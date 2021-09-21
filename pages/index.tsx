@@ -1,9 +1,10 @@
 import Head from 'next/head'
 import Swap from '../components/swap/swapComponent'
+import Layout from '../components/layout'
 
 export default function Home() {
   return (
-    <div className="container">
+    <Layout>
       <Head>
         <title>LayerSwap App</title>
         <link rel="icon" href="/favicon.ico" />
@@ -13,6 +14,6 @@ export default function Home() {
         <Swap/>
       </main>
    
-    </div>
+    </Layout>
   )
 }
