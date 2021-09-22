@@ -25,8 +25,8 @@ interface SwapApiResponse {
 function Swap() {
   const router = useRouter()
   const availableCurrencies: SelectMenuItem[] = [
-    new SelectMenuItem("USDC", "USDC", usdcLogo),
-    new SelectMenuItem("USDT", "USDT", usdtLogo, false)
+    new SelectMenuItem("USDT", "USDT", usdtLogo),
+    new SelectMenuItem("USDC", "USDC", usdcLogo, false)
   ];
   const availableNetworks: SelectMenuItem[] = CryptoNetwork.layerTwos.map(ltwo => new SelectMenuItem(ltwo.name, ltwo.displayName, ltwo.imgSrc));
   const initialValues: SwapFormValues = { amount: undefined, network: availableNetworks[0], destination_address: "", currency: availableCurrencies[0] };
@@ -46,6 +46,12 @@ function Swap() {
           }
           else if (values.amount < 0) {
             errors.amount = "Can't be negative";
+          }
+          else if (values.amount > 500) {
+            errors.amount = "Amount should be less than 500";
+          }
+          else if (values.amount < 10) {
+            errors.amount = "Amount should be at least 10";
           }
 
           if (!values.destination_address) {
@@ -80,11 +86,11 @@ function Swap() {
         {({ values, setFieldValue, errors, isSubmitting }) => (
           <Form>
             <div className="overflow-hidden">
-              <div className="px-4 py-5 sm:p-6">
+              <div className="p-0 sm:p-6">
                 <Field name="amount">
                   {({ field }) => (
                     <div>
-                      <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="amount" className="block text-base font-medium text-gray-700">
                         Send
                       </label>
                       <div className="">
@@ -95,13 +101,14 @@ function Swap() {
                             inputMode="decimal"
                             autoComplete="off"
                             placeholder="0.0"
-                            step="any"
+                            step="1"
                             autoCorrect="off"
-                            min="0"
+                            min="10"
+                            max="500"
                             type="number"
                             name="amount"
                             id="amount"
-                            className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block w-full sm:text-sm border-gray-300 rounded-md"
+                            className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block w-full font-semibold text-gray-700 border-gray-300 rounded-md placeholder-gray-400"
                             onKeyDown={e => {
                               if (!((e.keyCode > 95 && e.keyCode < 106)
                                 || (e.keyCode >= 46 && e.keyCode < 58)
@@ -113,7 +120,7 @@ function Swap() {
                             }}
                           />
                           <div className="absolute inset-y-0 right-0 flex items-center">
-                            <Field name="network" values={availableCurrencies} value={values.currency} as={SelectMenu} setFieldValue={setFieldValue} />
+                            <Field name="currency" values={availableCurrencies} value={values.currency} as={SelectMenu} setFieldValue={setFieldValue} />
                           </div>
                         </div>
                       </div>
@@ -121,7 +128,7 @@ function Swap() {
                   )}
                 </Field>
                 <div className="mt-5">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block font-medium text-gray-700">
                     To
                   </label>
                   <div className="relative rounded-md shadow-sm">
@@ -134,7 +141,7 @@ function Swap() {
                           type="text"
                           name="destination_address"
                           id="destination_address"
-                          className="focus:ring-indigo-500 focus:border-indigo-500 block pr-40 w-full sm:text-sm border-gray-300 rounded-md"
+                          className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold text-gray-700 pr-40 w-full border-gray-300 rounded-md placeholder-gray-400"
                         />
                       )}
                     </Field>
@@ -144,7 +151,7 @@ function Swap() {
                   </div>
                 </div>
                 <div className="mt-5">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block font-medium text-gray-700">
                     Estimated received
                   </label>
                   <p className="text-indigo-500 text-lg font-medium">{values.amount ? values.amount - values.amount * 5 / 100 : 0}<span className="text-gray-700">  {values.currency.name}</span></p>
@@ -153,11 +160,11 @@ function Swap() {
                   <button
                     disabled={errors.amount != null || errors.destination_address != null || isSubmitting}
                     type="submit"
-                    className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 disabled:bg-gray-500 disabled:cursor-not-allowed hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className={controlDisabledButton(errors, isSubmitting)}
                   >
                     <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                       {(errors.amount == null && errors.destination_address == null && !isSubmitting) &&
-                        <SwitchHorizontalIcon className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />}
+                        <SwitchHorizontalIcon className="h-5 w-5 text-white" aria-hidden="true" />}
                       {isSubmitting ?
                         <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -185,8 +192,20 @@ function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
     return errors.destination_address;
   }
   else {
-    return "Swap";
+    return "Swap now";
   }
+}
+
+function controlDisabledButton(errors: FormikErrors<SwapFormValues>, isSubmitting: boolean): string {
+  let defaultStyles = 'group relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500';
+  if (errors.amount != null || errors.destination_address != null || isSubmitting) {
+    defaultStyles += ' bg-gray-500 cursor-not-allowed';
+  }
+  else {
+    defaultStyles += ' bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out'
+  }
+
+  return defaultStyles;
 }
 
 export default Swap;

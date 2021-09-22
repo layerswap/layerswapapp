@@ -8,6 +8,7 @@ module.exports = {
       colors: {
         sky: colors.sky,
         cyan: colors.cyan,
+        pink: colors.pink,
       },
     },
   },
@@ -16,6 +17,7 @@ module.exports = {
       opacity: ["disabled"],
       cursor: ["hover", "focus", "disabled"],
       backgroundColor: ["disabled"],
+      translate:['hover']
     },
   },
   plugins: [require("@tailwindcss/forms")],

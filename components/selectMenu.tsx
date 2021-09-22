@@ -27,7 +27,7 @@ function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
 }
 
-let SelectMenu= ({ name, value, values, setFieldValue }) => {
+let SelectMenu = ({ name, value, values, setFieldValue }) => {
     const [selected, setSelected] = useState(value)
     React.useEffect(() => {
         name && setFieldValue && setFieldValue(name, selected);
@@ -37,7 +37,7 @@ let SelectMenu= ({ name, value, values, setFieldValue }) => {
             {({ open }) => (
                 <>
                     <div className="mt-1 relative">
-                        <Listbox.Button className="focus:ring-indigo-500 focus:border-indigo-500 w-full h-full py-0 pl-2 pr-12 border-transparent bg-transparent text-gray-500 sm:text-sm rounded-md">
+                        <Listbox.Button className="focus:ring-indigo-500 focus:border-indigo-500 w-full h-full py-0 pl-2 pr-12 border-transparent bg-transparent text-gray-500 font-semibold rounded-md">
                             <span className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                     <Image
@@ -61,21 +61,18 @@ let SelectMenu= ({ name, value, values, setFieldValue }) => {
                             leaveFrom="opacity-100"
                             leaveTo="opacity-0"
                         >
-                            <Listbox.Options className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                            <Listbox.Options className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none font-semibold">
                                 {values.map((item) => (
                                     <Listbox.Option
                                         key={item.id}
                                         disabled={!item.isEnabled}
-                                        className={({ active }) =>
-                                            classNames(
-                                                active ? 'text-white bg-indigo-600' : 'text-gray-900',
-                                                'cursor-default select-none relative py-2 pl-3 pr-9'
-                                            )
+                                        className={({ active, disabled }) =>
+                                            styleOption(active, disabled)
                                         }
                                         value={item}
                                     >
                                         {({ selected, active, disabled }) => (
-                                            <>
+                                            <div>
                                                 <div className="flex items-center">
                                                     <div className="flex-shrink-0 h-6 w-6 relative">
                                                         <Image
@@ -102,7 +99,8 @@ let SelectMenu= ({ name, value, values, setFieldValue }) => {
                                                         <CheckIcon className="h-5 w-5" aria-hidden="true" />
                                                     </span>
                                                 ) : null}
-                                            </>
+                                                <span className='tooltip bg-gray-200 text-gray-700 inset-0 text-center pt-2'>Coming soon</span>
+                                            </div>
                                         )}
                                     </Listbox.Option>
                                 ))}
@@ -115,4 +113,17 @@ let SelectMenu= ({ name, value, values, setFieldValue }) => {
     )
 }
 
-export default SelectMenu ;
+export default SelectMenu;
+
+function styleOption(active: boolean, disabled: boolean) {
+    let classNames = 'cursor-default select-none relative py-2 pl-3 pr-9';
+    if (disabled) {
+        return 'bg-gray-200 has-tooltip ' + classNames;
+    }
+    if (active) {
+        return 'text-white bg-indigo-600 ' + classNames;
+    }
+    else {
+        return 'text-gray-900 ' + classNames;
+    }
+}
