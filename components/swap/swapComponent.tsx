@@ -1,5 +1,5 @@
 import React from 'react';
-import { Formik, Form, Field, ErrorMessage, FormikErrors } from 'formik';
+import { Formik, Form, Field, FormikErrors } from 'formik';
 import axios from 'axios';
 import { useRouter } from 'next/router'
 import { CryptoNetwork } from '../../Models/CryptoNetwork';
@@ -8,7 +8,7 @@ import CardContainer from '../cardContainer';
 import SelectMenu, { SelectMenuItem } from '../selectMenu';
 import usdcLogo from '../../public/usd-coin-usdc-logo.png';
 import usdtLogo from '../../public/tether-usdt-logo.png';
-import { SwitchHorizontalIcon } from '@heroicons/react/solid'
+import { SwitchHorizontalIcon } from '@heroicons/react/solid';
 
 interface SwapFormValues {
   amount: number;
@@ -28,8 +28,23 @@ function Swap() {
     new SelectMenuItem("USDT", "USDT", usdtLogo),
     new SelectMenuItem("USDC", "USDC", usdcLogo, false)
   ];
+
+  let addressValue = '';
+
+  function handleOnFocusOut(field: any, setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void) {
+    addressValue = field.value;
+    if (addressValue.length > 10)
+    {
+      setFieldValue("destination_address", addressValue.substr(0, 5) + "..." + addressValue.substr(addressValue.length - 5))
+    }
+  }
+
+  function handleOnFocus(setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void) {
+    setFieldValue("destination_address", addressValue)
+  }
+
   const availableNetworks: SelectMenuItem[] = CryptoNetwork.layerTwos.map(ltwo => new SelectMenuItem(ltwo.name, ltwo.displayName, ltwo.imgSrc));
-  const initialValues: SwapFormValues = { amount: undefined, network: availableNetworks[0], destination_address: "", currency: availableCurrencies[0] };
+  const initialValues: SwapFormValues = { amount: 10, network: availableNetworks[0], destination_address: "", currency: availableCurrencies[0] };
   return (
     <CardContainer>
       <Formik
@@ -66,7 +81,7 @@ function Swap() {
             {
               amount: values.amount,
               currency: values.currency.id,
-              destination_address: values.destination_address,
+              destination_address: addressValue,
               network: values.network.id
             }
           )
@@ -83,7 +98,7 @@ function Swap() {
 
         }}
       >
-        {({ values, setFieldValue, errors, isSubmitting }) => (
+        {({ values, setFieldValue, errors, isSubmitting, handleBlur }) => (
           <Form>
             <div className="overflow-hidden">
               <div className="p-0 sm:p-6">
@@ -114,7 +129,7 @@ function Swap() {
                                 || (e.keyCode >= 46 && e.keyCode < 58)
                                 || e.keyCode == 8
                                 || e.keyCode == 37 || e.keyCode == 39 || e.keyCode == 190
-                                || e.keyCode == 9 || e.keyCode == 13)) {
+                                || e.keyCode == 9 || e.keyCode == 13 || e.keyCode == 110)) {
                                 return e.preventDefault();
                               }
                             }}
@@ -136,12 +151,14 @@ function Swap() {
                       {({ field }) => (
                         <input
                           {...field}
-                          placeholder="0x123ab56cd89"
+                          onBlur={e => { handleBlur(e); handleOnFocusOut(field, setFieldValue) }}
+                          onFocus={e => handleOnFocus(setFieldValue)}
+                          placeholder="0x123...ab56c"
                           autoCorrect="off"
                           type="text"
                           name="destination_address"
                           id="destination_address"
-                          className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold text-gray-700 pr-40 w-full border-gray-300 rounded-md placeholder-gray-400"
+                          className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold text-gray-700 pr-44 w-full border-gray-300 rounded-md placeholder-gray-400"
                         />
                       )}
                     </Field>

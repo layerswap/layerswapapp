@@ -121,7 +121,7 @@ function styleOption(active: boolean, disabled: boolean) {
         return 'bg-gray-200 has-tooltip ' + classNames;
     }
     if (active) {
-        return 'text-white bg-indigo-600 ' + classNames;
+        return 'text-white bg-gradient-to-r from-indigo-400 to-pink-400' + classNames;
     }
     else {
         return 'text-gray-900 ' + classNames;
