@@ -1,16 +1,15 @@
 import { Fragment, useState } from 'react'
 import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'
-import Image from 'next/image'
 import React from 'react';
 
 export class SelectMenuItem {
     id: string;
     name: string;
-    imgSrc: StaticImageData;
+    imgSrc: string;
     isEnabled: boolean;
 
-    constructor(id: string, name: string, imgSrc: StaticImageData, isEnabled: boolean = true) {
+    constructor(id: string, name: string, imgSrc: string, isEnabled: boolean = true) {
         this.id = id;
         this.name = name;
         this.imgSrc = imgSrc;
@@ -40,10 +39,9 @@ let SelectMenu = ({ name, value, values, setFieldValue }) => {
                         <Listbox.Button className="focus:ring-indigo-500 focus:border-indigo-500 w-full h-full py-0 pl-2 pr-12 border-transparent bg-transparent text-gray-500 font-semibold rounded-md">
                             <span className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
-                                    <Image
+                                    <img
                                         src={selected.imgSrc}
                                         alt="Project Logo"
-                                        layout="fill" // required
                                         className="rounded-full"
                                     />
                                 </div>
@@ -73,20 +71,18 @@ let SelectMenu = ({ name, value, values, setFieldValue }) => {
                                     >
                                         {({ selected, active, disabled }) => (
                                             <div>
-                                                <div className="flex items-center">
+                                                <div className="flex items-center group">
                                                     <div className="flex-shrink-0 h-6 w-6 relative">
-                                                        <Image
+                                                        <img
                                                             src={item.imgSrc}
                                                             alt="Project Logo"
-                                                            layout="fill" // required
-                                                            className="rounded-full" // just an example
+                                                            className="rounded-full"
                                                         />
                                                     </div>
-                                                    <span
-                                                        className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}
-                                                    >
-                                                        {item.name}
-                                                    </span>
+                                                    <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
+                                                        <div className={disabled ? 'inline group-hover:hidden' : null}>{item.name}</div>
+                                                        <div className={disabled ? 'hidden group-hover:inline cursor-not-allowed' : 'hidden'}>Soon..</div>
+                                                    </div>
                                                 </div>
 
                                                 {selected ? (
@@ -99,7 +95,6 @@ let SelectMenu = ({ name, value, values, setFieldValue }) => {
                                                         <CheckIcon className="h-5 w-5" aria-hidden="true" />
                                                     </span>
                                                 ) : null}
-                                                <span className='tooltip bg-gray-200 text-gray-700 inset-0 text-center pt-2'>Coming soon</span>
                                             </div>
                                         )}
                                     </Listbox.Option>
@@ -118,10 +113,10 @@ export default SelectMenu;
 function styleOption(active: boolean, disabled: boolean) {
     let classNames = 'cursor-default select-none relative py-2 pl-3 pr-9';
     if (disabled) {
-        return 'bg-gray-200 has-tooltip ' + classNames;
+        return 'bg-gray-200 ' + classNames;
     }
     if (active) {
-        return 'text-white bg-gradient-to-r from-indigo-400 to-pink-400' + classNames;
+        return 'text-white bg-indigo-500 ' + classNames;
     }
     else {
         return 'text-gray-900 ' + classNames;

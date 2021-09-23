@@ -6,12 +6,11 @@ import { CryptoNetwork } from '../../Models/CryptoNetwork';
 import LayerSwapApiClient from '../../layerSwapApiClient';
 import CardContainer from '../cardContainer';
 import SelectMenu, { SelectMenuItem } from '../selectMenu';
-import usdcLogo from '../../public/usd-coin-usdc-logo.png';
-import usdtLogo from '../../public/tether-usdt-logo.png';
 import { SwitchHorizontalIcon } from '@heroicons/react/solid';
+import SpinIcon from '../icons/spinIcon';
 
 interface SwapFormValues {
-  amount: number;
+  amount: string;
   destination_address: string;
   network: SelectMenuItem;
   currency: SelectMenuItem;
@@ -25,16 +24,14 @@ interface SwapApiResponse {
 function Swap() {
   const router = useRouter()
   const availableCurrencies: SelectMenuItem[] = [
-    new SelectMenuItem("USDT", "USDT", usdtLogo),
-    new SelectMenuItem("USDC", "USDC", usdcLogo, false)
+    new SelectMenuItem("USDT", "USDT", '/tether-usdt-logo.png'),
+    new SelectMenuItem("USDC", "USDC", '/usd-coin-usdc-logo.png', false)
   ];
 
   let addressValue = '';
-
   function handleOnFocusOut(field: any, setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void) {
     addressValue = field.value;
-    if (addressValue.length > 10)
-    {
+    if (addressValue.length > 10) {
       setFieldValue("destination_address", addressValue.substr(0, 5) + "..." + addressValue.substr(addressValue.length - 5))
     }
   }
@@ -44,13 +41,14 @@ function Swap() {
   }
 
   const availableNetworks: SelectMenuItem[] = CryptoNetwork.layerTwos.map(ltwo => new SelectMenuItem(ltwo.name, ltwo.displayName, ltwo.imgSrc));
-  const initialValues: SwapFormValues = { amount: 10, network: availableNetworks[0], destination_address: "", currency: availableCurrencies[0] };
+  const initialValues: SwapFormValues = { amount: '', network: availableNetworks[0], destination_address: "", currency: availableCurrencies[0] };
   return (
     <CardContainer>
       <Formik
         initialValues={initialValues}
         validate={values => {
           let errors: FormikErrors<SwapFormValues> = {};
+          let amount = Number(values.amount);
           if (!values.amount) {
             errors.amount = 'Enter an amount';
           }
@@ -59,13 +57,13 @@ function Swap() {
           ) {
             errors.amount = 'Invalid amount';
           }
-          else if (values.amount < 0) {
+          else if (amount < 0) {
             errors.amount = "Can't be negative";
           }
-          else if (values.amount > 500) {
+          else if (amount > 500) {
             errors.amount = "Amount should be less than 500";
           }
-          else if (values.amount < 10) {
+          else if (amount < 10) {
             errors.amount = "Amount should be at least 10";
           }
 
@@ -87,10 +85,8 @@ function Swap() {
           )
             .then(response => {
               let result: SwapApiResponse = response.data;
-              console.log(result);
-              actions.setSubmitting(false);
-              actions.resetForm();
               router.push(response.data.redirect_url);
+              actions.setSubmitting(false);
             })
             .catch(error => {
               actions.setSubmitting(false);
@@ -171,7 +167,7 @@ function Swap() {
                   <label className="block font-medium text-gray-700">
                     Estimated received
                   </label>
-                  <p className="text-indigo-500 text-lg font-medium">{values.amount ? values.amount - values.amount * 5 / 100 : 0}<span className="text-gray-700">  {values.currency.name}</span></p>
+                  <p className="text-indigo-500 text-lg font-medium">{values.amount ? Number(values.amount) - Number(values.amount) * 5 / 100 : 0}<span className="text-gray-700">  {values.currency.name}</span></p>
                 </div>
                 <div className="mt-10">
                   <button
@@ -183,10 +179,7 @@ function Swap() {
                       {(errors.amount == null && errors.destination_address == null && !isSubmitting) &&
                         <SwitchHorizontalIcon className="h-5 w-5 text-white" aria-hidden="true" />}
                       {isSubmitting ?
-                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                        <SpinIcon className="animate-spin h-5 w-5 text-white" />
                         : null}
                     </span>
                     {displayErrorsOrSubmit(errors)}

@@ -17,7 +17,8 @@ module.exports = {
       opacity: ["disabled"],
       cursor: ["hover", "focus", "disabled"],
       backgroundColor: ["disabled"],
-      translate:['hover']
+      translate:['hover'],
+      display:['group-hover']
     },
   },
   plugins: [require("@tailwindcss/forms")],

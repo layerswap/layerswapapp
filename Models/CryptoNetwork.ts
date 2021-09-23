@@ -1,24 +1,21 @@
-import arbitrumRinkebyLogo from '../public/arbitrum-rinkeby-logo.png';
-import arbitrumLogo from '../public/arbitrum-logo.png';
-
 export class CryptoNetwork {
     name: string;
     displayName: string;
     explorerUrl: string;
-    imgSrc: StaticImageData;
+    imgSrc: string;
 
     static layerTwos: CryptoNetwork[] = [
         {
             name: "ARBITRUM_RINKEBY",
             displayName: "Arbitrum R",
             explorerUrl: "https://rinkeby-explorer.arbitrum.io/tx/",
-            imgSrc: arbitrumRinkebyLogo
+            imgSrc: '/arbitrum-rinkeby-logo.png'
         },
         {
             name: "ARBITRUM_MAINNET",
             displayName: "Arbitrum M",
             explorerUrl: "https://arbiscan.io/tx/",
-            imgSrc: arbitrumLogo
+            imgSrc: '/arbitrum-logo.png'
         },
     ];
 
