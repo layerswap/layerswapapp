@@ -1,6 +1,7 @@
 import { Fragment, useState } from 'react'
 import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'
+import Image from 'next/image'
 import React from 'react';
 
 export class SelectMenuItem {
@@ -39,9 +40,12 @@ let SelectMenu = ({ name, value, values, setFieldValue }) => {
                         <Listbox.Button className="focus:ring-indigo-500 focus:border-indigo-500 w-full h-full py-0 pl-2 pr-12 border-transparent bg-transparent text-gray-500 font-semibold rounded-md">
                             <span className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
-                                    <img
+                                    <Image
                                         src={selected.imgSrc}
+                                        width="1.5rem"
+                                        height="1.5rem"
                                         alt="Project Logo"
+                                        layout="fill" // required
                                         className="rounded-full"
                                     />
                                 </div>
@@ -73,15 +77,18 @@ let SelectMenu = ({ name, value, values, setFieldValue }) => {
                                             <div>
                                                 <div className="flex items-center group">
                                                     <div className="flex-shrink-0 h-6 w-6 relative">
-                                                        <img
+                                                        <Image
                                                             src={item.imgSrc}
                                                             alt="Project Logo"
-                                                            className="rounded-full"
+                                                            width="1.5rem"
+                                                            height="1.5rem"
+                                                            layout="fill" // required
+                                                            className="rounded-full" // just an example
                                                         />
                                                     </div>
-                                                    <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
+                                                    <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate disabled:cursor-not-allowed')}                                                    >
                                                         <div className={disabled ? 'inline group-hover:hidden' : null}>{item.name}</div>
-                                                        <div className={disabled ? 'hidden group-hover:inline cursor-not-allowed' : 'hidden'}>Soon..</div>
+                                                        <div className={disabled ? 'hidden group-hover:inline' : 'hidden'}>Soon..</div>
                                                     </div>
                                                 </div>
 
