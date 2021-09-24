@@ -63,7 +63,7 @@ function Swap() {
           else if (amount > 500) {
             errors.amount = "Amount should be less than 500";
           }
-          else if (amount < 10) {
+          else if (amount < 0.01) {
             errors.amount = "Amount should be at least 10";
           }
 
@@ -112,9 +112,9 @@ function Swap() {
                             inputMode="decimal"
                             autoComplete="off"
                             placeholder="0.0"
-                            step="1"
+                            step="0.01"
                             autoCorrect="off"
-                            min="10"
+                            min="0.01"
                             max="500"
                             type="number"
                             name="amount"

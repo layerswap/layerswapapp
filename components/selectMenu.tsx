@@ -75,7 +75,7 @@ let SelectMenu = ({ name, value, values, setFieldValue }) => {
                                     >
                                         {({ selected, active, disabled }) => (
                                             <div>
-                                                <div className="flex items-center group">
+                                                <div className="flex items-center">
                                                     <div className="flex-shrink-0 h-6 w-6 relative">
                                                         <Image
                                                             src={item.imgSrc}
@@ -86,7 +86,7 @@ let SelectMenu = ({ name, value, values, setFieldValue }) => {
                                                             className="rounded-full" // just an example
                                                         />
                                                     </div>
-                                                    <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate disabled:cursor-not-allowed')}                                                    >
+                                                    <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
                                                         <div className={disabled ? 'inline group-hover:hidden' : null}>{item.name}</div>
                                                         <div className={disabled ? 'hidden group-hover:inline' : 'hidden'}>Soon..</div>
                                                     </div>
@@ -118,9 +118,9 @@ let SelectMenu = ({ name, value, values, setFieldValue }) => {
 export default SelectMenu;
 
 function styleOption(active: boolean, disabled: boolean) {
-    let classNames = 'cursor-default select-none relative py-2 pl-3 pr-9';
+    let classNames = 'cursor-default select-none relative py-2 pl-3 pr-9 group';
     if (disabled) {
-        return 'bg-gray-200 ' + classNames;
+        return 'bg-gray-200 cursor-not-allowed ' + classNames;
     }
     if (active) {
         return 'text-white bg-indigo-500 ' + classNames;

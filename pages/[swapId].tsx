@@ -8,6 +8,7 @@ import { CheckIcon, XIcon } from '@heroicons/react/outline'
 import { CryptoNetwork } from '../Models/CryptoNetwork';
 import Link from 'next/link'
 import SpinIcon from '../components/icons/spinIcon';
+import Layout from '../components/layout';
 
 enum SwapPageStatus {
   Processing,
@@ -41,51 +42,58 @@ const SwapDetails = () => {
   }
 
   return (
-    <CardContainer>
-      <div className="max-w-md mx-auto items-center justify-center flex">
-        {renderIndicator(swapPageStatus)}
-      </div>
-      <div className="mt-6 text-center">
-        <h3 className="text-2xl leading-6 font-medium text-gray-900">
-          {renderHeading(swapPageStatus)}
-        </h3>
-        <div className="mt-3 h-24">
-          <p className="text-gray-500 font-medium">
-            {renderDescription(swapPageStatus)}
-          </p>
-          {swapPageStatus === SwapPageStatus.Success &&
-            <div className="mb-6">
-              <a className="font-medium hover:underline text-indigo-600 hover:text-indigo-500" href={CryptoNetwork.GetLayerTwoByName(data.network).explorerUrl + data.transaction_id}>
-                <p className="truncate mt-3 ">{data.transaction_id}</p>
-              </a>
-              <Link href="/">
-                <a className="mt-3 w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10">
-                  Swap more
-                </a>
-              </Link>
+    <Layout>
+      <CardContainer>
+        <div className="w-96 max-w-7xl m-10">
+          <div className="max-w-md mx-auto items-center justify-center flex">
+            {renderIndicator(swapPageStatus)}
+          </div>
+          <div className="mt-6 text-center">
+            <h3 className="text-2xl leading-6 font-medium text-gray-900">
+              {renderHeading(swapPageStatus)}
+            </h3>
+            <div className="mt-3 h-24">
+              <p className="text-gray-500 font-medium">
+                {renderDescription(swapPageStatus)}
+              </p>
+              {swapPageStatus === SwapPageStatus.Success &&
+                <div className="my-6">
+
+                  <a href={CryptoNetwork.GetLayerTwoByName(data.network).explorerUrl + data.transaction_id} className="mt-5 relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                    View transaction in explorer
+                  </a>
+
+                  <Link href='/'>
+                    <a className="font-medium underline text-indigo-600 hover:text-indigo-500">
+                      <p className="truncate mt-3 ">Swap more</p>
+                    </a>
+                  </Link>
+
+                </div>
+              }
             </div>
-          }
+          </div>
         </div>
-      </div>
-    </CardContainer>
+      </CardContainer>
+    </Layout>
   )
 }
 
 function renderIndicator(swapPageStatus: SwapPageStatus) {
   switch (swapPageStatus) {
     case SwapPageStatus.Failed: {
-      return <div className="mx-auto flex items-center justify-center  h-24 w-24 rounded-full bg-red-100 sm:mx-0 sm:h-24 sm:w-24">
+      return <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-red-100 sm:mx-0">
         <XIcon className="text-red-500 h-16 w-16" />
       </div>;
     }
     default:
     case SwapPageStatus.Processing: {
-      return <div className="mx-auto flex items-center justify-center  h-24 w-24 rounded-full bg-green-100 sm:mx-0 sm:h-24 sm:w-24">
+      return <div className="mx-auto flex items-center justify-center  h-24 w-24 rounded-full bg-green-100 sm:mx-0">
         <SpinIcon className="animate-spin h-16 w-16 text-green-500" />
       </div>;
     }
     case SwapPageStatus.Success: {
-      return <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-green-100 md:mx-0 sm:h-24 sm:w-24">
+      return <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-green-100 md:mx-0">
         <CheckIcon className="text-green-500 h-16 w-16" />
       </div>;
     }
