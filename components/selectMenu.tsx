@@ -42,10 +42,8 @@ let SelectMenu = ({ name, value, values, setFieldValue }) => {
                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                     <Image
                                         src={selected.imgSrc}
-                                        width="1.5rem"
-                                        height="1.5rem"
                                         alt="Project Logo"
-                                        layout="fill" // required
+                                        layout="fill"
                                         className="rounded-full"
                                     />
                                 </div>
@@ -80,10 +78,8 @@ let SelectMenu = ({ name, value, values, setFieldValue }) => {
                                                         <Image
                                                             src={item.imgSrc}
                                                             alt="Project Logo"
-                                                            width="1.5rem"
-                                                            height="1.5rem"
-                                                            layout="fill" // required
-                                                            className="rounded-full" // just an example
+                                                            layout="fill"
+                                                            className="rounded-full"
                                                         />
                                                     </div>
                                                     <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >

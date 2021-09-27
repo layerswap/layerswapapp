@@ -18,7 +18,7 @@ export default function Navbar() {
                 <nav className="relative flex items-center justify-between sm:h-10 lg:justify-start" aria-label="Global">
                     <div className="flex items-center flex-grow flex-shrink-0 lg:flex-grow-0">
                         <div className="flex items-center justify-between w-full md:w-auto">
-                            <Link href="/">
+                            <Link href="/" key="Home">
                                 <a>
                                     <span className="sr-only">LayerSwap</span>
                                     <LayerSwapLogo className="h-8 w-auto text-white" />
@@ -34,7 +34,7 @@ export default function Navbar() {
                     </div>
                     <div className="hidden md:block md:ml-10 md:pr-4 md:space-x-8">
                         {navigation.map((item) => (
-                            <Link href={item.href}>
+                            <Link href={item.href} key={item.name}>
                                 <a key={item.name} className={classNames(router.pathname == item.href ? 'text-white' : 'text-gray-400', 'font-medium hover:text-gray-200')}>
                                     {item.name}
                                 </a>
@@ -60,7 +60,7 @@ export default function Navbar() {
                     <div className="rounded-lg shadow-md bg-white ring-1 ring-black ring-opacity-5 overflow-hidden">
                         <div className="px-5 pt-4 flex items-center justify-between">
                             <div>
-                                <Link href="/">
+                                <Link href="/" key="Home">
                                     <LayerSwapLogo className="h-8 w-auto text-gray-800" />
                                 </Link>
                             </div>
@@ -73,7 +73,7 @@ export default function Navbar() {
                         </div>
                         <div className="px-2 pt-2 pb-3 space-y-1">
                             {navigation.map((item) => (
-                                <Link href={item.href}>
+                                <Link href={item.href} key={item.name}>
                                     <a
                                         key={item.name}
                                         className={classNames(router.pathname == item.href ? 'text-pink-400' : 'text-gray-700', 'block px-3 py-2 rounded-md text-base font-medium hover:text-gray-900 hover:bg-gray-50')}
