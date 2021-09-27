@@ -9,6 +9,7 @@ import { CryptoNetwork } from '../Models/CryptoNetwork';
 import Link from 'next/link'
 import SpinIcon from '../components/icons/spinIcon';
 import Layout from '../components/layout';
+import { useState } from 'react';
 
 enum SwapPageStatus {
   Processing,
@@ -22,17 +23,22 @@ const SwapDetails = () => {
   const apiClient = new LayerSwapApiClient();
 
   const { data, mutate, error, isValidating } = useSWR<SwapInfo>(swapId ? `/swaps/${swapId}` : null, apiClient.apiFetcher);
-  let swapPageStatus = SwapPageStatus.Processing;
+  const [swapPageStatus, setswapPageStatus] = useState(SwapPageStatus.Processing);
 
   if (error || (data && data.status == SwapStatus.Failed)) {
-    swapPageStatus = SwapPageStatus.Failed;
+    if (swapPageStatus != SwapPageStatus.Failed) {
+      setswapPageStatus(SwapPageStatus.Failed);
+    }
   }
   else if ((!data || isValidating) || data.status == SwapStatus.Created || data.status == SwapStatus.Pending) {
-    swapPageStatus = SwapPageStatus.Processing;
-
+    if (swapPageStatus != SwapPageStatus.Processing) {
+      setswapPageStatus(SwapPageStatus.Processing);
+    }
   }
   else {
-    swapPageStatus = SwapPageStatus.Success;
+    if (swapPageStatus != SwapPageStatus.Success) {
+      setswapPageStatus(SwapPageStatus.Success);
+    }
   }
 
   if (data && (data.status == SwapStatus.Created || data.status == SwapStatus.Pending)) {
@@ -44,7 +50,7 @@ const SwapDetails = () => {
   return (
     <Layout>
       <CardContainer>
-        <div className="w-96 max-w-7xl m-10">
+        <div className="py-14">
           <div className="max-w-md mx-auto items-center justify-center flex">
             {renderIndicator(swapPageStatus)}
           </div>
@@ -56,21 +62,27 @@ const SwapDetails = () => {
               <p className="text-gray-500 font-medium">
                 {renderDescription(swapPageStatus)}
               </p>
-              {swapPageStatus === SwapPageStatus.Success &&
-                <div className="my-6">
-
-                  <a href={CryptoNetwork.GetLayerTwoByName(data.network).explorerUrl + data.transaction_id} className="mt-5 relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                    View transaction in explorer
-                  </a>
-
-                  <Link href='/'>
-                    <a className="font-medium underline text-indigo-600 hover:text-indigo-500">
-                      <p className="truncate mt-3 ">Swap more</p>
+              <div className="my-6 flex flex-col">
+                {swapPageStatus === SwapPageStatus.Success &&
+                  <div>
+                    <a href={CryptoNetwork.GetLayerTwoByName(data.network).explorerUrl + data.transaction_id} className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                      View transaction in explorer
                     </a>
-                  </Link>
-
-                </div>
-              }
+                    <Link href='/'>
+                      <a className="font-medium underline text-indigo-600 hover:text-indigo-500">
+                        <p className="mt-2">Swap more</p>
+                      </a>
+                    </Link>
+                  </div>
+                }
+                {swapPageStatus === SwapPageStatus.Failed &&
+                  <div>
+                    <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                      Open Discord
+                    </a>
+                  </div>
+                }
+              </div>
             </div>
           </div>
         </div>
@@ -118,7 +130,7 @@ function renderHeading(swapPageStatus: SwapPageStatus) {
 function renderDescription(swapPageStatus: SwapPageStatus) {
   switch (swapPageStatus) {
     case SwapPageStatus.Failed: {
-      return "We are sorry but there was an issue with your swap. We are on it, but if you want you can contact us by ...";
+      return "We are sorry but there was an issue with your swap. Please contact us through our Discord";
     }
     default:
     case SwapPageStatus.Processing: {

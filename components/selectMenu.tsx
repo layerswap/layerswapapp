@@ -43,6 +43,7 @@ let SelectMenu = ({ name, value, values, setFieldValue }) => {
                                     <Image
                                         src={selected.imgSrc}
                                         alt="Project Logo"
+                                        priority
                                         layout="fill"
                                         className="rounded-full"
                                     />

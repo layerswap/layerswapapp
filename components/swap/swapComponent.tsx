@@ -97,7 +97,7 @@ function Swap() {
         {({ values, setFieldValue, errors, isSubmitting, handleBlur }) => (
           <Form>
             <div className="overflow-hidden">
-              <div className="p-0 sm:p-6">
+              <div className="px-0 md:px-6 py-6">
                 <Field name="amount">
                   {({ field }) => (
                     <div>

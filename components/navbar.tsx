@@ -76,7 +76,7 @@ export default function Navbar() {
                                 <Link href={item.href} key={item.name}>
                                     <a
                                         key={item.name}
-                                        className={classNames(router.pathname == item.href ? 'text-pink-400' : 'text-gray-700', 'block px-3 py-2 rounded-md text-base font-medium hover:text-gray-900 hover:bg-gray-50')}
+                                        className={classNames(router.pathname == item.href ? 'text-indigo-500' : 'text-gray-700', 'block px-3 py-2 rounded-md text-base font-medium hover:text-gray-900 hover:bg-gray-50')}
                                     >
                                         {item.name}
                                     </a>
