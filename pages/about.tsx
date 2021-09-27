@@ -17,7 +17,7 @@ export default function About({ htmlContentString }) {
 
             <main>
                 <CardContainer>
-                    <div className="max-w-2xl mx-auto">
+                    <div className="max-w-2xl mx-auto py-6">
                         <div
                             className="prose"
                             dangerouslySetInnerHTML={{ __html: htmlContentString }}
