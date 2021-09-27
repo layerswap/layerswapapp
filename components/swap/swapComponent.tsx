@@ -28,18 +28,6 @@ function Swap() {
     new SelectMenuItem("USDC", "USDC", '/usd-coin-usdc-logo.png', false)
   ];
 
-  let addressValue = '';
-  function handleOnFocusOut(field: any, setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void) {
-    addressValue = field.value;
-    if (addressValue.length > 10) {
-      setFieldValue("destination_address", addressValue.substr(0, 5) + "..." + addressValue.substr(addressValue.length - 5))
-    }
-  }
-
-  function handleOnFocus(setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void) {
-    setFieldValue("destination_address", addressValue)
-  }
-
   const availableNetworks: SelectMenuItem[] = CryptoNetwork.layerTwos.map(ltwo => new SelectMenuItem(ltwo.name, ltwo.displayName, ltwo.imgSrc));
   const initialValues: SwapFormValues = { amount: '', network: availableNetworks[0], destination_address: "", currency: availableCurrencies[0] };
   return (
@@ -79,7 +67,7 @@ function Swap() {
             {
               amount: values.amount,
               currency: values.currency.id,
-              destination_address: addressValue,
+              destination_address: values.destination_address,
               network: values.network.id
             }
           )
@@ -147,14 +135,12 @@ function Swap() {
                       {({ field }) => (
                         <input
                           {...field}
-                          onBlur={e => { handleBlur(e); handleOnFocusOut(field, setFieldValue) }}
-                          onFocus={e => handleOnFocus(setFieldValue)}
                           placeholder="0x123...ab56c"
                           autoCorrect="off"
                           type="text"
                           name="destination_address"
                           id="destination_address"
-                          className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold text-gray-700 pr-44 w-full border-gray-300 rounded-md placeholder-gray-400"
+                          className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold text-gray-700 pr-44 w-full border-gray-300 rounded-md placeholder-gray-400 truncate"
                         />
                       )}
                     </Field>
