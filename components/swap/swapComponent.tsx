@@ -3,11 +3,12 @@ import { Formik, Form, Field, FormikErrors } from 'formik';
 import axios from 'axios';
 import { useRouter } from 'next/router'
 import { CryptoNetwork } from '../../Models/CryptoNetwork';
-import LayerSwapApiClient from '../../layerSwapApiClient';
+import LayerSwapApiClient from '../../lib/layerSwapApiClient';
 import CardContainer from '../cardContainer';
 import SelectMenu, { SelectMenuItem } from '../selectMenu';
 import { SwitchHorizontalIcon } from '@heroicons/react/solid';
 import SpinIcon from '../icons/spinIcon';
+import { isValidEtherAddress } from '../../lib/etherAddressValidator';
 
 interface SwapFormValues {
   amount: string;
@@ -58,6 +59,10 @@ function Swap() {
           if (!values.destination_address) {
             errors.destination_address = "Enter a destination address"
           }
+          else if (!isValidEtherAddress(values.destination_address))
+          {
+            errors.destination_address = "Enter a valid destination address"
+          }
 
           return errors;
         }}
@@ -75,7 +80,6 @@ function Swap() {
             .then(response => {
               let result: SwapApiResponse = response.data;
               router.push(response.data.redirect_url);
-              actions.setSubmitting(false);
             })
             .catch(error => {
               actions.setSubmitting(false);
