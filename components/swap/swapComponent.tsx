@@ -33,8 +33,8 @@ function Swap() {
   ];
 
   const availableExchanges: SelectMenuItem[] = [
+    new SelectMenuItem("coinbase", "Coinbase", '/coinbase-logo.png'),
     new SelectMenuItem("binance", "Binance", '/binance-logo.png'),
-    new SelectMenuItem("coinbase", "Coinbase", '/coinbase-logo.png')
   ];
 
 
