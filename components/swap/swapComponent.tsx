@@ -61,7 +61,7 @@ function Swap() {
           else if (amount > 500) {
             errors.amount = "Amount should be less than 500";
           }
-          else if (amount < 0.01) {
+          else if (amount < 10) {
             errors.amount = "Amount should be at least 10";
           }
 
@@ -86,7 +86,6 @@ function Swap() {
             }
           )
             .then(response => {
-              let result: SwapApiResponse = response.data;
               router.push(response.data.redirect_url);
             })
             .catch(error => {
@@ -115,18 +114,15 @@ function Swap() {
                             placeholder="0.0"
                             step="0.01"
                             autoCorrect="off"
-                            min="0.01"
+                            min="10"
                             max="500"
                             type="number"
                             name="amount"
                             id="amount"
                             className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block w-full font-semibold text-gray-700 border-gray-300 rounded-md placeholder-gray-400"
-                            onKeyDown={e => {
-                              if (!((e.keyCode > 95 && e.keyCode < 106)
-                                || (e.keyCode >= 46 && e.keyCode < 58)
-                                || e.keyCode == 8
-                                || e.keyCode == 37 || e.keyCode == 39 || e.keyCode == 190
-                                || e.keyCode == 9 || e.keyCode == 13 || e.keyCode == 110)) {
+                            onKeyPress={e => {
+                              const regex = /^[0-9]*[.,]?[0-9]*$/;
+                              if (!regex.test(e.key)) {
                                 return e.preventDefault();
                               }
                             }}
@@ -170,7 +166,16 @@ function Swap() {
                 <label className="block font-medium text-gray-700">
                   Estimated received
                 </label>
-                <p className="text-indigo-500 text-lg font-medium">{values.amount ? Number(values.amount) - Number(values.amount) * 5 / 100 : 0}<span className="text-gray-700">  {values.currency.name}</span></p>
+                <p className="text-indigo-500 text-lg font-medium">
+                  {(() => {
+                    if (values.amount) {
+                      let amount = Number(values.amount);
+                      return amount - 2 - (amount * 5 / 100);
+                    }
+
+                    return 0;
+                  })()}
+                  <span className="text-gray-700">  {values.currency.name}</span></p>
               </div>
               <div className="mt-10">
                 <button
