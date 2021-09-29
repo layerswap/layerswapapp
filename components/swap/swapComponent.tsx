@@ -68,7 +68,8 @@ function Swap() {
               amount: values.amount,
               currency: values.currency.id,
               destination_address: values.destination_address,
-              network: values.network.id
+              network: values.network.id,
+              exchange: 'coinbase'
             }
           )
             .then(response => {
