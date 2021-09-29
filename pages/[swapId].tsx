@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router'
 import useSWR from 'swr';
 import CardContainer from '../components/cardContainer';
-import LayerSwapApiClient from '../layerSwapApiClient';
+import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import { SwapInfo } from '../Models/SwapInfo';
 import { SwapStatus } from '../Models/SwapStatus';
 import { CheckIcon, XIcon } from '@heroicons/react/outline'
