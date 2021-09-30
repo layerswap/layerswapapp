@@ -25,7 +25,7 @@ export default function SelectMenu({ name, value, values, setFieldValue, label }
                                 alt="Project Logo"
                                 priority
                                 layout="fill"
-                                className="rounded-full"
+                                className="rounded-full object-cover"
                             />
                         </div>
                         <span className="ml-3 block truncate text-gray-600">{selected.name}</span>
@@ -49,7 +49,14 @@ export default function SelectMenu({ name, value, values, setFieldValue, label }
                                 {({ selected, active, disabled }) => (
                                     <>
                                         <div className="flex items-center justify-start">
-                                            <img src={item.imgSrc} alt="" className="flex-shrink-0 h-6 w-6 rounded-full" />
+                                            <div className="flex-shrink-0 h-6 w-6 relative">
+                                                <Image
+                                                    src={item.imgSrc}
+                                                    alt="Project Logo"
+                                                    layout="fill"
+                                                    className="rounded-full object-cover"
+                                                />
+                                            </div>
                                             <div className={joinClassNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
                                                 <div className={disabled ? 'inline group-hover:hidden' : null}>{item.name}</div>
                                                 <div className={disabled ? 'hidden group-hover:inline' : 'hidden'}>Soon..</div>

@@ -61,7 +61,7 @@ let InsetSelectMenu = ({ name, value, values, setFieldValue }) => {
                                                             src={item.imgSrc}
                                                             alt="Project Logo"
                                                             layout="fill"
-                                                            className="rounded-full"
+                                                            className="rounded-full object-cover"
                                                         />
                                                     </div>
                                                     <div className={joinClassNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
