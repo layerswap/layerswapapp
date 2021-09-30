@@ -38,7 +38,7 @@ function Swap() {
   ];
 
 
-  const availableNetworks: SelectMenuItem[] = CryptoNetwork.layerTwos.map(ltwo => new SelectMenuItem(ltwo.name, ltwo.displayName, ltwo.imgSrc));
+  const availableNetworks: SelectMenuItem[] = CryptoNetwork.GetAvailableNetworks().map(ltwo => new SelectMenuItem(ltwo.name, ltwo.displayName, ltwo.imgSrc, !ltwo.disabled));
   const initialValues: SwapFormValues = { amount: '', network: availableNetworks[0], destination_address: "", currency: availableCurrencies[0], exchange: availableExchanges[0] };
   return (
     <CardContainer>
@@ -170,7 +170,9 @@ function Swap() {
                   {(() => {
                     if (values.amount) {
                       let amount = Number(values.amount);
-                      return amount - 2 - (amount * 5 / 100);
+                      if (amount >= 10) {
+                        return amount - 2 - (amount * 5 / 100);
+                      }
                     }
 
                     return 0;
