@@ -15,11 +15,23 @@ export default function Layout({ children }) {
       <link rel="mask-icon" href="favicon/safari-pinned-tab.svg" color="#5bbad5" />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content="#ffffff" />
+
+      <meta name="description" content="Move crypto from Binance or Coinbase to Arbitrum One - save 10x on fees." />
+
+      {/* Facebook Meta Tags */}
+      <meta property="og:url" content="https://www.layerswap.io/" />
       <meta property="og:type" content="website" />
       <meta property="og:title" content="LayerSwap - Move crypto to Layer 2" />
-      <meta property="og:url" content="https://layerswap.io/" />
-      <meta property="og:image" content="https://layerswap.io/opengraph.png" />
       <meta property="og:description" content="Move crypto from Binance or Coinbase to Arbitrum One - save 10x on fees." />
+      <meta property="og:image" content="https://layerswap.io/opengraph.png" />
+
+      {/* Twitter Meta Tags */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta property="twitter:domain" content="layerswap.io" />
+      <meta property="twitter:url" content="https://www.layerswap.io/" />
+      <meta name="twitter:title" content="LayerSwap - Move crypto to Layer 2" />
+      <meta name="twitter:description" content="Move crypto from Binance or Coinbase to Arbitrum One - save 10x on fees." />
+      <meta name="twitter:image" content="https://layerswap.io/opengraph.png" />
     </Head>
     <main>
       <div className="overflow-hidden relative">
