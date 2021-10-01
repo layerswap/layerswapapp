@@ -23,7 +23,7 @@ export default function Layout({ children }) {
       <meta property="og:type" content="website" />
       <meta property="og:title" content="LayerSwap - Move crypto to Layer 2" />
       <meta property="og:description" content="Move crypto from Binance or Coinbase to Arbitrum One - save 10x on fees." />
-      <meta property="og:image" content="https://layerswap.io/opengraph.png" />
+      <meta property="og:image" content="https://layerswap.io/opengraph.jpg" />
 
       {/* Twitter Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -31,7 +31,7 @@ export default function Layout({ children }) {
       <meta property="twitter:url" content="https://www.layerswap.io/" />
       <meta name="twitter:title" content="LayerSwap - Move crypto to Layer 2" />
       <meta name="twitter:description" content="Move crypto from Binance or Coinbase to Arbitrum One - save 10x on fees." />
-      <meta name="twitter:image" content="https://layerswap.io/opengraph.png" />
+      <meta name="twitter:image" content="https://layerswap.io/opengraph.jpg" />
     </Head>
     <main>
       <div className="overflow-hidden relative">
