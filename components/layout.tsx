@@ -15,6 +15,11 @@ export default function Layout({ children }) {
       <link rel="mask-icon" href="favicon/safari-pinned-tab.svg" color="#5bbad5" />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content="#ffffff" />
+      <meta property="og:type" content="website" />
+      <meta property="og:title" content="LayerSwap - Move crypto to Layer 2" />
+      <meta property="og:url" content="https://layerswap.io/" />
+      <meta property="og:image" content="https://layerswap.io/opengraph.png" />
+      <meta property="og:description" content="Move crypto from Binance or Coinbase to Arbitrum One - save 10x on fees." />
     </Head>
     <main>
       <div className="overflow-hidden relative">
@@ -22,8 +27,8 @@ export default function Layout({ children }) {
         <div>
           {children}
         </div>
-        <BackgroundCircle className="md:w-60 md:h-60 lg:h-full lg:w-96 top-32 lg:top-0 -right-40 lg:-right-60 absolute w-0 h-0" />
-        <BackgroundRectangle className="md:w-60 md:h-60 lg:h-full lg:w-96 top-64 lg:top-36 -left-40 lg:-left-60 absolute w-0 h-0" />
+        <BackgroundCircle className="md:w-60 md:h-60 lg:h-full lg:w-96 top-32 lg:top-0 -right-40 lg:-right-60 fixed w-0 h-0" />
+        <BackgroundRectangle className="md:w-60 md:h-60 lg:h-full lg:w-96 top-64 lg:top-36 -left-40 lg:-left-60 fixed w-0 h-0" />
       </div>
     </main>
   </>)
