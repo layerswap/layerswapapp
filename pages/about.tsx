@@ -12,7 +12,6 @@ export default function About({ htmlContentString }) {
         <Layout>
             <Head>
                 <title>About LayerSwap</title>
-                <link rel="icon" href="/favicon.ico" />
             </Head>
 
             <main>
