@@ -96,7 +96,7 @@ function Swap() {
       >
         {({ values, setFieldValue, errors, isSubmitting }) => (
           <Form>
-            <div className="px-0 md:px-6 py-6">
+            <div className="px-0 md:px-6 py-0 md:py-6">
               <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                 <div className="w-full">
                   <Field name="amount">
@@ -135,31 +135,34 @@ function Swap() {
                     )}
                   </Field>
                 </div>
-                <div className="felx flex-col md:w-2/4 w-full">
+                <div className="flex flex-col md:w-2/4 w-full">
                   <Field name="exchange" values={availableExchanges} label="From" value={values.exchange} as={SelectMenu} setFieldValue={setFieldValue} />
                 </div>
               </div>
-              <div className="mt-5">
-                <label className="block font-medium text-gray-700">
-                  To
-                </label>
-                <div className="relative rounded-md shadow-sm">
-                  <Field name="destination_address">
-                    {({ field }) => (
-                      <input
-                        {...field}
-                        placeholder="0x123...ab56c"
-                        autoCorrect="off"
-                        type="text"
-                        name="destination_address"
-                        id="destination_address"
-                        className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold text-gray-700 pr-44 w-full border-gray-300 rounded-md placeholder-gray-400 truncate"
-                      />
-                    )}
-                  </Field>
-                  <div className="absolute inset-y-0 right-0 flex items-center">
-                    <Field name="network" values={availableNetworks} value={values.network} as={InsetSelectMenu} setFieldValue={setFieldValue} />
+              <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+                <div className="w-full">
+                  <label className="block font-medium text-gray-700">
+                    To
+                  </label>
+                  <div className="relative rounded-md shadow-sm">
+                    <Field name="destination_address">
+                      {({ field }) => (
+                        <input
+                          {...field}
+                          placeholder="0x123...ab56c"
+                          autoCorrect="off"
+                          type="text"
+                          name="destination_address"
+                          id="destination_address"
+                          className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold text-gray-700 w-full border-gray-300 rounded-md placeholder-gray-400 truncate"
+                        />
+                      )}
+                    </Field>
+
                   </div>
+                </div>
+                <div className="flex flex-col md:w-2/4 w-full">
+                  <Field name="network" values={availableNetworks} label="In" value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
                 </div>
               </div>
               <div className="mt-5">
