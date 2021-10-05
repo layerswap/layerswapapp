@@ -3,10 +3,12 @@ import Layout from '../components/layout'
 import CardContainer from '../components/cardContainer'
 import fs from 'fs'
 import path from 'path'
-import { remark } from 'remark'
-import html from 'remark-html'
+import { serialize } from "next-mdx-remote/serialize";
+import imageSize from "rehype-img-size";
+import React from 'react'
+import { MDXRemote } from 'next-mdx-remote'
 
-export default function About({ htmlContentString }) {
+export default function About(props) {
     return (
         <Layout>
             <Head>
@@ -16,11 +18,8 @@ export default function About({ htmlContentString }) {
             <main>
                 <div className="flex justify-center">
                     <CardContainer>
-                        <div className="max-w-2xl mx-auto p-16">
-                            <div
-                                className="prose"
-                                dangerouslySetInnerHTML={{ __html: htmlContentString }}
-                            />
+                    <div className="max-w-2xl mx-auto p-16 prose">
+                            <MDXRemote {...props.mdxSource} />
                         </div>
                     </CardContainer>
                 </div>
@@ -31,13 +30,11 @@ export default function About({ htmlContentString }) {
 }
 
 export async function getStaticProps() {
-    const aboutContent = fs.readFileSync(path.join(process.cwd(), 'public/doc/aboutPage.md'), 'utf-8');
-    const htmlContent = await remark().use(html).process(aboutContent);
-    const htmlContentString = htmlContent.toString();
-
+    const markdown = fs.readFileSync(path.join(process.cwd(), 'public/doc/aboutPage.md'), 'utf-8');
+    const mdxSource = await serialize(markdown);
     return {
         props: {
-            htmlContentString
+            mdxSource
         },
     }
 }
