@@ -6,11 +6,15 @@ import { CryptoNetwork } from '../../Models/CryptoNetwork';
 import LayerSwapApiClient from '../../lib/layerSwapApiClient';
 import CardContainer from '../cardContainer';
 import InsetSelectMenu from '../insetSelectMenu';
-import { SwitchHorizontalIcon } from '@heroicons/react/solid';
+import { PlayIcon, SwitchHorizontalIcon } from '@heroicons/react/solid';
 import SpinIcon from '../icons/spinIcon';
 import { isValidEtherAddress } from '../../lib/etherAddressValidator';
 import { SelectMenuItem } from '../utils/selectMenuItem';
 import SelectMenu from '../selectMenu';
+import SmallCardContainer from '../smallCardContainer';
+import TwitterLogo from '../icons/twitterLogo';
+import DiscordLogo from '../icons/discordLogo';
+import Link from 'next/link';
 
 interface SwapFormValues {
   amount: string;
@@ -41,168 +45,216 @@ function Swap() {
   const availableNetworks: SelectMenuItem[] = CryptoNetwork.GetAvailableNetworks().map(ltwo => new SelectMenuItem(ltwo.name, ltwo.displayName, ltwo.imgSrc, !ltwo.disabled));
   const initialValues: SwapFormValues = { amount: '', network: availableNetworks[0], destination_address: "", currency: availableCurrencies[0], exchange: availableExchanges[0] };
   return (
-    <CardContainer>
-      <Formik
-        initialValues={initialValues}
-        validate={values => {
-          let errors: FormikErrors<SwapFormValues> = {};
-          let amount = Number(values.amount);
-          if (!values.amount) {
-            errors.amount = 'Enter an amount';
-          }
-          else if (
-            !/^[0-9]*[.,]?[0-9]*$/i.test(values.amount.toString())
-          ) {
-            errors.amount = 'Invalid amount';
-          }
-          else if (amount < 0) {
-            errors.amount = "Can't be negative";
-          }
-          else if (amount > 500) {
-            errors.amount = "Amount should be less than 500";
-          }
-          else if (amount < 10) {
-            errors.amount = "Amount should be at least 10";
-          }
+    <div className="flex justify-center">
+      <div className="flex flex-col justify-center justify-items-center pt-10 px-2">
+        <CardContainer className="w-full">
+          <Formik
+            initialValues={initialValues}
+            validate={values => {
+              let errors: FormikErrors<SwapFormValues> = {};
+              let amount = Number(values.amount);
+              if (!values.amount) {
+                errors.amount = 'Enter an amount';
+              }
+              else if (
+                !/^[0-9]*[.,]?[0-9]*$/i.test(values.amount.toString())
+              ) {
+                errors.amount = 'Invalid amount';
+              }
+              else if (amount < 0) {
+                errors.amount = "Can't be negative";
+              }
+              else if (amount > 500) {
+                errors.amount = "Amount should be less than 500";
+              }
+              else if (amount < 10) {
+                errors.amount = "Amount should be at least 10";
+              }
 
-          if (!values.destination_address) {
-            errors.destination_address = "Enter a destination address"
-          }
-          else if (!isValidEtherAddress(values.destination_address)) {
-            errors.destination_address = "Enter a valid destination address"
-          }
+              if (!values.destination_address) {
+                errors.destination_address = "Enter a destination address"
+              }
+              else if (!isValidEtherAddress(values.destination_address)) {
+                errors.destination_address = "Enter a valid destination address"
+              }
 
-          return errors;
-        }}
-        onSubmit={(values, actions) => {
-          axios.post<SwapApiResponse>(
-            LayerSwapApiClient.apiBaseEndpoint + "/swaps",
-            {
-              amount: values.amount,
-              currency: values.currency.id,
-              destination_address: values.destination_address,
-              network: values.network.id,
-              exchange: values.exchange.id
-            }
-          )
-            .then(response => {
-              router.push(response.data.redirect_url);
-            })
-            .catch(error => {
-              actions.setSubmitting(false);
-            });
+              return errors;
+            }}
+            onSubmit={(values, actions) => {
+              axios.post<SwapApiResponse>(
+                LayerSwapApiClient.apiBaseEndpoint + "/swaps",
+                {
+                  amount: values.amount,
+                  currency: values.currency.id,
+                  destination_address: values.destination_address,
+                  network: values.network.id,
+                  exchange: values.exchange.id
+                }
+              )
+                .then(response => {
+                  router.push(response.data.redirect_url);
+                })
+                .catch(error => {
+                  actions.setSubmitting(false);
+                });
 
-        }}
-      >
-        {({ values, setFieldValue, errors, isSubmitting }) => (
-          <Form>
-            <div className="px-0 md:px-6 py-0 md:py-6">
-              <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
-                <div className="w-full">
-                  <Field name="amount">
-                    {({ field }) => (
-                      <div>
-                        <label htmlFor="amount" className="block text-base font-medium text-gray-700">
-                          Send
-                        </label>
-                        <div className="relative rounded-md shadow-sm">
-                          <input
-                            {...field}
-                            pattern="^[0-9]*[.,]?[0-9]*$"
-                            inputMode="decimal"
-                            autoComplete="off"
-                            placeholder="0.0"
-                            step="0.01"
-                            autoCorrect="off"
-                            min="10"
-                            max="500"
-                            type="number"
-                            name="amount"
-                            id="amount"
-                            className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block w-full font-semibold text-gray-700 border-gray-300 rounded-md placeholder-gray-400"
-                            onKeyPress={e => {
-                              const regex = /^[0-9]*[.,]?[0-9]*$/;
-                              if (!regex.test(e.key)) {
-                                return e.preventDefault();
-                              }
-                            }}
-                          />
-                          <div className="absolute inset-y-0 right-0 flex items-center">
-                            <Field name="currency" values={availableCurrencies} value={values.currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
+            }}
+          >
+            {({ values, setFieldValue, errors, isSubmitting }) => (
+              <Form>
+                <div className="px-0 md:px-6 py-0 md:py-2">
+                  <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+                    <div className="w-full">
+                      <Field name="amount">
+                        {({ field }) => (
+                          <div>
+                            <label htmlFor="amount" className="block text-base font-medium text-gray-700">
+                              Send
+                            </label>
+                            <div className="relative rounded-md shadow-sm">
+                              <input
+                                {...field}
+                                pattern="^[0-9]*[.,]?[0-9]*$"
+                                inputMode="decimal"
+                                autoComplete="off"
+                                placeholder="0.0"
+                                step="0.01"
+                                autoCorrect="off"
+                                min="10"
+                                max="500"
+                                type="number"
+                                name="amount"
+                                id="amount"
+                                className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block w-full font-semibold text-gray-700 border-gray-300 rounded-md placeholder-gray-400"
+                                onKeyPress={e => {
+                                  const regex = /^[0-9]*[.,]?[0-9]*$/;
+                                  if (!regex.test(e.key)) {
+                                    return e.preventDefault();
+                                  }
+                                }}
+                              />
+                              <div className="absolute inset-y-0 right-0 flex items-center">
+                                <Field name="currency" values={availableCurrencies} value={values.currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    )}
-                  </Field>
-                </div>
-                <div className="flex flex-col md:w-2/4 w-full">
-                  <Field name="exchange" values={availableExchanges} label="From" value={values.exchange} as={SelectMenu} setFieldValue={setFieldValue} />
-                </div>
-              </div>
-              <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
-                <div className="w-full">
-                  <label className="block font-medium text-gray-700">
-                    To
-                  </label>
-                  <div className="relative rounded-md shadow-sm">
-                    <Field name="destination_address">
-                      {({ field }) => (
-                        <input
-                          {...field}
-                          placeholder="0x123...ab56c"
-                          autoCorrect="off"
-                          type="text"
-                          name="destination_address"
-                          id="destination_address"
-                          className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold text-gray-700 w-full border-gray-300 rounded-md placeholder-gray-400 truncate"
-                        />
-                      )}
-                    </Field>
+                        )}
+                      </Field>
+                    </div>
+                    <div className="flex flex-col md:w-2/4 w-full">
+                      <Field name="exchange" values={availableExchanges} label="From" value={values.exchange} as={SelectMenu} setFieldValue={setFieldValue} />
+                    </div>
+                  </div>
+                  <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+                    <div className="w-full">
+                      <label className="block font-medium text-gray-700">
+                        To
+                      </label>
+                      <div className="relative rounded-md shadow-sm">
+                        <Field name="destination_address">
+                          {({ field }) => (
+                            <input
+                              {...field}
+                              placeholder="0x123...ab56c"
+                              autoCorrect="off"
+                              type="text"
+                              name="destination_address"
+                              id="destination_address"
+                              className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold text-gray-700 w-full border-gray-300 rounded-md placeholder-gray-400 truncate"
+                            />
+                          )}
+                        </Field>
 
+                      </div>
+                    </div>
+                    <div className="flex flex-col md:w-2/4 w-full">
+                      <Field name="network" values={availableNetworks} label="In" value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
+                    </div>
+                  </div>
+                  <div className="mt-5">
+                    <label className="block font-medium text-gray-700">
+                      Estimated received
+                    </label>
+                    <p className="text-indigo-500 text-lg font-medium">
+                      {(() => {
+                        if (values.amount) {
+                          let amount = Number(values.amount);
+                          if (amount >= 10) {
+                            return amount - 2 - (amount * 5 / 100);
+                          }
+                        }
+
+                        return 0;
+                      })()}
+                      <span className="text-gray-700">  {values.currency.name}</span></p>
+                  </div>
+                  <div className="mt-10">
+                    <button
+                      disabled={errors.amount != null || errors.destination_address != null || isSubmitting}
+                      type="submit"
+                      className={controlDisabledButton(errors, isSubmitting)}
+                    >
+                      <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                        {(errors.amount == null && errors.destination_address == null && !isSubmitting) &&
+                          <SwitchHorizontalIcon className="h-5 w-5 text-white" aria-hidden="true" />}
+                        {isSubmitting ?
+                          <SpinIcon className="animate-spin h-5 w-5 text-white" />
+                          : null}
+                      </span>
+                      {displayErrorsOrSubmit(errors)}
+                    </button>
                   </div>
                 </div>
-                <div className="flex flex-col md:w-2/4 w-full">
-                  <Field name="network" values={availableNetworks} label="In" value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
-                </div>
-              </div>
-              <div className="mt-5">
-                <label className="block font-medium text-gray-700">
-                  Estimated received
-                </label>
-                <p className="text-indigo-500 text-lg font-medium">
-                  {(() => {
-                    if (values.amount) {
-                      let amount = Number(values.amount);
-                      if (amount >= 10) {
-                        return amount - 2 - (amount * 5 / 100);
-                      }
-                    }
+              </Form>
+            )}
+          </Formik>
+        </CardContainer >
+        <SmallCardContainer className="w-full pt-5">
+          <div className="flex flex-col md:flex-row">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-800">LayerSwap</h1>
+              <p className="md:max-w-xs text-base text-gray-700 mt-2">
+                Save 10x on fees when moving crypto from Coinbase or Binance to Arbitrum
+              </p>
+              <div className="mt-2 space-x-5 flex flex-row">
+                <Link key="userGuide" href="/userguide">
+                  <a className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">User Guide</a>
+                </Link>
+                <a className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
+                  <div className="flex flex-row items-center">
+                    <TwitterLogo className="w-5 h-5 mr-2" />
+                    <span>Twitter</span>
+                  </div>
+                </a>
 
-                    return 0;
-                  })()}
-                  <span className="text-gray-700">  {values.currency.name}</span></p>
-              </div>
-              <div className="mt-10">
-                <button
-                  disabled={errors.amount != null || errors.destination_address != null || isSubmitting}
-                  type="submit"
-                  className={controlDisabledButton(errors, isSubmitting)}
-                >
-                  <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                    {(errors.amount == null && errors.destination_address == null && !isSubmitting) &&
-                      <SwitchHorizontalIcon className="h-5 w-5 text-white" aria-hidden="true" />}
-                    {isSubmitting ?
-                      <SpinIcon className="animate-spin h-5 w-5 text-white" />
-                      : null}
-                  </span>
-                  {displayErrorsOrSubmit(errors)}
-                </button>
+                <a className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
+                  <div className="flex flex-row items-center">
+                    <DiscordLogo className="w-5 h-5 mr-2" />
+                    <span>Discord</span>
+                  </div>
+                </a>
               </div>
             </div>
-          </Form>
-        )}
-      </Formik>
-    </CardContainer >
+            <div className="flex items-center">
+              <div className="mt-3 sm:mt-0">
+                <a
+                  href="#"
+                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:px-10"
+                >
+                  <div className="flex flex-row items-center">
+
+                    <PlayIcon className="w-5 h-5 mr-1" />
+                    <span>Intro video</span>
+                  </div>
+                </a>
+
+              </div>
+            </div>
+          </div>
+        </SmallCardContainer>
+      </div>
+    </div>
+
   )
 };
 

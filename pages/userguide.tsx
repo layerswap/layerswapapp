@@ -6,11 +6,11 @@ import path from 'path'
 import { remark } from 'remark'
 import html from 'remark-html'
 
-export default function About({ htmlContentString }) {
+export default function UserGuide({ htmlContentString }) {
     return (
         <Layout>
             <Head>
-                <title>About LayerSwap</title>
+                <title>LayerSwap User Guide</title>
             </Head>
 
             <main>
@@ -31,7 +31,7 @@ export default function About({ htmlContentString }) {
 }
 
 export async function getStaticProps() {
-    const aboutContent = fs.readFileSync(path.join(process.cwd(), 'public/doc/aboutPage.md'), 'utf-8');
+    const aboutContent = fs.readFileSync(path.join(process.cwd(), 'public/doc/userGuide.md'), 'utf-8');
     const htmlContent = await remark().use(html).process(aboutContent);
     const htmlContentString = htmlContent.toString();
 
