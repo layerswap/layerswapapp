@@ -3,7 +3,7 @@
 With LayerSwap, you can send crypto from your Binance or Coinbase account directly to the Arbitrum network without paying gas fees.
 This guide will go step by step throught the whole process.
 
-* Go to https://layerswap.io
+* Go to [layerswap.io](https://layerswap.io)
 
 ![Swap usdt from binance and coinbase to arbitrum](https://user-images.githubusercontent.com/11096006/136033467-e6e83dcf-a5fe-4867-8b9b-ad978efd655e.png)
 
@@ -19,14 +19,14 @@ You will be redirected to Bransfer to complete your transfer. Create your Bransf
 
 ### Create an account at Bransfer
 
-1. Go to the registration page https://connect.bransfer.io/auth/register
+1. Go to the [registration page](https://connect.bransfer.io/auth/register)
 1. Fill in email and password or login via Coinbase or Twitter.
 
 ![Create Bransfer account](https://user-images.githubusercontent.com/11096006/136033969-1678e985-76e3-4e0d-b319-12ac7aed0d85.png)
 
 ### Connect crypto exchange account to Bransfer
 
-Go to Bransfer payment methods https://connect.bransfer.io/paymentmethods
+Go to Bransfer [payment methods](https://connect.bransfer.io/paymentmethods)
 
 ![Attach payment method](https://user-images.githubusercontent.com/11096006/136034115-467e1d0a-d364-4ca3-858c-0662272e14aa.png)
 
@@ -46,12 +46,12 @@ Go to Bransfer payment methods https://connect.bransfer.io/paymentmethods
 
 ### Connect Binance
 
-1. Go to Binance and (create read-only API keys)[https://www.binance.com/en/support/faq/360002502072]. 
+1. Go to Binance and [create read-only API keys](https://www.binance.com/en/support/faq/360002502072) 
 1. Copy API and Secret Key
 
 ![Copy Binance api key and secret](https://user-images.githubusercontent.com/11096006/136034366-4123948b-9f8a-446f-947e-b441930ffbdc.png)
 
-1. Go to Bransfer payment methods https://connect.bransfer.io/paymentmethods
+1. Go to Bransfer [payment methods](https://connect.bransfer.io/paymentmethods)
 1. Click Connect next to Binance
 1. Paste newly copied keys and click Connect.
 
