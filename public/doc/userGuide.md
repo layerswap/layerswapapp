@@ -42,6 +42,8 @@ Go to Bransfer [payment methods](https://connect.bransfer.io/paymentmethods)
 
 ![Connect Coinbase to Bransfer](/images/coinbase_authorize.png)
 
+> Note that you have to authorize for amount you are going to swap.
+
 ### Connect Binance
 
 1. Go to Binance and [create read-only API keys](https://www.binance.com/en/support/faq/360002502072)
@@ -54,6 +56,8 @@ Go to Bransfer [payment methods](https://connect.bransfer.io/paymentmethods)
 1. Paste newly copied keys and click Connect.
 
 ![Connect Binance to Bransfer](/images/binance_connect_bransfer.png)
+
+> Note that it's Read-Only API Keys. Bransfer WONT and CANT initate any trade or withdrawal on your behalf.
 
 **Now, you are ready to process your first no-fee and instant crypto transfer with Bransfer!**
 
