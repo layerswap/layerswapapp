@@ -11,10 +11,9 @@ import { MDXRemote } from 'next-mdx-remote'
 
 const componentOverrides = {
     img: (props) => (
-        <Image {...props} layout="responsive" quality="100" />
+        <Image {...props} layout="responsive" quality="100"></Image>
     ),
 };
-
 
 export default function UserGuide(props) {
 
@@ -27,7 +26,7 @@ export default function UserGuide(props) {
             <main>
                 <div className="flex justify-center">
                     <CardContainer>
-                        <div className="max-w-2xl mx-auto p-16 prose">
+                        <div className="md:p-16 prose-sm md:prose lg:prose-lg prose-indigo">
                             <MDXRemote {...props.mdxSource} components={componentOverrides} />
                         </div>
                     </CardContainer>

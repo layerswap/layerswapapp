@@ -18,7 +18,7 @@ export default function About(props) {
             <main>
                 <div className="flex justify-center">
                     <CardContainer>
-                    <div className="max-w-2xl mx-auto p-16 prose">
+                        <div className="max-w-2xl mx-auto md:p-6 lg:p-16 prose prose-indigo">
                             <MDXRemote {...props.mdxSource} />
                         </div>
                     </CardContainer>

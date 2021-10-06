@@ -6,7 +6,7 @@ import { CryptoNetwork } from '../../Models/CryptoNetwork';
 import LayerSwapApiClient from '../../lib/layerSwapApiClient';
 import CardContainer from '../cardContainer';
 import InsetSelectMenu from '../insetSelectMenu';
-import { PlayIcon, SwitchHorizontalIcon } from '@heroicons/react/solid';
+import { BookOpenIcon, PlayIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
 import SpinIcon from '../icons/spinIcon';
 import { isValidEtherAddress } from '../../lib/etherAddressValidator';
 import { SelectMenuItem } from '../utils/selectMenuItem';
@@ -210,24 +210,29 @@ function Swap() {
           </Formik>
         </CardContainer >
         <SmallCardContainer className="w-full pt-5">
-          <div className="flex flex-col md:flex-row">
+          <div className="flex flex-col md:flex-row md:space-x-6">
             <div>
               <h1 className="text-2xl font-semibold text-gray-800">LayerSwap</h1>
               <p className="md:max-w-xs text-base text-gray-700 mt-2">
                 Save 10x on fees when moving crypto from Coinbase or Binance to Arbitrum
               </p>
-              <div className="mt-2 space-x-5 flex flex-row">
+              <div className="mt-2 md:space-x-5 flex flex-col md:flex-row">
                 <Link key="userGuide" href="/userguide">
-                  <a className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">User Guide</a>
+                  <a className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
+                    <div className="flex flex-row items-center">
+                      <BookOpenIcon className="w-5 h-5 mr-2" />
+                      <span>User Guide</span>
+                    </div>
+                  </a>
                 </Link>
-                <a className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
+                <a href="https://twitter.com/layerswap" target="_blank" className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
                   <div className="flex flex-row items-center">
                     <TwitterLogo className="w-5 h-5 mr-2" />
                     <span>Twitter</span>
                   </div>
                 </a>
 
-                <a className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
+                <a href="https://discord.com/invite/KhwYN35sHy" target="_blank" className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
                   <div className="flex flex-row items-center">
                     <DiscordLogo className="w-5 h-5 mr-2" />
                     <span>Discord</span>
@@ -236,9 +241,10 @@ function Swap() {
               </div>
             </div>
             <div className="flex items-center">
-              <div className="mt-3 sm:mt-0">
+              <div className="mt-3 md:mt-0">
                 <a
-                  href="#"
+                  target="_blank"
+                  href="https://www.loom.com/share/c853ca7e2ed04fa986e35928e8da015b"
                   className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:px-10"
                 >
                   <div className="flex flex-row items-center">
