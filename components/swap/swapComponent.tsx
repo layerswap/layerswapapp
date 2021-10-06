@@ -180,7 +180,7 @@ function Swap() {
                         if (values.amount) {
                           let amount = Number(values.amount);
                           if (amount >= 10) {
-                            return amount - 2 - (amount * 5 / 100);
+                            return amount - 3 - (amount * 5 / 100);
                           }
                         }
 
