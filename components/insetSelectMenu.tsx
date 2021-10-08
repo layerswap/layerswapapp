@@ -1,18 +1,41 @@
-import { Fragment, useState } from 'react'
+import { FC, Fragment, useState } from 'react'
 import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
 import React from 'react';
+import { SelectMenuProps } from './props/SelectMenuProps';
 
 function joinClassNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
 }
 
-let InsetSelectMenu = ({ name, value, values, setFieldValue }) => {
+let InsetSelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue }) => {
     const [selected, setSelected] = useState(value)
+    const [availableValues, setAvailableValues] = useState(values);
+
+    if (values.length != availableValues.length) {
+        updateValues();
+    }
+    else {
+        for (var i = 0; i < values.length; i++) {
+            if (values[i].id != availableValues[i].id) {
+                updateValues();
+                debugger;
+            }
+        }
+    }
+
+    function updateValues() {
+        setAvailableValues(values);
+        if (!values.some(x => x.id === selected.id)) {
+            setSelected(values[0]);
+        }
+    }
+
     React.useEffect(() => {
         name && setFieldValue && setFieldValue(name, selected);
     }, [name, selected, setFieldValue]);
+
     return (
         <Listbox value={selected} onChange={setSelected}>
             {({ open }) => (
@@ -25,8 +48,10 @@ let InsetSelectMenu = ({ name, value, values, setFieldValue }) => {
                                         src={selected.imgSrc}
                                         alt="Project Logo"
                                         priority
-                                        layout="fill"
-                                        className="rounded-full"
+                                        height="1.5rem"
+                                        width="1.5rem"
+                                        layout="responsive"
+                                        className="rounded-full object-contain"
                                     />
                                 </div>
                                 <span className="ml-3 block truncate">{selected.name}</span>
@@ -44,7 +69,7 @@ let InsetSelectMenu = ({ name, value, values, setFieldValue }) => {
                             leaveTo="opacity-0"
                         >
                             <Listbox.Options className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none font-semibold">
-                                {values.map((item) => (
+                                {availableValues.map((item) => (
                                     <Listbox.Option
                                         key={item.id}
                                         disabled={!item.isEnabled}
@@ -60,8 +85,10 @@ let InsetSelectMenu = ({ name, value, values, setFieldValue }) => {
                                                         <Image
                                                             src={item.imgSrc}
                                                             alt="Project Logo"
-                                                            layout="fill"
-                                                            className="rounded-full object-cover"
+                                                            height="1.5rem"
+                                                            width="1.5rem"
+                                                            layout="responsive"
+                                                            className="rounded-full object-contain"
                                                         />
                                                     </div>
                                                     <div className={joinClassNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >

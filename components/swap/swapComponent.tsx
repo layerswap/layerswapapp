@@ -1,5 +1,6 @@
 import React from 'react';
-import { Formik, Form, Field, FormikErrors } from 'formik';
+import { Formik, Form, Field, FormikErrors, useFormikContext, useField } from 'formik';
+import { FC } from 'react'
 import axios from 'axios';
 import { useRouter } from 'next/router'
 import { CryptoNetwork } from '../../Models/CryptoNetwork';
@@ -15,13 +16,17 @@ import SmallCardContainer from '../smallCardContainer';
 import TwitterLogo from '../icons/twitterLogo';
 import DiscordLogo from '../icons/discordLogo';
 import Link from 'next/link';
+import { LayerSwapSettings } from '../../Models/LayerSwapSettings';
+import { Currency } from '../../Models/Currency';
+import { Exchange } from '../../Models/Exchange';
+import GetLogoByProjectName from '../../lib/logoPathResolver';
 
 interface SwapFormValues {
   amount: string;
   destination_address: string;
-  network: SelectMenuItem;
-  currency: SelectMenuItem;
-  exchange: SelectMenuItem;
+  network: SelectMenuItem<CryptoNetwork>;
+  currency: SelectMenuItem<Currency>;
+  exchange: SelectMenuItem<Exchange>;
 }
 
 interface SwapApiResponse {
@@ -29,20 +34,29 @@ interface SwapApiResponse {
   redirect_url: string;
 }
 
-function Swap() {
+interface SwapProps {
+  settings: LayerSwapSettings;
+}
+
+const CurrenciesField = (props) => {
+  const {
+    values: { network, currency },
+    setFieldValue
+  } = useFormikContext<SwapFormValues>();
+
+  let availableCurrencies = props.availableCurrencies.filter(x => x.baseObject.network_id == network.baseObject.id);
+
+  return (<>
+    <Field name="currency" values={availableCurrencies} value={currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
+  </>)
+};
+
+const Swap: FC<SwapProps> = ({ settings }) => {
   const router = useRouter()
-  const availableCurrencies: SelectMenuItem[] = [
-    new SelectMenuItem("USDT", "USDT", '/tether-usdt-logo.png'),
-    new SelectMenuItem("USDC", "USDC", '/usd-coin-usdc-logo.png', false)
-  ];
+  let availableCurrencies = settings.currencies.map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled));
+  const availableExchanges = settings.exchanges.map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, GetLogoByProjectName(c.name), c.is_enabled));
+  const availableNetworks = settings.networks.map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled));
 
-  const availableExchanges: SelectMenuItem[] = [
-    new SelectMenuItem("coinbase", "Coinbase", '/coinbase-logo.png'),
-    new SelectMenuItem("binance", "Binance", '/binance-logo.png'),
-  ];
-
-
-  const availableNetworks: SelectMenuItem[] = CryptoNetwork.GetAvailableNetworks().map(ltwo => new SelectMenuItem(ltwo.name, ltwo.displayName, ltwo.imgSrc, !ltwo.disabled));
   const initialValues: SwapFormValues = { amount: '', network: availableNetworks[0], destination_address: "", currency: availableCurrencies[0], exchange: availableExchanges[0] };
   return (
     <div className="flex justify-center">
@@ -134,7 +148,7 @@ function Swap() {
                                 }}
                               />
                               <div className="absolute inset-y-0 right-0 flex items-center">
-                                <Field name="currency" values={availableCurrencies} value={values.currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
+                                <CurrenciesField name="currency" availableCurrencies={availableCurrencies} value={values.currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
                               </div>
                             </div>
                           </div>

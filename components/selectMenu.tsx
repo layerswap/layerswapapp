@@ -1,14 +1,15 @@
-import { Fragment, useState } from 'react'
+import { FC, Fragment, useState } from 'react'
 import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
 import React from 'react'
+import { SelectMenuProps } from './props/SelectMenuProps'
 
 function joinClassNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function SelectMenu({ name, value, values, setFieldValue, label }) {
+let SelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue, label }) => {
     const [selected, setSelected] = useState(value)
     React.useEffect(() => {
         name && setFieldValue && setFieldValue(name, selected);
@@ -24,8 +25,10 @@ export default function SelectMenu({ name, value, values, setFieldValue, label }
                                 src={selected.imgSrc}
                                 alt="Project Logo"
                                 priority
-                                layout="fill"
-                                className="rounded-full object-cover"
+                                height="1.5rem"
+                                width="1.5rem"
+                                layout="responsive"
+                                className="rounded-full object-contain"
                             />
                         </div>
                         <span className="ml-3 block truncate text-gray-600">{selected.name}</span>
@@ -53,8 +56,10 @@ export default function SelectMenu({ name, value, values, setFieldValue, label }
                                                 <Image
                                                     src={item.imgSrc}
                                                     alt="Project Logo"
-                                                    layout="fill"
-                                                    className="rounded-full object-cover"
+                                                    height="1.5rem"
+                                                    width="1.5rem"
+                                                    layout="responsive"
+                                                    className="rounded-full object-contain"
                                                 />
                                             </div>
                                             <div className={joinClassNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
@@ -96,3 +101,5 @@ function styleOption(active: boolean, disabled: boolean) {
         return 'text-gray-900 ' + classNames;
     }
 }
+
+export default SelectMenu;

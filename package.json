@@ -1,8 +1,9 @@
 {
-  "name": "learn-starter",
+  "name": "layerswap",
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "debug": "rm -rf .next/ && next dev",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
