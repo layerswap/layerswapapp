@@ -57,7 +57,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
   const availableExchanges = settings.exchanges.map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, GetLogoByProjectName(c.name), c.is_enabled));
   const availableNetworks = settings.networks.map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled));
 
-  const initialValues: SwapFormValues = { amount: '', network: availableNetworks[0], destination_address: "", currency: availableCurrencies[0], exchange: availableExchanges[0] };
+  const initialValues: SwapFormValues = { amount: '', network: availableNetworks.filter(x => x.isEnabled)[0], destination_address: "", currency: availableCurrencies[0], exchange: availableExchanges[0] };
   return (
     <div className="flex justify-center">
       <div className="flex flex-col justify-center justify-items-center pt-10 px-2">
