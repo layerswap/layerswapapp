@@ -9,9 +9,10 @@ import Link from 'next/link'
 import SpinIcon from '../components/icons/spinIcon';
 import Layout from '../components/layout';
 import { useState } from 'react';
+import fs from 'fs';
+import path from 'path';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
-import axios from 'axios';
-import settings from '../lib/settings.preval'
+import { InferGetServerSidePropsType } from 'next';
 
 enum SwapPageStatus {
   Processing,
@@ -19,7 +20,7 @@ enum SwapPageStatus {
   Success
 }
 
-const SwapDetails = () => {
+const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
   const { swapId } = router.query;
   const apiClient = new LayerSwapApiClient();
@@ -143,6 +144,45 @@ function renderDescription(swapPageStatus: SwapPageStatus) {
     case SwapPageStatus.Success: {
       return "Your swap successfully completed."
     }
+  }
+}
+
+const CACHE_PATH = ".settings";
+
+export const getServerSideProps = async () => {
+  let settings : LayerSwapSettings;
+
+  try {
+    settings = JSON.parse(
+      fs.readFileSync(path.join(__dirname, CACHE_PATH), 'utf8')
+    )
+  } catch (error) {
+    console.log('Member cache not initialized')
+  }
+
+  if (!settings) {
+    var apiClient = new LayerSwapApiClient();
+    const data = await apiClient.fetchSettingsAsync()
+
+    try {
+      fs.writeFileSync(
+        path.join(__dirname, CACHE_PATH),
+        JSON.stringify(data),
+        'utf8'
+      )
+      console.log('Wrote to settings cache')
+    } catch (error) {
+      console.log('ERROR WRITING SETTINGS CACHE TO FILE')
+      console.log(error)
+    }
+
+    settings = data
+  }
+
+  return {
+    props: {
+      settings,
+    },
   }
 }
 
