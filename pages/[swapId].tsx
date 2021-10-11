@@ -157,7 +157,7 @@ export const getServerSideProps = async () => {
       fs.readFileSync(path.join(__dirname, CACHE_PATH), 'utf8')
     )
   } catch (error) {
-    console.log('Member cache not initialized')
+    console.log('Cache not initialized')
   }
 
   if (!settings) {

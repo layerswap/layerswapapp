@@ -3,11 +3,11 @@ import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetStaticPropsType } from 'next'
 
-export default function Home() {
+export default function Home({ data }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <Layout>
       <main>
-        <Swap settings={settings} />
+        <Swap settings={data} />
       </main>
 
     </Layout>
