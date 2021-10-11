@@ -12,18 +12,19 @@ function joinClassNames(...classes: string[]) {
 let InsetSelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue }) => {
     const [selected, setSelected] = useState(value)
     const [availableValues, setAvailableValues] = useState(values);
-
-    if (values.length != availableValues.length) {
-        updateValues();
-    }
-    else {
-        for (var i = 0; i < values.length; i++) {
-            if (values[i].id != availableValues[i].id) {
-                updateValues();
-                debugger;
+    
+    React.useEffect(() => {
+        if (values.length != availableValues.length) {
+            updateValues();
+        }
+        else {
+            for (var i = 0; i < values.length; i++) {
+                if (values[i].id != availableValues[i].id) {
+                    updateValues();
+                }
             }
         }
-    }
+    }, [values, availableValues]);
 
     function updateValues() {
         setAvailableValues(values);

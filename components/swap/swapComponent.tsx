@@ -53,11 +53,20 @@ const CurrenciesField = (props) => {
 
 const Swap: FC<SwapProps> = ({ settings }) => {
   const router = useRouter()
-  let availableCurrencies = settings.currencies.map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled));
-  const availableExchanges = settings.exchanges.map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, GetLogoByProjectName(c.name), c.is_enabled));
-  const availableNetworks = settings.networks.map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled));
+  let availableCurrencies = settings.currencies
+    .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled))
+    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled));
+  const availableExchanges = settings.exchanges
+    .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, GetLogoByProjectName(c.name), c.is_enabled))
+    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled));
+  const availableNetworks = settings.networks
+    .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled))
+    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled));
+  const initialNetwork = availableNetworks.find(x => x.isEnabled);
+  const initialExchange = availableExchanges.find(x => x.isEnabled);
+  const initialCurrency = availableCurrencies.find(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled);
 
-  const initialValues: SwapFormValues = { amount: '', network: availableNetworks.filter(x => x.isEnabled)[0], destination_address: "", currency: availableCurrencies[0], exchange: availableExchanges[0] };
+  const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: "", currency: initialCurrency, exchange: initialExchange };
   return (
     <div className="flex justify-center">
       <div className="flex flex-col justify-center justify-items-center pt-10 px-2">
@@ -99,7 +108,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                 LayerSwapApiClient.apiBaseEndpoint + "/swaps",
                 {
                   amount: values.amount,
-                  currency: values.currency.id,
+                  currency: values.currency.name,
                   destination_address: values.destination_address,
                   network: values.network.id,
                   exchange: values.exchange.id
