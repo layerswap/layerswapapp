@@ -5,11 +5,13 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import { SwapInfo } from '../Models/SwapInfo';
 import { SwapStatus } from '../Models/SwapStatus';
 import { CheckIcon, XIcon } from '@heroicons/react/outline'
-import { CryptoNetwork } from '../Models/CryptoNetwork';
 import Link from 'next/link'
 import SpinIcon from '../components/icons/spinIcon';
 import Layout from '../components/layout';
 import { useState } from 'react';
+import { LayerSwapSettings } from '../Models/LayerSwapSettings';
+import axios from 'axios';
+import settings from '../lib/settings.preval'
 
 enum SwapPageStatus {
   Processing,
@@ -49,7 +51,7 @@ const SwapDetails = () => {
 
   return (
     <Layout>
-      <div className="flex justify-center">
+      <div className="flex justify-center pt-10">
         <CardContainer className="md:w-10/12 md:max-w-xl lg:max-w-2xl">
           <div className="py-14">
             <div className="max-w-md mx-auto items-center justify-center flex">
@@ -66,7 +68,7 @@ const SwapDetails = () => {
                 <div className="my-6 flex flex-col">
                   {swapPageStatus === SwapPageStatus.Success &&
                     <div>
-                      <a href={CryptoNetwork.GetLayerTwoByName(data.network).explorerUrl + data.transaction_id} className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                      <a href={settings.networks.filter(x => x.code === data.network)[0].explorer_template.replace("{0}", data.transaction_id)} className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                         View transaction in explorer
                       </a>
                       <Link href='/'>
@@ -78,7 +80,7 @@ const SwapDetails = () => {
                   }
                   {swapPageStatus === SwapPageStatus.Failed &&
                     <div>
-                      <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                      <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify`-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                         Open Discord
                       </a>
                     </div>
