@@ -81,7 +81,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
                   }
                   {swapPageStatus === SwapPageStatus.Failed &&
                     <div>
-                      <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify`-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                      <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                         Open Discord
                       </a>
                     </div>
