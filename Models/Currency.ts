@@ -5,7 +5,7 @@ export class Currency {
     decimals: number;
     is_enabled: boolean;
     is_erc20: boolean;
-    contract?: any;
+    contract?: string;
     min_amount: number;
     max_amount: number;
     network_fee: number;

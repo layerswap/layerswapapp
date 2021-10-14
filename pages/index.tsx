@@ -18,7 +18,7 @@ export async function getStaticProps() {
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
 
-  if (process.env.NODE_ENV == "production") {
+  if (process.env.NODE_ENV !== "production") {
     data.networks.forEach((element, index) => {
       if (element.is_test_net) data.networks.splice(index, 1);
     });
@@ -26,6 +26,6 @@ export async function getStaticProps() {
 
   return {
     props: { data },
-    //revalidate: 8 * 60, // In seconds
+    revalidate: 8 * 60, // In seconds
   }
 }
