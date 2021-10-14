@@ -23,8 +23,9 @@ export async function getStaticProps() {
       if (element.is_test_net) data.networks.splice(index, 1);
     });
   }
-  
+
   return {
     props: { data },
+    revalidate: 8 * 60, // In seconds
   }
 }

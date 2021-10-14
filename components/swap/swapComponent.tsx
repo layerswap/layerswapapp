@@ -87,11 +87,11 @@ const Swap: FC<SwapProps> = ({ settings }) => {
               else if (amount < 0) {
                 errors.amount = "Can't be negative";
               }
-              else if (amount > 500) {
-                errors.amount = "Amount should be less than 500";
+              else if (amount > values.currency.baseObject.max_amount) {
+                errors.amount = `Amount should be less than ${values.currency.baseObject.max_amount}`;
               }
-              else if (amount < 10) {
-                errors.amount = "Amount should be at least 10";
+              else if (amount < values.currency.baseObject.min_amount) {
+                errors.amount = `Amount should be at least ${values.currency.baseObject.min_amount}`;
               }
 
               if (!values.destination_address) {
@@ -141,11 +141,11 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                                 inputMode="decimal"
                                 autoComplete="off"
                                 placeholder="0.0"
-                                step="0.01"
                                 autoCorrect="off"
-                                min="10"
-                                max="500"
+                                min={values.currency.baseObject.min_amount}
+                                max={values.currency.baseObject.max_amount}
                                 type="number"
+                                step={1 / Math.pow(10, values.currency.baseObject.decimals)}
                                 name="amount"
                                 id="amount"
                                 className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block w-full font-semibold text-gray-700 border-gray-300 rounded-md placeholder-gray-400"
@@ -202,8 +202,10 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                       {(() => {
                         if (values.amount) {
                           let amount = Number(values.amount);
-                          if (amount >= 10) {
-                            return amount - 3 - (amount * 5 / 100);
+                          let currencyObject = values.currency.baseObject;
+                          if (amount >= currencyObject.min_amount) {
+                            var result = amount - currencyObject.network_fee - (amount * values.network.baseObject.fee_multiplier);
+                            return Math.round(result * Math.pow(10, currencyObject.decimals)) / Math.pow(10, currencyObject.decimals)
                           }
                         }
 

@@ -12,7 +12,7 @@ function joinClassNames(...classes: string[]) {
 let InsetSelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue }) => {
     const [selected, setSelected] = useState(value)
     const [availableValues, setAvailableValues] = useState(values);
-    
+
     React.useEffect(() => {
         if (values.length != availableValues.length) {
             updateValues();
@@ -34,7 +34,7 @@ let InsetSelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue
     }
 
     React.useEffect(() => {
-        name && setFieldValue && setFieldValue(name, selected);
+        name && selected && setFieldValue && setFieldValue(name, selected);
     }, [name, selected, setFieldValue]);
 
     return (

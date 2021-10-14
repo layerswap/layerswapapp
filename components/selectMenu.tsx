@@ -12,7 +12,7 @@ function joinClassNames(...classes: string[]) {
 let SelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue, label }) => {
     const [selected, setSelected] = useState(value)
     React.useEffect(() => {
-        name && setFieldValue && setFieldValue(name, selected);
+        name && selected && setFieldValue && setFieldValue(name, selected);
     }, [name, selected, setFieldValue]);
     return (
         <Listbox value={selected} onChange={setSelected}>
