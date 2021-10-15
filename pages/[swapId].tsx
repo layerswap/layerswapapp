@@ -8,12 +8,13 @@ import { CheckIcon, XIcon } from '@heroicons/react/outline'
 import Link from 'next/link'
 import SpinIcon from '../components/icons/spinIcon';
 import Layout from '../components/layout';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import fs from 'fs';
 import path from 'path';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
 import { AxiosError } from "axios";
+import React from 'react';
 
 enum SwapPageStatus {
   Processing,
@@ -22,6 +23,8 @@ enum SwapPageStatus {
   NotFound
 }
 
+const _maxRevalidateCount = 8;
+
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
   const { swapId } = router.query;
@@ -29,33 +32,58 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
 
   const { data, mutate, error, isValidating } = useSWR<SwapInfo>(swapId ? `/swaps/${swapId}` : null, apiClient.apiFetcher);
   const [swapPageStatus, setswapPageStatus] = useState(SwapPageStatus.Processing);
+  var checkAndSetStatus = (status: SwapPageStatus) => {
+    if (swapPageStatus != status) {
+      setswapPageStatus(status);
+    }
+  }
+  const revalidateTimeoutId = useRef<NodeJS.Timeout>();
+  const revalidateCount = useRef(0);
 
-  var axiosError = error as AxiosError;
-  if (axiosError?.response?.status == 404) {
-    if (swapPageStatus != SwapPageStatus.NotFound) {
-      setswapPageStatus(SwapPageStatus.NotFound);
+  var isLoading = data && (data.status == SwapStatus.Created || data.status == SwapStatus.Pending);
+  if (error) {
+    var axiosError = error as AxiosError;
+    if (axiosError?.response?.status == 404) {
+      checkAndSetStatus(SwapPageStatus.NotFound);
     }
-  }
-  else if (error || (data && data.status == SwapStatus.Failed)) {
-    if (swapPageStatus != SwapPageStatus.Failed) {
-      setswapPageStatus(SwapPageStatus.Failed);
-    }
-  }
-  else if ((!data || isValidating) || data.status == SwapStatus.Created || data.status == SwapStatus.Pending) {
-    if (swapPageStatus != SwapPageStatus.Processing) {
-      setswapPageStatus(SwapPageStatus.Processing);
+    else {
+      checkAndSetStatus(SwapPageStatus.Failed)
     }
   }
   else {
-    if (swapPageStatus != SwapPageStatus.Success) {
-      setswapPageStatus(SwapPageStatus.Success);
+    if (data) {
+      if (data.status == SwapStatus.Failed) {
+        checkAndSetStatus(SwapPageStatus.Failed);
+      }
+      else if ((revalidateCount.current >= _maxRevalidateCount) && isLoading) {
+        checkAndSetStatus(SwapPageStatus.Failed);
+      }
+      else if (isLoading || isValidating) {
+        checkAndSetStatus(SwapPageStatus.Processing);
+      }
+      else {
+        checkAndSetStatus(SwapPageStatus.Success);
+      }
+    }
+    else {
+      if (isValidating) {
+        checkAndSetStatus(SwapPageStatus.Processing);
+      }
     }
   }
 
-  if (data && (data.status == SwapStatus.Created || data.status == SwapStatus.Pending)) {
-    setTimeout(function () {
-      mutate()
-    }.bind(this), 5000)
+  if (data && isLoading) {
+    if (isValidating && revalidateTimeoutId) {
+      clearTimeout(revalidateTimeoutId.current);
+    }
+    else {
+      if (revalidateCount.current < _maxRevalidateCount) {
+        revalidateTimeoutId.current = setTimeout(function () {
+          mutate();
+          revalidateCount.current++;
+        }.bind(this), 5000);
+      }
+    }
   }
 
   return (
@@ -89,6 +117,9 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
                   }
                   {(swapPageStatus === SwapPageStatus.Failed || swapPageStatus === SwapPageStatus.NotFound) &&
                     <div>
+                      {swapPageStatus === SwapPageStatus.Failed &&
+                        <p className="text-sm text-gray-700 "><span className="text-base font-medium">Swap Id:</span> {swapId}</p>
+                      }
                       <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                         Open Discord
                       </a>
