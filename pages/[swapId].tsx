@@ -13,11 +13,13 @@ import fs from 'fs';
 import path from 'path';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
+import { AxiosError } from "axios";
 
 enum SwapPageStatus {
   Processing,
   Failed,
-  Success
+  Success,
+  NotFound
 }
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
@@ -28,7 +30,13 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
   const { data, mutate, error, isValidating } = useSWR<SwapInfo>(swapId ? `/swaps/${swapId}` : null, apiClient.apiFetcher);
   const [swapPageStatus, setswapPageStatus] = useState(SwapPageStatus.Processing);
 
-  if (error || (data && data.status == SwapStatus.Failed)) {
+  var axiosError = error as AxiosError;
+  if (axiosError?.response?.status == 404) {
+    if (swapPageStatus != SwapPageStatus.NotFound) {
+      setswapPageStatus(SwapPageStatus.NotFound);
+    }
+  }
+  else if (error || (data && data.status == SwapStatus.Failed)) {
     if (swapPageStatus != SwapPageStatus.Failed) {
       setswapPageStatus(SwapPageStatus.Failed);
     }
@@ -79,7 +87,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
                       </Link>
                     </div>
                   }
-                  {swapPageStatus === SwapPageStatus.Failed &&
+                  {(swapPageStatus === SwapPageStatus.Failed || swapPageStatus === SwapPageStatus.NotFound) &&
                     <div>
                       <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                         Open Discord
@@ -98,6 +106,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
 
 function renderIndicator(swapPageStatus: SwapPageStatus) {
   switch (swapPageStatus) {
+    case SwapPageStatus.NotFound:
     case SwapPageStatus.Failed: {
       return <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-red-100 sm:mx-0">
         <XIcon className="text-red-500 h-16 w-16" />
@@ -119,6 +128,9 @@ function renderIndicator(swapPageStatus: SwapPageStatus) {
 
 function renderHeading(swapPageStatus: SwapPageStatus) {
   switch (swapPageStatus) {
+    case SwapPageStatus.NotFound: {
+      return "Swap not found.";
+    }
     case SwapPageStatus.Failed: {
       return "Something went wrong.";
     }
@@ -134,6 +146,9 @@ function renderHeading(swapPageStatus: SwapPageStatus) {
 
 function renderDescription(swapPageStatus: SwapPageStatus) {
   switch (swapPageStatus) {
+    case SwapPageStatus.NotFound: {
+      return "Ooops looks like you landed on a wrong page. If you believe that's not the case plase contact us through our Discord";
+    }
     case SwapPageStatus.Failed: {
       return "We are sorry but there was an issue with your swap. Please contact us through our Discord";
     }
@@ -149,9 +164,19 @@ function renderDescription(swapPageStatus: SwapPageStatus) {
 
 const CACHE_PATH = ".settings";
 
-export const getServerSideProps = async () => {
-  let settings : LayerSwapSettings;
+export const getServerSideProps = async (ctx) => {
+  const params = ctx.params;
+  let isValidGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(params.swapId);
+  if (!isValidGuid) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      }
+    }
+  }
 
+  let settings: LayerSwapSettings;
   try {
     settings = JSON.parse(
       fs.readFileSync(path.join(__dirname, CACHE_PATH), 'utf8')
