@@ -8,17 +8,20 @@ import { CheckIcon, XIcon } from '@heroicons/react/outline'
 import Link from 'next/link'
 import SpinIcon from '../components/icons/spinIcon';
 import Layout from '../components/layout';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import fs from 'fs';
 import path from 'path';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
+import React from 'react';
 
 enum SwapPageStatus {
   Processing,
   Failed,
   Success
 }
+
+const _maxRevalidateCount = 10;
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
@@ -27,8 +30,10 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
 
   const { data, mutate, error, isValidating } = useSWR<SwapInfo>(swapId ? `/swaps/${swapId}` : null, apiClient.apiFetcher);
   const [swapPageStatus, setswapPageStatus] = useState(SwapPageStatus.Processing);
+  const revalidateTimeoutId = useRef<NodeJS.Timeout>();
+  const revalidateCount = useRef(0);
 
-  if (error || (data && data.status == SwapStatus.Failed)) {
+  if (error || (data && data.status == SwapStatus.Failed) || revalidateCount.current >= _maxRevalidateCount) {
     if (swapPageStatus != SwapPageStatus.Failed) {
       setswapPageStatus(SwapPageStatus.Failed);
     }
@@ -44,10 +49,21 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
     }
   }
 
-  if (data && (data.status == SwapStatus.Created || data.status == SwapStatus.Pending)) {
-    setTimeout(function () {
-      mutate()
-    }.bind(this), 5000)
+  if (swapPageStatus == SwapPageStatus.Processing) {
+    if (isValidating && revalidateTimeoutId) {
+      clearTimeout(revalidateTimeoutId.current);
+    }
+    else {
+      if (revalidateCount.current < _maxRevalidateCount) {
+        revalidateTimeoutId.current = setTimeout(function () {
+          mutate();
+          revalidateCount.current++;
+        }.bind(this), 5000);
+      }
+      else {
+        setswapPageStatus(SwapPageStatus.Failed);
+      }
+    }
   }
 
   return (
@@ -81,6 +97,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
                   }
                   {swapPageStatus === SwapPageStatus.Failed &&
                     <div>
+                      <p className="text-sm text-gray-700 "><span className="text-base font-medium">Swap Id:</span> {swapId}</p>
                       <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                         Open Discord
                       </a>
@@ -150,7 +167,7 @@ function renderDescription(swapPageStatus: SwapPageStatus) {
 const CACHE_PATH = ".settings";
 
 export const getServerSideProps = async () => {
-  let settings : LayerSwapSettings;
+  let settings: LayerSwapSettings;
 
   try {
     settings = JSON.parse(
