@@ -241,6 +241,9 @@ const Swap: FC<SwapProps> = ({ settings }) => {
               <p className="md:max-w-xs text-base text-gray-700 mt-2">
                 Save 10x on fees when moving crypto from Coinbase or Binance to Arbitrum
               </p>
+              <p className="py-4">
+                <span className="bg-pink-500 rounded-md py-1 px-2 text-white">New</span> Huobi Global is now supported.
+              </p>
               <div className="mt-2 md:space-x-5 flex flex-col md:flex-row">
                 <Link key="userGuide" href="/userguide">
                   <a className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
