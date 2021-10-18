@@ -1,5 +1,5 @@
 import React from 'react';
-import { Formik, Form, Field, FormikErrors, useFormikContext, useField } from 'formik';
+import { Formik, Form, Field, FormikErrors, useFormikContext } from 'formik';
 import { FC } from 'react'
 import axios from 'axios';
 import { useRouter } from 'next/router'
@@ -65,7 +65,6 @@ const Swap: FC<SwapProps> = ({ settings }) => {
   const initialNetwork = availableNetworks.find(x => x.isEnabled);
   const initialExchange = availableExchanges.find(x => x.isEnabled);
   const initialCurrency = availableCurrencies.find(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled);
-
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: "", currency: initialCurrency, exchange: initialExchange };
   return (
     <div className="flex justify-center">
@@ -194,24 +193,32 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                       <Field name="network" values={availableNetworks} label="In" value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
                     </div>
                   </div>
-                  <div className="mt-5">
-                    <label className="block font-medium text-gray-700">
+                  <div className="mt-5 flex flex-col md:flex-row items-baseline justify-between">
+                    <label className="block font-medium text-gray-700 text-center">
+                      Fees
+                    </label>
+                    <span className="text-gray-700 text-base font-medium text-center">
+                      {Number(values.currency.baseObject.network_fee.toFixed(values.currency.baseObject.precision))}
+                      <span>  {values.currency.name} (Network fee)</span> <span className="text-gray-700">+ {values.network.baseObject.fee_multiplier * 100}%</span></span>
+                  </div>
+                  <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
+                    <label className="block font-medium text-gray-700 text-center">
                       Estimated received
                     </label>
-                    <p className="text-indigo-500 text-lg font-medium">
+                    <span className="text-indigo-500 text-lg font-medium text-center">
                       {(() => {
                         if (values.amount) {
                           let amount = Number(values.amount);
                           let currencyObject = values.currency.baseObject;
                           if (amount >= currencyObject.min_amount) {
                             var result = amount - currencyObject.network_fee - (amount * values.network.baseObject.fee_multiplier);
-                            return Math.round(result * Math.pow(10, currencyObject.decimals)) / Math.pow(10, currencyObject.decimals)
+                            return Number(result.toFixed(currencyObject.precision));
                           }
                         }
 
                         return 0;
                       })()}
-                      <span className="text-gray-700">  {values.currency.name}</span></p>
+                      <span className="text-gray-700">  {values.currency.name}</span></span>
                   </div>
                   <div className="mt-10">
                     <button

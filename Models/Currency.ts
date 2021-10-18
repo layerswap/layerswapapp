@@ -10,4 +10,5 @@ export class Currency {
     max_amount: number;
     network_fee: number;
     network_id: string;
+    precision: number;
 }
