@@ -4,6 +4,7 @@ export class CryptoNetwork {
     code: string;
     is_enabled: boolean;
     is_test_net: boolean;
-    fee_multiplier: number;
+    is_default: boolean;
     explorer_template: string;
+    ether_price: number;
 }
