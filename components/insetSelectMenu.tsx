@@ -29,7 +29,7 @@ let InsetSelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue
     function updateValues() {
         setAvailableValues(values);
         if (!values.some(x => x.id === selected.id)) {
-            setSelected(values.filter(x => x.isEnabled)[0]);
+            setSelected(values.filter(x => x.isDefault)[0]);
         }
     }
 

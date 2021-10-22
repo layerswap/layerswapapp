@@ -4,13 +4,15 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     imgSrc: string;
     isEnabled: boolean;
     baseObject: T;
+    isDefault: boolean;
 
-    constructor(baseObject: T, id: string, name: string, imgSrc: string, isEnabled: boolean = true) {
+    constructor(baseObject: T, id: string, name: string, imgSrc: string, isEnabled: boolean = true, isDefault = false) {
         this.baseObject = baseObject;
         this.id = id;
         this.name = name;
         this.imgSrc = imgSrc;
         this.isEnabled = isEnabled;
+        this.isDefault = isDefault;
     }
 }
 
@@ -19,4 +21,5 @@ export interface ISelectMenuItem {
     name: string;
     imgSrc: string;
     isEnabled: boolean;
+    isDefault: boolean;
 }

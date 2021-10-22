@@ -54,17 +54,18 @@ const CurrenciesField = (props) => {
 const Swap: FC<SwapProps> = ({ settings }) => {
   const router = useRouter()
   let availableCurrencies = settings.currencies
-    .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled))
-    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled));
+    .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled, c.is_default))
+    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
   const availableExchanges = settings.exchanges
-    .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, GetLogoByProjectName(c.name), c.is_enabled))
-    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled));
+    .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, GetLogoByProjectName(c.name), c.is_enabled, c.is_default))
+    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
   const availableNetworks = settings.networks
-    .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled))
-    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled));
-  const initialNetwork = availableNetworks.find(x => x.isEnabled);
-  const initialExchange = availableExchanges.find(x => x.isEnabled);
-  const initialCurrency = availableCurrencies.find(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled);
+    .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled, c.is_default))
+    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
+    
+  const initialNetwork = availableNetworks.find(x => x.isEnabled && x.isDefault);
+  const initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
+  const initialCurrency = availableCurrencies.find(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled && x.isDefault);
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: "", currency: initialCurrency, exchange: initialExchange };
   return (
     <div className="flex justify-center">
@@ -115,6 +116,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
               )
                 .then(response => {
                   router.push(response.data.redirect_url);
+                  actions.setSubmitting(false);
                 })
                 .catch(error => {
                   actions.setSubmitting(false);
@@ -195,15 +197,16 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                   </div>
                   <div className="mt-5 flex flex-col md:flex-row items-baseline justify-between">
                     <label className="block font-medium text-gray-700 text-center">
-                      Fees
+                      Fee
                     </label>
                     <span className="text-gray-700 text-base font-medium text-center">
-                      {Number(values.currency.baseObject.network_fee.toFixed(values.currency.baseObject.precision))}
-                      <span>  {values.currency.name} (Network fee)</span> <span className="text-gray-700">+ {values.network.baseObject.fee_multiplier * 100}%</span></span>
+                      {values.currency.baseObject.fee}
+                      <span>  {values.currency.name} </span>
+                    </span>
                   </div>
                   <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
                     <label className="block font-medium text-gray-700 text-center">
-                      Estimated received
+                      You will get
                     </label>
                     <span className="text-indigo-500 text-lg font-medium text-center">
                       {(() => {
@@ -211,7 +214,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                           let amount = Number(values.amount);
                           let currencyObject = values.currency.baseObject;
                           if (amount >= currencyObject.min_amount) {
-                            var result = amount - currencyObject.network_fee - (amount * values.network.baseObject.fee_multiplier);
+                            var result = amount - currencyObject.fee;
                             return Number(result.toFixed(currencyObject.precision));
                           }
                         }

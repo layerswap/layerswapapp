@@ -3,12 +3,13 @@ export class Currency {
     asset: string;
     name: string;
     decimals: number;
+    precision: number;
     is_enabled: boolean;
     is_erc20: boolean;
     contract?: string;
     min_amount: number;
     max_amount: number;
-    network_fee: number;
+    fee: number;
     network_id: string;
-    precision: number;
+    is_default: boolean;
 }
