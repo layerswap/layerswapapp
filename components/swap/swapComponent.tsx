@@ -200,7 +200,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                       Fee
                     </label>
                     <span className="text-gray-700 text-base font-medium text-center">
-                      {(() => calculateFee(values).toFixed(values.currency.baseObject.precision))}
+                      {(() => calculateFee(values).toFixed(values.currency.baseObject.precision))()}
                       <span>  {values.currency.name} </span>
                     </span>
                   </div>
