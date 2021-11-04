@@ -13,7 +13,7 @@ Bransfer is a payment network running on top of crypto exchanges. It allows us t
 ## How much does it cost?
 If you want to transfer 100$ worth of crypto from the crypto exchange to the Arbitrum network, you have to pay ~70$ gas fees - one to send from the crypto exchange to your wallet and another for swapping it through the bridge. See [https://etherscan.io/gastracker](https://etherscan.io/gastracker).
 
-With LayerSwap, you pay 5% of the amount you send. In this example, only 5$ instead of 70$. It’s more than **10x cheaper!**
+With LayerSwap, you just pay $15.
 
 ## How long does it take?
 After you withdraw your crypto from the crypto exchange account, you will have assets available in the Arbitrum network in 1-2 minutes.

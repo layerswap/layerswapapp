@@ -249,10 +249,10 @@ const Swap: FC<SwapProps> = ({ settings }) => {
             <div>
               <h1 className="text-2xl font-semibold text-gray-800">LayerSwap</h1>
               <p className="md:max-w-xs text-base text-gray-700 mt-2">
-                Save 10x on fees when moving crypto from Coinbase or Binance to Arbitrum
+                Save 10x on fees when moving crypto from Coinbase, Binance or Huobi to Arbitrum
               </p>
               <p className="py-4">
-                <span className="bg-pink-500 rounded-md py-1 px-2 text-white">New</span> Huobi Global is now supported.
+                <span className="bg-pink-500 rounded-md py-1 px-2 text-white">New</span> FTX US is now supported.
               </p>
               <div className="mt-2 md:space-x-5 flex flex-col md:flex-row">
                 <Link key="userGuide" href="/userguide">
