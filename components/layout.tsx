@@ -32,6 +32,7 @@ export default function Layout({ children }) {
       <meta name="twitter:title" content="LayerSwap - Move crypto to Layer 2" />
       <meta name="twitter:description" content="Move crypto from Binance or Coinbase to Arbitrum One - save 10x on fees." />
       <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpg" />
+      <script defer data-domain="layerswap.io" src="https://plausible.io/js/plausible.js"></script>
     </Head>
     <main>
       <div className="overflow-hidden relative">
