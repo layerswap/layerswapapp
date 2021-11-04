@@ -9,7 +9,7 @@ export class Currency {
     contract?: string;
     min_amount: number;
     max_amount: number;
-    fee: number;
     network_id: string;
     is_default: boolean;
+    usdt_price: number;
 }

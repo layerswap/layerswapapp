@@ -7,4 +7,5 @@ export class CryptoNetwork {
     is_default: boolean;
     explorer_template: string;
     ether_price: number;
+    fee_in_usd: number;
 }

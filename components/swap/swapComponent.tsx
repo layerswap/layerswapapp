@@ -62,7 +62,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
   const availableNetworks = settings.networks
     .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
-    
+
   const initialNetwork = availableNetworks.find(x => x.isEnabled && x.isDefault);
   const initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
   const initialCurrency = availableCurrencies.find(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled && x.isDefault);
@@ -200,7 +200,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                       Fee
                     </label>
                     <span className="text-gray-700 text-base font-medium text-center">
-                      {values.currency.baseObject.fee}
+                      {(() => calculateFee(values).toFixed(values.currency.baseObject.precision))()}
                       <span>  {values.currency.name} </span>
                     </span>
                   </div>
@@ -214,7 +214,8 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                           let amount = Number(values.amount);
                           let currencyObject = values.currency.baseObject;
                           if (amount >= currencyObject.min_amount) {
-                            var result = amount - currencyObject.fee;
+                            var fee = calculateFee(values);
+                            var result = amount - fee;
                             return Number(result.toFixed(currencyObject.precision));
                           }
                         }
@@ -324,6 +325,20 @@ function controlDisabledButton(errors: FormikErrors<SwapFormValues>, isSubmittin
   }
 
   return defaultStyles;
+}
+
+function calculateFee(values: SwapFormValues): number {
+  let currencyObject = values.currency.baseObject;
+  let networkObject = values.network.baseObject;
+  let exchangeObject = values.exchange.baseObject;
+
+  var feeInUsd = exchangeObject.fee_in_usd + networkObject.fee_in_usd;
+  var fee = feeInUsd;
+  if (!currencyObject.is_erc20) {
+    fee = feeInUsd / networkObject.ether_price;
+  }
+
+  return fee;
 }
 
 export default Swap;
