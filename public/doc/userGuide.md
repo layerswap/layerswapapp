@@ -1,4 +1,4 @@
-# How to transfer crypto from Binance, Coinbase to Arbitrum without gas fees?
+## How to transfer crypto from Binance, Coinbase to Arbitrum without gas fees?
 
 With LayerSwap, you can send crypto from your Binance or Coinbase account directly to the Arbitrum network without paying gas fees.
 This guide will go step by step throught the whole process.

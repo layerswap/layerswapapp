@@ -246,21 +246,30 @@ const Swap: FC<SwapProps> = ({ settings }) => {
           </Formik>
         </CardContainer >
         <SmallCardContainer className="w-full pt-5">
-          <div className="flex flex-col md:flex-row md:space-x-6">
+          <div className="flex flex-col justify-between md:flex-row md:space-x-6">
             <div>
               <h1 className="text-2xl font-semibold text-gray-800">LayerSwap</h1>
-              <p className="md:max-w-xs text-base text-gray-700 mt-2">
-                Save 10x on fees when moving crypto from Coinbase, Binance or Huobi to Arbitrum
+              <p className="md:max-w-md text-base text-gray-700 mt-2">
+                Save 10x on fees when moving crypto from Coinbase, Binance, Huobi or FTX US to Arbitrum
               </p>
               <p className="py-4">
                 <span className="bg-pink-500 rounded-md py-1 px-2 text-white">New</span> FTX US is now supported.
               </p>
-              <div className="mt-2 md:space-x-5 flex flex-col md:flex-row">
+
+            </div>
+            <div className="flex items-center">
+              <div className="mt-2 space-y-2 flex flex-col">
+                <a href="https://www.loom.com/share/c853ca7e2ed04fa986e35928e8da015b" target="_blank" className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
+                  <div className="flex flex-row items-center">
+                    <PlayIcon className="w-5 h-5 mr-2" />
+                    <span>Into</span>
+                  </div>
+                </a>
                 <Link key="userGuide" href="/userguide">
                   <a className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
                     <div className="flex flex-row items-center">
                       <BookOpenIcon className="w-5 h-5 mr-2" />
-                      <span>User Guide</span>
+                      <span>Guide</span>
                     </div>
                   </a>
                 </Link>
@@ -270,29 +279,12 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                     <span>Twitter</span>
                   </div>
                 </a>
-
                 <a href="https://discord.com/invite/KhwYN35sHy" target="_blank" className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
                   <div className="flex flex-row items-center">
                     <DiscordLogo className="w-5 h-5 mr-2" />
                     <span>Discord</span>
                   </div>
                 </a>
-              </div>
-            </div>
-            <div className="flex items-center">
-              <div className="mt-3 md:mt-0">
-                <a
-                  target="_blank"
-                  href="https://www.loom.com/share/c853ca7e2ed04fa986e35928e8da015b"
-                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:px-10"
-                >
-                  <div className="flex flex-row items-center">
-
-                    <PlayIcon className="w-5 h-5 mr-1" />
-                    <span>Intro video</span>
-                  </div>
-                </a>
-
               </div>
             </div>
           </div>

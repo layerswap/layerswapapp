@@ -6,10 +6,42 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        sky: colors.sky,
         cyan: colors.cyan,
         pink: colors.pink,
+        blueGray : colors.blueGray
       },
+      typography: (theme) => ({
+        DEFAULT: {
+          css: {
+            h1: {
+              color: '#FFF',
+              textAlign: 'center',
+            },
+            h2: {
+              color: '#FFF',
+              textAlign: 'center',
+            },
+            h3: {
+              color: '#FFF',
+            },
+            h4: {
+              color: '#FFF',
+            },
+            h5: {
+              color: '#FFF',
+            },
+            a: {
+              color: theme('colors.pink.400'),
+            },
+            strong: {
+              color: '#FFF'
+            },
+            blockquote: {
+              color: '#FFF'
+            }
+          },
+        }
+      }),
     },
   },
   variants: {
