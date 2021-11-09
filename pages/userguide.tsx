@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import Layout from '../components/layout'
-import CardContainer from '../components/cardContainer'
+import slug from 'rehype-slug'
 import fs from 'fs'
 import path from 'path'
 import Image from 'next/dist/client/image'
@@ -37,7 +37,7 @@ export async function getStaticProps() {
     const markdown = fs.readFileSync(path.join(process.cwd(), 'public/doc/userGuide.md'), 'utf-8');
     const mdxSource = await serialize(markdown, {
         mdxOptions: {
-            rehypePlugins: [[imageSize, { dir: "public" }]],
+            rehypePlugins: [slug,[imageSize, { dir: "public" }]],
         },
     });
 
