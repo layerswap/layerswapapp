@@ -1,4 +1,4 @@
-## How to transfer crypto from Binance or Coinbase to Arbitrum?
+## How to transfer crypto from Binance, FTX or Coinbase to Arbitrum?
 
 With LayerSwap, you can send crypto from your crypto exchange account directly to the Arbitrum network with low fees.
 This guide will go step by step through the whole process.
@@ -6,6 +6,7 @@ This guide will go step by step through the whole process.
 - Go to [layerswap.io](https://layerswap.io)
 
 - Enter the **amount** you want to transfer to Arbitrum.
+- Choose the **currency** ETH or USDT.
 - Choose the **crypto exchange** from which you want to initiate the transfer.
 - Enter Aribtrum **address**.
 - Click Swap now!
@@ -21,6 +22,7 @@ Now, depending on the exchange the next steps differ.
 
 [Coinbase Guide](#coinbase-guide) <br />
 [Binance Guide](#binance-guide) <br />
+[FTX Guide](#ftx-us-guide) <br />
 
 ### Coinbase Guide
 
@@ -52,5 +54,20 @@ Here you will be presented the address and amount to withdraw from your Binance 
 ![Payment processing](/images/payment_processing.png)
 
 After you do the withdrawal from Binance, you will receive the amount in your Arbitrum account in a few seconds.
+
+![Swap success page](/images/swap_success.png)
+
+### FTX US Guide
+
+If you chose FTX US, after logging in to Bransfer you'll be directed to the processing screen. 
+
+![FTX US Processing](/images/ftx_processing.png)
+
+Here you'll see a button that will take you to FTX Pay website in another tab, and this page will wait till you confirm the transaction in FTX US.
+In FTX US website you'll see the amount that you're paying, and can confirm the payment with your 2FA Code.
+
+![FTX US Pay](/images/ftx_pay.png)
+
+After confirming the payment in FTX, head back to the previous tab to see the confirmation of your transfer!
 
 ![Swap success page](/images/swap_success.png)
