@@ -1,7 +1,7 @@
 ## How to transfer crypto from Binance or Coinbase to Arbitrum?
 
 With LayerSwap, you can send crypto from your crypto exchange account directly to the Arbitrum network with low fees.
-This guide will go step by step throught the whole process.
+This guide will go step by step through the whole process.
 
 - Go to [layerswap.io](https://layerswap.io)
 
@@ -12,7 +12,7 @@ This guide will go step by step throught the whole process.
 
 You will be redirected to Bransfer to complete your transfer.
 
-![Choose exchange to transfer from](/images/bransfer_choose_exchange.png)
+![Choose an exchange to transfer from](/images/bransfer_choose_exchange.png)
 
 Bransfer is a service that allows us to connect to crypto exchanges.
 You'll need an account to continue. No KYC is required, just register with an email or Twitter/Coinbase.
@@ -42,12 +42,12 @@ And that's it! After confirmation, you will receive the amount in your Arbitrum 
 If you chose Binance, after logging in to Bransfer you'll be asked to provide **read-only** API keys. This allows Bransfer to connect to your Binance account.  
 
 ![Connect Binance to Bransfer](/images/binance_connect_bransfer.png)
-> Note that these are Read-Only API Keys. Bransfer CANT initate any trade or withdrawal on your behalf.
+> Note that these are Read-Only API Keys. Bransfer CANT initiate any trade or withdrawal on your behalf.
 
 If you need help getting your API keys, please consult [this step-by-step guide](https://help.bransfer.io/article/guide-binance)
 
 After adding API keys, you will see the processing screen.
-Here you will be presented the address and amount to withdraw from you Binance account.
+Here you will be presented the address and amount to withdraw from your Binance account.
 
 ![Payment processing](/images/payment_processing.png)
 
