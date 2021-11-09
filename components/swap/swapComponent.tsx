@@ -246,10 +246,10 @@ const Swap: FC<SwapProps> = ({ settings }) => {
           </Formik>
         </CardContainer >
         <SmallCardContainer className="w-full pt-5">
-          <div className="flex flex-col justify-between md:flex-row md:space-x-6">
+          <div className="flex flex-col justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-gray-800">LayerSwap</h1>
-              <p className="md:max-w-md text-base text-gray-700 mt-2">
+              <p className="md:max-w-lg text-base text-gray-700 mt-2">
                 Save 10x on fees when moving crypto from Coinbase, Binance, Huobi or FTX US to Arbitrum
               </p>
               <p className="py-4">
@@ -258,18 +258,18 @@ const Swap: FC<SwapProps> = ({ settings }) => {
 
             </div>
             <div className="flex items-center">
-              <div className="mt-2 space-y-2 flex flex-col">
+              <div className="mt-2 space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row">
                 <a href="https://www.loom.com/share/c853ca7e2ed04fa986e35928e8da015b" target="_blank" className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
                   <div className="flex flex-row items-center">
                     <PlayIcon className="w-5 h-5 mr-2" />
-                    <span>Into</span>
+                    <span>Watch Intro Video</span>
                   </div>
                 </a>
                 <Link key="userGuide" href="/userguide">
                   <a className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
                     <div className="flex flex-row items-center">
                       <BookOpenIcon className="w-5 h-5 mr-2" />
-                      <span>Guide</span>
+                      <span>Read User Guide</span>
                     </div>
                   </a>
                 </Link>
