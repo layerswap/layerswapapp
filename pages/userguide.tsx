@@ -22,17 +22,13 @@ export default function UserGuide(props) {
             <Head>
                 <title>LayerSwap User Guide</title>
             </Head>
-
             <main>
                 <div className="flex justify-center">
-                    <CardContainer>
-                        <div className="md:p-16 prose-sm md:prose lg:prose-lg prose-indigo">
-                            <MDXRemote {...props.mdxSource} components={componentOverrides} />
-                        </div>
-                    </CardContainer>
+                    <div className="py-10 lg:py-20 px-8 md:px-0 prose md:prose-xl text-white">
+                        <MDXRemote {...props.mdxSource} components={componentOverrides} />
+                    </div>
                 </div>
             </main>
-
         </Layout>
     )
 }
