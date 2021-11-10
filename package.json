@@ -9,9 +9,9 @@
     "start": "next start"
   },
   "dependencies": {
-    "@headlessui/react": "^1.4.1",
-    "@heroicons/react": "^1.0.4",
-    "@tailwindcss/forms": "^0.3.3",
+    "@headlessui/react": "^1.4.2",
+    "@heroicons/react": "^1.0.5",
+    "@tailwindcss/forms": "^0.3.4",
     "@tailwindcss/typography": "^0.4.1",
     "axios": "^0.21.4",
     "formik": "^2.2.9",
@@ -26,11 +26,11 @@
     "swr": "^1.0.1"
   },
   "devDependencies": {
-    "@types/node": "^16.9.1",
-    "@types/react": "^17.0.20",
-    "autoprefixer": "^10.3.4",
-    "postcss": "^8.3.6",
-    "tailwindcss": "^2.2.15",
-    "typescript": "^4.4.3"
+    "@types/node": "^16.11.7",
+    "@types/react": "^17.0.34",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.3.11",
+    "tailwindcss": "^2.2.19",
+    "typescript": "^4.4.4"
   }
 }
