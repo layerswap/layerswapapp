@@ -11,7 +11,7 @@ import { MDXRemote } from 'next-mdx-remote'
 
 const componentOverrides = {
     img: (props) => (
-        <Image {...props} layout="responsive" quality="100"></Image>
+        <img {...props}></img>
     ),
 };
 
@@ -37,7 +37,7 @@ export async function getStaticProps() {
     const markdown = fs.readFileSync(path.join(process.cwd(), 'public/doc/userGuide.md'), 'utf-8');
     const mdxSource = await serialize(markdown, {
         mdxOptions: {
-            rehypePlugins: [slug,[imageSize, { dir: "public" }]],
+            rehypePlugins: [slug, [imageSize, { dir: "public" }]],
         },
     });
 

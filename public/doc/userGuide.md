@@ -22,7 +22,8 @@ Now, depending on the exchange the next steps differ.
 
 [Coinbase Guide](#coinbase-guide) <br />
 [Binance Guide](#binance-guide) <br />
-[FTX Guide](#ftx-us-guide) <br />
+[FTX Guide](#ftx-guide) <br />
+[Huobi Guide](#huobi-guide) <br />
 
 ### Coinbase Guide
 
@@ -50,6 +51,7 @@ If you need help getting your API keys, please consult [this step-by-step guide]
 
 After adding API keys, you will see the processing screen.
 Here you will be presented the address and amount to withdraw from your Binance account.
+***Make sure to double-check the amount and address.***
 
 ![Payment processing](/images/payment_processing.png)
 
@@ -57,7 +59,7 @@ After you do the withdrawal from Binance, you will receive the amount in your Ar
 
 ![Swap success page](/images/swap_success.png)
 
-### FTX US Guide
+### FTX Guide
 
 If you chose FTX US, after logging in to Bransfer you'll be directed to the processing screen. 
 
@@ -69,5 +71,24 @@ In FTX US website you'll see the amount that you're paying, and can confirm the 
 ![FTX US Pay](/images/ftx_pay.png)
 
 After confirming the payment in FTX, head back to the previous tab to see the confirmation of your transfer!
+
+![Swap success page](/images/swap_success.png)
+
+### Huobi Guide
+
+If you chose Huobi, after logging in to Bransfer you'll be asked to provide **read-only** API keys. This allows Bransfer to connect to your Huobi account.  
+
+![Connect Huobi to Bransfer](/images/huobi_connect_bransfer.png)
+> Note that these are Read-Only API Keys. Bransfer CANT initiate any trade or withdrawal on your behalf.
+
+If you need help getting your API keys, please consult [this step-by-step guide](https://help.bransfer.io/article/guide-huobi)
+
+After adding API keys, you will see the processing screen.
+Here you will be presented the address and amount to withdraw from your Binance account.
+***Make sure to double-check the amount and address.***
+
+![Payment processing](/images/huobi_payment_processing.png)
+
+After you do the withdrawal from Huobi, you will receive the amount in your Arbitrum account in a few seconds.
 
 ![Swap success page](/images/swap_success.png)
