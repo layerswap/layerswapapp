@@ -25,8 +25,8 @@ let SelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue, lab
                                 src={selected.imgSrc}
                                 alt="Project Logo"
                                 priority
-                                height="1.5rem"
-                                width="1.5rem"
+                                height="40"
+                                width="40"
                                 layout="responsive"
                                 className="rounded-full object-contain"
                             />
@@ -56,8 +56,8 @@ let SelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue, lab
                                                 <Image
                                                     src={item.imgSrc}
                                                     alt="Project Logo"
-                                                    height="1.5rem"
-                                                    width="1.5rem"
+                                                    height="40"
+                                                    width="40"
                                                     layout="responsive"
                                                     className="rounded-full object-contain"
                                                 />

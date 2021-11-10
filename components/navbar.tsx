@@ -4,9 +4,11 @@ import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import LayerSwapLogo from './icons/layerSwapLogo'
+import LayerSwapLogoSmall from './icons/layerSwapLogoSmall'
 
 const navigation = [
     { name: 'Swap', href: '/' },
+    { name: 'Guide', href: '/userguide' },
     { name: 'About', href: '/about' },
 ]
 
@@ -21,7 +23,8 @@ export default function Navbar() {
                             <Link href="/" key="Home">
                                 <a>
                                     <span className="sr-only">LayerSwap</span>
-                                    <LayerSwapLogo className="h-12 w-auto text-white" />
+                                    <LayerSwapLogo className="h-12 w-auto text-white hidden md:inline" />
+                                    <LayerSwapLogoSmall className="h-12 w-auto text-white inline md:hidden" />
                                 </a>
                             </Link>
                             <div className="-mr-2 flex items-center md:hidden">
@@ -61,7 +64,9 @@ export default function Navbar() {
                         <div className="px-5 pt-4 flex items-center justify-between">
                             <div>
                                 <Link href="/" key="Home">
-                                    <LayerSwapLogo className="h-8 w-auto text-gray-800" />
+                                    <a>
+                                        <LayerSwapLogo className="h-8 w-auto text-gray-800" />
+                                    </a>
                                 </Link>
                             </div>
                             <div className="-mr-2">

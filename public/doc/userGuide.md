@@ -1,78 +1,94 @@
-# How to transfer crypto from Binance, Coinbase to Arbitrum without gas fees?
+## How to transfer crypto from Binance, FTX or Coinbase to Arbitrum?
 
-With LayerSwap, you can send crypto from your Binance or Coinbase account directly to the Arbitrum network without paying gas fees.
-This guide will go step by step throught the whole process.
+With LayerSwap, you can send crypto from your crypto exchange account directly to the Arbitrum network with low fees.
+This guide will go step by step through the whole process.
 
 - Go to [layerswap.io](https://layerswap.io)
 
-![Swap usdt from binance and coinbase to arbitrum](/images/layerswap_swap.png)
-
 - Enter the **amount** you want to transfer to Arbitrum.
-- Choose **crypto exchange** from which you want to initiate the transfer.
+- Choose the **currency** ETH or USDT.
+- Choose the **crypto exchange** from which you want to initiate the transfer.
 - Enter Aribtrum **address**.
 - Click Swap now!
 
-You will be redirected to Bransfer to complete your transfer. Create your Bransfer Account and connect the exchange you want to transfer from.
+You will be redirected to Bransfer to complete your transfer.
 
-![Choose exchange to transfer from](/images/bransfer_choose_exchange.png)
+![Choose an exchange to transfer from](/images/bransfer_choose_exchange.png)
 
-### Create an account at Bransfer
+Bransfer is a service that allows us to connect to crypto exchanges.
+You'll need an account to continue. No KYC is required, just register with an email or Twitter/Coinbase.
 
-1. Go to the [registration page](https://connect.bransfer.io/auth/register)
-1. Fill in email and password or login via Coinbase or Twitter.
+Now, depending on the exchange the next steps differ.
 
-![Create Bransfer account](/images/bransfer_registration.png)
+[Coinbase Guide](#coinbase-guide) <br />
+[Binance Guide](#binance-guide) <br />
+[FTX Guide](#ftx-guide) <br />
+[Huobi Guide](#huobi-guide) <br />
 
-### Connect crypto exchange account to Bransfer
+### Coinbase Guide
 
-Go to Bransfer [payment methods](https://connect.bransfer.io/paymentmethods)
-
-![Attach payment method](/images/bransfer_payment_methods.png)
-
-> Bransfer is using your crypto exchange accounts as "payment method". As PayPal is using your VISA or MasterCard.
-> Different crypto exchanges provide different ways of integration. For Example with Coinbase it's simple as clicking Authorize button.
-> But for example with Binance you have to put your API Keys. And for this reason we ask only for Read-only API keys.
-> You will initate withdrawal manually and we will use read-only api keys to verify your withdrawal information and match with our records.
-> Right now we are working on more robust integration with Binance, which will allow to pay directly from Binance Pay App.
-
-### Connect Coinbase
-
-1. Click Connect next to Coinbase
-1. In Coinbase Authorization screen configure limits and click Authorize
+If you chose Coinbase, after logging in to Bransfer you'll be redirected to Coinbase to authorize the payment. 
+Please make sure that in Coinbase you authorize at least as much as you are trying to swap. If you encounter any difficulties consult [this step-by-step guide](https://help.bransfer.io/article/guide-coinbase)
 
 ![Connect Coinbase to Bransfer](/images/coinbase_authorize.png)
 
-> Note that you have to authorize for amount you are going to swap.
+After you connect your Coinbase account, you can review the transaction details and approve it with your Coinbase 2FA.
 
-### Connect Binance
+![Coinbase Approve](/images/coinbase_confirm.png)
 
-1. Go to Binance and [create read-only API keys](https://www.binance.com/en/support/faq/360002502072)
-1. Copy API and Secret Key
+And that's it! After confirmation, you will receive the amount in your Arbitrum account in a few seconds.
 
-![Copy Binance api key and secret](/images/binance_api_keys.png)
+![Swap success page](/images/swap_success.png)
 
-1. Go to Bransfer [payment methods](https://connect.bransfer.io/paymentmethods)
-1. Click Connect next to Binance
-1. Paste newly copied keys and click Connect.
+### Binance Guide
+
+If you chose Binance, after logging in to Bransfer you'll be asked to provide **read-only** API keys. This allows Bransfer to connect to your Binance account.  
 
 ![Connect Binance to Bransfer](/images/binance_connect_bransfer.png)
+> Note that these are Read-Only API Keys. Bransfer CANT initiate any trade or withdrawal on your behalf.
 
-> Note that it's Read-Only API Keys. Bransfer WONT and CANT initate any trade or withdrawal on your behalf.
+If you need help getting your API keys, please consult [this step-by-step guide](https://help.bransfer.io/article/guide-binance)
 
-**Now, you are ready to process your first no-fee and instant crypto transfer with Bransfer!**
+After adding API keys, you will see the processing screen.
+Here you will be presented the address and amount to withdraw from your Binance account.
+***Make sure to double-check the amount and address.***
 
-After finishing the setup of your Bransfer account verify that transfer information is correct and click confirm.
+![Payment processing](/images/payment_processing.png)
 
-![Transfer confirmation](/images/transfer_confirmation.png)
+After you do the withdrawal from Binance, you will receive the amount in your Arbitrum account in a few seconds.
 
-In case of Coinbase, your payment will be automatically processed.
+![Swap success page](/images/swap_success.png)
 
-In case of Binance, you will see this screen.
+### FTX Guide
 
-![Binance payment confirmation](/images/binance_payment_processing.png)
+If you chose FTX US, after logging in to Bransfer you'll be directed to the processing screen. 
 
-Go back to your Binance account and initate withdrawal to provided address and with exact amount. As the address provided is from Binance as well, there will be 0 fees (fees will be returned back your account).
+![FTX US Processing](/images/ftx_processing.png)
 
-After confirmation, your Arbitrum transaction will be published and you will receive the amount into your account in few seconds.
+Here you'll see a button that will take you to FTX Pay website in another tab, and this page will wait till you confirm the transaction in FTX US.
+In FTX US website you'll see the amount that you're paying, and can confirm the payment with your 2FA Code.
+
+![FTX US Pay](/images/ftx_pay.png)
+
+After confirming the payment in FTX, head back to the previous tab to see the confirmation of your transfer!
+
+![Swap success page](/images/swap_success.png)
+
+### Huobi Guide
+
+If you chose Huobi, after logging in to Bransfer you'll be asked to provide **read-only** API keys. This allows Bransfer to connect to your Huobi account.  
+
+![Connect Huobi to Bransfer](/images/huobi_connect_bransfer.png)
+> Note that these are Read-Only API Keys. Bransfer CANT initiate any trade or withdrawal on your behalf.
+
+If you need help getting your API keys, please consult [this step-by-step guide](https://help.bransfer.io/article/guide-huobi)
+
+After adding API keys, you will see the processing screen.
+Here you will be presented the address and amount to withdraw from your Binance account.
+***Make sure to double-check the amount and address.***
+
+![Payment processing](/images/huobi_payment_processing.png)
+
+After you do the withdrawal from Huobi, you will receive the amount in your Arbitrum account in a few seconds.
 
 ![Swap success page](/images/swap_success.png)

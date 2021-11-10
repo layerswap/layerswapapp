@@ -5,7 +5,7 @@ import { InferGetStaticPropsType } from 'next'
 
 export default function Home({ data }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
-    <Layout>
+    <Layout hasSideShapes>
       <main>
         <Swap settings={data} />
       </main>

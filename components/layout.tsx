@@ -4,7 +4,12 @@ import Navbar from "./navbar"
 import React from "react"
 import Head from "next/head"
 
-export default function Layout({ children }) {
+type Props = {
+  children: JSX.Element | JSX.Element[],
+  hasSideShapes?: boolean
+};
+
+export default function Layout({ hasSideShapes, children }: Props) {
   return (<>
     <Head>
       <title>LayerSwap</title>
@@ -40,8 +45,12 @@ export default function Layout({ children }) {
         <div>
           {children}
         </div>
-        <BackgroundCircle className="md:w-60 md:h-60 lg:h-full lg:w-96 top-32 lg:top-0 -right-40 lg:-right-60 fixed w-0 h-0" />
-        <BackgroundRectangle className="md:w-60 md:h-60 lg:h-full lg:w-96 top-64 lg:top-36 -left-40 lg:-left-60 fixed w-0 h-0" />
+        {hasSideShapes && hasSideShapes == true ? <>
+          <BackgroundCircle className="md:w-52 md:h-52 lg:h-full lg:w-96 top-32 lg:top-0 -right-40 lg:-right-60 fixed w-0 h-0" />
+          <BackgroundRectangle className="md:w-52 md:h-52 lg:h-full lg:w-96 top-64 lg:top-36 -left-40 lg:-left-60 fixed w-0 h-0" />
+        </> : null}
+
+
       </div>
     </main>
   </>)
