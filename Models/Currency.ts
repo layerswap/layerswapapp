@@ -11,5 +11,6 @@ export class Currency {
     max_amount: number;
     network_id: string;
     is_default: boolean;
-    usdt_price: number;
+    price_in_usdt: number;
+    fee: number;
 }

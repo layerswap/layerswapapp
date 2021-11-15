@@ -321,16 +321,12 @@ function controlDisabledButton(errors: FormikErrors<SwapFormValues>, isSubmittin
 
 function calculateFee(values: SwapFormValues): number {
   let currencyObject = values.currency.baseObject;
-  let networkObject = values.network.baseObject;
   let exchangeObject = values.exchange.baseObject;
 
-  var feeInUsd = exchangeObject.fee_in_usd + networkObject.fee_in_usd;
-  var fee = feeInUsd;
-  if (!currencyObject.is_erc20) {
-    fee = feeInUsd / networkObject.ether_price;
-  }
+  var exchangeFee = Number(values.amount) * exchangeObject.fee_percentage;
+  var overallFee = currencyObject.fee + exchangeFee;
 
-  return fee;
+  return overallFee;
 }
 
 export default Swap;
