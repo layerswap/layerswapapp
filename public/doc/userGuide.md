@@ -1,4 +1,4 @@
-## How to transfer crypto from Binance, FTX or Coinbase to Arbitrum?
+# How to transfer crypto from Binance, FTX or Coinbase to Arbitrum?
 
 With LayerSwap, you can send crypto from your crypto exchange account directly to the Arbitrum network with low fees.
 This guide will go step by step through the whole process.

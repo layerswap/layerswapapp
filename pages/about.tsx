@@ -15,7 +15,7 @@ export default function About(props) {
 
             <main>
                 <div className="flex justify-center">
-                    <div className="py-10 lg:py-20 px-8 md:px-0 prose md:prose-xl text-white">
+                    <div className="py-10 lg:py-20 px-8 md:px-0 prose md:prose-xl text-blueGray-300">
                         <MDXRemote {...props.mdxSource} />
                     </div>
                 </div>
