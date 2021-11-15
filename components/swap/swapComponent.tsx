@@ -253,7 +253,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                 Save 10x on fees when moving crypto from Coinbase, Binance, Huobi or FTX US to Arbitrum
               </p>
               <p className="py-4">
-                <span className="bg-pink-500 rounded-md py-1 px-2 text-white">New</span> FTX US is now supported.
+                <span className="bg-indigo-600 rounded-md py-1 px-2 text-white">New</span> FTX US is now supported.
               </p>
 
             </div>
