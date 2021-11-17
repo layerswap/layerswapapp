@@ -22,7 +22,7 @@ After you withdraw your crypto from the crypto exchange account, you will have a
 You can swap up to ~500$ worth of assets with LayerSwap now. This number is going to be changed as we open the liquidity pool for the community.
 
 ### Can I provide liquidity for LayerSwap?
-Liquidy is provided only by LayerSwap now, but we are hard at work to release community liquidity mining by the end of 2021. Follow us on [Twiiter](https://twitter.com/layerswap) or join our [Discord](https://discord.com/invite/KhwYN35sHy) to get updates!
+Liquidy is provided only by LayerSwap now, but we are hard at work to release community liquidity mining by the end of 2021. Follow us on [Twitter](https://twitter.com/layerswap) or join our [Discord](https://discord.com/invite/KhwYN35sHy) to get updates!
 
 ### Can I send from Arbitrum back to my exchange account?
 This feature is under development. We plan to release it by the end of 2021. 
