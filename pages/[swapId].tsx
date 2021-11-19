@@ -15,6 +15,7 @@ import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
 import { AxiosError } from "axios";
 import React from 'react';
+import IntroCard from '../components/introCard';
 
 enum SwapPageStatus {
   Processing,
@@ -88,70 +89,72 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
 
   return (
     <Layout>
-      <div className="flex justify-center pt-10">
-        <CardContainer className="md:w-10/12 md:max-w-xl lg:max-w-2xl">
-          <div className="py-14">
-            <div className="max-w-md mx-auto items-center justify-center flex">
-              {renderIndicator(swapPageStatus)}
-            </div>
-            <div className="mt-6 text-center">
-              <h3 className="text-2xl leading-6 font-medium text-gray-900">
+      <div className="flex justify-center text-white">
+        <div className="flex flex-col justify-center justify-items-center pt-10 px-2">
+          <CardContainer className="container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+            <div className="py-2 md:px-10">
+              <div className="justify-center flex">
+                {renderIndicator(swapPageStatus)}
+              </div>
+              <h3 className="mt-6 text-center text-xl md:text-2xl leading-6 font-medium text-gray-100">
                 {renderHeading(swapPageStatus)}
               </h3>
-              <div className="mt-3 h-24">
-                <p className="text-gray-500 font-medium">
+              <div className="mt-3">
+                <p className="text-blueGray-300 font-medium text-sm md:text-base max-w-md text-center mx-auto">
                   {renderDescription(swapPageStatus)}
                 </p>
-                <div className="my-6 flex flex-col">
-                  {swapPageStatus === SwapPageStatus.Success &&
-                    <div>
-                      <a href={settings.networks.filter(x => x.code === data.network)[0].explorer_template.replace("{0}", data.transaction_id)} className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                        View transaction in explorer
-                      </a>
-                      <Link href='/'>
-                        <a className="font-medium underline text-indigo-600 hover:text-indigo-500">
-                          <p className="mt-2">Swap more</p>
-                        </a>
-                      </Link>
-                    </div>
-                  }
-                  {(swapPageStatus === SwapPageStatus.Failed || swapPageStatus === SwapPageStatus.NotFound) &&
-                    <div>
-                      {swapPageStatus === SwapPageStatus.Failed &&
-                        <p className="text-sm text-gray-700 "><span className="text-base font-medium">Swap Id:</span> {swapId}</p>
-                      }
-                      <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                        Open Discord
-                      </a>
-                    </div>
-                  }
+              </div>
+              <div className="flex flex-col">
+                <div className={swapPageStatus === SwapPageStatus.Success ? "block" : "hidden"}>
+
+                  <Link href='/'>
+                    <a className="font-medium underline text-indigo-400 hover:text-indigo-500">
+                      <p className="mt-2 text-center">Swap more</p>
+                    </a>
+                  </Link>
+                  <a href={settings.networks.filter(x => x.code === data?.network)[0]?.explorer_template.replace("{0}", data?.transaction_id)} className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                    View in explorer
+                  </a>
+                </div>
+                <div className={(swapPageStatus === SwapPageStatus.Failed || swapPageStatus === SwapPageStatus.NotFound) ? "block" : "hidden"}>
+                  <p className={classNames(swapPageStatus === SwapPageStatus.Failed ? "block" : "hidden", "mt-2 text-sm text-center text-gray-300")}><span className="text-base font-medium">Swap Id:</span> {swapId}</p>
+                  <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                    Open Discord
+                  </a>
                 </div>
               </div>
             </div>
-          </div>
-        </CardContainer>
+          </CardContainer>
+          <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5" />
+        </div>
       </div>
     </Layout>
   )
 }
 
+function classNames(...classes: string[]) {
+  return classes.filter(Boolean).join(' ')
+}
+
 function renderIndicator(swapPageStatus: SwapPageStatus) {
+  let baseBackground = "mx-auto flex items-center justify-center h-16 w-16 md:h-20 md:w-20 rounded-full sm:mx-0 ";
+  let baseIcon = "h-8 w-8 md:h-16 md:w-16 ";
   switch (swapPageStatus) {
     case SwapPageStatus.NotFound:
     case SwapPageStatus.Failed: {
-      return <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-red-100 sm:mx-0">
-        <XIcon className="text-red-500 h-16 w-16" />
+      return <div className={baseBackground + 'bg-red-100'}>
+        <XIcon className={baseIcon + "text-red-500"} />
       </div>;
     }
     default:
     case SwapPageStatus.Processing: {
-      return <div className="mx-auto flex items-center justify-center  h-24 w-24 rounded-full bg-green-100 sm:mx-0">
-        <SpinIcon className="animate-spin h-16 w-16 text-green-500" />
+      return <div className={baseBackground + 'bg-green-500'}>
+        <SpinIcon className={baseIcon + "text-green-100 animate-spin"} />
       </div>;
     }
     case SwapPageStatus.Success: {
-      return <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-green-100 md:mx-0">
-        <CheckIcon className="text-green-500 h-16 w-16" />
+      return <div className={baseBackground + 'bg-green-500'}>
+        <CheckIcon className={baseIcon + "text-green-100"} />
       </div>;
     }
   }
@@ -170,7 +173,7 @@ function renderHeading(swapPageStatus: SwapPageStatus) {
       return "Processing...";
     }
     case SwapPageStatus.Success: {
-      return "Success";
+      return "Swap successful";
     }
   }
 }
@@ -188,7 +191,7 @@ function renderDescription(swapPageStatus: SwapPageStatus) {
       return "We are submitting your transaction to the network.You'll see the transaction id when it's picked up by a miner.";
     }
     case SwapPageStatus.Success: {
-      return "Your swap successfully completed."
+      return "Your swap successfully completed. You can view it in the explorer, or go ahead swap more!"
     }
   }
 }

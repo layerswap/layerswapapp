@@ -8,7 +8,8 @@ module.exports = {
       colors: {
         cyan: colors.cyan,
         pink: colors.pink,
-        blueGray : colors.blueGray
+        blueGray : colors.blueGray,
+        coolGray: colors.coolGray
       },
       typography: (theme) => ({
         DEFAULT: {

@@ -49,8 +49,6 @@ export default function Layout({ hasSideShapes, children }: Props) {
           <BackgroundCircle className="md:w-52 md:h-52 lg:h-full lg:w-96 top-32 lg:top-0 -right-40 lg:-right-60 fixed w-0 h-0" />
           <BackgroundRectangle className="md:w-52 md:h-52 lg:h-full lg:w-96 top-64 lg:top-36 -left-40 lg:-left-60 fixed w-0 h-0" />
         </> : null}
-
-
       </div>
     </main>
   </>)

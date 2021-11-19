@@ -1,11 +1,11 @@
-import Swap from '../components/swap/swapComponent'
+import Swap from '../components/swapComponent'
 import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetStaticPropsType } from 'next'
 
 export default function Home({ data }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
-    <Layout hasSideShapes>
+    <Layout>
       <main>
         <Swap settings={data} />
       </main>

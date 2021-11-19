@@ -3,23 +3,20 @@ import { Formik, Form, Field, FormikErrors, useFormikContext } from 'formik';
 import { FC } from 'react'
 import axios from 'axios';
 import { useRouter } from 'next/router'
-import { CryptoNetwork } from '../../Models/CryptoNetwork';
-import LayerSwapApiClient from '../../lib/layerSwapApiClient';
-import CardContainer from '../cardContainer';
-import InsetSelectMenu from '../insetSelectMenu';
-import { BookOpenIcon, PlayIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
-import SpinIcon from '../icons/spinIcon';
-import { isValidEtherAddress } from '../../lib/etherAddressValidator';
-import { SelectMenuItem } from '../utils/selectMenuItem';
-import SelectMenu from '../selectMenu';
-import SmallCardContainer from '../smallCardContainer';
-import TwitterLogo from '../icons/twitterLogo';
-import DiscordLogo from '../icons/discordLogo';
-import Link from 'next/link';
-import { LayerSwapSettings } from '../../Models/LayerSwapSettings';
-import { Currency } from '../../Models/Currency';
-import { Exchange } from '../../Models/Exchange';
-import GetLogoByProjectName from '../../lib/logoPathResolver';
+import { CryptoNetwork } from '../Models/CryptoNetwork';
+import LayerSwapApiClient from '../lib/layerSwapApiClient';
+import CardContainer from './cardContainer';
+import InsetSelectMenu from './selectMenu/insetSelectMenu';
+import { SwitchHorizontalIcon } from '@heroicons/react/outline';
+import SpinIcon from './icons/spinIcon';
+import { isValidEtherAddress } from '../lib/etherAddressValidator';
+import { LayerSwapSettings } from '../Models/LayerSwapSettings';
+import { Currency } from '../Models/Currency';
+import { Exchange } from '../Models/Exchange';
+import GetLogoByProjectName from '../lib/logoPathResolver';
+import { SelectMenuItem } from './selectMenu/selectMenuItem';
+import SelectMenu from './selectMenu/selectMenu';
+import IntroCard from './introCard';
 
 interface SwapFormValues {
   amount: string;
@@ -68,9 +65,9 @@ const Swap: FC<SwapProps> = ({ settings }) => {
   const initialCurrency = availableCurrencies.find(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled && x.isDefault);
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: "", currency: initialCurrency, exchange: initialExchange };
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center text-white">
       <div className="flex flex-col justify-center justify-items-center pt-10 px-2">
-        <CardContainer className="w-full">
+        <CardContainer className="container mx-auto sm:px-6 lg:px-8 max-w-3xl">
           <Formik
             initialValues={initialValues}
             validate={values => {
@@ -132,7 +129,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                       <Field name="amount">
                         {({ field }) => (
                           <div>
-                            <label htmlFor="amount" className="block text-base font-medium text-gray-700">
+                            <label htmlFor="amount" className="block text-base font-medium">
                               Send
                             </label>
                             <div className="relative rounded-md shadow-sm">
@@ -149,7 +146,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                                 step={1 / Math.pow(10, values.currency.baseObject.decimals)}
                                 name="amount"
                                 id="amount"
-                                className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block w-full font-semibold text-gray-700 border-gray-300 rounded-md placeholder-gray-400"
+                                className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block bg-gray-800 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                                 onKeyPress={e => {
                                   const regex = /^[0-9]*[.,]?[0-9]*$/;
                                   if (!regex.test(e.key)) {
@@ -171,7 +168,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                   </div>
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
-                      <label className="block font-medium text-gray-700">
+                      <label className="block font-medium">
                         To
                       </label>
                       <div className="relative rounded-md shadow-sm">
@@ -184,7 +181,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                               type="text"
                               name="destination_address"
                               id="destination_address"
-                              className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold text-gray-700 w-full border-gray-300 rounded-md placeholder-gray-400 truncate"
+                              className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate"
                             />
                           )}
                         </Field>
@@ -196,19 +193,19 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                     </div>
                   </div>
                   <div className="mt-5 flex flex-col md:flex-row items-baseline justify-between">
-                    <label className="block font-medium text-gray-700 text-center">
+                    <label className="block font-medium text-center">
                       Fee
                     </label>
-                    <span className="text-gray-700 text-base font-medium text-center">
+                    <span className="text-base font-medium text-center">
                       {(() => calculateFee(values).toFixed(values.currency.baseObject.precision))()}
                       <span>  {values.currency.name} </span>
                     </span>
                   </div>
                   <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
-                    <label className="block font-medium text-gray-700 text-center">
+                    <label className="block font-medium text-center">
                       You will get
                     </label>
-                    <span className="text-indigo-500 text-lg font-medium text-center">
+                    <span className="text-indigo-300 text-lg font-medium text-center">
                       {(() => {
                         if (values.amount) {
                           let amount = Number(values.amount);
@@ -222,7 +219,7 @@ const Swap: FC<SwapProps> = ({ settings }) => {
 
                         return 0;
                       })()}
-                      <span className="text-gray-700">  {values.currency.name}</span></span>
+                      <span>  {values.currency.name}</span></span>
                   </div>
                   <div className="mt-10">
                     <button
@@ -232,9 +229,9 @@ const Swap: FC<SwapProps> = ({ settings }) => {
                     >
                       <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                         {(errors.amount == null && errors.destination_address == null && !isSubmitting) &&
-                          <SwitchHorizontalIcon className="h-5 w-5 text-white" aria-hidden="true" />}
+                          <SwitchHorizontalIcon className="h-5 w-5" aria-hidden="true" />}
                         {isSubmitting ?
-                          <SpinIcon className="animate-spin h-5 w-5 text-white" />
+                          <SpinIcon className="animate-spin h-5 w-5" />
                           : null}
                       </span>
                       {displayErrorsOrSubmit(errors)}
@@ -245,53 +242,9 @@ const Swap: FC<SwapProps> = ({ settings }) => {
             )}
           </Formik>
         </CardContainer >
-        <SmallCardContainer className="w-full pt-5">
-          <div className="flex flex-col justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-800">LayerSwap</h1>
-              <p className="md:max-w-lg text-base text-gray-700 mt-2">
-                Save 10x on fees when moving crypto from Coinbase, Binance, Huobi or FTX US to Arbitrum
-              </p>
-              <p className="py-4">
-                <span className="bg-indigo-600 rounded-md py-1 px-2 text-white">New</span> FTX US is now supported.
-              </p>
-
-            </div>
-            <div className="flex items-center">
-              <div className="mt-2 space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row">
-                <a href="https://www.loom.com/share/c853ca7e2ed04fa986e35928e8da015b" target="_blank" className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
-                  <div className="flex flex-row items-center">
-                    <PlayIcon className="w-5 h-5 mr-2" />
-                    <span>Watch Intro Video</span>
-                  </div>
-                </a>
-                <Link key="userGuide" href="/userguide">
-                  <a className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
-                    <div className="flex flex-row items-center">
-                      <BookOpenIcon className="w-5 h-5 mr-2" />
-                      <span>Read User Guide</span>
-                    </div>
-                  </a>
-                </Link>
-                <a href="https://twitter.com/layerswap" target="_blank" className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
-                  <div className="flex flex-row items-center">
-                    <TwitterLogo className="w-5 h-5 mr-2" />
-                    <span>Twitter</span>
-                  </div>
-                </a>
-                <a href="https://discord.com/invite/KhwYN35sHy" target="_blank" className="text-indigo-700 font-semibold hover:underline hover:cursor-pointer">
-                  <div className="flex flex-row items-center">
-                    <DiscordLogo className="w-5 h-5 mr-2" />
-                    <span>Discord</span>
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
-        </SmallCardContainer>
+        <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5" />
       </div>
     </div>
-
   )
 };
 
@@ -308,7 +261,7 @@ function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
 }
 
 function controlDisabledButton(errors: FormikErrors<SwapFormValues>, isSubmitting: boolean): string {
-  let defaultStyles = 'group relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500';
+  let defaultStyles = 'group relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500';
   if (errors.amount != null || errors.destination_address != null || isSubmitting) {
     defaultStyles += ' bg-gray-500 cursor-not-allowed';
   }

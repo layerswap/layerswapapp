@@ -1,4 +1,4 @@
-import { ISelectMenuItem } from "../utils/selectMenuItem";
+import { ISelectMenuItem } from "./selectMenuItem";
 
 export interface SelectMenuProps {
     name: string;

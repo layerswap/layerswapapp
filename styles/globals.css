@@ -18,6 +18,6 @@
 
 @layer base {
   body {
-    @apply bg-blueGray-900;
+    @apply bg-gray-900;
   }
 }
