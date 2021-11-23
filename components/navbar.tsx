@@ -28,9 +28,9 @@ export default function Navbar() {
                                 </a>
                             </Link>
                             <div className="-mr-2 flex items-center md:hidden">
-                                <Popover.Button className="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                                <Popover.Button className="bg-transparent rounded-md p-2 inline-flex items-center justify-center text-gray-200 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
                                     <span className="sr-only">Open main menu</span>
-                                    <MenuIcon className="h-6 w-6" aria-hidden="true" />
+                                    <MenuIcon className="h-8 w-8" aria-hidden="true" />
                                 </Popover.Button>
                             </div>
                         </div>
@@ -60,17 +60,17 @@ export default function Navbar() {
                     focus
                     className="absolute z-10 top-0 inset-x-0 p-2 transition transform origin-top-right md:hidden"
                 >
-                    <div className="rounded-lg shadow-md bg-white ring-1 ring-black ring-opacity-5 overflow-hidden">
+                    <div className="rounded-lg shadow-md bg-gray-800 border-2 border-gray-700 ring-opacity-5 overflow-hidden">
                         <div className="px-5 pt-4 flex items-center justify-between">
                             <div>
                                 <Link href="/" key="Home">
                                     <a>
-                                        <LayerSwapLogo className="h-8 w-auto text-gray-800" />
+                                        <LayerSwapLogoSmall className="h-9 w-auto text-white" />
                                     </a>
                                 </Link>
                             </div>
                             <div className="-mr-2">
-                                <Popover.Button className="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                                <Popover.Button className="rounded-md p-2 inline-flex items-center justify-center text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
                                     <span className="sr-only">Close main menu</span>
                                     <XIcon className="h-6 w-6" aria-hidden="true" />
                                 </Popover.Button>
@@ -81,7 +81,7 @@ export default function Navbar() {
                                 <Link href={item.href} key={item.name}>
                                     <a
                                         key={item.name}
-                                        className={classNames(router.pathname == item.href ? 'text-indigo-500' : 'text-gray-700', 'block px-3 py-2 rounded-md text-base font-medium hover:text-gray-900 hover:bg-gray-50')}
+                                        className={classNames(router.pathname == item.href ? 'text-indigo-400' : 'text-white', 'block px-3 py-2 rounded-md text-base font-medium hover:text-gray-300 hover:bg-gray-700')}
                                     >
                                         {item.name}
                                     </a>
