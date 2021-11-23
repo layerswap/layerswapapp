@@ -247,7 +247,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork }) => {
             )}
           </Formik>
         </CardContainer >
-        <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5" />
+        <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5 pb-16" />
       </div>
     </div>
   )

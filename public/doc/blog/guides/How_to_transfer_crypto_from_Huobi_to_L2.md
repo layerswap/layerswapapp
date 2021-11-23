@@ -2,17 +2,11 @@
 title: How to transfer crypto from Huobi to Arbitrum or Optimism?
 ---
 
-# How to transfer crypto from Huobi to Arbitrum or Optimism?
+## How to transfer crypto from Huobi to Arbitrum or Optimism?
 
-- Go to [layerswap.io](/)
+With [LayerSwap](/), you can bridge crypto from your crypto exchange account directly to the Arbitrum and Optimism networks with low fees. <br />
 
-- Enter the **amount** you want to transfer.
-- Choose the **currency** ETH or USDT.
-- Choose **Huobi** as the exchange you want to transfer from.
-- Enter your wallet **address**.
-- Click Swap now!
-
-You will be redirected to Bransfer to complete your transfer.
+After filling in the **amount** and **asset** you want to send, the source **exchange** and destination **network**, you will be redirected to Bransfer to complete your transfer.
 
 ![Choose an exchange to transfer from](/images/bransfer_choose_exchange.png)
 
@@ -40,4 +34,4 @@ After you do the withdrawal from Huobi, you will receive the amount in your wall
 
 ### How to generate Huobi API keys and connect to Bransfer
 
-<iframe src="https://scribehow.com/embed/Connect_Huobi_account_to_Bransfer__oeMdcTLwTVumobFchGKMJA" width="100%" height="640" allowfullscreen frameborder="0"></iframe>
+<iframe src="https://scribehow.com/embed/Connect_Huobi_account_to_Bransfer__oeMdcTLwTVumobFchGKMJA" width="100%" height="640" allowFullScreen frameBorder="0"></iframe>

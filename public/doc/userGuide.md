@@ -1,12 +1,9 @@
-# How to transfer crypto from Binance, FTX or Coinbase to Arbitrum/Optimism?
+## How to transfer crypto from your exchange account to Arbitrum/Optimism networks?
 
-With LayerSwap, you can send crypto from your crypto exchange account directly to the Arbitrum and Optimism networks with low fees. <br />
-Depending on the exchange the steps differ, so please consult the appropriate guide for each exchange.
+With [LayerSwap](/), you can bridge crypto from your crypto exchange account directly to the Arbitrum and Optimism networks with low fees. <br />
 
-[Coinbase Guide](/blog/guide/How_to_transfer_crypto_from_Coinbase_to_L2) <br />
-[Binance Guide](/blog/guide/How_to_transfer_crypto_from_Binance_to_L2) <br />
-[FTX US Guide](/blog/guide/How_to_transfer_crypto_from_FTX_US_to_L2) <br />
-[Huobi Guide](/blog/guide/How_to_transfer_crypto_from_Huobi_to_L2) <br />
-[KuCoin Guide](/blog/guide/How_to_transfer_crypto_from_KuCoin_to_L2) <br />
-[FTX.COM Guide](/blog/guide/How_to_transfer_crypto_from_FTX_COM_to_L2) <br />
+We support transfers of ETH and USDT from 6 of the biggest crypto exchanges, with more exchanges, assets, and networks added on weekly basis. 
 
+After filling in the **amount** and **asset** you want to send, the source **exchange** and destination **network**, your journey will differ based on the exchange you chose. 
+
+Select your exchange from the list below to continue.
