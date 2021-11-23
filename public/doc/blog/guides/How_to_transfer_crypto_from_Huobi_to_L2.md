@@ -40,4 +40,4 @@ After you do the withdrawal from Huobi, you will receive the amount in your wall
 
 ### How to generate Huobi API keys and connect to Bransfer
 
-<iframe src="https://scribehow.com/embed/Connect_Huobi_account_to_Bransfer__oeMdcTLwTVumobFchGKMJA" width="100%" height="640" allowfullscreen frameborder="0"></iframe>
+<iframe src="https://scribehow.com/embed/Connect_Huobi_account_to_Bransfer__oeMdcTLwTVumobFchGKMJA" width="100%" height="640" allowFullScreen frameBorder="0"></iframe>

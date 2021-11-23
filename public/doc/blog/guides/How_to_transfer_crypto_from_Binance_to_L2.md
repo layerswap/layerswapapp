@@ -40,4 +40,4 @@ After you do the withdrawal from Binance, you will receive the amount in your wa
 
 ### How to generate Binance API keys and connect to Bransfer
 
-<iframe src="https://scribehow.com/embed/Connect_Binance_account_to_Bransfer__pHbAxs8RR1i6pqrHROnz3Q" width="100%" height="640" allowfullscreen frameborder="0"></iframe>
+<iframe src="https://scribehow.com/embed/Connect_Binance_account_to_Bransfer__pHbAxs8RR1i6pqrHROnz3Q" width="100%" height="640" allowFullScreen frameBorder="0"></iframe>
