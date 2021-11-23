@@ -125,7 +125,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
               </div>
             </div>
           </CardContainer>
-          <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5" />
+          <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5 pb-16" />
         </div>
       </div>
     </Layout>
