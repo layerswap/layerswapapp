@@ -23,7 +23,7 @@ export default function Navbar() {
                             <Link href="/" key="Home">
                                 <a>
                                     <span className="sr-only">LayerSwap</span>
-                                    <LayerSwapLogo className="h-11 md:h-12 w-auto text-white" />
+                                    <LayerSwapLogo className="h-11 w-auto text-white" />
                                 </a>
                             </Link>
                             <div className="-mr-2 flex items-center md:hidden">
