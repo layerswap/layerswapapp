@@ -1,6 +1,6 @@
 # How to transfer crypto from Binance, FTX or Coinbase to Arbitrum/Optimism?
 
-With LayerSwap, you can send crypto from your crypto exchange account directly to the Arbitrum network with low fees. <br />
+With LayerSwap, you can send crypto from your crypto exchange account directly to the Arbitrum and Optimism networks with low fees. <br />
 Depending on the exchange the steps differ, so please consult the appropriate guide for each exchange.
 
 [Coinbase Guide](/blog/guide/How_to_transfer_crypto_from_Coinbase_to_L2) <br />
