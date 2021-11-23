@@ -3,16 +3,21 @@ import Layout from '../components/layout'
 import slug from 'rehype-slug'
 import fs from 'fs'
 import path from 'path'
-import Image from 'next/dist/client/image'
 import { serialize } from "next-mdx-remote/serialize";
 import imageSize from "rehype-img-size";
 import React from 'react'
 import { MDXRemote } from 'next-mdx-remote'
+import Link from 'next/link'
 
 const componentOverrides = {
     img: (props) => (
         <img {...props}></img>
     ),
+    a: (props) => (
+        <Link {...props}>
+            <a {...props} />
+        </Link>
+    )
 };
 
 export default function UserGuide(props) {

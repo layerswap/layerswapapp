@@ -14,7 +14,13 @@ function IntroCard(props) {
                         Save 10x on fees when moving crypto from Coinbase, Binance, Huobi or FTX US to Arbitrum
                     </p>
                     <p className="py-4">
-                        <span className="bg-indigo-600 rounded-md py-1 px-2">New</span> FTX US is now supported.
+                        <span className="bg-indigo-600 text-sm mr-1 rounded-md py-1 px-2">New</span> 
+                        <span className="md:hidden">
+                            Optimism, KuCoin and FTX.COM.
+                        </span>
+                        <span className="hidden md:inline">
+                            Optimism is now supported, along with KuCoin and FTX.COM.
+                        </span>
                     </p>
 
                 </div>

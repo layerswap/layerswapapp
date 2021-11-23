@@ -61,7 +61,7 @@ function joinClassNames(...classes: string[]) {
 }
 
 function styleOption(active: boolean, disabled: boolean) {
-    let classNames = 'cursor-default select-none relative py-2 m-1.5 rounded-md px-3 pr-9 group';
+    let classNames = 'cursor-pointer select-none relative py-2 m-1.5 rounded-md px-3 pr-9 group';
     if (disabled) {
         return 'bg-gray-900 cursor-not-allowed ' + classNames;
     }
