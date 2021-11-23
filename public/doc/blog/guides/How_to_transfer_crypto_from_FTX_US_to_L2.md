@@ -2,17 +2,11 @@
 title: How to transfer crypto from FTX US to Arbitrum or Optimism?
 ---
 
-# How to transfer crypto from FTX US to Arbitrum or Optimism?
+## How to transfer crypto from FTX US to Arbitrum or Optimism?
 
-- Go to [layerswap.io](/)
+With [LayerSwap](/), you can bridge crypto from your crypto exchange account directly to the Arbitrum and Optimism networks with low fees. <br />
 
-- Enter the **amount** you want to transfer.
-- Choose the **currency** ETH or USDT.
-- Choose **FTX US** as the exchange you want to transfer from.
-- Enter your wallet **address**.
-- Click Swap now!
-
-You will be redirected to Bransfer to complete your transfer.
+After filling in the **amount** and **asset** you want to send, the source **exchange** and destination **network**, you will be redirected to Bransfer to complete your transfer.
 
 ![Choose an exchange to transfer from](/images/bransfer_choose_exchange.png)
 

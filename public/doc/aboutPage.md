@@ -1,4 +1,4 @@
-# About LayerSwap
+## About LayerSwap
 
 > With LayerSwap, you can send crypto from your crypto exchange account directly to Layer 2 networks such as Arbitrum or Optimism without paying high Gas fees.
 
