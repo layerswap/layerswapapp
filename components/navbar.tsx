@@ -23,8 +23,7 @@ export default function Navbar() {
                             <Link href="/" key="Home">
                                 <a>
                                     <span className="sr-only">LayerSwap</span>
-                                    <LayerSwapLogo className="h-12 w-auto text-white hidden md:inline" />
-                                    <LayerSwapLogoSmall className="h-12 w-auto text-white inline md:hidden" />
+                                    <LayerSwapLogo className="h-10 md:h-12 w-auto text-white" />
                                 </a>
                             </Link>
                             <div className="-mr-2 flex items-center md:hidden">
@@ -65,7 +64,7 @@ export default function Navbar() {
                             <div>
                                 <Link href="/" key="Home">
                                     <a>
-                                        <LayerSwapLogoSmall className="h-9 w-auto text-white" />
+                                        <LayerSwapLogo className="h-9 w-auto text-white" />
                                     </a>
                                 </Link>
                             </div>
