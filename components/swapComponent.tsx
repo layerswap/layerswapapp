@@ -33,6 +33,7 @@ interface SwapApiResponse {
 
 interface SwapProps {
   settings: LayerSwapSettings;
+  destNetwork?: string;
 }
 
 const CurrenciesField = (props) => {
@@ -48,8 +49,9 @@ const CurrenciesField = (props) => {
   </>)
 };
 
-const Swap: FC<SwapProps> = ({ settings }) => {
-  const router = useRouter()
+const Swap: FC<SwapProps> = ({ settings, destNetwork }) => {
+  const router = useRouter();
+
   let availableCurrencies = settings.currencies
     .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
@@ -60,7 +62,10 @@ const Swap: FC<SwapProps> = ({ settings }) => {
     .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
 
-  const initialNetwork = availableNetworks.find(x => x.isEnabled && x.isDefault);
+  let initialNetwork =
+    availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase())
+    ?? availableNetworks.find(x => x.isEnabled && x.isDefault);
+
   const initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
   const initialCurrency = availableCurrencies.find(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled && x.isDefault);
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: "", currency: initialCurrency, exchange: initialExchange };

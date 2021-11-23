@@ -1,20 +1,26 @@
 import Swap from '../components/swapComponent'
 import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
-import { InferGetStaticPropsType } from 'next'
+import { InferGetServerSidePropsType } from 'next'
 
-export default function Home({ data }: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function Home({ data, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
     <Layout>
       <main>
-        <Swap settings={data} />
+        <Swap settings={data} destNetwork={query.destNetwork} />
       </main>
 
     </Layout>
   )
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps(context) {
+  context.res.setHeader(
+    'Cache-Control',
+    's-maxage=60, stale-while-revalidate'
+  );
+
+  var query = context.query;
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
 
@@ -25,7 +31,6 @@ export async function getStaticProps() {
   }
 
   return {
-    props: { data },
-    revalidate: 1 * 60, // In seconds
+    props: { data, query },
   }
 }
