@@ -11,15 +11,15 @@ function IntroCard(props) {
                 <div>
                     <h1 className="text-2xl font-semibold">LayerSwap</h1>
                     <p className="md:max-w-lg text-base text-gray-100 mt-2">
-                        Save 10x on fees when moving crypto from Coinbase, Binance, Huobi or FTX US to Arbitrum and Optimism
+                        Save 10x on fees when moving crypto from Coinbase, Binance, Huobi or FTX to Arbitrum, Optimism, Boba and Ronin.
                     </p>
                     <p className="py-4">
                         <span className="bg-indigo-600 text-sm mr-1 rounded-md py-1 px-2">New</span> 
                         <span className="md:hidden">
-                            Optimism, KuCoin and FTX.COM.
+                            Optimism, Boba and Ronin!
                         </span>
                         <span className="hidden md:inline">
-                            Optimism is now supported, along with KuCoin and FTX.COM.
+                            Optimism, Boba and Ronin (Axie Infinity) supported.
                         </span>
                     </p>
 

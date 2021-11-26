@@ -1,6 +1,7 @@
 ## About LayerSwap
 
-> With LayerSwap, you can send crypto from your crypto exchange account directly to Layer 2 networks such as Arbitrum or Optimism without paying high Gas fees.
+> With LayerSwap, you can send crypto from your crypto exchange account directly to Layer 2 networks without paying high Gas fees. 
+> Supported networks include Arbitrum, Optimism, Boba and Ronin(Axie Infinity).
 
 ### How does it work?
 Internal transactions between exchange accounts are free and instant. LayerSwap uses [Bransfer](https://bransfer.io) to receive crypto from your exchange account into the LayerSwap exchange account. 
@@ -11,7 +12,7 @@ When we detect the exchange transaction, we send the equal amount from the L2 li
 Bransfer makes it easy and safe for people to connect their crypto exchange accounts to apps and services.
 
 ### How much does it cost?
-If you want to transfer 100$ worth of crypto from the crypto exchange to the Arbitrum or Optimism networks, you have to pay ~70$ gas fees - one to send from the crypto exchange to your wallet and another for swapping it through the bridge. See [https://etherscan.io/gastracker](https://etherscan.io/gastracker).
+If you want to transfer 100$ worth of crypto from the crypto exchange to layer 2 networks, you have to pay ~70$ gas fees - one to send from the crypto exchange to your wallet and another for swapping it through the bridge. See [https://etherscan.io/gastracker](https://etherscan.io/gastracker).
 
 With LayerSwap, you just pay $15.
 
