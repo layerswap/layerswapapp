@@ -19,7 +19,7 @@ function IntroCard(props) {
                             Optimism, Boba and Ronin!
                         </span>
                         <span className="hidden md:inline">
-                            Optimism, Boba and Ronin (Axie Infinity) supported.
+                            Optimism, Boba and Ronin(Axie Infinity) are supported.
                         </span>
                     </p>
 
