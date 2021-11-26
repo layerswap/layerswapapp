@@ -1,6 +1,19 @@
 import { keccak256 } from "js-sha3";
+import { CryptoNetwork } from "../Models/CryptoNetwork";
 
-export function isValidEtherAddress(address: string): boolean {
+export function isValidAddress(address: string, network: CryptoNetwork): boolean {
+    if (network.code.toLowerCase() === "RONIN_MAINNET".toLowerCase()) {
+        if (address.startsWith("ronin:")) {
+            return isValidEtherAddress(address.replace("ronin:", "0x"));
+        }
+        return false;
+    }
+    else {
+        return isValidEtherAddress(address);
+    }
+}
+
+function isValidEtherAddress(address: string): boolean {
     if (!/^(0x)?[0-9a-f]{40}$/i.test(address)) {
         // check if it has the basic requirements of an address
         return false;

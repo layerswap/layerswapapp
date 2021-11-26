@@ -9,7 +9,7 @@ import CardContainer from './cardContainer';
 import InsetSelectMenu from './selectMenu/insetSelectMenu';
 import { SwitchHorizontalIcon } from '@heroicons/react/outline';
 import SpinIcon from './icons/spinIcon';
-import { isValidEtherAddress } from '../lib/etherAddressValidator';
+import { isValidAddress } from '../lib/etherAddressValidator';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import { Currency } from '../Models/Currency';
 import { Exchange } from '../Models/Exchange';
@@ -99,7 +99,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork }) => {
               if (!values.destination_address) {
                 errors.destination_address = "Enter a destination address"
               }
-              else if (!isValidEtherAddress(values.destination_address)) {
+              else if (!isValidAddress(values.destination_address, values.network.baseObject)) {
                 errors.destination_address = "Enter a valid destination address"
               }
 
