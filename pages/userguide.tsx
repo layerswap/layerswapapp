@@ -52,6 +52,11 @@ const exchanges = [
         imageSrc: '/logos/medium/ftxcom.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_FTX_COM_to_L2',
     },
+    {
+        name: 'Okex',
+        imageSrc: '/logos/medium/okex.png',
+        guideUrl: '/blog/guide/How_to_transfer_crypto_from_Okex_to_L2',
+    },
 ]
 
 export default function UserGuide(props) {
