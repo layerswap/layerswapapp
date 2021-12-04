@@ -11,15 +11,15 @@ function IntroCard(props) {
                 <div>
                     <h1 className="text-2xl font-semibold">LayerSwap</h1>
                     <p className="md:max-w-lg text-base text-gray-100 mt-2">
-                        Save 10x on fees when moving crypto from Coinbase, Binance, Huobi or FTX to Arbitrum, Optimism, Boba and Ronin.
+                        Save 10x on fees when moving crypto from Coinbase, Binance, Huobi, OKEx or FTX to Arbitrum, Optimism, Boba and Ronin.
                     </p>
                     <p className="py-4">
                         <span className="bg-indigo-600 text-sm mr-1 rounded-md py-1 px-2">New</span> 
                         <span className="md:hidden">
-                            Optimism, Boba and Ronin!
+                            OKEx, Boba and Ronin!
                         </span>
                         <span className="hidden md:inline">
-                            Optimism, Boba and Ronin(Axie Infinity) are supported.
+                            OKEx exchange, Boba and Ronin(Axie Infinity) are supported.
                         </span>
                     </p>
 
