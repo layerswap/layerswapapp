@@ -1,4 +1,4 @@
-## How to transfer crypto from your exchange account to Arbitrum/Optimism networks?
+## How to transfer crypto from your exchange account to Arbitrum, Optimism or zkSync networks?
 
 With [LayerSwap](/), you can bridge crypto from your crypto exchange account directly to the Arbitrum and Optimism networks with low fees. <br />
 

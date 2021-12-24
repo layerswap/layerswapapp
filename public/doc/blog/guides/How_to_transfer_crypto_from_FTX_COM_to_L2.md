@@ -2,7 +2,7 @@
 title: How to transfer crypto from Ftx.com to Arbitrum or Optimism?
 ---
 
-## How to transfer crypto from Ftx.com to Arbitrum or Optimism?
+## How to transfer crypto from Ftx.com to Arbitrum, Optimism or zkSync?
 
 With [LayerSwap](/), you can bridge crypto from your crypto exchange account directly to the Arbitrum and Optimism networks with low fees. <br />
 
