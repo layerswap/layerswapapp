@@ -16,10 +16,10 @@ function IntroCard(props) {
                     <p className="py-4">
                         <span className="bg-indigo-600 text-sm mr-1 rounded-md py-1 px-2">New</span> 
                         <span className="md:hidden">
-                            zkSync!
+                            Polygon!
                         </span>
                         <span className="hidden md:inline">
-                            zkSync is supported! <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1474050582092652551">Join the discussion</a>
+                            Polygon is now supported!
                         </span>
                     </p>
 
