@@ -24,7 +24,7 @@ enum SwapPageStatus {
   NotFound
 }
 
-const _maxRevalidateCount = 8;
+const _maxRevalidateCount = 18;
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
@@ -82,7 +82,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
         revalidateTimeoutId.current = setTimeout(function () {
           mutate();
           revalidateCount.current++;
-        }.bind(this), 5000);
+        }.bind(this), revalidateCount.current * 5000);
       }
     }
   }
