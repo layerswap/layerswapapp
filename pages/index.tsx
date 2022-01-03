@@ -31,7 +31,9 @@ export async function getServerSideProps(context) {
     });
   }
   else {
-    result = data.networks;
+    data.networks.forEach((element, index) => {
+      if (!element.is_test_net || element.id == "7c5f190c-06d9-4ce3-bf51-4ee4cf907d28") result.push(element);
+    });
   }
 
   data.networks = result;
