@@ -1,7 +1,7 @@
 ## About LayerSwap
 
 > With LayerSwap, you can send crypto from your crypto exchange account directly to Layer 2 networks without paying high Gas fees. 
-> Supported networks include Arbitrum, Optimism, zkSync, Boba and Ronin(Axie Infinity).
+> Supported networks include Arbitrum, Optimism, zkSync, Polygon and Ronin(Axie Infinity).
 
 ### How does it work?
 Internal transactions between exchange accounts are free and instant. LayerSwap uses [Bransfer](https://bransfer.io) to receive crypto from your exchange account into the LayerSwap exchange account. 
