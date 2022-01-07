@@ -16,10 +16,10 @@ function IntroCard(props) {
                     <p className="py-4">
                         <span className="bg-indigo-600 text-sm mr-1 rounded-md py-1 px-2">New</span> 
                         <span className="md:hidden">
-                            Polygon!
+                            Loopring!
                         </span>
                         <span className="hidden md:inline">
-                            Polygon is now supported!
+                            Loopring is now supported!
                         </span>
                     </p>
 

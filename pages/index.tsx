@@ -32,7 +32,7 @@ export async function getServerSideProps(context) {
   }
   else {
     data.networks.forEach((element, index) => {
-      if (!element.is_test_net || element.id == "7c5f190c-06d9-4ce3-bf51-4ee4cf907d28") result.push(element);
+      if (!element.is_test_net || element.id == "7569e39c-78fa-4ff3-a618-30b3e4a88589") result.push(element);
     });
   }
 
