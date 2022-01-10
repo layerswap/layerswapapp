@@ -36,7 +36,7 @@ let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values }): JSX.Element =>
                                     </div>
                                     <div className={joinClassNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
                                         <div className={disabled ? 'inline group-hover:hidden' : null}>{item.name}</div>
-                                        <div className={disabled ? 'hidden group-hover:inline' : 'hidden'}>Soon..</div>
+                                        <div className={disabled ? 'hidden group-hover:inline' : 'hidden'}>Disabled</div>
                                     </div>
                                 </div>
 
