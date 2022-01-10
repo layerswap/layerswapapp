@@ -55,7 +55,6 @@ const CurrenciesField = (props) => {
 const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork }) => {
   const router = useRouter();
 
-
   let availableCurrencies = settings.currencies
     .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
@@ -65,7 +64,6 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   const availableNetworks = settings.networks
     .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
-
 
 
   let initialNetwork =
@@ -201,7 +199,8 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                               name="destination_address"
                               id="destination_address"
                               disabled={initialAddress != '' && lockAddress}
-                              className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate"
+                              className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate
+                               disabled:bg-gray-600 disabled:opacity-50"
                             />
                           )}
                         </Field>
