@@ -19,7 +19,7 @@ function IntroCard(props) {
                             Loopring!
                         </span>
                         <span className="hidden md:inline">
-                            Loopring is now supported!
+                            Loopring is now supported! <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1480921959252774918">Join the discussion</a>
                         </span>
                     </p>
                 </div>
