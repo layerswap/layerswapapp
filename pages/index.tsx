@@ -31,9 +31,7 @@ export async function getServerSideProps(context) {
     });
   }
   else {
-    data.networks.forEach((element, index) => {
-      if (!element.is_test_net || element.id == "7569e39c-78fa-4ff3-a618-30b3e4a88589") result.push(element);
-    });
+    result = data.networks;
   }
 
   data.networks = result;
