@@ -22,7 +22,6 @@ function IntroCard(props) {
                             Loopring is now supported!
                         </span>
                     </p>
-
                 </div>
                 <div className="flex items-center">
                     <div className="mt-2 space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row">
