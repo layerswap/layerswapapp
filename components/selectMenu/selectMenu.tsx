@@ -12,7 +12,7 @@ let SelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue, lab
     }, [name, selected, setFieldValue]);
     return (
         <Listbox disabled={disabled} value={selected} onChange={setSelected}>
-            <Listbox.Label className="block text-sm font-medium text-white">{label}</Listbox.Label>
+            <Listbox.Label className="block text-base font-medium text-white">{label}</Listbox.Label>
             <div className="mt-1 relative">
                 <Listbox.Button className="focus:ring-indigo-500 focus:border-indigo-500 w-full pl-3 pr-10 py-2 bg-gray-800 border-gray-600 border focus:ring-1 font-semibold rounded-md">
                     <SelectMenuButtonContent value={selected} />

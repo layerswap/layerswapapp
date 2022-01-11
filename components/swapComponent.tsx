@@ -17,6 +17,7 @@ import GetLogoByProjectName from '../lib/logoPathResolver';
 import { SelectMenuItem } from './selectMenu/selectMenuItem';
 import SelectMenu from './selectMenu/selectMenu';
 import IntroCard from './introCard';
+import Image from 'next/image'
 
 interface SwapFormValues {
   amount: string;
@@ -37,6 +38,7 @@ interface SwapProps {
   destAddress?: string;
   lockAddress?: boolean;
   lockNetwork?: boolean;
+  addressSource?: string;
 }
 
 const CurrenciesField = (props) => {
@@ -52,7 +54,7 @@ const CurrenciesField = (props) => {
   </>)
 };
 
-const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork }) => {
+const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork, addressSource }) => {
   const router = useRouter();
 
   let availableCurrencies = settings.currencies
@@ -66,6 +68,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
 
 
+  let isArgentSource = addressSource && addressSource == "argent";
   let initialNetwork =
     availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase())
     ?? availableNetworks.find(x => x.isEnabled && x.isDefault);
@@ -149,7 +152,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                             <label htmlFor="amount" className="block text-base font-medium">
                               Send
                             </label>
-                            <div className="relative rounded-md shadow-sm">
+                            <div className="relative rounded-md shadow-sm mt-1">
                               <input
                                 {...field}
                                 pattern="^[0-9]*[.,]?[0-9]*$"
@@ -185,10 +188,15 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                   </div>
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
-                      <label className="block font-medium">
-                        To
+                      <label className="block font-medium text-base">
+                        To  {isArgentSource && "your Argent wallet"}
                       </label>
-                      <div className="relative rounded-md shadow-sm">
+                      <div className="relative rounded-md shadow-sm mt-1">
+                        {isArgentSource &&
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Image className='rounded-md object-contain' src="/logos/argent_wallet.png" width="24" height="24"></Image>
+                          </div>
+                        }
                         <Field name="destination_address">
                           {({ field }) => (
                             <input
@@ -199,8 +207,8 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                               name="destination_address"
                               id="destination_address"
                               disabled={initialAddress != '' && lockAddress}
-                              className="focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate
-                               disabled:bg-gray-600 disabled:opacity-50"
+                              className="pl-11 focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate
+                               disabled:bg-gray-600"
                             />
                           )}
                         </Field>
@@ -215,7 +223,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                     <label className="block font-medium text-center">
                       Fee
                     </label>
-                    <span className="text-base font-medium text-center">
+                    <span className="text-base font-medium text-center text-gray-400">
                       {(() => calculateFee(values).toFixed(values.currency.baseObject.precision))()}
                       <span>  {values.currency.name} </span>
                     </span>

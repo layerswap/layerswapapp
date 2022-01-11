@@ -8,7 +8,7 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
   return (
     <Layout>
       <main>
-        <Swap settings={data} destNetwork={query.destNetwork} destAddress={query.destAddress} lockAddress={query.lockAddress} lockNetwork={query.lockNetwork} />
+        <Swap settings={data} destNetwork={query.destNetwork} destAddress={query.destAddress} lockAddress={query.lockAddress} lockNetwork={query.lockNetwork} addressSource={query.addressSource} />
       </main>
 
     </Layout>
