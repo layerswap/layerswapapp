@@ -86,7 +86,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, currency: initialCurrency, exchange: initialExchange };
   return (
     <div className="flex justify-center text-white">
-      <div className="flex flex-col justify-center justify-items-center pt-10 px-2">
+      <div className="flex flex-col justify-center justify-items-center px-2">
         <CardContainer className="container mx-auto sm:px-6 lg:px-8 max-w-3xl">
           <Formik
             initialValues={initialValues}
@@ -207,8 +207,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                               name="destination_address"
                               id="destination_address"
                               disabled={initialAddress != '' && lockAddress}
-                              className="pl-11 focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate
-                               disabled:bg-gray-600"
+                              className={joinClassNames(isArgentSource ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
                             />
                           )}
                         </Field>
@@ -269,7 +268,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
             )}
           </Formik>
         </CardContainer >
-        <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5 pb-16" />
+        <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5" />
       </div>
     </div>
   )
@@ -285,6 +284,10 @@ function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
   else {
     return "Swap now";
   }
+}
+
+function joinClassNames(...classes: string[]) {
+  return classes.filter(Boolean).join(' ')
 }
 
 function controlDisabledButton(errors: FormikErrors<SwapFormValues>, isSubmitting: boolean): string {

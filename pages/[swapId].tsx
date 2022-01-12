@@ -90,7 +90,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
   return (
     <Layout>
       <div className="flex justify-center text-white">
-        <div className="flex flex-col justify-center justify-items-center pt-10 px-2">
+        <div className="flex flex-col justify-center justify-items-center px-2">
           <CardContainer className="container mx-auto sm:px-6 lg:px-8 max-w-3xl">
             <div className="py-2 md:px-10">
               <div className="justify-center flex">
@@ -125,7 +125,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
               </div>
             </div>
           </CardContainer>
-          <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5 pb-16" />
+          <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5" />
         </div>
       </div>
     </Layout>
