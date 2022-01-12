@@ -10,18 +10,17 @@ function IntroCard(props) {
                 <div>
                     <h1 className="text-xl font-semibold">LayerSwap</h1>
                     <p className="md:max-w-lg text-base text-gray-100 mt-2">
-                        Save 10x on fees when moving crypto from Coinbase, Binance or FTX to Arbitrum, zkSync and other L2s.
+                        Save 10x on fees when moving crypto from Coinbase, Binance or FTX to Arbitrum, zkSync, Loopring and other L2s.
                     </p>
                     <p className="py-4">
                         <span className="bg-indigo-600 text-sm mr-1 rounded-md py-1 px-2">New</span> 
                         <span className="md:hidden">
-                            Polygon!
+                            Loopring!
                         </span>
                         <span className="hidden md:inline">
-                            Polygon is supported! <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1479490566236905484?s=20">Join the discussion</a>
+                            Loopring is now supported! <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1480921959252774918">Join the discussion</a>
                         </span>
                     </p>
-
                 </div>
                 <div className="flex items-center">
                     <div className="mt-2 space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row">
