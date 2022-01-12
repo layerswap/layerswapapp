@@ -2,26 +2,26 @@
 title: Global Terms of Service
 ---
 
-# Global Terms of Service
+## Global Terms of Service
 
-# LayerSwap **- who we are**
+### LayerSwap **- who we are**
 
 1. This LayerSwap application ('LayerSwap Application’) is offered to you by Bransfer, Inc.
 2. Bransfer, Inc., LayerSwap shall be jointly referred to as 'LayerSwap'.
 3. Liquidity Provider - our individual partners who provide liquidity in exchanges and chains.
 4. For more information on LayerSwap, please see our website: https://layerswap.io/
 
-# **The roles in the process**
+### **The roles in the process**
 
 1. LayerSwap acts as SaaS for matching users swaping digital assets across crypto exchanges and different chains.
 2. Users swap digital assets through LayerSwap Application from Liquidity Providers.
 
-# **Registration and logging in**
+### **Registration and logging in**
 
 1. Registration and logging into LayerSwap Application is possible via the following website: https://connect.bransfer.io/.
 2. In order for the User to register or log in to LayerSwap Application, such a User needs to provide an only email address and password.
 
-# LayerSwap **Application – service description**
+### LayerSwap **Application – service description**
 
 1. LayerSwap Application allows its Users to initiate P2P exchanges of digital assets between different chains and different exchanges.
 2. In order to request a transaction User must use LayerSwap Application and:
@@ -37,17 +37,17 @@ title: Global Terms of Service
 12. LayerSwap Application and the services that we provide under it are digital in nature. Therefore, both the features and the risks connected to digital businesses will apply accordingly to LayerSwap Application and its users. This means, in particular, that certain software and hardware qualities may be required in order to properly sign in to and use LayerSwap Application; and
 13. Blockchain transactions are irreversible, and any information stored in blockchain will remain there, with no possibility of deleting or withdrawing it. Your blockchain address and certain data will be displayed permanently and publicly. You agree to relinquish any right of rectification or to the erasure of personal data, which is not possible on the blockchain.
 
-# **No advice**
+### **No advice**
 
 1. The information provided on LayerSwap Application does not constitute any sort of advice, and you should not treat any of the site’s content as such.
 2. LayerSwap is not directly affiliated with or responsible for any cryptocurrency, token, or other digital asset and cannot be held liable with respect to either the price or features of such assets or your losses of them. Exchanging digital assets may involve risk. Do conduct your own due diligence and consult your financial advisor before making any decisions.
 
-# **Intellectual property**
+### **Intellectual property**
 
 1. You are not allowed to copy any part of LayerSwap Application or its code without LayerSwap’s prior explicit consent.
 2. No intellectual property rights to LayerSwap Application are transferred to User. No license is granted to User. The User is entitled to use LayerSwap Application only for the purpose of initiating transactions that may be carried out through LayerSwap Application.
 
-# **Fees and Expenses**
+### **Fees and Expenses**
 
 1. Fees
 2. LayerSwap Application may involve several types of fees paid by its users:
@@ -56,7 +56,7 @@ title: Global Terms of Service
 5. network fee;
 6. Certain transaction fees may be charged by other service providers, including your exchange service.
 
-# **Restrictions and User warranties**
+### **Restrictions and User warranties**
 
 1. LayerSwap Application may not be used by certain categories of people or entities as per the below.
 2. By accessing our application, you confirm the following:
@@ -67,7 +67,7 @@ title: Global Terms of Service
 7. you are over 18 years old.
 8. You are prohibited from interacting with LayerSwap Application in cases where your jurisdiction disallows our exclusions of liability or applies mandatory laws overriding the Global Terms of Service or any of its provisions. You are responsible for compliance with all of the applicable laws, regulations applicable to you.
 
-# **Functionality, compatibility and technical protection**
+### **Functionality, compatibility and technical protection**
 
 1. LayerSwap Application operates on the latest 3 versions of desktop Chrome, Firefox , and Opera.
 2. In order to properly sign in to and use LayerSwap Application, the system used by User must be properly supported by the browser on which LayerSwap Application operates.
@@ -75,14 +75,14 @@ title: Global Terms of Service
 4. LayerSwap intends to develop the list of digital assets supported by LayerSwap Application. All available assets will be displayed to you once you visit LayerSwap Application. LayerSwap cannot, however, guarantee availability of each digital asset in every jurisdiction nor liquidity of each and all digital assets at all times. LayerSwap reserves the right to shape the digital assets catalogue in LayerSwap Application at its own discretion.
 5. In extreme cases (e.g. suspicion of fraud or whenever we are required to do so by law), we may suspend access to LayerSwap Application with respect to particular crypto asset addresses, exchange account or a particular person.
 
-# **Security**
+### **Security**
 
 1. We use industry-standard encryption methods to ensure the security of your data in accordance with applicable laws and regulations, but we cannot guarantee the full security of any data transmitted to exchanges services providers or LayerSwap. We take reasonable precautions to ensure that your data is not lost, misused, accessed, disclosed, altered or destroyed.
 2. You are solely responsible for safekeeping your wallet and private information, including your private key, and you recognise and agree to use LayerSwap Application at your own risk.
 3. LayerSwap Application will never ask you to provide your exchange account password.
 4. You should ensure that your computer is free from and shall not introduce into the LayerSwap Application any malicious software. Prior to using our application, you are required to install up-to-date, industry-standard and comprehensive anti-virus software to seek to prevent the introduction of any malicious software into LayerSwap Application.
 
-# **Updates and Amendments**
+### **Updates and Amendments**
 
 1. The Global Terms of Service may be regularly reviewed and updated as required. Each document comprising the Global Terms of Service will include information on when it was last reviewed. Please observe what version of the Global Terms of Service applies to you before you enter into any transaction using LayerSwap Application.
 2. We may, without prior notice and liability, and for any reason:
@@ -91,27 +91,27 @@ title: Global Terms of Service
 5. create usage limits for LayerSwap Application; or
 6. permanently or temporarily terminate or suspend your access to LayerSwap Application.
 
-# **Liability**
+### **Liability**
 
 1. LayerSwap shall not be liable in any way to you or to any other person for the truthfulness, completeness, reliability and accuracy of account information or any other information or data it receives from third parties, including you and your exchange service providers. We shall not be required to make any investigation into and shall be entitled in good faith without incurring any liability to assume (without requesting evidence thereof) the validity, authenticity and veracity of any information, declarations or notices received with respect to providing services under LayerSwap Application. In this respect, we fully rely on the data providers involved and are not obliged to independently verify the information we receive.
 2. LAYERSWAP APPLICATION IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH LAYERSWAP APPLICATION OR THE USE OR OTHER DEALINGS IN LAYERSWAP APPLICATION.
 3. Since LayerSwap Application is provided on “as is” basis, we do not guarantee an error-free process. Every effort is made to keep the website up and running smoothly. However, LayerSwap takes no responsibility for, and will not be liable for, the website becoming temporarily unavailable, especially due to technical issues beyond our control. The possibility of performing transactions may be temporarily unavailable in case of liquidity issues for which we take no responsibility. Additionally, we accept no responsibility for and cannot guarantee the reliability of either exchange services that a user chooses in order to use LayerSwap Application.
 
-# **Indemnification**
+### **Indemnification**
 
 1. You will indemnify and hold harmless LayerSwap (including its officers, employees and/or agents) and/or any parties taking part in the transaction against any claims, actions, and/or costs that arise out of or in connection with either you breaching the Global Terms of Service or bearing the costs of any transaction or operation (e.g. cost of ‘network fee’) undertaken under LayerSwap Application, to the fullest extent permitted by law.
 
-# **Severability**
+### **Severability**
 
 1. Without prejudice to any other provision hereof, if one or more provisions hereof is or becomes invalid, illegal or unenforceable for any reason, in any jurisdiction or with respect to any party, such invalidity, illegality or unenforceability in such jurisdiction or with respect to such party or parties shall not, to the fullest extent permitted by applicable law, render invalid, illegal or unenforceable such provision or provisions in any other jurisdiction or with respect to any other party or parties hereto. Such invalid, illegal or unenforceable provisions shall be replaced by the parties with a provision which comes as close as reasonably possible to the commercial intentions of the invalid, illegal or unenforceable provision – in particular, by publishing new Global Terms of Service by LayerSwap.
 2. For the avoidance of doubt and without affecting the generality of the foregoing, it is hereby agreed that any invalidity, illegality or unenforceability of any other document regulating the bilateral rights and obligations of the parties (including the Privacy Policy) or any amendment thereto, in any jurisdiction or with respect to any party or parties, shall not affect the validity, legality or enforceability of the Global Terms of Service in any jurisdiction and with respect to any party.
 
-# **Entire Agreement**
+### **Entire Agreement**
 
 1. Global Terms of Service constitute a complete and exclusive agreement between you and LayerSwap. As of the date of their execution, they supersede and terminate all prior agreements, arrangements, terms, policies and/or understandings between you and LayerSwap in relation to LayerSwap Application, save for other terms of policies (including the Privacy Policy) still in force according to our website and the Global Terms of Service.
 2. In the event of inconsistency or discrepancy between the Global Terms of Service and any other document accompanying it, the Global Terms of Service shall prevail.
 
-# **Termination and suspension of services**
+### **Termination and suspension of services**
 
 1. User can resign from transaction at any moment prior to initiating transfer through exchange, simply by not doing anything. However, if you initiate many transactions and abandon them, we may block the possibility of you initiating transactions in LayerSwap Application.
 2. User is obligated to notify LayerSwap immediately of any unauthorised use of his account, personal data, e-mail address, payment account, or any other breach of security by email to support@layerswap.io. Any User who violates these rules may be terminated and hereafter held liable for losses incurred by LayerSwap or another User.
