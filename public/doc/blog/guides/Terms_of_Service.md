@@ -19,14 +19,14 @@ title: Global Terms of Service
 ### **Registration and logging in**
 
 1. Registration and logging into LayerSwap Application is possible via the following website: https://connect.bransfer.io/.
-2. In order for the User to register or log in to LayerSwap Application, such a User needs to provide an only email address and password.
+2. In order for the User to register or log in to LayerSwap Application, such a User needs to provide only an email address and password.
 
 ### LayerSwap **Application – service description**
 
 1. LayerSwap Application allows its Users to initiate P2P exchanges of digital assets between different chains and different exchanges.
 2. In order to request a transaction User must use LayerSwap Application and:
 3. fill in details required by LayerSwap Application to initiate swap transaction.
-4. accept the fees (you do this by clicking the “Swap no” button on the main screen where transaction details are displayed);
+4. accept the fees (you do this by clicking the “Swap now” button on the main screen where transaction details are displayed);
 5. accept the Global Terms of Service (in some cases a previous act of acceptance may be sufficient, which will be determined by LayerSwap);
 6. LayerSwap is not responsible for any inaccuracy in the data provided by User. User is obliged to check all the information before submitting it to LayerSwap. Blockchain transactions are irreversible and LayerSwap will not be able to reverse any transactions already executed in case User made a mistake in the provided data or instruction.
 7. The digital assets will be sent to the wallet address provided by the User after Liquidity Provider receives the purchase price from the User. The purchase price includes the price for digital assets and all applicable fees as set out in these Global Terms of Service. The time of settlement may differ depending on the exchange and/or chain you use. 
