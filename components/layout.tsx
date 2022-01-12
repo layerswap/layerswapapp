@@ -1,8 +1,7 @@
-import BackgroundRectangle from "./icons/backgroundRectangle"
-import BackgroundCircle from "./icons/backgroundCircle"
 import Navbar from "./navbar"
 import React from "react"
 import Head from "next/head"
+import FooterComponent from "./footerComponent"
 
 type Props = {
   children: JSX.Element | JSX.Element[],
@@ -45,10 +44,11 @@ export default function Layout({ hasSideShapes, children }: Props) {
         <div>
           {children}
         </div>
-        {hasSideShapes && hasSideShapes == true ? <>
+        <FooterComponent />
+        {/* {hasSideShapes && hasSideShapes == true ? <>
           <BackgroundCircle className="md:w-52 md:h-52 lg:h-full lg:w-96 top-32 lg:top-0 -right-40 lg:-right-60 fixed w-0 h-0" />
           <BackgroundRectangle className="md:w-52 md:h-52 lg:h-full lg:w-96 top-64 lg:top-36 -left-40 lg:-left-60 fixed w-0 h-0" />
-        </> : null}
+        </> : null} */}
       </div>
     </main>
   </>)

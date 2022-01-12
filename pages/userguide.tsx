@@ -68,7 +68,7 @@ export default function UserGuide(props) {
             </Head>
             <main>
                 <div className="flex justify-center">
-                    <div className="py-10 lg:py-20 px-8 md:px-0 prose md:prose-xl text-blueGray-300">
+                    <div className="py-4 px-8 md:px-0 prose md:prose-xl text-blueGray-300">
                         <MDXRemote {...props.mdxSource} components={componentOverrides} />
                     </div>
                 </div>

@@ -36,7 +36,7 @@ let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values }): JSX.Element =>
                                     </div>
                                     <div className={joinClassNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
                                         <div className={disabled ? 'inline group-hover:hidden' : null}>{item.name}</div>
-                                        <div className={disabled ? 'hidden group-hover:inline' : 'hidden'}>Soon..</div>
+                                        <div className={disabled ? 'hidden group-hover:inline' : 'hidden'}>Disabled</div>
                                     </div>
                                 </div>
 
@@ -63,7 +63,7 @@ function joinClassNames(...classes: string[]) {
 function styleOption(active: boolean, disabled: boolean) {
     let classNames = 'cursor-pointer select-none relative py-2 m-1.5 rounded-md px-3 pr-9 group';
     if (disabled) {
-        return 'bg-gray-900 cursor-not-allowed ' + classNames;
+        return 'text-gray-400 bg-gray-600 opacity-20 cursor-not-allowed ' + classNames;
     }
     if (active) {
         return 'text-white bg-coolGray-700 ' + classNames;

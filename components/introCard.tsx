@@ -1,5 +1,4 @@
-import TwitterLogo from './icons/twitterLogo';
-import DiscordLogo from './icons/discordLogo';
+import SupportIcon from './icons/supportIcon';
 import Link from 'next/link';
 import { BookOpenIcon, PlayIcon } from '@heroicons/react/outline';
 import CardContainer from './cardContainer';
@@ -9,12 +8,12 @@ function IntroCard(props) {
         <CardContainer {...props}>
             <div className="flex flex-col justify-between md:px-10">
                 <div>
-                    <h1 className="text-2xl font-semibold">LayerSwap</h1>
+                    <h1 className="text-xl font-semibold">LayerSwap</h1>
                     <p className="md:max-w-lg text-base text-gray-100 mt-2">
                         Save 10x on fees when moving crypto from Coinbase, Binance or FTX to Arbitrum, zkSync, Loopring and other L2s.
                     </p>
                     <p className="py-4">
-                        <span className="bg-indigo-600 text-sm mr-1 rounded-md py-1 px-2">New</span> 
+                        <span className="bg-indigo-600 text-sm mr-2 rounded-md py-1 px-2">New</span> 
                         <span className="md:hidden">
                             Loopring!
                         </span>
@@ -39,16 +38,10 @@ function IntroCard(props) {
                                 </div>
                             </a>
                         </Link>
-                        <a href="https://twitter.com/layerswap" target="_blank" className="text-indigo-300 font-semibold hover:underline hover:cursor-pointer">
+                        <a href="https://discord.gg/u54VcqpWhg" target="_blank" className="text-indigo-300 font-semibold hover:underline hover:cursor-pointer">
                             <div className="flex flex-row items-center">
-                                <TwitterLogo className="w-5 h-5 mr-2" />
-                                <span>Twitter</span>
-                            </div>
-                        </a>
-                        <a href="https://discord.com/invite/KhwYN35sHy" target="_blank" className="text-indigo-300 font-semibold hover:underline hover:cursor-pointer">
-                            <div className="flex flex-row items-center">
-                                <DiscordLogo className="w-5 h-5 mr-2" />
-                                <span>Discord</span>
+                                <SupportIcon className="w-5 h-5" />
+                                <span className='ml-2'>Get Support</span>
                             </div>
                         </a>
                     </div>
