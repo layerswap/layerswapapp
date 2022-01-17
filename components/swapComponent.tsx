@@ -239,7 +239,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
                       </div>
                     </div>
-                    <div className="flex flex-col md:w-2/4 w-full">
+                    <div className="flex flex-col md:w-3/5 w-full">
                       <Field name="network" values={availableNetworks} label="In" value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
                     </div>
                   </div>
