@@ -7,9 +7,33 @@ import SelectMenuButtonContent from './selectMenuButtonContent'
 
 let SelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue, label, disabled }) => {
     const [selected, setSelected] = useState(value)
+    const [availableValues, setAvailableValues] = useState(values);
+
+    React.useEffect(() => {
+        if (values.length != availableValues.length) {
+            updateValues();
+        }
+        else {
+            for (var i = 0; i < values.length; i++) {
+                if (values[i].id != availableValues[i].id) {
+                    updateValues();
+                }
+            }
+        }
+    }, [values, availableValues]);
+
+    function updateValues() {
+        setAvailableValues(values);
+        if (!values.some(x => x.id === selected.id)) {
+            var defaultValue = values.filter(x => x.isDefault)[0] ?? values[0];
+            setSelected(defaultValue);
+        }
+    }
+
     React.useEffect(() => {
         name && selected && setFieldValue && setFieldValue(name, selected);
     }, [name, selected, setFieldValue]);
+
     return (
         <Listbox disabled={disabled} value={selected} onChange={setSelected}>
             <Listbox.Label className="block text-base font-medium text-white">{label}</Listbox.Label>
