@@ -75,7 +75,7 @@ const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges }) => {
   })
 
   return (<>
-    <Field name="exchange" values={availableExchanges} label="From" value={exchange} as={SelectMenu} setFieldValue={setFieldValue} />
+    <Field name="exchange" values={filteredExchanges} label="From" value={exchange} as={SelectMenu} setFieldValue={setFieldValue} />
   </>)
 };
 
