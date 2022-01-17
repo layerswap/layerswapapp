@@ -207,7 +207,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                         )}
                       </Field>
                     </div>
-                    <div className="flex flex-col md:w-2/4 w-full">
+                    <div className="flex flex-col md:w-3/5 w-full">
                       <ExchangesField availableExchanges={availableExchanges} />
                     </div>
                   </div>
