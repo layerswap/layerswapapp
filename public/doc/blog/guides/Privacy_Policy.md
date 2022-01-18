@@ -5,16 +5,20 @@ title: Privacy Policy
 ## Privacy Policy
 
 Your privacy is important to us. It is Bransfer's policy to respect your privacy and comply with any applicable law and regulation regarding any personal information we may collect about you, including across our website, https://bransfer.io, and other sites we own and operate.
-This policy is effective as of 15 April 2021 and was last updated on 15 April 2021.
+This policy is effective as of 15 April 2021 and was last updated on 18 January 2022.
 
 ### Information We Collect
 
 Information we collect includes both information you knowingly and actively provide us when using or participating in any of our services and promotions, and any information automatically sent by your devices in the course of accessing our products and services.
 
+### Exchange API Keys
+
+In some cases, we ask for read-only API keys of specific exchanges to handle transactions properly. API keys provide only read-only access to your account. We are obligated to use exchange APIs only to request information necessary for proper product operation. We don't query any extra information. API Keys you provide are not subject to disclosure to any kind of the third party.
+
 ### Log Data
 
-When you visit our website, our servers may automatically log the standard data provided by your web browser. It may include your device’s Internet Protocol (IP) address, your browser type and version, the pages you visit, the time and date of your visit, the time spent on each page, other details about your visit, and technical details that occur in conjunction with any errors you may encounter.
-Please be aware that while this information may not be personally identifying by itself, it may be possible to combine it with other data to personally identify individual persons.
+When you visit our website, our servers may automatically log the standard data provided by your web browser. It may include your browser type and version, the pages you visit, the time and date of your visit, the time spent on each page, other details about your visit, and technical details that occur in conjunction with any errors you may encounter.
+
 
 ### Collection and Use of Information
 
@@ -26,7 +30,9 @@ We may collect personal information from you when you do any of the following on
 
 We may collect, hold, use, and disclose information for the following purposes, and personal information will not be further processed in a manner that is incompatible with these purposes:
 Please be aware that we may combine information we collect about you with general information or research data we receive from other trusted sources.
-Security of Your Personal Information
+
+### Security of Your Personal Information
+
 When we collect and process personal information, and while we retain this information, we will protect it within commercially acceptable means to prevent loss and theft, as well as unauthorized access, disclosure, copying, use, or modification.
 Although we will do our best to protect the personal information you provide to us, we advise that no method of electronic transmission or storage is 100% secure, and no one can guarantee absolute data security. We will comply with laws applicable to us in respect of any data breach.
 You are responsible for selecting any password and its overall security strength, ensuring the security of your own information within the bounds of our services.
@@ -35,7 +41,8 @@ You are responsible for selecting any password and its overall security strength
 
 We keep your personal information only for as long as we need to. This time period may depend on what we are using your information for, in accordance with this privacy policy. If your personal information is no longer required, we will delete it or make it anonymous by removing all details that identify you.
 However, if necessary, we may retain your personal information for our compliance with a legal, accounting, or reporting obligation or for archiving purposes in the public interest, scientific, or historical research purposes, or statistical purposes.
-Children’s Privacy
+
+### Children’s Privacy
 We do not aim any of our products or services directly at children under the age of 13, and we do not knowingly collect personal information about children under 13.
 
 ### Disclosure of Personal Information to Third Parties
@@ -52,7 +59,8 @@ We may disclose personal information to:
 ### International Transfers of Personal Information
 
 The personal information we collect is stored and/or processed where we or our partners, affiliates, and third-party providers maintain facilities. Please be aware that the locations to which we store, process, or transfer your personal information may not have the same data protection laws as the country in which you initially provided the information. If we transfer your personal information to third parties in other countries: (i) we will perform those transfers in accordance with the requirements of applicable law; and (ii) we will protect the transferred personal information in accordance with this privacy policy.
-Your Rights and Controlling Your Personal Information
+
+### Your Rights and Controlling Your Personal Information
 You always retain the right to withhold personal information from us, with the understanding that your experience of our website may be affected. We will not discriminate against you for exercising any of your rights over your personal information. If you do provide us with personal information you understand that we will collect, hold, use and disclose it in accordance with this privacy policy. You retain the right to request details of any personal information we hold about you.
 
 If we receive personal information about you from a third party, we will protect it as set out in this privacy policy. If you are a third party providing personal information about somebody else, you represent and warrant that you have such a person’s consent to provide the personal information to us.
