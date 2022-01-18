@@ -15,6 +15,7 @@ title: Global Terms of Service
 
 1. LayerSwap acts as SaaS for matching users swaping digital assets across crypto exchanges and different chains.
 2. Users swap digital assets through LayerSwap Application from Liquidity Providers.
+3. LayerSwap is not custodian, all assets transfers are done P2P.
 
 ### **Registration and logging in**
 
@@ -23,7 +24,7 @@ title: Global Terms of Service
 
 ### LayerSwap **Application – service description**
 
-1. LayerSwap Application allows its Users to initiate P2P exchanges of digital assets between different chains and different exchanges.
+1. LayerSwap Application allows its Users to initiate P2P transfers of digital assets between different chains and different exchanges.
 2. In order to request a transaction User must use LayerSwap Application and:
 3. fill in details required by LayerSwap Application to initiate swap transaction.
 4. accept the fees (you do this by clicking the “Swap now” button on the main screen where transaction details are displayed);
@@ -49,12 +50,11 @@ title: Global Terms of Service
 
 ### **Fees and Expenses**
 
-1. Fees
-2. LayerSwap Application may involve several types of fees paid by its users:
-3. LayerSwap fee;
-4. third party fee;
-5. network fee;
-6. Certain transaction fees may be charged by other service providers, including your exchange service.
+LayerSwap Application may involve several types of fees paid by its users:
+1. LayerSwap fee;
+2. third party fee;
+3. network fee;
+4. Certain transaction fees may be charged by other service providers, including your exchange service.
 
 ### **Restrictions and User warranties**
 
@@ -69,7 +69,7 @@ title: Global Terms of Service
 
 ### **Functionality, compatibility and technical protection**
 
-1. LayerSwap Application operates on the latest 3 versions of desktop Chrome, Firefox , and Opera.
+1. LayerSwap Application operates on the latest 4 versions of desktop Safari, Chrome, Firefox , and Opera.
 2. In order to properly sign in to and use LayerSwap Application, the system used by User must be properly supported by the browser on which LayerSwap Application operates.
 3. Supported workstations may include any workstation that can properly run the internet browsers supported by LayerSwap Application, save for mobile devices, which may not properly display the current version of our interface.
 4. LayerSwap intends to develop the list of digital assets supported by LayerSwap Application. All available assets will be displayed to you once you visit LayerSwap Application. LayerSwap cannot, however, guarantee availability of each digital asset in every jurisdiction nor liquidity of each and all digital assets at all times. LayerSwap reserves the right to shape the digital assets catalogue in LayerSwap Application at its own discretion.
