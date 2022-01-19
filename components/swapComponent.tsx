@@ -109,6 +109,8 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   const initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
   const initialCurrency = availableCurrencies.find(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled && x.isDefault);
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, currency: initialCurrency, exchange: initialExchange };
+
+
   return (
     <div className="flex justify-center text-white">
       <div className="flex flex-col justify-center justify-items-center px-2">
@@ -117,12 +119,12 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
             initialValues={initialValues}
             validate={values => {
               let errors: FormikErrors<SwapFormValues> = {};
-              let amount = Number(values.amount);
-              if (!values.amount) {
+              let amount = Number(values.amount?.toString()?.replace(",","."));
+              if (!amount) {
                 errors.amount = 'Enter an amount';
               }
               else if (
-                !/^[0-9]*[.,]?[0-9]*$/i.test(values.amount.toString())
+                !/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())
               ) {
                 errors.amount = 'Invalid amount';
               }
@@ -130,10 +132,10 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                 errors.amount = "Can't be negative";
               }
               else if (amount > values.currency.baseObject.max_amount) {
-                errors.amount = `Amount should be less than ${values.currency.baseObject.max_amount}`;
+                errors.amount = `Max amount is ${values.currency.baseObject.max_amount}`;
               }
               else if (amount < values.currency.baseObject.min_amount) {
-                errors.amount = `Amount should be at least ${values.currency.baseObject.min_amount}`;
+                errors.amount = `Min amount is ${values.currency.baseObject.min_amount}`;
               }
 
               if (!values.destination_address) {
@@ -149,7 +151,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
               axios.post<SwapApiResponse>(
                 LayerSwapApiClient.apiBaseEndpoint + "/swaps",
                 {
-                  amount: values.amount,
+                  amount: Number(values.amount?.toString()?.replace(",",".")),
                   currency: values.currency.name,
                   destination_address: values.destination_address,
                   network: values.network.id,
@@ -166,7 +168,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
             }}
           >
-            {({ values, setFieldValue, errors, isSubmitting }) => (
+            {({ values, setFieldValue, errors, isSubmitting,handleChange }) => (
               <Form>
                 <div className="px-0 md:px-6 py-0 md:py-2">
                   <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
@@ -187,16 +189,13 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                                 autoCorrect="off"
                                 min={values.currency.baseObject.min_amount}
                                 max={values.currency.baseObject.max_amount}
-                                type="number"
+                                type="text"
                                 step={1 / Math.pow(10, values.currency.baseObject.decimals)}
                                 name="amount"
                                 id="amount"
                                 className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block bg-gray-800 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
-                                onKeyPress={e => {
-                                  const regex = /^[0-9]*[.,]?[0-9]*$/;
-                                  if (!regex.test(e.key)) {
-                                    return e.preventDefault();
-                                  }
+                                onChange={e=>{
+                                  /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
                                 }}
                               />
                               <div className="absolute inset-y-0 right-0 flex items-center">
@@ -259,7 +258,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                     <span className="text-indigo-300 text-lg font-medium text-center">
                       {(() => {
                         if (values.amount) {
-                          let amount = Number(values.amount);
+                          let amount = Number(values.amount?.toString()?.replace(",","."));
                           let currencyObject = values.currency.baseObject;
                           if (amount >= currencyObject.min_amount) {
                             var fee = calculateFee(values);
@@ -331,7 +330,7 @@ function calculateFee(values: SwapFormValues): number {
   let currencyObject = values.currency.baseObject;
   let exchangeObject = values.exchange.baseObject;
 
-  var exchangeFee = Number(values.amount) * exchangeObject.fee_percentage;
+  var exchangeFee = Number(values.amount?.toString()?.replace(",",".")) * exchangeObject.fee_percentage;
   var overallFee = currencyObject.fee + exchangeFee;
 
   return overallFee;
