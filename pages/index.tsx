@@ -3,6 +3,7 @@ import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
+import { Currency } from '../Models/Currency'
 
 export default function Home({ data, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
@@ -23,17 +24,17 @@ export async function getServerSideProps(context) {
   var query = context.query;
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
-  var result: CryptoNetwork[] = [];
+  var networks: CryptoNetwork[] = [];
   if (process.env.IS_TESTING) {
     data.networks.forEach((element, index) => {
-      if (!element.is_test_net) result.push(element);
+      if (!element.is_test_net) networks.push(element);
     });
   }
   else {
-    result = data.networks;
+    networks = data.networks;
   }
 
-  data.networks = result;
+  data.networks = networks;
 
   return {
     props: { data, query },
