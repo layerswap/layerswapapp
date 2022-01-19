@@ -132,10 +132,10 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                 errors.amount = "Can't be negative";
               }
               else if (amount > values.currency.baseObject.max_amount) {
-                errors.amount = `Amount should be less than ${values.currency.baseObject.max_amount}`;
+                errors.amount = `Max amount is ${values.currency.baseObject.max_amount}`;
               }
               else if (amount < values.currency.baseObject.min_amount) {
-                errors.amount = `Amount should be at least ${values.currency.baseObject.min_amount}`;
+                errors.amount = `Min amount is ${values.currency.baseObject.min_amount}`;
               }
 
               if (!values.destination_address) {
