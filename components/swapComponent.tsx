@@ -1,5 +1,5 @@
 import React from 'react';
-import { Formik, Form, Field, FormikErrors, useFormikContext } from 'formik';
+import { Formik, Form, Field, FormikErrors, useFormikContext, useFormik } from 'formik';
 import { FC } from 'react'
 import axios from 'axios';
 import { useRouter } from 'next/router'
@@ -44,7 +44,7 @@ interface SwapProps {
 const CurrenciesField = (props) => {
   const {
     values: { network, currency },
-    setFieldValue
+    setFieldValue,
   } = useFormikContext<SwapFormValues>();
 
   let availableCurrencies = props.availableCurrencies.filter(x => x.baseObject.network_id == network.baseObject.id);
@@ -109,6 +109,8 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   const initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
   const initialCurrency = availableCurrencies.find(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled && x.isDefault);
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, currency: initialCurrency, exchange: initialExchange };
+
+
   return (
     <div className="flex justify-center text-white">
       <div className="flex flex-col justify-center justify-items-center px-2">
@@ -166,12 +168,12 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
             }}
           >
-            {({ values, setFieldValue, errors, isSubmitting }) => (
+            {({ values, setFieldValue, errors, isSubmitting,handleChange }) => (
               <Form>
                 <div className="px-0 md:px-6 py-0 md:py-2">
                   <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
-                      <Field name="amount">
+                      <Field name="amount" >
                         {({ field }) => (
                           <div>
                             <label htmlFor="amount" className="block text-base font-medium">
@@ -187,16 +189,14 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                                 autoCorrect="off"
                                 min={values.currency.baseObject.min_amount}
                                 max={values.currency.baseObject.max_amount}
-                                type="number"
+                                type="text"
                                 step={1 / Math.pow(10, values.currency.baseObject.decimals)}
                                 name="amount"
                                 id="amount"
+                                inputMode="numeric"
                                 className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block bg-gray-800 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
-                                onKeyPress={e => {
-                                  const regex = /^[0-9]*[.,]?[0-9]*$/;
-                                  if (!regex.test(e.key)) {
-                                    return e.preventDefault();
-                                  }
+                                onChange={e=>{
+                                  /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
                                 }}
                               />
                               <div className="absolute inset-y-0 right-0 flex items-center">
