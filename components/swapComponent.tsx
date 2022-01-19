@@ -1,5 +1,5 @@
 import React from 'react';
-import { Formik, Form, Field, FormikErrors, useFormikContext, useFormik } from 'formik';
+import { Formik, Form, Field, FormikErrors, useFormikContext } from 'formik';
 import { FC } from 'react'
 import axios from 'axios';
 import { useRouter } from 'next/router'
@@ -44,7 +44,7 @@ interface SwapProps {
 const CurrenciesField = (props) => {
   const {
     values: { network, currency },
-    setFieldValue,
+    setFieldValue
   } = useFormikContext<SwapFormValues>();
 
   let availableCurrencies = props.availableCurrencies.filter(x => x.baseObject.network_id == network.baseObject.id);
@@ -173,7 +173,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                 <div className="px-0 md:px-6 py-0 md:py-2">
                   <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
-                      <Field name="amount" >
+                      <Field name="amount">
                         {({ field }) => (
                           <div>
                             <label htmlFor="amount" className="block text-base font-medium">
