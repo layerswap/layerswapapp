@@ -120,11 +120,11 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
             validate={values => {
               let errors: FormikErrors<SwapFormValues> = {};
               let amount = Number(values.amount?.toString()?.replace(",","."));
-              if (!values.amount) {
+              if (!amount) {
                 errors.amount = 'Enter an amount';
               }
               else if (
-                !/^[0-9]*[.,]?[0-9]*$/i.test(values.amount.toString())
+                !/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())
               ) {
                 errors.amount = 'Invalid amount';
               }
@@ -151,7 +151,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
               axios.post<SwapApiResponse>(
                 LayerSwapApiClient.apiBaseEndpoint + "/swaps",
                 {
-                  amount: values.amount,
+                  amount: Number(values.amount?.toString()?.replace(",",".")),
                   currency: values.currency.name,
                   destination_address: values.destination_address,
                   network: values.network.id,
