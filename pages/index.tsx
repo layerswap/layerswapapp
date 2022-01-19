@@ -25,7 +25,7 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
-  if (process.env.IS_TESTING) {
+  if (!process.env.IS_TESTING) {
     data.networks.forEach((element, index) => {
       if (!element.is_test_net) networks.push(element);
     });
