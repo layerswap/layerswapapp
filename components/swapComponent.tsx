@@ -119,7 +119,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
             initialValues={initialValues}
             validate={values => {
               let errors: FormikErrors<SwapFormValues> = {};
-              let amount = Number(values.amount);
+              let amount = Number(values.amount?.toString()?.replace(",","."));
               if (!values.amount) {
                 errors.amount = 'Enter an amount';
               }
@@ -182,22 +182,17 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                             <div className="relative rounded-md shadow-sm mt-1">
                               <input
                                 {...field}
-                                pattern="^[0-9]*[.,]?[0-9]*$"
                                 inputMode="decimal"
                                 autoComplete="off"
                                 placeholder="0.0"
                                 autoCorrect="off"
                                 min={values.currency.baseObject.min_amount}
                                 max={values.currency.baseObject.max_amount}
-                                type="text"
+                                type="number"
                                 step={1 / Math.pow(10, values.currency.baseObject.decimals)}
                                 name="amount"
                                 id="amount"
-                                inputMode="numeric"
                                 className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block bg-gray-800 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
-                                onChange={e=>{
-                                  /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
-                                }}
                               />
                               <div className="absolute inset-y-0 right-0 flex items-center">
                                 <CurrenciesField name="currency" availableCurrencies={availableCurrencies} value={values.currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
@@ -259,7 +254,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                     <span className="text-indigo-300 text-lg font-medium text-center">
                       {(() => {
                         if (values.amount) {
-                          let amount = Number(values.amount);
+                          let amount = Number(values.amount?.toString()?.replace(",","."));
                           let currencyObject = values.currency.baseObject;
                           if (amount >= currencyObject.min_amount) {
                             var fee = calculateFee(values);
@@ -331,7 +326,7 @@ function calculateFee(values: SwapFormValues): number {
   let currencyObject = values.currency.baseObject;
   let exchangeObject = values.exchange.baseObject;
 
-  var exchangeFee = Number(values.amount) * exchangeObject.fee_percentage;
+  var exchangeFee = Number(values.amount?.toString()?.replace(",",".")) * exchangeObject.fee_percentage;
   var overallFee = currencyObject.fee + exchangeFee;
 
   return overallFee;
