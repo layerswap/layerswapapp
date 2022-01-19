@@ -15,10 +15,10 @@ function IntroCard(props) {
                     <p className="py-4">
                         <span className="bg-indigo-600 text-sm mr-2 rounded-md py-1 px-2">New</span>
                         <span className="md:hidden">
-                            Moonbeam!
+                            LRC in Loopring!
                         </span>
                         <span className="hidden md:inline">
-                            Moonbeam is now supported!
+                            LRC in Loopring network is now supported!
                             {/* <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1480921959252774918">Join the discussion</a> */}
                         </span>
                     </p>

@@ -1,3 +1,5 @@
+import { CurrencyExchange } from "./CurrencyExchange";
+
 export class Currency {
     id: string;
     asset: string;
@@ -13,4 +15,6 @@ export class Currency {
     is_default: boolean;
     price_in_usdt: number;
     fee: number;
+
+    exchanges: CurrencyExchange[];
 }

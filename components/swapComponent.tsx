@@ -54,6 +54,31 @@ const CurrenciesField = (props) => {
   </>)
 };
 
+interface ExchangesFieldProps {
+  availableExchanges: SelectMenuItem<Exchange>[];
+}
+
+const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges }) => {
+  const {
+    values: { exchange, currency },
+    setFieldValue
+  } = useFormikContext<SwapFormValues>();
+
+  let filteredExchanges: SelectMenuItem<Exchange>[] = [];
+
+  availableExchanges.map(function (exchange) {
+    currency.baseObject.exchanges.map(function (currencyExchange) {
+      if (exchange.baseObject.id === currencyExchange.exchangeId) {
+        filteredExchanges.push(exchange);
+      }
+    })
+  })
+
+  return (<>
+    <Field name="exchange" values={filteredExchanges} label="From" value={exchange} as={SelectMenu} setFieldValue={setFieldValue} />
+  </>)
+};
+
 const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork, addressSource }) => {
   const router = useRouter();
 
@@ -183,7 +208,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                       </Field>
                     </div>
                     <div className="flex flex-col md:w-3/5 w-full">
-                      <Field name="exchange" values={availableExchanges} label="From" value={values.exchange} as={SelectMenu} setFieldValue={setFieldValue} />
+                      <ExchangesField availableExchanges={availableExchanges} />
                     </div>
                   </div>
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">

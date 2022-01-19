@@ -25,23 +25,16 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
-  var currencies: Currency[] = [];
-
-  if (!process.env.IS_TESTING) {
+  if (process.env.IS_TESTING) {
     data.networks.forEach((element, index) => {
       if (!element.is_test_net) networks.push(element);
-    });
-    data.currencies.forEach((element, index) => {
-      if (element.id != "905c4647-858d-4756-b0c5-3e08382be6ad") currencies.push(element);
     });
   }
   else {
     networks = data.networks;
-    currencies = data.currencies;
   }
 
   data.networks = networks;
-  data.currencies = currencies;
 
   return {
     props: { data, query },
