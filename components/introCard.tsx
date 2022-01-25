@@ -39,7 +39,7 @@ function IntroCard(props) {
                                 </div>
                             </a>
                         </Link>
-                        <a href="https://discord.gg/u54VcqpWhg" target="_blank" className="text-indigo-300 font-semibold hover:underline hover:cursor-pointer">
+                        <a href="https://discord.gg/PeqHAqzxQX" target="_blank" className="text-indigo-300 font-semibold hover:underline hover:cursor-pointer">
                             <div className="flex flex-row items-center">
                                 <SupportIcon className="w-5 h-5" />
                                 <span className='ml-2'>Get Support</span>
