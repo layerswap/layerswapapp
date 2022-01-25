@@ -155,7 +155,8 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                   currency: values.currency.name,
                   destination_address: values.destination_address,
                   network: values.network.id,
-                  exchange: values.exchange.id
+                  exchange: values.exchange.id,
+                  partner_name: isArgentSource ? "Argent" : undefined
                 }
               )
                 .then(response => {
