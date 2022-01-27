@@ -39,6 +39,8 @@ interface SwapProps {
   lockAddress?: boolean;
   lockNetwork?: boolean;
   addressSource?: string;
+  sourceExchangeName?: string;
+  asset?: string;
 }
 
 const CurrenciesField = (props) => {
@@ -79,7 +81,7 @@ const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges }) => {
   </>)
 };
 
-const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork, addressSource }) => {
+const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork, addressSource, sourceExchangeName, asset }) => {
   const router = useRouter();
 
   let availableCurrencies = settings.currencies
@@ -106,10 +108,15 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   }
 
   let initialAddress = destAddress && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
-  const initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
-  const initialCurrency = availableCurrencies.find(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled && x.isDefault);
-  const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, currency: initialCurrency, exchange: initialExchange };
+  const enabledNetworkCurrencies = availableCurrencies.filter(x=> x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled);
+  const initialCurrency = enabledNetworkCurrencies.find(x=> x.baseObject.asset.toLowerCase() === asset?.toLowerCase()) ??  enabledNetworkCurrencies.find(x => x.isDefault);
 
+  let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
+  if (!initialExchange || !initialCurrency.baseObject.exchanges.find(x => x.exchangeId === initialExchange.baseObject.id)) { 
+    initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
+  }
+
+  const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, currency: initialCurrency, exchange: initialExchange };
 
   return (
     <div className="flex justify-center text-white">
