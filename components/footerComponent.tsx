@@ -52,7 +52,7 @@ export default function FooterComponent() {
       <div className="max-w-7xl mt-8 mx-auto pb-12 px-4 overflow-hidden sm:px-6 lg:px-8">
         <div className="flex justify-center space-x-6">
           {navigation.social.map((item) => (
-            <a key={item.name} href={item.href} className="text-blueGray-300 hover:text-blueGray-400">
+            <a key={item.name} target="_blank" href={item.href} className="text-blueGray-300 hover:text-blueGray-400">
               <span className="sr-only">{item.name}</span>
               <item.icon className="h-6 w-6" aria-hidden="true" />
             </a>

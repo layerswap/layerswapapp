@@ -14,13 +14,13 @@ Bransfer makes it easy and safe for people to connect their crypto exchange acco
 ### How much does it cost?
 If you want to transfer 100$ worth of crypto from the crypto exchange to layer 2 networks, you have to pay ~70$ gas fees - one to send from the crypto exchange to your wallet and another for swapping it through the bridge. See [https://etherscan.io/gastracker](https://etherscan.io/gastracker).
 
-With LayerSwap, you just pay $15.
+With LayerSwap, you just pay ~$10.
 
 ### How long does it take?
 After you withdraw your crypto from the crypto exchange account, you will have assets available in the L2 network in 1-2 minutes.
 
 ### What are the limitations?
-You can swap up to ~500$ worth of assets with LayerSwap now. This number is going to be changed as we open the liquidity pool for the community.
+The limitations vary between networks. In zkSync you can transfer up to 1 ETH per transaction, in Loopring - 1500 LRC, etc. These upper limits are constantly increasing and will get a significant boost by the introduction of liquidity mining.
 
 ### Can I provide liquidity for LayerSwap?
 Liquidity is provided only by LayerSwap now, but we are hard at work to release community liquidity mining by the end of 2022. Follow us on [Twitter](https://twitter.com/layerswap) or join our [Discord](https://discord.com/invite/KhwYN35sHy) to get updates!
