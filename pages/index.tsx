@@ -3,7 +3,6 @@ import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
-import { Currency } from '../Models/Currency'
 
 export default function Home({ data, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
@@ -31,6 +30,9 @@ export async function getServerSideProps(context) {
     });
   }
   else {
+    data.networks.forEach((element, index) => {
+      if (element.code.startsWith("STARKNET") || !element.is_test_net) networks.push(element);
+    });
     networks = data.networks;
   }
 
