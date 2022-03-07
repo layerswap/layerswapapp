@@ -33,7 +33,6 @@ export async function getServerSideProps(context) {
     data.networks.forEach((element, index) => {
       if (element.code.startsWith("STARKNET") || !element.is_test_net) networks.push(element);
     });
-    networks = data.networks;
   }
 
   data.networks = networks;
