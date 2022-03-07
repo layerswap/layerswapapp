@@ -21,8 +21,6 @@ export default function Layout({ hasSideShapes, children }: Props) {
  
       <meta name="description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
 
-
-
       {/* Facebook Meta Tags */}
       <meta property="og:url" content="https://www.layerswap.io/" />
       <meta property="og:type" content="website" />

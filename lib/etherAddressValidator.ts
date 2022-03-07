@@ -1,5 +1,6 @@
 import { keccak256 } from "js-sha3";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
+import { validateAndParseAddress } from "./starkNetAddressValidator";
 
 export function isValidAddress(address: string, network: CryptoNetwork): boolean {
     if (network.code.toLowerCase() === "RONIN_MAINNET".toLowerCase()) {
@@ -13,6 +14,10 @@ export function isValidAddress(address: string, network: CryptoNetwork): boolean
             return isValidEtherAddress(address.replace("zksync:", ""));
         }
         return isValidEtherAddress(address);
+    }
+    else if (network.code.toLowerCase().startsWith("STARKNET".toLowerCase()))
+    {
+        return validateAndParseAddress(address);
     }
     else {
         return isValidEtherAddress(address);
