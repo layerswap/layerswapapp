@@ -18,9 +18,11 @@ export default function Layout({ hasSideShapes, children }: Props) {
       <link rel="manifest" href="favicon/site.webmanifest" />
       <link rel="mask-icon" href="favicon/safari-pinned-tab.svg" color="#5bbad5" />
       <meta name="msapplication-TileColor" content="#ffffff" />
-      <meta name="theme-color" content="#ffffff" />
-
+      <meta name="theme-color" content="#111827" />
+ 
       <meta name="description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
+
+
 
       {/* Facebook Meta Tags */}
       <meta property="og:url" content="https://www.layerswap.io/" />
