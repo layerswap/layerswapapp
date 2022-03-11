@@ -6,4 +6,5 @@ export class CryptoNetwork {
     is_test_net: boolean;
     is_default: boolean;
     explorer_template: string;
+    chain_id: number;
 }

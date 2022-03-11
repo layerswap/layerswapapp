@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Formik, Form, Field, FormikErrors, useFormikContext } from 'formik';
 import { FC } from 'react'
 import axios from 'axios';
@@ -18,9 +18,6 @@ import { SelectMenuItem } from './selectMenu/selectMenuItem';
 import SelectMenu from './selectMenu/selectMenu';
 import IntroCard from './introCard';
 import Image from 'next/image'
-import { useWeb3React } from '@web3-react/core';
-import { Web3Provider } from '@ethersproject/providers';
-import { InjectedConnector } from '@web3-react/injected-connector';
 
 interface SwapFormValues {
   amount: string;
@@ -84,35 +81,9 @@ const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges }) => {
   </>)
 };
 
-
-const injected = new InjectedConnector({
-  supportedChainIds: [
-    1, // Mainet
-    3, // Ropsten
-    4, // Rinkeby
-    5, // Goerli
-    42, // Kovan
-  ],
-})
 const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork, addressSource, sourceExchangeName, asset }) => {
-  const { activate, active, account } = useWeb3React<Web3Provider>()
+  console.log(destNetwork);
   const router = useRouter();
-
-
-  const clickHandler = async () => {
-    try {
-      if (active) return alert('Already linked')
-      await activate(injected, walletError => {
-        if (walletError.message.includes('user_canceled')) {
-          return alert('You canceled the operation, please refresh and try to reauthorize.')
-        }
-        alert(`Failed to connect: ${walletError.message}`)
-      })
-    } catch (err) {
-      console.log(err)
-      alert('Failed to connect Wallet.')
-    }
-  }
 
   let availableCurrencies = settings.currencies
     .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled, c.is_default))
@@ -124,10 +95,9 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
     .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
 
-
   let isArgentSource = addressSource && addressSource == "argent";
   let initialNetwork =
-    availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase())
+    availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
     ?? availableNetworks.find(x => x.isEnabled && x.isDefault);
 
   if (lockNetwork) {
@@ -147,12 +117,12 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   }
 
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, currency: initialCurrency, exchange: initialExchange };
-
   return (
     <div className="flex justify-center text-white">
       <div className="flex flex-col justify-center justify-items-center px-2">
         <CardContainer className="container mx-auto sm:px-6 lg:px-8 max-w-3xl">
           <Formik
+            enableReinitialize={true}
             initialValues={initialValues}
             validate={values => {
               let errors: FormikErrors<SwapFormValues> = {};
@@ -274,7 +244,6 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                               />
                             )}
                           </Field>
-                          <button onClick={clickHandler}>Connect wallet</button>
                         </div>
 
                       </div>

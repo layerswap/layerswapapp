@@ -3,12 +3,50 @@ import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
+import { useWeb3React } from '@web3-react/core';
+import { Web3Provider } from '@ethersproject/providers';
+import { InjectedConnector } from '@web3-react/injected-connector';
 
 export default function Home({ data, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
+
+  let preSelectedNetwork: string = query.destNetwork;
+  let lockNetwork: boolean = query.lockNetwork;
+  let preSelectedAddress: string = query.destAddress;
+  let lockAddress: boolean = query.lockAddress;
+
+  const injected = new InjectedConnector({
+    supportedChainIds: data.networks.map(x => x.chain_id)
+  });
+
+  // if ((window as any).ethereum.isImToken) {
+  if (!active) {
+    activate(injected, onerror => {
+      if (onerror.message.includes('user_canceled')) {
+        return alert('You canceled the operation, please refresh and try to reauthorize.')
+      }
+      alert(`Failed to connect: ${onerror.message}`)
+    }).catch(err => {
+      console.log(err)
+    });
+    // }
+  }
+
+  if (chainId) {
+    let network = data.networks.find(x => x.chain_id == chainId);
+    console.log(network);
+    if (network) {
+      preSelectedNetwork = network.code;
+      lockNetwork = true;
+      preSelectedAddress = account;
+      lockAddress = true;
+    }
+  }
+
   return (
     <Layout>
       <main>
-        <Swap settings={data} destNetwork={query.destNetwork} destAddress={query.destAddress} lockAddress={query.lockAddress} lockNetwork={query.lockNetwork} addressSource={query.addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
+        <Swap settings={data} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={query.addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
       </main>
     </Layout>
   )
