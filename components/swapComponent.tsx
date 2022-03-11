@@ -77,7 +77,7 @@ const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges }) => {
   })
 
   return (<>
-    <Field name="exchange" values={filteredExchanges} label="From" value={exchange} as={SelectMenu} setFieldValue={setFieldValue} />
+    <Field name="exchange" values={filteredExchanges} label="Exchange" value={exchange} as={SelectMenu} setFieldValue={setFieldValue} />
   </>)
 };
 
@@ -185,7 +185,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                         {({ field }) => (
                           <div>
                             <label htmlFor="amount" className="block text-base font-medium">
-                              Send
+                              Amount
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1">
                               <input
@@ -221,7 +221,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
                       <label className="block font-medium text-base">
-                        To  {isArgentSource && "your Argent wallet"}
+                        Address  {isArgentSource && "(Your Argent wallet)"}
                       </label>
                       <div className="relative rounded-md shadow-sm mt-1">
                         {isArgentSource &&
@@ -247,7 +247,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                       </div>
                     </div>
                     <div className="flex flex-col md:w-3/5 w-full">
-                      <Field name="network" values={availableNetworks} label="In" value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
+                      <Field name="network" values={availableNetworks} label="Network" value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
                     </div>
                   </div>
                   <div className="mt-5 flex flex-col md:flex-row items-baseline justify-between">
