@@ -18,6 +18,9 @@ import { SelectMenuItem } from './selectMenu/selectMenuItem';
 import SelectMenu from './selectMenu/selectMenu';
 import IntroCard from './introCard';
 import Image from 'next/image'
+import { useWeb3React } from '@web3-react/core';
+import { Web3Provider } from '@ethersproject/providers';
+import { InjectedConnector } from '@web3-react/injected-connector';
 
 interface SwapFormValues {
   amount: string;
@@ -81,8 +84,35 @@ const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges }) => {
   </>)
 };
 
+
+const injected = new InjectedConnector({
+  supportedChainIds: [
+    1, // Mainet
+    3, // Ropsten
+    4, // Rinkeby
+    5, // Goerli
+    42, // Kovan
+  ],
+})
 const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork, addressSource, sourceExchangeName, asset }) => {
+  const { activate, active, account } = useWeb3React<Web3Provider>()
   const router = useRouter();
+
+
+  const clickHandler = async () => {
+    try {
+      if (active) return alert('Already linked')
+      await activate(injected, walletError => {
+        if (walletError.message.includes('user_canceled')) {
+          return alert('You canceled the operation, please refresh and try to reauthorize.')
+        }
+        alert(`Failed to connect: ${walletError.message}`)
+      })
+    } catch (err) {
+      console.log(err)
+      alert('Failed to connect Wallet.')
+    }
+  }
 
   let availableCurrencies = settings.currencies
     .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled, c.is_default))
@@ -108,11 +138,11 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   }
 
   let initialAddress = destAddress && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
-  const enabledNetworkCurrencies = availableCurrencies.filter(x=> x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled);
-  const initialCurrency = enabledNetworkCurrencies.find(x=> x.baseObject.asset.toLowerCase() === asset?.toLowerCase()) ??  enabledNetworkCurrencies.find(x => x.isDefault);
+  const enabledNetworkCurrencies = availableCurrencies.filter(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled);
+  const initialCurrency = enabledNetworkCurrencies.find(x => x.baseObject.asset.toLowerCase() === asset?.toLowerCase()) ?? enabledNetworkCurrencies.find(x => x.isDefault);
 
   let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
-  if (!initialExchange || !initialCurrency.baseObject.exchanges.find(x => x.exchangeId === initialExchange.baseObject.id)) { 
+  if (!initialExchange || !initialCurrency.baseObject.exchanges.find(x => x.exchangeId === initialExchange.baseObject.id)) {
     initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
   }
 
@@ -126,7 +156,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
             initialValues={initialValues}
             validate={values => {
               let errors: FormikErrors<SwapFormValues> = {};
-              let amount = Number(values.amount?.toString()?.replace(",","."));
+              let amount = Number(values.amount?.toString()?.replace(",", "."));
               if (!amount) {
                 errors.amount = 'Enter an amount';
               }
@@ -158,7 +188,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
               axios.post<SwapApiResponse>(
                 LayerSwapApiClient.apiBaseEndpoint + "/swaps",
                 {
-                  amount: Number(values.amount?.toString()?.replace(",",".")),
+                  amount: Number(values.amount?.toString()?.replace(",", ".")),
                   currency: values.currency.name,
                   destination_address: values.destination_address,
                   network: values.network.id,
@@ -176,7 +206,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
             }}
           >
-            {({ values, setFieldValue, errors, isSubmitting,handleChange }) => (
+            {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
               <Form>
                 <div className="px-0 md:px-6 py-0 md:py-2">
                   <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
@@ -202,7 +232,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                                 name="amount"
                                 id="amount"
                                 className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block bg-gray-800 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
-                                onChange={e=>{
+                                onChange={e => {
                                   /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
                                 }}
                               />
@@ -229,20 +259,23 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                             <Image className='rounded-md object-contain' src="/logos/argent_wallet.png" width="24" height="24"></Image>
                           </div>
                         }
-                        <Field name="destination_address">
-                          {({ field }) => (
-                            <input
-                              {...field}
-                              placeholder="0x123...ab56c"
-                              autoCorrect="off"
-                              type="text"
-                              name="destination_address"
-                              id="destination_address"
-                              disabled={initialAddress != '' && lockAddress}
-                              className={joinClassNames(isArgentSource ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
-                            />
-                          )}
-                        </Field>
+                        <div>
+                          <Field name="destination_address">
+                            {({ field }) => (
+                              <input
+                                {...field}
+                                placeholder="0x123...ab56c"
+                                autoCorrect="off"
+                                type="text"
+                                name="destination_address"
+                                id="destination_address"
+                                disabled={initialAddress != '' && lockAddress}
+                                className={joinClassNames(isArgentSource ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
+                              />
+                            )}
+                          </Field>
+                          <button onClick={clickHandler}>Connect wallet</button>
+                        </div>
 
                       </div>
                     </div>
@@ -266,7 +299,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                     <span className="text-indigo-300 text-lg font-medium text-center">
                       {(() => {
                         if (values.amount) {
-                          let amount = Number(values.amount?.toString()?.replace(",","."));
+                          let amount = Number(values.amount?.toString()?.replace(",", "."));
                           let currencyObject = values.currency.baseObject;
                           if (amount >= currencyObject.min_amount) {
                             var fee = calculateFee(values);
@@ -338,7 +371,7 @@ function calculateFee(values: SwapFormValues): number {
   let currencyObject = values.currency.baseObject;
   let exchangeObject = values.exchange.baseObject;
 
-  var exchangeFee = Number(values.amount?.toString()?.replace(",",".")) * exchangeObject.fee_percentage;
+  var exchangeFee = Number(values.amount?.toString()?.replace(",", ".")) * exchangeObject.fee_percentage;
   var overallFee = currencyObject.fee + exchangeFee;
 
   return overallFee;
