@@ -6,6 +6,7 @@ import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { InjectedConnector } from '@web3-react/injected-connector';
+import { useEffect, useState } from 'react'
 
 export default function Home({ data, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
@@ -15,26 +16,34 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
   let preSelectedAddress: string = query.destAddress;
   let lockAddress: boolean = query.lockAddress;
 
-  const injected = new InjectedConnector({
-    supportedChainIds: data.networks.map(x => x.chain_id)
-  });
+  const [addressSource, setAddressSource] = useState(query.addressSource);
 
-  // if ((window as any).ethereum.isImToken) {
-  if (!active) {
-    activate(injected, onerror => {
-      if (onerror.message.includes('user_canceled')) {
-        return alert('You canceled the operation, please refresh and try to reauthorize.')
+  useEffect(() => {
+    if ((window as any)?.ethereum?.isImToken) {
+      let supportedNetworks = data.networks.filter(x => x.chain_id != -1 && x.is_enabled);
+      const injected = new InjectedConnector({
+        supportedChainIds: supportedNetworks.map(x => x.chain_id)
+      });
+
+      if (!active) {
+        activate(injected, onerror => {
+          if (onerror.message.includes('user_canceled')) {
+            return alert('You canceled the operation, please refresh and try to reauthorize.')
+          }
+          else if (onerror.message.includes('Unsupported chain')) {
+            return alert('Current wallet network is not supported. Supported networks are ' + supportedNetworks.map(x=> x.name).join(', ') )
+          }
+          alert(`Failed to connect: ${onerror.message}`)
+        });
       }
-      alert(`Failed to connect: ${onerror.message}`)
-    }).catch(err => {
-      console.log(err)
-    });
-    // }
-  }
+      else {
+        setAddressSource("imtoken");
+      }
+    }
+  })
 
   if (chainId) {
     let network = data.networks.find(x => x.chain_id == chainId);
-    console.log(network);
     if (network) {
       preSelectedNetwork = network.code;
       lockNetwork = true;
@@ -46,7 +55,7 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
   return (
     <Layout>
       <main>
-        <Swap settings={data} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={query.addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
+        <Swap settings={data} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
       </main>
     </Layout>
   )
@@ -62,14 +71,14 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
-  if (!process.env.IS_TESTING) {
+  // if (!process.env.IS_TESTING) {
     data.networks.forEach((element, index) => {
       if (!element.is_test_net) networks.push(element);
     });
-  }
-  else {
-    networks = data.networks;
-  }
+  // }
+  // else {
+  //   networks = data.networks;
+  // }
 
   data.networks = networks;
 

@@ -43,6 +43,23 @@ interface SwapProps {
   asset?: string;
 }
 
+interface PartnerInfo
+{
+  name: string;
+  logoSrc: string;
+}
+
+const partners: { [key: string]: PartnerInfo } = {
+  "argent":{
+    name: "Argent",
+    logoSrc: "/logos/argent_wallet.png"
+  },
+  "imtoken":{
+    name: "imToken",
+    logoSrc: "/logos/imtoken_wallet.png"
+  }
+};
+
 const CurrenciesField = (props) => {
   const {
     values: { network, currency },
@@ -82,7 +99,6 @@ const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges }) => {
 };
 
 const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork, addressSource, sourceExchangeName, asset }) => {
-  console.log(destNetwork);
   const router = useRouter();
 
   let availableCurrencies = settings.currencies
@@ -95,7 +111,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
     .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
 
-  let isArgentSource = addressSource && addressSource == "argent";
+  let isPartnerAddress = addressSource && partners[addressSource] && destAddress;
   let initialNetwork =
     availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
     ?? availableNetworks.find(x => x.isEnabled && x.isDefault);
@@ -115,7 +131,6 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   if (!initialExchange || !initialCurrency.baseObject.exchanges.find(x => x.exchangeId === initialExchange.baseObject.id)) {
     initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
   }
-
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, currency: initialCurrency, exchange: initialExchange };
   return (
     <div className="flex justify-center text-white">
@@ -163,7 +178,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                   destination_address: values.destination_address,
                   network: values.network.id,
                   exchange: values.exchange.id,
-                  partner_name: isArgentSource ? "Argent" : undefined
+                  partner_name: isPartnerAddress ? partners[addressSource].name : undefined
                 }
               )
                 .then(response => {
@@ -221,12 +236,12 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
                       <label className="block font-medium text-base">
-                        Address  {isArgentSource && "(Your Argent wallet)"}
+                        Address  {isPartnerAddress && `(Your ${partners[addressSource].name} wallet)`}
                       </label>
                       <div className="relative rounded-md shadow-sm mt-1">
-                        {isArgentSource &&
+                        {isPartnerAddress &&
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Image className='rounded-md object-contain' src="/logos/argent_wallet.png" width="24" height="24"></Image>
+                            <Image className='rounded-md object-contain' src={partners[addressSource].logoSrc} width="24" height="24"></Image>
                           </div>
                         }
                         <div>
@@ -240,7 +255,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                                 name="destination_address"
                                 id="destination_address"
                                 disabled={initialAddress != '' && lockAddress}
-                                className={joinClassNames(isArgentSource ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
+                                className={joinClassNames(isPartnerAddress ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
                               />
                             )}
                           </Field>
