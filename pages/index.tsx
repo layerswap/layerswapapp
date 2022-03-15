@@ -20,9 +20,11 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
 
   useEffect(() => {
     if ((window as any)?.ethereum?.isImToken) {
+      setAddressSource("imtoken");
       let supportedNetworks = data.networks.filter(x => x.chain_id != -1 && x.is_enabled);
       const injected = new InjectedConnector({
-        supportedChainIds: supportedNetworks.map(x => x.chain_id)
+        // Commented to allow visitors from other networks to use this page
+        //supportedChainIds: supportedNetworks.map(x => x.chain_id)
       });
 
       if (!active) {
@@ -31,13 +33,12 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
             return alert('You canceled the operation, please refresh and try to reauthorize.')
           }
           else if (onerror.message.includes('Unsupported chain')) {
-            return alert('Current wallet network is not supported. Supported networks are ' + supportedNetworks.map(x=> x.name).join(', ') )
+            // Do nothing
           }
-          alert(`Failed to connect: ${onerror.message}`)
+          else {
+            alert(`Failed to connect: ${onerror.message}`)
+          }
         });
-      }
-      else {
-        setAddressSource("imtoken");
       }
     }
   })
@@ -47,9 +48,12 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
     if (network) {
       preSelectedNetwork = network.code;
       lockNetwork = true;
-      preSelectedAddress = account;
-      lockAddress = true;
     }
+  }
+
+  if (account) {
+    preSelectedAddress = account;
+    lockAddress = true;
   }
 
   return (
