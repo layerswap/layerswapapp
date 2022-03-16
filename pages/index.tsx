@@ -7,6 +7,13 @@ import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { useEffect, useState } from 'react'
+import NavRadio, { NavRadioOption } from '../components/navRadio'
+
+
+const swapOptions: NavRadioOption[] = [
+  { name: "onramp", displayName: 'On-ramp', isEnabled: true, isNew: false },
+  { name: "offramp", displayName: 'Off-ramp', isEnabled: true, isNew: true }
+];
 
 export default function Home({ data, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
@@ -15,6 +22,7 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
   let lockNetwork: boolean = query.lockNetwork;
   let preSelectedAddress: string = query.destAddress;
   let lockAddress: boolean = query.lockAddress;
+  let isOffRampEnabled: boolean = query.offRampEnabled;
 
   const [addressSource, setAddressSource] = useState(query.addressSource);
 
@@ -56,11 +64,16 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
     lockAddress = true;
   }
 
+  const [swapOption, setSwapOption] = useState(swapOptions[0]);
+
   return (
     <Layout>
-      <main>
-        <Swap settings={data} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
-      </main>
+      {isOffRampEnabled &&
+        <div className='flex content-center justify-center mb-8'>
+          <NavRadio selected={swapOption} items={swapOptions} setSelected={setSwapOption}></NavRadio>
+        </div>
+      }
+      <Swap swapMode={swapOption.name} settings={data} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
     </Layout>
   )
 }
@@ -75,14 +88,14 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
-  if (!process.env.IS_TESTING) {
+  //if (!process.env.IS_TESTING) {
     data.networks.forEach((element, index) => {
       if (!element.is_test_net) networks.push(element);
     });
-  }
-  else {
-    networks = data.networks;
-  }
+  // }
+  // else {
+  //   networks = data.networks;
+  // }
 
   data.networks = networks;
 
