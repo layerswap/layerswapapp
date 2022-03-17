@@ -22,7 +22,6 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
   let lockNetwork: boolean = query.lockNetwork;
   let preSelectedAddress: string = query.destAddress;
   let lockAddress: boolean = query.lockAddress;
-  let isOffRampEnabled: boolean = query.offRampEnabled;
 
   const [addressSource, setAddressSource] = useState(query.addressSource);
 
@@ -68,11 +67,9 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
 
   return (
     <Layout>
-      {isOffRampEnabled &&
         <div className='flex content-center justify-center mb-8'>
           <NavRadio selected={swapOption} items={swapOptions} setSelected={setSwapOption}></NavRadio>
         </div>
-      }
       <Swap swapMode={swapOption.name} settings={data} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
     </Layout>
   )
