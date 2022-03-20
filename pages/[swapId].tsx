@@ -99,7 +99,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
               {renderHeading(swapPageStatus, data?.offramp_info)}
             </h3>
             <div className="mt-3">
-              <p className="text-blueGray-300 font-medium text-sm md:text-base text-center truncate">
+              <p className="text-blueGray-300 font-medium text-sm md:text-base text-center">
                 {renderDescription(swapPageStatus, data?.offramp_info)}
               </p>
             </div>
