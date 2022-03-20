@@ -172,219 +172,217 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   return (
     <div>
       <OffRampDetailsModal address={offRampAddress} memo={offRampMemo} amount={offRampAmount} isOpen={isModalOpen} onConfirm={onOffRampModalConfirm} onDismiss={onOffRampModalDismiss} />
-      <div className="flex justify-center text-white">
-        <div className="flex flex-col justify-center justify-items-center px-2">
-          <CardContainer className="container mx-auto sm:px-6 lg:px-8 max-w-3xl">
-            <Formik
-              enableReinitialize={true}
-              initialValues={initialValues}
-              validate={values => {
-                let errors: FormikErrors<SwapFormValues> = {};
-                let amount = Number(values.amount?.toString()?.replace(",", "."));
-                if (!amount) {
-                  errors.amount = 'Enter an amount';
-                }
-                else if (
-                  !/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())
-                ) {
-                  errors.amount = 'Invalid amount';
-                }
-                else if (amount < 0) {
-                  errors.amount = "Can't be negative";
-                }
-                else if (amount > values.currency.baseObject.max_amount) {
-                  errors.amount = `Max amount is ${values.currency.baseObject.max_amount}`;
-                }
-                else if (amount < values.currency.baseObject.min_amount) {
-                  errors.amount = `Min amount is ${values.currency.baseObject.min_amount}`;
-                }
+      <div className="flex flex-col space-y-6 text-white">
+        <CardContainer>
+          <Formik
+            enableReinitialize={true}
+            initialValues={initialValues}
+            validate={values => {
+              let errors: FormikErrors<SwapFormValues> = {};
+              let amount = Number(values.amount?.toString()?.replace(",", "."));
+              if (!amount) {
+                errors.amount = 'Enter an amount';
+              }
+              else if (
+                !/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())
+              ) {
+                errors.amount = 'Invalid amount';
+              }
+              else if (amount < 0) {
+                errors.amount = "Can't be negative";
+              }
+              else if (amount > values.currency.baseObject.max_amount) {
+                errors.amount = `Max amount is ${values.currency.baseObject.max_amount}`;
+              }
+              else if (amount < values.currency.baseObject.min_amount) {
+                errors.amount = `Min amount is ${values.currency.baseObject.min_amount}`;
+              }
 
-                if (!values.destination_address) {
-                  errors.destination_address = "Enter a destination address"
+              if (!values.destination_address) {
+                errors.destination_address = "Enter a destination address"
+              }
+              else {
+                if (isOfframp) {
+                  if (!isValidEmailAddress(values.destination_address)) {
+                    errors.destination_address = "Enter a valid email address"
+                  }
                 }
-                else {
+                else if (!isValidAddress(values.destination_address, values.network.baseObject)) {
+                  errors.destination_address = "Enter a valid destination address"
+                }
+              }
+
+              return errors;
+            }}
+            onSubmit={(values, actions) => {
+              axios.post<SwapApiResponse>(
+                LayerSwapApiClient.apiBaseEndpoint + "/swaps",
+                {
+                  amount: Number(values.amount?.toString()?.replace(",", ".")),
+                  currency: values.currency.name,
+                  destination_address: values.destination_address,
+                  network: values.network.id,
+                  exchange: values.exchange.id,
+                  partner_name: isPartnerAddress ? partners[addressSource].name : undefined,
+                  to_exchange: isOfframp
+                }
+              )
+                .then(response => {
                   if (isOfframp) {
-                    if (!isValidEmailAddress(values.destination_address)) {
-                      errors.destination_address = "Enter a valid email address"
-                    }
+
+                    axios.get<SwapInfo>(LayerSwapApiClient.apiBaseEndpoint + `/swaps/${response.data.swap_id}`)
+                      .then(r => {
+                        setoffRampAddress(r.data.offramp_info.deposit_address);
+                        setoffRampMemo(r.data.offramp_info.memo);
+                        setoffRampAmount(r.data.amount.toLocaleString());
+                        setcreatedSwapId(r.data.id);
+
+                        setIsModalOpen(true);
+                      });
                   }
-                  else if (!isValidAddress(values.destination_address, values.network.baseObject)) {
-                    errors.destination_address = "Enter a valid destination address"
+                  else {
+                    router.push(response.data.redirect_url);
                   }
-                }
 
-                return errors;
-              }}
-              onSubmit={(values, actions) => {
-                axios.post<SwapApiResponse>(
-                  LayerSwapApiClient.apiBaseEndpoint + "/swaps",
-                  {
-                    amount: Number(values.amount?.toString()?.replace(",", ".")),
-                    currency: values.currency.name,
-                    destination_address: values.destination_address,
-                    network: values.network.id,
-                    exchange: values.exchange.id,
-                    partner_name: isPartnerAddress ? partners[addressSource].name : undefined,
-                    to_exchange: isOfframp
-                  }
-                )
-                  .then(response => {
-                    if (isOfframp) {
-
-                      axios.get<SwapInfo>(LayerSwapApiClient.apiBaseEndpoint + `/swaps/${response.data.swap_id}`)
-                        .then(r => {
-                          setoffRampAddress(r.data.offramp_info.deposit_address);
-                          setoffRampMemo(r.data.offramp_info.memo);
-                          setoffRampAmount(r.data.amount.toLocaleString());
-                          setcreatedSwapId(r.data.id);
-
-                          setIsModalOpen(true);
-                        });
-                    }
-                    else {
-                      router.push(response.data.redirect_url);
-                    }
-
-                    actions.setSubmitting(false);
-                  })
-                  .catch(error => {
-                    actions.setSubmitting(false);
-                  });
-              }}
-            >
-              {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
-                <Form>
-                  <div className="px-0 md:px-6 py-0 md:py-2">
-                    <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
-                      <div className="w-full">
-                        <Field name="amount">
-                          {({ field }) => (
-                            <div>
-                              <label htmlFor="amount" className="block text-base font-medium">
-                                Amount
-                              </label>
-                              <div className="relative rounded-md shadow-sm mt-1">
-                                <input
-                                  {...field}
-                                  pattern="^[0-9]*[.,]?[0-9]*$"
-                                  inputMode="decimal"
-                                  autoComplete="off"
-                                  placeholder={`${values.currency.baseObject.min_amount} - ${values.currency.baseObject.max_amount}`}
-                                  autoCorrect="off"
-                                  min={values.currency.baseObject.min_amount}
-                                  max={values.currency.baseObject.max_amount}
-                                  type="text"
-                                  step={1 / Math.pow(10, values.currency.baseObject.decimals)}
-                                  name="amount"
-                                  id="amount"
-                                  className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block bg-gray-800 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
-                                  onChange={e => {
-                                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
-                                  }}
-                                />
-                                <div className="absolute inset-y-0 right-0 flex items-center">
-                                  <CurrenciesField name="currency" availableCurrencies={availableCurrencies} value={values.currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
-                                </div>
+                  actions.setSubmitting(false);
+                })
+                .catch(error => {
+                  actions.setSubmitting(false);
+                });
+            }}
+          >
+            {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
+              <Form>
+                <div className="px-6 md:px-12 py-12">
+                  <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+                    <div className="w-full">
+                      <Field name="amount">
+                        {({ field }) => (
+                          <div>
+                            <label htmlFor="amount" className="block text-base font-medium">
+                              Amount
+                            </label>
+                            <div className="relative rounded-md shadow-sm mt-1">
+                              <input
+                                {...field}
+                                pattern="^[0-9]*[.,]?[0-9]*$"
+                                inputMode="decimal"
+                                autoComplete="off"
+                                placeholder={`${values.currency.baseObject.min_amount} - ${values.currency.baseObject.max_amount}`}
+                                autoCorrect="off"
+                                min={values.currency.baseObject.min_amount}
+                                max={values.currency.baseObject.max_amount}
+                                type="text"
+                                step={1 / Math.pow(10, values.currency.baseObject.decimals)}
+                                name="amount"
+                                id="amount"
+                                className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block bg-gray-800 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                onChange={e => {
+                                  /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
+                                }}
+                              />
+                              <div className="absolute inset-y-0 right-0 flex items-center">
+                                <CurrenciesField name="currency" availableCurrencies={availableCurrencies} value={values.currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
                               </div>
                             </div>
-                          )}
-                        </Field>
-                      </div>
-                      <div className="flex flex-col md:w-3/5 w-full">
-                        {
-                          isOfframp ? <Field name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
-                            : <ExchangesField isOfframp={isOfframp} label={isOfframp ? "To Exchange" : "From Exchange"} availableExchanges={availableExchanges} />
-                        }
-                      </div>
-                    </div>
-                    <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
-                      <div className="w-full">
-                        <label className="block font-medium text-base">
-                          Address  {isPartnerAddress && `(Your ${partners[addressSource].name} wallet)`}
-                        </label>
-                        <div className="relative rounded-md shadow-sm mt-1">
-                          {isPartnerAddress &&
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <Image className='rounded-md object-contain' src={partners[addressSource].logoSrc} width="24" height="24"></Image>
-                            </div>
-                          }
-                          <div>
-                            <Field name="destination_address">
-                              {({ field }) => (
-                                <input
-                                  {...field}
-                                  placeholder={isOfframp ? "mycoinbase@gmail.com" : "0x123...ab56c"}
-                                  autoCorrect="off"
-                                  type={isOfframp ? "email" : "text"}
-                                  name="destination_address"
-                                  id="destination_address"
-                                  disabled={initialAddress != '' && lockAddress}
-                                  className={joinClassNames(isPartnerAddress ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
-                                />
-                              )}
-                            </Field>
                           </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col md:w-3/5 w-full">
-                        {
-                          isOfframp ? <ExchangesField isOfframp={isOfframp} label={isOfframp ? "To Exchange" : "From Exchange"} availableExchanges={availableExchanges} />
-                            : <Field name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
-                        }
-                      </div>
+                        )}
+                      </Field>
                     </div>
-                    <div className="mt-5 flex flex-col md:flex-row items-baseline justify-between">
-                      <label className="block font-medium text-center">
-                        Fee
-                      </label>
-                      <span className="text-base font-medium text-center text-gray-400">
-                        {(() => calculateFee(values).toFixed(values.currency.baseObject.precision))()}
-                        <span>  {values.currency.name} </span>
-                      </span>
-                    </div>
-                    <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
-                      <label className="block font-medium text-center">
-                        You will get
-                      </label>
-                      <span className="text-indigo-300 text-lg font-medium text-center">
-                        {(() => {
-                          if (values.amount) {
-                            let amount = Number(values.amount?.toString()?.replace(",", "."));
-                            let currencyObject = values.currency.baseObject;
-                            if (amount >= currencyObject.min_amount) {
-                              var fee = calculateFee(values);
-                              var result = amount - fee;
-                              return Number(result.toFixed(currencyObject.precision));
-                            }
-                          }
-
-                          return 0;
-                        })()}
-                        <span>  {values.currency.name}</span></span>
-                    </div>
-                    <div className="mt-10">
-                      <button
-                        disabled={errors.amount != null || errors.destination_address != null || isSubmitting}
-                        type="submit"
-                        className={controlDisabledButton(errors, isSubmitting)}
-                      >
-                        <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                          {(errors.amount == null && errors.destination_address == null && !isSubmitting) &&
-                            <SwitchHorizontalIcon className="h-5 w-5" aria-hidden="true" />}
-                          {isSubmitting ?
-                            <SpinIcon className="animate-spin h-5 w-5" />
-                            : null}
-                        </span>
-                        {displayErrorsOrSubmit(errors)}
-                      </button>
+                    <div className="flex flex-col md:w-3/5 w-full">
+                      {
+                        isOfframp ? <Field name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
+                          : <ExchangesField isOfframp={isOfframp} label={isOfframp ? "To Exchange" : "From Exchange"} availableExchanges={availableExchanges} />
+                      }
                     </div>
                   </div>
-                </Form>
-              )}
-            </Formik>
-          </CardContainer >
-          <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5" />
-        </div>
+                  <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+                    <div className="w-full">
+                      <label className="block font-medium text-base">
+                        Address  {isPartnerAddress && `(Your ${partners[addressSource].name} wallet)`}
+                      </label>
+                      <div className="relative rounded-md shadow-sm mt-1">
+                        {isPartnerAddress &&
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Image className='rounded-md object-contain' src={partners[addressSource].logoSrc} width="24" height="24"></Image>
+                          </div>
+                        }
+                        <div>
+                          <Field name="destination_address">
+                            {({ field }) => (
+                              <input
+                                {...field}
+                                placeholder={isOfframp ? "mycoinbase@gmail.com" : "0x123...ab56c"}
+                                autoCorrect="off"
+                                type={isOfframp ? "email" : "text"}
+                                name="destination_address"
+                                id="destination_address"
+                                disabled={initialAddress != '' && lockAddress}
+                                className={joinClassNames(isPartnerAddress ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
+                              />
+                            )}
+                          </Field>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col md:w-3/5 w-full">
+                      {
+                        isOfframp ? <ExchangesField isOfframp={isOfframp} label={isOfframp ? "To Exchange" : "From Exchange"} availableExchanges={availableExchanges} />
+                          : <Field name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
+                      }
+                    </div>
+                  </div>
+                  <div className="mt-5 flex flex-col md:flex-row items-baseline justify-between">
+                    <label className="block font-medium text-center">
+                      Fee
+                    </label>
+                    <span className="text-base font-medium text-center text-gray-400">
+                      {(() => calculateFee(values).toFixed(values.currency.baseObject.precision))()}
+                      <span>  {values.currency.name} </span>
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
+                    <label className="block font-medium text-center">
+                      You will get
+                    </label>
+                    <span className="text-indigo-300 text-lg font-medium text-center">
+                      {(() => {
+                        if (values.amount) {
+                          let amount = Number(values.amount?.toString()?.replace(",", "."));
+                          let currencyObject = values.currency.baseObject;
+                          if (amount >= currencyObject.min_amount) {
+                            var fee = calculateFee(values);
+                            var result = amount - fee;
+                            return Number(result.toFixed(currencyObject.precision));
+                          }
+                        }
+
+                        return 0;
+                      })()}
+                      <span>  {values.currency.name}</span></span>
+                  </div>
+                  <div className="mt-10">
+                    <button
+                      disabled={errors.amount != null || errors.destination_address != null || isSubmitting}
+                      type="submit"
+                      className={controlDisabledButton(errors, isSubmitting)}
+                    >
+                      <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                        {(errors.amount == null && errors.destination_address == null && !isSubmitting) &&
+                          <SwitchHorizontalIcon className="h-5 w-5" aria-hidden="true" />}
+                        {isSubmitting ?
+                          <SpinIcon className="animate-spin h-5 w-5" />
+                          : null}
+                      </span>
+                      {displayErrorsOrSubmit(errors)}
+                    </button>
+                  </div>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </CardContainer >
+        <IntroCard />
       </div>
     </div>
   )
