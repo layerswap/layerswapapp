@@ -101,7 +101,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
               </h3>
               <div className="mt-3">
                 <p className="text-blueGray-300 font-medium text-sm md:text-base text-center mx-0 px-0 md:mx-auto">
-                  {renderDescription(swapPageStatus, data?.offramp_info)}
+                  {renderDescription(swapPageStatus, data)}
                 </p>
               </div>
               <div className="flex flex-col">
@@ -183,7 +183,7 @@ function renderHeading(swapPageStatus: SwapPageStatus, offRampInfo?: SwapOffRamp
   }
 }
 
-function renderDescription(swapPageStatus: SwapPageStatus, offRampInfo?: SwapOffRampInfo) {
+function renderDescription(swapPageStatus: SwapPageStatus, swapInfo?: SwapInfo) {
   switch (swapPageStatus) {
     case SwapPageStatus.NotFound: {
       return "Ooops looks like you landed on a wrong page. If you believe that's not the case plase contact us through our Discord";
@@ -193,15 +193,15 @@ function renderDescription(swapPageStatus: SwapPageStatus, offRampInfo?: SwapOff
     }
     default:
     case SwapPageStatus.Processing: {
-      if (offRampInfo) {
-        return <span>We are waiting for a deposit on Address <span className='font-bold text-pink-300 text-xs md:text-sm'>{offRampInfo.deposit_address}</span> with Memo  <span className='font-bold text-pink-300 text-xs md:text-sm'>{offRampInfo.memo}</span>.</span>
+      if (swapInfo) {
+        return <span>We are waiting for a deposit <span className='font-bold text-pink-300 text-xs md:text-sm'>{swapInfo.amount} {swapInfo.currency}</span> on Address <span className='font-bold text-pink-300 text-xs md:text-sm'>{swapInfo.offramp_info.deposit_address}</span> with Memo  <span className='font-bold text-pink-300 text-xs md:text-sm'>{swapInfo.offramp_info.memo}</span>.</span> 
       }
       else {
         return "We are submitting your transaction to the network.You'll see the transaction id when it's picked up by a miner.";
       }
     }
     case SwapPageStatus.Success: {
-      if (offRampInfo)
+      if (swapInfo)
       {
         return "Your swap successfully completed. You can see it in your exchange account, or go ahead swap more! "
       }
