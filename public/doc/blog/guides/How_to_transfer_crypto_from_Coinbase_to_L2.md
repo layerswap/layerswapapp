@@ -1,12 +1,12 @@
 ---
-title: How to transfer crypto from Coinbase to Arbitrum or Optimism?
+title: How to transfer crypto from Coinbase to Loopring or zkSync?
 ---
 
-## How to transfer crypto from Coinbase to Arbitrum, Optimism or zkSync?
+## How to transfer crypto from Coinbase to Loopring or zkSync?
 
-With [LayerSwap](/), you can bridge crypto from your crypto exchange account directly to the Arbitrum and Optimism networks with low fees. <br />
+With [LayerSwap](/), you can bridge crypto from your crypto exchange account directly to a Layer 2 network with low fees. <br />
 
-After filling in the **amount** and **asset** you want to send, the source **exchange** and destination **network**, you will be redirected to Bransfer to complete your transfer.
+After filling in the **amount** and **asset** you want to send, the source **exchange**, destination **network** and your L2 wallet **address**, you will be redirected to Bransfer to complete your transfer.
 
 ![Choose an exchange to transfer from](/images/bransfer_choose_exchange.png)
 

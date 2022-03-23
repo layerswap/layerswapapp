@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Formik, Form, Field, FormikErrors, useFormikContext } from 'formik';
+import React, { useRef, useState } from 'react';
+import { Formik, Form, Field, FormikErrors, useFormikContext, FormikProps } from 'formik';
 import { FC } from 'react'
 import axios from 'axios';
 import { useRouter } from 'next/router'
@@ -7,8 +7,6 @@ import { CryptoNetwork } from '../Models/CryptoNetwork';
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import CardContainer from './cardContainer';
 import InsetSelectMenu from './selectMenu/insetSelectMenu';
-import { SwitchHorizontalIcon } from '@heroicons/react/outline';
-import SpinIcon from './icons/spinIcon';
 import { isValidAddress } from '../lib/etherAddressValidator';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import { Currency } from '../Models/Currency';
@@ -18,14 +16,9 @@ import { SelectMenuItem } from './selectMenu/selectMenuItem';
 import SelectMenu from './selectMenu/selectMenu';
 import IntroCard from './introCard';
 import Image from 'next/image'
-
-interface SwapFormValues {
-  amount: string;
-  destination_address: string;
-  network: SelectMenuItem<CryptoNetwork>;
-  currency: SelectMenuItem<Currency>;
-  exchange: SelectMenuItem<Exchange>;
-}
+import ConfirmationModal from './confirmationModal';
+import SubmitButton from './submitButton';
+import { SwapFormValues } from './DTOs/SwapFormValues';
 
 interface SwapApiResponse {
   swapId: string;
@@ -43,18 +36,17 @@ interface SwapProps {
   asset?: string;
 }
 
-interface PartnerInfo
-{
+interface PartnerInfo {
   name: string;
   logoSrc: string;
 }
 
 const partners: { [key: string]: PartnerInfo } = {
-  "argent":{
+  "argent": {
     name: "Argent",
     logoSrc: "/logos/argent_wallet.png"
   },
-  "imtoken":{
+  "imtoken": {
     name: "imToken",
     logoSrc: "/logos/imtoken_wallet.png"
   }
@@ -94,7 +86,7 @@ const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges }) => {
   })
 
   return (<>
-    <Field name="exchange" values={filteredExchanges} label="Exchange" value={exchange} as={SelectMenu} setFieldValue={setFieldValue} />
+    <Field name="exchange" values={filteredExchanges} label="From exchange" value={exchange} as={SelectMenu} setFieldValue={setFieldValue} />
   </>)
 };
 
@@ -132,12 +124,47 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
     initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
   }
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, currency: initialCurrency, exchange: initialExchange };
+
+  const formikRef = useRef<FormikProps<SwapFormValues>>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
+  function onConfirmModalDismiss(isIntentional: boolean) {
+    if (isIntentional || confirm("Are you sure you want to stop?")) {
+      setIsConfirmModalOpen(false);
+      formikRef.current.setSubmitting(false);
+    }
+  }
+
+  function onConfrmModalConfirm() {
+    setIsConfirmModalOpen(false);
+    let formValues = formikRef.current.values;
+    axios.post<SwapApiResponse>(
+      LayerSwapApiClient.apiBaseEndpoint + "/swaps",
+      {
+        amount: Number(formValues.amount?.toString()?.replace(",", ".")),
+        currency: formValues.currency.name,
+        destination_address: formValues.destination_address,
+        network: formValues.network.id,
+        exchange: formValues.exchange.id,
+        partner_name: isPartnerAddress ? partners[addressSource].name : undefined
+      }
+    )
+      .then(response => {
+        router.push(response.data.redirect_url)
+          .then(() => formikRef.current.setSubmitting(false));
+      }).catch(error => {
+        formikRef.current.setSubmitting(false);
+      });
+  }
+
   return (
     <div className="flex justify-center text-white">
+      <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} />
       <div className="flex flex-col justify-center justify-items-center px-2">
         <CardContainer className="container mx-auto sm:px-6 lg:px-8 max-w-3xl">
           <Formik
             enableReinitialize={true}
+            innerRef={formikRef}
             initialValues={initialValues}
             validate={values => {
               let errors: FormikErrors<SwapFormValues> = {};
@@ -161,34 +188,16 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
               }
 
               if (!values.destination_address) {
-                errors.destination_address = "Enter a destination address"
+                errors.destination_address = `Enter ${values?.network.name} address`
               }
               else if (!isValidAddress(values.destination_address, values.network.baseObject)) {
-                errors.destination_address = "Enter a valid destination address"
+                errors.destination_address = `Enter a valid ${values?.network.name} address`
               }
 
               return errors;
             }}
-            onSubmit={(values, actions) => {
-              axios.post<SwapApiResponse>(
-                LayerSwapApiClient.apiBaseEndpoint + "/swaps",
-                {
-                  amount: Number(values.amount?.toString()?.replace(",", ".")),
-                  currency: values.currency.name,
-                  destination_address: values.destination_address,
-                  network: values.network.id,
-                  exchange: values.exchange.id,
-                  partner_name: isPartnerAddress ? partners[addressSource].name : undefined
-                }
-              )
-                .then(response => {
-                  router.push(response.data.redirect_url);
-                  actions.setSubmitting(false);
-                })
-                .catch(error => {
-                  actions.setSubmitting(false);
-                });
-
+            onSubmit={() => {
+              setIsConfirmModalOpen(true);
             }}
           >
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
@@ -236,7 +245,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
                       <label className="block font-medium text-base">
-                        Address  {isPartnerAddress && `(Your ${partners[addressSource].name} wallet)`}
+                        To {values?.network?.name} address {isPartnerAddress && `(${partners[addressSource].name} wallet)`}
                       </label>
                       <div className="relative rounded-md shadow-sm mt-1">
                         {isPartnerAddress &&
@@ -297,20 +306,9 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                       <span>  {values.currency.name}</span></span>
                   </div>
                   <div className="mt-10">
-                    <button
-                      disabled={errors.amount != null || errors.destination_address != null || isSubmitting}
-                      type="submit"
-                      className={controlDisabledButton(errors, isSubmitting)}
-                    >
-                      <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                        {(errors.amount == null && errors.destination_address == null && !isSubmitting) &&
-                          <SwitchHorizontalIcon className="h-5 w-5" aria-hidden="true" />}
-                        {isSubmitting ?
-                          <SpinIcon className="animate-spin h-5 w-5" />
-                          : null}
-                      </span>
+                    <SubmitButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={isSubmitting}>
                       {displayErrorsOrSubmit(errors)}
-                    </button>
+                    </SubmitButton>
                   </div>
                 </div>
               </Form>
@@ -337,18 +335,6 @@ function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
 
 function joinClassNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
-}
-
-function controlDisabledButton(errors: FormikErrors<SwapFormValues>, isSubmitting: boolean): string {
-  let defaultStyles = 'group relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500';
-  if (errors.amount != null || errors.destination_address != null || isSubmitting) {
-    defaultStyles += ' bg-gray-500 cursor-not-allowed';
-  }
-  else {
-    defaultStyles += ' bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out'
-  }
-
-  return defaultStyles;
 }
 
 function calculateFee(values: SwapFormValues): number {
