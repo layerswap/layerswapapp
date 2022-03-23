@@ -20,11 +20,17 @@ const ConfirmationModal: FC<ConfirmationModalParams> = ({ onConfirm, formValues,
     let { amount, currency, destination_address, exchange, network } = formValues;
 
     const modalDescription = () => {
-        return (<div className='text-base'><span>You are requesting a transfer of <span className='text-indigo-100 font-bold'>{amount} {currency.name} </span> from your <span className='text-indigo-100 font-bold'>{exchange.name}</span> exchange account to your <span className='text-indigo-100 font-bold'>{network.name}</span> wallet  <span className='text-indigo-100 font-bold'>({destination_address.slice(0, 4) + "..." + destination_address.slice(destination_address.length - 4, destination_address.length)})</span></span></div>)
+        return (
+            <div className='text-base'>
+                <span>
+                    You are requesting a transfer of <span className='text-indigo-100 font-bold'> {amount} {currency.name}</span> from your <span className='text-indigo-100 font-bold'>{exchange.name}</span> exchange account to your <span className='text-indigo-100 font-bold'>{network.name}</span> wallet  <span className='text-indigo-100 font-bold'>({destination_address.slice(0, 4) + "..." + destination_address.slice(destination_address.length - 4, destination_address.length)})</span>
+                    <p className='mt-2'>To continue, you have to confirm that </p>
+                </span>
+            </div>)
     }
 
     const checkboxes = [
-        { label: <span>The provided address is my <span className='text-indigo-300'>{network.name}</span> wallet address</span> },
+        { label: <span>The provided address is your <span className='text-indigo-300'>{network.name}</span> wallet address</span> },
         { label: <span>Providing wrong information will result in a loss of funds</span> },
     ]
 

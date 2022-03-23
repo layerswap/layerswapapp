@@ -44,13 +44,13 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, descriptio
                             <div className="text-center">
                                 <Dialog.Title as="div" >
                                     <div className='flex justify-between'>
-                                        <div className="text-lg text-left leading-6 font-medium text-gray-400" >
+                                        <div className="text-lg text-left leading-6 font-medium text-gray-300" >
                                             {title}
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => onDismiss(true)}
-                                            className="bg-transparent rounded-md text-gray-400 hover:text-gray-200"
+                                            className="bg-transparent rounded-md text-gray-300 hover:text-gray-200"
                                         >
                                             <span className="sr-only">Close</span>
                                             <XIcon className="h-6 w-6" aria-hidden="true" />
