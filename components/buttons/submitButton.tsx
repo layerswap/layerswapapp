@@ -1,7 +1,7 @@
 import { SwitchHorizontalIcon } from "@heroicons/react/outline";
 import { FC } from "react";
 import SpinIcon from "../icons/spinIcon";
-import { SubmitButtonProps } from "./SubmitButtonProps";
+import { SubmitButtonProps } from "../submitButtonProps";
 
 const SubmitButton: FC<SubmitButtonProps> = ({isDisabled,isSubmitting, children, type, onClick, bgColor}) => {
     bgColor ??= "bg-indigo-500";
