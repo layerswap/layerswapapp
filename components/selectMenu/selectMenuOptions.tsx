@@ -9,6 +9,11 @@ export interface SelectMenuOptionsProps {
 }
 
 let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values }): JSX.Element => {
+    if (!values)
+    {
+        return <></>
+    }
+
     return (
         <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options className="ring-2 ring-gray-700 ring-opacity-60 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-gray-800 rounded-md py-1 overflow-hidden  focus:outline-none">
@@ -19,7 +24,7 @@ let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values }): JSX.Element =>
                         className={({ active, disabled }) =>
                             styleOption(active, disabled)
                         }
-                        value={item}
+                        value={item.id}
                     >
                         {({ selected, disabled }) => (
                             <>

@@ -20,8 +20,8 @@ import OffRampDetailsModal from './offRampDetailsModal';
 import { SwapInfo } from '../Models/SwapInfo';
 import { isValidEmailAddress } from '../lib/emailAddressValidator';
 import ConfirmationModal from './confirmationModal';
-import SubmitButton from './submitButton';
 import { SwapFormValues } from './DTOs/SwapFormValues';
+import GradientSubmitButton from './buttons/gradientSubmitButton';
 
 interface SwapApiResponse {
   swap_id: string;
@@ -77,7 +77,7 @@ interface ExchangesFieldProps {
 const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges, label, isOfframp }) => {
   const {
     values: { exchange, currency },
-    setFieldValue
+    setFieldValue,
   } = useFormikContext<SwapFormValues>();
 
   let filteredExchanges: SelectMenuItem<Exchange>[] = [];
@@ -99,6 +99,8 @@ const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges, label, is
 const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork, addressSource, sourceExchangeName, asset, swapMode }) => {
   const router = useRouter();
   let isOfframp = swapMode == "offramp";
+  const formikRef = useRef<FormikProps<SwapFormValues>>(null);
+  let formValues = formikRef.current?.values;
 
   let availableCurrencies = settings.currencies
     .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled, c.is_default))
@@ -115,8 +117,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
     availableNetworks = availableNetworks.filter(n => availableCurrencies.find(c => c.baseObject.network_id == n.baseObject.id));
   }
 
-
-  let isPartnerAddress = addressSource && partners[addressSource] && destAddress;
+  let isPartnerAddress = addressSource !== undefined && partners[addressSource] !== undefined && destAddress !== undefined;
 
   let initialNetwork =
     availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
@@ -162,8 +163,6 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
     router.push(`/${createdSwapId}`);
   }
 
-
-  const formikRef = useRef<FormikProps<SwapFormValues>>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   function onConfirmModalDismiss(isIntentional: boolean) {
@@ -175,8 +174,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
   function onConfrmModalConfirm() {
     setIsConfirmModalOpen(false);
-    
-    let formValues = formikRef.current.values;
+
     axios.post<SwapApiResponse>(
       LayerSwapApiClient.apiBaseEndpoint + "/swaps",
       {
@@ -213,7 +211,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   return (
     <div>
       <OffRampDetailsModal address={offRampAddress} memo={offRampMemo} amount={offRampAmount} isOpen={isModalOpen} onConfirm={onOffRampModalConfirm} onDismiss={onOffRampModalDismiss} />
-      <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} />
+      <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} isOfframp={isOfframp}/>
       <div className="flex flex-col space-y-6 text-white">
         <CardContainer>
           <Formik
@@ -242,7 +240,12 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
               }
 
               if (!values.destination_address) {
-                errors.destination_address = `Enter ${values?.network.name} address`
+                if (isOfframp) {
+                  errors.destination_address = `Enter ${values?.exchange.name} address`
+                }
+                else {
+                  errors.destination_address = `Enter ${values?.network.name} address`
+                }
               }
               else {
                 if (isOfframp) {
@@ -299,7 +302,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                         )}
                       </Field>
                     </div>
-                    <div className="flex flex-col md:w-3/5 w-full">
+                    <div className="flex flex-col md:w-80 w-full">
                       {
                         isOfframp ? <Field name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
                           : <ExchangesField isOfframp={isOfframp} label={isOfframp ? "To Exchange" : "From Exchange"} availableExchanges={availableExchanges} />
@@ -309,10 +312,13 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
                       <label className="block font-medium text-base">
-                        To {values?.network?.name} address {isPartnerAddress && `(${partners[addressSource].name} wallet)`}
+                        {
+                          isOfframp ? `To ${values?.exchange?.name} address`
+                            : `To ${values?.network?.name} address` + (isPartnerAddress ? " (" + partners[addressSource]?.name + " wallet)" : "")
+                        }
                       </label>
                       <div className="relative rounded-md shadow-sm mt-1">
-                        {isPartnerAddress &&
+                        {isPartnerAddress && !isOfframp &&
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Image className='rounded-md object-contain' src={partners[addressSource].logoSrc} width="24" height="24"></Image>
                           </div>
@@ -328,14 +334,14 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                                 name="destination_address"
                                 id="destination_address"
                                 disabled={initialAddress != '' && lockAddress}
-                                className={joinClassNames(isPartnerAddress ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
+                                className={joinClassNames(isPartnerAddress && !isOfframp ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
                               />
                             )}
                           </Field>
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col md:w-3/5 w-full">
+                    <div className="flex flex-col md:w-80 w-full">
                       {
                         isOfframp ? <ExchangesField isOfframp={isOfframp} label={isOfframp ? "To Exchange" : "From Exchange"} availableExchanges={availableExchanges} />
                           : <Field name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
@@ -372,9 +378,9 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                       <span>  {values.currency.name}</span></span>
                   </div>
                   <div className="mt-10">
-                    <SubmitButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={isSubmitting}>
+                    <GradientSubmitButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={isSubmitting}>
                       {displayErrorsOrSubmit(errors)}
-                    </SubmitButton>
+                    </GradientSubmitButton>
                   </div>
                 </div>
               </Form>
