@@ -8,6 +8,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { useEffect, useState } from 'react'
 import NavRadio, { NavRadioOption } from '../components/navRadio'
+import Banner from '../components/banner'
 
 
 const swapOptions: NavRadioOption[] = [
@@ -67,10 +68,18 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
 
   return (
     <Layout>
-        <div className='flex content-center justify-center mb-8'>
+      <div className='flex flex-col space-y-5'>
+        <div className='flex flex-col items-center'>
           <NavRadio selected={swapOption} items={swapOptions} setSelected={setSwapOption}></NavRadio>
+          {swapOption.name === "offramp"
+            &&
+            <div className='flex w-full'>
+              <Banner className='mt-2' localStorageId='WarningBetaProduct' desktopMessage='WARNING! Beta product, please use at your own risk' mobileMessage='WARNING! Beta product'></Banner>
+            </div>
+          }
         </div>
-      <Swap swapMode={swapOption.name} settings={data} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
+        <Swap swapMode={swapOption.name} settings={data} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
+      </div>
     </Layout>
   )
 }
@@ -86,9 +95,9 @@ export async function getServerSideProps(context) {
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
   //if (!process.env.IS_TESTING) {
-    data.networks.forEach((element, index) => {
-      if (!element.is_test_net) networks.push(element);
-    });
+  data.networks.forEach((element, index) => {
+    if (!element.is_test_net) networks.push(element);
+  });
   // }
   // else {
   //   networks = data.networks;
