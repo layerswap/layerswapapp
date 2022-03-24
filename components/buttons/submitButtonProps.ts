@@ -1,6 +1,6 @@
 import { MouseEventHandler } from "react";
 
-export interface SubmitButtonProps {
+export class SubmitButtonProps {
     isDisabled: boolean;
     isSubmitting: boolean;
     type?: 'submit' | 'reset' | 'button' | undefined;
