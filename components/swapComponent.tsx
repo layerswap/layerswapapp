@@ -49,6 +49,10 @@ const partners: { [key: string]: PartnerInfo } = {
   "imtoken": {
     name: "imToken",
     logoSrc: "/logos/imtoken_wallet.png"
+  },
+  "tokenpocket": {
+    name: "TokenPocket",
+    logoSrc: "/logos/tokenpocket_wallet.png"
   }
 };
 
@@ -245,7 +249,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
                       <label className="block font-medium text-base">
-                        To {values?.network?.name} address {isPartnerAddress && `(${partners[addressSource].name} wallet)`}
+                        To {values?.network?.name} address {isPartnerAddress && <span className='truncate text-sm text-indigo-200'>({partners[addressSource].name} wallet)</span>}
                       </label>
                       <div className="relative rounded-md shadow-sm mt-1">
                         {isPartnerAddress &&
