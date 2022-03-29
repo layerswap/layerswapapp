@@ -20,7 +20,7 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
 
   useEffect(() => {
     let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
-    let isTokenPocket = (window as any)?.ethereum.isTokenPocket !== undefined;
+    let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
 
     if (isImtoken || isTokenPocket) {
       if (isImtoken) {
