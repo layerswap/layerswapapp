@@ -11,7 +11,6 @@ import { isValidAddress } from '../lib/etherAddressValidator';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import { Currency } from '../Models/Currency';
 import { Exchange } from '../Models/Exchange';
-import GetLogoByProjectName from '../lib/logoPathResolver';
 import { SelectMenuItem } from './selectMenu/selectMenuItem';
 import SelectMenu from './selectMenu/selectMenu';
 import IntroCard from './introCard';
@@ -94,13 +93,13 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   const router = useRouter();
 
   let availableCurrencies = settings.currencies
-    .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled, c.is_default))
+    .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
   const availableExchanges = settings.exchanges
-    .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, GetLogoByProjectName(c.internal_name), c.is_enabled, c.is_default))
+    .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
   const availableNetworks = settings.networks
-    .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled, c.is_default))
+    .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
 
   let isPartnerAddress = addressSource && partners[addressSource] && destAddress;

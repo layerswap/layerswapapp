@@ -4,6 +4,7 @@ export class Currency {
     id: string;
     asset: string;
     name: string;
+    logo_url: string;
     decimals: number;
     precision: number;
     is_enabled: boolean;
