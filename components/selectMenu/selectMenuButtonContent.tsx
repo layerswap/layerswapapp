@@ -17,7 +17,7 @@ let SelectMenuButtonContent: FC<SelectMenuButtonContentProps> = ({ value }) => {
             <span className="flex items-center">
                 <div className="flex-shrink-0 h-6 w-6 relative">
                     <Image
-                        src={value.imgSrc}
+                        src={value.logo_url}
                         alt="Project Logo"
                         priority
                         height="40"

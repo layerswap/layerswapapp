@@ -1,7 +1,7 @@
 export class SelectMenuItem<T> implements ISelectMenuItem {
     id: string;
     name: string;
-    imgSrc: string;
+    logo_url: string;
     isEnabled: boolean;
     baseObject: T;
     isDefault: boolean;
@@ -10,7 +10,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         this.baseObject = baseObject;
         this.id = id;
         this.name = name;
-        this.imgSrc = imgSrc;
+        this.logo_url = imgSrc;
         this.isEnabled = isEnabled;
         this.isDefault = isDefault;
     }
@@ -19,7 +19,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
 export interface ISelectMenuItem {
     id: string;
     name: string;
-    imgSrc: string;
+    logo_url: string;
     isEnabled: boolean;
     isDefault: boolean;
 }

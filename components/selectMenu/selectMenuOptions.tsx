@@ -31,7 +31,7 @@ let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values }): JSX.Element =>
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0 h-6 w-6 relative">
                                         <Image
-                                            src={item.imgSrc}
+                                            src={item.logo_url}
                                             alt="Project Logo"
                                             height="40"
                                             width="40"
