@@ -133,7 +133,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
         destination_address: formValues.destination_address,
         network: formValues.network.id,
         exchange: formValues.exchange.id,
-        partner_name: isPartnerAddress ? availablePartners[addressSource].name : undefined
+        partner_name: isPartnerAddress ? availablePartners[addressSource].id : undefined
       }
     )
       .then(response => {
@@ -232,7 +232,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
                       <label className="block font-medium text-base">
-                        To {values?.network?.name} address {isPartnerWallet && `(${availablePartners[addressSource].name} wallet)`}
+                        To {values?.network?.name} address {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name} wallet)</span>}
                       </label>
                       <div className="relative rounded-md shadow-sm mt-1">
                         {isPartnerWallet &&
@@ -251,7 +251,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                                 name="destination_address"
                                 id="destination_address"
                                 disabled={initialAddress != '' && lockAddress}
-                                className={joinClassNames(isPartnerAddress ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
+                                className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
                               />
                             )}
                           </Field>

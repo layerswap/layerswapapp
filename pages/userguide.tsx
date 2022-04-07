@@ -57,6 +57,11 @@ const exchanges = [
         imageSrc: '/logos/medium/okex.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_Okex_to_L2',
     },
+    {
+        name: 'Bitfinex',
+        imageSrc: '/logos/medium/bitfinex.png',
+        guideUrl: '/blog/guide/How_to_transfer_crypto_from_Bitfinex_to_L2',
+    }
 ]
 
 export default function UserGuide(props) {
