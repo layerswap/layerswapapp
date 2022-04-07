@@ -232,7 +232,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
                       <label className="block font-medium text-base">
-                        To {values?.network?.name} address {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name} wallet)</span>}
+                        To {values?.network?.name} address {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
                       </label>
                       <div className="relative rounded-md shadow-sm mt-1">
                         {isPartnerWallet &&
