@@ -24,42 +24,42 @@ const componentOverrides = {
 const exchanges = [
     {
         name: 'Binance',
-        imageSrc: '/logos/medium/binance.png',
+        imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/binance.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_Binance_to_L2'
     },
     {
         name: 'Coinbase',
-        imageSrc: '/logos/medium/coinbase.png',
+        imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/coinbase.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_Coinbase_to_L2',
     },
     {
         name: 'FTX US',
-        imageSrc: '/logos/medium/ftxus.png',
+        imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/ftxus.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_FTX_US_to_L2',
     },
     {
         name: 'Huobi',
-        imageSrc: '/logos/medium/huobi.png',
+        imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/huobi.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_Huobi_to_L2',
     },
     {
         name: 'KuCoin',
-        imageSrc: '/logos/medium/kucoin.png',
+        imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/kucoin.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_KuCoin_to_L2',
     },
     {
         name: 'FTX COM',
-        imageSrc: '/logos/medium/ftxcom.png',
+        imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/ftxcom.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_FTX_COM_to_L2',
     },
     {
         name: 'Okex',
-        imageSrc: '/logos/medium/okex.png',
+        imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/okex.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_Okex_to_L2',
     },
     {
         name: 'Bitfinex',
-        imageSrc: '/logos/medium/bitfinex.png',
+        imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/bitfinex.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_Bitfinex_to_L2',
     }
 ]

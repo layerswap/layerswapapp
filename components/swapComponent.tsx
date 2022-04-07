@@ -11,7 +11,6 @@ import { isValidAddress } from '../lib/etherAddressValidator';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import { Currency } from '../Models/Currency';
 import { Exchange } from '../Models/Exchange';
-import GetLogoByProjectName from '../lib/logoPathResolver';
 import { SelectMenuItem } from './selectMenu/selectMenuItem';
 import SelectMenu from './selectMenu/selectMenu';
 import IntroCard from './introCard';
@@ -19,6 +18,7 @@ import Image from 'next/image'
 import ConfirmationModal from './confirmationModal';
 import SubmitButton from './submitButton';
 import { SwapFormValues } from './DTOs/SwapFormValues';
+import { Partner } from '../Models/Partner';
 
 interface SwapApiResponse {
   swapId: string;
@@ -35,26 +35,6 @@ interface SwapProps {
   sourceExchangeName?: string;
   asset?: string;
 }
-
-interface PartnerInfo {
-  name: string;
-  logoSrc: string;
-}
-
-const partners: { [key: string]: PartnerInfo } = {
-  "argent": {
-    name: "Argent",
-    logoSrc: "/logos/argent_wallet.png"
-  },
-  "imtoken": {
-    name: "imToken",
-    logoSrc: "/logos/imtoken_wallet.png"
-  },
-  "tokenpocket": {
-    name: "TokenPocket",
-    logoSrc: "/logos/tokenpocket_wallet.png"
-  }
-};
 
 const CurrenciesField = (props) => {
   const {
@@ -98,16 +78,19 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   const router = useRouter();
 
   let availableCurrencies = settings.currencies
-    .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, GetLogoByProjectName(c.asset), c.is_enabled, c.is_default))
+    .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
   const availableExchanges = settings.exchanges
-    .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, GetLogoByProjectName(c.internal_name), c.is_enabled, c.is_default))
+    .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
   const availableNetworks = settings.networks
-    .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, GetLogoByProjectName(c.code), c.is_enabled, c.is_default))
+    .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
 
-  let isPartnerAddress = addressSource && partners[addressSource] && destAddress;
+  const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), new SelectMenuItem<Partner>(c, c.name, c.display_name, c.logo_url, c.is_enabled)]));
+
+  let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
+  let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].baseObject.is_wallet;
   let initialNetwork =
     availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
     ?? availableNetworks.find(x => x.isEnabled && x.isDefault);
@@ -150,7 +133,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
         destination_address: formValues.destination_address,
         network: formValues.network.id,
         exchange: formValues.exchange.id,
-        partner_name: isPartnerAddress ? partners[addressSource].name : undefined
+        partner_name: isPartnerAddress ? availablePartners[addressSource].id : undefined
       }
     )
       .then(response => {
@@ -249,12 +232,12 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
                       <label className="block font-medium text-base">
-                        To {values?.network?.name} address {isPartnerAddress && <span className='truncate text-sm text-indigo-200'>({partners[addressSource].name} wallet)</span>}
+                        To {values?.network?.name} address {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
                       </label>
                       <div className="relative rounded-md shadow-sm mt-1">
-                        {isPartnerAddress &&
+                        {isPartnerWallet &&
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Image className='rounded-md object-contain' src={partners[addressSource].logoSrc} width="24" height="24"></Image>
+                            <Image className='rounded-md object-contain' src={availablePartners[addressSource].imgSrc} width="24" height="24"></Image>
                           </div>
                         }
                         <div>
@@ -268,7 +251,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                                 name="destination_address"
                                 id="destination_address"
                                 disabled={initialAddress != '' && lockAddress}
-                                className={joinClassNames(isPartnerAddress ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
+                                className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
                               />
                             )}
                           </Field>
