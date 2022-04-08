@@ -86,7 +86,11 @@ export async function getServerSideProps(context) {
   var networks: CryptoNetwork[] = [];
   if (!process.env.IS_TESTING) {
     data.networks.forEach((element, index) => {
-      if (!element.is_test_net) networks.push(element);
+      if (!element.is_test_net) {
+         networks.push(element);
+        } else if (element.id === 'e81c954c-7bb0-4774-af35-6a363d4c32b7'){
+          networks.push(element);
+        }
     });
   }
   else {
