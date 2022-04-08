@@ -61,6 +61,11 @@ const exchanges = [
         name: 'Bitfinex',
         imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/bitfinex.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_Bitfinex_to_L2',
+    },
+    {
+        name: 'Kraken',
+        imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/kraken.png',
+        guideUrl: '/blog/guide/How_to_transfer_crypto_from_Kraken_to_L2',
     }
 ]
 
