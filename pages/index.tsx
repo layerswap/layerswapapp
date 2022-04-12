@@ -19,17 +19,8 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
   const [addressSource, setAddressSource] = useState(query.addressSource);
 
   useEffect(() => {
-    let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
-    let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
-
-    if (isImtoken || isTokenPocket) {
-      if (isImtoken) {
-        setAddressSource("imtoken");
-      }
-      else if (isTokenPocket)
-      {
-        setAddressSource("tokenpocket");
-      }
+    if ((window as any)?.ethereum?.isImToken) {
+      setAddressSource("imtoken");
       let supportedNetworks = data.networks.filter(x => x.chain_id != -1 && x.is_enabled);
       const injected = new InjectedConnector({
         // Commented to allow visitors from other networks to use this page
@@ -84,7 +75,7 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
-  if (!process.env.IS_TESTING) {
+  if (data) {
     data.networks.forEach((element, index) => {
       if (!element.is_test_net) {
          networks.push(element);
