@@ -17,10 +17,10 @@ import SelectMenu from './selectMenu/selectMenu';
 import IntroCard from './introCard';
 import Image from 'next/image'
 import ConfirmationModal from './confirmationModal';
-import SubmitButton from './submitButton';
 import { SwapFormValues } from './DTOs/SwapFormValues';
 import { ImmutableXClient } from '@imtbl/imx-sdk';
 import ImmutableXConnectModal from './immutableXConnectModal';
+import SwapButton from './buttons/swapButton';
 
 const apiAddress = 'https://api.x.immutable.com/v1';
 
@@ -144,6 +144,13 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
     }
   }
 
+  function onImmutableModalDismiss(isIntentional: boolean) {
+    if (isIntentional || confirm("Are you sure you want to stop?")) {
+      setIsImmutableModalOpen(false);
+      formikRef.current.setSubmitting(false);
+    }
+  }
+
   function onConfrmModalConfirm() {
     setIsConfirmModalOpen(false);
     let formValues = formikRef.current.values;
@@ -166,10 +173,16 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
       });
   }
 
+  function onImmutableModalConfirm(address: string) {
+    formikRef.current.values.destination_address = address;
+    setIsImmutableModalOpen(false);
+    setIsConfirmModalOpen(true);
+  }
+
   return (
     <div className="flex justify-center text-white">
       <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} />
-      <ImmutableXConnectModal onConfirm={()=> {}} onDismiss={onConfirmModalDismiss} isOpen={isImmutableModalOpen} destination_address={formikRef.current?.values?.destination_address} />
+      <ImmutableXConnectModal onConfirm={onImmutableModalConfirm} onDismiss={onImmutableModalDismiss} isOpen={isImmutableModalOpen} destination_address={formikRef.current?.values?.destination_address} />
       <div className="flex flex-col justify-center justify-items-center px-2">
         <CardContainer className="container mx-auto sm:px-6 lg:px-8 max-w-3xl">
           <Formik
@@ -207,18 +220,23 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
               return errors;
             }}
             onSubmit={values => {
-              ImmutableXClient.build({ publicApiUrl: apiAddress })
-                .then(client => {
-                  client.isRegistered({ user: values.destination_address })
-                    .then(isRegistered => {
-                      if (isRegistered) {
-                        setIsConfirmModalOpen(true);
-                      }
-                      else {
-                        setIsImmutableModalOpen(true);
-                      }
-                    })
-                })
+              if (values.network.baseObject.code.toLowerCase().includes("immutablex")) {
+                ImmutableXClient.build({ publicApiUrl: apiAddress })
+                  .then(client => {
+                    client.isRegistered({ user: values.destination_address })
+                      .then(isRegistered => {
+                        if (isRegistered) {
+                          setIsConfirmModalOpen(true);
+                        }
+                        else {
+                          setIsImmutableModalOpen(true);
+                        }
+                      })
+                  })
+              }
+              else {
+                setIsConfirmModalOpen(true);
+              }
             }}
           >
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
@@ -327,9 +345,9 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                       <span>  {values.currency.name}</span></span>
                   </div>
                   <div className="mt-10">
-                    <SubmitButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={isSubmitting}>
+                    <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={isSubmitting}>
                       {displayErrorsOrSubmit(errors)}
-                    </SubmitButton>
+                    </SwapButton>
                   </div>
                 </div>
               </Form>
