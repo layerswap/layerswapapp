@@ -22,7 +22,7 @@ import ImmutableXConnectModal from './immutableXConnectModal';
 import SwapButton from './buttons/swapButton';
 import { Partner } from '../Models/Partner';
 
-const apiAddress = 'https://api.x.immutable.com/v1';
+const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
 interface SwapApiResponse {
   swapId: string;
@@ -204,7 +204,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
             }}
             onSubmit={values => {
               if (values.network.baseObject.code.toLowerCase().includes("immutablex")) {
-                ImmutableXClient.build({ publicApiUrl: apiAddress })
+                ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
                   .then(client => {
                     client.isRegistered({ user: values.destination_address })
                       .then(isRegistered => {
