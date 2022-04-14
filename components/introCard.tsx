@@ -15,11 +15,10 @@ function IntroCard(props) {
                     <p className="py-4">
                         <span className="bg-indigo-600 text-sm mr-2 rounded-md py-1 px-2">New</span>
                         <span className="md:hidden">
-                            5000 LRC limit in Loopring!
+                            Immutable X!
                         </span>
                         <span className="hidden md:inline">
-                            5000 LRC limit in Loopring. New exchange - Bitfinex!
-                            {/* <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1480921959252774918">Join the discussion</a> */}
+                            Immutable X is live! 
                         </span>
                     </p>
                 </div>
