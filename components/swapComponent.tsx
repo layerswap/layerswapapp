@@ -103,7 +103,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
   const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), new SelectMenuItem<Partner>(c, c.name, c.display_name, c.logo_url, c.is_enabled)]));
 
-  let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
+  let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress && !isOfframp;
   let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].baseObject.is_wallet;
   let initialNetwork =
     availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
@@ -116,7 +116,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
     });
   }
 
-  let initialAddress = destAddress && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
+  let initialAddress = destAddress && !isOfframp && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
   const enabledNetworkCurrencies = availableCurrencies.filter(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled);
   const initialCurrency = enabledNetworkCurrencies.find(x => x.baseObject.asset.toLowerCase() === asset?.toLowerCase()) ?? enabledNetworkCurrencies.find(x => x.isDefault) ?? enabledNetworkCurrencies[0];
 
@@ -169,7 +169,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
         destination_address: formValues.destination_address,
         network: formValues.network.id,
         exchange: formValues.exchange.id,
-        to_exchange: isOfframp
+        to_exchange: isOfframp,
         partner_name: isPartnerAddress ? availablePartners[addressSource].id : undefined
       }
     )
@@ -299,7 +299,8 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                     <div className="w-full">
                       <label className="block font-medium text-base">
                         {isOfframp && `To ${values?.exchange?.name} address`}
-                        {!isOfframp && `To ${values?.network?.name} address ${isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}`}
+                        {!isOfframp && `To ${values?.network?.name} address`}
+                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
                       </label>
                       <div className="relative rounded-md shadow-sm mt-1">
                         {isPartnerWallet && !isOfframp &&
