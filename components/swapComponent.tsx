@@ -20,8 +20,12 @@ import { SwapInfo } from '../Models/SwapInfo';
 import { isValidEmailAddress } from '../lib/emailAddressValidator';
 import ConfirmationModal from './confirmationModal';
 import { SwapFormValues } from './DTOs/SwapFormValues';
-import GradientSubmitButton from './buttons/gradientSubmitButton';
+import { ImmutableXClient } from '@imtbl/imx-sdk';
+import ImmutableXConnectModal from './immutableXConnectModal';
+import SwapButton from './buttons/swapButton';
 import { Partner } from '../Models/Partner';
+
+const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
 interface SwapApiResponse {
   swap_id: string;
@@ -150,10 +154,18 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   }
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isImmutableModalOpen, setIsImmutableModalOpen] = useState(false);
 
   function onConfirmModalDismiss(isIntentional: boolean) {
     if (isIntentional || confirm("Are you sure you want to stop?")) {
       setIsConfirmModalOpen(false);
+      formikRef.current.setSubmitting(false);
+    }
+  }
+
+  function onImmutableModalDismiss(isIntentional: boolean) {
+    if (isIntentional || confirm("Are you sure you want to stop?")) {
+      setIsImmutableModalOpen(false);
       formikRef.current.setSubmitting(false);
     }
   }
@@ -194,10 +206,17 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
       });
   }
 
+  function onImmutableModalConfirm(address: string) {
+    formikRef.current.values.destination_address = address;
+    setIsImmutableModalOpen(false);
+    setIsConfirmModalOpen(true);
+  }
+
   return (
     <div>
       <OffRampDetailsModal address={offRampAddress} memo={offRampMemo} amount={offRampAmount} isOpen={isModalOpen} onConfirm={onOffRampModalConfirm} onDismiss={onOffRampModalDismiss} />
       <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} isOfframp={isOfframp} />
+      <ImmutableXConnectModal onConfirm={onImmutableModalConfirm} onDismiss={onImmutableModalDismiss} isOpen={isImmutableModalOpen} destination_address={formikRef.current?.values?.destination_address} />
       <div className="flex flex-col space-y-6 text-white">
         <CardContainer>
           <Formik
@@ -246,8 +265,24 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
               return errors;
             }}
-            onSubmit={() => {
-              setIsConfirmModalOpen(true);
+            onSubmit={values => {
+              if (values.network.baseObject.code.toLowerCase().includes("immutablex")) {
+                ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
+                  .then(client => {
+                    client.isRegistered({ user: values.destination_address })
+                      .then(isRegistered => {
+                        if (isRegistered) {
+                          setIsConfirmModalOpen(true);
+                        }
+                        else {
+                          setIsImmutableModalOpen(true);
+                        }
+                      })
+                  })
+              }
+              else {
+                setIsConfirmModalOpen(true);
+              }
             }}
           >
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
@@ -363,9 +398,9 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                       <span>  {values.currency.name}</span></span>
                   </div>
                   <div className="mt-10">
-                    <GradientSubmitButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={isSubmitting}>
+                    <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={isSubmitting}>
                       {displayErrorsOrSubmit(errors)}
-                    </GradientSubmitButton>
+                    </SwapButton>
                   </div>
                 </div >
               </Form >

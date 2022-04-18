@@ -1,4 +1,5 @@
 /* This example requires Tailwind CSS v2.0+ */
+import { CheckIcon } from '@heroicons/react/outline';
 import { FC } from 'react'
 import SubmitButton from './buttons/submitButton';
 import Modal from './modalComponent';
@@ -19,6 +20,8 @@ const OffRampDetailsModal: FC<OffRampDetailsModalParams> = ({ onConfirm, address
                 Please do a transaction with the provided details
             </p>)
     }
+    
+    const checkButtonIcon = <CheckIcon className='h-5 w-5'></CheckIcon>
 
     return (
         <Modal title='Off-ramp details' {...modalParams} description={modalDescription()}>
@@ -62,7 +65,7 @@ const OffRampDetailsModal: FC<OffRampDetailsModalParams> = ({ onConfirm, address
                 </div>
             </div>
             <div className="mt-3 sm:mt-6 text-white text-sm">
-                <SubmitButton onClick={() => onConfirm()} isSubmitting={false} isDisabled={false}>
+                <SubmitButton onClick={() => onConfirm()} defaultStyle="bg-indigo-500" icon={checkButtonIcon}  isSubmitting={false} isDisabled={false}>
                     I did the transfer!
                 </SubmitButton>
             </div>

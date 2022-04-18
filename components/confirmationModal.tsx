@@ -1,3 +1,4 @@
+import { CheckIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { FC, useState } from 'react'
 import SubmitButton from './buttons/submitButton';
@@ -34,7 +35,7 @@ const ConfirmationModal: FC<ConfirmationModalParams> = ({ onConfirm, formValues,
             return (
                 <div className='text-base'>
                     <span>
-                        You are requesting a transfer of <span className='text-indigo-100 font-bold'> {amount} {currency.name}</span> from your <span className='text-indigo-100 font-bold'>{exchange.name}</span> exchange account to your <span className='text-indigo-100 font-bold'>{network.name}</span> wallet  <span className='text-indigo-100 font-bold'>({destination_address.slice(0, 4) + "..." + destination_address.slice(destination_address.length - 4, destination_address.length)})</span>
+                        You are requesting a transfer of <span className='text-indigo-100 font-bold'> {amount} {currency.name}</span> from your <span className='text-indigo-100 font-bold'>{exchange.name}</span> exchange account to your <span className='text-indigo-100 font-bold'>{network.name}</span> wallet  <span className='text-indigo-100 font-bold'>({destination_address.slice(0, 5) + "..." + destination_address.slice(destination_address.length - 4, destination_address.length)})</span>
                         <p className='mt-2'>To continue, you have to confirm that </p>
                     </span>
                 </div>)
@@ -42,7 +43,7 @@ const ConfirmationModal: FC<ConfirmationModalParams> = ({ onConfirm, formValues,
     }
 
     const checkboxes = [
-        { label: <span>The provided address is your <span className='text-indigo-300'>{isOfframp ? exchange.name + " exchange": network.name + " wallet"}</span> address</span> },
+        { label: <span>The provided address is your <span className='text-indigo-300'>{isOfframp ? exchange.name + " exchange" : network.name + " wallet"}</span> address</span> },
         { label: <span>Providing wrong information will result in a loss of funds</span> },
     ]
 
@@ -54,6 +55,8 @@ const ConfirmationModal: FC<ConfirmationModalParams> = ({ onConfirm, formValues,
         setCheckedState(checkedState.map((item, index) =>
             index === position ? !item : item
         ));
+
+    const checkButtonIcon = <CheckIcon className='h-5 w-5'></CheckIcon>
 
     return (
         <Modal title='Swap Confirmation' {...modalParams} description={modalDescription()}>
@@ -84,7 +87,7 @@ const ConfirmationModal: FC<ConfirmationModalParams> = ({ onConfirm, formValues,
             </fieldset>
             <p className='text-white mt-4 pt-2 border-t-2 border-indigo-300'>First time here? Please read the  <Link key="userGuide" href="/userguide"><a className="text-indigo-400 font-semibold underline hover:cursor-pointer"> User Guide</a></Link></p>
             <div className="mt-3 sm:mt-6 text-white text-sm">
-                <SubmitButton isDisabled={!checkedState.every(x => x === true)} isSubmitting={false} onClick={() => onConfirm()}>
+                <SubmitButton isDisabled={!checkedState.every(x => x === true)} defaultStyle="bg-indigo-500" icon={checkButtonIcon} isSubmitting={false} onClick={() => onConfirm()}>
                     Confirm
                 </SubmitButton>
             </div>
