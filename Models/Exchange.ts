@@ -1,6 +1,7 @@
 export class Exchange {
     id: string;
     name: string;
+    logo_url: string;
     internal_name: string;
     is_enabled: boolean;
     is_default: boolean;
