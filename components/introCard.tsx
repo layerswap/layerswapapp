@@ -18,8 +18,7 @@ function IntroCard(props) {
                             Immutable X!
                         </span>
                         <span className="hidden md:inline">
-                            Immutable X is live!
-                            {/* <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1480921959252774918">Join the discussion</a> */}
+                            Immutable X is live! 
                         </span>
                     </p>
                 </div>
