@@ -16,9 +16,13 @@ import SelectMenu from './selectMenu/selectMenu';
 import IntroCard from './introCard';
 import Image from 'next/image'
 import ConfirmationModal from './confirmationModal';
-import SubmitButton from './submitButton';
 import { SwapFormValues } from './DTOs/SwapFormValues';
+import { ImmutableXClient } from '@imtbl/imx-sdk';
+import ImmutableXConnectModal from './immutableXConnectModal';
+import SwapButton from './buttons/swapButton';
 import { Partner } from '../Models/Partner';
+
+const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
 interface SwapApiResponse {
   swapId: string;
@@ -114,10 +118,18 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
   const formikRef = useRef<FormikProps<SwapFormValues>>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isImmutableModalOpen, setIsImmutableModalOpen] = useState(false);
 
   function onConfirmModalDismiss(isIntentional: boolean) {
     if (isIntentional || confirm("Are you sure you want to stop?")) {
       setIsConfirmModalOpen(false);
+      formikRef.current.setSubmitting(false);
+    }
+  }
+
+  function onImmutableModalDismiss(isIntentional: boolean) {
+    if (isIntentional || confirm("Are you sure you want to stop?")) {
+      setIsImmutableModalOpen(false);
       formikRef.current.setSubmitting(false);
     }
   }
@@ -144,9 +156,16 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
       });
   }
 
+  function onImmutableModalConfirm(address: string) {
+    formikRef.current.values.destination_address = address;
+    setIsImmutableModalOpen(false);
+    setIsConfirmModalOpen(true);
+  }
+
   return (
     <div className="flex justify-center text-white">
       <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} />
+      <ImmutableXConnectModal onConfirm={onImmutableModalConfirm} onDismiss={onImmutableModalDismiss} isOpen={isImmutableModalOpen} destination_address={formikRef.current?.values?.destination_address} />
       <div className="flex flex-col justify-center justify-items-center px-2">
         <CardContainer className="container mx-auto sm:px-6 lg:px-8 max-w-3xl">
           <Formik
@@ -183,8 +202,24 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
               return errors;
             }}
-            onSubmit={() => {
-              setIsConfirmModalOpen(true);
+            onSubmit={values => {
+              if (values.network.baseObject.code.toLowerCase().includes("immutablex")) {
+                ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
+                  .then(client => {
+                    client.isRegistered({ user: values.destination_address })
+                      .then(isRegistered => {
+                        if (isRegistered) {
+                          setIsConfirmModalOpen(true);
+                        }
+                        else {
+                          setIsImmutableModalOpen(true);
+                        }
+                      })
+                  })
+              }
+              else {
+                setIsConfirmModalOpen(true);
+              }
             }}
           >
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
@@ -293,9 +328,9 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                       <span>  {values.currency.name}</span></span>
                   </div>
                   <div className="mt-10">
-                    <SubmitButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={isSubmitting}>
+                    <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={isSubmitting}>
                       {displayErrorsOrSubmit(errors)}
-                    </SubmitButton>
+                    </SwapButton>
                   </div>
                 </div>
               </Form>
