@@ -3,6 +3,7 @@ const navigation = {
     { name: 'Privacy Policy', href: '/blog/guide/Privacy_Policy' },
     { name: 'Terms of Service', href: '/blog/guide/Terms_of_Service' },
     { name: 'About Us', href: '/about' },
+    { name: 'For Partners', href: '/forpartners'}
   ],
   social: [
     {
