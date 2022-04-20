@@ -66,6 +66,17 @@ const exchanges = [
         name: 'Kraken',
         imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/kraken.png',
         guideUrl: '/blog/guide/How_to_transfer_crypto_from_Kraken_to_L2',
+    },
+    {
+        name: 'crypto.com',
+        imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/cryptocom.png',
+        guideUrl: '/blog/guide/How_to_transfer_crypto_from_cryptocom_to_L2',
+    },
+    ,
+    {
+        name: 'Bittrex Global',
+        imageSrc: 'https://bransferstorage.blob.core.windows.net/layerswap/exchanges/medium/bittrexglobal.png',
+        guideUrl: '/blog/guide/How_to_transfer_crypto_from_BITTREX_GLOBAL_to_L2',
     }
 ]
 

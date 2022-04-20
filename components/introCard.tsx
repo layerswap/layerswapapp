@@ -18,7 +18,7 @@ function IntroCard(props) {
                             Immutable X!
                         </span>
                         <span className="hidden md:inline">
-                            Immutable X is live! 
+                            Immutable X, crypto.com and more! 
                         </span>
                     </p>
                 </div>
