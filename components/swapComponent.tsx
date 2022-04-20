@@ -136,20 +136,20 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, currency: initialCurrency, exchange: initialExchange };
 
   // Offramp modal stuff
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOfframpModalOpen, setisOfframpModalOpen] = useState(false);
   const [offRampAddress, setoffRampAddress] = useState("");
   const [offRampMemo, setoffRampMemo] = useState("");
   const [offRampAmount, setoffRampAmount] = useState("");
   const [createdSwapId, setcreatedSwapId] = useState("");
 
-  function onOffRampModalDismiss() {
-    if (confirm("Are you sure you want to cancel?")) {
-      setIsModalOpen(false);
+  function onOffRampModalDismiss(isIntentional: boolean) {
+    if (isIntentional || confirm("Are you sure you want to stop?")) {
+      setisOfframpModalOpen(false);
     }
   }
 
   function onOffRampModalConfirm() {
-    setIsModalOpen(false);
+    setisOfframpModalOpen(false);
     router.push(`/${createdSwapId}`);
   }
 
@@ -194,7 +194,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
               setoffRampAmount(r.data.amount.toLocaleString());
               setcreatedSwapId(r.data.id);
 
-              setIsModalOpen(true);
+              setisOfframpModalOpen(true);
             });
         }
         else {
@@ -214,7 +214,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
   return (
     <div>
-      <OffRampDetailsModal address={offRampAddress} memo={offRampMemo} amount={offRampAmount} isOpen={isModalOpen} onConfirm={onOffRampModalConfirm} onDismiss={onOffRampModalDismiss} />
+      <OffRampDetailsModal address={offRampAddress} memo={offRampMemo} amount={offRampAmount} isOpen={isOfframpModalOpen} onConfirm={onOffRampModalConfirm} onDismiss={onOffRampModalDismiss} />
       <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} isOfframp={isOfframp} />
       <ImmutableXConnectModal onConfirm={onImmutableModalConfirm} onDismiss={onImmutableModalDismiss} isOpen={isImmutableModalOpen} destination_address={formikRef.current?.values?.destination_address} />
       <div className="flex flex-col space-y-6 text-white">
