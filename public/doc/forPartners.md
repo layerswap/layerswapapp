@@ -1,14 +1,14 @@
-## LayerSwap Integration Guide
+## Layerswap Integration Guide
 
-To integrate in your wallet or dapp, you can direct users to [LayerSwap](https://layerswap.io/) and customize the initial values by using query parametrs.
+To integrate Layerswap in your wallet or app, direct users to Layerswap and customize the initial values by using query parameters.
 
 Example: [Loopring & FTX.COM](https://www.layerswap.io/?destNetwork=LOOPRING_MAINNET&sourceExchangeName=ftxcom).
 
-- *sourceExchangeName* - To pre-select the source exchange. Avilable values are: ***binance***, ***coinbase***, ***ftxcom***, ***ftxus***, ***huobi***, ***okex***, ***kucoin*** and ***kraken***.
+- *sourceExchangeName* - Pre-select the source exchange. Avilable values are: ***binance***, ***coinbase***, ***ftxcom***, ***ftxus***, ***huobi***, ***okex***, ***kucoin*** and ***kraken***.
 
-- *destNetwork* - To pre-select the destination network(L2, sidechain etc.). Avilable values are: 
-***LOOPRING_MAINNET***, ***ZKSYNC_MAINNET***, ***ARBITRUM_MAINNET***, ***RONIN_MAINNET***, ***BOBA_MAINNET***, ***OPTIMISM_MAINNET***, ***POLYGON_MAINNET*** and ***MOONBEAM_MAINNET***.
 
+- *destNetwork* - Pre-select the destination network(L2, sidechain etc.). Avilable values are at the bottom of a page
+   
 - *lockAddress = true* - To lock the provided address, to not allow user to change it.
 
 - *lockNetwork = true* - To lock the provided network.
@@ -21,15 +21,27 @@ Example: [Loopring & FTX.COM](https://www.layerswap.io/?destNetwork=LOOPRING_MAI
 
 ## Centralized exchange or L2/side-chain integration
 
-If you want LayerSwap to integrate your exchange or L2 you can reach out to hi@layerswap.io.
-Pre-requisites for exchange integration are the availability of (free and instant) internal transactions and APIs to fetch deposit/withdrawal history. For L2 integrations, the ability to transfer between accounts.
+If you want Layerswap to integrate your exchange or L2 you can reach out to hi@layerswap.io. Prerequisites for exchange integration are the availability of (free and instant) internal transactions and APIs to fetch deposit/withdrawal history. For L2 integrations, only the ability to transfer between accounts.
+
+| **Network Name**  | **Query Type**     |
+| ----------------- | -----------------: |
+| Loopring          | LOOPRING_MAINNET   |
+| Zksync            | ZKSYNC_MAINNET     | 
+| Arbitrum          | ARBITRUM_MAINNET   |
+| Ronin             | RONIN_MAINNET      |
+| Boba              | BOBA_MAINNET       | 
+| Optimism          | OPTIMISM_MAINNET   |
+| Polygon           | POLYGON_MAINNET    |
+| Moonbeam          | MOONBEAM_MAINNET   | 
+| Immutable X       | IMMUTABLEX_MAINNET |  
 
 ---
 
 ## Wallet Integration Source
 
-If you're integrating LayerSwap in your wallet, and want your users to see where's the address coming from, you can reach out to hi@layerswap.io and provide the assets and information shown to the user.
+If you're integrating Layerswap to your wallet, and want your users to see where their address is coming from, you can reach out to hi@layerswap.io and provide the assets and information shown to the user.
 
 <img className='mx-auto' src="/images/argentIntegr.png" alt="Argent" width="500"/> 
 <img className='mx-auto' src="/images/imTokenIntegr.png" alt="imToken" width="500"/>
 <img className='mx-auto' src="/images/tokenPocketIntegr.png" alt="TokenPocket" width="500"/>
+

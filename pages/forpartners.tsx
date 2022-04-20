@@ -12,7 +12,7 @@ export default function About(props) {
     return (
         <Layout>
             <Head>
-                <title>For LayerSwap Partners</title>
+                <title>For Layerswap Partners</title>
             </Head>
 
             <main>
