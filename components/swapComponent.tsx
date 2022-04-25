@@ -224,6 +224,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
             enableReinitialize={true}
             innerRef={formikRef}
             initialValues={initialValues}
+            validateOnMount={true}
             validate={values => {
               let errors: FormikErrors<SwapFormValues> = {};
               let amount = Number(values.amount?.toString()?.replace(",", "."));
