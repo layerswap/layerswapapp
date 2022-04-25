@@ -16,7 +16,8 @@ const swapOptions: NavRadioOption[] = [
   { name: "offramp", displayName: 'Off-ramp', isEnabled: true, isNew: true }
 ];
 
-export default function Home({ data, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+
+export default function Home({ data, query, isOfframpEnabled }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
 
   let preSelectedNetwork: string = query.destNetwork;
@@ -34,8 +35,7 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
       if (isImtoken) {
         setAddressSource("imtoken");
       }
-      else if (isTokenPocket)
-      {
+      else if (isTokenPocket) {
         setAddressSource("tokenpocket");
       }
       let supportedNetworks = data.networks.filter(x => x.chain_id != -1 && x.is_enabled);
@@ -79,7 +79,10 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
     <Layout>
       <div className='flex flex-col space-y-5'>
         <div className='flex flex-col items-center'>
-          <NavRadio selected={swapOption} items={swapOptions} setSelected={setSwapOption}></NavRadio>
+          {
+            isOfframpEnabled &&
+            <NavRadio selected={swapOption} items={swapOptions} setSelected={setSwapOption}></NavRadio>
+          }
           {swapOption.name === "offramp"
             &&
             <div className='flex w-full'>
@@ -113,8 +116,9 @@ export async function getServerSideProps(context) {
   // }
 
   data.networks = networks;
+  let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 
   return {
-    props: { data, query },
+    props: { data, query, isOfframpEnabled },
   }
 }
