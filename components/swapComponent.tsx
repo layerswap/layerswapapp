@@ -111,7 +111,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].baseObject.is_wallet;
   let initialNetwork =
     availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
-    ?? availableNetworks.find(x => x.isEnabled);
+    ?? availableNetworks.find(x => x.isEnabled && x.isDefault);
 
   if (lockNetwork) {
     availableNetworks.forEach(x => {
@@ -198,9 +198,10 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
             });
         }
         else {
-          router.push(response.data.redirect_url);
+          router.push(response.data.redirect_url)
+            .then(() => formikRef.current.setSubmitting(false));
         }
-        formikRef.current.setSubmitting(false);
+
       }).catch(error => {
         formikRef.current.setSubmitting(false);
       });
