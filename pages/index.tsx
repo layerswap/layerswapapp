@@ -106,14 +106,14 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
-  //if (!process.env.IS_TESTING) {
-  data.networks.forEach((element, index) => {
-    if (!element.is_test_net) networks.push(element);
-  });
-  // }
-  // else {
-  //   networks = data.networks;
-  // }
+  if (!process.env.IS_TESTING) {
+    data.networks.forEach((element) => {
+      if (!element.is_test_net) networks.push(element);
+    });
+  }
+  else {
+    networks = data.networks;
+  }
 
   data.networks = networks;
   let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
