@@ -20,4 +20,8 @@
   body {
     @apply bg-gray-900;
   }
+  /* On iOS disabled inputs have default opacitiy */
+  .ntdi {
+    opacity: 1; /* required on iOS */
+  }
 }

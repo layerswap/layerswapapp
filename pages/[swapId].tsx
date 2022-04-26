@@ -2,7 +2,7 @@ import { useRouter } from 'next/router'
 import useSWR from 'swr';
 import CardContainer from '../components/cardContainer';
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
-import { SwapInfo } from '../Models/SwapInfo';
+import { SwapInfo, SwapOffRampInfo } from '../Models/SwapInfo';
 import { SwapStatus } from '../Models/SwapStatus';
 import { CheckIcon, XIcon } from '@heroicons/react/outline'
 import Link from 'next/link'
@@ -89,44 +89,44 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
 
   return (
     <Layout>
-      <div className="flex justify-center text-white">
-        <div className="flex flex-col justify-center justify-items-center px-2">
-          <CardContainer className="container mx-auto sm:px-6 lg:px-8 max-w-3xl">
-            <div className="py-2 md:px-10">
-              <div className="justify-center flex">
-                {renderIndicator(swapPageStatus)}
-              </div>
-              <h3 className="mt-6 text-center text-xl md:text-2xl leading-6 font-medium text-gray-100">
-                {renderHeading(swapPageStatus)}
-              </h3>
-              <div className="mt-3">
-                <p className="text-blueGray-300 font-medium text-sm md:text-base max-w-md text-center mx-auto">
-                  {renderDescription(swapPageStatus)}
-                </p>
-              </div>
-              <div className="flex flex-col">
-                <div className={swapPageStatus === SwapPageStatus.Success ? "block" : "hidden"}>
+      <div className='space-y-5 text-white'>
+        <CardContainer>
+          <div className='px-6 md:px-4 py-12'>
+            <div className="justify-center flex">
+              {renderIndicator(swapPageStatus)}
+            </div>
+            <h3 className="mt-6 text-center text-xl md:text-2xl leading-6 font-medium text-gray-100">
+              {renderHeading(swapPageStatus, data?.offramp_info)}
+            </h3>
+            <div className="mt-3">
+              <p className="text-blueGray-300 font-medium text-sm md:text-base text-center">
+                {renderDescription(swapPageStatus, data?.offramp_info)}
+              </p>
+            </div>
+            <div className="flex flex-col">
+              <div className={swapPageStatus === SwapPageStatus.Success ? "block" : "hidden"}>
 
-                  <Link href='/'>
-                    <a className="font-medium underline text-indigo-400 hover:text-indigo-500">
-                      <p className="mt-2 text-center">Swap more</p>
-                    </a>
-                  </Link>
+                <Link href='/'>
+                  <a className="font-medium underline text-indigo-400 hover:text-indigo-500">
+                    <p className="mt-2 text-center">Swap more</p>
+                  </a>
+                </Link>
+                {data?.transaction_id &&
                   <a href={settings.networks.filter(x => x.code === data?.network)[0]?.explorer_template.replace("{0}", data?.transaction_id)} className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                     View in explorer
                   </a>
-                </div>
-                <div className={(swapPageStatus === SwapPageStatus.Failed || swapPageStatus === SwapPageStatus.NotFound) ? "block" : "hidden"}>
-                  <p className={classNames(swapPageStatus === SwapPageStatus.Failed ? "block" : "hidden", "mt-2 text-sm text-center text-gray-300")}><span className="text-base font-medium">Swap Id:</span> {swapId}</p>
-                  <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                    Open Discord
-                  </a>
-                </div>
+                }
+              </div>
+              <div className={(swapPageStatus === SwapPageStatus.Failed || swapPageStatus === SwapPageStatus.NotFound) ? "block" : "hidden"}>
+                <p className={classNames(swapPageStatus === SwapPageStatus.Failed ? "block" : "hidden", "mt-2 text-sm text-center text-gray-300")}><span className="text-base font-medium">Swap Id:</span> {swapId}</p>
+                <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                  Open Discord
+                </a>
               </div>
             </div>
-          </CardContainer>
-          <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5" />
-        </div>
+          </div>
+        </CardContainer>
+        <IntroCard />
       </div>
     </Layout>
   )
@@ -160,7 +160,7 @@ function renderIndicator(swapPageStatus: SwapPageStatus) {
   }
 }
 
-function renderHeading(swapPageStatus: SwapPageStatus) {
+function renderHeading(swapPageStatus: SwapPageStatus, offRampInfo?: SwapOffRampInfo) {
   switch (swapPageStatus) {
     case SwapPageStatus.NotFound: {
       return "Swap not found.";
@@ -170,6 +170,9 @@ function renderHeading(swapPageStatus: SwapPageStatus) {
     }
     default:
     case SwapPageStatus.Processing: {
+      if (offRampInfo) {
+        return "Waiting..."
+      }
       return "Processing...";
     }
     case SwapPageStatus.Success: {
@@ -178,7 +181,7 @@ function renderHeading(swapPageStatus: SwapPageStatus) {
   }
 }
 
-function renderDescription(swapPageStatus: SwapPageStatus) {
+function renderDescription(swapPageStatus: SwapPageStatus, offRampInfo?: SwapOffRampInfo) {
   switch (swapPageStatus) {
     case SwapPageStatus.NotFound: {
       return "Ooops looks like you landed on a wrong page. If you believe that's not the case plase contact us through our Discord";
@@ -188,9 +191,17 @@ function renderDescription(swapPageStatus: SwapPageStatus) {
     }
     default:
     case SwapPageStatus.Processing: {
-      return "We are submitting your transaction to the network.You'll see the transaction id when it's picked up by a miner.";
+      if (offRampInfo) {
+        return <span>We are waiting for a deposit on Address <span className='font-bold text-pink-300 text-xs md:text-sm'>{offRampInfo.deposit_address}</span> with Memo  <span className='font-bold text-pink-300 text-xs md:text-sm'>{offRampInfo.memo}</span>.</span>
+      }
+      else {
+        return "We are submitting your transaction to the network.You'll see the transaction id when it's picked up by a miner.";
+      }
     }
     case SwapPageStatus.Success: {
+      if (offRampInfo) {
+        return "Your swap successfully completed. You can see it in your exchange account, or go ahead swap more! "
+      }
       return "Your swap successfully completed. You can view it in the explorer, or go ahead swap more!"
     }
   }

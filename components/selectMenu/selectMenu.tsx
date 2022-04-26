@@ -1,49 +1,17 @@
-import { FC, useEffect, useState } from 'react'
+import { FC } from 'react'
 import { Listbox } from '@headlessui/react'
 import { SelectMenuProps } from './selectMenuProps'
-import SelectMenuOptions from './selectMenuOptions'
 import SelectMenuButtonContent from './selectMenuButtonContent'
+import BaseSelectMenu from './baseSelectMenu'
 
-let SelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue, label, disabled }) => {
-    const [selected, setSelected] = useState(value)
-    const [availableValues, setAvailableValues] = useState(values);
-
-    useEffect(() => {
-        if (values.length != availableValues.length) {
-            updateValues();
-        }
-        else {
-            for (var i = 0; i < values.length; i++) {
-                if (values[i].id != availableValues[i].id) {
-                    updateValues();
-                }
-            }
-        }
-    }, [values, availableValues]);
-
-    function updateValues() {
-        setAvailableValues(values);
-        if (!values.some(x => x.id === value.id)) {
-            var defaultValue = values.filter(x => x.isDefault)[0] ?? values[0];
-            setSelected(defaultValue);
-        }
-    }
-
-    useEffect(() => {
-        name && selected && setFieldValue && setFieldValue(name, selected);
-    }, [name, selected, setFieldValue]);
+let SelectMenu: FC<SelectMenuProps> = (props) => {
 
     return (
-        <Listbox disabled={disabled} value={value} onChange={setSelected}>
-            <Listbox.Label className="block text-base font-medium text-white">{label}</Listbox.Label>
-            <div className="mt-1 relative">
-                <Listbox.Button className="focus:ring-indigo-500 focus:border-indigo-500 w-full pl-3 pr-10 py-2 bg-gray-800 border-gray-600 border focus:ring-1 font-semibold rounded-md">
-                    <SelectMenuButtonContent value={value} />
-                </Listbox.Button>
-
-                <SelectMenuOptions values={values} />
-            </div>
-        </Listbox>
+        <BaseSelectMenu {...props}>
+            <Listbox.Button className="focus:ring-indigo-500 focus:border-indigo-500 w-full pl-3 pr-10 py-2 bg-gray-800 border-gray-600 border focus:ring-1 font-semibold rounded-md">
+                <SelectMenuButtonContent value={props.value} />
+            </Listbox.Button>
+        </BaseSelectMenu>
     )
 }
 export default SelectMenu;

@@ -40,7 +40,7 @@ export default function Layout({ hasSideShapes, children }: Props) {
     <main>
       <div className="overflow-hidden relative">
         <Navbar></Navbar>
-        <div>
+        <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
           {children}
         </div>
         <FooterComponent />

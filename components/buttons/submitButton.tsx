@@ -1,4 +1,3 @@
-import { SwitchHorizontalIcon } from "@heroicons/react/outline";
 import { FC, MouseEventHandler } from "react";
 import SpinIcon from "../icons/spinIcon";
 

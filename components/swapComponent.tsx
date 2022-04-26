@@ -15,6 +15,9 @@ import { SelectMenuItem } from './selectMenu/selectMenuItem';
 import SelectMenu from './selectMenu/selectMenu';
 import IntroCard from './introCard';
 import Image from 'next/image'
+import OffRampDetailsModal from './offRampDetailsModal';
+import { SwapInfo } from '../Models/SwapInfo';
+import { isValidEmailAddress } from '../lib/emailAddressValidator';
 import ConfirmationModal from './confirmationModal';
 import { SwapFormValues } from './DTOs/SwapFormValues';
 import { ImmutableXClient } from '@imtbl/imx-sdk';
@@ -25,7 +28,7 @@ import { Partner } from '../Models/Partner';
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
 interface SwapApiResponse {
-  swapId: string;
+  swap_id: string;
   redirect_url: string;
 }
 
@@ -38,6 +41,7 @@ interface SwapProps {
   addressSource?: string;
   sourceExchangeName?: string;
   asset?: string;
+  swapMode: string
 }
 
 const CurrenciesField = (props) => {
@@ -47,7 +51,6 @@ const CurrenciesField = (props) => {
   } = useFormikContext<SwapFormValues>();
 
   let availableCurrencies = props.availableCurrencies.filter(x => x.baseObject.network_id == network.baseObject.id);
-
   return (<>
     <Field name="currency" values={availableCurrencies} value={currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
   </>)
@@ -55,12 +58,14 @@ const CurrenciesField = (props) => {
 
 interface ExchangesFieldProps {
   availableExchanges: SelectMenuItem<Exchange>[];
+  label: string;
+  isOfframp: boolean;
 }
 
-const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges }) => {
+const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges, label, isOfframp }) => {
   const {
     values: { exchange, currency },
-    setFieldValue
+    setFieldValue,
   } = useFormikContext<SwapFormValues>();
 
   let filteredExchanges: SelectMenuItem<Exchange>[] = [];
@@ -68,32 +73,41 @@ const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges }) => {
   availableExchanges.map(function (exchange) {
     currency.baseObject.exchanges.map(function (currencyExchange) {
       if (exchange.baseObject.id === currencyExchange.exchangeId) {
-        filteredExchanges.push(exchange);
+        if (!isOfframp || currencyExchange.isOffRampEnabled)
+          filteredExchanges.push(exchange);
       }
     })
   })
 
   return (<>
-    <Field name="exchange" values={filteredExchanges} label="From exchange" value={exchange} as={SelectMenu} setFieldValue={setFieldValue} />
+    <Field name="exchange" values={filteredExchanges} label={label} value={exchange} as={SelectMenu} setFieldValue={setFieldValue} />
   </>)
 };
 
-const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork, addressSource, sourceExchangeName, asset }) => {
+const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, lockNetwork, addressSource, sourceExchangeName, asset, swapMode }) => {
   const router = useRouter();
+  let isOfframp = swapMode == "offramp";
+  const formikRef = useRef<FormikProps<SwapFormValues>>(null);
+  let formValues = formikRef.current?.values;
 
   let availableCurrencies = settings.currencies
     .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
-  const availableExchanges = settings.exchanges
+  let availableExchanges = settings.exchanges
     .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
-  const availableNetworks = settings.networks
+  let availableNetworks = settings.networks
     .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
 
+  if (isOfframp) {
+    availableCurrencies = availableCurrencies.filter(x => x.baseObject.exchanges.find(c => c.isOffRampEnabled));
+    availableNetworks = availableNetworks.filter(n => availableCurrencies.find(c => c.baseObject.network_id == n.baseObject.id));
+  }
+
   const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), new SelectMenuItem<Partner>(c, c.name, c.display_name, c.logo_url, c.is_enabled)]));
 
-  let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
+  let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress && !isOfframp;
   let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].baseObject.is_wallet;
   let initialNetwork =
     availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
@@ -106,17 +120,39 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
     });
   }
 
-  let initialAddress = destAddress && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
+  let initialAddress = destAddress && !isOfframp && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
   const enabledNetworkCurrencies = availableCurrencies.filter(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled);
   const initialCurrency = enabledNetworkCurrencies.find(x => x.baseObject.asset.toLowerCase() === asset?.toLowerCase()) ?? enabledNetworkCurrencies.find(x => x.isDefault) ?? enabledNetworkCurrencies[0];
 
   let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
+
+  if (isOfframp) {
+    initialExchange = availableExchanges.filter(e => initialCurrency.baseObject.exchanges.find(ce => ce.isOffRampEnabled && ce.exchangeId == e.baseObject.id))[0]
+  }
+
   if (!initialExchange || !initialCurrency.baseObject.exchanges.find(x => x.exchangeId === initialExchange.baseObject.id)) {
     initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
   }
   const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, currency: initialCurrency, exchange: initialExchange };
 
-  const formikRef = useRef<FormikProps<SwapFormValues>>(null);
+  // Offramp modal stuff
+  const [isOfframpModalOpen, setisOfframpModalOpen] = useState(false);
+  const [offRampAddress, setoffRampAddress] = useState("");
+  const [offRampMemo, setoffRampMemo] = useState("");
+  const [offRampAmount, setoffRampAmount] = useState("");
+  const [createdSwapId, setcreatedSwapId] = useState("");
+
+  function onOffRampModalDismiss(isIntentional: boolean) {
+    if (isIntentional || confirm("Are you sure you want to stop?")) {
+      setisOfframpModalOpen(false);
+    }
+  }
+
+  function onOffRampModalConfirm() {
+    setisOfframpModalOpen(false);
+    router.push(`/${createdSwapId}`);
+  }
+
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isImmutableModalOpen, setIsImmutableModalOpen] = useState(false);
 
@@ -136,7 +172,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
   function onConfrmModalConfirm() {
     setIsConfirmModalOpen(false);
-    let formValues = formikRef.current.values;
+
     axios.post<SwapApiResponse>(
       LayerSwapApiClient.apiBaseEndpoint + "/swaps",
       {
@@ -145,12 +181,27 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
         destination_address: formValues.destination_address,
         network: formValues.network.id,
         exchange: formValues.exchange.id,
+        to_exchange: isOfframp,
         partner_name: isPartnerAddress ? availablePartners[addressSource].id : undefined
       }
     )
       .then(response => {
-        router.push(response.data.redirect_url)
-          .then(() => formikRef.current.setSubmitting(false));
+        if (isOfframp) {
+          axios.get<SwapInfo>(LayerSwapApiClient.apiBaseEndpoint + `/swaps/${response.data.swap_id}`)
+            .then(r => {
+              setoffRampAddress(r.data.offramp_info.deposit_address);
+              setoffRampMemo(r.data.offramp_info.memo);
+              setoffRampAmount(r.data.amount.toLocaleString());
+              setcreatedSwapId(r.data.id);
+
+              setisOfframpModalOpen(true);
+            });
+        }
+        else {
+          router.push(response.data.redirect_url)
+            .then(() => formikRef.current.setSubmitting(false));
+        }
+
       }).catch(error => {
         formikRef.current.setSubmitting(false);
       });
@@ -163,15 +214,17 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   }
 
   return (
-    <div className="flex justify-center text-white">
-      <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} />
+    <div>
+      <OffRampDetailsModal address={offRampAddress} memo={offRampMemo} amount={offRampAmount} isOpen={isOfframpModalOpen} onConfirm={onOffRampModalConfirm} onDismiss={onOffRampModalDismiss} />
+      <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} isOfframp={isOfframp} />
       <ImmutableXConnectModal onConfirm={onImmutableModalConfirm} onDismiss={onImmutableModalDismiss} isOpen={isImmutableModalOpen} destination_address={formikRef.current?.values?.destination_address} />
-      <div className="flex flex-col justify-center justify-items-center px-2">
-        <CardContainer className="container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+      <div className="flex flex-col space-y-6 text-white">
+        <CardContainer>
           <Formik
             enableReinitialize={true}
             innerRef={formikRef}
             initialValues={initialValues}
+            validateOnMount={true}
             validate={values => {
               let errors: FormikErrors<SwapFormValues> = {};
               let amount = Number(values.amount?.toString()?.replace(",", "."));
@@ -194,10 +247,22 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
               }
 
               if (!values.destination_address) {
-                errors.destination_address = `Enter ${values?.network.name} address`
+                if (isOfframp) {
+                  errors.destination_address = `Enter ${values?.exchange.name} address`
+                }
+                else {
+                  errors.destination_address = `Enter ${values?.network.name} address`
+                }
               }
-              else if (!isValidAddress(values.destination_address, values.network.baseObject)) {
-                errors.destination_address = `Enter a valid ${values?.network.name} address`
+              else {
+                if (isOfframp) {
+                  if (!isValidEmailAddress(values.destination_address)) {
+                    errors.destination_address = "Enter a valid email address"
+                  }
+                }
+                else if (!isValidAddress(values.destination_address, values.network.baseObject)) {
+                  errors.destination_address = `Enter a valid ${values?.network.name} address`
+                }
               }
 
               return errors;
@@ -224,7 +289,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
           >
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
               <Form>
-                <div className="px-0 md:px-6 py-0 md:py-2">
+                <div className="px-6 md:px-12 py-12">
                   <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
                       <Field name="amount">
@@ -260,17 +325,22 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                         )}
                       </Field>
                     </div>
-                    <div className="flex flex-col md:w-3/5 w-full">
-                      <ExchangesField availableExchanges={availableExchanges} />
+                    <div className="flex flex-col md:w-80 w-full">
+                      {
+                        isOfframp ? <Field name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
+                          : <ExchangesField isOfframp={isOfframp} label={isOfframp ? "To Exchange" : "From Exchange"} availableExchanges={availableExchanges} />
+                      }
                     </div>
                   </div>
                   <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     <div className="w-full">
                       <label className="block font-medium text-base">
-                        To {values?.network?.name} address {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
+                        {isOfframp && `To ${values?.exchange?.name} address`}
+                        {!isOfframp && `To ${values?.network?.name} address`}
+                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
                       </label>
                       <div className="relative rounded-md shadow-sm mt-1">
-                        {isPartnerWallet &&
+                        {isPartnerWallet && !isOfframp &&
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Image className='rounded-md object-contain' src={availablePartners[addressSource].imgSrc} width="24" height="24"></Image>
                           </div>
@@ -280,9 +350,9 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                             {({ field }) => (
                               <input
                                 {...field}
-                                placeholder="0x123...ab56c"
+                                placeholder={isOfframp ? "mycoinbase@gmail.com" : "0x123...ab56c"}
                                 autoCorrect="off"
-                                type="text"
+                                type={isOfframp ? "email" : "text"}
                                 name="destination_address"
                                 id="destination_address"
                                 disabled={initialAddress != '' && lockAddress}
@@ -291,13 +361,15 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                             )}
                           </Field>
                         </div>
-
                       </div>
+                    </div >
+                    <div className="flex flex-col md:w-80 w-full">
+                      {
+                        isOfframp ? <ExchangesField isOfframp={isOfframp} label={isOfframp ? "To Exchange" : "From Exchange"} availableExchanges={availableExchanges} />
+                          : <Field name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
+                      }
                     </div>
-                    <div className="flex flex-col md:w-3/5 w-full">
-                      <Field name="network" values={availableNetworks} label="Network" value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
-                    </div>
-                  </div>
+                  </div >
                   <div className="mt-5 flex flex-col md:flex-row items-baseline justify-between">
                     <label className="block font-medium text-center">
                       Fee
@@ -332,14 +404,14 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                       {displayErrorsOrSubmit(errors)}
                     </SwapButton>
                   </div>
-                </div>
-              </Form>
+                </div >
+              </Form >
             )}
-          </Formik>
+          </Formik >
         </CardContainer >
-        <IntroCard className="container mx-auto sm:px-6 lg:px-8 max-w-3xl pt-5" />
-      </div>
-    </div>
+        <IntroCard />
+      </div >
+    </div >
   )
 };
 

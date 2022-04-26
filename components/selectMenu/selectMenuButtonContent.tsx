@@ -8,6 +8,10 @@ export interface SelectMenuButtonContentProps {
 }
 
 let SelectMenuButtonContent: FC<SelectMenuButtonContentProps> = ({ value }) => {
+    if (!value)
+    {
+        return <></>
+    }
     return (
         <>
             <span className="flex items-center">

@@ -1,16 +1,16 @@
 import SupportIcon from './icons/supportIcon';
 import Link from 'next/link';
-import { BookOpenIcon, PlayIcon } from '@heroicons/react/outline';
+import { BookOpenIcon } from '@heroicons/react/outline';
 import CardContainer from './cardContainer';
 
 function IntroCard(props) {
     return (
-        <CardContainer {...props}>
-            <div className="flex flex-col justify-between md:px-10">
+        <CardContainer {...props} >
+            <div className="flex flex-col px-6 md:px-12 py-10">
                 <div>
-                    <h1 className="text-xl font-semibold">LayerSwap</h1>
-                    <p className="md:max-w-lg text-base text-gray-100 mt-2">
-                        Save 10x on fees when moving crypto from Coinbase, Binance or FTX to Arbitrum, zkSync, Loopring and other L2s.
+                    <h1 className="text-xl font-semibold">About Layerswap</h1>
+                    <p className="text-base text-gray-100 mt-6">
+                        Save up to 10x on fees when moving crypto from Coinbase, Binance or FTX to Arbitrum, zkSync, Loopring and other L2s.
                     </p>
                     <p className="py-4">
                         <span className="bg-indigo-600 text-sm mr-2 rounded-md py-1 px-2">New</span>
@@ -18,7 +18,8 @@ function IntroCard(props) {
                             Immutable X!
                         </span>
                         <span className="hidden md:inline">
-                            Immutable X, crypto.com and more! 
+                            Immutable X, crypto.com exchange and more!
+                            {/* <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1480921959252774918">Join the discussion</a> */}
                         </span>
                     </p>
                 </div>
