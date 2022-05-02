@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "debug": "rm -rf .next/ && next dev",
+    "debug": "next dev",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
@@ -17,6 +17,7 @@
     "@tailwindcss/typography": "^0.4.1",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
+    "@web3-react/types": "^6.0.7",
     "axios": "^0.21.4",
     "bn.js": "^5.2.0",
     "formik": "^2.2.9",

@@ -9,6 +9,9 @@ import { InjectedConnector } from '@web3-react/injected-connector';
 import { useEffect, useState } from 'react'
 import NavRadio, { NavRadioOption } from '../components/navRadio'
 import Banner from '../components/banner'
+import { SettingsProvider } from '../context/settings'
+import { QueryProvider } from '../context/query'
+import { AccountProvider } from '../context/account'
 
 
 const swapOptions: NavRadioOption[] = [
@@ -90,7 +93,13 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
             </div>
           }
         </div>
-        <Swap swapMode={swapOption.name} settings={data} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
+        <SettingsProvider data={data}>
+          <QueryProvider query={query}>
+            <AccountProvider data={{ account, chainId }}>
+              <Swap swapMode={swapOption.name} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
+            </AccountProvider>
+          </QueryProvider>
+        </SettingsProvider>
       </div>
     </Layout>
   )

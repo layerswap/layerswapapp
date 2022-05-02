@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @layer utilities {
+
   /* Chrome, Safari, Edge, Opera */
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button {
@@ -20,8 +21,23 @@
   body {
     @apply bg-gray-900;
   }
+
   /* On iOS disabled inputs have default opacitiy */
   .ntdi {
-    opacity: 1; /* required on iOS */
+    opacity: 1;
+    /* required on iOS */
   }
+}
+
+.top-backdrop {
+  width: 1325px;
+  height: 1164px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: -5%;
+  border-radius: 50%;
+  z-index: -1;
+  background: rgba(255, 0, 184, 0.2);
+  filter: blur(133px);
 }

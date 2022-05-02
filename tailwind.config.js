@@ -17,7 +17,13 @@ module.exports = {
         cyan: colors.cyan,
         pink: colors.pink,
         blueGray: colors.blueGray,
-        coolGray: colors.coolGray
+        coolGray: colors.coolGray,
+        darkBlue: '#111827',
+       'ouline-blue': '#1A2949',
+       'light-blue': '#74AAC8',
+      },
+      boxShadow: {
+        'card': '5px 5px 40px rgba(0, 0, 0, 0.2), 0px 0px 200px rgba(0, 0, 0, 0.43)',
       },
       typography: (theme) => ({
         DEFAULT: {
