@@ -19,6 +19,7 @@ import Image from 'next/image'
 import SwapButton from "../../buttons/swapButton";
 import { useWizardState } from "../../../context/wizard";
 import { useSwapDataUpdate } from "../../../context/swap";
+import Select from "../../Select/Select";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -188,6 +189,7 @@ export default function MainStep() {
         >
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
                 <Form>
+                    <Select items={availableExchanges}/>
                     <div className="px-6 md:px-12 py-12">
                         <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                             
