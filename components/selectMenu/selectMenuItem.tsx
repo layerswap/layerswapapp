@@ -3,6 +3,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     name: string;
     imgSrc: string;
     isEnabled: boolean;
+    isAvailable: boolean = true;
     baseObject: T;
     isDefault: boolean;
 

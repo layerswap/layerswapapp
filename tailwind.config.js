@@ -13,6 +13,9 @@ module.exports = {
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {
+      opacity: {
+        '35': '.35',
+      },
       colors: {
         cyan: colors.cyan,
         pink: colors.pink,
@@ -21,10 +24,11 @@ module.exports = {
         darkBlue: '#111827',
         'ouline-blue': '#1A2949',
         'light-blue': '#74AAC8',
+        'darkblue-600': '#131E36',
         'darkblue-500': '#121D33',
         'darkblue-300': '#192846',
         'darkblue-200': '#2C3C60',
-        'pink-primary': '#FF0093'
+        'pink-primary': '#FF0093',
 
       },
       boxShadow: {

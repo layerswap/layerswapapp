@@ -23,45 +23,128 @@ import Select from "../../Select/Select";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
-
-const CurrenciesField = (props) => {
+const Logger = () => {
+    const formik = useFormikContext();
+    useEffect(() => {
+        console.group("Formik State");
+        console.log("values", formik.values);
+        console.log("errors", formik.errors);
+        console.log("touched", formik.touched);
+        console.log("isSubmitting", formik.isSubmitting);
+        console.log("isValidating", formik.isValidating);
+        console.log("submitCount", formik.submitCount);
+        console.groupEnd();
+    }, [
+        formik.values,
+        formik.errors,
+        formik.touched,
+        formik.isSubmitting,
+        formik.isValidating,
+        formik.submitCount
+    ]);
+    return null;
+};
+const CurrenciesField: FC = () => {
     const {
-        values: { network, currency },
-        setFieldValue
+        values: { network, currency, exchange },
+        setFieldValue,
+        touched,
     } = useFormikContext<SwapFormValues>();
 
-    let availableCurrencies = props.availableCurrencies.filter(x => x.baseObject.network_id == network.baseObject.id);
+    const name = "currency"
+    const settings = useSettingsState();
+
+    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? settings.currencies
+        .filter(x => x.network_id === network.baseObject.id)
+        .map(c => ({
+            baseObject: c,
+            id: c.id,
+            name: c.asset,
+            imgSrc: c.logo_url,
+            isAvailable: true,
+            isEnabled: c.is_enabled,
+            isDefault: c.is_default
+        })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
+            || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)))
+        : []
+
+    useEffect(() => {
+        
+        if (network && (!currency || !currencyMenuItems.some(c=>c.id == currency.id))) {
+            const defaultCurrency = currencyMenuItems.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
+            .find(c => c.baseObject.network_id === network.baseObject.id && c.baseObject.is_enabled)
+            setFieldValue(name, defaultCurrency)
+        }
+
+    }, [network, setFieldValue])
+
+
+
+
     return (<>
-        <Field name="currency" values={availableCurrencies} value={currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
+        <Field name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} />
     </>)
 };
 
-interface ExchangesFieldProps {
-    availableExchanges: SelectMenuItem<Exchange>[];
-    label: string;
-}
-
-const ExchangesField: FC<ExchangesFieldProps> = ({ availableExchanges, label }) => {
+const ExchangesField: FC = () => {
     const {
         values: { exchange, currency },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
-    let filteredExchanges: SelectMenuItem<Exchange>[] = [];
+    const settings = useSettingsState();
 
-    availableExchanges.map(function (exchange) {
-        currency.baseObject.exchanges.map(function (currencyExchange) {
-            if (exchange.baseObject.id === currencyExchange.exchangeId) {
-                filteredExchanges.push(exchange);
-            }
-        })
-    })
+    const exchangeMenuItems: SelectMenuItem<Exchange>[] = settings.exchanges
+        .map(e => ({
+            baseObject: e,
+            id: e.internal_name,
+            name: e.name,
+            imgSrc: e.logo_url,
+            isAvailable: true, //currency?.baseObject?.exchanges?.some(ce => ce.exchangeId === e.id),
+            isEnabled: e.is_enabled,
+            isDefault: e.is_default
+        })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
+            || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
 
     return (<>
-        <Field name="exchange" values={filteredExchanges} label={label} value={exchange} as={SelectMenu} setFieldValue={setFieldValue} />
+        <label className="block font-normal text-light-blue text-sm">
+            From
+        </label>
+        <div className="mt-1.5 focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg">
+            <Field name="exchange" placeholder="Choose exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
+        </div>
     </>)
 };
 
+const NetworkField: FC = () => {
+    const {
+        values: { network, currency },
+        setFieldValue,
+    } = useFormikContext<SwapFormValues>();
+
+    const settings = useSettingsState();
+
+    const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = settings.networks
+        .map(n => ({
+            baseObject: n,
+            id: n.code,
+            name: n.name,
+            imgSrc: n.logo_url,
+            isAvailable: true,
+            isEnabled: n.is_enabled,
+            isDefault: n.is_default
+        })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
+            || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
+
+    return (<>
+        <label className="block font-normal text-light-blue text-sm">
+            From
+        </label>
+        <div className="mt-1.5 focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg">
+            <Field name="network" placeholder="Choose network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
+        </div>
+    </>)
+};
 
 export default function MainStep() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
@@ -122,9 +205,10 @@ export default function MainStep() {
 
     let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
     let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].baseObject.is_wallet;
+
+
     let initialNetwork =
         availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
-        ?? availableNetworks.find(x => x.isEnabled && x.isDefault);
 
     const lockNetwork = !!chainId
     const asset = query.asset
@@ -140,14 +224,9 @@ export default function MainStep() {
 
     let initialAddress = destAddress && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
 
-    const enabledNetworkCurrencies = availableCurrencies.filter(x => x.baseObject.network_id === initialNetwork.baseObject.id && x.isEnabled);
-    const initialCurrency = enabledNetworkCurrencies.find(x => x.baseObject.asset.toLowerCase() === asset?.toLowerCase()) ?? enabledNetworkCurrencies.find(x => x.isDefault) ?? enabledNetworkCurrencies[0];
-    let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
 
-    if (!initialExchange || !initialCurrency.baseObject.exchanges.find(x => x.exchangeId === initialExchange.baseObject.id)) {
-        initialExchange = availableExchanges.find(x => x.isEnabled && x.isDefault);
-    }
-    const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, currency: initialCurrency, exchange: initialExchange };
+    let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
+    const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
 
     return <>
         <Formik
@@ -185,97 +264,94 @@ export default function MainStep() {
 
                 // return errors;
             }}
+
             onSubmit={handleSubmit}
         >
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
                 <Form>
-                    <Select items={availableExchanges}/>
                     <div className="px-6 md:px-12 py-12">
-                        <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
-                            
+                        <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4">
                             <div className="flex flex-col md:w-80 w-full">
                                 {
-                                    <ExchangesField label={"From"} availableExchanges={availableExchanges} />}
+                                    <ExchangesField />
+                                }
                             </div>
                             <div className="flex flex-col md:w-80 w-full">
                                 {
-                                    <Field name="network" values={availableNetworks} label={"To"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} />
+                                    <NetworkField />
                                 }
                             </div>
                         </div>
-                        <div className="mt-5 flex flex-col justify-between items-center w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0">
-                            <div className="w-full">
-                                <label className="block font-medium text-base">
-                                    {`To ${values?.network?.name} address`}
-                                    {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
-                                </label>
-                                <div className="relative rounded-md shadow-sm mt-1">
-                                    {isPartnerWallet &&
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Image className='rounded-md object-contain' src={availablePartners[addressSource].imgSrc} width="24" height="24"></Image>
-                                        </div>
-                                    }
-                                    <div>
-                                        <Field name="destination_address">
-                                            {({ field }) => (
-                                                <input
-                                                    {...field}
-                                                    placeholder={"0x123...ab56c"}
-                                                    autoCorrect="off"
-                                                    type={"text"}
-                                                    name="destination_address"
-                                                    id="destination_address"
-                                                    disabled={initialAddress != '' && lockAddress}
-                                                    className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'focus:ring-indigo-500 focus:border-indigo-500 block font-semibold w-full bg-gray-800 border-gray-600 rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
-                                                />
-                                            )}
-                                        </Field>
+                        <div className="w-full mb-3.5 leading-4">
+                            <label className="block font-normal text-light-blue text-sm">
+                                {`To ${values?.network?.name} address`}
+                                {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
+                            </label>
+                            <div className="relative rounded-md shadow-sm mt-1.5">
+                                {isPartnerWallet &&
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <Image className='rounded-md object-contain' src={availablePartners[addressSource].imgSrc} width="24" height="24"></Image>
                                     </div>
+                                }
+                                <div>
+                                    <Field name="destination_address">
+                                        {({ field }) => (
+                                            <input
+                                                {...field}
+                                                placeholder={"0x123...ab56c"}
+                                                autoCorrect="off"
+                                                type={"text"}
+                                                name="destination_address"
+                                                id="destination_address"
+                                                disabled={initialAddress != '' && lockAddress}
+                                                className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
+                                            />
+                                        )}
+                                    </Field>
                                 </div>
-                            </div >
-
-                            <div className="">
-                                <Field name="amount">
-                                    {({ field }) => (
-                                        <div>
-                                            <label htmlFor="amount" className="block text-base font-medium">
-                                                Amount
-                                            </label>
-                                            <div className="relative rounded-md shadow-sm mt-1">
-                                                <input
-                                                    {...field}
-                                                    pattern="^[0-9]*[.,]?[0-9]*$"
-                                                    inputMode="decimal"
-                                                    autoComplete="off"
-                                                    placeholder={`${values.currency.baseObject.min_amount} - ${values.currency.baseObject.max_amount}`}
-                                                    autoCorrect="off"
-                                                    min={values.currency.baseObject.min_amount}
-                                                    max={values.currency.baseObject.max_amount}
-                                                    type="text"
-                                                    step={1 / Math.pow(10, values.currency.baseObject.decimals)}
-                                                    name="amount"
-                                                    id="amount"
-                                                    className="focus:ring-indigo-500 focus:border-indigo-500 pr-36 block bg-gray-800 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
-                                                    onChange={e => {
-                                                        /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
-                                                    }}
-                                                />
-                                                <div className="absolute inset-y-0 right-0 flex items-center">
-                                                    <CurrenciesField name="currency" availableCurrencies={availableCurrencies} value={values.currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </Field>
                             </div>
                         </div >
+                        <div className="mb-3.5 leading-4">
+                            <Field name="amount">
+                                {({ field }) => (
+                                    <div>
+                                        <label htmlFor="amount" className="block font-normal text-light-blue text-sm">
+                                            Amount
+                                        </label>
+                                        <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-600 border-ouline-blue border">
+                                            <input
+                                                {...field}
+                                                pattern="^[0-9]*[.,]?[0-9]*$"
+                                                inputMode="decimal"
+                                                autoComplete="off"
+                                                placeholder={`${values.currency?.baseObject?.min_amount} - ${values.currency?.baseObject?.max_amount}`}
+                                                autoCorrect="off"
+                                                min={values.currency?.baseObject?.min_amount}
+                                                max={values.currency?.baseObject?.max_amount}
+                                                type="text"
+                                                step={1 / Math.pow(10, values.currency?.baseObject?.decimals)}
+                                                name="amount"
+                                                id="amount"
+                                                className="h-12 bg-darkblue-600 focus:ring-pink-primary focus:border-pink-primary flex-grow block w-full min-w-0 rounded-none rounded-l-md sm:text-sm font-semibold placeholder-gray-400 border-0"
+                                                onChange={e => {
+                                                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
+                                                }}
+                                            />
+                                            <span className="ml-1 inline-flex items-center">
+                                                <CurrenciesField />
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </Field>
+                        </div>
                         <div className="mt-5 flex flex-col md:flex-row items-baseline justify-between">
                             <label className="block font-medium text-center">
                                 Fee
                             </label>
                             <span className="text-base font-medium text-center text-gray-400">
-                                {(() => calculateFee(values).toFixed(values.currency.baseObject.precision))()}
-                                <span>  {values.currency.name} </span>
+                                {/* {(() => calculateFee(values)?.toFixed(values.currency?.baseObject?.precision))() || ''} */}
+                                {/* <span>  {values?.currency?.name} </span> */}
                             </span>
                         </div>
                         <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
@@ -286,7 +362,7 @@ export default function MainStep() {
                                 {(() => {
                                     if (values.amount) {
                                         let amount = Number(values.amount?.toString()?.replace(",", "."));
-                                        let currencyObject = values.currency.baseObject;
+                                        let currencyObject = values.currency?.baseObject;
                                         if (amount >= currencyObject.min_amount) {
                                             var fee = calculateFee(values);
                                             var result = amount - fee;
@@ -296,7 +372,11 @@ export default function MainStep() {
 
                                     return 0;
                                 })()}
-                                <span>  {values.currency.name}</span></span>
+                                <span>
+                                    {
+                                        //values.currency.name
+                                    }
+                                </span></span>
                         </div>
                         <div className="mt-10">
                             <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={false}>
@@ -328,11 +408,11 @@ function joinClassNames(...classes: string[]) {
 }
 
 function calculateFee(values: SwapFormValues): number {
-    let currencyObject = values.currency.baseObject;
-    let exchangeObject = values.exchange.baseObject;
+    let currencyObject = values.currency?.baseObject;
+    let exchangeObject = values.exchange?.baseObject;
 
     var exchangeFee = Number(values.amount?.toString()?.replace(",", ".")) * exchangeObject.fee_percentage;
-    var overallFee = currencyObject.fee + exchangeFee;
+    var overallFee = currencyObject?.fee + exchangeFee;
 
     return overallFee;
 }
