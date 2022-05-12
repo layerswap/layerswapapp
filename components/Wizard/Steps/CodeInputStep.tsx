@@ -42,7 +42,7 @@ const CodeInputStep: FC = () => {
                     </SubmitButton>
                 </div>
                 <div className="flex items-center">
-                    <label className="block text-base font-lighter leading-6 text-light-blue"> Did not receive the verification?  <Link key="userGuide" href="/userguide"><a className="font-lighter text-darkblue underline hover:cursor-pointer">Resend again</a></Link></label>
+                    <label className="block text-base font-lighter leading-6 text-light-blue"> Did not receive the verification?  <Link key="/" href="/"><a className="font-lighter text-darkblue underline hover:cursor-pointer">Resend again</a></Link></label>
                 </div>
             </div>
 
