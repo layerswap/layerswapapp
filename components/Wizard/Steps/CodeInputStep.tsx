@@ -30,6 +30,9 @@ const CodeInputStep: FC = () => {
                             id="Code"
                             className="h-12 text-2xl pl-5 focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
                             placeholder:text-light-blue placeholder:text-2xl placeholder:h-12 placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            onKeyPress={e => {
+                                isNaN(Number(e.key)) && e.preventDefault()
+                            }}
                         />
                     </div>
                 </div>
