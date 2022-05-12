@@ -5,6 +5,8 @@ import ConfirmationStep from '../components/Wizard/Steps/ConfirmationStep';
 import MainStep from '../components/Wizard/Steps/MainStep';
 import SomeTestStep from '../components/Wizard/Steps/SomeTestStep';
 import UserLoginStep from '../components/Wizard/Steps/UserLoginStep';
+import EmailStep from '../components/Wizard/Steps/EmailStep';
+import CodeInputStep from '../components/Wizard/Steps/CodeInputStep';
 import { SwapDataProvider, useSwapDataState } from './swap';
 
 const WizardStateContext = React.createContext<any>(null);
