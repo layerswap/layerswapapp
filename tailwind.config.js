@@ -29,7 +29,8 @@ module.exports = {
         'darkblue-300': '#192846',
         'darkblue-200': '#2C3C60',
         'pink-primary': '#FF0093',
-
+        'pink-primary-600': '#760045',
+        'white-alpha-100': '#ffffff66'
       },
       boxShadow: {
         'card': '5px 5px 40px rgba(0, 0, 0, 0.2), 0px 0px 200px rgba(0, 0, 0, 0.43)',

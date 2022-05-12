@@ -1,7 +1,7 @@
 import { Web3Provider } from "@ethersproject/providers";
 import { ImmutableXClient } from "@imtbl/imx-sdk";
 import { useWeb3React } from "@web3-react/core";
-import { Field, Form, Formik, FormikErrors, FormikProps, useFormikContext } from "formik";
+import { Field, Form, Formik, FormikErrors, FormikProps, useField, useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useAccountState } from "../../../context/account";
 import { useQueryState } from "../../../context/query";
@@ -20,6 +20,7 @@ import SwapButton from "../../buttons/swapButton";
 import { useWizardState } from "../../../context/wizard";
 import { useSwapDataUpdate } from "../../../context/swap";
 import Select from "../../Select/Select";
+import React from "react";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -68,25 +69,29 @@ const CurrenciesField: FC = () => {
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)))
         : []
 
+    // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
+
     useEffect(() => {
-        
-        if (network && (!currency || !currencyMenuItems.some(c=>c.id == currency.id))) {
-            const defaultCurrency = currencyMenuItems.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
-            .find(c => c.baseObject.network_id === network.baseObject.id && c.baseObject.is_enabled)
-            setFieldValue(name, defaultCurrency)
+
+        if (network && (!currency || !currencyMenuItems.some(c => c.id == currency.id))) {
+            // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
+            const defaultValue = currencyMenuItems?.find(c => c.isDefault)
+            // if(alternativeToSelectedValue){
+            //     setFieldValue(name, alternativeToSelectedValue)
+            // }
+            // else{
+            setFieldValue(name, defaultValue || currencyMenuItems[0])
+            // }
         }
 
     }, [network, setFieldValue])
 
-
-
-
     return (<>
-        <Field name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} />
+        <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} />
     </>)
 };
 
-const ExchangesField: FC = () => {
+const ExchangesField = React.forwardRef((props: any, ref: any) => {
     const {
         values: { exchange, currency },
         setFieldValue,
@@ -107,18 +112,18 @@ const ExchangesField: FC = () => {
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
 
     return (<>
-        <label className="block font-normal text-light-blue text-sm">
+        <label htmlFor="exchange" className="block font-normal text-light-blue text-sm">
             From
         </label>
-        <div className="mt-1.5 focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg">
+        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
             <Field name="exchange" placeholder="Choose exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
-};
+});
 
-const NetworkField: FC = () => {
+const NetworkField = React.forwardRef((props: any, ref: any) => {
     const {
-        values: { network, currency },
+        values: { exchange, network, currency },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
@@ -136,15 +141,62 @@ const NetworkField: FC = () => {
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
 
+    if (exchange && !network)
+        ref.current?.focus()
+
     return (<>
-        <label className="block font-normal text-light-blue text-sm">
-            From
+        <label htmlFor="network" className="block font-normal text-light-blue text-sm">
+            To
         </label>
-        <div className="mt-1.5 focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg">
+        <div ref={ref} tabIndex={0} className={`mt-1.5 ${exchange && !network ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
             <Field name="network" placeholder="Choose network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
-};
+});
+
+const AmountField = React.forwardRef((props: any, ref: any) => {
+    const {
+        values: { network, currency },
+        handleChange,
+    } = useFormikContext<SwapFormValues>();
+
+    const name = "amount"
+
+    const [field, meta, helpers] = useField(name)
+
+    const placeholder = currency ? `${currency?.baseObject?.min_amount} - ${currency?.baseObject?.max_amount}` : '0.01234'
+
+    return (<>
+        <label htmlFor={name} className="block font-normal text-light-blue text-sm">
+            Amount
+        </label>
+        <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-600 border-ouline-blue border ">
+            <input
+                {...field}
+                pattern="^[0-9]*[.,]?[0-9]*$"
+                inputMode="decimal"
+                autoComplete="off"
+                disabled={!currency}
+                placeholder={placeholder}
+                autoCorrect="off"
+                min={currency?.baseObject?.min_amount}
+                max={currency?.baseObject?.max_amount}
+                type="text"
+                step={1 / Math.pow(10, currency?.baseObject?.decimals)}
+                name={name}
+                id="amount"
+                ref={ref}
+                className="disabled:cursor-not-allowed h-12 bg-darkblue-600 focus:ring-pink-primary focus:border-pink-primary flex-grow block w-full min-w-0 rounded-none rounded-l-md sm:text-sm font-semibold placeholder-gray-400 border-0"
+                onChange={e => {
+                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
+                }}
+            />
+            <span className="ml-1 inline-flex items-center">
+                <CurrenciesField />
+            </span>
+        </div>
+    </>)
+});
 
 export default function MainStep() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
@@ -224,45 +276,82 @@ export default function MainStep() {
 
     let initialAddress = destAddress && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
 
-
     let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
     const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
-
+    const exchangeRef: any = useRef();
+    const networkRef: any = useRef();
+    const addressRef: any = useRef();
+    const amountRef: any = useRef();
+    const onButtonClick = () => {
+        // `current` points to the mounted text input element
+        addressRef.current.focus();
+    };
+    const focusHim = () => {
+        exchangeRef.current.focus()
+    }
     return <>
+
         <Formik
             enableReinitialize={true}
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
             validate={values => {
-                // let errors: FormikErrors<SwapFormValues> = {};
-                // let amount = Number(values.amount?.toString()?.replace(",", "."));
-                // if (!amount) {
-                //     errors.amount = 'Enter an amount';
-                // }
-                // else if (
-                //     !/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())
-                // ) {
-                //     errors.amount = 'Invalid amount';
-                // }
-                // else if (amount < 0) {
-                //     errors.amount = "Can't be negative";
-                // }
-                // else if (amount > values.currency.baseObject.max_amount) {
-                //     errors.amount = `Max amount is ${values.currency.baseObject.max_amount}`;
-                // }
-                // else if (amount < values.currency.baseObject.min_amount) {
-                //     errors.amount = `Min amount is ${values.currency.baseObject.min_amount}`;
-                // }
+                let errors: FormikErrors<SwapFormValues> = {};
+                let amount = Number(values.amount?.toString()?.replace(",", "."));
+
+                if (!values.exchange) {
+                    errors.amount = 'Select exchange'
+                }
+                else if (!values.network) {
+                    errors.amount = 'Select network'
+                }
+                else if (!values.destination_address) {
+                    errors.amount = `Enter ${values?.network?.name} address`
+                    if (!formikRef.current.getFieldMeta("destination_address").touched)
+                        addressRef?.current?.focus()
+                }
+                else if (!isValidAddress(values.destination_address, values.network?.baseObject)) {
+                    errors.amount = `Enter a valid ${values?.network?.name} address`
+                    if (!formikRef.current.getFieldMeta("destination_address").touched)
+                        addressRef?.current?.focus()
+                }
+                else if (!amount) {
+                    errors.amount = 'Enter an amount'
+                    if (!formikRef.current.getFieldMeta("amount").touched)
+                        amountRef?.current?.focus()
+                }
+                else if (
+                    !/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())
+                ) {
+                    errors.amount = 'Invalid amount'
+                    if (!formikRef.current.getFieldMeta("amount").touched)
+                        amountRef?.current?.focus()
+                }
+                else if (amount < 0) {
+                    errors.amount = "Can't be negative"
+                    if (!formikRef.current.getFieldMeta("amount").touched)
+                        amountRef?.current?.focus()
+                }
+                else if (amount > values.currency?.baseObject.max_amount) {
+                    errors.amount = `Max amount is ${values.currency.baseObject.max_amount}`
+                    if (!formikRef.current.getFieldMeta("amount").touched)
+                        amountRef?.current?.focus()
+                }
+                else if (amount < values.currency?.baseObject.min_amount) {
+                    errors.amount = `Min amount is ${values.currency?.baseObject.min_amount}`
+                    if (!formikRef.current.getFieldMeta("amount").touched)
+                        amountRef?.current?.focus()
+                }
 
                 // if (!values.destination_address) {
-                //     errors.destination_address = `Enter ${values?.network.name} address`
+                //     errors.destination_address = `Enter ${values?.network?.name} address`
                 // }
-                // else if (!isValidAddress(values.destination_address, values.network.baseObject)) {
-                //     errors.destination_address = `Enter a valid ${values?.network.name} address`
+                // else if (!isValidAddress(values.destination_address, values.network?.baseObject)) {
+                //     errors.destination_address = `Enter a valid ${values?.network?.name} address`
                 // }
 
-                // return errors;
+                return errors;
             }}
 
             onSubmit={handleSubmit}
@@ -273,18 +362,18 @@ export default function MainStep() {
                         <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4">
                             <div className="flex flex-col md:w-80 w-full">
                                 {
-                                    <ExchangesField />
+                                    <ExchangesField ref={exchangeRef} />
                                 }
                             </div>
                             <div className="flex flex-col md:w-80 w-full">
                                 {
-                                    <NetworkField />
+                                    <NetworkField ref={networkRef} />
                                 }
                             </div>
                         </div>
                         <div className="w-full mb-3.5 leading-4">
-                            <label className="block font-normal text-light-blue text-sm">
-                                {`To ${values?.network?.name} address`}
+                            <label htmlFor="destination_address" className="block font-normal text-light-blue text-sm">
+                                {`To ${values?.network?.name || ''} address`}
                                 {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1.5">
@@ -298,13 +387,14 @@ export default function MainStep() {
                                         {({ field }) => (
                                             <input
                                                 {...field}
+                                                ref={addressRef}
                                                 placeholder={"0x123...ab56c"}
                                                 autoCorrect="off"
                                                 type={"text"}
                                                 name="destination_address"
                                                 id="destination_address"
-                                                disabled={initialAddress != '' && lockAddress}
-                                                className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate disabled:bg-gray-600')}
+                                                disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
+                                                className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
                                             />
                                         )}
                                     </Field>
@@ -312,53 +402,22 @@ export default function MainStep() {
                             </div>
                         </div >
                         <div className="mb-3.5 leading-4">
-                            <Field name="amount">
-                                {({ field }) => (
-                                    <div>
-                                        <label htmlFor="amount" className="block font-normal text-light-blue text-sm">
-                                            Amount
-                                        </label>
-                                        <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-600 border-ouline-blue border">
-                                            <input
-                                                {...field}
-                                                pattern="^[0-9]*[.,]?[0-9]*$"
-                                                inputMode="decimal"
-                                                autoComplete="off"
-                                                placeholder={`${values.currency?.baseObject?.min_amount} - ${values.currency?.baseObject?.max_amount}`}
-                                                autoCorrect="off"
-                                                min={values.currency?.baseObject?.min_amount}
-                                                max={values.currency?.baseObject?.max_amount}
-                                                type="text"
-                                                step={1 / Math.pow(10, values.currency?.baseObject?.decimals)}
-                                                name="amount"
-                                                id="amount"
-                                                className="h-12 bg-darkblue-600 focus:ring-pink-primary focus:border-pink-primary flex-grow block w-full min-w-0 rounded-none rounded-l-md sm:text-sm font-semibold placeholder-gray-400 border-0"
-                                                onChange={e => {
-                                                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
-                                                }}
-                                            />
-                                            <span className="ml-1 inline-flex items-center">
-                                                <CurrenciesField />
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
-                            </Field>
+                            <AmountField ref={amountRef} />
                         </div>
                         <div className="mt-5 flex flex-col md:flex-row items-baseline justify-between">
                             <label className="block font-medium text-center">
                                 Fee
                             </label>
                             <span className="text-base font-medium text-center text-gray-400">
-                                {/* {(() => calculateFee(values)?.toFixed(values.currency?.baseObject?.precision))() || ''} */}
-                                {/* <span>  {values?.currency?.name} </span> */}
+                                {(() => calculateFee(values)?.toFixed(values.currency?.baseObject?.precision))() || ''}
+                                <span>  {values?.currency?.name} </span>
                             </span>
                         </div>
                         <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
                             <label className="block font-medium text-center">
                                 You will get
                             </label>
-                            <span className="text-indigo-300 text-lg font-medium text-center">
+                            <span className="text-indigo-600 font-medium text-center">
                                 {(() => {
                                     if (values.amount) {
                                         let amount = Number(values.amount?.toString()?.replace(",", "."));
@@ -369,12 +428,11 @@ export default function MainStep() {
                                             return Number(result.toFixed(currencyObject.precision));
                                         }
                                     }
-
                                     return 0;
                                 })()}
                                 <span>
                                     {
-                                        //values.currency.name
+                                        ` ${values.currency?.name || ""}`
                                     }
                                 </span></span>
                         </div>
@@ -395,9 +453,6 @@ function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
     if (errors.amount) {
         return errors.amount;
     }
-    else if (errors.destination_address) {
-        return errors.destination_address;
-    }
     else {
         return "Swap now";
     }
@@ -411,8 +466,8 @@ function calculateFee(values: SwapFormValues): number {
     let currencyObject = values.currency?.baseObject;
     let exchangeObject = values.exchange?.baseObject;
 
-    var exchangeFee = Number(values.amount?.toString()?.replace(",", ".")) * exchangeObject.fee_percentage;
+    var exchangeFee = Number(values.amount?.toString()?.replace(",", ".")) * exchangeObject?.fee_percentage;
     var overallFee = currencyObject?.fee + exchangeFee;
 
-    return overallFee;
+    return overallFee || 0;
 }
