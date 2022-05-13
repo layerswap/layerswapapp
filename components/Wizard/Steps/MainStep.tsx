@@ -282,15 +282,8 @@ export default function MainStep() {
     const networkRef: any = useRef();
     const addressRef: any = useRef();
     const amountRef: any = useRef();
-    const onButtonClick = () => {
-        // `current` points to the mounted text input element
-        addressRef.current.focus();
-    };
-    const focusHim = () => {
-        exchangeRef.current.focus()
-    }
-    return <>
 
+    return <>
         <Formik
             enableReinitialize={true}
             innerRef={formikRef}
@@ -343,13 +336,6 @@ export default function MainStep() {
                     if (!formikRef.current.getFieldMeta("amount").touched)
                         amountRef?.current?.focus()
                 }
-
-                // if (!values.destination_address) {
-                //     errors.destination_address = `Enter ${values?.network?.name} address`
-                // }
-                // else if (!isValidAddress(values.destination_address, values.network?.baseObject)) {
-                //     errors.destination_address = `Enter a valid ${values?.network?.name} address`
-                // }
 
                 return errors;
             }}

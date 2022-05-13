@@ -44,7 +44,7 @@ const UserLoginStep: FC = () => {
                     </div>
                 </div>
                 <div className="text-white text-sm mt-auto">
-                    <SubmitButton isDisabled={false} defaultStyle="bg-pink-primary text-lg" icon="" isSubmitting={false} onClick={prevStep}>
+                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={nextStep}>
                         Send
                     </SubmitButton>
                 </div>

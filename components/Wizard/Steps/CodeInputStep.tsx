@@ -37,7 +37,7 @@ const CodeInputStep: FC = () => {
                     </div>
                 </div>
                 <div className="text-white text-sm mt-auto mb-4 mt-4">
-                    <SubmitButton isDisabled={false} defaultStyle="bg-pink-primary text-lg" icon="" isSubmitting={false} onClick={prevStep}>
+                    <SubmitButton isDisabled={false}  icon="" isSubmitting={false} onClick={nextStep}>
                         Confirm
                     </SubmitButton>
                 </div>

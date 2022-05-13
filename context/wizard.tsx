@@ -8,6 +8,7 @@ import UserLoginStep from '../components/Wizard/Steps/UserLoginStep';
 import EmailStep from '../components/Wizard/Steps/EmailStep';
 import CodeInputStep from '../components/Wizard/Steps/CodeInputStep';
 import { SwapDataProvider, useSwapDataState } from './swap';
+import AccountConnectStep from '../components/Wizard/Steps/AccountConnectStep';
 
 const WizardStateContext = React.createContext<any>(null);
 
@@ -49,7 +50,10 @@ export function WizardProvider({ children }) {
         if (swapData?.exchange) {
             setSteps([
                 { name: "Step 1", status: "current", content: MainStep },
-                { name: "Step 2", status: "upcoming", content: UserLoginStep },
+                { name: "Step 5", status: "upcoming", content: AccountConnectStep },
+                { name: "Step 2", status: "upcoming", content: ConfirmationStep },
+                { name: "Step 3", status: "upcoming", content: UserLoginStep },
+                { name: "Step 4", status: "upcoming", content: CodeInputStep },
                 ...(wizards[swapData.exchange.id] || [])])
         }
     }, [swapData])

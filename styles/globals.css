@@ -18,9 +18,7 @@
 }
 
 @layer base {
-  html {
-    font-family: Roboto;
-  }
+
   body {
     @apply bg-gray-900;
   }

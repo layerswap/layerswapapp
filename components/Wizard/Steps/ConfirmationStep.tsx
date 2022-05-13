@@ -18,7 +18,7 @@ interface ConfirmationStepParams {
 const ConfirmationStep: FC = () => {
 
     const checkButtonIcon = <CheckIcon className='h-5 w-5'></CheckIcon>
-    const { prevStep } = useWizardState();
+    const { nextStep } = useWizardState();
 
     return (
         <>
@@ -28,7 +28,7 @@ const ConfirmationStep: FC = () => {
                     </fieldset>
                     <p className='text-white mt-4 pt-2 border-t-2 border-indigo-300'>First time here? Please read the  <Link key="userGuide" href="/userguide"><a className="text-indigo-400 font-semibold underline hover:cursor-pointer"> User Guide</a></Link></p>
                     <div className="mt-3 sm:mt-6 text-white text-sm">
-                        <SubmitButton isDisabled={false} defaultStyle="bg-indigo-500" icon={checkButtonIcon} isSubmitting={false} onClick={prevStep}>
+                        <SubmitButton isDisabled={false} icon={checkButtonIcon} isSubmitting={false} onClick={nextStep}>
                             Confirm
                         </SubmitButton>
                     </div>
