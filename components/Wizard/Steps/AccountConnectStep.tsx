@@ -33,7 +33,7 @@ const AccountConnectStep: FC = () => {
                 </div>
                 <div>
                     <label className="block font-normal text-light-blue text-sm mt-12">
-                    You will leave Bransfer and be securely redirected to Coibase authorization page.
+                    You will leave Bransfer and be securely redirected to Conibase authorization page.
                     </label>
                 </div>
                 <div className="text-white text-sm mt-3">

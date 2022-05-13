@@ -35,6 +35,9 @@ module.exports = {
         'pink-primary-600': '#760045',
         'white-alpha-100': '#ffffff66'
       },
+      animation: {
+        'spin-slow': 'spin 3s linear infinite',
+      },
       letterSpacing: {
         tightest: '-.075em',
         tighter: '-.05em',

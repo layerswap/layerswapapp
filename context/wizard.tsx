@@ -7,6 +7,8 @@ import SomeTestStep from '../components/Wizard/Steps/SomeTestStep';
 import UserLoginStep from '../components/Wizard/Steps/UserLoginStep';
 import EmailStep from '../components/Wizard/Steps/EmailStep';
 import CodeInputStep from '../components/Wizard/Steps/CodeInputStep';
+import AccountConnectStep from '../components/Wizard/Steps/AccountConnectStep';
+import TransactionLoadingPage from '../components/Wizard/Steps/TransactionLoadingPage';
 import { SwapDataProvider, useSwapDataState } from './swap';
 import AccountConnectStep from '../components/Wizard/Steps/AccountConnectStep';
 
