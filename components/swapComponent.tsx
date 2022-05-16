@@ -153,7 +153,6 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
           <WizardProvider >
           </WizardProvider >
         </SwapDataProvider >
-
         <IntroCard />
       </div >
     </div >
