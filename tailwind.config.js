@@ -1,4 +1,5 @@
 const colors = require("tailwindcss/colors");
+const defaultTheme = require('tailwindcss/defaultTheme')
 
 const round = (num) =>
   num
@@ -33,7 +34,8 @@ module.exports = {
         'pink-primary': '#FF0093',
         'green-success': '#55B585',
         'red-failed': '#E43636',
-
+        'pink-primary-600': '#760045',
+        'white-alpha-100': '#ffffff66'
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',

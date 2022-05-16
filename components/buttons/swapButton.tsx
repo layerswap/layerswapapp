@@ -13,7 +13,7 @@ const SwapButton: FC<SwapButtonProps> = (props) => {
     const swapIcon =   <SwitchHorizontalIcon className="h-5 w-5" aria-hidden="true" />;
     
     return (
-      <SubmitButton icon={swapIcon} defaultStyle="bg-gradient-to-r from-indigo-400 to-pink-400" {...props}/>
+      <SubmitButton icon={swapIcon} {...props}/>
     );
 }
 

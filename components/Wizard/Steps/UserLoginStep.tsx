@@ -42,7 +42,7 @@ const UserLoginStep: FC = () => {
                     </div>
                 </div>
                 <div className="mt-3 sm:mt-6 text-white text-sm mt-auto">
-                    <SubmitButton isDisabled={false} defaultStyle="bg-indigo-500" icon={checkButtonIcon} isSubmitting={false} onClick={prevStep}>
+                    <SubmitButton isDisabled={false} icon={checkButtonIcon} isSubmitting={false} onClick={nextStep}>
                         Get the code
                     </SubmitButton>
                 </div>

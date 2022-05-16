@@ -1,5 +1,5 @@
 import { Combobox, Dialog, Transition } from '@headlessui/react'
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { SearchIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
 
@@ -20,7 +20,7 @@ export interface SelectProps<T> {
     setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void
 }
 
-export default function Select<T>({ values, setFieldValue, name, value, placeholder }: SelectProps<T>) {
+export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
     const [query, setQuery] = useState('')
 
@@ -55,12 +55,13 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
     return (
         <>
-
             <div className="flex items-center relative">
                 <button
                     type="button"
                     onClick={openModal}
-                    className="relative grow h-12 flex items-center text-left justify-bottom  w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold rounded-none"
+                    disabled={disabled}
+                    // ref={asdRef}
+                    className="disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom  w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold rounded-none"
                 >
                     <span className='flex grow  text-left items-center'>
                         {
@@ -175,7 +176,6 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                                     <CheckIcon className="h-6 w-6" aria-hidden="true" />
                                                                 </div>
                                                             }
-
                                                         </>
                                                     )}
                                                 </Combobox.Option>

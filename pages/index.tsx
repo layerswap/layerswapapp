@@ -77,6 +77,7 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
   }
 
   const [swapOption, setSwapOption] = useState(swapOptions[0]);
+  const [isShowing, setIsShowing] = useState(false)
 
   return (
     <Layout>
@@ -93,6 +94,7 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
             </div>
           }
         </div>
+
         <SettingsProvider data={data}>
           <QueryProvider query={query}>
             <AccountProvider data={{ account, chainId }}>
