@@ -11,6 +11,7 @@ import TransactionLoadingPage from '../components/Wizard/Steps/TransactionLoadin
 import { SwapDataProvider, useSwapDataState } from './swap';
 import AccountConnectStep from '../components/Wizard/Steps/AccountConnectStep';
 import { ArrowRightIcon, ArrowLeftIcon } from '@heroicons/react/solid';
+import SwapConfirmationStep from '../components/Wizard/Steps/SwapConfirmation';
 
 const WizardStateContext = React.createContext<any>(null);
 
@@ -19,11 +20,12 @@ const WizardStateContext = React.createContext<any>(null);
 // }
 
 const defaultSteps = [
-    { name: "Swap", status: "current", content: MainStep },
+    { name: "Swap", status: "current", content: MainStep, navigationDisabled: true },
+    { name: "Swap confirmation", status: "upcoming", content: SwapConfirmationStep },
     { name: "Email confirmation", status: "upcoming", content: EmailStep },
     { name: "Code", status: "upcoming", content: CodeInputStep },
     { name: "Authorize", status: "upcoming", content: AccountConnectStep },
-    { name: "Step 5", status: "upcoming", content: ConfirmationStep },
+    { name: "", status: "upcoming", content: TransactionLoadingPage, navigationDisabled: true },
 ]
 
 const wizards = {
@@ -57,11 +59,11 @@ export function WizardProvider({ children }) {
     }, []);
 
     useEffect(() => {
-        if (swapData?.exchange) {
-            setSteps([
-                ...defaultSteps,
-                ...(wizards[swapData.exchange.id] || [])])
-        }
+        // if (swapData?.exchange) {
+        //     setSteps([
+        //         ...defaultSteps,
+        //         ...(wizards[swapData.exchange.id] || [])])
+        // }
     }, [swapData])
 
     const wrapper = useRef(null);
@@ -106,12 +108,17 @@ export function WizardProvider({ children }) {
         <WizardStateContext.Provider value={{ nextStep, prevStep }}>
             <div className="bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative  border-t-4 border-ouline-blue">
                 <div className='grid grid-cols-2 gap-4 place-content-end p-2'>
-                    <button onClick={prevStep} className="justify-self-start">
-                        <ArrowLeftIcon className='h-5 w-5 text-darkblue-200 hover:text-ouline-blue cursor-pointer' />
-                    </button>
-                    <button onClick={nextStep} className="justify-self-end">
-                        <ArrowRightIcon className='h-5 w-5 text-darkblue-200 hover:text-ouline-blue cursor-pointer' />
-                    </button>
+                    {
+                        !steps.find(s => s.status === 'current')?.navigationDisabled &&
+                        <>
+                            <button onClick={prevStep} className="justify-self-start">
+                                <ArrowLeftIcon className='h-5 w-5 text-darkblue-200 hover:text-ouline-blue cursor-pointer' />
+                            </button>
+                            <button onClick={nextStep} className="justify-self-end">
+                                <ArrowRightIcon className='h-5 w-5 text-darkblue-200 hover:text-ouline-blue cursor-pointer' />
+                            </button>
+                        </>
+                    }
                 </div>
                 <div className='text-center text-lg text-darkblue-200'>
                     {steps.find(s => s.status === 'current').name}
