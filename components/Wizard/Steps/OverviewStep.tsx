@@ -47,7 +47,7 @@ const OverviewStep: FC = () => {
                     </div>
                 </div>
                 <div className="text-white text-sm mt-auto mt-4">
-                    <SubmitButton isDisabled={false} defaultStyle="bg-pink-primary text-lg" icon="" isSubmitting={false} onClick={prevStep}>
+                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={prevStep}>
                         Confirm
                     </SubmitButton>
                 </div>
