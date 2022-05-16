@@ -9,6 +9,10 @@ import EmailStep from '../components/Wizard/Steps/EmailStep';
 import CodeInputStep from '../components/Wizard/Steps/CodeInputStep';
 import AccountConnectStep from '../components/Wizard/Steps/AccountConnectStep';
 import TransactionLoadingPage from '../components/Wizard/Steps/TransactionLoadingPage';
+import OverviewStep from '../components/Wizard/Steps/OverviewStep';
+import ProccessingStep from '../components/Wizard/Steps/ProccessingStep';
+import SuccessfulStep from '../components/Wizard/Steps/SuccessfulStep';
+import FailedPage from '../components/Wizard/Steps/FailedPage';
 import { SwapDataProvider, useSwapDataState } from './swap';
 
 const WizardStateContext = React.createContext<any>(null);
@@ -29,7 +33,7 @@ export function WizardProvider({ children }) {
 
     const [steps, setSteps] = useState([
         { name: "Step 1", status: "current", content: MainStep },
-        { name: "Step 2", status: "upcoming", content: UserLoginStep }
+        { name: "Step 2", status: "upcoming", content: FailedPage }
     ]);
 
     const [moving, setMoving] = useState("right");

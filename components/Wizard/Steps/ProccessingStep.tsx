@@ -4,14 +4,14 @@ import { FC, useState } from 'react'
 import { useWizardState } from '../../../context/wizard';
 import SubmitButton from '../../buttons/submitButton';
 
-const TransactionLoadingPage: FC = () => {
+const ProccessingStep: FC = () => {
 
     const { prevStep, nextStep } = useWizardState();
-
+    
     return (
         <>
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
-                <div className="flex place-content-center mb-7 mt-20 animate-spin-slow">
+                <div className="flex place-content-center mb-4 mt-20 animate-spin-slow">
                     <svg xmlns="http://www.w3.org/2000/svg" width="53" height="51" viewBox="0 0 53 51" fill="none">
                         <path d="M26.502 2V6.7" stroke="#4D6FB8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M38.2951 5.14795L35.9365 9.21822" stroke="#4D6FB8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -27,11 +27,8 @@ const TransactionLoadingPage: FC = () => {
                         <path d="M14.709 5.14795L17.0676 9.21822" stroke="#4D6FB8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
-                <div className="flex text-center place-content-center mt-2">
-                    <label className="block text-lg font-lighter leading-6 text-light-blue"> Please wait. </label>
-                </div>
-                <div className="flex text-center place-content-center mt-4 md:mt-2">
-                    <label className="block text-lg font-lighter leading-6 text-light-blue"> We'ar checking your transacton, It'll just take a moment. </label>
+                <div className="flex text-center place-content-center mt-1 md:mt-1">
+                    <label className="block text-lg font-lighter leading-6 text-light-blue"> Awaiting for Coinbase confirmation </label>
                 </div>
             </div>
 
@@ -39,4 +36,4 @@ const TransactionLoadingPage: FC = () => {
     )
 }
 
-export default TransactionLoadingPage;
+export default ProccessingStep;

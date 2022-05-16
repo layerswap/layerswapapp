@@ -8,8 +8,6 @@ const UserLoginStep: FC = () => {
     const [email, setEmail] = useState()
     const { prevStep, nextStep } = useWizardState();
 
-    const checkButtonIcon = <CheckIcon className='h-5 w-5'></CheckIcon>
-
     return (
         <>
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
