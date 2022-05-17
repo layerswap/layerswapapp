@@ -6,9 +6,12 @@ import SubmitButton from '../../buttons/submitButton';
 
 const CodeInputStep: FC = () => {
 
-    const [email, setEmail] = useState()
+    const [code, setCode] = useState("")
     const { prevStep, nextStep } = useWizardState();
 
+    const handleInputChange = (e) => {
+        setCode(e?.target?.value)
+    }
     return (
         <>
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
@@ -31,11 +34,12 @@ const CodeInputStep: FC = () => {
                             onKeyPress={e => {
                                 isNaN(Number(e.key)) && e.preventDefault()
                             }}
+                            onChange={handleInputChange}
                         />
                     </div>
                 </div>
                 <div className="text-white text-sm mt-auto mb-4 mt-4">
-                    <SubmitButton isDisabled={false}  icon="" isSubmitting={false} onClick={nextStep}>
+                    <SubmitButton isDisabled={code?.length != 6} icon="" isSubmitting={false} onClick={nextStep}>
                         Confirm
                     </SubmitButton>
                 </div>

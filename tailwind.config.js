@@ -35,6 +35,7 @@ module.exports = {
         'green-success': '#55B585',
         'red-failed': '#E43636',
         'pink-primary-600': '#760045',
+        'pink-primary-800': '#930863',
         'white-alpha-100': '#ffffff66'
       },
       animation: {

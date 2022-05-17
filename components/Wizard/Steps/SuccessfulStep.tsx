@@ -16,7 +16,7 @@ const SuccessfulStep: FC = () => {
                         <circle cx="58" cy="58" r="58" fill="#55B585" fill-opacity="0.1"/>
                         <circle cx="58" cy="58" r="45" fill="#55B585" fill-opacity="0.3"/>
                         <circle cx="58" cy="58" r="30" fill="#55B585"/>
-                        <path d="M44.5781 57.245L53.7516 66.6843L70.6308 49.3159" stroke="white" stroke-width="3.15789" stroke-linecap="round"/>
+                        <path d="M44.5781 57.245L53.7516 66.6843L70.6308 49.3159" stroke="white" stroke-width="3.15789" strokeLinecap="round"/>
                     </svg>
                 </div>
                 <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">
