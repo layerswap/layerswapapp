@@ -16,8 +16,8 @@ const FailedPage: FC = () => {
                         <circle cx="58" cy="58" r="58" fill="#E43636" fill-opacity="0.1"/>
                         <circle cx="58" cy="58" r="45" fill="#E43636" fill-opacity="0.5"/>
                         <circle cx="58" cy="58" r="30" fill="#E43636"/>
-                        <path d="M48 69L68 48" stroke="white" stroke-width="3.15789" stroke-linecap="round"/>
-                        <path d="M48 48L68 69" stroke="white" stroke-width="3.15789" stroke-linecap="round"/>
+                        <path d="M48 69L68 48" stroke="white" stroke-width="3.15789" strokeLinecap="round"/>
+                        <path d="M48 48L68 69" stroke="white" stroke-width="3.15789" strokeLinecap="round"/>
                     </svg>                       
                 </div>
                 <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">

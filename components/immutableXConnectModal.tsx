@@ -47,7 +47,7 @@ const ImmutableXConnectModal: FC<ImmutableXConnectModalParams> = ({ onConfirm, d
                 </div>
             }
             <div className="mt-3 sm:mt-6 text-white text-sm">
-                <SubmitButton icon={connectButtonIcon} defaultStyle="bg-cyan-500" isDisabled={false} isSubmitting={false} onClick={async () => await onImmutableConnectClick()}>
+                <SubmitButton icon={connectButtonIcon} isDisabled={false} isSubmitting={false} onClick={async () => await onImmutableConnectClick()}>
                     Connect
                 </SubmitButton>
             </div>
