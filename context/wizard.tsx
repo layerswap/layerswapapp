@@ -16,6 +16,9 @@ import { SwapDataProvider, useSwapDataState } from './swap';
 import AccountConnectStep from '../components/Wizard/Steps/AccountConnectStep';
 import { ArrowRightIcon, ArrowLeftIcon } from '@heroicons/react/solid';
 import SwapConfirmationStep from '../components/Wizard/Steps/SwapConfirmation';
+import WithdrawIntExchangeStep from '../components/Wizard/Steps/WithdrawIntExchangeStep';
+import WithdrawExchangeStep from '../components/Wizard/Steps/WithdrawExhangeStep';
+import APIKeyStep from '../components/Wizard/Steps/APIKeyStep';
 
 const WizardStateContext = React.createContext<any>(null);
 

@@ -31,6 +31,7 @@ module.exports = {
         'darkblue-300': '#192846',
         'darkblue-200': '#2C3C60',
         'darkblue-100': '#1A2949',
+        'darkblue-50': '#203259',
         'pink-primary': '#FF0093',
         'green-success': '#55B585',
         'red-failed': '#E43636',
