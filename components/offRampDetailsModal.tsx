@@ -65,7 +65,7 @@ const OffRampDetailsModal: FC<OffRampDetailsModalParams> = ({ onConfirm, address
                 </div>
             </div>
             <div className="mt-3 sm:mt-6 text-white text-sm">
-                <SubmitButton onClick={() => onConfirm()} defaultStyle="bg-indigo-500" icon={checkButtonIcon}  isSubmitting={false} isDisabled={false}>
+                <SubmitButton onClick={() => onConfirm()}  icon={checkButtonIcon}  isSubmitting={false} isDisabled={false}>
                     I did the transfer!
                 </SubmitButton>
             </div>
