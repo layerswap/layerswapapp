@@ -1,23 +1,17 @@
 import { Transition } from '@headlessui/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import CardContainer from '../components/cardContainer';
 import ConfirmationStep from '../components/Wizard/Steps/ConfirmationStep';
 import MainStep from '../components/Wizard/Steps/MainStep';
 import SomeTestStep from '../components/Wizard/Steps/SomeTestStep';
-import UserLoginStep from '../components/Wizard/Steps/UserLoginStep';
 import EmailStep from '../components/Wizard/Steps/EmailStep';
 import CodeInputStep from '../components/Wizard/Steps/CodeInputStep';
 import TransactionLoadingPage from '../components/Wizard/Steps/TransactionLoadingPage';
-import { SwapDataProvider, useSwapDataState } from './swap';
+import { useSwapDataState } from './swap';
 import AccountConnectStep from '../components/Wizard/Steps/AccountConnectStep';
 import { ArrowRightIcon, ArrowLeftIcon } from '@heroicons/react/solid';
 import SwapConfirmationStep from '../components/Wizard/Steps/SwapConfirmation';
 
 const WizardStateContext = React.createContext<any>(null);
-
-// const wizards = {
-//     ''
-// }
 
 const defaultSteps = [
     { name: "Swap", status: "current", content: MainStep, navigationDisabled: true },

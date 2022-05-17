@@ -137,17 +137,8 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
       });
   }
 
-  function onImmutableModalConfirm(address: string) {
-    formikRef.current.values.destination_address = address;
-    setIsImmutableModalOpen(false);
-    setIsConfirmModalOpen(true);
-  }
-
   return (
     <div>
-      <OffRampDetailsModal address={offRampAddress} memo={offRampMemo} amount={offRampAmount} isOpen={isOfframpModalOpen} onConfirm={onOffRampModalConfirm} onDismiss={onOffRampModalDismiss} />
-      <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} isOfframp={isOfframp} />
-      <ImmutableXConnectModal onConfirm={onImmutableModalConfirm} onDismiss={onImmutableModalDismiss} isOpen={isImmutableModalOpen} destination_address={formikRef.current?.values?.destination_address} />
       <div className="flex flex-col space-y-6 text-white">
         <SwapDataProvider >
           <WizardProvider >
@@ -158,8 +149,6 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
     </div >
   )
 };
-
-
 
 
 export default Swap;
