@@ -6,28 +6,32 @@ import SomeTestStep from '../components/Wizard/Steps/SomeTestStep';
 import EmailStep from '../components/Wizard/Steps/EmailStep';
 import CodeInputStep from '../components/Wizard/Steps/CodeInputStep';
 import TransactionLoadingPage from '../components/Wizard/Steps/TransactionLoadingPage';
-<<<<<<< HEAD
-import { useSwapDataState } from './swap';
-=======
 import OverviewStep from '../components/Wizard/Steps/OverviewStep';
 import ProccessingStep from '../components/Wizard/Steps/ProccessingStep';
 import SuccessfulStep from '../components/Wizard/Steps/SuccessfulStep';
 import FailedPage from '../components/Wizard/Steps/FailedPage';
-import { SwapDataProvider, useSwapDataState } from './swap';
->>>>>>> da2463bfba1c33a7e900bcb051bae76ce0f8e3bb
+import { useSwapDataState } from './swap';
 import AccountConnectStep from '../components/Wizard/Steps/AccountConnectStep';
 import { ArrowRightIcon, ArrowLeftIcon } from '@heroicons/react/solid';
 import SwapConfirmationStep from '../components/Wizard/Steps/SwapConfirmation';
 
 const WizardStateContext = React.createContext<any>(null);
 
-const defaultSteps = [
+type Step = {
+    name: string,
+    status: string,
+    content: any,
+    navigationDisabled?: boolean
+}
+
+const defaultSteps: Step[] = [
     { name: "Swap", status: "current", content: MainStep, navigationDisabled: true },
     { name: "Swap confirmation", status: "upcoming", content: SwapConfirmationStep },
     { name: "Email confirmation", status: "upcoming", content: EmailStep },
     { name: "Code", status: "upcoming", content: CodeInputStep },
     { name: "Authorize", status: "upcoming", content: AccountConnectStep },
-    { name: "", status: "upcoming", content: TransactionLoadingPage, navigationDisabled: true },
+    { name: "", status: "upcoming", content: ProccessingStep, navigationDisabled: true },
+    { name: "", status: "upcoming", content: SuccessfulStep, navigationDisabled: true },
 ]
 
 const wizards = {
@@ -41,7 +45,7 @@ export function WizardProvider({ children }) {
 
     const [wrapperWidth, setWrapperWidth] = useState(1);
 
-    const [currentStep, setCurrentStep] = useState(0);
+    const [currentStep, setCurrentStep] = useState<Step | undefined>();
 
     const [steps, setSteps] = useState(defaultSteps);
 
@@ -75,7 +79,8 @@ export function WizardProvider({ children }) {
     const nextStep = useCallback(async () => {
         setMoving("right");
         const currentStepIndex = steps.findIndex(s => s.status == 'current')
-        if (steps[currentStepIndex + 1])
+        if (steps[currentStepIndex + 1]) {
+            setCurrentStep(steps[currentStepIndex + 1])
             setSteps((old) =>
                 old.map((v, i) => {
                     if (i === currentStepIndex) {
@@ -86,6 +91,8 @@ export function WizardProvider({ children }) {
                     return v;
                 })
             );
+        }
+
     }, [steps])
 
     const prevStep = useCallback(async () => {
@@ -107,7 +114,7 @@ export function WizardProvider({ children }) {
     }, [steps])
 
     return (
-        <WizardStateContext.Provider value={{ nextStep, prevStep }}>
+        <WizardStateContext.Provider value={{ nextStep, prevStep, }}>
             <div className="bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative  border-t-4 border-ouline-blue">
                 <div className='grid grid-cols-2 gap-4 place-content-end p-2'>
                     {
@@ -155,7 +162,7 @@ export function WizardProvider({ children }) {
                                     <div
                                         style={{ width: `${wrapperWidth}px`, minHeight: '440px' }}
                                     >
-                                        <step.content />
+                                        <step.content current={step.status === 'current'}/>
                                     </div>
                                 </Transition>)
                             }

@@ -25,17 +25,19 @@ const UserLoginStep: FC = () => {
     const { prevStep, nextStep } = useWizardState();
     const swapData = useSwapDataState()
 
-<<<<<<< HEAD
     const checkButtonIcon = <CheckIcon className='h-5 w-5'></CheckIcon>
 
 
     const sendEmail = async () => {
         setLoading(true)
-        var apiClient = new LayerSwapAuthApiClient();
-        const res = await apiClient.getCodeAsync(formValues.email)
-        console.log(res)
-        setLoading(false)
-        nextStep()
+        // var apiClient = new LayerSwapAuthApiClient();
+        // const res = await apiClient.getCodeAsync(formValues.email)
+        // console.log(res)
+        setTimeout(() => {
+            setLoading(false)
+            nextStep()
+        }, 5000);
+
     }
 
     function validateEmail(value) {
@@ -48,8 +50,6 @@ const UserLoginStep: FC = () => {
         return error;
     }
 
-=======
->>>>>>> da2463bfba1c33a7e900bcb051bae76ce0f8e3bb
     return (
         <>
             <Formik
@@ -82,7 +82,7 @@ const UserLoginStep: FC = () => {
                                             />
                                         )}
                                     </Field>
-                                    
+
                                 </div>
                                 <div className="flex items-center md:mb-3 mb-5">
                                     <Field name="confirm_right_wallet">
