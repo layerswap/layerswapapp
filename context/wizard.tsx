@@ -6,7 +6,15 @@ import SomeTestStep from '../components/Wizard/Steps/SomeTestStep';
 import EmailStep from '../components/Wizard/Steps/EmailStep';
 import CodeInputStep from '../components/Wizard/Steps/CodeInputStep';
 import TransactionLoadingPage from '../components/Wizard/Steps/TransactionLoadingPage';
+<<<<<<< HEAD
 import { useSwapDataState } from './swap';
+=======
+import OverviewStep from '../components/Wizard/Steps/OverviewStep';
+import ProccessingStep from '../components/Wizard/Steps/ProccessingStep';
+import SuccessfulStep from '../components/Wizard/Steps/SuccessfulStep';
+import FailedPage from '../components/Wizard/Steps/FailedPage';
+import { SwapDataProvider, useSwapDataState } from './swap';
+>>>>>>> da2463bfba1c33a7e900bcb051bae76ce0f8e3bb
 import AccountConnectStep from '../components/Wizard/Steps/AccountConnectStep';
 import { ArrowRightIcon, ArrowLeftIcon } from '@heroicons/react/solid';
 import SwapConfirmationStep from '../components/Wizard/Steps/SwapConfirmation';

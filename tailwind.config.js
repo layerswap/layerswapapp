@@ -32,6 +32,8 @@ module.exports = {
         'darkblue-200': '#2C3C60',
         'darkblue-100': '#1A2949',
         'pink-primary': '#FF0093',
+        'green-success': '#55B585',
+        'red-failed': '#E43636',
         'pink-primary-600': '#760045',
         'white-alpha-100': '#ffffff66'
       },

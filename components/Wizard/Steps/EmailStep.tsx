@@ -25,6 +25,7 @@ const UserLoginStep: FC = () => {
     const { prevStep, nextStep } = useWizardState();
     const swapData = useSwapDataState()
 
+<<<<<<< HEAD
     const checkButtonIcon = <CheckIcon className='h-5 w-5'></CheckIcon>
 
 
@@ -47,6 +48,8 @@ const UserLoginStep: FC = () => {
         return error;
     }
 
+=======
+>>>>>>> da2463bfba1c33a7e900bcb051bae76ce0f8e3bb
     return (
         <>
             <Formik
