@@ -28,7 +28,7 @@ To continue, you have to confirm that
         <>
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
                 <p className='mb-12 md:mb-3.5 text-white mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
-                    You are requesting a transfer of {swapData.amount} {swapData.currency.name} from your {swapData.exchange.name} exchange account to your {swapData.network.name} wallet ({`${swapData.destination_address.substr(0, 5)}...${swapData.destination_address.substr(swapData.destination_address.length-4, swapData.destination_address.length-1)}`})
+                    You are requesting a transfer of {swapData?.amount} {swapData.currency?.name} from your {swapData.exchange?.name} exchange account to your {swapData.network?.name} wallet ({`${swapData?.destination_address?.substr(0, 5)}...${swapData?.destination_address?.substr(swapData?.destination_address?.length - 4, swapData?.destination_address?.length - 1)}`})
                 </p>
                 <p className='mb-12 md:mb-3.5 text-white mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
                     To continue, you have to confirm that
