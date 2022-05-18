@@ -11,6 +11,7 @@ const WithdrawExchangeStep: FC = () => {
     const { prevStep, nextStep } = useWizardState();
     const swapData = useSwapDataState()
 
+
     return (
         <>
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
@@ -38,6 +39,7 @@ const WithdrawExchangeStep: FC = () => {
                             type="text"
                             name="address"
                             id="address"
+                            value={swapData.destination_address}
                             disabled={true}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
@@ -61,12 +63,13 @@ const WithdrawExchangeStep: FC = () => {
                             name="network"
                             id="network"
                             disabled={true}
+                            value={swapData.network.name}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
                     <label htmlFor="withdrawlAmount" className="block font-normal text-light-blue text-sm">
-                        Withdrawl amount in LRC
+                        Withdrawl amount in {swapData.currency.name}
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                         <input
@@ -78,6 +81,7 @@ const WithdrawExchangeStep: FC = () => {
                             name="withdrawlAmount"
                             id="withdrawlAmount"
                             disabled={true}
+                            value={swapData.amount}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
