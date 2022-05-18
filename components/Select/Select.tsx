@@ -142,7 +142,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                         />
                                     </div>
                                     {filteredItems.length > 0 && (
-                                        <Combobox.Options static className="border-0 max-h-96 scroll-py-3 overflow-y-auto grid grid-cols-2 gap-2">
+                                        <Combobox.Options static className="border-0 max-h-96 scroll-py-3 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-2">
                                             {filteredItems.map((item) => (
                                                 <Combobox.Option
                                                     key={item.id}
