@@ -118,7 +118,12 @@ export function WizardProvider({ children }) {
 
     return (
         <WizardStateContext.Provider value={{ nextStep, prevStep, }}>
-            <div className="bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative  border-t-4 border-ouline-blue">
+            <div className="bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative">
+                <div className="relative">
+                    <div className="overflow-hidden h-1 flex rounded-t-lg bg-ouline-blue">
+                        <div style={{ width: "50%" }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-pink-primary"></div>
+                    </div>
+                </div>
                 <div className='grid grid-cols-2 gap-4 place-content-end p-2'>
                     {
                         !steps.find(s => s.status === 'current')?.navigationDisabled &&

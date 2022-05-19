@@ -33,10 +33,10 @@ module.exports = {
         'darkblue-100': '#1A2949',
         'darkblue-50': '#203259',
         'pink-primary': '#FF0093',
-        'green-success': '#55B585',
-        'red-failed': '#E43636',
         'pink-primary-600': '#760045',
         'pink-primary-800': '#930863',
+        'green-success': '#55B585',
+        'red-failed': '#E43636',
         'white-alpha-100': '#ffffff66'
       },
       animation: {
