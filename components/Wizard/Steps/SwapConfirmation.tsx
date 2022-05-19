@@ -18,10 +18,21 @@ const SwapConfirmationStep: FC = () => {
     const handleConfirm_right_information = (e) => {
         setConfirm_right_information(e.target.checked)
     }
+
+    /*
+    
+    You are requesting a transfer of 90 LRC from your Coinbase exchange account to your Loopring wallet (0x437...2768)
+To continue, you have to confirm that
+    */
     return (
         <>
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
-                <p className='mb-12 md:mb-3.5 text-white mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>We will send 4 digits code to your email for the verification.</p>
+                <p className='mb-12 md:mb-3.5 text-white mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
+                    You are requesting a transfer of {swapData?.amount} {swapData.currency?.name} from your {swapData.exchange?.name} exchange account to your {swapData.network?.name} wallet ({`${swapData?.destination_address?.substr(0, 5)}...${swapData?.destination_address?.substr(swapData?.destination_address?.length - 4, swapData?.destination_address?.length - 1)}`})
+                </p>
+                <p className='mb-12 md:mb-3.5 text-white mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
+                    To continue, you have to confirm that
+                </p>
                 <div>
 
                     <div className="flex items-center md:mb-3 mb-5">
