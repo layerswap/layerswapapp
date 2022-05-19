@@ -9,8 +9,6 @@ export function SwapDataProvider({ children }) {
 
     const updateFns = {
         updateSwap:(data) => {
-
-
             setSwapData(data)
         }
     };

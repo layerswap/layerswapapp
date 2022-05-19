@@ -1,7 +1,8 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import axios from 'axios';
 import { Field, Form, Formik, FormikErrors, FormikProps } from 'formik';
-import { FC, useRef, useState } from 'react'
+import { FC, useCallback, useRef, useState } from 'react'
+import { useAuthDataUpdate } from '../../../context/auth';
 import { useSwapDataState } from '../../../context/swap';
 import { useWizardState } from '../../../context/wizard';
 import LayerSwapAuthApiClient from '../../../lib/userAuthApiClient';
@@ -20,25 +21,26 @@ const UserLoginStep: FC = () => {
     const formValues = formikRef.current?.values;
 
     const [loading, setLoading] = useState(false)
-
-    const [email, setEmail] = useState()
-    const { prevStep, nextStep } = useWizardState();
+    const { nextStep } = useWizardState();
     const swapData = useSwapDataState()
 
-    const checkButtonIcon = <CheckIcon className='h-5 w-5'></CheckIcon>
+    const { updateEmail } = useAuthDataUpdate();
 
-
-    const sendEmail = async () => {
+    const sendEmail = useCallback(async (values) => {
         setLoading(true)
-        // var apiClient = new LayerSwapAuthApiClient();
-        // const res = await apiClient.getCodeAsync(formValues.email)
-        // console.log(res)
-        setTimeout(() => {
-            setLoading(false)
+        try {
+            const apiClient = new LayerSwapAuthApiClient();
+            const email = values.email
+            const res = await apiClient.getCodeAsync(email)
+            updateEmail(email)
+            console.log(res)
             nextStep()
-        }, 2000);
-
-    }
+        }
+        catch (e) {
+            console.log(e)
+            setLoading(false)
+        }
+    }, [formValues])
 
     function validateEmail(value) {
         let error;

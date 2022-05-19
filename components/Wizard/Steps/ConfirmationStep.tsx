@@ -2,6 +2,7 @@ import { CheckIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { FC, useState } from 'react'
 import { useWizardState } from '../../../context/wizard';
+import LayerSwapAuthApiClient from '../../../lib/userAuthApiClient';
 import SubmitButton from '../../buttons/submitButton';
 import CardContainer from '../../cardContainer';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';

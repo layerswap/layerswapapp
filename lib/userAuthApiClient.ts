@@ -7,7 +7,10 @@ export default class LayerSwapAuthApiClient {
     static identityBaseEndpoint: string = "https://bransfer-connect-identity-dev.azurewebsites.net";
 
     async getCodeAsync(email): Promise<AuthGetCodeResponse> {
-        return await axios.post(LayerSwapAuthApiClient.apiBaseEndpoint + '/api/auth/get_code', { email }).then(res => res.data);
+        return await axios.post(LayerSwapAuthApiClient.apiBaseEndpoint + '/api/auth/get_code',
+            { email },
+            { headers: { 'Access-Control-Allow-Origin': '*' } })
+            .then(res => res.data);
     }
 
     async connectAsync(email, code): Promise<AuthConnectResponse> {
@@ -18,6 +21,6 @@ export default class LayerSwapAuthApiClient {
         params.append('email', email);
         params.append('code', code);
 
-        return await axios.post(LayerSwapAuthApiClient.identityBaseEndpoint + '/connect/token', params).then(res => res.data);
+        return await axios.post(LayerSwapAuthApiClient.identityBaseEndpoint + '/connect/token', params, { headers: { 'Access-Control-Allow-Origin': '*' } }).then(res => res.data);
     }
 }

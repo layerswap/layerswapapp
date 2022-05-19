@@ -1,17 +1,33 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
-import { FC, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
+import { useAuthDataUpdate, useAuthState } from '../../../context/auth';
 import { useWizardState } from '../../../context/wizard';
+import LayerSwapAuthApiClient from '../../../lib/userAuthApiClient';
 import SubmitButton from '../../buttons/submitButton';
 
 const CodeInputStep: FC = () => {
 
     const [code, setCode] = useState("")
-    const { prevStep, nextStep } = useWizardState();
+    const { nextStep } = useWizardState();
+    const [loading, setLoading] = useState(false)
 
+    const { email } = useAuthState();
+    const { updateAuthData } = useAuthDataUpdate()
     const handleInputChange = (e) => {
         setCode(e?.target?.value)
     }
+
+    const verifyCode = useCallback(async () => {
+        setLoading(true)
+        var apiClient = new LayerSwapAuthApiClient();
+        const res = await apiClient.connectAsync(email, code)
+        updateAuthData(res)
+        console.log(res)
+        setLoading(false)
+        nextStep()
+    }, [email, code])
+
     return (
         <>
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
@@ -39,7 +55,7 @@ const CodeInputStep: FC = () => {
                     </div>
                 </div>
                 <div className="text-white text-sm mt-auto mb-4 mt-4">
-                    <SubmitButton isDisabled={code?.length != 6} icon="" isSubmitting={false} onClick={nextStep}>
+                    <SubmitButton isDisabled={code?.length != 6 || loading} icon="" isSubmitting={loading} onClick={verifyCode}>
                         Confirm
                     </SubmitButton>
                 </div>

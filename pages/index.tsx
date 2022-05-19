@@ -19,7 +19,6 @@ const swapOptions: NavRadioOption[] = [
   { name: "offramp", displayName: 'Off-ramp', isEnabled: true, isNew: true }
 ];
 
-
 export default function Home({ data, query, isOfframpEnabled }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
 
@@ -44,7 +43,7 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
       let supportedNetworks = data.networks.filter(x => x.chain_id != -1 && x.is_enabled);
       const injected = new InjectedConnector({
         // Commented to allow visitors from other networks to use this page
-        //supportedChainIds: supportedNetworks.map(x => x.chain_id)
+        // supportedChainIds: supportedNetworks.map(x => x.chain_id)
       });
 
       if (!active) {

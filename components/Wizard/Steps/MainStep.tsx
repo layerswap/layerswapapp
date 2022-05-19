@@ -229,6 +229,8 @@ export default function MainStep() {
 
     const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), new SelectMenuItem<Partner>(c, c.name, c.display_name, c.logo_url, c.is_enabled)]));
 
+    console.log(availableExchanges)
+
     const handleSubmit = useCallback(async (values) => {
         await updateSwap(values)
         nextStep()

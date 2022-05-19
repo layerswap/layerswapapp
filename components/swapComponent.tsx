@@ -28,6 +28,8 @@ import { useSettingsState } from '../context/settings';
 import MainStep from './Wizard/Steps/MainStep';
 import { useWizardState, WizardProvider } from '../context/wizard';
 import { SwapDataProvider } from '../context/swap';
+import { AuthProvider } from '../context/auth';
+import { UserExchangeProvider } from '../context/userExchange';
 
 
 interface SwapApiResponse {
@@ -141,8 +143,12 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
     <div>
       <div className="flex flex-col space-y-6 text-white">
         <SwapDataProvider >
-          <WizardProvider >
-          </WizardProvider >
+          <AuthProvider>
+            <UserExchangeProvider>
+              <WizardProvider >
+              </WizardProvider >
+            </UserExchangeProvider>
+          </AuthProvider>
         </SwapDataProvider >
         <IntroCard />
       </div >

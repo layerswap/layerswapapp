@@ -17,44 +17,62 @@ import SwapConfirmationStep from '../components/Wizard/Steps/SwapConfirmation';
 import WithdrawIntExchangeStep from '../components/Wizard/Steps/WithdrawIntExchangeStep';
 import WithdrawExchangeStep from '../components/Wizard/Steps/WithdrawExhangeStep';
 import APIKeyStep from '../components/Wizard/Steps/APIKeyStep';
+import { useAuthState } from './auth';
 
 const WizardStateContext = React.createContext<any>(null);
 
 type Step = {
-    name: string,
+    title: string,
     status: string,
     content: any,
     navigationDisabled?: boolean
 }
 
 const defaultSteps: Step[] = [
-    { name: "Swap", status: "current", content: MainStep, navigationDisabled: true },
-    { name: "Swap confirmation", status: "upcoming", content: SwapConfirmationStep },
-    { name: "Email confirmation", status: "upcoming", content: EmailStep },
-    { name: "Code", status: "upcoming", content: CodeInputStep },
-    { name: "Please connect your account to Layerswap", status: "upcoming", content: AccountConnectStep },
-    { name: "", status: "upcoming", content: ProccessingStep, navigationDisabled: true },
-    { name: "", status: "upcoming", content: SuccessfulStep, navigationDisabled: true },
+    { title: "Please connect your account to Layerswap", status: "upcoming", content: AccountConnectStep },
+    { title: "", status: "upcoming", content: ProccessingStep, navigationDisabled: true },
+    { title: "", status: "upcoming", content: SuccessfulStep, navigationDisabled: true },
+]
+
+const swapSteps: Step[] = [
+    { title: "Swap", status: "current", content: MainStep, navigationDisabled: true },
+    { title: "Swap confirmation", status: "upcoming", content: SwapConfirmationStep }
+]
+
+const authSteps: Step[] = [
+    { title: "Email confirmation", status: "upcoming", content: EmailStep },
+    { title: "Code", status: "upcoming", content: CodeInputStep },
+]
+
+const _apiKeyFlowSteps: Step[] = [
+    { title: "Please provide Read-only API keys", status: "upcoming", content: APIKeyStep },
+    { title: "Please connect your account to Layerswap", status: "upcoming", content: AccountConnectStep },
+]
+
+const withdrawalSteps: Step[] = [
+    { title: "Withdrawal", status: "upcoming", content: WithdrawExchangeStep },
+    { title: "", status: "upcoming", content: ProccessingStep, navigationDisabled: true },
+    { title: "", status: "upcoming", content: SuccessfulStep, navigationDisabled: true },
 ]
 
 const apiKeyFlowSteps: Step[] = [
-    { name: "Swap", status: "current", content: MainStep, navigationDisabled: true },
-    { name: "Swap confirmation", status: "upcoming", content: SwapConfirmationStep },
-    { name: "Email confirmation", status: "upcoming", content: EmailStep },
-    { name: "Code", status: "upcoming", content: CodeInputStep },
-    { name: "Please provide Read-only API keys", status: "upcoming", content: APIKeyStep },
-    { name: "Please connect your account to Layerswap", status: "upcoming", content: AccountConnectStep },
-    { name: "Withdrawal", status: "upcoming", content: WithdrawExchangeStep },
-    { name: "", status: "upcoming", content: ProccessingStep, navigationDisabled: true },
-    { name: "", status: "upcoming", content: SuccessfulStep, navigationDisabled: true },
+    { title: "Swap", status: "current", content: MainStep, navigationDisabled: true },
+    { title: "Swap confirmation", status: "upcoming", content: SwapConfirmationStep },
+    { title: "Email confirmation", status: "upcoming", content: EmailStep },
+    { title: "Code", status: "upcoming", content: CodeInputStep },
+    { title: "Please provide Read-only API keys", status: "upcoming", content: APIKeyStep },
+    { title: "Please connect your account to Layerswap", status: "upcoming", content: AccountConnectStep },
+    { title: "Withdrawal", status: "upcoming", content: WithdrawExchangeStep },
+    { title: "", status: "upcoming", content: ProccessingStep, navigationDisabled: true },
+    { title: "", status: "upcoming", content: SuccessfulStep, navigationDisabled: true },
 ]
 
 const wizards = {
-    // 'coinbase': [{ name: "Step 2", status: "upcoming", content: ConfirmationStep },],
+    // 'coinbase': [{ title: "Step 2", status: "upcoming", content: ConfirmationStep },],
     'binance': apiKeyFlowSteps,
     // 'bitfinex': [
-    //     { name: "Step 2", status: "upcoming", content: SomeTestStep },
-    //     { name: "Step 3", status: "upcoming", content: ConfirmationStep },],
+    //     { title: "Step 2", status: "upcoming", content: SomeTestStep },
+    //     { title: "Step 3", status: "upcoming", content: ConfirmationStep },],
 }
 
 export function WizardProvider({ children }) {
@@ -63,10 +81,13 @@ export function WizardProvider({ children }) {
 
     const [currentStep, setCurrentStep] = useState<Step | undefined>();
 
-    const [steps, setSteps] = useState(defaultSteps);
+    const [steps, setSteps] = useState(swapSteps);
 
-    const [moving, setMoving] = useState("right");
+    const [moving, setMoving] = useState("right")
+
     const swapData = useSwapDataState()
+
+    const { email, authData } = useAuthState()
 
     useEffect(() => {
         function handleResize() {
@@ -87,8 +108,6 @@ export function WizardProvider({ children }) {
     }, [swapData])
 
     const wrapper = useRef(null);
-
-
 
     const nextStep = useCallback(async () => {
         setMoving("right");
@@ -124,7 +143,7 @@ export function WizardProvider({ children }) {
                 })
             );
     }, [steps])
-
+    
     return (
         <WizardStateContext.Provider value={{ nextStep, prevStep, }}>
             <div className="bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative  border-t-4 border-ouline-blue">
@@ -133,13 +152,10 @@ export function WizardProvider({ children }) {
                         <button onClick={prevStep} className="justify-self-start">
                             <ArrowLeftIcon className='h-5 w-5 text-darkblue-200 hover:text-ouline-blue cursor-pointer' />
                         </button>
-                        <button onClick={nextStep} className="justify-self-end">
-                            <ArrowRightIcon className='h-5 w-5 text-darkblue-200 hover:text-ouline-blue cursor-pointer' />
-                        </button>
                     </>
                 </div>
                 <div className='text-center text-xl text-darkblue-200'>
-                    {steps.find(s => s.status === 'current').name}
+                    {steps.find(s => s.status === 'current').title}
                 </div>
                 <div className="p-2">
                     <div className="flex items-start overflow-hidden"
@@ -147,7 +163,7 @@ export function WizardProvider({ children }) {
                         <div className="flex flex-nowrap min-h-440">
                             {
                                 steps.map(step => <Transition
-                                    key={step.name}
+                                    key={step.title}
                                     appear={false}
                                     unmount={false}
                                     show={step.status === 'current'}
