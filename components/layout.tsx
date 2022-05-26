@@ -18,7 +18,37 @@ export default function Layout({ hasSideShapes, children }: Props) {
       <link rel="manifest" href="favicon/site.webmanifest" />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content="#111827" />
- 
+      
+      <script type="text/javascript" 
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.Intercom("boot", {
+              api_base: "https://api-iam.intercom.io",
+              app_id: "h5zisg78"
+            });
+          `,
+        }}
+      > 
+      </script>
+
+      <script type="text/javascript" 
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/h5zisg78';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+          `,
+        }}
+      > 
+      </script>
+      
+      <script type="text/javascript" 
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.Intercom("update");
+          `,
+        }}
+      > 
+      </script>
+
       <meta name="description" content="Move crypto from CEX to L2. Instant and gasless." />
 
       {/* Facebook Meta Tags */}
