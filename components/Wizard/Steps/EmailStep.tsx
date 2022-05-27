@@ -28,8 +28,8 @@ const EmailStep: FC = () => {
         try {
             const apiClient = new LayerSwapAuthApiClient();
             const email = values.email
-            //const res = await apiClient.getCodeAsync(email)
-            //console.log(res)
+            const res = await apiClient.getCodeAsync(email)
+            console.log(res)
             updateEmail(email)
             nextStep()
         }

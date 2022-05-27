@@ -49,7 +49,7 @@ const swapSteps: Step[] = [
 
 const authSteps: Step[] = [
     { title: "Email confirmation", status: "upcoming", content: EmailStep },
-    { title: "Code", status: "upcoming", content: CodeStep },
+    { title: "Code", status: "upcoming", content: CodeStep, navigationDisabled: true },
 ]
 
 const apiKeyFlowSteps: Step[] = [

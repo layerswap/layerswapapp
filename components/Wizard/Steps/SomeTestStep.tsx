@@ -22,7 +22,8 @@ const SomeTestStep: FC = () => {
 
     return (
         <>
-                <iframe src="https://www.youtube.com/embed/uXWycyeTeCs"></iframe>
+            Test step for iframe
+            <iframe src="https://www.youtube.com/embed/uXWycyeTeCs"></iframe>
         </>
     )
 }
