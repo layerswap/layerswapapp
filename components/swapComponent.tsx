@@ -94,6 +94,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
     .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
   let availableExchanges = settings.exchanges
+    .filter(e => e.is_enabled)
     .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
   let availableNetworks = settings.networks
@@ -201,7 +202,6 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
           router.push(response.data.redirect_url)
             .then(() => formikRef.current.setSubmitting(false));
         }
-
       }).catch(error => {
         formikRef.current.setSubmitting(false);
       });

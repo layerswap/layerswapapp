@@ -3,7 +3,7 @@ import { Listbox } from '@headlessui/react'
 import { SelectMenuProps } from './selectMenuProps'
 import SelectMenuOptions from './selectMenuOptions'
 
-let BaseSelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue, label, disabled, children}) => {
+let BaseSelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue, label, disabled, children }) => {
     function onChangeHandler(newValue: string) {
         setFieldValue(name, values.find(x => x.id === newValue));
     }
@@ -22,7 +22,7 @@ let BaseSelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue,
             {label && <Listbox.Label className="block text-base font-medium text-white">{label}</Listbox.Label>}
             <div className="mt-1 relative">
                 {children}
-                <SelectMenuOptions values={values} />
+                <SelectMenuOptions name={name} values={values} />
             </div>
         </Listbox>
     )
