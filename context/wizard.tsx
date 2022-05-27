@@ -43,6 +43,7 @@ enum WizardPartType {
 }
 
 const swapSteps: Step[] = [
+    { title: "Please provide Read-only API keys", status: "upcoming", content: APIKeyStep },
     { title: "Swap", status: "current", content: MainStep, navigationDisabled: true },
     { title: "Swap confirmation", status: "upcoming", content: SwapConfirmationStep }
 ]
