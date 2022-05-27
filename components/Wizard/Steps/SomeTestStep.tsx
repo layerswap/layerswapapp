@@ -22,18 +22,7 @@ const SomeTestStep: FC = () => {
 
     return (
         <>
-                <div className="w-full">
-                    <fieldset className="">
-                        <legend className="sr-only">This is test step</legend>
-                    </fieldset>
-                    <p className='text-white mt-4 pt-2 border-t-2 border-indigo-300'>This is some test step  <Link key="userGuide" href="/userguide"><a className="text-indigo-400 font-semibold underline hover:cursor-pointer"> User Guide</a></Link></p>
-                    <div className="mt-3 sm:mt-6 text-white text-sm">
-                        <SubmitButton isDisabled={false} icon={checkButtonIcon} isSubmitting={false} onClick={nextStep}>
-                            Confirm
-                        </SubmitButton>
-                    </div>
-                </div>
-
+                <iframe src="https://www.youtube.com/embed/uXWycyeTeCs"></iframe>
         </>
     )
 }

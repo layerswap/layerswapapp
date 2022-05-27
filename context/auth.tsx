@@ -1,18 +1,22 @@
 import React from 'react'
+import useStorage from '../hooks/useStorage';
 
 const AuthStateContext = React.createContext<any>(null);
 const AuthDataUpdateContext = React.createContext<any>(null);
 
 
 export function AuthProvider({ children }) {
-    const [email, setEmail] = React.useState<string | undefined>()
-    const [authData, setAuthData] = React.useState({});
+    const { getItem, setItem } = useStorage()
+    const [email, setEmail] = React.useState<string | undefined>(getItem("email"))
+    const [authData, setAuthData] = React.useState(JSON.parse(getItem("authData") || "{}"));
 
     const updateFns = {
         updateEmail: (email) => {
+            setItem("email", email)
             setEmail(email)
         },
         updateAuthData: (data) => {
+            setItem("authData", JSON.stringify(data))
             setAuthData(data)
         }
     };
@@ -23,7 +27,7 @@ export function AuthProvider({ children }) {
                 {children}
             </AuthDataUpdateContext.Provider>
         </AuthStateContext.Provider>
-    );
+    )
 }
 
 export function useAuthState() {

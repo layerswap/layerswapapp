@@ -1,5 +1,3 @@
-import { CheckIcon } from '@heroicons/react/outline';
-import axios from 'axios';
 import { Field, Form, Formik, FormikErrors, FormikProps } from 'formik';
 import { FC, useCallback, useRef, useState } from 'react'
 import { useAuthDataUpdate } from '../../../context/auth';
@@ -16,24 +14,23 @@ type EmailFormValues = {
 }
 
 
-const UserLoginStep: FC = () => {
+const EmailStep: FC = () => {
     const formikRef = useRef<FormikProps<EmailFormValues>>(null);
     const formValues = formikRef.current?.values;
 
     const [loading, setLoading] = useState(false)
     const { nextStep } = useWizardState();
     const swapData = useSwapDataState()
-
-    const { updateEmail } = useAuthDataUpdate();
+    const { updateEmail } = useAuthDataUpdate()
 
     const sendEmail = useCallback(async (values) => {
         setLoading(true)
         try {
             const apiClient = new LayerSwapAuthApiClient();
             const email = values.email
-            const res = await apiClient.getCodeAsync(email)
+            //const res = await apiClient.getCodeAsync(email)
+            //console.log(res)
             updateEmail(email)
-            console.log(res)
             nextStep()
         }
         catch (e) {
@@ -137,9 +134,8 @@ const UserLoginStep: FC = () => {
                     </Form >
                 )}
             </Formik >
-
         </>
     )
 }
 
-export default UserLoginStep;
+export default EmailStep;

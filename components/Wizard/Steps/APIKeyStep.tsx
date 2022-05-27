@@ -1,12 +1,26 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
-import { FC, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import { useWizardState } from '../../../context/wizard';
 import SubmitButton from '../../buttons/submitButton';
 
 const APIKeyStep: FC = () => {
 
-    const { prevStep, nextStep } = useWizardState();
+    const [key, setKey] = useState("")
+    const [secret, setSecret] = useState("")
+
+    const { nextStep } = useWizardState();
+
+    const handleKeyChange = (e) => {
+        setKey(e?.target?.value)
+    }
+    const handleSecretChange = (e) => {
+        setSecret(e?.target?.value)
+    }
+
+    const connect = useCallback(() => {
+        
+    }, [key, secret])
 
     return (
         <>
@@ -53,6 +67,7 @@ const APIKeyStep: FC = () => {
                             type="text"
                             name="apiKey"
                             id="apiKey"
+                            onChange={handleKeyChange}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
@@ -69,6 +84,7 @@ const APIKeyStep: FC = () => {
                             type="number"
                             name="apiSecret"
                             id="apiSecret"
+                            onChange={handleSecretChange}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />

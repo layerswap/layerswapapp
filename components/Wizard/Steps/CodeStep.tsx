@@ -6,7 +6,7 @@ import { useWizardState } from '../../../context/wizard';
 import LayerSwapAuthApiClient from '../../../lib/userAuthApiClient';
 import SubmitButton from '../../buttons/submitButton';
 
-const CodeInputStep: FC = () => {
+const CodeStep: FC = () => {
 
     const [code, setCode] = useState("")
     const { nextStep } = useWizardState();
@@ -68,4 +68,4 @@ const CodeInputStep: FC = () => {
     )
 }
 
-export default CodeInputStep;
+export default CodeStep;
