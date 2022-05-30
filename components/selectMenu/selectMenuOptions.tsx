@@ -3,7 +3,7 @@ import { ISelectMenuItem } from "./selectMenuItem"
 import Image from 'next/image'
 import { CheckIcon } from '@heroicons/react/solid'
 import { InformationCircleIcon } from '@heroicons/react/outline'
-
+import { Messages } from "../../lib/disabledNetworkMessages"
 import { Listbox, Transition } from "@headlessui/react"
 
 export interface SelectMenuOptionsProps {
@@ -11,9 +11,6 @@ export interface SelectMenuOptionsProps {
     name: string;
 }
 
-const disabledMEssages = {
-    "RONIN_MAINNET": "binance message very long one this is just redicu louslya sdasdasd asdasddsa long message for binance us"
-}
 
 let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values, name }): JSX.Element => {
     if (!values) {
@@ -52,13 +49,13 @@ let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values, name }): JSX.Elem
                                     {
                                         disabled &&
                                         <>
-                                            <div className="text-white relative inset-y-0 right-0 flex items-center px-4">
+                                            <div className="text-white absolute inset-y-0 right-0 flex items-center px-4">
                                                 <div className="relative flex flex-col items-center group">
-                                                    <div className="min-w-fit absolute bottom-0 flex flex-col items-center hidden mb-3 ml-20 group-hover:flex">
+                                                    <div className="w-48 absolute right-0 bottom-0 flex flex-col items-right hidden mb-3 group-hover:flex">
                                                         <span className="leading-4 min z-10 p-2 text-xs text-white whitespace-no-wrap bg-gray-600 shadow-lg rounded-md">
-                                                            {disabledMEssages[item.id] || "default message"}
+                                                            {Messages[item.id] || Messages.DEFAULT}
                                                         </span>
-                                                        <div className=" w-3 h-3 -mt-2 rotate-45 bg-gray-600"></div>
+                                                        <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-gray-600"></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -66,8 +63,6 @@ let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values, name }): JSX.Elem
                                                 <InformationCircleIcon className="h-6 w-6 opacity-30" aria-hidden="true" />
                                             </div>
                                         </>
-
-
                                     }
                                 </div>
                                 {selected ? (
