@@ -6,7 +6,6 @@ import SelectMenuButtonContent from './selectMenuButtonContent';
 import BaseSelectMenu from './baseSelectMenu';
 
 let InsetSelectMenu: FC<SelectMenuProps> = (props) => {
-
     return (
         <BaseSelectMenu {...props}>
             <Listbox.Button className="focus:ring-indigo-500 focus:border-indigo-500 w-full py-0 pl-8 pr-12 border-transparent bg-transparent font-semibold rounded-md">
