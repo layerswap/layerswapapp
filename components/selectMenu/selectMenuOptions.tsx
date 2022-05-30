@@ -9,16 +9,16 @@ import { Listbox, Transition } from "@headlessui/react"
 export interface SelectMenuOptionsProps {
     values: ISelectMenuItem[];
     name: string;
+    showNotAvailableMessage?: boolean;
 }
 
 
-let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values, name }): JSX.Element => {
+let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values, name, showNotAvailableMessage }): JSX.Element => {
     if (!values) {
         return <></>
     }
     console.log(values)
     return (<>
-
         <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options className="ring-2 ring-gray-700 ring-opacity-60 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-gray-800 rounded-md py-1 overflow-hidden  focus:outline-none">
                 {values.map((item) => (
@@ -47,7 +47,7 @@ let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values, name }): JSX.Elem
                                         <div className='inline group-hover'>{item.name}</div>
                                     </div>
                                     {
-                                        disabled &&
+                                       showNotAvailableMessage && disabled &&
                                         <>
                                             <div className="text-white absolute inset-y-0 right-0 flex items-center px-4">
                                                 <div className="relative flex flex-col items-center group">
