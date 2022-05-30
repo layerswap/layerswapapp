@@ -1,15 +1,22 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { FC, useCallback, useState } from 'react'
+import { useAuthState } from '../../../context/auth';
+import { useSwapDataState } from '../../../context/swap';
 import { useWizardState } from '../../../context/wizard';
+import { BransferApiClient } from '../../../lib/bransferApiClients';
 import SubmitButton from '../../buttons/submitButton';
 
 const APIKeyStep: FC = () => {
 
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
-
+    const [loading, setLoading] = useState(false);
+    const swapData = useSwapDataState()
     const { nextStep } = useWizardState();
+    const { authData } = useAuthState()
+
+
 
     const handleKeyChange = (e) => {
         setKey(e?.target?.value)
@@ -18,9 +25,22 @@ const APIKeyStep: FC = () => {
         setSecret(e?.target?.value)
     }
 
-    const connect = useCallback(() => {
-        
-    }, [key, secret])
+    const connect = useCallback(async () => {
+        try {
+            setLoading(true)
+            const bransferApiClient = new BransferApiClient();
+            const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: swapData.exchange?.id, api_key: key, api_secret: secret }, authData.access_token)
+            if (res.is_success)
+                nextStep()
+            //TODO handle error
+        }
+        catch (e) {
+            //TODO handle errror
+        }
+        finally {
+            setLoading(false)
+        }
+    }, [key, secret, swapData, authData, nextStep])
 
     return (
         <>
@@ -60,7 +80,6 @@ const APIKeyStep: FC = () => {
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                         <input
-                            inputMode="decimal"
                             autoComplete="off"
                             placeholder="Your API Key"
                             autoCorrect="off"
@@ -77,11 +96,10 @@ const APIKeyStep: FC = () => {
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                         <input
-                            inputMode="decimal"
                             autoComplete="off"
                             placeholder="Your API Secret"
                             autoCorrect="off"
-                            type="number"
+                            type="text"
                             name="apiSecret"
                             id="apiSecret"
                             onChange={handleSecretChange}
@@ -91,7 +109,7 @@ const APIKeyStep: FC = () => {
                     </div>
                 </div>
                 <div className="text-white text-base mt-3">
-                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={nextStep}>
+                    <SubmitButton isDisabled={false} icon="" isSubmitting={loading} onClick={connect}>
                         Connect
                     </SubmitButton>
                 </div>

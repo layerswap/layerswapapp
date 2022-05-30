@@ -1,4 +1,5 @@
 import React from 'react'
+import { BransferApiClient } from '../lib/bransferApiClients';
 
 const UserExchangeStateContext = React.createContext<any>(null);
 const UserExchangeDataUpdateContext = React.createContext<any>(null);
@@ -7,9 +8,18 @@ const UserExchangeDataUpdateContext = React.createContext<any>(null);
 export function UserExchangeProvider({ children }) {
     const [exchangeData, setUserExchangeData] = React.useState({});
 
+    const bransferApiClient = new BransferApiClient()
+
     const updateFns = {
-        updateUserExchange: (data) => {
-            setUserExchangeData(data)
+        getUserExchanges: (token:string) => {
+            try{
+                const res = bransferApiClient.GetExchangeAccounts(token)
+                setUserExchangeData(res)
+                return res;
+            }
+            catch(e){
+                //TODO handle error
+            }            
         }
     };
 

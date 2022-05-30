@@ -8,7 +8,7 @@ const AuthDataUpdateContext = React.createContext<any>(null);
 export function AuthProvider({ children }) {
     const { getItem, setItem } = useStorage()
     const [email, setEmail] = React.useState<string | undefined>(getItem("email"))
-    const [authData, setAuthData] = React.useState(JSON.parse(getItem("authData") || "{}"));
+    const [authData, setAuthData] = React.useState<AuthData>(JSON.parse(getItem("authData") || "{}"));
 
     const updateFns = {
         updateEmail: (email) => {
@@ -31,7 +31,7 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuthState() {
-    const data = React.useContext(AuthStateContext);
+    const data = React.useContext<{ authData: AuthData, email: string }>(AuthStateContext);
 
     if (data === undefined) {
         throw new Error('useAuthState must be used within a AuthStateProvider');
@@ -49,4 +49,12 @@ export function useAuthDataUpdate() {
     }
 
     return updateFns;
+}
+
+export type AuthData = {
+    access_token?: string,
+    expires_in?: number,
+    refresh_token?: string,
+    scope?: string,
+    token_type?: string,
 }

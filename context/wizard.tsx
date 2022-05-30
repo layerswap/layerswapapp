@@ -146,7 +146,6 @@ export function WizardProvider({ children }) {
     }, []);
 
     useEffect(() => {
-        debugger
         switch (swapData?.exchange?.baseObject?.authorization_flow) {
             case Flow.ApiCredentials:
                 setWizard(old => ({ ...old, Flow: apiKeyFlowSteps }))
@@ -174,6 +173,12 @@ export function WizardProvider({ children }) {
                 res = WizardPartType.Withdrawal
                 break;
         }
+        if (res === WizardPartType.Auth && authData?.access_token)
+            return getNextPart(res)
+        
+        if (res === WizardPartType.Flow && authData?.access_token)
+            return getNextPart(res)
+
 
         if (res != currentPart && !wizard[res].length)
             return getNextPart(res)
