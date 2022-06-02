@@ -21,6 +21,7 @@ import { useWizardState } from "../../../context/wizard";
 import { useSwapDataUpdate } from "../../../context/swap";
 import Select from "../../Select/Select";
 import React from "react";
+import { useInterval } from "../../../hooks/useInyterval";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -166,6 +167,8 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
 
     const placeholder = currency ? `${currency?.baseObject?.min_amount} - ${currency?.baseObject?.max_amount}` : '0.01234'
 
+    const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
+
     return (<>
         <label htmlFor={name} className="block font-normal text-light-blue text-sm">
             Amount
@@ -182,7 +185,7 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
                 min={currency?.baseObject?.min_amount}
                 max={currency?.baseObject?.max_amount}
                 type="text"
-                step={1 / Math.pow(10, currency?.baseObject?.decimals)}
+                step={isNaN(step) ? 0.01 : step}
                 name={name}
                 id="amount"
                 ref={ref}
@@ -207,8 +210,8 @@ export default function MainStep() {
     const settings = useSettingsState();
     const query = useQueryState();
     const [addressSource, setAddressSource] = useState("")
-    const { updateSwap } = useSwapDataUpdate()
-
+    const { updateSwapFormData } = useSwapDataUpdate()
+    
     useEffect(() => {
         let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
         let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
@@ -229,10 +232,8 @@ export default function MainStep() {
 
     const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), new SelectMenuItem<Partner>(c, c.name, c.display_name, c.logo_url, c.is_enabled)]));
 
-    console.log(availableExchanges)
-
     const handleSubmit = useCallback(async (values) => {
-        await updateSwap(values)
+        await updateSwapFormData(values)
         nextStep()
         // if (values.network.baseObject.code.toLowerCase().includes("immutablex")) {
         //     ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
@@ -251,7 +252,7 @@ export default function MainStep() {
         // else {
         //     // setIsConfirmModalOpen(true);
         // }
-    }, [updateSwap])
+    }, [updateSwapFormData, nextStep])
 
     let destAddress: string = account || query.destAddress;
     let destNetwork: string = (chainId && settings.networks.find(x => x.chain_id == chainId)?.code) || query.destNetwork;
@@ -425,7 +426,7 @@ export default function MainStep() {
                                 </span></span>
                         </div>
                         <div className="mt-10">
-                            <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={false}>
+                            <SwapButton type='submit' onClick={handleChange} isDisabled={false} isSubmitting={false}>
                                 {displayErrorsOrSubmit(errors)}
                             </SwapButton>
                         </div>

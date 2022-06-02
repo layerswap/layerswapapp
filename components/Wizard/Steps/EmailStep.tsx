@@ -20,7 +20,7 @@ const EmailStep: FC = () => {
 
     const [loading, setLoading] = useState(false)
     const { nextStep } = useWizardState();
-    const swapData = useSwapDataState()
+    const { swapFormData } = useSwapDataState()
     const { updateEmail } = useAuthDataUpdate()
 
     const sendEmail = useCallback(async (values) => {
@@ -35,9 +35,11 @@ const EmailStep: FC = () => {
         }
         catch (e) {
             console.log(e)
+        }
+        finally {
             setLoading(false)
         }
-    }, [formValues])
+    }, [formValues, nextStep])
 
     function validateEmail(value) {
         let error;
@@ -107,7 +109,7 @@ const EmailStep: FC = () => {
                                             />
                                         )}
                                     </Field>
-                                    <label htmlFor="confirm_right_wallet" className="ml-3 block text-lg leading-6 text-light-blue cursor-pointer"> The provided address is your <span className='text-white'>{swapData.network?.name}</span> wallet address </label>
+                                    <label htmlFor="confirm_right_wallet" className="ml-3 block text-lg leading-6 text-light-blue cursor-pointer"> The provided address is your <span className='text-white'>{swapFormData?.network?.name}</span> wallet address </label>
                                 </div>
                                 <div className="flex items-center mb-12 md:mb-11">
                                     <Field name="confirm_right_information" validate={validateCheckbox}>

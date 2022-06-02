@@ -1,7 +1,7 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { FC, useCallback, useState } from 'react'
-import { useAuthState } from '../../../context/auth';
+import { useAuthDataUpdate } from '../../../context/auth';
 import { useSwapDataState } from '../../../context/swap';
 import { useWizardState } from '../../../context/wizard';
 import { BransferApiClient } from '../../../lib/bransferApiClients';
@@ -12,11 +12,9 @@ const APIKeyStep: FC = () => {
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false);
-    const swapData = useSwapDataState()
+    const {swapFormData} = useSwapDataState()
     const { nextStep } = useWizardState();
-    const { authData } = useAuthState()
-
-
+    const { getAuthData } = useAuthDataUpdate()
 
     const handleKeyChange = (e) => {
         setKey(e?.target?.value)
@@ -29,7 +27,8 @@ const APIKeyStep: FC = () => {
         try {
             setLoading(true)
             const bransferApiClient = new BransferApiClient();
-            const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: swapData.exchange?.id, api_key: key, api_secret: secret }, authData.access_token)
+            const authData = getAuthData()
+            const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: swapFormData?.exchange?.id, api_key: key, api_secret: secret }, authData.access_token)
             if (res.is_success)
                 nextStep()
             //TODO handle error
@@ -40,7 +39,7 @@ const APIKeyStep: FC = () => {
         finally {
             setLoading(false)
         }
-    }, [key, secret, swapData, authData, nextStep])
+    }, [key, secret, swapFormData, getAuthData, nextStep])
 
     return (
         <>

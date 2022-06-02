@@ -13,10 +13,10 @@ const SuccessfulStep: FC = () => {
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
                 <div className='flex place-content-center mb-12 md:mb-4'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="116" height="116" viewBox="0 0 116 116" fill="none">
-                        <circle cx="58" cy="58" r="58" fill="#55B585" fill-opacity="0.1"/>
-                        <circle cx="58" cy="58" r="45" fill="#55B585" fill-opacity="0.3"/>
+                        <circle cx="58" cy="58" r="58" fill="#55B585" fillOpacity="0.1"/>
+                        <circle cx="58" cy="58" r="45" fill="#55B585" fillOpacity="0.3"/>
                         <circle cx="58" cy="58" r="30" fill="#55B585"/>
-                        <path d="M44.5781 57.245L53.7516 66.6843L70.6308 49.3159" stroke="white" stroke-width="3.15789" strokeLinecap="round"/>
+                        <path d="M44.5781 57.245L53.7516 66.6843L70.6308 49.3159" stroke="white" strokeWidth="3.15789" strokeLinecap="round"/>
                     </svg>
                 </div>
                 <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">

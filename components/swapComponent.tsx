@@ -142,19 +142,25 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
   return (
     <div>
       <div className="flex flex-col space-y-6 text-white">
-        <SwapDataProvider >
-          <AuthProvider>
+        <AuthProvider>
+          <SwapDataProvider >
             <UserExchangeProvider>
               <WizardProvider >
+                <TestComp />
               </WizardProvider >
             </UserExchangeProvider>
-          </AuthProvider>
-        </SwapDataProvider >
+          </SwapDataProvider >
+        </AuthProvider>
         <IntroCard />
       </div >
     </div >
   )
 };
+
+function TestComp() {
+  console.log("Test compnent rerendered")
+  return <></>
+}
 
 
 export default Swap;

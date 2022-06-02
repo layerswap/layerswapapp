@@ -6,4 +6,5 @@ export class Exchange {
     is_enabled: boolean;
     is_default: boolean;
     fee_percentage: number;
+    authorization_flow: string;
 }

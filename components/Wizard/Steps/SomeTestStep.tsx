@@ -24,6 +24,7 @@ const SomeTestStep: FC = () => {
         <>
             Test step for iframe
             <iframe src="https://www.youtube.com/embed/uXWycyeTeCs"></iframe>
+            <button onClick={nextStep}>Next</button>
         </>
     )
 }

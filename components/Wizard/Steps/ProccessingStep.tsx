@@ -8,7 +8,7 @@ import SubmitButton from '../../buttons/submitButton';
 const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
 
     const { prevStep, nextStep } = useWizardState();
-    const swapData = useSwapDataState()
+    const {swapFormData} = useSwapDataState()
     useEffect(() => {
         if (current)
             setTimeout(() => {
@@ -28,7 +28,7 @@ const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
                     </div>
                 </div>
                 <div className="flex text-center place-content-center mt-1 md:mt-1">
-                    <label className="block text-lg font-lighter leading-6 text-light-blue"> Awaiting for {swapData.exchange?.name} confirmation </label>
+                    <label className="block text-lg font-lighter leading-6 text-light-blue"> Awaiting for {swapFormData?.exchange?.name} confirmation </label>
                 </div>
             </div>
 

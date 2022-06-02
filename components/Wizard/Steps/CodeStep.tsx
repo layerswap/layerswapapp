@@ -22,11 +22,11 @@ const CodeStep: FC = () => {
         setLoading(true)
         var apiClient = new LayerSwapAuthApiClient();
         const res = await apiClient.connectAsync(email, code)
-        updateAuthData(res)
+        await updateAuthData(res)
         console.log(res)
         setLoading(false)
         nextStep()
-    }, [email, code])
+    }, [email, code, nextStep])
 
     return (
         <>

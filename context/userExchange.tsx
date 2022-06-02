@@ -1,30 +1,33 @@
 import React from 'react'
-import { BransferApiClient } from '../lib/bransferApiClients';
+import { BransferApiClient, UserExchangesResponse } from '../lib/bransferApiClients';
 
 const UserExchangeStateContext = React.createContext<any>(null);
 const UserExchangeDataUpdateContext = React.createContext<any>(null);
 
+type UpdateFns = {
+    getUserExchanges: (token: string) => Promise<UserExchangesResponse>
+}
 
 export function UserExchangeProvider({ children }) {
     const [exchangeData, setUserExchangeData] = React.useState({});
 
     const bransferApiClient = new BransferApiClient()
 
-    const updateFns = {
-        getUserExchanges: (token:string) => {
-            try{
-                const res = bransferApiClient.GetExchangeAccounts(token)
+    const updateFns: UpdateFns = {
+        getUserExchanges: async (token: string): Promise<UserExchangesResponse> => {
+            try {
+                const res = await bransferApiClient.GetExchangeAccounts(token)
                 setUserExchangeData(res)
                 return res;
             }
-            catch(e){
+            catch (e) {
                 //TODO handle error
-            }            
+            }
         }
     };
 
     return (
-        <UserExchangeStateContext.Provider value={{ exchangeData }}>
+        <UserExchangeStateContext.Provider value={exchangeData}>
             <UserExchangeDataUpdateContext.Provider value={updateFns}>
                 {children}
             </UserExchangeDataUpdateContext.Provider>
@@ -33,7 +36,7 @@ export function UserExchangeProvider({ children }) {
 }
 
 export function useUserExchangeState() {
-    const data = React.useContext(UserExchangeStateContext);
+    const data = React.useContext<UserExchangesResponse>(UserExchangeStateContext);
 
     if (data === undefined) {
         throw new Error('useUserExchangeState must be used within a UserExchangeStateProvider');
@@ -44,7 +47,7 @@ export function useUserExchangeState() {
 
 
 export function useUserExchangeDataUpdate() {
-    const updateFns = React.useContext(UserExchangeDataUpdateContext);
+    const updateFns = React.useContext<UpdateFns>(UserExchangeDataUpdateContext);
 
     if (updateFns === undefined) {
         throw new Error('useUserExchangeDataUpdate must be used within a UserExchangeDataProvider');

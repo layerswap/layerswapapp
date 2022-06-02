@@ -1,24 +1,38 @@
-import React from 'react'
+import React, { useCallback, useEffect } from 'react'
 import useStorage from '../hooks/useStorage';
 
 const AuthStateContext = React.createContext<any>(null);
 const AuthDataUpdateContext = React.createContext<any>(null);
 
 
-export function AuthProvider({ children }) {
-    const { getItem, setItem } = useStorage()
-    const [email, setEmail] = React.useState<string | undefined>(getItem("email"))
-    const [authData, setAuthData] = React.useState<AuthData>(JSON.parse(getItem("authData") || "{}"));
+export type UpdateInterface = {
+    updateEmail: (email: string) => void,
+    updateAuthData: (data: any) => void,
+    getAuthData: () => AuthData | undefined
+}
 
-    const updateFns = {
-        updateEmail: (email) => {
-            setItem("email", email)
+export function AuthProvider({ children }) {
+
+    const [email, setEmail] = React.useState<string | undefined>()
+    const [authData, setAuthData] = React.useState<AuthData>({})
+
+    useEffect(() => {
+        setEmail(localStorage.getItem(email))
+        setAuthData(JSON.parse(localStorage.getItem("authData") || "{}"))
+    }, [])
+
+    const updateFns: UpdateInterface = {
+        updateEmail: useCallback((email) => {
+            localStorage.setItem("email", email)
             setEmail(email)
-        },
-        updateAuthData: (data) => {
-            setItem("authData", JSON.stringify(data))
+        }, []),
+        updateAuthData: useCallback((data) => {
+            localStorage.setItem("authData", JSON.stringify(data))
             setAuthData(data)
-        }
+        }, []),
+        getAuthData: useCallback(() => {
+            return JSON.parse(localStorage.getItem("authData") || "{}")
+        }, [])
     };
 
     return (
@@ -42,7 +56,7 @@ export function useAuthState() {
 
 
 export function useAuthDataUpdate() {
-    const updateFns = React.useContext(AuthDataUpdateContext);
+    const updateFns = React.useContext<UpdateInterface>(AuthDataUpdateContext);
 
     if (updateFns === undefined) {
         throw new Error('useAuthDataUpdate must be used within a AuthDataProvider');
