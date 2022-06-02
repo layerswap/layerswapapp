@@ -24,7 +24,7 @@ enum SwapPageStatus {
   NotFound
 }
 
-const _maxRevalidateCount = 36;
+const _maxRevalidateCount = 21;
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
