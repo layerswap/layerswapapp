@@ -91,24 +91,45 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   let formValues = formikRef.current?.values;
 
   let availableCurrencies = settings.currencies
-    .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.logo_url, c.is_enabled, c.is_default))
-    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
+    .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.order, c.logo_url, c.is_enabled, c.is_default))
+    .sort((x, y) => { 
+      if(!y.isEnabled) {
+        y.order = 100;
+      } else if (!x.isEnabled) {
+        x.order = 100;
+      };
+      return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
+    });
   let availableExchanges = settings.exchanges
-    .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.logo_url, c.is_enabled, c.is_default))
-    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
+    .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
+    .sort((x, y) => { 
+      if(!y.isEnabled) {
+        y.order = 100;
+      } else if (!x.isEnabled) {
+        x.order = 100;
+      };
+      return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
+    });
   let availableNetworks = settings.networks
-    .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.logo_url, c.is_enabled, c.is_default))
-    .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
-
+    .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
+    .sort((x, y) => { 
+      if(!y.isEnabled) {
+        y.order = 100;
+      } else if (!x.isEnabled) {
+        x.order = 100;
+      };
+      return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
+    });
+  
   if (isOfframp) {
     availableCurrencies = availableCurrencies.filter(x => x.baseObject.exchanges.find(c => c.isOffRampEnabled));
     availableNetworks = availableNetworks.filter(n => availableCurrencies.find(c => c.baseObject.network_id == n.baseObject.id));
   }
 
-  const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), new SelectMenuItem<Partner>(c, c.name, c.display_name, c.logo_url, c.is_enabled)]));
+  const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), c]));
 
   let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress && !isOfframp;
-  let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].baseObject.is_wallet;
+  let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].is_wallet;
   let initialNetwork =
     availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
     ?? availableNetworks.find(x => x.isEnabled && x.isDefault);
@@ -182,7 +203,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
         network: formValues.network.id,
         exchange: formValues.exchange.id,
         to_exchange: isOfframp,
-        partner_name: isPartnerAddress ? availablePartners[addressSource].id : undefined
+        partner_name: isPartnerAddress ? availablePartners[addressSource].name : undefined
       }
     )
       .then(response => {
@@ -342,7 +363,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                       <div className="relative rounded-md shadow-sm mt-1">
                         {isPartnerWallet && !isOfframp &&
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Image className='rounded-md object-contain' src={availablePartners[addressSource].imgSrc} width="24" height="24"></Image>
+                            <Image className='rounded-md object-contain' src={availablePartners[addressSource].logo_url} width="24" height="24"></Image>
                           </div>
                         }
                         <div>
