@@ -115,6 +115,10 @@ export async function getServerSideProps(context) {
     networks = data.networks;
   }
 
+  // Hide bkt and exchange
+  data.exchanges = data.exchanges.filter(x => x.id != "b98a09e0-6209-4660-b389-227bac7df080");
+  data.currencies = data.currencies.filter(x => x.id != "773d57b3-e7d4-436a-99c0-5fe3c427a115");
+
   data.networks = networks;
   let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 

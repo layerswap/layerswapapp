@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Formik, Form, Field, FormikErrors, useFormikContext, FormikProps } from 'formik';
 import { FC } from 'react'
 import axios from 'axios';
@@ -24,6 +24,7 @@ import { ImmutableXClient } from '@imtbl/imx-sdk';
 import ImmutableXConnectModal from './immutableXConnectModal';
 import SwapButton from './buttons/swapButton';
 import { Partner } from '../Models/Partner';
+import NeworkNotAvailableModal from './networkNotAvailableModal';
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
@@ -91,6 +92,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   let formValues = formikRef.current?.values;
 
   let availableCurrencies = settings.currencies
+    .filter(e => e.is_enabled)
     .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.order, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => { 
       if(!y.isEnabled) {
@@ -101,6 +103,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
       return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
     });
   let availableExchanges = settings.exchanges
+    .filter(e => e.is_enabled)
     .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => { 
       if(!y.isEnabled) {
@@ -111,6 +114,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
       return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
     });
   let availableNetworks = settings.networks
+    .filter(e => e.is_enabled)  
     .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => { 
       if(!y.isEnabled) {
@@ -130,9 +134,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
   let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress && !isOfframp;
   let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].is_wallet;
-  let initialNetwork =
-    availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
-    ?? availableNetworks.find(x => x.isEnabled && x.isDefault);
+  let initialNetwork = availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled) ?? availableNetworks.find(x => x.isEnabled && x.isDefault);
 
   if (lockNetwork) {
     availableNetworks.forEach(x => {
@@ -162,6 +164,18 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   const [offRampMemo, setoffRampMemo] = useState("");
   const [offRampAmount, setoffRampAmount] = useState("");
   const [createdSwapId, setcreatedSwapId] = useState("");
+  const [networkNotAvailableModalOpen, setNetworkNotAvailableModalOpen] = useState(false)
+
+  useEffect(()=>{
+    const destNetworkIsAvailable = settings.networks.some(n=>n.code?.toUpperCase() === destNetwork?.toUpperCase() && n.is_enabled)
+    if(destNetwork && !destNetworkIsAvailable){
+      setNetworkNotAvailableModalOpen(true)
+    }
+  },[destNetwork, settings])
+
+  const closeNetworkNotAvailableModal= ()=>{
+    setNetworkNotAvailableModalOpen(false)
+  } 
 
   function onOffRampModalDismiss(isIntentional: boolean) {
     if (isIntentional || confirm("Are you sure you want to stop?")) {
@@ -222,7 +236,6 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
           router.push(response.data.redirect_url)
             .then(() => formikRef.current.setSubmitting(false));
         }
-
       }).catch(error => {
         formikRef.current.setSubmitting(false);
       });
@@ -236,6 +249,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
   return (
     <div>
+      <NeworkNotAvailableModal networkCode={destNetwork} isOpen={networkNotAvailableModalOpen} onConfirm={closeNetworkNotAvailableModal} onDismiss={closeNetworkNotAvailableModal}/>
       <OffRampDetailsModal address={offRampAddress} memo={offRampMemo} amount={offRampAmount} isOpen={isOfframpModalOpen} onConfirm={onOffRampModalConfirm} onDismiss={onOffRampModalDismiss} />
       <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} isOfframp={isOfframp} />
       <ImmutableXConnectModal onConfirm={onImmutableModalConfirm} onDismiss={onImmutableModalDismiss} isOpen={isImmutableModalOpen} destination_address={formikRef.current?.values?.destination_address} />

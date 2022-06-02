@@ -17,7 +17,8 @@ module.exports = {
         cyan: colors.cyan,
         pink: colors.pink,
         blueGray: colors.blueGray,
-        coolGray: colors.coolGray
+        coolGray: colors.coolGray,
+        disabledSelect: "#283240"
       },
       typography: (theme) => ({
         DEFAULT: {
