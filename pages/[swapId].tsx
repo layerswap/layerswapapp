@@ -24,7 +24,7 @@ enum SwapPageStatus {
   NotFound
 }
 
-const _maxRevalidateCount = 18;
+const _maxRevalidateCount = 36;
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
@@ -80,6 +80,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
     else {
       if (revalidateCount.current < _maxRevalidateCount) {
         revalidateTimeoutId.current = setTimeout(function () {
+          debugger
           mutate();
           revalidateCount.current++;
         }.bind(this), revalidateCount.current * 5000);
