@@ -30,6 +30,7 @@ import { useWizardState, WizardProvider } from '../context/wizard';
 import { SwapDataProvider } from '../context/swap';
 import { AuthProvider } from '../context/auth';
 import { UserExchangeProvider } from '../context/userExchange';
+import Wizard from './Wizard/Wizard';
 
 
 interface SwapApiResponse {
@@ -146,6 +147,7 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
           <SwapDataProvider >
             <UserExchangeProvider>
               <WizardProvider >
+                <Wizard />
                 <TestComp />
               </WizardProvider >
             </UserExchangeProvider>
@@ -158,6 +160,7 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
 };
 
 function TestComp() {
+  const { currentStepPath } = useWizardState()
   console.log("Test compnent rerendered")
   return <></>
 }

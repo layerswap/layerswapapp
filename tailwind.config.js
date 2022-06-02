@@ -14,6 +14,10 @@ module.exports = {
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {
+      transitionDuration: {
+        '0': '0ms',
+        '2000': '2000ms',
+      },
       opacity: {
         '35': '.35',
       },

@@ -6,17 +6,27 @@ import { apiKeyFlowSteps, Flow, initialWizard, OAuthSteps, StepPath, WizardParts
 import { UserExchangesResponse } from "../lib/bransferApiClients";
 import TokenService from "../lib/TokenService";
 
+type WizardState = {
+    moving: string,
+    loading: boolean,
+    error: string,
+    wizard: WizardParts,
+    currentStepPath: StepPath
+}
+
 export function useWizardNavigation() {
-    const [wizard, setWizard] = useState<WizardParts>(initialWizard)
+
+    const [data, setData] = useState<WizardState>({
+        currentStepPath: { part: WizardPartType.Swap, index: 0 },
+        moving: "right",
+        loading: false,
+        error: "",
+        wizard: initialWizard
+    })
+
 
     const { swapFormData, payment } = useSwapDataState()
 
-    const [currentStepPath, setCurrentStep] = useState<StepPath>({ part: WizardPartType.Swap, index: 0 })
-
-    const [moving, setMoving] = useState("right")
-
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
 
     const paymentStatus = payment?.data?.status
     const userExchanges = useUserExchangeState()
@@ -54,43 +64,48 @@ export function useWizardNavigation() {
                 break;
         }
 
-        if (res != currentPart && !wizard[res].steps.length)
+        if (res != currentPart && !data.wizard[res].steps.length)
             return getPreviousPart(res)
 
         return res
-    }, [])
+    }, [data])
 
     const prevStep = useCallback(async () => {
-        setMoving("left");
-        if (currentStepPath.index == 0)
-            setCurrentStep(old => {
-                const previousPart = getPreviousPart(old.part)
-                return { part: previousPart, index: wizard[previousPart].steps.length - 1 }
-            })
-        else
-            setCurrentStep(old => ({ part: old.part, index: old.index - 1 }))
-    }, [currentStepPath, wizard])
+        setData(old => ({ ...old, loading: true, error: "", moving: "left" }))
+
+        const previousStepPath = { ...data.currentStepPath }
+        if (data.currentStepPath.index == 0) {
+            previousStepPath.part = getPreviousPart(data.currentStepPath.part)
+            previousStepPath.index = 0
+        }
+        else {
+            previousStepPath.index = data.currentStepPath.index - 1
+        }
+        setData(old => ({ ...old, currentStepPath: previousStepPath }))
+    }, [data])
 
     const nextStep = useCallback(async () => {
-        setMoving("right")
+        setData(old => ({ ...old, loading: true, error: "", moving: "right" }))
+        const currentStepPath = data.currentStepPath
+        const nextStepPath = { ...currentStepPath }
         try {
-            if (currentStepPath.index >= wizard[currentStepPath.part].steps.length - 1) {
-                const nextPart = await getNextPart({ currentPart: currentStepPath.part, wizard, userExchanges, swapFormData, getUserExchanges, createSwap })
-                setCurrentStep({ part: nextPart, index: 0 })
+            if (currentStepPath.index >= data.wizard[currentStepPath.part].steps.length - 1) {
+                const nextPart = await getNextPart({ currentPart: currentStepPath.part, wizard: data.wizard, userExchanges, swapFormData, getUserExchanges, createSwap })
+                nextStepPath.part = nextPart;
+                nextStepPath.index = 0;
             }
             else {
-                setCurrentStep({ part: currentStepPath.part, index: currentStepPath.index + 1 })
+                nextStepPath.part = currentStepPath.part;
+                nextStepPath.index = currentStepPath.index + 1;
             }
+            setData(old => ({ ...old, loading: false, error: "", currentStepPath: nextStepPath }))
         }
         catch (e) {
-            // setError(e.message)
+            setData(old => ({ ...old, loading: false, error: e.message }))
         }
-        finally {
-            // setLoading(false)
-        }
-    }, [currentStepPath, wizard, userExchanges, swapFormData, getUserExchanges, createSwap, setLoading, setError])
+    }, [data, userExchanges, swapFormData, getUserExchanges, createSwap])
 
-    return { wizard, nextStep, prevStep, moving, currentStepPath, loading, error }
+    return { nextStep, prevStep, data }
 }
 
 async function getNextPart({ currentPart, wizard, userExchanges, swapFormData, getUserExchanges, createSwap }: {
