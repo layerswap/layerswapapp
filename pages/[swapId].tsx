@@ -195,7 +195,7 @@ function renderDescription(swapPageStatus: SwapPageStatus, offRampInfo?: SwapOff
         return <span>We are waiting for a deposit on Address <span className='font-bold text-pink-300 text-xs md:text-sm'>{offRampInfo.deposit_address}</span> with Memo  <span className='font-bold text-pink-300 text-xs md:text-sm'>{offRampInfo.memo}</span>.</span>
       }
       else {
-        return "We are submitting your transaction to the network.You'll see the transaction id when it's picked up by a miner.";
+        return "We are submitting your transaction to the network. You'll see the transaction id when it's published.";
       }
     }
     case SwapPageStatus.Success: {

@@ -14,7 +14,7 @@ interface NeworkNotAvailableModalParams {
 const NeworkNotAvailableModal: FC<NeworkNotAvailableModalParams> = ({ onConfirm, networkCode, ...modalParams }) => {
 
     return (
-        <Modal title='Network is not available' {...modalParams} description={Messages[networkCode] || Messages.DEFAULT}>
+        <Modal title='Network is not available' {...modalParams} description={Messages[networkCode?.toUpperCase()] || Messages.DEFAULT}>
             <div className="mt-3 sm:mt-6 text-white text-sm">
                 <button
                     onClick={onConfirm}
