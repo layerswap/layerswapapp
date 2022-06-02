@@ -106,9 +106,13 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
-  if (!process.env.IS_TESTING) {
+  if (data) {
     data.networks.forEach((element) => {
-      if (!element.is_test_net) networks.push(element);
+      if (!element.is_test_net) {
+        networks.push(element);
+      } else if(element.name === "Nahmii") {
+        networks.push(element);
+      }
     });
   }
   else {
