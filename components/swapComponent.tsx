@@ -92,7 +92,6 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   let formValues = formikRef.current?.values;
 
   let availableCurrencies = settings.currencies
-    .filter(e => e.is_enabled)
     .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.order, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => { 
       if(!y.isEnabled) {
@@ -114,7 +113,6 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
       return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
     });
   let availableNetworks = settings.networks
-    .filter(e => e.is_enabled)  
     .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
     .sort((x, y) => { 
       if(!y.isEnabled) {
