@@ -15,11 +15,12 @@ function IntroCard(props) {
                     <p className="py-4">
                         <span className="bg-indigo-600 text-sm mr-2 rounded-md py-1 px-2">New</span>
                         <span className="md:hidden">
-                            Immutable X!
+                            StarkNet!
                         </span>
                         <span className="hidden md:inline">
-                            Immutable X, crypto.com exchange and more!
-                            {/* <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1480921959252774918">Join the discussion</a> */}
+                            StarkNet Mainnet integration is here!   
+                            <> </>
+                             <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1532773817868865538"> Join the discussion</a>
                         </span>
                     </p>
                 </div>
