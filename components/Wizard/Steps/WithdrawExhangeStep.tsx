@@ -1,16 +1,51 @@
 import { CheckIcon } from '@heroicons/react/outline';
-import { FC, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { useWizardState, WizardPartType } from '../../../context/wizard';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInyterval';
+import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { SwapWizardSteps } from '../../../Models/Wizard';
+import TokenService from '../../../lib/TokenService';
+import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
+import { BransferApiClient } from '../../../lib/bransferApiClients';
+import { useRouter } from 'next/router';
+import { SwapStatus } from '../../../Models/SwapStatus';
 
 const WithdrawExchangeStep: FC = () => {
 
-    const { nextStep } = useWizardState();
-    const { swapFormData } = useSwapDataState()
-    const { payment } = useSwapDataState()
+    const { swap, payment } = useSwapDataState()
+    const { currentStep } = useFormWizardState<SwapWizardSteps>()
+
+    const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
+    const router = useRouter();
+    const { swapId } = router.query;
+    const { getSwap } = useSwapDataUpdate()
+
+    useInterval(async () => {
+        if (currentStep === "Withdrawal") {
+            const authData = TokenService.getAuthData();
+            if (!authData) {
+                await goToStep("Email")
+                return;
+            }
+            const { payment, swap } = await getSwap(swapId.toString())
+            const swapStatus = swap?.status;
+            const paymentStatus = payment?.data?.status
+            if (swapStatus == SwapStatus.Completed)
+                await goToStep("Suiccess")
+            else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
+                await goToStep("Failed")
+            // else if (swapStatus == SwapStatus.Pending)
+            //     await goToStep("Processing")
+        }
+    }, [currentStep, swapId], 2000)
+
+
+    const handleConfirm = useCallback(async () => {
+        goToStep("Processing")
+    }, [])
 
     return (
         <>
@@ -39,7 +74,7 @@ const WithdrawExchangeStep: FC = () => {
                             type="text"
                             name="address"
                             id="address"
-                            value={payment?.data?.manual_flow_context?.address || ""}
+                            value={swap?.destination_address}
                             disabled={true}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
@@ -63,13 +98,13 @@ const WithdrawExchangeStep: FC = () => {
                             name="network"
                             id="network"
                             disabled={true}
-                            value={swapFormData?.network?.name || ""}
+                            value={swap?.network}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
                     <label htmlFor="withdrawlAmount" className="block font-normal text-light-blue text-sm">
-                        Withdrawl amount in {swapFormData?.currency?.name}
+                        Withdrawl amount in {swap?.currency}
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                         <input
@@ -96,18 +131,17 @@ const WithdrawExchangeStep: FC = () => {
                             {
                                 payment?.data?.manual_flow_context?.is_fee_refundable &&
                                 <li>
-                                    Transaction fee <strong>({payment?.data?.manual_flow_context?.withdrawal_fee} {swapFormData?.currency?.name})</strong> will be refunded to your exchange account.
+                                    Transaction fee <strong>({payment?.data?.manual_flow_context?.withdrawal_fee} {swap?.currency})</strong> will be refunded to your exchange account.
                                 </li>
                             }
-
                             <li>
-                                Make sure that <strong>Receive amount</strong> is precisely <strong>{payment?.data?.manual_flow_context?.total_withdrawal_amount} {swapFormData?.currency?.name}</strong>
+                                Make sure that <strong>Receive amount</strong> is precisely <strong>{payment?.data?.manual_flow_context?.total_withdrawal_amount} {swap?.currency}</strong>
                             </li>
                         </ul>
                     </div>
                 </div>
                 <div className="text-white text-lg ">
-                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={nextStep}>
+                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConfirm}>
                         I Did The Transfer
                     </SubmitButton>
                     <div className='flex place-content-center items-center mt-8'>

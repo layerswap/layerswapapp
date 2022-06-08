@@ -1,17 +1,26 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/solid';
-import { FC, useState } from 'react'
-import { useSwapDataState } from '../../../context/swap';
+import Router, { useRouter } from 'next/router';
+import { FC, useCallback, useEffect, useState } from 'react'
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
+import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { useWizardState } from '../../../context/wizard';
+import { BaseStepProps, FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 
-const SwapConfirmationStep: FC = () => {
+const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
     const [confirm_right_information, setConfirm_right_information] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
 
-    const { prevStep, nextStep, loading, error } = useWizardState();
     const { swapFormData } = useSwapDataState()
-    const checkButtonIcon = <CheckIcon className='h-5 w-5'></CheckIcon>
+    const { createSwap } = useSwapDataUpdate()
+    const router = useRouter();
+
+    useEffect(() => {
+        setError("")
+    }, [current])
 
     const handleConfirm_right_wallet = (e) => {
         setConfirm_right_wallet(e.target.checked)
@@ -20,6 +29,19 @@ const SwapConfirmationStep: FC = () => {
         setConfirm_right_information(e.target.checked)
     }
 
+    const handleSubmit = useCallback(async () => {
+        setLoading(true)
+        try {
+            const swapId = await createSwap()
+            router.push(`/${swapId}`);
+        }
+        catch (e) {
+            setError(e.message)
+        }
+        finally {
+            setLoading(false)
+        }
+    }, [createSwap])
 
     return (
         <>
@@ -49,11 +71,11 @@ const SwapConfirmationStep: FC = () => {
                     <div className="flex items-center md:mb-3 mb-5">
                         <input
                             onChange={handleConfirm_right_wallet}
-                            id="confirm_right_wallet"
-                            name="confirm_right_wallet"
+                            id="confirm_right_wallet_"
+                            name="confirm_right_wallet_"
                             type="checkbox"
                             className="cursor-pointer h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
-                        <label htmlFor='confirm_right_wallet' className="cursor-pointer  ml-3 block text-lg leading-6 text-light-blue"> The provided address is your <span className='text-white'>{swapFormData?.network?.name}</span> wallet address </label>
+                        <label htmlFor='confirm_right_wallet_' className="cursor-pointer  ml-3 block text-lg leading-6 text-light-blue"> The provided address is your <span className='text-white'>{swapFormData?.network?.name}</span> wallet address </label>
                     </div>
                     <div className="flex items-center mb-12 md:mb-11">
                         <input
@@ -69,7 +91,7 @@ const SwapConfirmationStep: FC = () => {
                     <div className="flex items-center mb-2">
                         <span className="block text-sm leading-6 text-light-blue"> First time here? Please read the User Guide </span>
                     </div>
-                    <SubmitButton isDisabled={!confirm_right_wallet || !confirm_right_information || loading} icon="" isSubmitting={loading} onClick={nextStep}>
+                    <SubmitButton isDisabled={!confirm_right_wallet || !confirm_right_information || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
                 </div>

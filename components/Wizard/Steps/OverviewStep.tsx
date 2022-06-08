@@ -1,10 +1,17 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/solid';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useState } from 'react'
+import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { useWizardState } from '../../../context/wizard';
+import { useInterval } from '../../../hooks/useInyterval';
 import { BransferApiClient } from '../../../lib/bransferApiClients';
+import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
+import TokenService from '../../../lib/TokenService';
+import { SwapStatus } from '../../../Models/SwapStatus';
+import { SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 
 type Props = {
@@ -14,28 +21,49 @@ type Props = {
 const OverviewStep: FC<Props> = ({ current }) => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState()
-    const { nextStep } = useWizardState();
     const { payment } = useSwapDataState()
-    const { processPayment } = useSwapDataUpdate()
+    const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
+
+    const router = useRouter();
+    const { swapId } = router.query;
+
+    const { getSwap } = useSwapDataUpdate()
 
     useEffect(() => {
-        if (current && payment?.data?.status && payment?.data?.status != "created")
-            nextStep()
-    }, [payment, current])
+        (async () => {
+            const authData = TokenService.getAuthData();
+            if (!authData) {
+                await goToStep("Email")
+                setLoadingWizard(false)
+                return;
+            }
+            const { payment, swap } = await getSwap(swapId.toString())
+            const swapStatus = swap?.status;
+            const paymentStatus = payment?.data?.status
+            if (swapStatus == SwapStatus.Completed)
+                await goToStep("Suiccess")
+            else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
+                await goToStep("Failed")
+            else if (swapStatus == SwapStatus.Pending)
+                await goToStep("Processing")
+
+            setTimeout(() => {
+                setLoadingWizard(false)
+            }, 500);
+
+        })()
+    }, [swapId])
 
     const handleConfirm = useCallback(async () => {
         try {
-            setLoading(true)
-            await processPayment(payment?.data?.id);
-            nextStep()
+            goToStep("Withdrawal")
         }
         catch (e) {
             setError(e.message)
         }
         finally {
-            setLoading(false)
         }
-    }, [payment, processPayment])
+    }, [payment])
 
     return (
         <>

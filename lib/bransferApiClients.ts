@@ -39,7 +39,7 @@ export type PaymentProcessreponse = {
 export type Payment = {
     data: {
         id: string,
-        status: string,
+        status: 'completed' | 'closed' | 'processing' | "created",
         close_reason: string,
         flow: string,
         amount: number,

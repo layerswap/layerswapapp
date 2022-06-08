@@ -13,7 +13,7 @@ const APIKeyStep: FC = () => {
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false);
     const {swapFormData} = useSwapDataState()
-    const { nextStep } = useWizardState();
+    // const { nextStep } = useWizardState();
     const { getAuthData } = useAuthDataUpdate()
 
     const handleKeyChange = (e) => {
@@ -29,8 +29,8 @@ const APIKeyStep: FC = () => {
             const bransferApiClient = new BransferApiClient();
             const authData = getAuthData()
             const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: swapFormData?.exchange?.id, api_key: key, api_secret: secret }, authData.access_token)
-            if (res.is_success)
-                nextStep()
+            //if (res.is_success)
+                // nextStep()
             //TODO handle error
         }
         catch (e) {
@@ -39,7 +39,7 @@ const APIKeyStep: FC = () => {
         finally {
             setLoading(false)
         }
-    }, [key, secret, swapFormData, getAuthData, nextStep])
+    }, [key, secret, swapFormData, getAuthData])
 
     return (
         <>

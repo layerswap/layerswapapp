@@ -22,6 +22,10 @@ import { useSwapDataUpdate } from "../../../context/swap";
 import Select from "../../Select/Select";
 import React from "react";
 import { useInterval } from "../../../hooks/useInyterval";
+import { useFormWizardaUpdate } from "../../../context/formWizardProvider";
+import { ExchangeAuthorizationSteps, FormWizardSteps } from "../../../Models/Wizard";
+import TokenService from "../../../lib/TokenService";
+import { useUserExchangeDataUpdate } from "../../../context/userExchange";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -203,7 +207,8 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
 
 export default function MainStep() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
-    const { nextStep } = useWizardState();
+    // const { nextStep } = useWizardState();
+    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
 
     let formValues = formikRef.current?.values;
 
@@ -211,7 +216,8 @@ export default function MainStep() {
     const query = useQueryState();
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData } = useSwapDataUpdate()
-    
+    const { getUserExchanges } = useUserExchangeDataUpdate()
+
     useEffect(() => {
         let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
         let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
@@ -234,7 +240,18 @@ export default function MainStep() {
 
     const handleSubmit = useCallback(async (values) => {
         await updateSwapFormData(values)
-        nextStep()
+        const accessToken = TokenService.getAuthData()?.access_token
+        if (!accessToken)
+            goToStep("Email")
+        else {
+            const exchanges = await (await getUserExchanges(accessToken))?.data
+            const exchangeIsEnabled = exchanges?.some(e => e.exchange === values?.exchange?.id && e.is_enabled)
+            if (values?.exchange?.baseObject?.authorization_flow === "none" || exchangeIsEnabled)
+                goToStep("SwapConfirmation")
+            else
+                goToStep(ExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
+
+        }
         // if (values.network.baseObject.code.toLowerCase().includes("immutablex")) {
         //     ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
         //         .then(client => {
@@ -252,7 +269,7 @@ export default function MainStep() {
         // else {
         //     // setIsConfirmModalOpen(true);
         // }
-    }, [updateSwapFormData, nextStep])
+    }, [updateSwapFormData])
 
     let destAddress: string = account || query.destAddress;
     let destNetwork: string = (chainId && settings.networks.find(x => x.chain_id == chainId)?.code) || query.destNetwork;
@@ -347,7 +364,7 @@ export default function MainStep() {
         >
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
                 <Form>
-                    <div className="px-6 md:px-12 py-12">
+                    <div className="px-6 md:px-12 py-12 relative">
                         <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4">
                             <div className="flex flex-col md:w-80 w-full">
                                 {
@@ -426,7 +443,7 @@ export default function MainStep() {
                                 </span></span>
                         </div>
                         <div className="mt-10">
-                            <SwapButton type='submit' onClick={handleChange} isDisabled={false} isSubmitting={false}>
+                            <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={false}>
                                 {displayErrorsOrSubmit(errors)}
                             </SwapButton>
                         </div>

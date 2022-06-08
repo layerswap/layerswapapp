@@ -1,5 +1,6 @@
 import axios from "axios";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
+import { SwapStatus } from "../Models/SwapStatus";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = "http://localhost:7071/api";
@@ -31,10 +32,10 @@ type CreateSwapParams = {
     destination_address: string
 }
 
-type SwapDetailsResponse = {
+export type SwapDetailsResponse = {
     id: string,
     amount: number,
-    status: string,
+    status: SwapStatus,
     type: string,
     destination_address: string,
     external_payment_id: string,

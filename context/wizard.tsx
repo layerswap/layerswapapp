@@ -24,22 +24,15 @@ import TokenService from '../lib/TokenService';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import Router, { useRouter } from 'next/router';
 import { useInterval } from '../hooks/useInyterval';
-import { useWizardNavigation } from '../hooks/useWizardNavigation';
+import { useWizardNavigation, WizardState } from '../hooks/useWizardNavigation';
 
 const WizardStateContext = React.createContext<WizardProvider>(null);
-const WizardWrapperStateContext = React.createContext<WizardWrapperProvider>(null);
 
-type WizardWrapperProvider = {
-    moving: string,
-    wizard: WizardParts,
-}
 
 type WizardProvider = {
     nextStep: () => void,
     prevStep: () => void,
-    loading: boolean,
-    error: string,
-    currentStepPath: StepPath
+    data: WizardState
 }
 
 export enum StepStatus {
@@ -73,7 +66,6 @@ const swapSteps: WizardPart = {
     type: WizardPartType.Swap,
     steps: [
         { title: "Swap", status: StepStatus.Upcoming, content: MainStep, navigationDisabled: true },
-        { title: "Swap confirmation", status: StepStatus.Upcoming, content: SwapConfirmationStep }
     ]
 }
 
@@ -107,6 +99,7 @@ export const NoneSteps: WizardPart = {
 export const withdrawalSteps: WizardPart = {
     type: WizardPartType.Withdrawal,
     steps: [
+        { title: "Swap confirmation", status: StepStatus.Upcoming, content: SwapConfirmationStep },
         { title: "Payment overview", status: StepStatus.Upcoming, content: OverviewStep, navigationDisabled: true },
     ]
 }
@@ -176,13 +169,8 @@ export function WizardProvider({ children }) {
     const query = router?.query
     const { paymentId } = query
 
-    const { data: { currentStepPath, error, loading, moving, wizard }, nextStep, prevStep } = useWizardNavigation()
-    // useEffect(() => {
-    //     if (paymentStatus == 'completed')
-    //         setCurrentStep({ part: WizardPartType.PaymentStatus, index: 2 })
-    //     if (paymentStatus == 'closed')
-    //         setCurrentStep({ part: WizardPartType.PaymentStatus, index: 3 })
-    // }, [paymentStatus])
+    const { data, nextStep, prevStep } = useWizardNavigation()
+
 
     useEffect(() => {
         function handleResize() {
@@ -199,30 +187,15 @@ export function WizardProvider({ children }) {
 
     const wrapper = useRef(null);
 
-    const currentStep = wizard[currentStepPath.part].steps[currentStepPath.index]
-
-    const asd = { moving, wizard }
 
     return (
-        <WizardWrapperStateContext.Provider value={asd}>
-            <WizardStateContext.Provider value={{ nextStep, prevStep, loading, error, currentStepPath }}>
-                {children}
-            </WizardStateContext.Provider >
-        </WizardWrapperStateContext.Provider>
+        <WizardStateContext.Provider value={{ nextStep, prevStep, data }}>
+            {children}
+        </WizardStateContext.Provider >
 
     );
 }
 
-
-export function useWizardWrapperState() {
-    const data = React.useContext<WizardWrapperProvider>(WizardWrapperStateContext);
-
-    if (data === undefined) {
-        throw new Error('useWizardWrapperState must be used within a WizardStateProvider');
-    }
-
-    return data;
-}
 
 export function useWizardState() {
     const data = React.useContext<WizardProvider>(WizardStateContext);

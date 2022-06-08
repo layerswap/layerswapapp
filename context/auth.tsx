@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from 'react'
 import useStorage from '../hooks/useStorage';
+import TokenService from '../lib/TokenService';
 
 const AuthStateContext = React.createContext<any>(null);
 const AuthDataUpdateContext = React.createContext<any>(null);
@@ -8,7 +9,7 @@ const AuthDataUpdateContext = React.createContext<any>(null);
 export type UpdateInterface = {
     updateEmail: (email: string) => void,
     updateAuthData: (data: any) => void,
-    getAuthData: () => AuthData | undefined
+    getAuthData: () => (AuthData | undefined)
 }
 
 export function AuthProvider({ children }) {
@@ -18,7 +19,7 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         setEmail(localStorage.getItem(email))
-        setAuthData(JSON.parse(localStorage.getItem("authData") || "{}"))
+        setAuthData(TokenService.getAuthData())
     }, [])
 
     const updateFns: UpdateInterface = {
@@ -27,11 +28,11 @@ export function AuthProvider({ children }) {
             setEmail(email)
         }, []),
         updateAuthData: useCallback((data) => {
-            localStorage.setItem("authData", JSON.stringify(data))
+            TokenService.setAuthData(data)
             setAuthData(data)
         }, []),
         getAuthData: useCallback(() => {
-            return JSON.parse(localStorage.getItem("authData") || "{}")
+            return TokenService.getAuthData()
         }, [])
     };
 

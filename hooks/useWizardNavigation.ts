@@ -1,18 +1,23 @@
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { useUserExchangeDataUpdate, useUserExchangeState } from "../context/userExchange";
 import { apiKeyFlowSteps, Flow, initialWizard, OAuthSteps, StepPath, WizardParts, WizardPartType } from "../context/wizard";
-import { UserExchangesResponse } from "../lib/bransferApiClients";
+import { BransferApiClient, UserExchangesResponse } from "../lib/bransferApiClients";
+import LayerSwapApiClient from "../lib/layerSwapApiClient";
 import TokenService from "../lib/TokenService";
+import { SwapStatus } from "../Models/SwapStatus";
+import { useInterval } from "./useInyterval";
 
-type WizardState = {
+export type WizardState = {
     moving: string,
     loading: boolean,
     error: string,
     wizard: WizardParts,
     currentStepPath: StepPath
 }
+const _maxRevalidateCount = 18;
 
 export function useWizardNavigation() {
 
@@ -23,27 +28,62 @@ export function useWizardNavigation() {
         error: "",
         wizard: initialWizard
     })
+    const [revalidateCount, setRevialidateCount] = useState(0)
+
+    const revalidateTimeoutId = useRef<NodeJS.Timeout>();
+
+    const goToStep = (stepPath: StepPath) => {
+        setData(old => ({ ...old, currentStepPath: stepPath }))
+    }
+
+    const { swapFormData } = useSwapDataState()
+
+    const { getSwap } = useSwapDataUpdate()
 
 
-    const { swapFormData, payment } = useSwapDataState()
-
-
-    const paymentStatus = payment?.data?.status
     const userExchanges = useUserExchangeState()
     const { getUserExchanges } = useUserExchangeDataUpdate()
 
-    const { createSwap } = useSwapDataUpdate()
+    const router = useRouter()
+    const { swapId } = router?.query || {}
 
-    // useEffect(() => {
-    //     switch (swapFormData?.exchange?.baseObject?.authorization_flow) {
-    //         case Flow.ApiCredentials:
-    //             setWizard(old => ({ ...old, Flow: apiKeyFlowSteps }))
-    //             break;
-    //         case Flow.OAuth:
-    //             setWizard(old => ({ ...old, Flow: OAuthSteps }))
-    //             break;
-    //     }
-    // }, [swapFormData])
+    useInterval(() => {
+        if (swapId)
+            (async () => {
+                const authData = TokenService.getAuthData();
+                if (!authData){
+                    // setData(old => ({ ...old, currentStepPath: { part: WizardPartType.Auth, index: 0 } }))
+                    return;
+                }                   
+                const layerswapApiClient = new LayerSwapApiClient()
+                const bransferApiClient = new BransferApiClient()
+                const swapDetails = await layerswapApiClient.getSwapDetails(swapId?.toString(), authData?.access_token)
+                const payment = await bransferApiClient.GetPayment(swapDetails.external_payment_id, authData?.access_token)
+                const swapStatus = swapDetails?.status;
+                const paymentStatus = payment?.data?.status
+                if (swapStatus == SwapStatus.Completed)
+                    setData(old => ({ ...old, currentStepPath: { part: WizardPartType.PaymentStatus, index: 2 } }))
+                else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
+                    setData(old => ({ ...old, currentStepPath: { part: WizardPartType.PaymentStatus, index: 3 } }))
+                else if (swapStatus == SwapStatus.Created) {
+                    if (paymentStatus == 'created')
+                        setData(old => ({ ...old, currentStepPath: { part: WizardPartType.Withdrawal, index: 1 } }))
+                    else
+                        setData(old => ({ ...old, currentStepPath: { part: WizardPartType.PaymentStatus, index: 0 } }))
+                }
+            })()
+    }, [swapId], 2000)
+
+    useEffect(() => {
+        switch (swapFormData?.exchange?.baseObject?.authorization_flow) {
+            case Flow.ApiCredentials:
+                setData(old => ({ ...old, wizard: { ...initialWizard, Flow: apiKeyFlowSteps } }))
+                break;
+            case Flow.OAuth:
+                setData(old => ({ ...old, wizard: { ...initialWizard, Flow: OAuthSteps } }))
+                break;
+        }
+    }, [swapFormData])
 
     const getPreviousPart = useCallback((currentPart: WizardPartType) => {
         let res: WizardPartType = currentPart;
@@ -90,7 +130,7 @@ export function useWizardNavigation() {
         const nextStepPath = { ...currentStepPath }
         try {
             if (currentStepPath.index >= data.wizard[currentStepPath.part].steps.length - 1) {
-                const nextPart = await getNextPart({ currentPart: currentStepPath.part, wizard: data.wizard, userExchanges, swapFormData, getUserExchanges, createSwap })
+                const nextPart = await getNextPart({ currentPart: currentStepPath.part, wizard: data.wizard, userExchanges, swapFormData, getUserExchanges })
                 nextStepPath.part = nextPart;
                 nextStepPath.index = 0;
             }
@@ -103,18 +143,17 @@ export function useWizardNavigation() {
         catch (e) {
             setData(old => ({ ...old, loading: false, error: e.message }))
         }
-    }, [data, userExchanges, swapFormData, getUserExchanges, createSwap])
+    }, [data, userExchanges, swapFormData, getUserExchanges])
 
-    return { nextStep, prevStep, data }
+    return { nextStep, prevStep, data, goToStep }
 }
 
-async function getNextPart({ currentPart, wizard, userExchanges, swapFormData, getUserExchanges, createSwap }: {
+async function getNextPart({ currentPart, wizard, userExchanges, swapFormData, getUserExchanges }: {
     currentPart: WizardPartType,
     wizard: WizardParts,
     userExchanges: UserExchangesResponse,
     swapFormData: SwapFormValues,
     getUserExchanges: (token: string) => Promise<UserExchangesResponse>,
-    createSwap: () => void
 }) {
     try {
         const authData = TokenService?.getAuthData()
@@ -135,27 +174,27 @@ async function getNextPart({ currentPart, wizard, userExchanges, swapFormData, g
         }
 
         if (nextStep === WizardPartType.Auth && authData?.access_token)
-            return await getNextPart({ currentPart: nextStep, wizard, userExchanges, swapFormData, getUserExchanges, createSwap })
+            return await getNextPart({ currentPart: nextStep, wizard, userExchanges, swapFormData, getUserExchanges })
 
         if (nextStep === WizardPartType.Flow) {
+
             if (!authData?.access_token) {
                 return WizardPartType.Auth
             }
             const exchanges = userExchanges?.data || await (await getUserExchanges(authData?.access_token))?.data
+            console.log(exchanges)
+            console.log(swapFormData?.exchange?.id && exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled))
             if (swapFormData?.exchange?.id && exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)) {
-                return await getNextPart({ currentPart: nextStep, wizard, userExchanges, swapFormData, getUserExchanges, createSwap })
+                return await getNextPart({ currentPart: nextStep, wizard, userExchanges, swapFormData, getUserExchanges })
             }
         }
-
         if (nextStep === WizardPartType.Withdrawal) {
             if (!authData?.access_token) {
                 return WizardPartType.Auth
             }
-            await createSwap();
         }
-
         if (nextStep != currentPart && !wizard[nextStep].steps.length)
-            return await getNextPart({ currentPart: nextStep, wizard, userExchanges, swapFormData, getUserExchanges, createSwap })
+            return await getNextPart({ currentPart: nextStep, wizard, userExchanges, swapFormData, getUserExchanges })
 
         return nextStep
     }

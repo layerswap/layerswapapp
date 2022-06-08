@@ -6,8 +6,6 @@ import SubmitButton from '../../buttons/submitButton';
 
 const SuccessfulStep: FC = () => {
 
-    const { prevStep, nextStep } = useWizardState();
-
     return (
         <>
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
@@ -33,7 +31,7 @@ const SuccessfulStep: FC = () => {
                     </Link>
                 </div>
                 <div className="text-white text-sm md:mt-3 mt-0">
-                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={nextStep}>
+                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={()=>{}}>
                         View in Eplorer
                     </SubmitButton>
 

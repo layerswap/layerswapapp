@@ -7,7 +7,7 @@ import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
 import { useWizardState } from '../../../context/wizard';
 import LayerSwapAuthApiClient from '../../../lib/userAuthApiClient';
-import { ExchangeAuthorizationSteps, FormWizardSteps } from '../../../Models/Wizard';
+import { ExchangeAuthorizationSteps, SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 
 const CodeStep: FC = () => {
@@ -17,7 +17,7 @@ const CodeStep: FC = () => {
     const [loading, setLoading] = useState(false)
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const { swapFormData } = useSwapDataState()
-    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
+    const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
 
     const { email } = useAuthState();
     const { updateAuthData } = useAuthDataUpdate()
@@ -32,12 +32,7 @@ const CodeStep: FC = () => {
         await updateAuthData(res)
         console.log(res)
         setLoading(false)
-        const exchanges = await (await getUserExchanges(res.access_token))?.data
-        const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
-        if (swapFormData?.exchange?.baseObject?.authorization_flow === "none" || exchangeIsEnabled)
-            goToStep("SwapConfirmation")
-        else
-            goToStep(ExchangeAuthorizationSteps[swapFormData?.exchange?.baseObject?.authorization_flow])
+        goToStep("Overview")
     }, [email, code, swapFormData])
 
     return (

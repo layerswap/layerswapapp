@@ -1,8 +1,8 @@
 import { AuthData } from "../context/auth";
 
 class TokenService {
-    getAuthData(): AuthData {
-        return JSON.parse(window.localStorage.getItem("authData"));
+    getAuthData(): (AuthData | undefined | null) {
+        return JSON.parse(typeof window !== 'undefined' && window?.localStorage?.getItem("authData")) || undefined;
     }
     setAuthData(user) {
         console.log(JSON.stringify(user));

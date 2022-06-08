@@ -31,6 +31,12 @@ import { SwapDataProvider } from '../context/swap';
 import { AuthProvider } from '../context/auth';
 import { UserExchangeProvider } from '../context/userExchange';
 import Wizard from './Wizard/Wizard';
+import { FormWizardSteps } from '../Models/Wizard';
+import EmailStep from './Wizard/Steps/EmailStep';
+import CodeStep from './Wizard/Steps/CodeStep';
+import { FormWizardProvider } from '../context/formWizardProvider';
+import APIKeyStep from './Wizard/Steps/APIKeyStep';
+import SwapConfirmationStep from './Wizard/Steps/SwapConfirmation';
 
 
 interface SwapApiResponse {
@@ -55,6 +61,14 @@ interface ExchangesFieldProps {
   isOfframp: boolean;
 }
 
+const FormWizard: FormWizardSteps = {
+  "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true },
+  "Email": { title: "Email confirmation", content: EmailStep, dismissOnBack: true },
+  "Code": { title: "Code", content: CodeStep, navigationDisabled: true, dismissOnBack: true },
+  "ExchangeOAuth": { title: "OAuth flow", content: () => <>Coming sooon</>, dismissOnBack: true },
+  "ExchangeApiCredentials": { title: "Please provide Read-only API keys", content: APIKeyStep, dismissOnBack: true },
+  "SwapConfirmation": { title: "Swap confirmation", content: SwapConfirmationStep },
+}
 
 const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSource, sourceExchangeName, asset, swapMode }) => {
   const router = useRouter();
@@ -146,10 +160,10 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
         <AuthProvider>
           <SwapDataProvider >
             <UserExchangeProvider>
-              <WizardProvider >
+              <FormWizardProvider wizard={FormWizard} initialStep={"SwapForm"}>
                 <Wizard />
                 <TestComp />
-              </WizardProvider >
+              </FormWizardProvider >
             </UserExchangeProvider>
           </SwapDataProvider >
         </AuthProvider>
@@ -160,7 +174,6 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
 };
 
 function TestComp() {
-  const { currentStepPath } = useWizardState()
   console.log("Test compnent rerendered")
   return <></>
 }

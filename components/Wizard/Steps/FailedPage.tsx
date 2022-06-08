@@ -1,12 +1,8 @@
-import { CheckIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
-import { FC, useState } from 'react'
-import { useWizardState } from '../../../context/wizard';
+import { FC } from 'react'
 import SubmitButton from '../../buttons/submitButton';
 
 const FailedPage: FC = () => {
-
-    const { prevStep, nextStep } = useWizardState();
 
     return (
         <>
@@ -34,10 +30,9 @@ const FailedPage: FC = () => {
                     </Link>
                 </div>
                 <div className="text-white text-sm md:mt-3 mt-0">
-                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={nextStep}>
+                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={()=>{}}>
                         View in Eplorer
                     </SubmitButton>
-
                 </div>
             </div>
 
