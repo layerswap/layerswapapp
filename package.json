@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@ethersproject/providers": "^5.5.3",
-    "@headlessui/react": "^1.6.3",
+    "@headlessui/react": "^1.6.4",
     "@heroicons/react": "^1.0.5",
     "@imtbl/imx-sdk": "^1.12.0",
     "@tailwindcss/forms": "^0.5.0",

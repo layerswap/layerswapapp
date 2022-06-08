@@ -5,7 +5,7 @@ import { useWizardState } from '../../../context/wizard';
 import SubmitButton from '../../buttons/submitButton';
 import CardContainer from '../../cardContainer';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
-import IframeResizer from 'iframe-resizer-react';
+import Example from '../../swapHistoryComponent';
 
 
 interface ConfirmationStepParams {
@@ -25,18 +25,7 @@ const SomeTestStep: FC = () => {
 
     return (
         <>
-            <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={() => setIsOpen(true)}>
-                Test
-            </SubmitButton>
-            
-                <div className="text-white text-base">
-                    <div className='relative overflow-hidden pb-96'>
-                    
-                        <iframe src="https://stonly.com/guide/en/scrolled-article-template-PLOQniHQ1D/Steps/1502583"  className='overflow-hidden border-0 self-center absolute w-full h-full'></iframe>
-                        <IframeResizer></IframeResizer>
-                    </div>
-                </div>
-            
+            <Example></Example>
         </>
     )
 }

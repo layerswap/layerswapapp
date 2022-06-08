@@ -43,7 +43,7 @@ enum WizardPartType {
 }
 
 const swapSteps: Step[] = [
-    { title: "Please provide Read-only API keys", status: "upcoming", content: APIKeyStep },
+    { title: "Please provide Read-only API keys", status: "upcoming", content: SomeTestStep },
     { title: "Swap", status: "current", content: MainStep, navigationDisabled: true },
     { title: "Swap confirmation", status: "upcoming", content: SwapConfirmationStep }
 ]
@@ -146,7 +146,6 @@ export function WizardProvider({ children }) {
     }, []);
 
     useEffect(() => {
-        debugger
         switch (swapData?.exchange?.baseObject?.authorization_flow) {
             case Flow.ApiCredentials:
                 setWizard(old => ({ ...old, Flow: apiKeyFlowSteps }))
