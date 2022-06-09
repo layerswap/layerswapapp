@@ -5,17 +5,20 @@ import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { useWizardState } from '../../../context/wizard';
-import { BaseStepProps, FormWizardSteps } from '../../../Models/Wizard';
+import { BaseStepProps, FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
     const [confirm_right_information, setConfirm_right_information] = useState(false)
+    const [towFactorCode, setTwoFactorCode] = useState("")
+
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
+    const [twoFARequired, setTwoFARequired] = useState(false)
 
-    const { swapFormData } = useSwapDataState()
-    const { createSwap } = useSwapDataUpdate()
+    const { swapFormData, swap } = useSwapDataState()
+    const { createSwap, processPayment, getSwapAndPayment, getPayment } = useSwapDataUpdate()
     const router = useRouter();
 
     useEffect(() => {
@@ -28,20 +31,44 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const handleConfirm_right_information = (e) => {
         setConfirm_right_information(e.target.checked)
     }
-
+    const handleTwoFACodeChange = (e) => {
+        setTwoFactorCode(e?.target?.value)
+    }
     const handleSubmit = useCallback(async () => {
         setLoading(true)
         try {
-            const swapId = await createSwap()
-            router.push(`/${swapId}`);
+            const data = {
+                Amount: Number(swapFormData.amount),
+                Exchange: swapFormData.exchange?.id,
+                Network: swapFormData.network.id,
+                currency: swapFormData.currency.baseObject.asset,
+                destination_address: swapFormData.destination_address
+            }
+            const _swap = swap || await createSwap(data)
+            const payment = await getPayment(_swap.external_payment_id)
+            if (payment?.data?.status !== 'processing')
+                await processPayment(payment?.data?.id, towFactorCode)
+            router.push(`/${_swap.id}`);
         }
-        catch (e) {
-            setError(e.message)
+        catch (error) {
+            ///TODO handle authorize amount error
+            ///TODO newline may not work, will not defenitaly fix this
+            console.log("error in confirmation", error?.response?.data)
+            const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error.message || error?.response?.data?.message || error.message)
+
+            if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {
+                setError("Two factor authentication is required")
+                setTwoFARequired(true)
+            }
+            else {
+                setError(errorMessage)
+            }
+
         }
         finally {
             setLoading(false)
         }
-    }, [createSwap])
+    }, [swapFormData, swap, towFactorCode])
 
     return (
         <>
@@ -86,6 +113,33 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             className="cursor-pointer h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
                         <label htmlFor='confirm_right_information' className="cursor-pointer ml-3 block text-lg leading-6 text-light-blue"> Providing wrong information will result in a loss of funds </label>
                     </div>
+                    {
+                        twoFARequired &&
+                        <div>
+                            <label htmlFor="amount" className="block font-normal text-light-blue text-sm">
+                                Your verification code
+                            </label>
+                            <div className="relative rounded-md shadow-sm mt-2 mb-4">
+                                <input
+                                    inputMode="decimal"
+                                    autoComplete="off"
+                                    placeholder="XXXXXXX"
+                                    autoCorrect="off"
+                                    type="text"
+                                    maxLength={7}
+                                    name="TwoFACode"
+                                    id="TwoFACode"
+                                    className="h-12 text-2xl pl-5 focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
+                            placeholder:text-light-blue placeholder:text-2xl placeholder:h-12 placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                    onKeyPress={e => {
+                                        isNaN(Number(e.key)) && e.preventDefault()
+                                    }}
+                                    onChange={handleTwoFACodeChange}
+                                />
+                            </div>
+                        </div>
+                    }
+
                 </div>
                 <div className="text-white text-sm mt-auto">
                     <div className="flex items-center mb-2">

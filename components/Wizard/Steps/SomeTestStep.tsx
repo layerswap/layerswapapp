@@ -19,7 +19,6 @@ interface ConfirmationStepParams {
 const SomeTestStep: FC = () => {
 
     const checkButtonIcon = <CheckIcon className='h-5 w-5'></CheckIcon>
-    const { prevStep, nextStep } = useWizardState();
 
     const [isOpen, setIsOpen] = useState(false)
 

@@ -7,4 +7,5 @@ export class Exchange {
     is_default: boolean;
     fee_percentage: number;
     authorization_flow: string;
+    oauth_redirect_url: string;
 }

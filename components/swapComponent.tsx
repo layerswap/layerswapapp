@@ -37,6 +37,7 @@ import CodeStep from './Wizard/Steps/CodeStep';
 import { FormWizardProvider } from '../context/formWizardProvider';
 import APIKeyStep from './Wizard/Steps/APIKeyStep';
 import SwapConfirmationStep from './Wizard/Steps/SwapConfirmation';
+import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
 
 
 interface SwapApiResponse {
@@ -65,7 +66,7 @@ const FormWizard: FormWizardSteps = {
   "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true },
   "Email": { title: "Email confirmation", content: EmailStep, dismissOnBack: true },
   "Code": { title: "Code", content: CodeStep, navigationDisabled: true, dismissOnBack: true },
-  "ExchangeOAuth": { title: "OAuth flow", content: () => <>Coming sooon</>, dismissOnBack: true },
+  "ExchangeOAuth": { title: "OAuth flow", content: AccountConnectStep, dismissOnBack: true },
   "ExchangeApiCredentials": { title: "Please provide Read-only API keys", content: APIKeyStep, dismissOnBack: true },
   "SwapConfirmation": { title: "Swap confirmation", content: SwapConfirmationStep },
 }

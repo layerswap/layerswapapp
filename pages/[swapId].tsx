@@ -29,6 +29,7 @@ import SuccessfulStep from '../components/Wizard/Steps/SuccessfulStep';
 import FailedPage from '../components/Wizard/Steps/FailedPage';
 import EmailStep from '../components/Wizard/Steps/EmailStep';
 import SwapCodeStep from '../components/Wizard/Steps/SwapCodeStep';
+import ExternalPaumentStep from '../components/Wizard/Steps/ExternalPaymentStep';
 
 enum SwapPageStatus {
   Processing,
@@ -41,9 +42,10 @@ const SwapWizard: SwapWizardSteps = {
   "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, dismissOnBack: true },
   "Code": { title: "Code", content: SwapCodeStep, navigationDisabled: true, dismissOnBack: true },
   "Overview": { title: "Payment overview", content: OverviewStep, navigationDisabled: true },
+  "ExternalPayment":{ title: "Withdrawal", content: ExternalPaumentStep, navigationDisabled: true },
   "Withdrawal": { title: "Withdrawal", content: WithdrawExchangeStep },
   "Processing": { title: "", content: ProccessingStep },
-  "Suiccess": { title: "", content: SuccessfulStep, navigationDisabled: true },
+  "Success": { title: "", content: SuccessfulStep, navigationDisabled: true },
   "Failed": { title: "", content: FailedPage, navigationDisabled: true },
 }
 

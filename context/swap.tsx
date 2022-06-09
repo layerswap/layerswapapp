@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { BransferApiClient, Payment } from '../lib/bransferApiClients';
-import LayerSwapApiClient, { SwapDetailsResponse } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, SwapDetailsResponse } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate, useAuthState } from './auth';
 import Router, { useRouter } from 'next/router'
 import TokenService from '../lib/TokenService';
@@ -12,10 +12,10 @@ const SwapDataUpdateContext = React.createContext<UpdateInterface>(null);
 
 type UpdateInterface = {
     updateSwapFormData: (data: SwapFormValues) => void,
-    createSwap: () => Promise<string>,
-    // processPayment: (id: string) => void,
+    createSwap: (data: CreateSwapParams) => Promise<SwapDetailsResponse>,
+    processPayment: (id: string, twoFactorCode?: string) => void,
     getPayment: (id: string) => Promise<Payment>
-    getSwap: (id: string) => Promise<{ swap: SwapDetailsResponse, payment: Payment }>
+    getSwapAndPayment: (id: string) => Promise<{ swap: SwapDetailsResponse, payment: Payment }>
 }
 
 type SwapData = {
@@ -31,38 +31,11 @@ export function SwapDataProvider({ children }) {
 
     const { getAuthData } = useAuthDataUpdate();
 
-    const router = useRouter()
-    const { swapId } = router?.query || { swapId: payment?.data?.id }
-
-    useEffect(() => {
-        const authData = TokenService.getAuthData();
-        if (authData && swapId && !swap)
-            (async () => {
-                const layerswapApiClient = new LayerSwapApiClient()
-                const bransferApiClient = new BransferApiClient()
-                const swapDetails = await layerswapApiClient.getSwapDetails(swapId?.toString(), authData?.access_token)
-                setSwap(swapDetails)
-                const payment = await bransferApiClient.GetPayment(swapDetails.external_payment_id, authData?.access_token)
-                await setPayment(payment)
-            })();
-    }, [swapId])
-
-    // useInterval(async () => {
-    //     const { access_token } = TokenService.getAuthData() || {}
-
-    //     if (paymentId && access_token) {
-    //         const bransferApiClient = new BransferApiClient()
-    //         const payment = await bransferApiClient.GetPayment(paymentId?.toString(), access_token)
-    //         setPayment(payment)
-    //     }
-
-    // }, [paymentId], 5000)
-
-    const updateFns = {
+    const updateFns: UpdateInterface = {
         updateSwapFormData: (data: SwapFormValues) => {
             setSwapFormData(data)
         },
-        createSwap: useCallback(async () => {
+        createSwap: useCallback(async (data: CreateSwapParams) => {
             try {
                 const layerswapApiClient = new LayerSwapApiClient()
                 const authData = getAuthData()
@@ -80,14 +53,7 @@ export function SwapDataProvider({ children }) {
                 const swapId = swap.value?.swap_id;
                 const swapDetails = await layerswapApiClient.getSwapDetails(swapId, authData?.access_token)
                 setSwap(swapDetails)
-                const bransferApiClient = new BransferApiClient()
-                const payment = await bransferApiClient.GetPayment(swapDetails.external_payment_id, authData?.access_token)
-                const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(payment?.data?.id, authData?.access_token)
-                if (!prcoessPaymentReponse.is_success)
-                    throw new Error(prcoessPaymentReponse.errors)
-                const processed_payment = await bransferApiClient.GetPayment(payment?.data?.id, authData?.access_token)
-                await setPayment(processed_payment)
-                return swapId;
+                return swapDetails;
             }
             catch (e) {
                 throw e
@@ -97,27 +63,27 @@ export function SwapDataProvider({ children }) {
             const bransferApiClient = new BransferApiClient()
             const res = await bransferApiClient.GetPayment(id, TokenService.getAuthData().access_token)
             await setPayment(res)
-            return payment;
+            return res;
         }, []),
-        getSwap: useCallback(async (id) => {
+        getSwapAndPayment: useCallback(async (id) => {
             const authData = TokenService.getAuthData();
             const layerswapApiClient = new LayerSwapApiClient()
             const bransferApiClient = new BransferApiClient()
-            const swapDetails = await layerswapApiClient.getSwapDetails(swapId?.toString(), authData?.access_token)
+            const swapDetails = await layerswapApiClient.getSwapDetails(id, authData?.access_token)
             setSwap(swapDetails)
             const payment = await bransferApiClient.GetPayment(swapDetails.external_payment_id, authData?.access_token)
             await setPayment(payment)
             return { swap: swapDetails, payment: payment }
         }, []),
-        // processPayment: useCallback(async (id) => {
-        //     const authData = getAuthData()
-        //     const bransferApiClient = new BransferApiClient()
-        //     const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(id, authData?.access_token)
-        //     if (!prcoessPaymentReponse.is_success)
-        //         throw new Error(prcoessPaymentReponse.errors)
-        //     const payment = await bransferApiClient.GetPayment(id, authData?.access_token)
-        //     await setPayment(payment)
-        // }, [getAuthData]),
+        processPayment: useCallback(async (id, twoFactorCode?: string) => {
+            const authData = getAuthData()
+            const bransferApiClient = new BransferApiClient()
+            const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(id, authData?.access_token, twoFactorCode)
+            if (!prcoessPaymentReponse.is_success)
+                throw new Error(prcoessPaymentReponse.errors)
+            const payment = await bransferApiClient.GetPayment(id, authData?.access_token)
+            await setPayment(payment)
+        }, [getAuthData]),
     };
 
     return (

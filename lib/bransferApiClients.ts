@@ -17,8 +17,8 @@ export class BransferApiClient {
             .then(res => res.data)
     }
 
-    async ProcessPayment(id: string, token: string): Promise<PaymentProcessreponse> {
-        return await authInterceptor.post(BransferApiClient.apiBaseEndpoint + `/api/payments/${id}/process`,
+    async ProcessPayment(id: string, token: string, twoFactorCode?: string): Promise<PaymentProcessreponse> {
+        return await authInterceptor.post(BransferApiClient.apiBaseEndpoint + `/api/payments/${id}/process${twoFactorCode ? `?twoFactor=${twoFactorCode}` : ''}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data)
     }
@@ -58,8 +58,15 @@ export type Payment = {
             withdrawal_amount: number,
             total_withdrawal_amount: number
         },
-        external_flow_context: string,
-        note_flow_context: string,
+        external_flow_context: {
+            payment_url: string;
+        },
+        note_flow_context: {
+            address: string,
+            memo: string,
+            has_memo: string,
+            note: string,
+        },
         sequence_number: string,
     },
     is_success: boolean,

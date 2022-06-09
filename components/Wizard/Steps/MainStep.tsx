@@ -26,6 +26,9 @@ import { useFormWizardaUpdate } from "../../../context/formWizardProvider";
 import { ExchangeAuthorizationSteps, FormWizardSteps } from "../../../Models/Wizard";
 import TokenService from "../../../lib/TokenService";
 import { useUserExchangeDataUpdate } from "../../../context/userExchange";
+import axios from "axios";
+import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
+import { ExclamationIcon } from "@heroicons/react/outline";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -115,7 +118,7 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             isDefault: e.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
-
+    console.log(settings.exchanges)
     return (<>
         <label htmlFor="exchange" className="block font-normal text-light-blue text-sm">
             From
@@ -209,7 +212,8 @@ export default function MainStep() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     // const { nextStep } = useWizardState();
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
-
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState();
     let formValues = formikRef.current?.values;
 
     const settings = useSettingsState();
@@ -239,18 +243,26 @@ export default function MainStep() {
     const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), new SelectMenuItem<Partner>(c, c.name, c.display_name, c.logo_url, c.is_enabled)]));
 
     const handleSubmit = useCallback(async (values) => {
-        await updateSwapFormData(values)
-        const accessToken = TokenService.getAuthData()?.access_token
-        if (!accessToken)
-            goToStep("Email")
-        else {
-            const exchanges = await (await getUserExchanges(accessToken))?.data
-            const exchangeIsEnabled = exchanges?.some(e => e.exchange === values?.exchange?.id && e.is_enabled)
-            if (values?.exchange?.baseObject?.authorization_flow === "none" || exchangeIsEnabled)
-                goToStep("SwapConfirmation")
-            else
-                goToStep(ExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
-
+        try {
+            setLoading(true)
+            await updateSwapFormData(values)
+            const accessToken = TokenService.getAuthData()?.access_token
+            if (!accessToken)
+                goToStep("Email")
+            else {
+                const exchanges = await (await getUserExchanges(accessToken))?.data
+                const exchangeIsEnabled = exchanges?.some(e => e.exchange === values?.exchange?.id && e.is_enabled)
+                if (values?.exchange?.baseObject?.authorization_flow === "none" || exchangeIsEnabled)
+                    goToStep("SwapConfirmation")
+                else
+                    goToStep(ExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
+            }
+        }
+        catch (e) {
+            setError(e.message)
+        }
+        finally {
+            setLoading(false)
         }
         // if (values.network.baseObject.code.toLowerCase().includes("immutablex")) {
         //     ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
@@ -359,12 +371,26 @@ export default function MainStep() {
 
                 return errors;
             }}
-
             onSubmit={handleSubmit}
         >
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
                 <Form>
                     <div className="px-6 md:px-12 py-12 relative">
+                        {
+                            error &&
+                            <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
+                                <div className="flex">
+                                    <div className="flex-shrink-0">
+                                        <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                                    </div>
+                                    <div className="ml-3">
+                                        <p className="text-sm text-light-blue">
+                                            {error}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
                         <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4">
                             <div className="flex flex-col md:w-80 w-full">
                                 {
@@ -443,7 +469,7 @@ export default function MainStep() {
                                 </span></span>
                         </div>
                         <div className="mt-10">
-                            <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={false}>
+                            <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors)}
                             </SwapButton>
                         </div>
@@ -452,7 +478,6 @@ export default function MainStep() {
             )}
         </Formik >
     </>
-
 }
 
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {

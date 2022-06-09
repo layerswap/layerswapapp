@@ -1,10 +1,11 @@
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { Field, Form, Formik, FormikErrors, FormikProps } from 'formik';
-import { FC, useCallback, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useAuthDataUpdate } from '../../../context/auth';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
 import { useWizardState } from '../../../context/wizard';
+import TokenService from '../../../lib/TokenService';
 import LayerSwapAuthApiClient from '../../../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../../../Models/LayerSwapAuth';
 import { FormWizardSteps } from '../../../Models/Wizard';
@@ -15,7 +16,6 @@ type EmailFormValues = {
     email_confirm_right_wallet?: boolean;
     email_confirm_right_information?: boolean;
 }
-
 
 const EmailStep: FC = () => {
     const formikRef = useRef<FormikProps<EmailFormValues>>(null);
@@ -32,7 +32,9 @@ const EmailStep: FC = () => {
             const apiClient = new LayerSwapAuthApiClient();
             const email = values.email
             const res = await apiClient.getCodeAsync(email)
-            console.log(res)
+            if (!res.is_success)
+                throw new Error(res.errors)
+            TokenService.setCodeNextTime(res?.data?.next)
             updateEmail(email)
             goToStep("Code")
         }

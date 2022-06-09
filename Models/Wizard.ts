@@ -1,8 +1,8 @@
 import { FC } from "react"
 
 export const ExchangeAuthorizationSteps = {
-    "api_credentials": "ExchangeOAuth",
-    "o_auth2": "ExchangeApiCredentials"
+    "api_credentials": "ExchangeApiCredentials",
+    "o_auth2": "ExchangeOAuth"
 }
 
 export type BaseStepProps = {
@@ -18,7 +18,7 @@ export type Step = {
 
 export type FormSteps = "SwapForm" | "Email" | "Code" | "ExchangeOAuth" | "ExchangeApiCredentials" | "SwapConfirmation"
 
-export type SwapSteps = "Email" | "Code" | "Overview" | "Withdrawal" | "Processing" | "Suiccess" | "Failed"
+export type SwapSteps = "Email" | "Code" | "Overview" | "Withdrawal" | "Processing" | "Success" | "Failed" | "ExternalPayment"
 
 export type BaseWizard = {
     [key: string]: Step

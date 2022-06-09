@@ -38,9 +38,6 @@ export function useWizardNavigation() {
 
     const { swapFormData } = useSwapDataState()
 
-    const { getSwap } = useSwapDataUpdate()
-
-
     const userExchanges = useUserExchangeState()
     const { getUserExchanges } = useUserExchangeDataUpdate()
 

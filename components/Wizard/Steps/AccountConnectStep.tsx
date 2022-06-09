@@ -1,12 +1,46 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
-import { FC, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
+import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { useSwapDataState } from '../../../context/swap';
+import { useUserExchangeDataUpdate } from '../../../context/userExchange';
 import { useWizardState } from '../../../context/wizard';
+import { useInterval } from '../../../hooks/useInyterval';
+import { parseJwt } from '../../../lib/jwtParser';
+import TokenService from '../../../lib/TokenService';
+import { FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 
 const AccountConnectStep: FC = () => {
+    const { swapFormData } = useSwapDataState()
+    const { oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
+    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
+    const { currentStep } = useFormWizardState<FormWizardSteps>()
+    const { getUserExchanges } = useUserExchangeDataUpdate()
 
-    const { prevStep, nextStep } = useWizardState();
+    useInterval(async () => {
+        if (currentStep === "ExchangeOAuth") {
+            debugger
+            const {access_token} = TokenService.getAuthData() || {};
+            if (!access_token) {
+                await goToStep("Email")
+                return;
+            }
+            const exchanges = await (await getUserExchanges(access_token))?.data
+            const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
+            if (swapFormData?.exchange?.baseObject?.authorization_flow === "none" || exchangeIsEnabled)
+                goToStep("SwapConfirmation")
+        }
+    }, [currentStep], 2000)
+
+
+    const handleConnect = useCallback(() => {
+        const access_token = TokenService.getAuthData()?.access_token
+        if (!access_token)
+            goToStep("Email")
+        const { sub } = parseJwt(access_token) || {}
+        window.open(oauth_redirect_url + sub, '_blank', 'width=420,height=720')
+    }, [oauth_redirect_url])
 
     return (
         <>
@@ -31,11 +65,11 @@ const AccountConnectStep: FC = () => {
                 </div>
                 <div>
                     <label className="block font-normal text-light-blue text-sm mt-12">
-                    You will leave Bransfer and be securely redirected to Conibase authorization page.
+                        You will leave Bransfer and be securely redirected to Conibase authorization page.
                     </label>
                 </div>
                 <div className="text-white text-sm mt-3">
-                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={nextStep}>
+                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConnect}>
                         Confirm
                     </SubmitButton>
                 </div>

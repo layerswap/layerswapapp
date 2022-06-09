@@ -15,6 +15,7 @@ const CodeStep: FC = () => {
     const [code, setCode] = useState("")
     // const { nextStep } = useWizardState();
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const { swapFormData } = useSwapDataState()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
@@ -30,7 +31,6 @@ const CodeStep: FC = () => {
         var apiClient = new LayerSwapAuthApiClient();
         const res = await apiClient.connectAsync(email, code)
         await updateAuthData(res)
-        console.log(res)
         setLoading(false)
         const exchanges = await (await getUserExchanges(res.access_token))?.data
         const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
@@ -39,6 +39,20 @@ const CodeStep: FC = () => {
         else
             goToStep(ExchangeAuthorizationSteps[swapFormData?.exchange?.baseObject?.authorization_flow])
     }, [email, code, swapFormData])
+
+    const handleResendCode = useCallback(async () => {
+        try {
+            const apiClient = new LayerSwapAuthApiClient();
+            const res = await apiClient.getCodeAsync(email)
+        }
+        catch (e) {
+            setError(e.message)
+            console.log(e)
+        }
+        finally {
+            setLoading(false)
+        }
+    }, [email])
 
     return (
         <>
@@ -72,7 +86,7 @@ const CodeStep: FC = () => {
                     </SubmitButton>
                 </div>
                 <div className="flex items-center">
-                    <label className="block text-base font-lighter leading-6 text-light-blue"> Did not receive the verification?  <Link key="/" href="/"><a className="font-lighter text-darkblue underline hover:cursor-pointer">Resend again</a></Link></label>
+                    <label className="block text-base font-lighter leading-6 text-light-blue"> Did not receive the verification?  <button onClick={handleResendCode}><a className="font-lighter text-darkblue underline hover:cursor-pointer">Resend again</a></button></label>
                 </div>
             </div>
 

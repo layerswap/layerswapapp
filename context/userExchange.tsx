@@ -15,14 +15,9 @@ export function UserExchangeProvider({ children }) {
 
     const updateFns: UpdateFns = {
         getUserExchanges: async (token: string): Promise<UserExchangesResponse> => {
-            try {
-                const res = await bransferApiClient.GetExchangeAccounts(token)
-                setUserExchangeData(res)
-                return res;
-            }
-            catch (e) {
-                //TODO handle error
-            }
+            const res = await bransferApiClient.GetExchangeAccounts(token)
+            setUserExchangeData(res)
+            return res;
         }
     };
 

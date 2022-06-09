@@ -23,40 +23,47 @@ const OverviewStep: FC<Props> = ({ current }) => {
     const [error, setError] = useState()
     const { payment } = useSwapDataState()
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
+    const { currentStep } = useFormWizardState<SwapWizardSteps>()
 
     const router = useRouter();
     const { swapId } = router.query;
 
-    const { getSwap } = useSwapDataUpdate()
+    const { getSwapAndPayment } = useSwapDataUpdate()
 
     useEffect(() => {
         (async () => {
-            const authData = TokenService.getAuthData();
-            if (!authData) {
-                await goToStep("Email")
-                setLoadingWizard(false)
-                return;
+            if (currentStep == "Overview") {
+                const authData = TokenService.getAuthData();
+                if (!authData) {
+                    await goToStep("Email")
+                    setLoadingWizard(false)
+                    return;
+                }
+                const { payment, swap } = await getSwapAndPayment(swapId.toString())
+                const swapStatus = swap?.status;
+                const paymentStatus = payment?.data?.status
+                if (swapStatus == SwapStatus.Completed)
+                    await goToStep("Success")
+                else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
+                    await goToStep("Failed")
+                else if (swapStatus == SwapStatus.Pending)
+                    await goToStep("Processing")
+
+                setTimeout(() => {
+                    setLoadingWizard(false)
+                }, 500);
             }
-            const { payment, swap } = await getSwap(swapId.toString())
-            const swapStatus = swap?.status;
-            const paymentStatus = payment?.data?.status
-            if (swapStatus == SwapStatus.Completed)
-                await goToStep("Suiccess")
-            else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
-                await goToStep("Failed")
-            else if (swapStatus == SwapStatus.Pending)
-                await goToStep("Processing")
-
-            setTimeout(() => {
-                setLoadingWizard(false)
-            }, 500);
-
         })()
-    }, [swapId])
+    }, [swapId, currentStep])
 
     const handleConfirm = useCallback(async () => {
         try {
-            goToStep("Withdrawal")
+            if (payment.data.external_flow_context)
+                goToStep("ExternalPayment")
+            else if (payment.data.manual_flow_context)
+                goToStep("Withdrawal")
+            else
+                goToStep("Processing")
         }
         catch (e) {
             setError(e.message)

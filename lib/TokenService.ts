@@ -5,8 +5,13 @@ class TokenService {
         return JSON.parse(typeof window !== 'undefined' && window?.localStorage?.getItem("authData")) || undefined;
     }
     setAuthData(user) {
-        console.log(JSON.stringify(user));
         localStorage.setItem("authData", JSON.stringify(user));
+    }
+    getCodeNextTime(): Date | undefined {
+        return JSON.parse(typeof window !== 'undefined' && window?.localStorage?.getItem("codeNextTime")) || undefined;
+    }
+    setCodeNextTime(time) {
+        localStorage.setItem("codeNextTime", JSON.stringify(time));
     }
     removeAuthData() {
         localStorage.removeItem("authData");

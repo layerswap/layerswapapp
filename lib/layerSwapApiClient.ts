@@ -24,7 +24,7 @@ export default class LayerSwapApiClient {
     }
 }
 
-type CreateSwapParams = {
+export type CreateSwapParams = {
     Amount: number,
     Network: string,
     Exchange: string,

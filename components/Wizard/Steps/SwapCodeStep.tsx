@@ -1,11 +1,13 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import { useAuthDataUpdate, useAuthState } from '../../../context/auth';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
 import { useWizardState } from '../../../context/wizard';
+import { useInterval } from '../../../hooks/useInyterval';
+import TokenService from '../../../lib/TokenService';
 import LayerSwapAuthApiClient from '../../../lib/userAuthApiClient';
 import { ExchangeAuthorizationSteps, SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
@@ -15,15 +17,29 @@ const CodeStep: FC = () => {
     const [code, setCode] = useState("")
     // const { nextStep } = useWizardState();
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const { swapFormData } = useSwapDataState()
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
 
-    const { email } = useAuthState();
+    const nextTime = TokenService.getCodeNextTime()
+
+
+    const [resendTimeLeft, setResendTimeLeft] = useState(nextTime ? new Date(nextTime).getTime() - new Date().getTime() : 0)
+
+    const { email, authData } = useAuthState();
+
     const { updateAuthData } = useAuthDataUpdate()
     const handleInputChange = (e) => {
         setCode(e?.target?.value)
     }
+
+    useInterval(() => {
+        if (nextTime && new Date(nextTime).getTime() > new Date().getTime())
+            setResendTimeLeft(new Date(nextTime).getTime() - new Date().getTime())
+        else
+            setResendTimeLeft(0)
+    }, [nextTime], 1000)
 
     const verifyCode = useCallback(async () => {
         setLoading(true)
@@ -34,6 +50,20 @@ const CodeStep: FC = () => {
         setLoading(false)
         goToStep("Overview")
     }, [email, code, swapFormData])
+
+    const handleResendCode = useCallback(async () => {
+        try {
+            const apiClient = new LayerSwapAuthApiClient();
+            const res = await apiClient.getCodeAsync(email)
+        }
+        catch (e) {
+            setError(e.message)
+            console.log(e)
+        }
+        finally {
+            setLoading(false)
+        }
+    }, [email])
 
     return (
         <>
@@ -67,7 +97,11 @@ const CodeStep: FC = () => {
                     </SubmitButton>
                 </div>
                 <div className="flex items-center">
-                    <label className="block text-base font-lighter leading-6 text-light-blue"> Did not receive the verification?  <Link key="/" href="/"><a className="font-lighter text-darkblue underline hover:cursor-pointer">Resend again</a></Link></label>
+                    <label className="block text-base font-lighter leading-6 text-light-blue"> Did not receive the verification?
+                        <button onClick={handleResendCode}>
+                            <a className="font-lighter text-darkblue underline hover:cursor-pointer">Resend again</a>
+                        </button>
+                    </label>
                 </div>
             </div>
 

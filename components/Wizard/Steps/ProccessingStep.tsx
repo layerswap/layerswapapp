@@ -22,7 +22,7 @@ const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
     const router = useRouter();
     const { swapId } = router.query;
-    const { getSwap } = useSwapDataUpdate()
+    const { getSwapAndPayment } = useSwapDataUpdate()
 
     useInterval(async () => {
         if (currentStep === "Processing") {
@@ -31,11 +31,11 @@ const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
                 await goToStep("Email")
                 return;
             }
-            const { payment, swap } = await getSwap(swapId.toString())
+            const { payment, swap } = await getSwapAndPayment(swapId.toString())
             const swapStatus = swap?.status;
             const paymentStatus = payment?.data?.status
             if (swapStatus == SwapStatus.Completed)
-                await goToStep("Suiccess")
+                await goToStep("Success")
             else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
                 await goToStep("Failed")
         }
