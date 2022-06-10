@@ -39,6 +39,8 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const handleSubmit = useCallback(async () => {
         setLoading(true)
+        setError("")
+        setTwoFARequired(false)
         try {
             const data = {
                 Amount: Number(swapFormData.amount),
@@ -49,8 +51,16 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             }
             const _swap = swap || await createSwap(data)
             const payment = await getPayment(_swap.external_payment_id)
-            if (payment?.data?.status !== 'processing')
+            if (payment?.data?.status === 'created')
                 await processPayment(payment?.data?.id, towFactorCode)
+            ///TODO grdon code please refactor
+            else if (payment?.data?.status === 'closed') {
+                const newSwap = await createSwap(data)
+                const newPayment = await getPayment(newSwap.external_payment_id)
+                await processPayment(newPayment?.data?.id, towFactorCode)
+                router.push(`/${newSwap.id}`);
+                return;
+            }
             router.push(`/${_swap.id}`);
         }
         catch (error) {
@@ -66,10 +76,12 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 setError("Two factor authentication is required")
                 setTwoFARequired(true)
             }
+            else if(error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {
+                setError(`${swapFormData.exchange.name} error: You don't have that much.`)
+            }
             else {
                 setError(errorMessage)
             }
-
         }
         finally {
             setLoading(false)
