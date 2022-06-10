@@ -13,7 +13,8 @@ export type Step = {
     title: string,
     content: FC<BaseStepProps>,
     navigationDisabled?: boolean,
-    dismissOnBack?: boolean
+    positionPercent: number,
+    dismissOnBack?: boolean,
 }
 
 export type FormSteps = "SwapForm" | "Email" | "Code" | "ExchangeOAuth" | "ExchangeApiCredentials" | "SwapConfirmation"

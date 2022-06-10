@@ -63,12 +63,12 @@ interface ExchangesFieldProps {
 }
 
 const FormWizard: FormWizardSteps = {
-  "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true },
-  "Email": { title: "Email confirmation", content: EmailStep, dismissOnBack: true },
-  "Code": { title: "Code", content: CodeStep, navigationDisabled: true, dismissOnBack: true },
-  "ExchangeOAuth": { title: "OAuth flow", content: AccountConnectStep, dismissOnBack: true },
-  "ExchangeApiCredentials": { title: "Please provide Read-only API keys", content: APIKeyStep, dismissOnBack: true },
-  "SwapConfirmation": { title: "Swap confirmation", content: SwapConfirmationStep },
+  "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true, positionPercent: 0 },
+  "Email": { title: "Email confirmation", content: EmailStep, dismissOnBack: true, positionPercent: 30 },
+  "Code": { title: "Code", content: CodeStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 35 },
+  "ExchangeOAuth": { title: "OAuth flow", content: AccountConnectStep, dismissOnBack: true, positionPercent: 40 },
+  "ExchangeApiCredentials": { title: "Please provide Read-only API keys", content: APIKeyStep, dismissOnBack: true, positionPercent: 40 },
+  "SwapConfirmation": { title: "Swap confirmation", content: SwapConfirmationStep, positionPercent: 60 },
 }
 
 const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSource, sourceExchangeName, asset, swapMode }) => {

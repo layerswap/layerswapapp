@@ -39,14 +39,14 @@ enum SwapPageStatus {
 }
 
 const SwapWizard: SwapWizardSteps = {
-  "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, dismissOnBack: true },
-  "Code": { title: "Code", content: SwapCodeStep, navigationDisabled: true, dismissOnBack: true },
-  "Overview": { title: "Payment overview", content: OverviewStep, navigationDisabled: true },
-  "ExternalPayment":{ title: "Withdrawal", content: ExternalPaumentStep, navigationDisabled: true },
-  "Withdrawal": { title: "Withdrawal", content: WithdrawExchangeStep },
-  "Processing": { title: "", content: ProccessingStep },
-  "Success": { title: "", content: SuccessfulStep, navigationDisabled: true },
-  "Failed": { title: "", content: FailedPage, navigationDisabled: true },
+  "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 70 },
+  "Code": { title: "Code", content: SwapCodeStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 75 },
+  "Overview": { title: "Payment overview", content: OverviewStep, navigationDisabled: true, positionPercent: 80 },
+  "ExternalPayment": { title: "Withdrawal", content: ExternalPaumentStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 90 },
+  "Withdrawal": { title: "Withdrawal", content: WithdrawExchangeStep, positionPercent: 90, dismissOnBack: true, },
+  "Processing": { title: "", content: ProccessingStep, positionPercent: 95 },
+  "Success": { title: "", content: SuccessfulStep, navigationDisabled: true, positionPercent: 100 },
+  "Failed": { title: "", content: FailedPage, navigationDisabled: true, positionPercent: 100 },
 }
 
 

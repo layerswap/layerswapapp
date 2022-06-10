@@ -30,7 +30,7 @@ const Wizard: FC = () => {
       <div className={`bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-ouline-blue">
-               <div style={{ width: "50%" }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-pink-primary"></div>
+               <div style={{ width: `${wizard[currentStep].positionPercent}%`,transition:'width 1s;' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-pink-primary"></div>
             </div>
          </div>
          <WizardHeader />
