@@ -20,8 +20,7 @@ const AccountConnectStep: FC = () => {
 
     useInterval(async () => {
         if (currentStep === "ExchangeOAuth") {
-            debugger
-            const {access_token} = TokenService.getAuthData() || {};
+            const { access_token } = TokenService.getAuthData() || {};
             if (!access_token) {
                 await goToStep("Email")
                 return;
@@ -33,7 +32,6 @@ const AccountConnectStep: FC = () => {
         }
     }, [currentStep], 2000)
 
-
     const handleConnect = useCallback(() => {
         const access_token = TokenService.getAuthData()?.access_token
         if (!access_token)
@@ -42,6 +40,7 @@ const AccountConnectStep: FC = () => {
         window.open(oauth_redirect_url + sub, '_blank', 'width=420,height=720')
     }, [oauth_redirect_url])
 
+    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
     return (
         <>
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
@@ -52,7 +51,7 @@ const AccountConnectStep: FC = () => {
                     <label className="block text-lg font-medium leading-6 text-white"> Important </label>
                 </div>
                 <div className="flex items-center mt-2">
-                    <label className="block text-lg font-lighter leading-6 text-light-blue"> Make sure to authorize at least 90$. Follow this <Link key="userGuide" href="/userguide"><a className="font-lighter text-darkblue underline hover:cursor-pointer">Step by step guide</a></Link></label>
+                    <label className="block text-lg font-lighter leading-6 text-light-blue"> Make sure to authorize at least {minimalAuthorizeAmount}$. Follow this <Link key="userGuide" href="/userguide"><a className="font-lighter text-darkblue underline hover:cursor-pointer">Step by step guide</a></Link></label>
                 </div>
                 <div className="flex items-center mt-12 md:mt-5">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-pink-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
