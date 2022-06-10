@@ -19,6 +19,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     const { swapFormData, swap } = useSwapDataState()
     const { createSwap, processPayment, getSwapAndPayment, getPayment } = useSwapDataUpdate()
+    const { goToStep, setWizardError } = useFormWizardaUpdate<FormWizardSteps>()
     const router = useRouter();
 
     useEffect(() => {
@@ -34,6 +35,8 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const handleTwoFACodeChange = (e) => {
         setTwoFactorCode(e?.target?.value)
     }
+    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
+    const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const handleSubmit = useCallback(async () => {
         setLoading(true)
         try {
@@ -51,12 +54,15 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             router.push(`/${_swap.id}`);
         }
         catch (error) {
-            ///TODO handle authorize amount error
             ///TODO newline may not work, will not defenitaly fix this
             console.log("error in confirmation", error?.response?.data)
             const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error.message || error?.response?.data?.message || error.message)
 
-            if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {
+            if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
+                await goToStep("ExchangeOAuth")
+                setWizardError(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
+            }
+            else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {
                 setError("Two factor authentication is required")
                 setTwoFARequired(true)
             }
@@ -68,7 +74,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         finally {
             setLoading(false)
         }
-    }, [swapFormData, swap, towFactorCode])
+    }, [swapFormData, swap, towFactorCode, minimalAuthorizeAmount, transferAmount])
 
     return (
         <>
