@@ -57,3 +57,10 @@ select:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0px 1000px #131e36 inset;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+hr.horizontal-gradient {
+  border: 0;
+  height: 1px;
+  background-image: linear-gradient(to right, hsla(0, 0%, 100%, 0), #1A2949, hsla(0, 0%, 100%, 0));
+}
+ 

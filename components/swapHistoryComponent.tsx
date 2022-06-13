@@ -48,7 +48,7 @@ function classNames(...classes) {
 }
 function Example() {
     return (
-      <div className="px-4 sm:px-6 lg:px-8 drop-shadow-lg">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="-mx-4 mt-10 ring-1 ring-darkblue-100 sm:-mx-6 md:mx-0 md:rounded-lg bg-darkblue-600">
           <table className="min-w-full divide-y divide-darkblue-100">
             <thead>

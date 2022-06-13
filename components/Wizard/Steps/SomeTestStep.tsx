@@ -6,6 +6,7 @@ import SubmitButton from '../../buttons/submitButton';
 import CardContainer from '../../cardContainer';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
 import Example from '../../swapHistoryComponent';
+import SwapDetails from '../../swapDetailsComponent';
 
 
 interface ConfirmationStepParams {
@@ -25,7 +26,7 @@ const SomeTestStep: FC = () => {
 
     return (
         <>
-            <Example></Example>
+            <SwapDetails current={false}></SwapDetails>
         </>
     )
 }
