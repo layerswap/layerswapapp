@@ -184,67 +184,6 @@ export function WizardProvider({ children }) {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-<<<<<<< HEAD
-    useEffect(() => {
-        switch (swapData?.exchange?.baseObject?.authorization_flow) {
-            case Flow.ApiCredentials:
-                setWizard(old => ({ ...old, Flow: apiKeyFlowSteps }))
-                break;
-            case Flow.OAuth:
-                setWizard(old => ({ ...old, Flow: OAuthSteps }))
-                break;
-        }
-    }, [swapData])
-
-    const getNextPart = useCallback((currentPart: WizardPartType) => {
-        let res: WizardPartType = currentPart;
-
-        switch (currentPart) {
-            case WizardPartType.Swap:
-                if (authData?.access_token)
-                    res = WizardPartType.Flow
-                else
-                    res = WizardPartType.Auth
-                break;
-            case WizardPartType.Auth:
-                res = WizardPartType.Flow
-                break;
-            case WizardPartType.Flow:
-                res = WizardPartType.Withdrawal
-                break;
-        }
-
-        if (res != currentPart && !wizard[res].length)
-            return getNextPart(res)
-
-        return res
-
-    }, [authData, wizard])
-
-    const getPreviousPart = useCallback((currentPart: WizardPartType) => {
-        let res: WizardPartType = currentPart;
-
-        switch (currentPart) {
-            case WizardPartType.Withdrawal:
-                res = WizardPartType.Flow
-            case WizardPartType.Flow:
-                if (authData?.access_token)
-                    res = WizardPartType.Swap
-                else
-                    res = WizardPartType.Auth
-                break;
-            case WizardPartType.Auth:
-                res = WizardPartType.Swap
-                break;
-        }
-
-        if (res != currentPart && !wizard[res].length)
-            return getPreviousPart(res)
-
-        return res
-    }, [authData])
-=======
->>>>>>> bransferui-merge
 
     const wrapper = useRef(null);
 
