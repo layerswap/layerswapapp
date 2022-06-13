@@ -30,6 +30,14 @@ import { useWizardState, WizardProvider } from '../context/wizard';
 import { SwapDataProvider } from '../context/swap';
 import { AuthProvider } from '../context/auth';
 import { UserExchangeProvider } from '../context/userExchange';
+import Wizard from './Wizard/Wizard';
+import { FormWizardSteps } from '../Models/Wizard';
+import EmailStep from './Wizard/Steps/EmailStep';
+import CodeStep from './Wizard/Steps/CodeStep';
+import { FormWizardProvider } from '../context/formWizardProvider';
+import APIKeyStep from './Wizard/Steps/APIKeyStep';
+import SwapConfirmationStep from './Wizard/Steps/SwapConfirmation';
+import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
 
 
 interface SwapApiResponse {
@@ -54,6 +62,14 @@ interface ExchangesFieldProps {
   isOfframp: boolean;
 }
 
+const FormWizard: FormWizardSteps = {
+  "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true, positionPercent: 0 },
+  "Email": { title: "Email confirmation", content: EmailStep, dismissOnBack: true, positionPercent: 30 },
+  "Code": { title: "Code", content: CodeStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 35 },
+  "ExchangeOAuth": { title: "OAuth flow", content: AccountConnectStep, dismissOnBack: true, positionPercent: 40 },
+  "ExchangeApiCredentials": { title: "Please provide Read-only API keys", content: APIKeyStep, dismissOnBack: true, positionPercent: 40 },
+  "SwapConfirmation": { title: "Swap confirmation", content: SwapConfirmationStep, positionPercent: 60 },
+}
 
 const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSource, sourceExchangeName, asset, swapMode }) => {
   const router = useRouter();
@@ -142,19 +158,26 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
   return (
     <div>
       <div className="flex flex-col space-y-6 text-white">
-        <SwapDataProvider >
-          <AuthProvider>
+        <AuthProvider>
+          <SwapDataProvider >
             <UserExchangeProvider>
-              <WizardProvider >
-              </WizardProvider >
+              <FormWizardProvider wizard={FormWizard} initialStep={"SwapForm"}>
+                <Wizard />
+                <TestComp />
+              </FormWizardProvider >
             </UserExchangeProvider>
-          </AuthProvider>
-        </SwapDataProvider >
+          </SwapDataProvider >
+        </AuthProvider>
         <IntroCard />
       </div >
     </div >
   )
 };
+
+function TestComp() {
+  console.log("Test compnent rerendered")
+  return <></>
+}
 
 
 export default Swap;

@@ -14,8 +14,15 @@ module.exports = {
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {
+      transitionDuration: {
+        '0': '0ms',
+        '2000': '2000ms',
+      },
       opacity: {
         '35': '.35',
+      },
+      animation: {
+        fadein: 'fadein 4s',
       },
       colors: {
         cyan: colors.cyan,
@@ -41,6 +48,19 @@ module.exports = {
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
+        'fade-in-down': 'fade-in-down 0.5s ease-out'
+      },
+      keyframes: {
+        'fade-in-down': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(-10px)'
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          },
+        }
       },
       letterSpacing: {
         tightest: '-.075em',

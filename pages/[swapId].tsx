@@ -16,6 +16,20 @@ import { InferGetServerSidePropsType } from 'next';
 import { AxiosError } from "axios";
 import React from 'react';
 import IntroCard from '../components/introCard';
+import { AuthProvider } from '../context/auth';
+import { SwapDataProvider } from '../context/swap';
+import { UserExchangeProvider } from '../context/userExchange';
+import { FormWizardProvider } from '../context/formWizardProvider';
+import Wizard from '../components/Wizard/Wizard';
+import { SwapWizardSteps } from '../Models/Wizard';
+import OverviewStep from '../components/Wizard/Steps/OverviewStep';
+import WithdrawExchangeStep from '../components/Wizard/Steps/WithdrawExhangeStep';
+import ProccessingStep from '../components/Wizard/Steps/ProccessingStep';
+import SuccessfulStep from '../components/Wizard/Steps/SuccessfulStep';
+import FailedPage from '../components/Wizard/Steps/FailedPage';
+import EmailStep from '../components/Wizard/Steps/EmailStep';
+import SwapCodeStep from '../components/Wizard/Steps/SwapCodeStep';
+import ExternalPaumentStep from '../components/Wizard/Steps/ExternalPaymentStep';
 
 enum SwapPageStatus {
   Processing,
@@ -24,110 +38,36 @@ enum SwapPageStatus {
   NotFound
 }
 
-const _maxRevalidateCount = 18;
+const SwapWizard: SwapWizardSteps = {
+  "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 70 },
+  "Code": { title: "Code", content: SwapCodeStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 75 },
+  "Overview": { title: "Payment overview", content: OverviewStep, navigationDisabled: true, positionPercent: 80 },
+  "ExternalPayment": { title: "Withdrawal", content: ExternalPaumentStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 90 },
+  "Withdrawal": { title: "Withdrawal", content: WithdrawExchangeStep, positionPercent: 90, dismissOnBack: true, },
+  "Processing": { title: "", content: ProccessingStep, positionPercent: 95 },
+  "Success": { title: "", content: SuccessfulStep, navigationDisabled: true, positionPercent: 100 },
+  "Failed": { title: "", content: FailedPage, navigationDisabled: true, positionPercent: 100 },
+}
+
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const router = useRouter();
-  const { swapId } = router.query;
-  const apiClient = new LayerSwapApiClient();
-
-  const { data, mutate, error, isValidating } = useSWR<SwapInfo>(swapId ? `/swaps/${swapId}` : null, apiClient.apiFetcher);
-  const [swapPageStatus, setswapPageStatus] = useState(SwapPageStatus.Processing);
-  var checkAndSetStatus = (status: SwapPageStatus) => {
-    if (swapPageStatus != status) {
-      setswapPageStatus(status);
-    }
-  }
-  const revalidateTimeoutId = useRef<NodeJS.Timeout>();
-  const revalidateCount = useRef(0);
-
-  var isLoading = data && (data.status == SwapStatus.Created || data.status == SwapStatus.Pending);
-  if (error) {
-    var axiosError = error as AxiosError;
-    if (axiosError?.response?.status == 404) {
-      checkAndSetStatus(SwapPageStatus.NotFound);
-    }
-    else {
-      checkAndSetStatus(SwapPageStatus.Failed)
-    }
-  }
-  else {
-    if (data) {
-      if (data.status == SwapStatus.Failed) {
-        checkAndSetStatus(SwapPageStatus.Failed);
-      }
-      else if ((revalidateCount.current >= _maxRevalidateCount) && isLoading) {
-        checkAndSetStatus(SwapPageStatus.Failed);
-      }
-      else if (isLoading || isValidating) {
-        checkAndSetStatus(SwapPageStatus.Processing);
-      }
-      else {
-        checkAndSetStatus(SwapPageStatus.Success);
-      }
-    }
-    else {
-      if (isValidating) {
-        checkAndSetStatus(SwapPageStatus.Processing);
-      }
-    }
-  }
-
-  if (data && isLoading) {
-    if (isValidating && revalidateTimeoutId) {
-      clearTimeout(revalidateTimeoutId.current);
-    }
-    else {
-      if (revalidateCount.current < _maxRevalidateCount) {
-        revalidateTimeoutId.current = setTimeout(function () {
-          mutate();
-          revalidateCount.current++;
-        }.bind(this), revalidateCount.current * 5000);
-      }
-    }
-  }
 
   return (
     <Layout>
-      <div className='space-y-5 text-white'>
-        <CardContainer>
-          <div className='px-6 md:px-4 py-12'>
-            <div className="justify-center flex">
-              {renderIndicator(swapPageStatus)}
-            </div>
-            <h3 className="mt-6 text-center text-xl md:text-2xl leading-6 font-medium text-gray-100">
-              {renderHeading(swapPageStatus, data?.offramp_info)}
-            </h3>
-            <div className="mt-3">
-              <p className="text-blueGray-300 font-medium text-sm md:text-base text-center">
-                {renderDescription(swapPageStatus, data?.offramp_info)}
-              </p>
-            </div>
-            <div className="flex flex-col">
-              <div className={swapPageStatus === SwapPageStatus.Success ? "block" : "hidden"}>
-
-                <Link href='/'>
-                  <a className="font-medium underline text-indigo-400 hover:text-indigo-500">
-                    <p className="mt-2 text-center">Swap more</p>
-                  </a>
-                </Link>
-                {data?.transaction_id &&
-                  <a href={settings.networks.filter(x => x.code === data?.network)[0]?.explorer_template.replace("{0}", data?.transaction_id)} className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                    View in explorer
-                  </a>
-                }
-              </div>
-              <div className={(swapPageStatus === SwapPageStatus.Failed || swapPageStatus === SwapPageStatus.NotFound) ? "block" : "hidden"}>
-                <p className={classNames(swapPageStatus === SwapPageStatus.Failed ? "block" : "hidden", "mt-2 text-sm text-center text-gray-300")}><span className="text-base font-medium">Swap Id:</span> {swapId}</p>
-                <a href="https://discord.com/invite/KhwYN35sHy" className="mt-5 w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gradient-to-r from-indigo-400 to-pink-400 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                  Open Discord
-                </a>
-              </div>
-            </div>
-          </div>
-        </CardContainer>
-        <IntroCard />
-      </div>
+      <div>
+        <div className="flex flex-col space-y-6 text-white">
+          <AuthProvider>
+            <SwapDataProvider >
+              <UserExchangeProvider>
+                <FormWizardProvider wizard={SwapWizard} initialStep={"Overview"} initialLoading={true}>
+                  <Wizard />
+                </FormWizardProvider >
+              </UserExchangeProvider>
+            </SwapDataProvider >
+          </AuthProvider>
+          <IntroCard />
+        </div >
+      </div >
     </Layout>
   )
 }

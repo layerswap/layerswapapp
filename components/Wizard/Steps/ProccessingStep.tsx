@@ -1,21 +1,45 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { FC, useEffect, useState } from 'react'
-import { useSwapDataState } from '../../../context/swap';
-import { useWizardState } from '../../../context/wizard';
+import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
+import { useWizardState, WizardPartType } from '../../../context/wizard';
+import { useInterval } from '../../../hooks/useInyterval';
+import { BransferApiClient } from '../../../lib/bransferApiClients';
+import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
+import TokenService from '../../../lib/TokenService';
+import { SwapStatus } from '../../../Models/SwapStatus';
+import { SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 
 const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
 
-    const { prevStep, nextStep } = useWizardState();
-    const swapData = useSwapDataState()
-    useEffect(() => {
-        if (current)
-            setTimeout(() => {
-                console.log("nexting now")
-                nextStep()
-            }, 5000);
-    }, [current])
+    // const { prevStep, nextStep, goToStep } = useWizardState();
+    const { swap, payment } = useSwapDataState()
+    const { currentStep } = useFormWizardState<SwapWizardSteps>()
+
+    const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
+    const router = useRouter();
+    const { swapId } = router.query;
+    const { getSwapAndPayment } = useSwapDataUpdate()
+
+    useInterval(async () => {
+        if (currentStep === "Processing") {
+            const authData = TokenService.getAuthData();
+            if (!authData) {
+                await goToStep("Email")
+                return;
+            }
+            const { payment, swap } = await getSwapAndPayment(swapId.toString())
+            const swapStatus = swap?.status;
+            const paymentStatus = payment?.data?.status
+            if (swapStatus == SwapStatus.Completed)
+                await goToStep("Success")
+            else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
+                await goToStep("Failed")
+        }
+    }, [currentStep, swapId], 2000)
 
     return (
         <>
@@ -28,8 +52,13 @@ const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
                     </div>
                 </div>
                 <div className="flex text-center place-content-center mt-1 md:mt-1">
-                    <label className="block text-lg font-lighter leading-6 text-light-blue"> Awaiting for {swapData.exchange?.name} confirmation </label>
+                    <label className="block text-lg font-lighter leading-6 text-light-blue">{payment?.data?.status == "completed" ? "Payment processed. " : "Processing payment"} </label>
                 </div>
+                {
+                    payment?.data?.status == "completed" && <div className="flex text-center place-content-center mt-1 md:mt-1">
+                        <label className="block text-lg font-lighter leading-6 text-light-blue"> Awaiting for {payment?.data?.exchange} confirmation </label>
+                    </div>
+                }
             </div>
 
         </>

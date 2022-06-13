@@ -6,7 +6,7 @@ type UseStorageReturnValue = {
 };
 
 const useStorage = (): UseStorageReturnValue => {
-  const storageType = (type?: StorageType): 'localStorage' | 'sessionStorage' => `${type ?? 'session'}Storage`;
+  const storageType = (type?: StorageType): 'localStorage' | 'sessionStorage' => `${type ?? 'local'}Storage`;
 
   const isBrowser: boolean = ((): boolean => typeof window !== 'undefined')();
 

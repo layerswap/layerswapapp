@@ -6,4 +6,5 @@ module.exports = {
   images: {
     domains: ["bransferstorage.blob.core.windows.net"],
   },
+  reactStrictMode: false
 };
