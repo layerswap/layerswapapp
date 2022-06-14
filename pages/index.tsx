@@ -90,7 +90,7 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
             </div>
           }
         </div>
-        <Swap swapMode={swapOption.name} settings={data} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
+        <Swap swapMode={swapOption.name} settings={data} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource?.toLowerCase()} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
       </div>
     </Layout>
   )
