@@ -2,7 +2,7 @@ import axios from "axios";
 import TokenService from "./TokenService";
 
 const instance = axios.create({
-    baseURL: "https://localhost:5019",
+    baseURL: "https://bransfer-connect-identity-dev.azurewebsites.net",
     headers: {
         "Content-Type": "application/json, text/plain, */*",
     },
