@@ -93,14 +93,14 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
             </div>
           }
         </div>
-
+{/* 
         <SettingsProvider data={data}>
           <QueryProvider query={query}>
-            <AccountProvider data={{ account, chainId }}>
+            <AccountProvider data={{ account, chainId }}> */}
               <Swap swapMode={swapOption.name} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
-            </AccountProvider>
+            {/* </AccountProvider>
           </QueryProvider>
-        </SettingsProvider>
+        </SettingsProvider> */}
       </div>
     </Layout>
   )
