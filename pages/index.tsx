@@ -60,7 +60,7 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
         });
       }
     }
-  })
+  },[])
 
   if (chainId) {
     let network = data.networks.find(x => x.chain_id == chainId);
