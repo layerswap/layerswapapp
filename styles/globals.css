@@ -34,17 +34,17 @@
   width: 1325px;
   height: 1164px;
   position: absolute;
-  transform: translate(-50%, -50%);
+  filter: blur(133px);
+  transform: translate(-50%, -50%) translate3d(0, 0, 0);
   left: 50%;
   top: -5%;
   border-radius: 50%;
   z-index: -1;
   background: rgba(255, 0, 184, 0.2);
-  filter: blur(133px);
 }
 
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
+input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 textarea:-webkit-autofill,
 textarea:-webkit-autofill:hover,
@@ -63,4 +63,3 @@ hr.horizontal-gradient {
   height: 1px;
   background-image: linear-gradient(to right, hsla(0, 0%, 100%, 0), #1A2949, hsla(0, 0%, 100%, 0));
 }
- 

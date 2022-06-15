@@ -9,13 +9,6 @@ function IntroCard(props) {
             <div className="flex flex-col px-6 md:px-12 py-10">
                 <div>
                     <h1 className="text-xl font-semibold">About Layerswap</h1>
-                    <input
-                        type="text"
-                        name="usernamea"
-                        id="usernamea"
-                        autoComplete="usernamea"
-                        className="text-black flex-1 text: block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                    />
                     <p className="text-base text-gray-100 mt-6">
                         Save up to 10x on fees when moving crypto from Coinbase, Binance or FTX to Arbitrum, zkSync, Loopring and other L2s.
                     </p>
