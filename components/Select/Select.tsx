@@ -53,6 +53,9 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
         setFieldValue(name, item, true)
     }, [name])
 
+    const handleComboboxChange = useCallback(()=>{},[])
+    const handleQueryInputChange = useCallback((event) => setQuery(event.target.value),[])
+
     return (
         <>
             <div className="flex items-center relative">
@@ -94,7 +97,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                         <button
                             type="button"
                             className="rounded-md text-darkblue-200 focus:ring-2 hover:text-light-blue"
-                            onClick={() => closeModal()}
+                            onClick={closeModal}
                         >
                             <span className="sr-only">Close</span>
                             <XIcon className="h-6 w-6" aria-hidden="true" />
@@ -126,7 +129,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 <Combobox
                                     as="div"
                                     className="transform  transition-all"
-                                    onChange={() => { }}
+                                    onChange={handleComboboxChange}
                                     value={query}
                                 >
                                     <div className="relative mb-5">
@@ -137,7 +140,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                         <Combobox.Input
                                             className="h-12 w-full bg-darkblue-500 rounded-lg border-ouline-blue pl-11 pr-4 text-light-blue placeholder-light-blue focus:ring-0 sm:text-sm"
                                             placeholder="Search..."
-                                            onChange={(event) => setQuery(event.target.value)}
+                                            onChange={handleQueryInputChange}
                                             value={query}
                                         />
                                     </div>
