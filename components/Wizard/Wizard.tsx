@@ -26,7 +26,7 @@ const Wizard: FC = () => {
 
       return () => window.removeEventListener("resize", handleResize);
    }, []);
-   console.log("as")
+   
    return <>
       <div className={`bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
          <div className="relative">

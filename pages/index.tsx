@@ -29,7 +29,38 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
 
   const [addressSource, setAddressSource] = useState(query.addressSource);
 
-  
+  useEffect(() => {
+    let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
+    let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
+
+    if (isImtoken || isTokenPocket) {
+      if (isImtoken) {
+        setAddressSource("imtoken");
+      }
+      else if (isTokenPocket) {
+        setAddressSource("tokenpocket");
+      }
+      let supportedNetworks = data.networks.filter(x => x.chain_id != -1 && x.is_enabled);
+      const injected = new InjectedConnector({
+        // Commented to allow visitors from other networks to use this page
+        // supportedChainIds: supportedNetworks.map(x => x.chain_id)
+      });
+
+      if (!active) {
+        activate(injected, onerror => {
+          if (onerror.message.includes('user_canceled')) {
+            return alert('You canceled the operation, please refresh and try to reauthorize.')
+          }
+          else if (onerror.message.includes('Unsupported chain')) {
+            // Do nothing
+          }
+          else {
+            alert(`Failed to connect: ${onerror.message}`)
+          }
+        });
+      }
+    }
+  })
 
   if (chainId) {
     let network = data.networks.find(x => x.chain_id == chainId);
@@ -62,14 +93,14 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
             </div>
           }
         </div>
-{/* 
+
         <SettingsProvider data={data}>
           <QueryProvider query={query}>
-            <AccountProvider data={{ account, chainId }}> */}
+            <AccountProvider data={{ account, chainId }}>
               <Swap swapMode={swapOption.name} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
-            {/* </AccountProvider>
+            </AccountProvider>
           </QueryProvider>
-        </SettingsProvider> */}
+        </SettingsProvider>
       </div>
     </Layout>
   )
