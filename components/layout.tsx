@@ -18,7 +18,7 @@ export default function Layout({ hasSideShapes, children }: Props) {
       <link rel="manifest" href="favicon/site.webmanifest" />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content="#111827" />
- 
+
       <meta name="description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
 
       {/* Facebook Meta Tags */}
@@ -44,6 +44,13 @@ export default function Layout({ hasSideShapes, children }: Props) {
         <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
           {children}
         </div>
+        <input
+          type="text"
+          name="usernamebb"
+          id="usernamebb"
+          autoComplete="usernamebb"
+          className="text-black flex-1 text: block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
+        />
         <FooterComponent />
         {/* {hasSideShapes && hasSideShapes == true ? <>
           <BackgroundCircle className="md:w-52 md:h-52 lg:h-full lg:w-96 top-32 lg:top-0 -right-40 lg:-right-60 fixed w-0 h-0" />
