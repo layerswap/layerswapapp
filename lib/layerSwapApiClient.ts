@@ -3,7 +3,7 @@ import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { SwapStatus } from "../Models/SwapStatus";
 
 export default class LayerSwapApiClient {
-    static apiBaseEndpoint: string = "https://api2.layerswap.io";
+    static apiBaseEndpoint: string = "https://api2.layerswap.io"; // "http://localhost:7071/api";
 
     apiFetcher = (url: string) => axios.get(LayerSwapApiClient.apiBaseEndpoint + url).then(res => res.data);
 

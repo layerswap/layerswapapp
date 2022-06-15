@@ -17,14 +17,25 @@ export function AuthProvider({ children }) {
     const [email, setEmail] = React.useState<string | undefined>()
     const [authData, setAuthData] = React.useState<AuthData>({})
 
-    useEffect(() => {
-        setEmail(localStorage.getItem(email))
+    const setData = () => {
+        setEmail(TokenService.getEmail())
         setAuthData(TokenService.getAuthData())
+    }
+
+    useEffect(setData,[])
+
+    useEffect(() => {
+        document.addEventListener(
+            'storageChange',
+            setData,
+            false
+        )
+        return () => document.removeEventListener('storageChange', setData)
     }, [])
 
     const updateFns: UpdateInterface = {
         updateEmail: useCallback((email) => {
-            localStorage.setItem("email", email)
+            TokenService.setEmail(email)
             setEmail(email)
         }, []),
         updateAuthData: useCallback((data) => {

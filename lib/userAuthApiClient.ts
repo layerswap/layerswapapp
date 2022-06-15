@@ -3,8 +3,8 @@ import { AuthGetCodeResponse, AuthConnectResponse } from "../Models/LayerSwapAut
 
 
 export default class LayerSwapAuthApiClient {
-    static apiBaseEndpoint: string = "https://bransfer-connect-api-dev.azurewebsites.net";
-    static identityBaseEndpoint: string = "https://bransfer-connect-identity-dev.azurewebsites.net";
+    static apiBaseEndpoint: string = "https://bransfer-connect-api-dev.azurewebsites.net"; //"https://localhost:5069";
+    static identityBaseEndpoint: string = "https://bransfer-connect-identity-dev.azurewebsites.net"; //"https://localhost:5019";
 
     async getCodeAsync(email): Promise<AuthGetCodeResponse> {
         return await axios.post(LayerSwapAuthApiClient.apiBaseEndpoint + '/api/auth/get_code',

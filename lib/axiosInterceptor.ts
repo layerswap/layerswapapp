@@ -1,8 +1,9 @@
 import axios from "axios";
 import TokenService from "./TokenService";
+import LayerSwapAuthApiClient from "./userAuthApiClient";
 
 const instance = axios.create({
-    baseURL: "https://bransfer-connect-identity-dev.azurewebsites.net",
+    baseURL: LayerSwapAuthApiClient.apiBaseEndpoint,
     headers: {
         "Content-Type": "application/json, text/plain, */*",
     },
