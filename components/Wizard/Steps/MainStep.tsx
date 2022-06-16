@@ -74,14 +74,14 @@ const CurrenciesField: FC = () => {
             isAvailable: true,
             isEnabled: c.is_enabled,
             isDefault: c.is_default
-        })).sort((x, y) => { 
-            if(!y.isEnabled) {
-              y.order = 100;
+        })).sort((x, y) => {
+            if (!y.isEnabled) {
+                y.order = 100;
             } else if (!x.isEnabled) {
-              x.order = 100;
+                x.order = 100;
             };
             return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
-          })
+        })
         : []
 
     // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
@@ -124,14 +124,14 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             isAvailable: true, //currency?.baseObject?.exchanges?.some(ce => ce.exchangeId === e.id),
             isEnabled: e.is_enabled,
             isDefault: e.is_default
-        })).sort((x, y) => { 
-            if(!y.isEnabled) {
-              y.order = 100;
+        })).sort((x, y) => {
+            if (!y.isEnabled) {
+                y.order = 100;
             } else if (!x.isEnabled) {
-              x.order = 100;
+                x.order = 100;
             };
             return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
-          });
+        });
     console.log(settings.exchanges)
     return (<>
         <label htmlFor="exchange" className="block font-normal text-light-blue text-sm">
@@ -160,17 +160,17 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             order: n.order,
             imgSrc: n.logo_url,
             isAvailable: true,
-            isEnabled: n.is_enabled,
+            isEnabled: n.is_enabled && !(query.lockNetwork && n.code != network.id),
             isDefault: n.is_default
-        })).sort((x, y) => { 
-            if(!y.isEnabled) {
-              y.order = 100;
+        })).sort((x, y) => {
+            if (!y.isEnabled) {
+                y.order = 100;
             } else if (!x.isEnabled) {
-              x.order = 100;
+                x.order = 100;
             };
             return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
-          });
-          
+        });
+
     if (exchange && !network)
         ref.current?.focus()
 
