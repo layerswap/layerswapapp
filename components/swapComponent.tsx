@@ -79,8 +79,7 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
 
   const settings = useSettingsState();
 
-  const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), new SelectMenuItem<Partner>(c, c.name, c.display_name, c.logo_url, c.is_enabled)]));
-
+  const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), c]));
   let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress && !isOfframp;
 
   // Offramp modal stuff
@@ -130,7 +129,7 @@ const Swap: FC<SwapProps> = ({ destNetwork, destAddress, lockNetwork, addressSou
         network: formValues.network.id,
         exchange: formValues.exchange.id,
         to_exchange: isOfframp,
-        partner_name: isPartnerAddress ? availablePartners[addressSource].id : undefined
+        partner_name: isPartnerAddress ? availablePartners[addressSource].name : undefined
       }
     )
       .then(response => {

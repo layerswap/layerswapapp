@@ -1,6 +1,7 @@
 export class CryptoNetwork {
     id: string;
     name: string;
+    order: number;
     logo_url: string;
     code: string;
     is_enabled: boolean;

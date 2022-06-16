@@ -9,7 +9,7 @@ let BaseSelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue,
     }
 
     useEffect(() => {
-        if (!values.some(x => x.id === value.id)) {
+        if (!values.some(x => x.id === value?.id)) {
             var defaultValue = values.filter(x => x.isDefault)[0] ?? values[0];
             if (defaultValue) {
                 onChangeHandler(defaultValue.id);
@@ -18,7 +18,7 @@ let BaseSelectMenu: FC<SelectMenuProps> = ({ name, value, values, setFieldValue,
     })
 
     return (
-        <Listbox disabled={disabled} value={value.id} onChange={onChangeHandler}>
+        <Listbox disabled={disabled} value={value?.id} onChange={onChangeHandler}>
             {label && <Listbox.Label className="block text-base font-medium text-white">{label}</Listbox.Label>}
             <div className="mt-1 relative">
                 {children}

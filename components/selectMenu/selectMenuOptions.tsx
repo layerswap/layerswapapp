@@ -16,7 +16,7 @@ let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values }): JSX.Element =>
 
     return (
         <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <Listbox.Options className="ring-2 ring-gray-700 ring-opacity-60 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-gray-800 rounded-md py-1 overflow-hidden  focus:outline-none">
+            <Listbox.Options className="ring-1 ring-darkblue-100 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-darkblue-600 rounded-md py-1 overflow-hidden focus:outline-none">
                 {values.map((item) => (
                     <Listbox.Option
                         key={item.id}
@@ -36,7 +36,7 @@ let SelectMenuOptions: FC<SelectMenuOptionsProps> = ({ values }): JSX.Element =>
                                             height="40"
                                             width="40"
                                             layout="responsive"
-                                            className="rounded-md object-contain"
+                                            className="rounded-md object-contain "
                                         />
                                     </div>
                                     <div className={joinClassNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
@@ -71,7 +71,7 @@ function styleOption(active: boolean, disabled: boolean) {
         return 'text-gray-400 bg-gray-600 opacity-20 cursor-not-allowed ' + classNames;
     }
     if (active) {
-        return 'text-white bg-coolGray-700 ' + classNames;
+        return 'text-white bg-darkblue-300 ' + classNames;
     }
     else {
         return 'text-white ' + classNames;

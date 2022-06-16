@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { ISelectMenuItem } from './selectMenuItem';
 import Image from 'next/image'
-import { SelectorIcon } from '@heroicons/react/solid'
+import { ChevronDownIcon } from '@heroicons/react/solid'
 
 export interface SelectMenuButtonContentProps {
     value: ISelectMenuItem;
@@ -28,8 +28,8 @@ let SelectMenuButtonContent: FC<SelectMenuButtonContentProps> = ({ value }) => {
                 </div>
                 <span className="ml-3 block truncate">{value.name}</span>
             </span>
-            <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                <SelectorIcon className="h-5 w-5 text-white" aria-hidden="true" />
+            <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-light-blue">
+                <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
             </span>
         </>
     );

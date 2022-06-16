@@ -69,12 +69,19 @@ const CurrenciesField: FC = () => {
             baseObject: c,
             id: c.id,
             name: c.asset,
+            order: c.order,
             imgSrc: c.logo_url,
             isAvailable: true,
             isEnabled: c.is_enabled,
             isDefault: c.is_default
-        })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
-            || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)))
+        })).sort((x, y) => { 
+            if(!y.isEnabled) {
+              y.order = 100;
+            } else if (!x.isEnabled) {
+              x.order = 100;
+            };
+            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
+          })
         : []
 
     // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
@@ -95,7 +102,7 @@ const CurrenciesField: FC = () => {
     }, [network, setFieldValue])
 
     return (<>
-        <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} />
+        <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={InsetSelectMenu} setFieldValue={setFieldValue} />
     </>)
 };
 
@@ -112,12 +119,19 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             baseObject: e,
             id: e.internal_name,
             name: e.name,
+            order: e.order,
             imgSrc: e.logo_url,
             isAvailable: true, //currency?.baseObject?.exchanges?.some(ce => ce.exchangeId === e.id),
             isEnabled: e.is_enabled,
             isDefault: e.is_default
-        })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
-            || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
+        })).sort((x, y) => { 
+            if(!y.isEnabled) {
+              y.order = 100;
+            } else if (!x.isEnabled) {
+              x.order = 100;
+            };
+            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
+          });
     console.log(settings.exchanges)
     return (<>
         <label htmlFor="exchange" className="block font-normal text-light-blue text-sm">
@@ -136,19 +150,27 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
     } = useFormikContext<SwapFormValues>();
 
     const settings = useSettingsState();
+    const query = useQueryState();
 
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = settings.networks
         .map(n => ({
             baseObject: n,
             id: n.code,
             name: n.name,
+            order: n.order,
             imgSrc: n.logo_url,
             isAvailable: true,
             isEnabled: n.is_enabled,
             isDefault: n.is_default
-        })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
-            || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
-
+        })).sort((x, y) => { 
+            if(!y.isEnabled) {
+              y.order = 100;
+            } else if (!x.isEnabled) {
+              x.order = 100;
+            };
+            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
+          });
+          
     if (exchange && !network)
         ref.current?.focus()
 
@@ -161,6 +183,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
         </div>
     </>)
 });
+
 
 const AmountField = React.forwardRef((props: any, ref: any) => {
     const {
@@ -231,16 +254,16 @@ export default function MainStep() {
     const { account, chainId } = useAccountState();
 
     let availableCurrencies = settings.currencies
-        .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.logo_url, c.is_enabled, c.is_default))
+        .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.order, c.logo_url, c.is_enabled, c.is_default))
         .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
     let availableExchanges = settings.exchanges
-        .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.logo_url, c.is_enabled, c.is_default))
+        .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
         .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
     let availableNetworks = settings.networks
-        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.logo_url, c.is_enabled, c.is_default))
+        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
         .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
 
-    const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), new SelectMenuItem<Partner>(c, c.name, c.display_name, c.logo_url, c.is_enabled)]));
+    const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), c]));
 
     const handleSubmit = useCallback(async (values) => {
         try {
@@ -284,11 +307,11 @@ export default function MainStep() {
     }, [updateSwapFormData])
 
     let destAddress: string = account || query.destAddress;
-    let destNetwork: string = (chainId && settings.networks.find(x => x.chain_id == chainId)?.code) || query.destNetwork;
+    let destNetwork: string = (chainId && settings.networks.find(x => x.id == chainId)?.code) || query.destNetwork;
 
 
     let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
-    let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].baseObject.is_wallet;
+    let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].is_wallet;
 
 
     let initialNetwork =
@@ -406,12 +429,12 @@ export default function MainStep() {
                         <div className="w-full mb-3.5 leading-4">
                             <label htmlFor="destination_address" className="block font-normal text-light-blue text-sm">
                                 {`To ${values?.network?.name || ''} address`}
-                                {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
+                                {isPartnerWallet && <span className='truncate text-sm text-white'>({availablePartners[addressSource].display_name})</span>}
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1.5">
                                 {isPartnerWallet &&
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Image className='rounded-md object-contain' src={availablePartners[addressSource].imgSrc} width="24" height="24"></Image>
+                                        <Image className='rounded-md object-contain' src={availablePartners[addressSource].logo_url} width="24" height="24"></Image>
                                     </div>
                                 }
                                 <div>
@@ -426,7 +449,7 @@ export default function MainStep() {
                                                 name="destination_address"
                                                 id="destination_address"
                                                 disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
-                                                className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
+                                                className={joinClassNames(isPartnerWallet ? 'pl-11 bg-darkblue-200' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
                                             />
                                         )}
                                     </Field>

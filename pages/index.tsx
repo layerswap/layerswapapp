@@ -97,7 +97,7 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
         <SettingsProvider data={data}>
           <QueryProvider query={query}>
             <AccountProvider data={{ account, chainId }}>
-              <Swap swapMode={swapOption.name} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
+              <Swap swapMode={swapOption.name} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource?.toLowerCase()} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
             </AccountProvider>
           </QueryProvider>
         </SettingsProvider>
