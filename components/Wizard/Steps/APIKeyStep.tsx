@@ -1,19 +1,22 @@
-import { CheckIcon } from '@heroicons/react/outline';
+import { CheckIcon, ExclamationIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { FC, useCallback, useState } from 'react'
 import { useAuthDataUpdate } from '../../../context/auth';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
 import { useWizardState } from '../../../context/wizard';
 import { BransferApiClient } from '../../../lib/bransferApiClients';
+import { FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 
 const APIKeyStep: FC = () => {
 
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
+    const [error, setError] = useState("")
     const [loading, setLoading] = useState(false);
-    const {swapFormData} = useSwapDataState()
-    // const { nextStep } = useWizardState();
+    const { swapFormData } = useSwapDataState()
+    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const { getAuthData } = useAuthDataUpdate()
 
     const handleKeyChange = (e) => {
@@ -29,12 +32,19 @@ const APIKeyStep: FC = () => {
             const bransferApiClient = new BransferApiClient();
             const authData = getAuthData()
             const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: swapFormData?.exchange?.id, api_key: key, api_secret: secret }, authData.access_token)
-            //if (res.is_success)
-                // nextStep()
+            if (res.is_success)
+                goToStep("SwapConfirmation")
             //TODO handle error
         }
-        catch (e) {
-            //TODO handle errror
+        catch (error) {
+            if (error.response?.data?.errors?.length > 0) {
+                const message = error.response.data.errors.map(e => e.message).join(", ")
+                setError(message)
+            }
+            else {
+                setError(error.message)
+            }
+
         }
         finally {
             setLoading(false)
@@ -44,6 +54,21 @@ const APIKeyStep: FC = () => {
     return (
         <>
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
+                {
+                    error &&
+                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-light-blue">
+                                    {error}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
                 <div>
                     <div className="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-pink-primary mr-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2}>

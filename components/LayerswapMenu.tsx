@@ -1,5 +1,7 @@
 import { Menu, Transition } from "@headlessui/react";
 import { MenuIcon } from "@heroicons/react/outline";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { Fragment } from "react";
 import { useAuthState } from "../context/auth";
 import TokenService from "../lib/TokenService";
@@ -11,9 +13,11 @@ function classNames(...classes) {
 
 export default function () {
     const { email, authData } = useAuthState()
+    const router = useRouter();
 
     const handleLogout = () => {
         TokenService.removeAuthData()
+        router.push('/login')
     }
 
     return <span className="justify-self-end text-light-blue cursor-pointer">
@@ -36,48 +40,52 @@ export default function () {
                 <Menu.Items className="font-bold border border-ouline-blue origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-darkblue-600 ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="py-1">
                         {
-                            authData?.access_token ? <div className='text-darkblue-200 block px-4 py-2 text-sm '>
+                            authData?.access_token ? <div className='block w-full text-left px-4 py-2 text-sm text-light-blue'>
                                 {email}
                             </div>
                                 :
                                 <Menu.Item>
                                     {({ active }) => (
-                                        <a
-                                            href="/login"
-                                            className={classNames(
-                                                active ? 'bg-darkblue-300' : '',
-                                                'block px-4 py-2 text-sm text-light-blue'
-                                            )}
-                                        >
-                                            Login
-                                        </a>
+                                        <Link key="login" href="/login">
+                                            <a
+                                                className={classNames(
+                                                    active ? 'bg-darkblue-300' : '',
+                                                    'block px-4 py-2 text-sm text-light-blue'
+                                                )}
+                                            >
+                                                Login
+                                            </a>
+                                        </Link>
                                     )}
                                 </Menu.Item>
                         }
                         <Menu.Item>
                             {({ active }) => (
-                                <a
-                                    href="/transactions"
-                                    className={classNames(
-                                        active ? 'bg-darkblue-300' : '',
-                                        'block px-4 py-2 text-sm text-light-blue'
-                                    )}
-                                >
-                                    Transactions
-                                </a>
+                                <Link key="transactions" href="/transactions">
+                                    <a
+                                        className={classNames(
+                                            active ? 'bg-darkblue-300' : '',
+                                            'block px-4 py-2 text-sm text-light-blue'
+                                        )}
+                                    >
+                                        Transactions
+                                    </a>
+                                </Link>
                             )}
                         </Menu.Item>
                         <Menu.Item>
                             {({ active }) => (
-                                <a
-                                    href="/exchanges"
-                                    className={classNames(
-                                        active ? 'bg-darkblue-300' : '',
-                                        'block px-4 py-2 text-sm text-light-blue'
-                                    )}
-                                >
-                                    Exchanges
-                                </a>
+                                <Link key="exchanges" href="/exchanges">
+                                    <a
+                                        href="/exchanges"
+                                        className={classNames(
+                                            active ? 'bg-darkblue-300' : '',
+                                            'block px-4 py-2 text-sm text-light-blue'
+                                        )}
+                                    >
+                                        Exchanges
+                                    </a>
+                                </Link>
                             )}
                         </Menu.Item>
                         {
@@ -89,7 +97,7 @@ export default function () {
                                         onClick={handleLogout}
                                         className={classNames(
                                             active ? 'bg-darkblue-300' : '',
-                                            'block w-full text-left px-4 py-2 text-sm text-light-blue'
+                                            'font-bold block w-full text-left px-4 py-2 text-sm text-light-blue'
                                         )}
                                     >
                                         Sign out
