@@ -34,7 +34,6 @@ const APIKeyStep: FC = () => {
             const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: swapFormData?.exchange?.id, api_key: key, api_secret: secret }, authData.access_token)
             if (res.is_success)
                 goToStep("SwapConfirmation")
-            //TODO handle error
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
@@ -44,7 +43,6 @@ const APIKeyStep: FC = () => {
             else {
                 setError(error.message)
             }
-
         }
         finally {
             setLoading(false)

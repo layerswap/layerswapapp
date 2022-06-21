@@ -37,10 +37,10 @@ export default function () {
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
             >
-                <Menu.Items className="font-bold border border-ouline-blue origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-darkblue-600 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <Menu.Items className="font-bold border border-ouline-blue origin-top-right absolute right-0 mt-2 min-w-56 rounded-md shadow-lg bg-darkblue-600 ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="py-1">
                         {
-                            authData?.access_token ? <div className='block w-full text-left px-4 py-2 text-sm text-light-blue'>
+                            authData?.access_token ? <div className='font-light block w-full text-left px-4 py-2 text-sm text-light-blue'>
                                 {email}
                             </div>
                                 :
@@ -65,10 +65,10 @@ export default function () {
                                     <a
                                         className={classNames(
                                             active ? 'bg-darkblue-300' : '',
-                                            'block px-4 py-2 text-sm text-light-blue'
+                                            'block px-4 py-2 text-sm text-light-blue hover:bg-darkblue-300'
                                         )}
                                     >
-                                        Transactions
+                                        Swap history
                                     </a>
                                 </Link>
                             )}
@@ -80,10 +80,10 @@ export default function () {
                                         href="/exchanges"
                                         className={classNames(
                                             active ? 'bg-darkblue-300' : '',
-                                            'block px-4 py-2 text-sm text-light-blue'
+                                            'block px-4 py-2 text-sm text-light-blue hover:bg-darkblue-300'
                                         )}
                                     >
-                                        Exchanges
+                                        CEX Acocunts
                                     </a>
                                 </Link>
                             )}
