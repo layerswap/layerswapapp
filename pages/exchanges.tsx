@@ -15,6 +15,7 @@ import { AccountProvider } from '../context/account'
 import { AuthProvider } from '../context/auth'
 import UserExchanges from '../components/exchangesComponent'
 import LayerswapMenu from '../components/LayerswapMenu'
+import { MenuProvider } from '../context/menu'
 
 
 const swapOptions: NavRadioOption[] = [
@@ -29,10 +30,12 @@ export default function Home({ data }: InferGetServerSidePropsType<typeof getSer
         <Layout>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
                 <div className='flex flex-col space-y-5'>
-                   
+
                     <SettingsProvider data={data}>
                         <AuthProvider>
-                            <UserExchanges />
+                            <MenuProvider>
+                                <UserExchanges />
+                            </MenuProvider>
                         </AuthProvider>
                     </SettingsProvider>
                 </div>

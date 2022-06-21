@@ -20,6 +20,7 @@ import { FormWizardProvider } from '../context/formWizardProvider'
 import { LoginWizardSteps } from '../Models/Wizard'
 import EmailStep from '../components/Wizard/Steps/Login/EmailStep'
 import CodeStep from '../components/Wizard/Steps/Login/CodeStep'
+import { MenuProvider } from '../context/menu'
 
 const loginWizard: LoginWizardSteps = {
   "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 50 },
@@ -33,9 +34,11 @@ export default function Transactions() {
       <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
         <div className="flex flex-col space-y-6 text-white">
           <AuthProvider>
-            <FormWizardProvider wizard={loginWizard} initialStep={"Email"} initialLoading={true}>
-              <Wizard />
-            </FormWizardProvider >
+            <MenuProvider>
+              <FormWizardProvider wizard={loginWizard} initialStep={"Email"} initialLoading={true}>
+                <Wizard />
+              </FormWizardProvider >
+            </MenuProvider>
           </AuthProvider>
           <IntroCard />
         </div>

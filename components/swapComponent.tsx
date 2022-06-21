@@ -26,6 +26,7 @@ import { FormWizardProvider } from '../context/formWizardProvider';
 import APIKeyStep from './Wizard/Steps/APIKeyStep';
 import SwapConfirmationStep from './Wizard/Steps/SwapConfirmation';
 import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
+import { MenuProvider } from '../context/menu';
 
 const FormWizard: FormWizardSteps = {
   "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true, positionPercent: 0 },
@@ -36,20 +37,22 @@ const FormWizard: FormWizardSteps = {
   "SwapConfirmation": { title: "Swap confirmation", content: SwapConfirmationStep, positionPercent: 60 },
 }
 
-const Swap: FC= () => {
+const Swap: FC = () => {
 
   return (
     <div>
       <div className="flex flex-col space-y-6 text-white">
         <AuthProvider>
-          <SwapDataProvider >
-            <UserExchangeProvider>
-              <FormWizardProvider wizard={FormWizard} initialStep={"SwapForm"}>
-                <Wizard />
-                <TestComp />
-              </FormWizardProvider >
-            </UserExchangeProvider>
-          </SwapDataProvider >
+          <MenuProvider>
+            <SwapDataProvider >
+              <UserExchangeProvider>
+                <FormWizardProvider wizard={FormWizard} initialStep={"SwapForm"}>
+                  <Wizard />
+                  <TestComp />
+                </FormWizardProvider >
+              </UserExchangeProvider>
+            </SwapDataProvider >
+          </MenuProvider>
         </AuthProvider>
         <IntroCard />
       </div >

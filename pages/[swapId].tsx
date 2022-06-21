@@ -30,6 +30,7 @@ import FailedPage from '../components/Wizard/Steps/FailedPage';
 import EmailStep from '../components/Wizard/Steps/EmailStep';
 import SwapCodeStep from '../components/Wizard/Steps/SwapCodeStep';
 import ExternalPaumentStep from '../components/Wizard/Steps/ExternalPaymentStep';
+import { MenuProvider } from '../context/menu';
 
 enum SwapPageStatus {
   Processing,
@@ -58,13 +59,15 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
         <div>
           <div className="flex flex-col space-y-6 text-white">
             <AuthProvider>
-              <SwapDataProvider >
-                <UserExchangeProvider>
-                  <FormWizardProvider wizard={SwapWizard} initialStep={"Overview"} initialLoading={true}>
-                    <Wizard />
-                  </FormWizardProvider >
-                </UserExchangeProvider>
-              </SwapDataProvider >
+              <MenuProvider>
+                <SwapDataProvider >
+                  <UserExchangeProvider>
+                    <FormWizardProvider wizard={SwapWizard} initialStep={"Overview"} initialLoading={true}>
+                      <Wizard />
+                    </FormWizardProvider >
+                  </UserExchangeProvider>
+                </SwapDataProvider >
+              </MenuProvider>
             </AuthProvider>
             <IntroCard />
           </div >

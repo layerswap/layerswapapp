@@ -10,6 +10,7 @@ import {
     CheckIcon
 } from '@heroicons/react/outline'
 import { SelectMenuItem } from '../selectMenu/selectMenuItem'
+import { useMenuState } from '../../context/menu'
 
 export interface SelectProps<T> {
     name: string;
@@ -27,6 +28,8 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
     const initialValue = value ? values?.find(v => v.id === value.id) : undefined
     const [selectedItem, setSelectedItem] = useState<SelectMenuItem<T> | undefined>(value || undefined)
 
+    const { setMenuVisible } = useMenuState()
+
     useEffect(() => {
         if (value)
             setSelectedItem(value)
@@ -34,10 +37,12 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
     function closeModal() {
         setIsOpen(false)
+        setMenuVisible(true)
     }
 
     function openModal() {
         setIsOpen(true)
+        setMenuVisible(false)
     }
 
     const filteredItems =
@@ -91,17 +96,30 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                 </button>
             </div>
 
-            <Transition appear show={isOpen} as={Fragment}>
-                <div className='absolute inset-0 z-10 overflow-hidden flex flex-col w-full bg-darkBlue p-10'>
-                    <div className="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
-                        <button
-                            type="button"
-                            className="rounded-md text-darkblue-200 focus:ring-2 hover:text-light-blue"
-                            onClick={closeModal}
-                        >
-                            <span className="sr-only">Close</span>
-                            <XIcon className="h-6 w-6" aria-hidden="true" />
-                        </button>
+            <Transition
+                appear
+                show={isOpen}
+                as={Fragment}
+                enter="ease-in-out duration-300"
+                enterFrom="translate-y-full"
+                enterTo="translate-y-0"
+                leave="ease-in duration-200"
+                leaveFrom="translate-y-0"
+                leaveTo="translate-y-full">
+                <div className='absolute inset-0 z-10 overflow-hidden flex flex-col w-full bg-darkBlue p-10 pt-0'>
+                    <div className='relative grid grid-cols-1 gap-4 place-content-end z-20 mb-2'>
+                        <span className="justify-self-end text-light-blue cursor-pointer">
+                            <div className="hidden sm:block ">
+                                <button
+                                    type="button"
+                                    className="rounded-md text-darkblue-200 focus:ring-2 hover:text-light-blue"
+                                    onClick={closeModal}
+                                >
+                                    <span className="sr-only">Close</span>
+                                    <XIcon className="h-6 w-6" aria-hidden="true" />
+                                </button>
+                            </div>
+                        </span>
                     </div>
                     <Transition.Child
                         as={Fragment}
@@ -116,7 +134,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     </Transition.Child>
 
                     <div className="relative inset-0 flex flex-col overflow-y-scroll scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
-                        <div className="relative min-h-full items-center justify-center p-4 text-center">
+                        <div className="relative min-h-full items-center justify-center p-4 pt-0 text-center">
                             <Transition.Child
                                 as={Fragment}
                                 enter="ease-out duration-300"
