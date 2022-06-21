@@ -56,6 +56,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
         setIsOpen(false)
         setSelectedItem(item)
         setFieldValue(name, item, true)
+        setMenuVisible(true)
     }, [name])
 
     const handleComboboxChange = useCallback(() => { }, [])
