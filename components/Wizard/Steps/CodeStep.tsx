@@ -34,7 +34,7 @@ const CodeStep: FC = () => {
         setLoading(false)
         const exchanges = await (await getUserExchanges(res.access_token))?.data
         const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
-        if (swapFormData?.exchange?.baseObject?.authorization_flow === "none" || exchangeIsEnabled)
+        if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow === "none" || exchangeIsEnabled)
             goToStep("SwapConfirmation")
         else
             goToStep(ExchangeAuthorizationSteps[swapFormData?.exchange?.baseObject?.authorization_flow])
