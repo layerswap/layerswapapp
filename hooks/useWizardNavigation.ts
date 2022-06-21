@@ -55,9 +55,9 @@ export function useWizardNavigation() {
                 const layerswapApiClient = new LayerSwapApiClient()
                 const bransferApiClient = new BransferApiClient()
                 const swapDetails = await layerswapApiClient.getSwapDetails(swapId?.toString(), authData?.access_token)
-                const payment = await bransferApiClient.GetPayment(swapDetails.external_payment_id, authData?.access_token)
+                const {payment} = swapDetails || {}
                 const swapStatus = swapDetails?.status;
-                const paymentStatus = payment?.data?.status
+                const paymentStatus = payment?.status
                 if (swapStatus == SwapStatus.Completed)
                     setData(old => ({ ...old, currentStepPath: { part: WizardPartType.PaymentStatus, index: 2 } }))
                 else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')

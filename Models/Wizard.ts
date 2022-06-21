@@ -1,6 +1,6 @@
 import { FC } from "react"
 
-export const ExchangeAuthorizationSteps = {
+export const ExchangeAuthorizationSteps: { [key: string]: FormSteps } = {
     "api_credentials": "ExchangeApiCredentials",
     "o_auth2": "ExchangeOAuth"
 }

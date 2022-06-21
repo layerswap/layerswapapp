@@ -25,7 +25,7 @@ const SomeTestStep: FC = () => {
 
     return (
         <>
-            <SwapDetails current={false}></SwapDetails>
+            Test step
         </>
     )
 }
