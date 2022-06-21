@@ -151,11 +151,15 @@ function TransactionsHistory() {
     return <Sceleton />
 
   return (
-    <div className={`bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative`}>
+    <div className={`bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
       <div className="relative grid grid-cols-1 gap-4 place-content-end z-20 px-6 md:px-12" >
         <LayerswapMenu />
       </div>
-      <div className="px-6 md:px-12 lg:px-8 mb-2 ">
+
+      {
+        false?
+        <>
+        <div className="px-6 md:px-12 lg:px-8 mb-2 ">
         <div className="-mx-4 mt-10 ring-1 ring-darkblue-100 sm:-mx-6 md:mx-0 md:rounded-lg bg-darkblue-600">
           <table className="min-w-full divide-y divide-darkblue-100">
             <thead>
@@ -211,7 +215,7 @@ function TransactionsHistory() {
               </tr>
             </thead>
             <tbody>
-              {swaps?.map((swap, index) => (
+              {[]?.map((swap, index) => (
                 <tr key={swap.id}>
                   <td
                     className={classNames(
@@ -368,6 +372,12 @@ function TransactionsHistory() {
           </div>
         </Dialog>
       </Transition>
+        </>
+        :<div className="m-16 text-center mb-20 pb-10">
+          You do not have any transactions yet waln't you <a className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600" href="/">go</a> and do some swaps?
+        </div>
+      }
+
     </div>
   )
 }
