@@ -374,7 +374,7 @@ function TransactionsHistory() {
       </Transition>
         </>
         :<div className="m-16 text-center mb-20 pb-10">
-          You do not have any transactions yet won't you <a className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600" href="/">go</a> and do some swaps?
+          You do not have any transactions yet won't you <a className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600" href="/">do</a> some swaps?
         </div>
       }
 
