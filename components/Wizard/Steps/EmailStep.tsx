@@ -38,9 +38,14 @@ const EmailStep: FC = () => {
             updateEmail(email)
             goToStep("Code")
         }
-        catch (e) {
-            setError(e.message)
-            console.log(e)
+        catch (error) {
+            if (error.response?.data?.errors?.length > 0) {
+                const message = error.response.data.errors.map(e => e.message).join(", ")
+                setError(message)
+            }
+            else {
+                setError(error.message)
+            }
         }
         finally {
             setLoading(false)

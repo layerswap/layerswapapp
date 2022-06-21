@@ -37,13 +37,28 @@ const CodeStep: FC = () => {
     }, [nextTime], 1000)
 
     const verifyCode = useCallback(async () => {
-        setLoading(true)
-        var apiClient = new LayerSwapAuthApiClient();
-        const res = await apiClient.connectAsync(email, code)
-        await updateAuthData(res)
-        console.log(res)
-        await router.push(redirect?.toString() || '/')
-        setLoading(false)
+        try {
+            setLoading(true)
+            var apiClient = new LayerSwapAuthApiClient();
+            const res = await apiClient.connectAsync(email, code)
+            await updateAuthData(res)
+            console.log(res)
+            await router.push(redirect?.toString() || '/')
+
+        }
+        catch (error) {
+            if (error.response?.data?.error_description) {
+                const message = error.response.data.error_description
+                setError(message)
+            }
+            else {
+                setError(error.message)
+            }
+        }
+        finally {
+            setLoading(false)
+        }
+
     }, [email, code, redirect])
 
     const handleResendCode = useCallback(async () => {

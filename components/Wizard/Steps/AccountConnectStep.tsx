@@ -28,8 +28,11 @@ const AccountConnectStep: FC = () => {
             }
             const exchanges = await (await getUserExchanges(access_token))?.data
             const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
-            if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled)
+            if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled){
                 goToStep("SwapConfirmation")
+                window.close()
+            }
+                
         }
     }, [currentStep], 2000)
 

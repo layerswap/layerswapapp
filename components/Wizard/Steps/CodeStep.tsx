@@ -45,9 +45,15 @@ const CodeStep: FC = () => {
             const apiClient = new LayerSwapAuthApiClient();
             const res = await apiClient.getCodeAsync(email)
         }
-        catch (e) {
-            setError(e.message)
-            console.log(e)
+        catch (error) {
+            debugger
+            if (error.response?.data?.error_description) {
+                const message = error.response.data.error_description
+                setError(message)
+            }
+            else {
+                setError(error.message)
+            }
         }
         finally {
             setLoading(false)

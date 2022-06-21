@@ -1,7 +1,7 @@
 import { ExclamationIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../context/swap';
 import { useInterval } from '../hooks/useInyterval';
 import { BransferApiClient } from '../lib/bransferApiClients';
@@ -20,6 +20,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const router = useRouter();
+    const authWindowRef = useRef(null);
 
     useEffect(() => {
         setLoading(false)
@@ -40,6 +41,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                 const userExchanges = await bransferApiClient.GetExchangeAccounts(access_token)
 
                 if (userExchanges.data.some(e => e.exchange === exchange?.internal_name && e.is_enabled)) {
+                    authWindowRef.current?.close()
                     onClose()
                     setLoading(false)
                 }
@@ -49,7 +51,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                 setLoading(false)
             }
         }
-    }, [exchange, loading], 2000)
+    }, [exchange, loading, authWindowRef], 2000)
 
 
     const handleConnect = useCallback(() => {
@@ -65,7 +67,8 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
             }
 
             const { sub } = parseJwt(access_token) || {}
-            window.open(exchange.oauth_redirect_url + sub, '_blank', 'width=420,height=720')
+            const authWindow = window.open(exchange.oauth_redirect_url + sub, '_blank', 'width=420,height=720')
+            authWindowRef.current = authWindow
         }
         catch (e) {
             setError(e.message)

@@ -52,7 +52,7 @@ export default function () {
                                                 <a
                                                     className={classNames(
                                                         active ? 'bg-darkblue-300' : '',
-                                                        'block px-4 py-2 text-sm text-light-blue'
+                                                        'block px-4 py-2 text-sm text-light-blue whitespace-nowrap'
                                                     )}
                                                 >
                                                     Login
@@ -67,7 +67,7 @@ export default function () {
                                         <a
                                             className={classNames(
                                                 active ? 'bg-darkblue-300' : '',
-                                                'block px-4 py-2 text-sm text-light-blue hover:bg-darkblue-300'
+                                                'block px-4 py-2 text-sm text-light-blue hover:bg-darkblue-300 whitespace-nowrap'
                                             )}
                                         >
                                             Swap history
@@ -82,7 +82,7 @@ export default function () {
                                             href="/exchanges"
                                             className={classNames(
                                                 active ? 'bg-darkblue-300' : '',
-                                                'block px-4 py-2 text-sm text-light-blue hover:bg-darkblue-300'
+                                                'block px-4 py-2 text-sm text-light-blue hover:bg-darkblue-300 whitespace-nowrap'
                                             )}
                                         >
                                             CEX Acocunts
@@ -99,7 +99,7 @@ export default function () {
                                             onClick={handleLogout}
                                             className={classNames(
                                                 active ? 'bg-darkblue-300' : '',
-                                                'font-bold block w-full text-left px-4 py-2 text-sm text-light-blue'
+                                                'font-bold block w-full text-left px-4 py-2 text-sm text-light-blue whitespace-nowrap'
                                             )}
                                         >
                                             Sign out
