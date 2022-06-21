@@ -80,6 +80,8 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                         alt="Project Logo"
                                         height="40"
                                         width="40"
+                                        loading="eager"
+                                        priority
                                         layout="responsive"
                                         className="rounded-md object-contain"
                                     />
@@ -181,6 +183,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                                         alt="Project Logo"
                                                                         height="40"
                                                                         width="40"
+                                                                        loading="eager"
                                                                         layout="responsive"
                                                                         className="rounded-md object-contain"
                                                                     />
