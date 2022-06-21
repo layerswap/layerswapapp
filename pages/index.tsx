@@ -80,27 +80,16 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
 
   return (
     <Layout>
-      <div className='flex flex-col space-y-5'>
-        <div className='flex flex-col items-center'>
-          {
-            isOfframpEnabled &&
-            <NavRadio selected={swapOption} items={swapOptions} setSelected={setSwapOption}></NavRadio>
-          }
-          {swapOption.name === "offramp"
-            &&
-            <div className='flex w-full'>
-              <Banner className='mt-2' localStorageId='WarningBetaProduct' desktopMessage='WARNING! Beta product, please use at your own risk' mobileMessage='WARNING! Beta product'></Banner>
-            </div>
-          }
+      <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+        <div className='flex flex-col space-y-5'>
+          <SettingsProvider data={data}>
+            <QueryProvider query={query}>
+              <AccountProvider data={{ account, chainId }}>
+                <Swap />
+              </AccountProvider>
+            </QueryProvider>
+          </SettingsProvider>
         </div>
-
-        <SettingsProvider data={data}>
-          <QueryProvider query={query}>
-            <AccountProvider data={{ account, chainId }}>
-              <Swap swapMode={swapOption.name} destNetwork={preSelectedNetwork} destAddress={preSelectedAddress} lockAddress={lockAddress} lockNetwork={lockNetwork} addressSource={addressSource} sourceExchangeName={query.sourceExchangeName} asset={query.asset} />
-            </AccountProvider>
-          </QueryProvider>
-        </SettingsProvider>
       </div>
     </Layout>
   )

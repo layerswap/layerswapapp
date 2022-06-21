@@ -3,7 +3,7 @@ import TokenService from "./TokenService";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
 
 const instance = axios.create({
-    baseURL: LayerSwapAuthApiClient.apiBaseEndpoint,
+    baseURL: LayerSwapAuthApiClient.identityBaseEndpoint,
     headers: {
         "Content-Type": "application/json, text/plain, */*",
     },
@@ -13,7 +13,7 @@ instance.interceptors.request.use(
     (config) => {
         const token = TokenService.getAuthData()?.access_token;
         if (token) {
-            config.headers["Authorization"] = 'Bearer ' + token;  // for Spring Boot back-end
+            config.headers["Authorization"] = 'Bearer ' + token;  
         }
         return config;
     },
@@ -26,8 +26,9 @@ instance.interceptors.response.use(
         return res;
     },
     async (err) => {
+        
         const originalConfig = err.config;
-        if (originalConfig.url !== "/connect/token" && err.message === 'Network Error') {
+        if (originalConfig.url !== "/connect/token" && err?.response?.status === 401) {
             // Access Token was expired
             if (!originalConfig._retry) { //err.response.status === 401 && 
                 originalConfig._retry = true;

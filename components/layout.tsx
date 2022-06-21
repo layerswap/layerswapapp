@@ -41,9 +41,9 @@ export default function Layout({ hasSideShapes, children }: Props) {
       <div className="overflow-hidden relative font-robo">
         <div className="top-backdrop"></div>
         <Navbar></Navbar>
-        <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+        <>
           {children}
-        </div>
+        </>
         <FooterComponent />
         {/* {hasSideShapes && hasSideShapes == true ? <>
           <BackgroundCircle className="md:w-52 md:h-52 lg:h-full lg:w-96 top-32 lg:top-0 -right-40 lg:-right-60 fixed w-0 h-0" />

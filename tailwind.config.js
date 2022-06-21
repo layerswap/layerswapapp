@@ -1,5 +1,6 @@
 const colors = require("tailwindcss/colors");
 const defaultTheme = require('tailwindcss/defaultTheme')
+const plugin = require('tailwindcss/plugin')
 
 const round = (num) =>
   num
@@ -48,9 +49,21 @@ module.exports = {
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
+        'fade-in': 'fade-in 1s ease-out',
         'fade-in-down': 'fade-in-down 0.5s ease-out'
       },
       keyframes: {
+        'fade-in': {
+          '0%': {
+            opacity: '0',
+          },
+          '50%': {
+            opacity: '0.3',
+          },
+          '100%': {
+            opacity: '1',
+          },
+        },
         'fade-in-down': {
           '0%': {
             opacity: '0',
@@ -118,5 +131,10 @@ module.exports = {
       display: ["group-hover"],
     },
   },
-  plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],
+  plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography"),
+  plugin(function ({ addVariant }) {
+    // Add a `third` variant, ie. `third:pb-0`
+    addVariant('scrollbar', '&::-webkit-scrollbar');
+    addVariant('scrollbar-thumb', '&::-webkit-scrollbar-thumb')
+  })],
 };

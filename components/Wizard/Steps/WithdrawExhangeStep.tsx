@@ -14,13 +14,14 @@ import { copyTextToClipboard } from '../../../lib/copyToClipboard';
 
 const WithdrawExchangeStep: FC = () => {
 
-    const { swap, payment } = useSwapDataState()
+    const { swap } = useSwapDataState()
+    const { payment } = swap || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
 
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
     const router = useRouter();
     const { swapId } = router.query;
-    const { getSwapAndPayment } = useSwapDataUpdate()
+    const { getSwap } = useSwapDataUpdate()
 
     useInterval(async () => {
         if (currentStep === "Withdrawal") {
@@ -29,9 +30,10 @@ const WithdrawExchangeStep: FC = () => {
                 await goToStep("Email")
                 return;
             }
-            const { payment, swap } = await getSwapAndPayment(swapId.toString())
+            const swap = await getSwap(swapId.toString())
+            const { payment } = swap || {}
             const swapStatus = swap?.status;
-            const paymentStatus = payment?.data?.status
+            const paymentStatus = payment?.status
             if (swapStatus == SwapStatus.Completed)
                 await goToStep("Success")
             else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
@@ -46,8 +48,7 @@ const WithdrawExchangeStep: FC = () => {
         goToStep("Processing")
     }, [])
 
-    const paymentData = payment?.data
-    const contextFlow = paymentData?.external_flow_context || paymentData?.manual_flow_context || paymentData?.note_flow_context
+    const contextFlow = payment?.external_flow_context || payment?.manual_flow_context || payment?.note_flow_context
 
     return (
         <>
@@ -81,7 +82,7 @@ const WithdrawExchangeStep: FC = () => {
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
-                        <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-2.5'  onClick={()=>{copyTextToClipboard(swap?.destination_address)}}>
+                        <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-2.5' onClick={() => { copyTextToClipboard(swap?.destination_address) }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
                                 <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
                             </svg>
@@ -118,18 +119,18 @@ const WithdrawExchangeStep: FC = () => {
                             name="withdrawlAmount"
                             id="withdrawlAmount"
                             disabled={true}
-                            value={payment?.data?.manual_flow_context?.total_withdrawal_amount || payment?.data?.amount}
+                            value={payment?.manual_flow_context?.total_withdrawal_amount || payment?.amount}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
-                        <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-2.5' onClick={()=>{copyTextToClipboard(payment?.data?.manual_flow_context?.total_withdrawal_amount || payment?.data?.amount)}}>
+                        <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-2.5' onClick={() => { copyTextToClipboard(payment?.manual_flow_context?.total_withdrawal_amount || payment?.amount) }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
                                 <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
                             </svg>
                         </button>
                     </div>
                     {
-                        payment?.data?.note_flow_context?.note &&
+                        payment?.note_flow_context?.note &&
                         <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                             <input
                                 inputMode="decimal"
@@ -140,11 +141,11 @@ const WithdrawExchangeStep: FC = () => {
                                 name="remark"
                                 id="remark"
                                 disabled={true}
-                                value={payment?.data?.note_flow_context?.note}
+                                value={payment?.note_flow_context?.note}
                                 className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                             />
-                            <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-2.5' onClick={()=>{copyTextToClipboard(payment?.data?.note_flow_context?.note)}}>
+                            <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-2.5' onClick={() => { copyTextToClipboard(payment?.note_flow_context?.note) }}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
                                     <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
                                 </svg>
@@ -155,13 +156,13 @@ const WithdrawExchangeStep: FC = () => {
                     <div className='mt-1 md:mt-7 block text-base font-lighter leading-6 text-white'>
                         <ul className='list-disc ml-5'>
                             {
-                                payment?.data?.manual_flow_context?.is_fee_refundable &&
+                                payment?.manual_flow_context?.is_fee_refundable &&
                                 <li>
-                                    Transaction fee <strong>({payment?.data?.manual_flow_context?.withdrawal_fee} {swap?.currency})</strong> will be refunded to your exchange account.
+                                    Transaction fee <strong>({payment?.manual_flow_context?.withdrawal_fee} {swap?.currency})</strong> will be refunded to your exchange account.
                                 </li>
                             }
                             <li>
-                                Make sure that <strong>Receive amount</strong> is precisely <strong>{payment?.data?.manual_flow_context?.total_withdrawal_amount || payment?.data?.amount} {swap?.currency}</strong>
+                                Make sure that <strong>Receive amount</strong> is precisely <strong>{payment?.manual_flow_context?.total_withdrawal_amount || payment?.amount} {swap?.currency}</strong>
                             </li>
                         </ul>
                     </div>

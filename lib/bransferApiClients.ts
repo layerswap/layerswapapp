@@ -10,6 +10,11 @@ export class BransferApiClient {
             .then(res => res.data)
     }
 
+    async DeleteExchange(exchange: string, token: string): Promise<ConnectResponse> {
+        return await authInterceptor.delete(BransferApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}`,
+            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            .then(res => res.data)
+    }
     async ConnectExchangeApiKeys(params: ConnectParams, token: string): Promise<ConnectResponse> {
         return await authInterceptor.post(BransferApiClient.apiBaseEndpoint + '/api/exchange_accounts',
             params,
@@ -22,12 +27,6 @@ export class BransferApiClient {
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data)
     }
-
-    async GetPayment(id: string, token: string): Promise<Payment> {
-        return await authInterceptor.get(BransferApiClient.apiBaseEndpoint + `/api/payments/${id}`,
-            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
-            .then(res => res.data)
-    }
 }
 
 export type PaymentProcessreponse = {
@@ -36,44 +35,7 @@ export type PaymentProcessreponse = {
     errors: string
 }
 
-export type Payment = {
-    data: {
-        id: string,
-        status: 'completed' | 'closed' | 'processing' | "created",
-        close_reason: string,
-        flow: string,
-        amount: number,
-        currency: string,
-        exchange: string,
-        message: string,
-        manual_flow_context?: {
-            require_select_internal: boolean,
-            display_network: boolean,
-            is_fee_refundable: boolean,
-            has_memo: boolean,
-            address: string,
-            memo: string,
-            network_display_name: string,
-            withdrawal_fee: number,
-            withdrawal_amount: number,
-            total_withdrawal_amount: number
-        },
-        external_flow_context: {
-            payment_url: string;
-        },
-        note_flow_context: {
-            address: string,
-            memo: string,
-            has_memo: string,
-            note: string,
-        },
-        sequence_number: string,
-    },
-    is_success: boolean,
-    request_id: string,
-    errors: string
 
-}
 
 export type ConnectParams = {
     api_key: string,

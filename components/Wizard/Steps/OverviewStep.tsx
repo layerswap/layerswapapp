@@ -21,18 +21,19 @@ type Props = {
 const OverviewStep: FC<Props> = ({ current }) => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState()
-    const { payment } = useSwapDataState()
+    const { swap } = useSwapDataState()
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
 
     const router = useRouter();
     const { swapId } = router.query;
 
-    const { getSwapAndPayment } = useSwapDataUpdate()
+    const { getSwap } = useSwapDataUpdate()
 
+    const { payment } = swap || {}
     useEffect(() => {
         (async () => {
-            try{
+            try {
                 if (currentStep == "Overview") {
                     const authData = TokenService.getAuthData();
                     if (!authData) {
@@ -40,9 +41,10 @@ const OverviewStep: FC<Props> = ({ current }) => {
                         setLoadingWizard(false)
                         return;
                     }
-                    const { payment, swap } = await getSwapAndPayment(swapId.toString())
+                    const swap = await getSwap(swapId.toString())
+                    const { payment } = swap || {};
                     const swapStatus = swap?.status;
-                    const paymentStatus = payment?.data?.status
+                    const paymentStatus = payment?.status
                     if (swapStatus == SwapStatus.Completed)
                         await goToStep("Success")
                     else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
@@ -50,9 +52,9 @@ const OverviewStep: FC<Props> = ({ current }) => {
                     else if (swapStatus == SwapStatus.Pending)
                         await goToStep("Processing")
                     else {
-                        if (payment.data.external_flow_context)
+                        if (payment.external_flow_context)
                             goToStep("ExternalPayment")
-                        else if (payment.data.manual_flow_context)
+                        else if (payment.manual_flow_context)
                             goToStep("Withdrawal")
                         else
                             goToStep("Processing")
@@ -67,13 +69,13 @@ const OverviewStep: FC<Props> = ({ current }) => {
             }
 
         })()
-    }, [swapId, currentStep, payment])
+    }, [swapId, currentStep])
 
     const handleConfirm = useCallback(async () => {
         try {
-            if (payment.data.external_flow_context)
+            if (payment.external_flow_context)
                 goToStep("ExternalPayment")
-            else if (payment.data.manual_flow_context)
+            else if (payment.manual_flow_context)
                 goToStep("Withdrawal")
             else
                 goToStep("Processing")
@@ -107,7 +109,7 @@ const OverviewStep: FC<Props> = ({ current }) => {
                     <div className="items-center mx-4 my-3 block text-base font-lighter leading-6 text-light-blue">
                         <div className="sm:flex sm:justify-between sm:items-baseline">
                             <span className="text-left">Payment Number: </span>
-                            <span>#{payment?.data?.sequence_number}</span>
+                            <span>#{payment?.sequence_number}</span>
                         </div>
                         <div className="sm:flex sm:justify-between sm:items-baseline">
                             <span className="text-left">Merchant: </span>
@@ -115,16 +117,16 @@ const OverviewStep: FC<Props> = ({ current }) => {
                         </div>
                         <div className="sm:flex sm:justify-between sm:items-baseline">
                             <span className="text-left">Payment Method: </span>
-                            <span>{payment?.data?.exchange}</span>
+                            <span>{payment?.exchange}</span>
                         </div>
                         <div className="sm:flex sm:justify-between sm:items-baseline">
                             <span className="text-left">Amount: </span>
-                            <span>{payment?.data?.amount} {payment?.data?.currency}</span>
+                            <span>{payment?.amount} {payment?.currency}</span>
                         </div>
                         <div className="sm:flex sm:justify-between sm:items-baseline">
                             <span className="text-left">Fee: </span>
                             {/*TODO check flow */}
-                            <span>{payment?.data?.manual_flow_context?.withdrawal_fee} {payment?.data?.currency}</span>
+                            <span>{payment?.manual_flow_context?.withdrawal_fee} {payment?.currency}</span>
                         </div>
                     </div>
                     {/* <div className="items-center inline-flex mx-4 my-3 block text-base font-lighter leading-6 text-light-blue">

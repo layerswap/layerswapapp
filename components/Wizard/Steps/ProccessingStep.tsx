@@ -16,13 +16,14 @@ import SubmitButton from '../../buttons/submitButton';
 const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
 
     // const { prevStep, nextStep, goToStep } = useWizardState();
-    const { swap, payment } = useSwapDataState()
+    const { swap } = useSwapDataState()
+    const { payment } = swap || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
 
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
     const router = useRouter();
     const { swapId } = router.query;
-    const { getSwapAndPayment } = useSwapDataUpdate()
+    const { getSwap } = useSwapDataUpdate()
 
     useInterval(async () => {
         if (currentStep === "Processing") {
@@ -31,9 +32,10 @@ const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
                 await goToStep("Email")
                 return;
             }
-            const { payment, swap } = await getSwapAndPayment(swapId.toString())
+            const swap = await getSwap(swapId.toString())
+            const { payment } = swap || {}
             const swapStatus = swap?.status;
-            const paymentStatus = payment?.data?.status
+            const paymentStatus = payment?.status
             if (swapStatus == SwapStatus.Completed)
                 await goToStep("Success")
             else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
@@ -52,11 +54,11 @@ const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
                     </div>
                 </div>
                 <div className="flex text-center place-content-center mt-1 md:mt-1">
-                    <label className="block text-lg font-lighter leading-6 text-light-blue">{payment?.data?.status == "completed" ? "Payment processed. " : "Processing payment"} </label>
+                    <label className="block text-lg font-lighter leading-6 text-light-blue">{payment?.status == "completed" ? "Payment processed. " : "Processing payment"} </label>
                 </div>
                 {
-                    payment?.data?.status == "completed" && <div className="flex text-center place-content-center mt-1 md:mt-1">
-                        <label className="block text-lg font-lighter leading-6 text-light-blue"> Awaiting for {payment?.data?.exchange} confirmation </label>
+                    payment?.status == "completed" && <div className="flex text-center place-content-center mt-1 md:mt-1">
+                        <label className="block text-lg font-lighter leading-6 text-light-blue"> Awaiting for {payment?.exchange} confirmation </label>
                     </div>
                 }
             </div>

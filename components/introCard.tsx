@@ -6,7 +6,7 @@ import CardContainer from './cardContainer';
 function IntroCard(props) {
     return (
         <CardContainer {...props} >
-            <div className="flex flex-col px-6 md:px-12 py-10">
+            <div className="flex flex-col px-6 md:px-12 py-10 text-white">
                 <div>
                     <h1 className="text-xl font-semibold">About Layerswap</h1>
                     <p className="text-base text-gray-100 mt-6">

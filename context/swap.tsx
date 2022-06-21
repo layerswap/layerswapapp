@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import { BransferApiClient, Payment } from '../lib/bransferApiClients';
+import { BransferApiClient } from '../lib/bransferApiClients';
 import LayerSwapApiClient, { CreateSwapParams, SwapDetailsResponse } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate, useAuthState } from './auth';
 import Router, { useRouter } from 'next/router'
@@ -13,21 +13,18 @@ const SwapDataUpdateContext = React.createContext<UpdateInterface>(null);
 type UpdateInterface = {
     updateSwapFormData: (data: SwapFormValues) => void,
     createSwap: (data: CreateSwapParams) => Promise<SwapDetailsResponse>,
-    processPayment: (id: string, twoFactorCode?: string) => void,
-    getPayment: (id: string) => Promise<Payment>
-    getSwapAndPayment: (id: string) => Promise<{ swap: SwapDetailsResponse, payment: Payment }>
+    processPayment: (swap: SwapDetailsResponse, twoFactorCode?: string) => void,
+    getSwap: (id: string) => Promise<SwapDetailsResponse>
 }
 
 type SwapData = {
     swapFormData: SwapFormValues,
-    payment: Payment,
     swap: SwapDetailsResponse
 }
 
 export function SwapDataProvider({ children }) {
     const [swapFormData, setSwapFormData] = React.useState<SwapFormValues>();
     const [swap, setSwap] = useState<SwapDetailsResponse>()
-    const [payment, setPayment] = React.useState<Payment>();
 
     const { getAuthData } = useAuthDataUpdate();
 
@@ -59,35 +56,27 @@ export function SwapDataProvider({ children }) {
                 throw e
             }
         }, [swapFormData, getAuthData]),
-        getPayment: useCallback(async (id) => {
-            const bransferApiClient = new BransferApiClient()
-            const res = await bransferApiClient.GetPayment(id, TokenService.getAuthData().access_token)
-            await setPayment(res)
-            return res;
-        }, []),
-        getSwapAndPayment: useCallback(async (id) => {
+        getSwap: useCallback(async (id) => {
             const authData = TokenService.getAuthData();
             const layerswapApiClient = new LayerSwapApiClient()
-            const bransferApiClient = new BransferApiClient()
             const swapDetails = await layerswapApiClient.getSwapDetails(id, authData?.access_token)
             setSwap(swapDetails)
-            const payment = await bransferApiClient.GetPayment(swapDetails.external_payment_id, authData?.access_token)
-            await setPayment(payment)
-            return { swap: swapDetails, payment: payment }
+            return swapDetails
         }, []),
-        processPayment: useCallback(async (id, twoFactorCode?: string) => {
+        processPayment: useCallback(async (swap: SwapDetailsResponse, twoFactorCode?: string) => {
             const authData = getAuthData()
             const bransferApiClient = new BransferApiClient()
-            const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(id, authData?.access_token, twoFactorCode)
+            const layerswapApiClient = new LayerSwapApiClient()
+            const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(swap.payment.id, authData?.access_token, twoFactorCode)
             if (!prcoessPaymentReponse.is_success)
                 throw new Error(prcoessPaymentReponse.errors)
-            const payment = await bransferApiClient.GetPayment(id, authData?.access_token)
-            await setPayment(payment)
+            const swapDetails = await layerswapApiClient.getSwapDetails(swap.id, authData?.access_token)
+            setSwap(swapDetails)
         }, [getAuthData]),
     };
 
     return (
-        <SwapDataStateContext.Provider value={{ swapFormData, payment, swap }}>
+        <SwapDataStateContext.Provider value={{ swapFormData, swap }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>

@@ -1,16 +1,11 @@
-import { CheckIcon } from '@heroicons/react/outline';
-import Link from 'next/link';
+
+import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useState } from 'react'
-import { useAuthDataUpdate, useAuthState } from '../../../context/auth';
-import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
-import { useSwapDataState } from '../../../context/swap';
-import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useWizardState } from '../../../context/wizard';
-import { useInterval } from '../../../hooks/useInyterval';
-import TokenService from '../../../lib/TokenService';
-import LayerSwapAuthApiClient from '../../../lib/userAuthApiClient';
-import { ExchangeAuthorizationSteps, SwapWizardSteps } from '../../../Models/Wizard';
-import SubmitButton from '../../buttons/submitButton';
+import { useAuthDataUpdate, useAuthState } from '../../../../context/auth';
+import { useInterval } from '../../../../hooks/useInyterval';
+import TokenService from '../../../../lib/TokenService';
+import LayerSwapAuthApiClient from '../../../../lib/userAuthApiClient';
+import SubmitButton from '../../../buttons/submitButton';
 
 const CodeStep: FC = () => {
 
@@ -18,10 +13,11 @@ const CodeStep: FC = () => {
     // const { nextStep } = useWizardState();
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
-    const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
 
     const nextTime = TokenService.getCodeNextTime()
 
+    const router = useRouter();
+    const { redirect } = router.query;
 
     const [resendTimeLeft, setResendTimeLeft] = useState(nextTime ? new Date(nextTime).getTime() - new Date().getTime() : 0)
 
@@ -45,9 +41,9 @@ const CodeStep: FC = () => {
         const res = await apiClient.connectAsync(email, code)
         await updateAuthData(res)
         console.log(res)
+        await router.push(redirect?.toString() || '/')
         setLoading(false)
-        goToStep("Overview")
-    }, [email, code])
+    }, [email, code, redirect])
 
     const handleResendCode = useCallback(async () => {
         try {

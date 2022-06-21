@@ -84,38 +84,40 @@ export default function UserGuide(props) {
 
     return (
         <Layout>
-            <Head>
-                <title>LayerSwap User Guide</title>
-            </Head>
-            <main>
-                <div className="flex justify-center">
-                    <div className="py-4 px-8 md:px-0 prose md:prose-xl text-blueGray-300">
-                        <MDXRemote {...props.mdxSource} components={componentOverrides} />
+            <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+                <Head>
+                    <title>LayerSwap User Guide</title>
+                </Head>
+                <main>
+                    <div className="flex justify-center">
+                        <div className="py-4 px-8 md:px-0 prose md:prose-xl text-blueGray-300">
+                            <MDXRemote {...props.mdxSource} components={componentOverrides} />
+                        </div>
                     </div>
-                </div>
-                <div className="mx-auto px-8 pb-20 max-w-xl md:max-w-3xl">
-                    <ul role="list" className="space-y-4 sm:grid sm:grid-cols-2 sm:gap-6 sm:space-y-0 lg:grid-cols-3 lg:gap-8">
-                        {exchanges.map((exchange) => (
-                            <Link href={exchange.guideUrl} key={exchange.name}>
-                                <li key={exchange.name} className="py-6 md:py-10 px-4 md:px-6 bg-gray-800 text-center rounded-lg xl:px-10 hover:cursor-pointer hover:bg-gray-600">
-                                    <div className="space-y-2 md:space-y-6 xl:space-y-10">
-                                        <Image
-                                            height="100"
-                                            width="100"
-                                            layout="fixed"
-                                            className="mx-auto rounded-md"
-                                            src={exchange.imageSrc}
-                                            alt="" />
-                                        <div className="font-medium text-lg leading-6 space-y-1">
-                                            <h3 className="text-white">{exchange.name}</h3>
+                    <div className="mx-auto px-8 pb-20 max-w-xl md:max-w-3xl">
+                        <ul role="list" className="space-y-4 sm:grid sm:grid-cols-2 sm:gap-6 sm:space-y-0 lg:grid-cols-3 lg:gap-8">
+                            {exchanges.map((exchange) => (
+                                <Link href={exchange.guideUrl} key={exchange.name}>
+                                    <li key={exchange.name} className="py-6 md:py-10 px-4 md:px-6 bg-gray-800 text-center rounded-lg xl:px-10 hover:cursor-pointer hover:bg-gray-600">
+                                        <div className="space-y-2 md:space-y-6 xl:space-y-10">
+                                            <Image
+                                                height="100"
+                                                width="100"
+                                                layout="fixed"
+                                                className="mx-auto rounded-md"
+                                                src={exchange.imageSrc}
+                                                alt="" />
+                                            <div className="font-medium text-lg leading-6 space-y-1">
+                                                <h3 className="text-white">{exchange.name}</h3>
+                                            </div>
                                         </div>
-                                    </div>
-                                </li>
-                            </Link>
-                        ))}
-                    </ul>
-                </div>
-            </main>
+                                    </li>
+                                </Link>
+                            ))}
+                        </ul>
+                    </div>
+                </main>
+            </div>
         </Layout>
     )
 }

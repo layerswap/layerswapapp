@@ -14,13 +14,14 @@ import { copyTextToClipboard } from '../../../lib/copyToClipboard';
 
 const ExternalPaumentStep: FC = () => {
 
-    const { swap, payment } = useSwapDataState()
+    const { swap } = useSwapDataState()
+    const { payment } = swap || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
 
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
     const router = useRouter();
     const { swapId } = router.query;
-    const { getSwapAndPayment } = useSwapDataUpdate()
+    const { getSwap } = useSwapDataUpdate()
 
     useInterval(async () => {
         if (currentStep === "Withdrawal") {
@@ -29,9 +30,10 @@ const ExternalPaumentStep: FC = () => {
                 await goToStep("Email")
                 return;
             }
-            const { payment, swap } = await getSwapAndPayment(swapId.toString())
+            const swap = await getSwap(swapId.toString())
+            const { payment } = swap || {}
             const swapStatus = swap?.status;
-            const paymentStatus = payment?.data?.status
+            const paymentStatus = payment?.status
             if (swapStatus == SwapStatus.Completed)
                 await goToStep("Success")
             else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
@@ -41,15 +43,15 @@ const ExternalPaumentStep: FC = () => {
         }
     }, [currentStep, swapId], 2000)
 
-    const paymentData = payment?.data
 
     const handleContinue = useCallback(async () => {
         const access_token = TokenService.getAuthData()?.access_token
         if (!access_token)
             goToStep("Email")
-        const { payment } = await getSwapAndPayment(swapId.toString())
+        const swap = await getSwap(swapId.toString())
+        const { payment } = swap ||{}
         //TODO handle no payment url
-        const { payment_url } = payment.data.external_flow_context || {}
+        const { payment_url } = payment.external_flow_context || {}
         window.open(payment_url, '_blank', 'width=420,height=720')
     }, [])
 
@@ -58,20 +60,20 @@ const ExternalPaumentStep: FC = () => {
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
                 <div className="rounded-md border bg-darkblue-600 w-full grid grid-flow-row p-5 border-darkblue-100 mb-11">
                     <div className="flex items-center">
-                        <label className="block text-lg font-medium leading-6 text-white"> Go to {paymentData?.exchange} to complete the payment </label>
+                        <label className="block text-lg font-medium leading-6 text-white"> Go to {payment?.exchange} to complete the payment </label>
                     </div>
                     <ul className='list-disc mt-10 pl-5'>
                         <li>
-                            By clicking Continue you will be directed to {paymentData?.exchange} to authorize and pay.
+                            By clicking Continue you will be directed to {payment?.exchange} to authorize and pay.
                         </li>
                         <li>
-                            This page will automatically update after you complete the payment in {paymentData?.exchange}.
+                            This page will automatically update after you complete the payment in {payment?.exchange}.
                         </li>
                     </ul>
                 </div>
                 <div className="text-white text-lg ">
                     <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleContinue}>
-                        Continue to {paymentData?.exchange}
+                        Continue to {payment?.exchange}
                     </SubmitButton>
                     <div className='flex place-content-center items-center mt-8'>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 fill-pink-primary" width="20" height="20" viewBox="0 0 20 20" fill="none">

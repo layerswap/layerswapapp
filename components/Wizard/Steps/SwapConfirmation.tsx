@@ -18,7 +18,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [twoFARequired, setTwoFARequired] = useState(false)
 
     const { swapFormData, swap } = useSwapDataState()
-    const { createSwap, processPayment, getSwapAndPayment, getPayment } = useSwapDataUpdate()
+    const { createSwap, processPayment } = useSwapDataUpdate()
     const { goToStep, setWizardError } = useFormWizardaUpdate<FormWizardSteps>()
     const router = useRouter();
 
@@ -50,23 +50,23 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 destination_address: swapFormData.destination_address
             }
             const _swap = swap || await createSwap(data)
-            const payment = await getPayment(_swap.external_payment_id)
-            if (payment?.data?.status === 'created')
-                await processPayment(payment?.data?.id, towFactorCode)
+            const { payment } = _swap
+            if (payment?.status === 'created')
+                await processPayment(_swap, towFactorCode)
             ///TODO grdon code please refactor
-            else if (payment?.data?.status === 'closed') {
+            else if (payment?.status === 'closed') {
                 const newSwap = await createSwap(data)
-                const newPayment = await getPayment(newSwap.external_payment_id)
-                await processPayment(newPayment?.data?.id, towFactorCode)
-                router.push(`/${newSwap.id}`);
-                return;
+                const newPayment = newSwap
+                await processPayment(newSwap, towFactorCode)
+                router.push(`/${newSwap.id}`)
+                return
             }
-            router.push(`/${_swap.id}`);
+            router.push(`/${_swap.id}`)
         }
         catch (error) {
             ///TODO newline may not work, will not defenitaly fix this
             console.log("error in confirmation", error?.response?.data)
-            const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error.message || error?.response?.data?.message || error.message)
+            const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error?.message || error?.response?.data?.message || error.message)
 
             if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
                 await goToStep("ExchangeOAuth")
@@ -76,7 +76,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 setError("Two factor authentication is required")
                 setTwoFARequired(true)
             }
-            else if(error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {
+            else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {
                 setError(`${swapFormData.exchange.name} error: You don't have that much.`)
             }
             else {

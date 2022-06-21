@@ -53,8 +53,8 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
         setFieldValue(name, item, true)
     }, [name])
 
-    const handleComboboxChange = useCallback(()=>{},[])
-    const handleQueryInputChange = useCallback((event) => setQuery(event.target.value),[])
+    const handleComboboxChange = useCallback(() => { }, [])
+    const handleQueryInputChange = useCallback((event) => setQuery(event.target.value), [])
 
     return (
         <>
@@ -64,7 +64,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     onClick={openModal}
                     disabled={disabled}
                     // ref={asdRef}
-                    className="disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom  w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold rounded-none"
+                    className="disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold rounded-none"
                 >
                     <span className='flex grow  text-left items-center'>
                         {
@@ -92,7 +92,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
             </div>
 
             <Transition appear show={isOpen} as={Fragment}>
-                <div className='absolute inset-0 z-10 overflow-y-visible w-full bg-darkBlue p-10'>
+                <div className='absolute inset-0 z-10 overflow-hidden flex flex-col w-full bg-darkBlue p-10'>
                     <div className="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
                         <button
                             type="button"
@@ -112,10 +112,10 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <div className="relative inset-0" />
+                        <div className="relative inset-0" ></div>
                     </Transition.Child>
 
-                    <div className="relative inset-0 overflow-y-visible">
+                    <div className="relative inset-0 flex flex-col overflow-y-scroll scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
                         <div className="relative min-h-full items-center justify-center p-4 text-center">
                             <Transition.Child
                                 as={Fragment}
@@ -128,7 +128,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                             >
                                 <Combobox
                                     as="div"
-                                    className="transform  transition-all"
+                                    className="transform  transition-all "
                                     onChange={handleComboboxChange}
                                     value={query}
                                 >
@@ -145,7 +145,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                         />
                                     </div>
                                     {filteredItems.length > 0 && (
-                                        <Combobox.Options static className="border-0 max-h-96 scroll-py-3 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-2">
+                                        <Combobox.Options static className="border-0 max-h-96  grid grid-cols-1 md:grid-cols-2 gap-2">
                                             {filteredItems.map((item) => (
                                                 <Combobox.Option
                                                     key={item.id}

@@ -1,12 +1,17 @@
 import { FC, Fragment, useEffect, useRef, useState } from 'react'
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, Menu, Transition } from "@headlessui/react";
 import { Step, StepPath, useWizardState, WizardPart, WizardParts, WizardPartType } from '../../context/wizard';
 import { ArrowLeftIcon, MenuIcon, XIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import { BaseWizard, FormSteps, FormWizardSteps, SwapWizardSteps } from '../../Models/Wizard';
 import { useAuthState } from '../../context/auth';
-import SomeTestStep from './Steps/SomeTestStep';
+import TokenService from '../../lib/TokenService';
+import LayerswapMenu from '../LayerswapMenu';
 
+
+function classNames(...classes) {
+   return classes.filter(Boolean).join(' ')
+}
 
 const Wizard: FC = () => {
 
@@ -64,7 +69,7 @@ const Wizard: FC = () => {
                                  ? `-translate-x-96 opacity-0`
                                  : `translate-x-96 opacity-0`
                            }
-                           className="w-0 overflow-visible"
+                           className={`${step === currentStep ? 'w-full' : 'w-0'} overflow-visible`}
                            as="div"
                         >
                            <div
@@ -84,42 +89,19 @@ const Wizard: FC = () => {
 function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
    const { goBack } = useFormWizardaUpdate()
    const { wizard, currentStep } = useFormWizardState<BaseWizard>()
-   const { email, authData } = useAuthState()
-   const [open, setOpen] = useState(false)
 
-   const handleOpenMenu = () => {
-      setOpen(true)
-   }
-   const handleCloseMenu = () => {
-      setOpen(false)
-   }
+ 
+
    return <>
-      <div className='flex flex-nowrap min-h-440'>
-         <Transition
-            appear={false}
-            unmount={false}
-            show={open}
-            enter="transform transition ease-in-out duration-500"
-            enterFrom={`translate-x-96 `}
-            enterTo={`translate-x-0 o`}
-            leave="transform transition ease-in-out duration-500"
-            leaveFrom={`translate-x-0 opacity-100`}
-            leaveTo={`-translate-x-96 `}
-            className="w-0 overflow-visible absolute z-10"
-            as="div">
-            <SomeTestStep />
-         </Transition>
-      </div>
-      <div className="grid grid-cols-2 gap-4 place-content-end p-2" >
+
+      <div className="relative grid grid-cols-2 gap-4 place-content-end px-14 z-20" >
          <>
 
             <button onClick={goBack} className="justify-self-start" style={{ visibility: wizard[currentStep].navigationDisabled ? 'hidden' : 'visible' }}>
                <ArrowLeftIcon className='h-5 w-5 text-darkblue-200 hover:text-ouline-blue cursor-pointer' />
             </button>
-            <span onClick={handleOpenMenu} className="justify-self-end text-light-blue cursor-pointer">
-               <MenuIcon className='h-8 w-8 text-darkblue-200 hover:text-ouline-blue cursor-pointer' />
-            </span>
 
+            <LayerswapMenu/>
          </>
       </div>
    </>
