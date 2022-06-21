@@ -107,7 +107,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                 leaveFrom="translate-y-0"
                 leaveTo="translate-y-full">
                 <div className='absolute inset-0 z-10 overflow-hidden flex flex-col w-full bg-darkBlue p-10 pt-0'>
-                    <div className='relative grid grid-cols-1 gap-4 place-content-end z-20 mb-2'>
+                    <div className='relative grid grid-cols-1 gap-4 place-content-end z-20 mb-2 mt-1'>
                         <span className="justify-self-end text-light-blue cursor-pointer">
                             <div className="hidden sm:block ">
                                 <button

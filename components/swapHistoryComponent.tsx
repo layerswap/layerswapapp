@@ -157,7 +157,7 @@ function TransactionsHistory() {
       </div>
 
       {
-        false?
+        swaps?.length > 0?
         <>
         <div className="px-6 md:px-12 lg:px-8 mb-2 ">
         <div className="-mx-4 mt-10 ring-1 ring-darkblue-100 sm:-mx-6 md:mx-0 md:rounded-lg bg-darkblue-600">
@@ -215,7 +215,7 @@ function TransactionsHistory() {
               </tr>
             </thead>
             <tbody>
-              {[]?.map((swap, index) => (
+              {swaps?.map((swap, index) => (
                 <tr key={swap.id}>
                   <td
                     className={classNames(
