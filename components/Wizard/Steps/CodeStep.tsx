@@ -1,4 +1,4 @@
-import { CheckIcon } from '@heroicons/react/outline';
+import { CheckIcon, ExclamationIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { FC, useCallback, useState } from 'react'
 import { useAuthDataUpdate, useAuthState } from '../../../context/auth';
@@ -57,6 +57,21 @@ const CodeStep: FC = () => {
     return (
         <>
             <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
+                {
+                    error &&
+                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-light-blue">
+                                    {error}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
                 <div>
                     <label htmlFor="amount" className="block font-normal text-light-blue text-sm">
                         Your Email Code

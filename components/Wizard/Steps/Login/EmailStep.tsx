@@ -56,12 +56,7 @@ const EmailStep: FC = () => {
         }
         return error;
     }
-    function validateCheckbox(value) {
-        let error;
-        if (!value)
-            error = 'Required';
-        return error;
-    }
+    
     return (
         <>
             <Formik
@@ -111,28 +106,11 @@ const EmailStep: FC = () => {
                                                 type="text"
                                                 name="email"
                                                 id="email"
-                                                className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
+                                                className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary focus:border border-darkblue-100 pr-36 block
                                         placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                                             />
                                         )}
                                     </Field>
-
-                                </div>
-
-                                <div className="flex items-center mb-12 md:mb-11">
-                                    <Field name="email_confirm_right_information" validate={validateCheckbox}>
-                                        {({ field }) => (
-                                            <input
-                                                {...field}
-                                                required={true}
-                                                type="checkbox"
-                                                name="email_confirm_right_information"
-                                                id="email_confirm_right_information"
-                                                className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
-                                            />
-                                        )}
-                                    </Field>
-                                    <label htmlFor="email_confirm_right_information" className="ml-3 block text-lg leading-6 text-light-blue cursor-pointer"> Providing wrong information will result in a loss of funds </label>
                                 </div>
                             </div>
                             <div className="text-white text-sm mt-auto">
