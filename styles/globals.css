@@ -64,3 +64,25 @@ hr.horizontal-gradient {
   height: 1px;
   background-image: linear-gradient(to right, hsla(0, 0%, 100%, 0), #1A2949, hsla(0, 0%, 100%, 0));
 }
+
+.strong-highlight {
+  position: relative;
+  font-size: larger;
+  opacity: 1;
+  z-index: 1;
+}
+
+.strong-highlight::after {
+  /* Highlight color */
+  background-color: #E42575;
+  background: linear-gradient(90deg, rgba(114,0,67,1) 0%, rgba(45,22,54,1) 100%);
+  /* background: linear-gradient(90deg, rgba(43,23,54,1) 0%, rgba(228,37,117,1)*/
+  content: "";
+  position: absolute;
+  width: calc(100% + 4px);
+  height: 40%;
+  left: -2px;
+  bottom: 0;
+  z-index: -1;
+  transform: rotate(-2deg);
+}
