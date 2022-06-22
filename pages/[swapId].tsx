@@ -43,7 +43,7 @@ const SwapWizard: SwapWizardSteps = {
   "Code": { title: "Code", content: SwapCodeStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 75 },
   "Overview": { title: "Payment overview", content: OverviewStep, navigationDisabled: true, positionPercent: 80 },
   "ExternalPayment": { title: "Withdrawal", content: ExternalPaumentStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 90 },
-  "Withdrawal": { title: "Withdrawal", content: WithdrawExchangeStep, positionPercent: 90, dismissOnBack: true, },
+  "Withdrawal": { title: "Withdrawal", content: WithdrawExchangeStep, positionPercent: 90, navigationDisabled: true, dismissOnBack: true, },
   "Processing": { title: "", content: ProccessingStep, positionPercent: 95 },
   "Success": { title: "", content: SuccessfulStep, navigationDisabled: true, positionPercent: 100 },
   "Failed": { title: "", content: FailedPage, navigationDisabled: true, positionPercent: 100 },

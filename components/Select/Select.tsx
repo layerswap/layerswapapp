@@ -66,6 +66,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
         setFieldValue(name, item, true)
     }, [name])
 
+<<<<<<< HEAD
     if (selectedItem?.name === "LRC" || selectedItem?.name === "ETH" || selectedItem?.name === "BKT" || selectedItem?.name === "USDC") {
         return (
             <Listbox disabled={disabled} value={value?.id} onChange={onChangeHandler}>
@@ -82,9 +83,38 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                     layout="responsive"
                                     className="rounded-md object-contain"
                                 />
+=======
+    const handleComboboxChange = useCallback(()=>{},[])
+    const handleQueryInputChange = useCallback((event) => setQuery(event.target.value),[])
+
+    return (
+        <>
+            <div className="flex items-center relative">
+                <button
+                    type="button"
+                    onClick={openModal}
+                    disabled={disabled}
+                    // ref={asdRef}
+                    className="disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom  w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold rounded-none"
+                >
+                    <span className='flex grow  text-left items-center'>
+                        {
+                            selectedItem && <div className="flex items-center">
+                                <div className="flex-shrink-0 h-6 w-6 relative">
+                                    <Image
+                                        src={selectedItem.imgSrc}
+                                        alt="Project Logo"
+                                        height="40"
+                                        width="40"
+                                        layout="responsive"
+                                        className="rounded-md object-contain"
+                                    />
+                                </div>
+>>>>>>> bransferui-merge
                             </div>
                             <span className="ml-3 block truncate">{value.name}</span>
                         </span>
+<<<<<<< HEAD
                         <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-light-blue">
                             <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
                         </span>
@@ -155,6 +185,66 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                             width="40"
                                             layout="responsive"
                                             className="rounded-md object-contain"
+=======
+                    </span>
+                    <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-light-blue">
+                        <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                </button>
+            </div>
+
+            <Transition appear show={isOpen} as={Fragment}>
+                <div className='absolute inset-0 z-10 overflow-y-visible w-full bg-darkBlue p-10'>
+                    <div className="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
+                        <button
+                            type="button"
+                            className="rounded-md text-darkblue-200 focus:ring-2 hover:text-light-blue"
+                            onClick={closeModal}
+                        >
+                            <span className="sr-only">Close</span>
+                            <XIcon className="h-6 w-6" aria-hidden="true" />
+                        </button>
+                    </div>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="relative inset-0" />
+                    </Transition.Child>
+
+                    <div className="relative inset-0 overflow-y-visible">
+                        <div className="relative min-h-full items-center justify-center p-4 text-center">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
+                                <Combobox
+                                    as="div"
+                                    className="transform  transition-all"
+                                    onChange={handleComboboxChange}
+                                    value={query}
+                                >
+                                    <div className="relative mb-5">
+                                        <SearchIcon
+                                            className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-light-blue"
+                                            aria-hidden="true"
+                                        />
+                                        <Combobox.Input
+                                            className="h-12 w-full bg-darkblue-500 rounded-lg border-ouline-blue pl-11 pr-4 text-light-blue placeholder-light-blue focus:ring-0 sm:text-sm"
+                                            placeholder="Search..."
+                                            onChange={handleQueryInputChange}
+                                            value={query}
+>>>>>>> bransferui-merge
                                         />
                                     </div>
                                 </div>

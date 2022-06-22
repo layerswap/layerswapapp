@@ -1,8 +1,9 @@
 import axios from "axios";
 import TokenService from "./TokenService";
+import LayerSwapAuthApiClient from "./userAuthApiClient";
 
 const instance = axios.create({
-    baseURL: "https://localhost:5019",
+    baseURL: LayerSwapAuthApiClient.apiBaseEndpoint,
     headers: {
         "Content-Type": "application/json, text/plain, */*",
     },

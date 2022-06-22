@@ -3,7 +3,7 @@ import authInterceptor from "./axiosInterceptor"
 
 
 export class BransferApiClient {
-    static apiBaseEndpoint: string = "https://localhost:5069";
+    static apiBaseEndpoint: string = "https://bransfer-connect-api-dev.azurewebsites.net"; //"https://localhost:5069";
 
     async GetExchangeAccounts(token: string): Promise<UserExchangesResponse> {
         return await authInterceptor.get(BransferApiClient.apiBaseEndpoint + '/api/exchange_accounts')
