@@ -42,7 +42,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
             if (defaultValue) {
                 onChangeHandler(defaultValue.id);
             }
-        }   
+        }
     }, [value])
 
     function closeModal() {
@@ -71,23 +71,23 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
             <Listbox disabled={disabled} value={value?.id} onChange={onChangeHandler}>
                 <div className="mt-1 relative">
                     <Listbox.Button className="focus:ring-indigo-500 focus:border-indigo-500 w-full py-0 pl-8 pr-12 border-transparent bg-transparent font-semibold rounded-md">
-                    <span className="flex items-center">
-                        <div className="flex-shrink-0 h-6 w-6 relative">
-                            <Image
-                                src={value.imgSrc}
-                                alt="Project Logo"
-                                priority
-                                height="40"
-                                width="40"
-                                layout="responsive"
-                                className="rounded-md object-contain"
-                            />
-                        </div>
-                        <span className="ml-3 block truncate">{value.name}</span>
-                    </span>
-                    <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-light-blue">
-                        <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
-                    </span>
+                        <span className="flex items-center">
+                            <div className="flex-shrink-0 h-6 w-6 relative">
+                                <Image
+                                    src={value.imgSrc}
+                                    alt="Project Logo"
+                                    priority
+                                    height="40"
+                                    width="40"
+                                    layout="responsive"
+                                    className="rounded-md object-contain"
+                                />
+                            </div>
+                            <span className="ml-3 block truncate">{value.name}</span>
+                        </span>
+                        <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-light-blue">
+                            <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
+                        </span>
                     </Listbox.Button>
                     <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
                         <Listbox.Options className="ring-1 ring-darkblue-100 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-darkblue-600 rounded-md py-1 overflow-hidden focus:outline-none">
@@ -131,7 +131,8 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                         </Listbox.Options>
                     </Transition>
                 </div>
-            </Listbox>        )
+            </Listbox>
+        )
     } else {
         return (
             <>
@@ -167,7 +168,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                         </span>
                     </button>
                 </div>
-    
+
                 <Transition appear show={isOpen} as={Fragment}>
                     <div className='absolute inset-0 z-10 overflow-y-visible w-full bg-darkBlue p-10'>
                         <div className="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
@@ -191,7 +192,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                         >
                             <div className="relative inset-0" />
                         </Transition.Child>
-    
+
                         <div className="relative inset-0 overflow-y-visible">
                             <div className="relative min-h-full items-center justify-center p-4 text-center">
                                 <Transition.Child
@@ -222,18 +223,18 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                             />
                                         </div>
                                         {filteredItems.length > 0 && (
-                                            <Combobox.Options static className="border-0 max-h-96 scroll-py-3 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-2">
+                                            <Combobox.Options static className="border-0 max-h-96 scroll-py-3 overflow-y-visible grid grid-cols-1 md:grid-cols-2 gap-2">
                                                 {filteredItems.map((item) => (
                                                     <Combobox.Option
                                                         key={item.id}
                                                         value={item}
                                                         disabled={!item.isEnabled || !item.isAvailable}
-                                                        className={`flex text-left ${item.id === selectedItem?.id ? 'bg-darkblue-300' : 'bg-darkblue-500'} ${!item.isEnabled || !item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-300 select-none rounded-lg p-3`}
+                                                        className={`flex text-left ${item.id === selectedItem?.id ? 'bg-darkblue-300' : 'bg-darkblue-500'} hover:bg-darkblue-300 select-none rounded-lg p-3`}
                                                         onClick={() => handleSelect(item)}
                                                     >
-                                                        {({ active }) => (
+                                                        {({ active, disabled }) => (
                                                             <>
-                                                                <div className="flex items-center">
+                                                                <div className={`flex items-center ${!item.isEnabled || !item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}`}>
                                                                     <div className="flex-shrink-0 h-6 w-6 relative">
                                                                         <Image
                                                                             src={item.imgSrc}
@@ -245,30 +246,30 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                                         />
                                                                     </div>
                                                                 </div>
-    
-                                                                <div className="ml-4 flex-auto">
-                                                                    <p className='text-sm font-medium'>
+
+                                                                <div className="ml-4 flex-auto relative">
+                                                                    <p className={`text-sm font-medium ${!item.isEnabled || !item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}`}>
                                                                         {item.name}
                                                                     </p>
-                                                                </div>
-                                                                {
-                                                                    showNotAvailableMessage && disabled &&
-                                                                    <>
-                                                                        <div className="text-white absolute inset-y-0 right-0 flex items-center px-4">
-                                                                            <div className="relative flex flex-col items-center group">
-                                                                                <div className="w-48 absolute right-0 bottom-0 flex flex-col items-right hidden mb-3 group-hover:flex">
-                                                                                    <span className="leading-4 min z-10 p-2 text-xs text-white whitespace-no-wrap bg-gray-600 shadow-lg rounded-md">
-                                                                                        {Messages[item.id] || Messages.DEFAULT}
-                                                                                    </span>
-                                                                                    <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-gray-600"></div>
+                                                                    {
+                                                                        showNotAvailableMessage && disabled &&
+                                                                        <>
+                                                                            <div className="text-white absolute inset-y-0 -right-4 flex items-center px-4 group">
+                                                                                <div className="absolute flex flex-col items-center">
+                                                                                    <div className="w-48 absolute -right-6 bottom-0 flex flex-col items-right mb-3 hidden group-hover:flex">
+                                                                                        <span className="leading-4 min z-10 p-2 text-xs text-white whitespace-no-wrap bg-gray-600 shadow-lg rounded-md">
+                                                                                            {Messages[item.id] || Messages.DEFAULT}
+                                                                                        </span>
+                                                                                        <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-gray-600"></div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div className="justify-self-end">
+                                                                                    <InformationCircleIcon className="h-6 w-6 opacity-20" aria-hidden="true" />
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
-                                                                        <div className="text-white absolute inset-y-0 right-0 flex items-center px-4">
-                                                                            <InformationCircleIcon className="h-6 w-6 opacity-30" aria-hidden="true" />
-                                                                        </div>
-                                                                    </>
-                                                                }
+                                                                        </>
+                                                                    }
+                                                                </div>
                                                                 {
                                                                     item.id === selectedItem?.id && <div className="justify-self-end">
                                                                         <CheckIcon className="h-6 w-6" aria-hidden="true" />
@@ -280,7 +281,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 ))}
                                             </Combobox.Options>
                                         )}
-    
+
                                         {query !== '' && filteredItems.length === 0 && (
                                             <div className="py-14 px-6 text-center text-sm sm:px-14">
                                                 <ExclamationCircleIcon
