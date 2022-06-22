@@ -31,7 +31,7 @@ import { MenuProvider } from '../context/menu';
 const FormWizard: FormWizardSteps = {
   "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true, positionPercent: 0 },
   "Email": { title: "Email confirmation", content: EmailStep, dismissOnBack: true, positionPercent: 30 },
-  "Code": { title: "Code", content: CodeStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 35 },
+  "Code": { title: "Code", content: CodeStep, dismissOnBack: true, positionPercent: 35 },
   "ExchangeOAuth": { title: "OAuth flow", content: AccountConnectStep, dismissOnBack: true, positionPercent: 40 },
   "ExchangeApiCredentials": { title: "Please provide Read-only API keys", content: APIKeyStep, dismissOnBack: true, positionPercent: 40 },
   "SwapConfirmation": { title: "Swap confirmation", content: SwapConfirmationStep, positionPercent: 60 },

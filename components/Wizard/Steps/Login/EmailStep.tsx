@@ -119,9 +119,6 @@ const EmailStep: FC = () => {
                                     </div>
                                 </div>
                                 <div className="text-white text-sm mt-auto">
-                                    <p className='mb-5 text-pink-primary-300'>
-                                        By clicking continue to create an account, you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='strong-highlight'> Terms of Conditions</a></Link> and <Link href="/blog/guide/Terms_of_Service"><a className='strong-highlight'>Privacy Policy</a></Link>
-                                    </p>
                                     <SubmitButton isDisabled={loading || !!errors.email || !!errors.email_confirm_right_information || !!errors.email_confirm_right_wallet} icon="" isSubmitting={loading} onClick={() => { }}>
                                         Continue
                                     </SubmitButton>

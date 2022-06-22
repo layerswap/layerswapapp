@@ -23,8 +23,8 @@ import CodeStep from '../components/Wizard/Steps/Login/CodeStep'
 import { MenuProvider } from '../context/menu'
 
 const loginWizard: LoginWizardSteps = {
-  "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 50 },
-  "Code": { title: "Code", content: CodeStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 75 },
+  "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, positionPercent: 50 },
+  "Code": { title: "Code", content: CodeStep, positionPercent: 75 },
 }
 
 export default function Transactions() {
