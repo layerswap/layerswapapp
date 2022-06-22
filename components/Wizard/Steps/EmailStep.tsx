@@ -1,5 +1,6 @@
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { Field, Form, Formik, FormikErrors, FormikProps } from 'formik';
+import Link from 'next/link';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useAuthDataUpdate } from '../../../context/auth';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
@@ -22,7 +23,6 @@ const EmailStep: FC = () => {
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState()
-    const { swapFormData } = useSwapDataState()
     const { updateEmail } = useAuthDataUpdate()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
 
@@ -72,19 +72,17 @@ const EmailStep: FC = () => {
             <Formik
                 enableReinitialize={true}
                 innerRef={formikRef}
-                initialValues={{ email_confirm_right_information: false, email_confirm_right_wallet: false, email: "" }}
+                initialValues={{ email_confirm_right_information: false, email: "" }}
                 validateOnMount={true}
                 onSubmit={sendEmail}
                 validate={(values) => {
                     let errors: FormikErrors<EmailFormValues> = {};
                     if (!values.email_confirm_right_information)
                         errors.email_confirm_right_information = 'Confirmation is required'
-                    if (!values.email_confirm_right_wallet)
-                        errors.email_confirm_right_wallet = 'Confirmation is required'
                 }}
             >
                 {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
-                    <Form>
+                    <Form className='flex-1'>
                         <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
                             {
                                 error &&
@@ -135,23 +133,11 @@ const EmailStep: FC = () => {
                                             />
                                         )}
                                     </Field>
-                                    <label htmlFor="email_confirm_right_wallet" className="ml-3 block text-lg leading-6 text-light-blue cursor-pointer"> The provided address is your <span className='text-white'>{swapFormData?.network?.name}</span> wallet address </label>
+                                    <label htmlFor="email_confirm_right_wallet" className="ml-3 block text-lg leading-6 text-light-blue cursor-pointer">
+                                        I agree with <Link href="/blog/guide/Terms_of_Service"><a className=''>Layerswap’s term of use</a></Link>
+                                    </label>
                                 </div>
-                                <div className="flex items-center mb-12 md:mb-11">
-                                    <Field name="email_confirm_right_information" validate={validateCheckbox}>
-                                        {({ field }) => (
-                                            <input
-                                                {...field}
-                                                required={true}
-                                                type="checkbox"
-                                                name="email_confirm_right_information"
-                                                id="email_confirm_right_information"
-                                                className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
-                                            />
-                                        )}
-                                    </Field>
-                                    <label htmlFor="email_confirm_right_information" className="ml-3 block text-lg leading-6 text-light-blue cursor-pointer"> Providing wrong information will result in a loss of funds </label>
-                                </div>
+
                             </div>
                             <div className="text-white text-sm mt-auto">
                                 <SubmitButton isDisabled={loading || !!errors.email || !!errors.email_confirm_right_information || !!errors.email_confirm_right_wallet} icon="" isSubmitting={loading} onClick={() => { }}>
