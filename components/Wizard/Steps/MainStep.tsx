@@ -179,7 +179,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             To
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 ${exchange && !network ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
-            <Field name="network" placeholder="Choose network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} showNotAvailableMessage={query.lockNetwork}/>
+            <Field name="network" placeholder="Choose network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} showNotAvailableMessage={!query.isEnabled || query.lockNetwork}/>
         </div>
     </>)
 });
