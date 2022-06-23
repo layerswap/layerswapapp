@@ -70,9 +70,9 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     onClick={openModal}
                     disabled={disabled}
                     // ref={asdRef}
-                    className="disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold rounded-none"
+                    className="disabled:cursor-not-allowed disabled:hidden relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold rounded-none"
                 >
-                    <span className='flex grow  text-left items-center'>
+                    <span className='flex grow text-left items-center'>
                         {
                             selectedItem && <div className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
