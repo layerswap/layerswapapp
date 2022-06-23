@@ -65,7 +65,7 @@ const CodeStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
+            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
                 <div>
                     <label htmlFor="amount" className="block font-normal text-light-blue text-sm">
                         Your Email Code

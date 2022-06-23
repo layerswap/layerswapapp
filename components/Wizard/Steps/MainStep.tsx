@@ -375,7 +375,7 @@ export default function MainStep() {
         >
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
                 <Form>
-                    <div className="px-6 md:px-12 relative">
+                    <div className="px-8 relative">
                         {
                             error &&
                             <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">

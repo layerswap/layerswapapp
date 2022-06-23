@@ -51,7 +51,7 @@ export type Swap = {
     "created_date": Date,
     "currency": string,
     "network": string,
-    "exchange": string,
+    "exchange":string,
     "offramp_info": string
 }
 

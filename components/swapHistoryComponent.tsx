@@ -152,7 +152,7 @@ function TransactionsHistory() {
 
   return (
     <div className={`bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
-      <div className="relative grid grid-cols-1 gap-4 place-content-end z-20 px-6 md:px-12" >
+      <div className="relative grid grid-cols-1 gap-4 place-content-end z-20 px-6 md:px-12 mt-3" >
         <LayerswapMenu />
       </div>
 

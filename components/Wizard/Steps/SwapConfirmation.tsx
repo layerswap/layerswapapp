@@ -1,10 +1,12 @@
-import { CheckIcon } from '@heroicons/react/outline';
+import { Dialog, Transition } from '@headlessui/react';
+import { CheckIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/solid';
 import Router, { useRouter } from 'next/router';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, Fragment, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { useWizardState } from '../../../context/wizard';
+import { isValidAddress } from '../../../lib/etherAddressValidator';
 import { BaseStepProps, FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 
@@ -18,9 +20,18 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [twoFARequired, setTwoFARequired] = useState(false)
 
     const { swapFormData, swap } = useSwapDataState()
-    const { createSwap, processPayment } = useSwapDataUpdate()
+    const { createSwap, processPayment, updateSwapFormData } = useSwapDataUpdate()
     const { goToStep, setWizardError } = useFormWizardaUpdate<FormWizardSteps>()
+    const [editingAddress, setEditingAddress] = useState(false)
+    const [addressInputValue, setAddressInputValue] = useState("")
+    const [addressInputError, setAddressInputError] = useState("")
+
+    const { destination_address, network } = swapFormData || {}
     const router = useRouter();
+
+    useEffect(() => {
+        setAddressInputValue(destination_address)
+    }, [destination_address])
 
     useEffect(() => {
         setError("")
@@ -35,6 +46,17 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const handleTwoFACodeChange = (e) => {
         setTwoFactorCode(e?.target?.value)
     }
+    const handleStartEditingAddress = () => {
+        setEditingAddress(true)
+    }
+    const handleAddressInputChange = useCallback((e) => {
+        setAddressInputError("")
+        setAddressInputValue(e?.target?.value)
+        if (!isValidAddress(e?.target?.value, swapFormData.network.baseObject))
+            setAddressInputError(`Enter a valid ${swapFormData.network.name} address`)
+
+    }, [network])
+
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const handleSubmit = useCallback(async () => {
@@ -88,9 +110,23 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         }
     }, [swapFormData, swap, towFactorCode, minimalAuthorizeAmount, transferAmount])
 
+    const handleClose = () => {
+        setEditingAddress(false)
+    }
+
+    const handleSaveAddress = useCallback(() => {
+        setAddressInputError("")
+        if (!isValidAddress(addressInputValue, swapFormData.network.baseObject)) {
+            setAddressInputError(`Enter a valid ${swapFormData.network.name} address`)
+            return;
+        }
+        updateSwapFormData({ ...swapFormData, destination_address: addressInputValue })
+        setEditingAddress(false)
+    }, [addressInputValue, swapFormData])
+
     return (
         <>
-            <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
+            <div className="w-full px-3 md:px-8 py-6 pt-1 grid grid-flow-row min-h-[440px] text-pink-primary-300">
                 {
                     error &&
                     <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
@@ -106,21 +142,23 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                         </div>
                     </div>
                 }
-                <p className='mb-12 md:mb-3.5 text-white mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
-                    You are requesting a transfer of {swapFormData?.amount} {swapFormData?.currency?.name} from your {swapFormData?.exchange?.name} exchange account to your {swapFormData?.network?.name} wallet ({`${swapFormData?.destination_address?.substr(0, 5)}...${swapFormData?.destination_address?.substr(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`})
-                </p>
-                <p className='mb-12 md:mb-3.5 text-white mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
+                <h3 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
+                    You are requesting a transfer of <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from your {swapFormData?.exchange?.name} exchange account to your {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substr(0, 5)}...${swapFormData?.destination_address?.substr(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></span>)
+                </h3>
+
+                <p className='mt-4 pt-2 text-lg leading-6 text-center md:text-left font-roboto'>
                     To continue, you have to confirm that
                 </p>
+
                 <div>
-                    <div className="flex items-center md:mb-3 mb-5">
+                    <div className="flex items-center">
                         <input
                             onChange={handleConfirm_right_wallet}
                             id="confirm_right_wallet_"
                             name="confirm_right_wallet_"
                             type="checkbox"
-                            className="cursor-pointer h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
-                        <label htmlFor='confirm_right_wallet_' className="cursor-pointer  ml-3 block text-lg leading-6 text-light-blue"> The provided address is your <span className='text-white'>{swapFormData?.network?.name}</span> wallet address </label>
+                            className="cursor-pointer h-4 w-4 focus:ring-indigo-500 border-gray-300 rounded" />
+                        <label htmlFor='confirm_right_wallet_' className="cursor-pointer  ml-3 block text-base leading-6"> The provided address is your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address </label>
                     </div>
                     <div className="flex items-center mb-12 md:mb-11">
                         <input
@@ -128,13 +166,13 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             id="confirm_right_information"
                             name="confirm_right_information"
                             type="checkbox"
-                            className="cursor-pointer h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
-                        <label htmlFor='confirm_right_information' className="cursor-pointer ml-3 block text-lg leading-6 text-light-blue"> Providing wrong information will result in a loss of funds </label>
+                            className="cursor-pointer h-4 w-4 focus:ring-indigo-500 border-gray-300 rounded" />
+                        <label htmlFor='confirm_right_information' className="cursor-pointer ml-3 block text-md leading-6 "> Providing wrong information will result in a loss of funds </label>
                     </div>
                     {
                         twoFARequired &&
                         <div>
-                            <label htmlFor="amount" className="block font-normal text-light-blue text-sm">
+                            <label htmlFor="amount" className="block font-normal text-sm">
                                 Your verification code
                             </label>
                             <div className="relative rounded-md shadow-sm mt-2 mb-4">
@@ -161,13 +199,103 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 </div>
                 <div className="text-white text-sm mt-auto">
                     <div className="flex items-center mb-2">
-                        <span className="block text-sm leading-6 text-light-blue"> First time here? Please read the User Guide </span>
+                        <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
                     </div>
                     <SubmitButton isDisabled={!confirm_right_wallet || !confirm_right_information || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
                 </div>
             </div>
+
+            <Transition
+                appear
+                show={editingAddress}
+                as={Fragment}
+                enter="ease-in-out duration-300"
+                enterFrom="translate-y-full"
+                enterTo="translate-y-0"
+                leave="ease-in duration-200"
+                leaveFrom="translate-y-0"
+                leaveTo="translate-y-full">
+                <div className='absolute inset-0 -inset-y-11 z-10 overflow-hidden flex flex-col w-full bg-darkBlue p-10 pt-0'>
+                    <div className='relative grid grid-cols-1 gap-4 place-content-end z-20 mb-2 mt-1'>
+                        <span className="justify-self-end text-light-blue cursor-pointer">
+                            <div className="hidden sm:block ">
+                                <button
+                                    type="button"
+                                    className="rounded-md text-darkblue-200 focus:ring-2 hover:text-light-blue"
+                                    onClick={handleClose}
+                                >
+                                    <span className="sr-only">Close</span>
+                                    <XIcon className="h-6 w-6" aria-hidden="true" />
+                                </button>
+                            </div>
+                        </span>
+                    </div>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="relative inset-0" ></div>
+                    </Transition.Child>
+
+                    <div className="relative inset-0 text-pink-primary-300 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                        <div className="relative min-h-full items-center justify-center p-4 pt-0 text-center">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
+
+                                <div className='pb-12 grid grid-flow-row min-h-[440px] text-pink-primary-300'>
+                                    <h4 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
+                                    <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mb-1' /> Editing your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address
+                                    </h4>
+                                    <div>
+                                        <label htmlFor="address" className="block font-normal text-sm text-left">
+                                            Address
+                                        </label>
+                                        <div className="relative rounded-md shadow-sm mt-2 mb-4">
+                                            <input
+                                                placeholder={"0x123...ab56c"}
+                                                autoCorrect="off"
+                                                onChange={handleAddressInputChange}
+                                                value={addressInputValue}
+                                                type={"text"}
+                                                name="destination_address"
+                                                id="destination_address"
+                                                className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate'}
+                                            />
+                                            {
+                                                addressInputError &&
+                                                <div className="flex items-center mb-2">
+                                                    <span className="block text-base leading-6 text-pink-primary-800"> {addressInputError} </span>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div className="text-white text-sm mt-auto">
+                                        <SubmitButton type='button' isDisabled={!!addressInputError} icon="" isSubmitting={loading} onClick={handleSaveAddress}>
+                                            Save
+                                        </SubmitButton>
+                                    </div>
+                                </div>
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+
+
 
         </>
     )

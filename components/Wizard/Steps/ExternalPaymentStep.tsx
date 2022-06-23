@@ -57,7 +57,7 @@ const ExternalPaumentStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
+            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
                 <div className="rounded-md border bg-darkblue-600 w-full grid grid-flow-row p-5 border-darkblue-100 mb-11">
                     <div className="flex items-center">
                         <label className="block text-lg font-medium leading-6 text-white"> Go to {payment?.exchange} to complete the payment </label>

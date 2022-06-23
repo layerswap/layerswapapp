@@ -39,8 +39,7 @@ export function FormWizardProvider<Type extends BaseWizard>({ children, wizard, 
         const wizardSteps = Object.keys(wizard) as (keyof Type)[]
         const position = wizardSteps.findIndex(k => k === step)
         const previousStep = wizardSteps[position - 1]
-        //TODO fix this should be changed
-        if (step != "Code" && wizard[previousStep]?.dismissOnBack)
+        if (wizard[previousStep]?.dismissOnBack)
             return getPreviousStep(previousStep)
         return previousStep
     }

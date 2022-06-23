@@ -76,7 +76,7 @@ const EmailStep: FC = () => {
                 >
                     {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
                         <Form className='flex flex-col items-stretch min-h-[440px] text-pink-primary-300'>
-                            <div className="w-full px-3 md:px-6 md:px-12 pb-12 pt-4 flex-col flex-1 flex">
+                            <div className="w-full px-3 md:px-8 pb-12 pt-4 flex-col flex-1 flex">
                                 {
                                     error &&
                                     <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">

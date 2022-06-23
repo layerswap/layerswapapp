@@ -87,7 +87,7 @@ const CodeStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row min-h-[440px] text-pink-primary-300">
+            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row min-h-[440px] text-pink-primary-300">
                 {
                     error &&
                     <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
