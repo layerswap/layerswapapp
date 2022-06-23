@@ -18,27 +18,31 @@ const AccountConnectStep: FC = () => {
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const { currentStep, error: wizardError } = useFormWizardState<FormWizardSteps>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
+    const [poll, setPoll] = useState(false)
     const authWindowRef = useRef(null);
 
     useInterval(async () => {
-        if (currentStep === "ExchangeOAuth") {
+        if (currentStep === "ExchangeOAuth" && poll) {
             const { access_token } = TokenService.getAuthData() || {};
             if (!access_token) {
                 await goToStep("Email")
+                setPoll(false)
                 return;
             }
             const exchanges = await (await getUserExchanges(access_token))?.data
             const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
             if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
                 goToStep("SwapConfirmation")
+                setPoll(false)
                 authWindowRef.current?.close()
             }
 
         }
-    }, [currentStep, authWindowRef], 2000)
+    }, [currentStep, authWindowRef, poll], 7000)
 
     const handleConnect = useCallback(() => {
         try {
+            setPoll(true)
             const access_token = TokenService.getAuthData()?.access_token
             if (!access_token)
                 goToStep("Email")
@@ -73,7 +77,7 @@ const AccountConnectStep: FC = () => {
                     </div>
                 }
                 <div className="flex items-center">
-                    <h3 className="block text-lg font-medium leading-6 mb-12">
+                    <h3 className="block text-lg text-white font-medium leading-6 mb-12">
                         You will leave Layerswap and be securely redirected to <span className='strong-highlight'>{exchange_name}</span> authorization page.
                     </h3>
                 </div>
@@ -84,6 +88,7 @@ const AccountConnectStep: FC = () => {
                     </svg>
                     <label className="block text-lg font-lighter leading-6 "> Make sure to authorize at least <span className='strong-highlight'>{minimalAuthorizeAmount}$</span>. Follow this <Link key="userGuide" href="/userguide"><a className="strong-highlight hightlight-animation highlight-link hover:cursor-pointer">Step by step guide</a></Link></label>
                 </div>
+                
                 <div className="text-white text-sm  mt-auto">
                     <div className="flex mt-12 md:mt-5 font-normal text-sm text-pink-primary-300 mb-3">
                         <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>

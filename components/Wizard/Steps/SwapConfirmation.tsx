@@ -126,7 +126,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-6 pt-1 grid grid-flow-row min-h-[440px] text-pink-primary-300">
+            <div className="w-full  px-3 md:px-8 py-6 pt-1 grid grid-flow-row min-h-[440px] text-pink-primary-300">
                 {
                     error &&
                     <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
@@ -217,81 +217,83 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 leave="ease-in duration-200"
                 leaveFrom="translate-y-0"
                 leaveTo="translate-y-full">
-                <div className='absolute inset-0 -inset-y-11 z-10 overflow-hidden flex flex-col w-full bg-darkBlue p-10 pt-0'>
-                    <div className='relative grid grid-cols-1 gap-4 place-content-end z-20 mb-2 mt-1'>
-                        <span className="justify-self-end text-light-blue cursor-pointer">
-                            <div className="hidden sm:block ">
-                                <button
-                                    type="button"
-                                    className="rounded-md text-darkblue-200 focus:ring-2 hover:text-light-blue"
-                                    onClick={handleClose}
+                <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkBlue'>
+                    <span className='relative z-40 overflow-hidden bg-darkBlue p-10 pt-0'>
+                        <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
+                            <span className="justify-self-end text-light-blue cursor-pointer">
+                                <div className="hidden sm:block ">
+                                    <button
+                                        type="button"
+                                        className="rounded-md text-darkblue-200 focus:ring-2 hover:text-light-blue"
+                                        onClick={handleClose}
+                                    >
+                                        <span className="sr-only">Close</span>
+                                        <XIcon className="h-6 w-6" aria-hidden="true" />
+                                    </button>
+                                </div>
+                            </span>
+                        </div>
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0"
+                            enterTo="opacity-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                        >
+                            <div className="relative inset-0" ></div>
+                        </Transition.Child>
+
+                        <div className="relative inset-0 text-pink-primary-300 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                            <div className="relative min-h-full items-center justify-center p-4 pt-0 text-center">
+                                <Transition.Child
+                                    as={Fragment}
+                                    enter="ease-out duration-300"
+                                    enterFrom="opacity-0 scale-95"
+                                    enterTo="opacity-100 scale-100"
+                                    leave="ease-in duration-200"
+                                    leaveFrom="opacity-100 scale-100"
+                                    leaveTo="opacity-0 scale-95"
                                 >
-                                    <span className="sr-only">Close</span>
-                                    <XIcon className="h-6 w-6" aria-hidden="true" />
-                                </button>
-                            </div>
-                        </span>
-                    </div>
-                    <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <div className="relative inset-0" ></div>
-                    </Transition.Child>
 
-                    <div className="relative inset-0 text-pink-primary-300 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
-                        <div className="relative min-h-full items-center justify-center p-4 pt-0 text-center">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 scale-95"
-                                enterTo="opacity-100 scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 scale-100"
-                                leaveTo="opacity-0 scale-95"
-                            >
-
-                                <div className='pb-12 grid grid-flow-row min-h-[440px] text-pink-primary-300'>
-                                    <h4 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
-                                    <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mb-1' /> Editing your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address
-                                    </h4>
-                                    <div>
-                                        <label htmlFor="address" className="block font-normal text-sm text-left">
-                                            Address
-                                        </label>
-                                        <div className="relative rounded-md shadow-sm mt-2 mb-4">
-                                            <input
-                                                placeholder={"0x123...ab56c"}
-                                                autoCorrect="off"
-                                                onChange={handleAddressInputChange}
-                                                value={addressInputValue}
-                                                type={"text"}
-                                                name="destination_address"
-                                                id="destination_address"
-                                                className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate'}
-                                            />
-                                            {
-                                                addressInputError &&
-                                                <div className="flex items-center mb-2">
-                                                    <span className="block text-base leading-6 text-pink-primary-800"> {addressInputError} </span>
-                                                </div>
-                                            }
+                                    <div className='pb-12 grid grid-flow-row min-h-[440px] text-pink-primary-300'>
+                                        <h4 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
+                                            <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mb-1' /> Editing your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address
+                                        </h4>
+                                        <div>
+                                            <label htmlFor="address" className="block font-normal text-sm text-left">
+                                                Address
+                                            </label>
+                                            <div className="relative rounded-md shadow-sm mt-2 mb-4">
+                                                <input
+                                                    placeholder={"0x123...ab56c"}
+                                                    autoCorrect="off"
+                                                    onChange={handleAddressInputChange}
+                                                    value={addressInputValue}
+                                                    type={"text"}
+                                                    name="destination_address"
+                                                    id="destination_address"
+                                                    className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate'}
+                                                />
+                                                {
+                                                    addressInputError &&
+                                                    <div className="flex items-center mb-2">
+                                                        <span className="block text-base leading-6 text-pink-primary-800"> {addressInputError} </span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div className="text-white text-sm mt-auto">
+                                            <SubmitButton type='button' isDisabled={!!addressInputError} icon="" isSubmitting={loading} onClick={handleSaveAddress}>
+                                                Save
+                                            </SubmitButton>
                                         </div>
                                     </div>
-                                    <div className="text-white text-sm mt-auto">
-                                        <SubmitButton type='button' isDisabled={!!addressInputError} icon="" isSubmitting={loading} onClick={handleSaveAddress}>
-                                            Save
-                                        </SubmitButton>
-                                    </div>
-                                </div>
-                            </Transition.Child>
+                                </Transition.Child>
+                            </div>
                         </div>
-                    </div>
+                    </span>
                 </div>
             </Transition>
 

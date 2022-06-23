@@ -24,7 +24,7 @@ const ExternalPaumentStep: FC = () => {
     const { getSwap } = useSwapDataUpdate()
 
     useInterval(async () => {
-        if (currentStep === "Withdrawal") {
+        if (currentStep === "ExternalPayment") {
             const authData = TokenService.getAuthData();
             if (!authData) {
                 await goToStep("Email")
@@ -41,7 +41,7 @@ const ExternalPaumentStep: FC = () => {
             // else if (swapStatus == SwapStatus.Pending)
             //     await goToStep("Processing")
         }
-    }, [currentStep, swapId], 2000)
+    }, [currentStep, swapId], 10000)
 
 
     const handleContinue = useCallback(async () => {

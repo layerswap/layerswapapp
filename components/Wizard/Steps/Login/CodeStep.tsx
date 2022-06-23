@@ -139,7 +139,6 @@ const CodeStep: FC = () => {
                                     </button>
                                 </label>
                         }
-
                     </div>
                 </div>
 

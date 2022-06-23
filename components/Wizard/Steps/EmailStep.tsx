@@ -96,7 +96,7 @@ const EmailStep: FC = () => {
                                     </div>
                                 }
                                 <UserIcon className='w-8 h-8 self-center' />
-                                <h4 className='mb-12 mt-2 pt-2 text-xl leading-6 text-center font-roboto'>
+                                <h4 className='mb-12 mt-2 pt-2 text-xl leading-6 text-white text-center font-roboto'>
                                     Let's get started
                                 </h4>
                                 <div>

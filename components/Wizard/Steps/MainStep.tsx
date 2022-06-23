@@ -62,7 +62,6 @@ const CurrenciesField: FC = () => {
 
     const name = "currency"
     const settings = useSettingsState();
-
     const currencyMenuItems: SelectMenuItem<Currency>[] = network ? settings.currencies
         .filter(x => x.network_id === network.baseObject.id)
         .map(c => ({
@@ -83,7 +82,7 @@ const CurrenciesField: FC = () => {
 
         if (network && (!currency || !currencyMenuItems.some(c => c.id == currency.id))) {
             // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
-            const defaultValue = currencyMenuItems?.find(c => c.isDefault)
+            const defaultValue = currencyMenuItems?.find(c => c.isDefault && c.isEnabled)
             // if(alternativeToSelectedValue){
             //     setFieldValue(name, alternativeToSelectedValue)
             // }
@@ -120,7 +119,7 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
     console.log(settings.exchanges)
     return (<>
-        <label htmlFor="exchange" className="block font-normal text-light-blue text-sm">
+        <label htmlFor="exchange" className="block font-normal text-pink-primary-300 text-sm">
             From
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
@@ -153,7 +152,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
         ref.current?.focus()
 
     return (<>
-        <label htmlFor="network" className="block font-normal text-light-blue text-sm">
+        <label htmlFor="network" className="block font-normal text-pink-primary-300 text-sm">
             To
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 ${exchange && !network ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
@@ -177,7 +176,7 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
 
     return (<>
-        <label htmlFor={name} className="block font-normal text-light-blue text-sm">
+        <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
             Amount
         </label>
         <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-600 border-ouline-blue border ">
@@ -384,7 +383,7 @@ export default function MainStep() {
                                         <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
                                     </div>
                                     <div className="ml-3">
-                                        <p className="text-sm text-light-blue">
+                                        <p className="text-sm text-pink-primary-300">
                                             {error}
                                         </p>
                                     </div>
@@ -404,7 +403,7 @@ export default function MainStep() {
                             </div>
                         </div>
                         <div className="w-full mb-3.5 leading-4">
-                            <label htmlFor="destination_address" className="block font-normal text-light-blue text-sm">
+                            <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
                                 {`To ${values?.network?.name || ''} address`}
                                 {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
                             </label>
