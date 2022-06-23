@@ -7,7 +7,7 @@ import { CryptoNetwork } from '../Models/CryptoNetwork';
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import CardContainer from './cardContainer';
 import InsetSelectMenu from './selectMenu/insetSelectMenu';
-import { isValidAddress } from '../lib/etherAddressValidator';
+import { isBlacklistedAddress, isValidAddress } from '../lib/addressValidator';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import { Currency } from '../Models/Currency';
 import { Exchange } from '../Models/Exchange';
@@ -146,16 +146,16 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
   const [createdSwapId, setcreatedSwapId] = useState("");
   const [networkNotAvailableModalOpen, setNetworkNotAvailableModalOpen] = useState(false)
 
-  useEffect(()=>{
-    const destNetworkIsAvailable = settings.networks.some(n=>n.code?.toUpperCase() === destNetwork?.toUpperCase() && n.is_enabled)
-    if(destNetwork && !destNetworkIsAvailable){
+  useEffect(() => {
+    const destNetworkIsAvailable = settings.networks.some(n => n.code?.toUpperCase() === destNetwork?.toUpperCase() && n.is_enabled)
+    if (destNetwork && !destNetworkIsAvailable) {
       setNetworkNotAvailableModalOpen(true)
     }
-  },[destNetwork, settings])
+  }, [destNetwork, settings])
 
-  const closeNetworkNotAvailableModal= ()=>{
+  const closeNetworkNotAvailableModal = () => {
     setNetworkNotAvailableModalOpen(false)
-  } 
+  }
 
   function onOffRampModalDismiss(isIntentional: boolean) {
     if (isIntentional || confirm("Are you sure you want to stop?")) {
@@ -229,7 +229,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
 
   return (
     <div>
-      <NeworkNotAvailableModal networkCode={destNetwork} isOpen={networkNotAvailableModalOpen} onConfirm={closeNetworkNotAvailableModal} onDismiss={closeNetworkNotAvailableModal}/>
+      <NeworkNotAvailableModal networkCode={destNetwork} isOpen={networkNotAvailableModalOpen} onConfirm={closeNetworkNotAvailableModal} onDismiss={closeNetworkNotAvailableModal} />
       <OffRampDetailsModal address={offRampAddress} memo={offRampMemo} amount={offRampAmount} isOpen={isOfframpModalOpen} onConfirm={onOffRampModalConfirm} onDismiss={onOffRampModalDismiss} />
       <ConfirmationModal formValues={formikRef.current?.values} onConfirm={onConfrmModalConfirm} onDismiss={onConfirmModalDismiss} isOpen={isConfirmModalOpen} isOfframp={isOfframp} />
       <ImmutableXConnectModal onConfirm={onImmutableModalConfirm} onDismiss={onImmutableModalDismiss} isOpen={isImmutableModalOpen} destination_address={formikRef.current?.values?.destination_address} />
@@ -275,8 +275,14 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                     errors.destination_address = "Enter a valid email address"
                   }
                 }
-                else if (!isValidAddress(values.destination_address, values.network.baseObject)) {
-                  errors.destination_address = `Enter a valid ${values?.network.name} address`
+                else {
+                  if (!isValidAddress(values.destination_address, values.network.baseObject)) {
+                    errors.destination_address = `Enter a valid ${values?.network.name} address`
+                  }
+                  else if (isBlacklistedAddress(values.destination_address, values.network.baseObject, settings.blacklistedAddresses))
+                  {
+                    errors.destination_address = `Can't transfer to that address.`;
+                  }
                 }
               }
 
@@ -342,7 +348,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                     </div>
                     <div className="flex flex-col md:w-80 w-full">
                       {
-                        isOfframp ? <Field  name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} showNotAvailableMessage={!lockNetwork}/>
+                        isOfframp ? <Field name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} showNotAvailableMessage={!lockNetwork} />
                           : <ExchangesField isOfframp={isOfframp} label={isOfframp ? "To Exchange" : "From Exchange"} availableExchanges={availableExchanges} />
                       }
                     </div>
@@ -381,7 +387,7 @@ const Swap: FC<SwapProps> = ({ settings, destNetwork, destAddress, lockAddress, 
                     <div className="flex flex-col md:w-80 w-full">
                       {
                         isOfframp ? <ExchangesField isOfframp={isOfframp} label={isOfframp ? "To Exchange" : "From Exchange"} availableExchanges={availableExchanges} />
-                          : <Field name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} showNotAvailableMessage={!lockNetwork}/>
+                          : <Field name="network" values={availableNetworks} label={isOfframp ? "From Network" : "To Network"} value={values.network} as={SelectMenu} setFieldValue={setFieldValue} showNotAvailableMessage={!lockNetwork} />
                       }
                     </div>
                   </div >

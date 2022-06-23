@@ -1,4 +1,5 @@
 import { keccak256 } from "js-sha3";
+import { BlacklistedAddress } from "../Models/BlacklistedAddress";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 
@@ -22,6 +23,16 @@ export function isValidAddress(address: string, network: CryptoNetwork): boolean
     else {
         return isValidEtherAddress(address);
     }
+}
+
+export function isBlacklistedAddress(address: string, network: CryptoNetwork, blacklistedAddresses: BlacklistedAddress[]) : boolean {
+    var blacklistedRecord = blacklistedAddresses.find(x=> x.address.toLowerCase() == address);
+    if (blacklistedRecord != undefined && blacklistedRecord.networkId == network.id)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 function isValidEtherAddress(address: string): boolean {
