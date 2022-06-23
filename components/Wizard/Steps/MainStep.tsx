@@ -242,7 +242,7 @@ export default function MainStep() {
 
     const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), new SelectMenuItem<Partner>(c, c.name, c.display_name, c.logo_url, c.is_enabled)]));
 
-    const handleSubmit = useCallback(async (values) => {
+    const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             setLoading(true)
             await updateSwapFormData(values)
