@@ -18,7 +18,7 @@ export default function () {
     const { menuVisible } = useMenuState()
     const handleLogout = () => {
         TokenService.removeAuthData()
-        router.push('/')
+        router.push('/', '/signedout', { shallow: true })
     }
 
     return <span className="justify-self-end text-pink-primary-300 cursor-pointer relative ">
