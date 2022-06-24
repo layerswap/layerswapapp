@@ -4,7 +4,7 @@ import { SwapStatus } from "../Models/SwapStatus";
 import authInterceptor from "./axiosInterceptor"
 
 export default class LayerSwapApiClient {
-    static apiBaseEndpoint: string = "https://layerswap-core-functions-6.azurewebsites.net/api"; // "http://localhost:7071/api";
+    static apiBaseEndpoint: string = "https://api.layerswap.io/"; // "http://localhost:7071/api";
 
     apiFetcher = (url: string) => authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + url).then(res => res.data);
 

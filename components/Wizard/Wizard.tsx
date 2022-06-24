@@ -32,6 +32,9 @@ const Wizard: FC = () => {
       return () => window.removeEventListener("resize", handleResize);
    }, []);
 
+   console.log("currentStep", currentStep)
+   console.log("wizard currentStep", wizard[currentStep])
+
    return <>
       <div className={`bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
          <div className="relative">
@@ -90,7 +93,7 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
    const { goBack } = useFormWizardaUpdate()
    const { wizard, currentStep } = useFormWizardState<BaseWizard>()
 
- 
+
 
    return <>
 
@@ -101,7 +104,7 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
                <ArrowLeftIcon className='h-5 w-5 text-darkblue-200 hover:text-ouline-blue cursor-pointer' />
             </button>
 
-            <LayerswapMenu/>
+            <LayerswapMenu />
          </>
       </div>
    </>
