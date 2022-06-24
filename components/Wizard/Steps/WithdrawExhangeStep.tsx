@@ -12,13 +12,14 @@ import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { copyTextToClipboard } from '../../../lib/copyToClipboard';
 import { useSettingsState } from '../../../context/settings';
+import Image from 'next/image'
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
     const { payment } = swap || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
-    const { networks } = useSettingsState()
+    const { networks, exchanges } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
     const router = useRouter();
     const { swapId } = router.query;
@@ -53,12 +54,36 @@ const WithdrawExchangeStep: FC = () => {
 
     const contextFlow = payment?.external_flow_context || payment?.manual_flow_context || payment?.note_flow_context
     const network_name = networks?.find(n => n.code === swap?.network)?.name || ' '
+    const exchange = exchanges?.find(n => n.internal_name === payment?.exchange)
+    const exchange_name = exchange?.name || ' '
+    const exchange_logo_url = exchange?.logo_url
+
     return (
         <>
             <div className="w-full px-3 md:px-8 py-6 grid grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
-                    <h3 className="block text-lg font-medium leading-6 mb-12">
-                        Go to <span className='font-medium underline'>Binance</span> and do a withdrawal to the provided address.
+                    <h3 className="block text-lg font-medium leading-6 mb-12 flex text-left items-center">
+                        Go to
+                        {
+                            exchange_logo_url &&
+                            <div className="inline-block mx-1">
+                                <div className="flex-shrink-0 h-6 w-6 relative">
+                                    <Image
+                                        src={exchange_logo_url}
+                                        alt="Project Logo"
+                                        height="40"
+                                        width="40"
+                                        loading="eager"
+                                        priority
+                                        layout="responsive"
+                                        className="rounded-md object-contain"
+                                    />
+                                </div>
+                            </div>
+                        }
+                        <span className='strong-highlight mr-1'>
+                            {exchange_name}
+                        </span> and do a withdrawal to the provided address.
                     </h3>
                 </div>
 
@@ -99,7 +124,7 @@ const WithdrawExchangeStep: FC = () => {
                             name="network"
                             id="network"
                             disabled={true}
-                            value={network_name}
+                            value={payment?.manual_flow_context?.network_display_name}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
