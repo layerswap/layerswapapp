@@ -29,6 +29,7 @@ import { useUserExchangeDataUpdate } from "../../../context/userExchange";
 import axios from "axios";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { ExclamationIcon } from "@heroicons/react/outline";
+import AmountAndFeeDetails from "../../amountAndFeeDetailsComponent";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -71,7 +72,8 @@ const CurrenciesField: FC = () => {
             imgSrc: c.logo_url,
             isAvailable: true,
             isEnabled: c.is_enabled,
-            isDefault: c.is_default
+            isDefault: c.is_default,
+            
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)))
         : []
@@ -251,7 +253,7 @@ export default function MainStep() {
             else {
                 const exchanges = await (await getUserExchanges(accessToken))?.data
                 const exchangeIsEnabled = exchanges?.some(e => e.exchange === values?.exchange?.id && e.is_enabled)
-                if (values?.exchange?.baseObject?.authorization_flow === "none" || exchangeIsEnabled)
+                if (values?.exchange?.baseObject?.authorization_flow === "none" || !values?.exchange?.baseObject?.authorization_flow || exchangeIsEnabled)
                     goToStep("SwapConfirmation")
                 else
                     goToStep(ExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
@@ -432,42 +434,15 @@ export default function MainStep() {
                                 </div>
                             </div>
                         </div >
-                        <div className="mb-3.5 leading-4">
+                        <div className="mb-6 leading-4">
                             <AmountField ref={amountRef} />
                         </div>
-                        <div className="mt-5 flex flex-col md:flex-row items-baseline justify-between">
-                            <label className="block font-medium text-center">
-                                Fee
-                            </label>
-                            <span className="text-base font-medium text-center text-gray-400">
-                                {(() => calculateFee(values)?.toFixed(values.currency?.baseObject?.precision))() || ''}
-                                <span>  {values?.currency?.name} </span>
-                            </span>
+                        
+                        <div className="w-full">
+                            {AmountAndFeeDetails(values)}
                         </div>
-                        <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
-                            <label className="block font-medium text-center">
-                                You will get
-                            </label>
-                            <span className="text-indigo-600 font-medium text-center">
-                                {(() => {
-                                    if (values.amount) {
-                                        let amount = Number(values.amount?.toString()?.replace(",", "."));
-                                        let currencyObject = values.currency?.baseObject;
-                                        if (amount >= currencyObject.min_amount) {
-                                            var fee = calculateFee(values);
-                                            var result = amount - fee;
-                                            return Number(result.toFixed(currencyObject.precision));
-                                        }
-                                    }
-                                    return 0;
-                                })()}
-                                <span>
-                                    {
-                                        ` ${values.currency?.name || ""}`
-                                    }
-                                </span></span>
-                        </div>
-                        <div className="mt-10">
+
+                        <div className="mt-6">
                             <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors)}
                             </SwapButton>
@@ -490,14 +465,4 @@ function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
 
 function joinClassNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
-}
-
-function calculateFee(values: SwapFormValues): number {
-    let currencyObject = values.currency?.baseObject;
-    let exchangeObject = values.exchange?.baseObject;
-
-    var exchangeFee = Number(values.amount?.toString()?.replace(",", ".")) * exchangeObject?.fee_percentage;
-    var overallFee = currencyObject?.fee + exchangeFee;
-
-    return overallFee || 0;
 }
