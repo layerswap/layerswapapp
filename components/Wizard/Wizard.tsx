@@ -49,7 +49,7 @@ const Wizard: FC = () => {
          <div className="relative p-2">
             <div className="flex items-start"
                ref={wrapper}>
-               <div className={`flex flex-nowrap min-h-440  ${loading ? 'invisible' : 'visible animate-fade-in-down'}`}>
+               <div className={`flex flex-nowrap min-h-480  ${loading ? 'invisible' : 'visible animate-fade-in-down'}`}>
                   {
                      Object.keys(wizard).map((step, index) => {
                         const Content = (wizard as BaseWizard)[step].content
@@ -76,7 +76,7 @@ const Wizard: FC = () => {
                            as="div"
                         >
                            <div
-                              style={{ width: `${wrapperWidth}px`, minHeight: '440px' }}>
+                              style={{ width: `${wrapperWidth}px`, minHeight: '480px' }}>
                               <Content current={step === currentStep} />
                            </div>
                         </Transition>

@@ -60,35 +60,35 @@ const AccountConnectStep: FC = () => {
     const error = localError + wizardError
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-6 grid grid-flow-row min-h-[440px] text-pink-primary-300">
+            <div className="w-full px-3 md:px-8 py-6 pt-1 grid grid-flow-row min-h-[440px] text-pink-primary-300 font-light">
+
+                <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
+                    Please connect your {exchange_name} account
+                    <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-sm text-pink-primary-300 font-light'>
+                        You will leave Layerswap and be securely redirected to <span className='strong-highlight'>{exchange_name}</span> authorization page.
+                    </p>
+                    <div className="flex items-center text-pink-primary-300 border-2 p-4 rounded-md border-ouline-blue border-dashed">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-pink-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <label className="block text-lg font-lighter leading-6 "> Make sure to authorize at least <span className='strong-highlight'>{minimalAuthorizeAmount}$</span>. Follow this <Link key="userGuide" href="/userguide"><a className="strong-highlight hightlight-animation highlight-link hover:cursor-pointer">Step by step guide</a></Link></label>
+                    </div>
+                </h3>
                 {
                     error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">
-                        <div className="flex">
+                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5 flex items-center">
+                        <div className="flex items-center">
                             <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                                <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
                             </div>
                             <div className="ml-3">
-                                <p className="text-sm text-light-blue">
+                                <p className="text-xl text-light-blue font-normal">
                                     {error}
                                 </p>
                             </div>
                         </div>
                     </div>
                 }
-                <div className="flex items-center">
-                    <h3 className="block text-lg text-white font-medium leading-6 mb-12">
-                        You will leave Layerswap and be securely redirected to <span className='strong-highlight'>{exchange_name}</span> authorization page.
-                    </h3>
-                </div>
-
-                <div className="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-pink-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <label className="block text-lg font-lighter leading-6 "> Make sure to authorize at least <span className='strong-highlight'>{minimalAuthorizeAmount}$</span>. Follow this <Link key="userGuide" href="/userguide"><a className="strong-highlight hightlight-animation highlight-link hover:cursor-pointer">Step by step guide</a></Link></label>
-                </div>
-                
                 <div className="text-white text-sm  mt-auto">
                     <div className="flex mt-12 md:mt-5 font-normal text-sm text-pink-primary-300 mb-3">
                         <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>

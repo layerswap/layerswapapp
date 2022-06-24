@@ -73,7 +73,7 @@ const CurrenciesField: FC = () => {
             isAvailable: true,
             isEnabled: c.is_enabled,
             isDefault: c.is_default,
-            
+
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)))
         : []
@@ -253,6 +253,7 @@ export default function MainStep() {
             else {
                 const exchanges = await (await getUserExchanges(accessToken))?.data
                 const exchangeIsEnabled = exchanges?.some(e => e.exchange === values?.exchange?.id && e.is_enabled)
+                debugger
                 if (values?.exchange?.baseObject?.authorization_flow === "none" || !values?.exchange?.baseObject?.authorization_flow || exchangeIsEnabled)
                     goToStep("SwapConfirmation")
                 else
@@ -437,7 +438,7 @@ export default function MainStep() {
                         <div className="mb-6 leading-4">
                             <AmountField ref={amountRef} />
                         </div>
-                        
+
                         <div className="w-full">
                             {AmountAndFeeDetails(values)}
                         </div>

@@ -9,6 +9,7 @@ import { useWizardState } from '../../../context/wizard';
 import { isValidAddress } from '../../../lib/etherAddressValidator';
 import { BaseStepProps, FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
+import Image from 'next/image'
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
@@ -126,47 +127,72 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     return (
         <>
-            <div className="w-full  px-3 md:px-8 py-6 pt-1 grid grid-flow-row min-h-[440px] text-pink-primary-300">
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-light-blue">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
-                <h3 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
+            <div className="w-full px-3 md:px-8 py-6 pt-1 grid grid-flow-row min-h-[440px] text-pink-primary-300 font-light">
+                <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
+                    Please confirm your swap
+                </h3>
+                <h3 className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-sm'>
                     You are requesting a transfer of <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from your {swapFormData?.exchange?.name} exchange account to your {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substr(0, 5)}...${swapFormData?.destination_address?.substr(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></span>)
                 </h3>
 
-                <p className='mt-4 pt-2 text-lg leading-6 text-center md:text-left font-roboto'>
+                <div className="mx-auto w-full rounded-lg bg-darkblue-500 p-2 font-normal">
+                    {
+                        swapFormData?.exchange?.imgSrc &&
+                        <div className="inline-block mx-1 flex">
+                            <div className="flex-shrink-0 h-12 w-12 relative rounded-full border-4 border-darkblue-500">
+                                <Image
+                                    src={swapFormData?.exchange?.imgSrc}
+                                    alt="Exchange Logo"
+                                    height="40"
+                                    width="40"
+                                    loading="eager"
+                                    priority
+                                    layout="responsive"
+                                    className="rounded-full object-contain"
+                                />
+                            </div>
+                            <div className="flex-shrink-0 h-12 w-12 relative -left-3 rounded-full border-4 border-darkblue-500">
+                                <Image
+                                    src={swapFormData?.network?.imgSrc}
+                                    alt="Exchange Logo"
+                                    height="40"
+                                    width="40"
+                                    loading="eager"
+                                    priority
+                                    layout="responsive"
+                                    className="object-contain rounded-full overflow-hidden "
+                                />
+                            </div>
+                            <div className='text-w'>
+                                <div>{swapFormData?.destination_address} <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></div>
+                                <div>{swapFormData?.amount} {swapFormData?.currency?.name}</div>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+
+                <p className='mt-4 pt-2 text-lg leading-6 text-center md:text-left font-roboto text-white'>
                     To continue, you have to confirm that
                 </p>
 
-                <div>
+                <div className='mb-8'>
                     <div className="flex items-center">
                         <input
                             onChange={handleConfirm_right_wallet}
                             id="confirm_right_wallet_"
                             name="confirm_right_wallet_"
                             type="checkbox"
-                            className="cursor-pointer h-4 w-4 focus:ring-indigo-500 border-gray-300 rounded" />
+                            className="cursor-pointer h-4 w-4 focus:ring-pink-primary text-pink-primary  rounded" />
                         <label htmlFor='confirm_right_wallet_' className="cursor-pointer  ml-3 block text-base leading-6"> The provided address is your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address </label>
                     </div>
-                    <div className="flex items-center mb-12 md:mb-11">
+                    <div className="flex items-center">
                         <input
                             onChange={handleConfirm_right_information}
                             id="confirm_right_information"
                             name="confirm_right_information"
                             type="checkbox"
-                            className="cursor-pointer h-4 w-4 focus:ring-indigo-500 border-gray-300 rounded" />
+                            className="cursor-pointer h-4 w-4 focus:ring-pink-primary text-pink-primary  rounded" />
                         <label htmlFor='confirm_right_information' className="cursor-pointer ml-3 block text-md leading-6 "> Providing wrong information will result in a loss of funds </label>
                     </div>
                     {
@@ -197,6 +223,21 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     }
 
                 </div>
+                {
+                    error &&
+                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5 flex items-center mb-4">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-xl text-light-blue font-normal">
+                                    {error}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
                 <div className="text-white text-sm mt-auto">
                     <div className="flex items-center mb-2">
                         <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>

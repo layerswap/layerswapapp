@@ -6,9 +6,9 @@ import CardContainer from './cardContainer';
 function IntroCard(props) {
     return (
         <CardContainer {...props} >
-            <div className="flex flex-col px-4 md:px-8 py-6 text-pink-primary-300">
+            <div className="flex flex-col px-4 md:px-8 py-6 text-pink-primary-300 font-light">
                 <div>
-                    <h1 className="text-xl font-semibold text-white">About Layerswap</h1>
+                    <h1 className="text-xl font-light text-white">About Layerswap</h1>
                     <p className="text-base mt-4">
                         Save up to 10x on fees when moving crypto from Coinbase, Binance or FTX to Arbitrum, zkSync, Loopring and other L2s.                    </p>
                     <p className="py-4">

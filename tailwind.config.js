@@ -43,7 +43,7 @@ module.exports = {
         'pink-primary': '#E42575',
         'pink-primary-600': '#760045',
         'pink-primary-800': '#930863',
-        'pink-primary-300': '#A197AA',
+        'pink-primary-300': '#a4afc8', //'#A197AA',
         'green-success': '#55B585',
         'red-failed': '#E43636',
         'white-alpha-100': '#ffffff66'

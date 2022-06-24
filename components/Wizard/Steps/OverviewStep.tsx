@@ -20,7 +20,7 @@ type Props = {
 
 const OverviewStep: FC<Props> = ({ current }) => {
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState()
+    const [error, setError] = useState("")
     const { swap } = useSwapDataState()
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
@@ -35,6 +35,7 @@ const OverviewStep: FC<Props> = ({ current }) => {
         (async () => {
             try {
                 if (currentStep == "Overview") {
+                    setError("")
                     const authData = TokenService.getAuthData();
                     if (!authData) {
                         await goToStep("Email")
@@ -65,7 +66,10 @@ const OverviewStep: FC<Props> = ({ current }) => {
                 }
             }
             catch (e) {
-                setError(e.message)
+                await goToStep("Failed")
+                setTimeout(() => {
+                    setLoadingWizard(false)
+                }, 500);
             }
 
         })()
@@ -81,7 +85,13 @@ const OverviewStep: FC<Props> = ({ current }) => {
                 goToStep("Processing")
         }
         catch (e) {
+            debugger
+            if (e?.response?.status === 404)
+                setError("Swap not found")
             setError(e.message)
+            setTimeout(() => {
+                setLoadingWizard(false)
+            }, 500);
         }
         finally {
         }
@@ -90,7 +100,21 @@ const OverviewStep: FC<Props> = ({ current }) => {
     return (
         <>
             <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
-                
+                {
+                    error &&
+                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-light-blue">
+                                    {error}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
         </>
     )
