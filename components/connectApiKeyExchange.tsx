@@ -56,7 +56,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
+            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
                 {
                     error &&
                     <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">

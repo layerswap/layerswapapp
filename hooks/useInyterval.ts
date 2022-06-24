@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 
-export function useInterval(callback, dependencies = [], delay = 5000) {
+export function useInterval(callback, dependencies = [], delay = 50000) {
     const timeoutIdRef = useRef(null)
     useEffect(() => {
         // Side note: preceding semicolon needed for IIFEs.

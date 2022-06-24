@@ -6,7 +6,7 @@ const FailedPage: FC = () => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
+            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
                 <div className='flex place-content-center mb-12 md:mb-4'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="116" height="116" viewBox="0 0 116 116" fill="none">
                         <circle cx="58" cy="58" r="58" fill="#E43636" fillOpacity="0.1"/>

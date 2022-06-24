@@ -79,8 +79,8 @@ const EmailStep: FC = () => {
                 >
                     {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
                         <Form className='flex flex-col items-stretch min-h-[440px] text-pink-primary-300'>
-                            <div className="w-full px-3 md:px-6 md:px-12 pb-12 pt-4 flex-col flex-1 flex">
-                                {
+                            <div className="w-full px-3 md:px-8 pb-12 pt-4 flex-col flex-1 flex">
+                                { 
                                     error &&
                                     <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
                                         <div className="flex">
@@ -96,7 +96,7 @@ const EmailStep: FC = () => {
                                     </div>
                                 }
                                 <UserIcon className='w-8 h-8 self-center' />
-                                <h4 className='mb-12 mt-2 pt-2 text-xl leading-6 text-center font-roboto'>
+                                <h4 className='mb-12 mt-2 pt-2 text-xl leading-6 text-white text-center font-roboto'>
                                     Let's get started
                                 </h4>
                                 <div>

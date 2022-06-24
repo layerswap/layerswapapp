@@ -46,8 +46,8 @@ const Wizard: FC = () => {
          <div className='text-center text-xl text-darkblue-200'>
 
          </div>
-         <div className="p-2">
-            <div className="flex items-start overflow-hidden"
+         <div className="relative p-2">
+            <div className="flex items-start"
                ref={wrapper}>
                <div className={`flex flex-nowrap min-h-440  ${loading ? 'invisible' : 'visible animate-fade-in-down'}`}>
                   {
@@ -97,11 +97,10 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
 
    return <>
 
-      <div className="relative grid grid-cols-2 gap-4 place-content-end px-14 z-20" >
+      <div className="grid grid-cols-2 gap-4 place-content-end px-8 mt-3 h-[44px]" >
          <>
-
             <button onClick={goBack} className="justify-self-start" style={{ visibility: wizard[currentStep].navigationDisabled ? 'hidden' : 'visible' }}>
-               <ArrowLeftIcon className='h-5 w-5 text-darkblue-200 hover:text-ouline-blue cursor-pointer' />
+               <ArrowLeftIcon className='h-5 w-5 text-pink-primary-300 hover:text-ouline-blue cursor-pointer' />
             </button>
 
             <LayerswapMenu />

@@ -21,20 +21,24 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
+interface UserExchange extends Exchange {
+    is_connected: boolean
+}
+
 function UserExchanges() {
 
     const { exchanges } = useSettingsState()
-    const [userExchanges, setUserExchanges] = useState<UserExchangesResponse>()
+    const [userExchanges, setUserExchanges] = useState<UserExchange[]>()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
     const router = useRouter();
     const [query, setQuery] = useState('')
     const [exchangeToConnect, setExchangeToConnect] = useState<Exchange>()
+    const [exchangeLoading, setExchangeLoading] = useState<Exchange>()
 
     useEffect(() => {
 
         (async () => {
-
             setLoading(true)
             try {
                 const authData = TokenService.getAuthData();
@@ -45,9 +49,7 @@ function UserExchanges() {
                     })
                     return;
                 }
-                const bransferApiClient = new BransferApiClient()
-                const userExchanges = await bransferApiClient.GetExchangeAccounts(authData.access_token)
-                setUserExchanges(userExchanges)
+                await getAndMapExchanges(authData)
             }
             catch (e) {
                 setError(e.message)
@@ -58,14 +60,28 @@ function UserExchanges() {
         })()
     }, [])
 
+    const getAndMapExchanges = useCallback(async (authData) => {
+        const bransferApiClient = new BransferApiClient()
+        const userExchanges = await bransferApiClient.GetExchangeAccounts(authData.access_token)
+
+        const mappedExchanges = exchanges.map(e => {
+            return {
+                ...e,
+                is_connected: userExchanges.data?.some(ue => ue.exchange === e.internal_name && ue.is_enabled)
+            }
+        })
+        mappedExchanges.sort((a, b) => (+b.is_enabled) - (+a.is_enabled) || (+b.is_connected) - (+a.is_connected))
+
+        setUserExchanges(mappedExchanges)
+    }, [exchanges])
+
 
     const filteredItems =
         query === ''
-            ? exchanges
-            : exchanges.filter((item) => {
+            ? userExchanges
+            : userExchanges.filter((item) => {
                 return item.name.toLowerCase().includes(query.toLowerCase())
             })
-
 
     const handleComboboxChange = useCallback(() => { }, [])
     const handleQueryInputChange = useCallback((event) => setQuery(event.target.value), [])
@@ -74,7 +90,7 @@ function UserExchanges() {
         setExchangeToConnect(exchange)
     }
     const handleDisconnectExchange = async (exchange: Exchange) => {
-        setLoading(true)
+        setExchangeLoading(exchange)
         try {
             const authData = TokenService.getAuthData();
             if (!authData) {
@@ -86,14 +102,13 @@ function UserExchanges() {
             }
             const bransferApiClient = new BransferApiClient()
             await bransferApiClient.DeleteExchange(exchange.internal_name, authData.access_token)
-            const userExchanges = await bransferApiClient.GetExchangeAccounts(authData.access_token)
-            setUserExchanges(userExchanges)
+            await getAndMapExchanges(authData)
         }
         catch (e) {
             setError(e.message)
         }
         finally {
-            setLoading(false)
+            setExchangeLoading(undefined)
         }
     }
 
@@ -113,9 +128,7 @@ function UserExchanges() {
                 })
                 return;
             }
-            const bransferApiClient = new BransferApiClient()
-            const userExchanges = await bransferApiClient.GetExchangeAccounts(authData.access_token)
-            setUserExchanges(userExchanges)
+            await getAndMapExchanges(authData)
         }
         catch (e) {
             setError(e.message)
@@ -124,10 +137,10 @@ function UserExchanges() {
             setLoading(false)
         }
     }
-
+console.log(exchanges)
     return (
         <div className={`bg-darkBlue text-white min-w-3xl shadow-card rounded-lg w-full overflow-hidden relative `}>
-            <div className="relative grid grid-cols-1 gap-4 place-content-end px-14 z-20" >
+            <div className="relative grid grid-cols-1 gap-4 place-content-end px-14 z-20 mt-3" >
                 <LayerswapMenu />
             </div>
             <div className="px-6 md:px-12 relative inset-0 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
@@ -150,7 +163,7 @@ function UserExchanges() {
                                 value={query}
                             />
                         </div>
-                        {filteredItems.length > 0 && (
+                        {filteredItems?.length > 0 && (
                             <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2">
                                 {filteredItems.map((item) => (
                                     <Combobox.Option
@@ -176,33 +189,40 @@ function UserExchanges() {
                                                 </div>
 
                                                 <div className="ml-4 flex-auto">
-                                                    <p className='text-lg font-medium'>
+                                                    <div className='text-lg font-medium'>
                                                         {item.name}
-                                                        {!item.authorization_flow && <div className="text-sm text-emerald-600">No action required</div>}
+                                                        {(!item.authorization_flow || item.authorization_flow == "none" )&& <div className="text-sm text-emerald-600">No action required</div>}
                                                         {
-                                                            item.authorization_flow &&
+                                                            item.authorization_flow && item.authorization_flow !== "none" && item.is_enabled &&
                                                             <>
-                                                                {userExchanges?.data?.some(e => e.exchange === item.internal_name && e.is_enabled) ? <div className="text-sm text-emerald-600">Connected</div> : <div className="text-sm text-slate-600">Not beeing used</div>}
+                                                                {item.is_connected ? <div className="text-sm text-emerald-600">Connected</div> : <div className="text-sm text-slate-600">Not beeing used</div>}
                                                             </>
                                                         }
-                                                    </p>
+                                                        {!item.is_enabled && <div className="text-sm text-yellow-600">Currently not available</div>}
+
+                                                    </div>
                                                 </div>
                                                 <div className="p-4 rounded-md hover:bg-darkblue-300 cursor-pointer">
                                                     {
-                                                        !item.authorization_flow &&
+                                                        (!item.authorization_flow || item.authorization_flow == "none") && 
                                                         <CheckIcon className="h-8 w-8 fill-green-400" />
                                                     }
                                                     {
-                                                        item.authorization_flow &&
+                                                        item.authorization_flow && item.authorization_flow !== "none" && item.is_enabled && exchangeLoading?.id !== item.id &&
                                                         <>
                                                             {
-                                                                userExchanges?.data?.some(e => e.exchange === item.internal_name && e.is_enabled) ?
+                                                                item.is_connected ?
                                                                     <span onClick={() => handleDisconnectExchange(item)}><ScissorsIcon className="h-8 w-8 fill-red-400" /></span>
                                                                     : <span onClick={() => handleConnectExchange(item)}><LinkIcon className="h-8 w-8 fill-green-400" /></span>
                                                             }
                                                         </>
                                                     }
-
+                                                    {
+                                                        exchangeLoading?.id === item.id &&
+                                                        <span className="flex items-center pl-3">
+                                                            <SpinIcon className="animate-spin h-5 w-5" />
+                                                        </span>
+                                                    }
 
                                                 </div>
 
@@ -213,7 +233,7 @@ function UserExchanges() {
                             </Combobox.Options>
                         )}
 
-                        {query !== '' && filteredItems.length === 0 && (
+                        {query !== '' && filteredItems?.length === 0 && (
                             <div className="py-14 px-6 text-center text-sm sm:px-14">
                                 <ExclamationCircleIcon
                                     type="outline"

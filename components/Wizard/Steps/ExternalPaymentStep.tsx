@@ -24,7 +24,7 @@ const ExternalPaumentStep: FC = () => {
     const { getSwap } = useSwapDataUpdate()
 
     useInterval(async () => {
-        if (currentStep === "Withdrawal") {
+        if (currentStep === "ExternalPayment") {
             const authData = TokenService.getAuthData();
             if (!authData) {
                 await goToStep("Email")
@@ -41,7 +41,7 @@ const ExternalPaumentStep: FC = () => {
             // else if (swapStatus == SwapStatus.Pending)
             //     await goToStep("Processing")
         }
-    }, [currentStep, swapId], 2000)
+    }, [currentStep, swapId], 10000)
 
 
     const handleContinue = useCallback(async () => {
@@ -57,7 +57,7 @@ const ExternalPaumentStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-6 md:px-12 py-12 grid grid-flow-row">
+            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
                 <div className="rounded-md border bg-darkblue-600 w-full grid grid-flow-row p-5 border-darkblue-100 mb-11">
                     <div className="flex items-center">
                         <label className="block text-lg font-medium leading-6 text-white"> Go to {payment?.exchange} to complete the payment </label>

@@ -33,7 +33,7 @@ function AppHeader() {
 
     return <>
 
-        <div className="absolute w-full grid grid-cols-2 gap-4 place-content-end p-2 z-20" >
+        <div className="absolute w-full grid grid-cols-2 gap-4 place-content-end p-2" >
             <>
                 <span></span>
                 <span className="justify-self-end text-light-blue cursor-pointer">
