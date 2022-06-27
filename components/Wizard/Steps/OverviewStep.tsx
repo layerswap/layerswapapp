@@ -85,7 +85,6 @@ const OverviewStep: FC<Props> = ({ current }) => {
                 goToStep("Processing")
         }
         catch (e) {
-            debugger
             if (e?.response?.status === 404)
                 setError("Swap not found")
             setError(e.message)

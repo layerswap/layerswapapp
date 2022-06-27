@@ -75,7 +75,7 @@ const EmailStep: FC = () => {
                     onSubmit={sendEmail}
                 >
                     {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
-                        <Form className='flex flex-col items-stretch min-h-[440px] text-pink-primary-300'>
+                        <Form className='flex flex-col items-stretch min-h-[480px] text-pink-primary-300'>
                             <div className="w-full px-3 md:px-8 pb-12 pt-4 flex-col flex-1 flex">
                                 {
                                     error &&
@@ -93,10 +93,13 @@ const EmailStep: FC = () => {
                                     </div>
                                 }
                                 <UserIcon className='w-8 h-8 self-center' />
-                                <h4 className='mb-12 mt-2 pt-2 text-xl leading-6 text-center font-roboto'>
+                                <h4 className='mb-6 mt-2 pt-2 text-xl text-white leading-6 text-center font-roboto'>
                                     Let's get started
                                 </h4>
-                                <div>
+                                <p className='text-center text-sm mb-12'>
+                                    With LayerSwap, you can send crypto from your crypto exchange account directly to Layer 2 networks without paying high Gas fees.
+                                </p>
+                                <div className=''>
                                     <label htmlFor="email" className="block font-normal text-sm">
                                         Enter email
                                     </label>

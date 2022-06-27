@@ -253,7 +253,6 @@ export default function MainStep() {
             else {
                 const exchanges = await (await getUserExchanges(accessToken))?.data
                 const exchangeIsEnabled = exchanges?.some(e => e.exchange === values?.exchange?.id && e.is_enabled)
-                debugger
                 if (values?.exchange?.baseObject?.authorization_flow === "none" || !values?.exchange?.baseObject?.authorization_flow || exchangeIsEnabled)
                     goToStep("SwapConfirmation")
                 else
@@ -440,7 +439,7 @@ export default function MainStep() {
                         </div>
 
                         <div className="w-full">
-                            {AmountAndFeeDetails(values)}
+                            <AmountAndFeeDetails swapFormData={values}/>
                         </div>
 
                         <div className="mt-6">

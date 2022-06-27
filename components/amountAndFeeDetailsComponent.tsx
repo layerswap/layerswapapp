@@ -2,29 +2,32 @@ import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/outline
 import { Disclosure } from "@headlessui/react";
 import Tooltip from './tooltip';
 import { SwapFormValues } from './DTOs/SwapFormValues';
+import { useSwapDataState } from '../context/swap';
 
 function exchangeFee(values: SwapFormValues): number {
-    return values?.currency?.baseObject.exchanges?.find(e => e.exchangeId == values.exchange.baseObject.id)?.fee;
+    return values?.currency?.baseObject.exchanges?.find(e => e.exchangeId == values.exchange.baseObject.id)?.fee || 0;
 }
 
 function calculateFee(values: SwapFormValues): number {
-    let currencyObject = values.currency?.baseObject;
-    let exchangeObject = values.exchange?.baseObject;
+    let currencyObject = values?.currency?.baseObject;
+    let exchangeObject = values?.exchange?.baseObject;
 
-    var exchangeFee = Number(values.amount?.toString()?.replace(",", ".")) * exchangeObject?.fee_percentage;
+    var exchangeFee = Number(values?.amount?.toString()?.replace(",", ".")) * exchangeObject?.fee_percentage;
     var overallFee = currencyObject?.fee + exchangeFee;
 
     return overallFee || 0;
 }
 
-export default function AmountAndFeeDetails(values) {
-    let fee = values.amount ? Number(calculateFee(values)?.toFixed(values.currency?.baseObject?.precision)) : 0;
+export default function AmountAndFeeDetails({ swapFormData }: { swapFormData: SwapFormValues }) {
+
+    let fee = swapFormData?.amount ? Number(calculateFee(swapFormData)?.toFixed(swapFormData?.currency?.baseObject?.precision)) : 0;
+
 
     let receive_amount = 0;
-    let amount = Number(values.amount?.toString()?.replace(",", "."));
-    let currencyObject = values?.currency?.baseObject;
+    let amount = Number(swapFormData?.amount?.toString()?.replace(",", "."));
+    let currencyObject = swapFormData?.currency?.baseObject;
     if (amount >= currencyObject?.min_amount) {
-        var exFee = exchangeFee(values);
+        var exFee = exchangeFee(swapFormData);
         var result = amount - fee - exFee;
         receive_amount = Number(result.toFixed(currencyObject.precision));
     }
@@ -39,15 +42,15 @@ export default function AmountAndFeeDetails(values) {
                                 <span className="absolute right-9">
                                     {
                                         receive_amount ?
-                                        <span className="font-medium text-center strong-highlight">
-                                            {receive_amount}
-                                            <span>
-                                                {
-                                                    ` ${values.currency?.name || ""}`
-                                                }
+                                            <span className="font-medium text-center strong-highlight">
+                                                {receive_amount}
+                                                <span>
+                                                    {
+                                                        ` ${swapFormData?.currency?.name || ""}`
+                                                    }
+                                                </span>
                                             </span>
-                                        </span>
-                                        :'-'
+                                            : '-'
                                     }
 
                                 </span>
@@ -64,8 +67,8 @@ export default function AmountAndFeeDetails(values) {
                                             {Tooltip("Layerswap Fee is used to cover the gas costs of relaying and executing your swap on Layerswap.")}
                                         </label>
                                         <span className="font-normal text-center text-white">
-                                            {fee}
-                                            <span>  {values?.currency?.name} </span>
+                                            {fee.toLocaleString()}
+                                            <span>  {swapFormData?.currency?.name} </span>
                                         </span>
                                     </div>
                                     <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
@@ -75,12 +78,12 @@ export default function AmountAndFeeDetails(values) {
                                         </label>
                                         <span className="font-normal text-center text-white">
                                             {(() => {
-                                                if (values.amount && values?.amount != "") {
-                                                    return exchangeFee(values)
+                                                if (swapFormData?.amount && swapFormData?.amount != "") {
+                                                    return exchangeFee(swapFormData)
                                                 }
-                                                return "-";
+                                                return "0";
                                             })()}
-                                            <span>  {values?.currency?.name} </span>
+                                            <span>  {swapFormData?.currency?.name} {swapFormData?.exchange?.baseObject?.internal_name === "binance" && <span>(Refundable)</span>}</span>
                                         </span>
                                     </div>
                                     <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">

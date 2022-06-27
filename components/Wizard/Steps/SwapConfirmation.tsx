@@ -127,7 +127,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-6 pt-1 grid grid-flow-row min-h-[440px] text-pink-primary-300 font-light">
+            <div className="w-full px-3 md:px-8 py-6 pt-1 grid grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
                 <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please confirm your swap
                 </h3>
@@ -221,7 +221,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             </div>
                         </div>
                     }
-
                 </div>
                 {
                     error &&
@@ -298,7 +297,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     leaveTo="opacity-0 scale-95"
                                 >
 
-                                    <div className='pb-12 grid grid-flow-row min-h-[440px] text-pink-primary-300'>
+                                    <div className='pb-12 grid grid-flow-row min-h-[480px] text-pink-primary-300'>
                                         <h4 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
                                             <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mb-1' /> Editing your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address
                                         </h4>

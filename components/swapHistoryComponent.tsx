@@ -157,101 +157,101 @@ function TransactionsHistory() {
       </div>
 
       {
-        swaps?.length > 0?
-        <>
-        <div className="px-6 md:px-12 lg:px-8 mb-2 ">
-        <div className="-mx-4 mt-10 ring-1 ring-darkblue-100 sm:-mx-6 md:mx-0 md:rounded-lg bg-darkblue-600">
-          <table className="min-w-full divide-y divide-darkblue-100">
-            <thead>
-              <tr>
-                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-500 sm:pl-6">
-                  <div className="hidden lg:block">
-                    From
-                  </div>
-                  <div className="block lg:hidden">
-                    From - To / Date
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-                >
-                  To
-                </th>
-                <th
-                  scope="col"
-                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-500 "
-                >
-                  Amount
-                </th>
-                {/* <th
+        swaps?.length > 0 ?
+          <>
+            <div className="px-8 md:px-12 mb-2 ">
+              <div className="-mx-4 mt-10 ring-1 ring-darkblue-100 sm:-mx-6 md:mx-0 md:rounded-lg bg-darkblue-600">
+                <table className="min-w-full divide-y divide-darkblue-100">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-500 sm:pl-6">
+                        <div className="hidden lg:block">
+                          From
+                        </div>
+                        <div className="block lg:hidden">
+                          From - To / Date
+                        </div>
+                      </th>
+                      <th
+                        scope="col"
+                        className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                      >
+                        To
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-500 "
+                      >
+                        Amount
+                      </th>
+                      {/* <th
                 scope="col"
                 className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
               >
                 Fee
               </th> */}
-                <th
-                  scope="col"
-                  className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-                >
-                  TX Id
-                </th>
-                <th
-                  scope="col"
-                  className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-                >
-                  Status
-                </th>
+                      <th
+                        scope="col"
+                        className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                      >
+                        TX Id
+                      </th>
+                      <th
+                        scope="col"
+                        className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                      >
+                        Status
+                      </th>
 
-                <th
-                  scope="col"
-                  className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-                >
-                  Date
-                </th>
-                <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                  <span className="sr-only">More</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {swaps?.map((swap, index) => (
-                <tr key={swap.id}>
-                  <td
-                    className={classNames(
-                      index === 0 ? '' : 'border-t border-transparent',
-                      'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
-                    )}
-                  >
-                    <div className="text-white hidden lg:block">
-                      {swap.exchange}
-                    </div>
-                    <div className="mt-1 flex flex-col text-white sm:block lg:hidden">
-                      <span className="flex items-center">
-                        {statusIcon(swap.status)}
-                        {/* {plan.from} - {plan.to} */}
-                      </span>
-                      <span className="block lg:hidden">{(new Date(swap.created_date)).toLocaleString()}</span>
-                    </div>
-                    {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-100" /> : null}
-                  </td>
-                  <td
-                    className={classNames(
-                      index === 0 ? '' : 'border-t border-darkblue-100',
-                      'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
-                    )}
-                  >
-                    {swap.network}
-                  </td>
-                  <td
-                    className={classNames(
-                      index === 0 ? '' : 'border-t border-darkblue-100',
-                      'px-3 py-3.5 text-sm text-white table-cell'
-                    )}
-                  >
-                    {swap.amount} {swap.currency}
-                  </td>
-                  {/* <td
+                      <th
+                        scope="col"
+                        className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                      >
+                        Date
+                      </th>
+                      <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                        <span className="sr-only">More</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {swaps?.map((swap, index) => (
+                      <tr key={swap.id}>
+                        <td
+                          className={classNames(
+                            index === 0 ? '' : 'border-t border-transparent',
+                            'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
+                          )}
+                        >
+                          <div className="text-white hidden lg:block">
+                            {swap.exchange}
+                          </div>
+                          <div className="mt-1 flex flex-col text-white sm:block lg:hidden">
+                            <span className="flex items-center">
+                              {statusIcon(swap.status)}
+                              {/* {plan.from} - {plan.to} */}
+                            </span>
+                            <span className="block lg:hidden">{(new Date(swap.created_date)).toLocaleString()}</span>
+                          </div>
+                          {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-100" /> : null}
+                        </td>
+                        <td
+                          className={classNames(
+                            index === 0 ? '' : 'border-t border-darkblue-100',
+                            'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
+                          )}
+                        >
+                          {swap.network}
+                        </td>
+                        <td
+                          className={classNames(
+                            index === 0 ? '' : 'border-t border-darkblue-100',
+                            'px-3 py-3.5 text-sm text-white table-cell'
+                          )}
+                        >
+                          {swap.amount} {swap.currency}
+                        </td>
+                        {/* <td
                   className={classNames(
                     index === 0 ? '' : 'border-t border-darkblue-100',
                     'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
@@ -259,123 +259,123 @@ function TransactionsHistory() {
                 >
                   {swap.fee} {swap.currency} 
                 </td> */}
-                  <td
-                    className={classNames(
-                      index === 0 ? '' : 'border-t border-darkblue-100',
-                      'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
-                    )}
-                  >
-                    {swap.id}
-                  </td>
-                  <td
-                    className={classNames(
-                      index === 0 ? '' : 'border-t border-darkblue-100',
-                      'relative px-3 py-3.5 text-sm text-white hidden lg:table-cell group'
-                    )}
-                  >
-                    {statusIcon(swap.status)}
+                        <td
+                          className={classNames(
+                            index === 0 ? '' : 'border-t border-darkblue-100',
+                            'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
+                          )}
+                        >
+                          {swap.id}
+                        </td>
+                        <td
+                          className={classNames(
+                            index === 0 ? '' : 'border-t border-darkblue-100',
+                            'relative px-3 py-3.5 text-sm text-white hidden lg:table-cell group'
+                          )}
+                        >
+                          {statusIcon(swap.status)}
 
-                  </td>
-                  <td
-                    className={classNames(
-                      index === 0 ? '' : 'border-t border-darkblue-100',
-                      'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
-                    )}
-                  >
-                    {(new Date(swap.created_date)).toLocaleString()}
-                  </td>
-                  <td
-                    className={classNames(
-                      index === 0 ? '' : 'border-t border-transparent',
-                      'relative py-3.5 pl-3 pr-4 sm:pr-6 text-right text-sm font-medium'
-                    )}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleopenSwapDetails(swap)}
-                      className="group text-white  relative w-full flex justify-center py-2 px-2 border-0 font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
-                    >
-                      <ChevronRightIcon className="h-5 w-5s" />
-                    </button>
-                    {index !== 0 ? <div className="absolute right-6 left-0 -top-px h-px bg-darkblue-100" /> : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div className="text-white text-sm mt-auto mb-4 mt-10 flex justify-center mb-4">
-        {
-          !isLastPage &&
-          <button
-            disabled={isLastPage || loading}
-            type="button"
-            onClick={handleLoadMore}
-            className="group disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
-          >
-            <span className="flex items-center pl-3 mr-2">
-              {(!isLastPage && !loading) &&
-                <RefreshIcon className="h-5 w-5" />}
-              {loading ?
-                <SpinIcon className="animate-spin h-5 w-5" />
-                : null}
-            </span>
-            Load more
-          </button>
-        }
-
-      </div>
-
-      <Transition appear show={!!selectedSwap} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={handleClose}>
-          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-darkBlue shadow-card text-center align-middle shadow-xl transition-all">
-
-                  <SwapDetails id={selectedSwap?.id} />
-
-                  <div className="mt-4">
-                    <button
-                      type="button"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      onClick={handleClose}
-                    >
-                      OK
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
+                        </td>
+                        <td
+                          className={classNames(
+                            index === 0 ? '' : 'border-t border-darkblue-100',
+                            'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
+                          )}
+                        >
+                          {(new Date(swap.created_date)).toLocaleString()}
+                        </td>
+                        <td
+                          className={classNames(
+                            index === 0 ? '' : 'border-t border-transparent',
+                            'relative py-3.5 pl-3 pr-4 sm:pr-6 text-right text-sm font-medium'
+                          )}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => handleopenSwapDetails(swap)}
+                            className="group text-white  relative w-full flex justify-center py-2 px-2 border-0 font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                          >
+                            <ChevronRightIcon className="h-5 w-5s" />
+                          </button>
+                          {index !== 0 ? <div className="absolute right-6 left-0 -top-px h-px bg-darkblue-100" /> : null}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
+            <div className="text-white text-sm mt-auto mb-4 mt-10 flex justify-center mb-4">
+              {
+                !isLastPage &&
+                <button
+                  disabled={isLastPage || loading}
+                  type="button"
+                  onClick={handleLoadMore}
+                  className="group disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                >
+                  <span className="flex items-center pl-3 mr-2">
+                    {(!isLastPage && !loading) &&
+                      <RefreshIcon className="h-5 w-5" />}
+                    {loading ?
+                      <SpinIcon className="animate-spin h-5 w-5" />
+                      : null}
+                  </span>
+                  Load more
+                </button>
+              }
+
+            </div>
+
+            <Transition appear show={!!selectedSwap} as={Fragment}>
+              <Dialog as="div" className="relative z-10" onClose={handleClose}>
+                <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <div className="fixed inset-0 bg-black bg-opacity-25" />
+                </Transition.Child>
+
+                <div className="fixed inset-0 overflow-y-auto">
+                  <div className="flex min-h-full items-center justify-center p-4 text-center">
+                    <Transition.Child
+                      as={Fragment}
+                      enter="ease-out duration-300"
+                      enterFrom="opacity-0 scale-95"
+                      enterTo="opacity-100 scale-100"
+                      leave="ease-in duration-200"
+                      leaveFrom="opacity-100 scale-100"
+                      leaveTo="opacity-0 scale-95"
+                    >
+                      <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-darkBlue shadow-card text-center align-middle shadow-xl transition-all">
+
+                        <SwapDetails id={selectedSwap?.id} />
+
+                        <div className="mt-4">
+                          <button
+                            type="button"
+                            className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            onClick={handleClose}
+                          >
+                            OK
+                          </button>
+                        </div>
+                      </Dialog.Panel>
+                    </Transition.Child>
+                  </div>
+                </div>
+              </Dialog>
+            </Transition>
+          </>
+          : <div className="m-16 text-center mb-20 pb-10">
+            You do not have any transactions yet won't you <a className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600" href="/">do</a> some swaps?
           </div>
-        </Dialog>
-      </Transition>
-        </>
-        :<div className="m-16 text-center mb-20 pb-10">
-          You do not have any transactions yet won't you <a className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600" href="/">do</a> some swaps?
-        </div>
       }
 
     </div>
