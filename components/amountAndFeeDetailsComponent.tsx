@@ -83,7 +83,7 @@ export default function AmountAndFeeDetails({ swapFormData }: { swapFormData: Sw
                                                 }
                                                 return "0";
                                             })()}
-                                            <span>  {swapFormData?.currency?.name} {swapFormData?.exchange?.baseObject?.internal_name === "binance" && <span>(Refundable)</span>}</span>
+                                            <span>  {swapFormData?.currency?.name} {swapFormData?.exchange?.baseObject?.internal_name === "binance" && <span className='inline-flex'>( Refundable {Tooltip("test")} )</span>}</span>
                                         </span>
                                     </div>
                                     <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
