@@ -105,8 +105,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             else {
                 setError(errorMessage)
             }
-        }
-        finally {
             setLoading(false)
         }
     }, [swapFormData, swap, towFactorCode, minimalAuthorizeAmount, transferAmount])

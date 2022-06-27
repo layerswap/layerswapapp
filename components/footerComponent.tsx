@@ -68,8 +68,6 @@ export default function FooterComponent() {
             </div>
           ))}
         </nav>
-        <p className="mt-2 text-center text-sm text-gray-400">651 N Broad St, Suite 206, Middletown, DE 19709, US</p>
-        <p className="mt-1 text-center text-base text-gray-400">&copy; 2022 Bransfer, Inc. All rights reserved.</p>
       </div>
     </footer>
   )
