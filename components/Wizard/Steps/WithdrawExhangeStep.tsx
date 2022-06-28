@@ -13,10 +13,13 @@ import { SwapStatus } from '../../../Models/SwapStatus';
 import { copyTextToClipboard } from '../../../lib/copyToClipboard';
 import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
+import { Popover } from '@headlessui/react';
+import AmountAndFeeDetails from '../../amountAndFeeDetailsComponent';
+import { SwapFormValues } from '../../DTOs/SwapFormValues'; 
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const { swap } = useSwapDataState()
+    const { swap, swapFormData } = useSwapDataState()
     const { payment } = swap || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
     const { networks, exchanges } = useSettingsState()
@@ -102,14 +105,32 @@ const WithdrawExchangeStep: FC = () => {
                             id="address"
                             value={swap?.destination_address}
                             disabled={true}
-                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
+                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
-                        <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-2.5' onClick={() => { copyTextToClipboard(swap?.destination_address) }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
-                                <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
-                            </svg>
-                        </button>
+                        <div className='absolute inset-y-2 right-2.5'>
+                            <Popover>
+                                <Popover.Button>
+                                    <button className=' rounded bg bg-darkblue-50 p-2' onClick={() => { copyTextToClipboard(payment?.note_flow_context?.note) }}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
+                                            <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
+                                        </svg>
+                                    </button>
+                                </Popover.Button>
+                                <Popover.Panel>
+                                    <div className="ml-1 text-white">
+                                        <div className="relative">
+                                            <div className="w-14 absolute flex right-0.5 bottom-6 flex-col mb-3">
+                                                <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
+                                                    Copied!
+                                                </span>
+                                                <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Popover.Panel>
+                            </Popover>
+                        </div>
                     </div>
                     <label htmlFor="network" className="block font-normal text-sm">
                         Network
@@ -125,8 +146,8 @@ const WithdrawExchangeStep: FC = () => {
                             id="network"
                             disabled={true}
                             value={payment?.manual_flow_context?.network_display_name}
-                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
+                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
                     <label htmlFor="withdrawlAmount" className="block font-normal text-sm">
@@ -143,14 +164,35 @@ const WithdrawExchangeStep: FC = () => {
                             id="withdrawlAmount"
                             disabled={true}
                             value={payment?.manual_flow_context?.total_withdrawal_amount || payment?.amount}
-                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
+                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
-                        <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-2.5' onClick={() => { copyTextToClipboard(payment?.manual_flow_context?.total_withdrawal_amount || payment?.amount) }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
-                                <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
-                            </svg>
-                        </button>
+                        <div className='absolute inset-y-2 right-2.5'>
+                            <Popover>
+                                <Popover.Button>
+                                    <button className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={() => { copyTextToClipboard(payment?.note_flow_context?.note) }}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
+                                            <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
+                                        </svg>
+                                    </button>
+                                </Popover.Button>
+                                <Popover.Panel>
+                                    <div className="ml-1 text-white">
+                                        <div className="relative">
+                                            <div className="w-14 absolute flex right-0.5 bottom-6 flex-col mb-3">
+                                                <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
+                                                    Copied!
+                                                </span>
+                                                <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Popover.Panel>
+                            </Popover>
+                        </div>
+                    </div>
+                    <div className="w-full">
+                        <AmountAndFeeDetails swapFormData={swapFormData}/>
                     </div>
                     {
                         payment?.note_flow_context?.note &&
@@ -166,13 +208,31 @@ const WithdrawExchangeStep: FC = () => {
                                 disabled={true}
                                 value={payment?.note_flow_context?.note}
                                 className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                             />
-                            <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-2.5' onClick={() => { copyTextToClipboard(payment?.note_flow_context?.note) }}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
-                                    <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
-                                </svg>
-                            </button>
+                            <div className='absolute inset-y-2 right-2.5'>
+                                <Popover>
+                                        <Popover.Button>
+                                            <button className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={() => { copyTextToClipboard(payment?.note_flow_context?.note) }}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
+                                                    <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
+                                                </svg>
+                                            </button>
+                                        </Popover.Button>
+                                        <Popover.Panel>
+                                            <div className="ml-1 text-white">
+                                                <div className="relative">
+                                                    <div className="w-14 absolute flex right-0.5 bottom-6 flex-col mb-3">
+                                                        <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
+                                                            Copied!
+                                                        </span>
+                                                        <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Popover.Panel>
+                                    </Popover>
+                            </div>
                         </div>
                     }
 
@@ -200,7 +260,7 @@ const WithdrawExchangeStep: FC = () => {
                             </div>
                         </div>
                         :
-                        <div className="text-white text-lg ">
+                        <div className="text-white text-base">
                             <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConfirm}>
                                 I Did The Transfer
                             </SubmitButton>
