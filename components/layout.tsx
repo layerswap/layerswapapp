@@ -1,7 +1,8 @@
 import Navbar from "./navbar"
-import React from "react"
+import React, { useEffect, useState } from "react"
 import Head from "next/head"
 import FooterComponent from "./footerComponent"
+import { useRouter } from "next/router";
 
 type Props = {
   children: JSX.Element | JSX.Element[],
@@ -9,6 +10,25 @@ type Props = {
 };
 
 export default function Layout({ hasSideShapes, children }: Props) {
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const handleStart = (url) => (url !== router.asPath) && setLoading(true);
+    const handleComplete = (url) => (url === router.asPath) && setLoading(false);
+
+    router.events.on('routeChangeStart', handleStart)
+    router.events.on('routeChangeComplete', handleComplete)
+    router.events.on('routeChangeError', handleComplete)
+
+    return () => {
+      router.events.off('routeChangeStart', handleStart)
+      router.events.off('routeChangeComplete', handleComplete)
+      router.events.off('routeChangeError', handleComplete)
+    }
+  })
+
   return (<>
     <Head>
       <title>Layerswap</title>
@@ -45,10 +65,6 @@ export default function Layout({ hasSideShapes, children }: Props) {
           {children}
         </>
         <FooterComponent />
-        {/* {hasSideShapes && hasSideShapes == true ? <>
-          <BackgroundCircle className="md:w-52 md:h-52 lg:h-full lg:w-96 top-32 lg:top-0 -right-40 lg:-right-60 fixed w-0 h-0" />
-          <BackgroundRectangle className="md:w-52 md:h-52 lg:h-full lg:w-96 top-64 lg:top-36 -left-40 lg:-left-60 fixed w-0 h-0" />
-        </> : null} */}
       </div>
     </main>
   </>)

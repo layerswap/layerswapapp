@@ -1,6 +1,3 @@
-import SupportIcon from './icons/supportIcon';
-import Link from 'next/link';
-import { BookOpenIcon } from '@heroicons/react/outline';
 import CardContainer from './cardContainer';
 
 function IntroCard(props) {
@@ -10,7 +7,8 @@ function IntroCard(props) {
                 <div>
                     <h1 className="text-xl font-light text-white">About Layerswap</h1>
                     <p className="text-base mt-4">
-                        Save up to 10x on fees when moving crypto from Coinbase, Binance or FTX to Arbitrum, zkSync, Loopring and other L2s.                    </p>
+                        Save up to 10x on fees when moving crypto from Coinbase, Binance or FTX to Arbitrum, zkSync, Loopring and other L2s.
+                    </p>
                     <p className="py-4">
                         <span className="text-sm mr-2 rounded-md py-1 px-2 text-pink-primary border border-pink-primary uppercase">New</span>
                         <span className="md:hidden">
@@ -22,7 +20,7 @@ function IntroCard(props) {
                         </span>
                     </p>
                 </div>
-                
+
             </div>
         </CardContainer>
     );
