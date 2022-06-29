@@ -27,6 +27,7 @@
     "next-mdx-remote": "^3.0.8",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-swipeable": "^7.0.0",
     "react-use": "^17.4.0",
     "rehype-image-size": "^1.0.0",
     "rehype-img-size": "0.0.1",

@@ -30,6 +30,7 @@ import axios from "axios";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { ExclamationIcon } from "@heroicons/react/outline";
 import AmountAndFeeDetails from "../../amountAndFeeDetailsComponent";
+import ConnectImmutableX from "./ConnectImmutableX";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -215,6 +216,8 @@ export default function MainStep() {
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState();
+    const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
+
     let formValues = formikRef.current?.values;
 
     const settings = useSettingsState();
@@ -251,6 +254,15 @@ export default function MainStep() {
             if (!accessToken)
                 goToStep("Email")
             else {
+                if (values.network.baseObject.code.toLowerCase().includes("immutablex")) {
+                    const client = await ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
+                    const isRegistered = await client.isRegistered({ user: values.destination_address })
+                    if (!isRegistered) {
+                        setConnectImmutableIsOpen(true)
+                        setLoading(false)
+                        return
+                    }
+                }
                 const exchanges = await (await getUserExchanges(accessToken))?.data
                 const exchangeIsEnabled = exchanges?.some(e => e.exchange === values?.exchange?.id && e.is_enabled)
                 if (values?.exchange?.baseObject?.authorization_flow === "none" || !values?.exchange?.baseObject?.authorization_flow || exchangeIsEnabled)
@@ -316,7 +328,12 @@ export default function MainStep() {
     const addressRef: any = useRef();
     const amountRef: any = useRef();
 
+    const closeConnectImmutableX = () => {
+        setConnectImmutableIsOpen(false)
+    }
+
     return <>
+        <ConnectImmutableX isOpen={connectImmutableIsOpen} swapFormData={formValues} onClose={closeConnectImmutableX} />
         <Formik
             enableReinitialize={true}
             innerRef={formikRef}
@@ -439,7 +456,7 @@ export default function MainStep() {
                         </div>
 
                         <div className="w-full">
-                            <AmountAndFeeDetails swapFormData={values}/>
+                            <AmountAndFeeDetails swapFormData={values} />
                         </div>
 
                         <div className="mt-6">
