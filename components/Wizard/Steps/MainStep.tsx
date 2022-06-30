@@ -31,6 +31,7 @@ import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { ExclamationIcon } from "@heroicons/react/outline";
 import AmountAndFeeDetails from "../../amountAndFeeDetailsComponent";
 import ConnectImmutableX from "./ConnectImmutableX";
+import ConnectDeversifi from "../../ConnectDeversifi";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -217,6 +218,7 @@ export default function MainStep() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState();
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
+    const [connectDeversifiIsOpen, setConnectDeversifiIsOpen] = useState(false);
 
     let formValues = formikRef.current?.values;
 
@@ -259,6 +261,26 @@ export default function MainStep() {
                     const isRegistered = await client.isRegistered({ user: values.destination_address })
                     if (!isRegistered) {
                         setConnectImmutableIsOpen(true)
+                        setLoading(false)
+                        return
+                    }
+                // } else if (values.network.baseObject.id.includes("82024449-400c-40cf-a466-57b24ea611e2")) {
+                //     axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
+                //       .then(r => {
+                //         if (r.status == 200 && r.data?.isRegisteredOnDeversifi == true) {
+                //             setConnectDeversifiIsOpen(false);
+                //         }
+                //         else {
+                //             setConnectDeversifiIsOpen(true);
+                //             setLoading(false)
+                //             return
+                //         }
+                //     })
+                } else if (values.network.baseObject.id.includes("82024449-400c-40cf-a466-57b24ea611e2")) {
+                    const client = await axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
+                    const isRegistered = await client.data?.isRegisteredOnDeversifi
+                    if (!isRegistered) {
+                        setConnectDeversifiIsOpen(true);
                         setLoading(false)
                         return
                     }
@@ -332,8 +354,13 @@ export default function MainStep() {
         setConnectImmutableIsOpen(false)
     }
 
+    const closeConnectDeversifi = () => {
+        setConnectDeversifiIsOpen(false)
+    }
+
     return <>
         <ConnectImmutableX isOpen={connectImmutableIsOpen} swapFormData={formValues} onClose={closeConnectImmutableX} />
+        <ConnectDeversifi isOpen={connectDeversifiIsOpen} swapFormData={formValues} onClose={closeConnectDeversifi} />
         <Formik
             enableReinitialize={true}
             innerRef={formikRef}
