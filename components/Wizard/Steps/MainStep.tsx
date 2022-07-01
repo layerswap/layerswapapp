@@ -32,6 +32,7 @@ import { ExclamationIcon } from "@heroicons/react/outline";
 import AmountAndFeeDetails from "../../amountAndFeeDetailsComponent";
 import ConnectImmutableX from "./ConnectImmutableX";
 import ConnectDeversifi from "../../ConnectDeversifi";
+import SendFeedback from "../../sendFeedback";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -264,18 +265,6 @@ export default function MainStep() {
                         setLoading(false)
                         return
                     }
-                // } else if (values.network.baseObject.id.includes("82024449-400c-40cf-a466-57b24ea611e2")) {
-                //     axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
-                //       .then(r => {
-                //         if (r.status == 200 && r.data?.isRegisteredOnDeversifi == true) {
-                //             setConnectDeversifiIsOpen(false);
-                //         }
-                //         else {
-                //             setConnectDeversifiIsOpen(true);
-                //             setLoading(false)
-                //             return
-                //         }
-                //     })
                 } else if (values.network.baseObject.id.includes("82024449-400c-40cf-a466-57b24ea611e2")) {
                     const client = await axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
                     const isRegistered = await client.data?.isRegisteredOnDeversifi
