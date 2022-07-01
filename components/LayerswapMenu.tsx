@@ -2,10 +2,11 @@ import { Menu, Transition } from "@headlessui/react";
 import { MenuIcon } from "@heroicons/react/outline";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { useAuthState } from "../context/auth";
 import { useMenuState } from "../context/menu";
 import TokenService from "../lib/TokenService";
+import SendFeedback from './sendFeedback'
 
 
 function classNames(...classes) {
@@ -89,9 +90,22 @@ export default function () {
                                                             'block px-4 py-2 text-sm text-light-blue hover:bg-darkblue-300 whitespace-nowrap'
                                                         )}
                                                     >
-                                                        CEX Acocunts
+                                                        CEX Accounts
                                                     </a>
                                                 </Link>
+                                            )}
+                                        </Menu.Item>
+                                        <Menu.Item>
+                                            {({ active }) => (
+                                                <button
+                                                    type="button"
+                                                    className={classNames(
+                                                        active ? 'bg-darkblue-300' : '',
+                                                        'font-bold block w-full text-left px-4 py-2 text-sm text-light-blue whitespace-nowrap'
+                                                    )}
+                                                >
+                                                    Send Feedback
+                                                </button>
                                             )}
                                         </Menu.Item>
                                         {
