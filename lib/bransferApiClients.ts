@@ -9,7 +9,6 @@ export class BransferApiClient {
         return await authInterceptor.get(BransferApiClient.apiBaseEndpoint + '/api/exchange_accounts')
             .then(res => res.data)
     }
-
     async DeleteExchange(exchange: string, token: string): Promise<ConnectResponse> {
         return await authInterceptor.delete(BransferApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
@@ -40,6 +39,7 @@ export type PaymentProcessreponse = {
 export type ConnectParams = {
     api_key: string,
     api_secret: string,
+    keyphrase?: string,
     exchange: string
 }
 

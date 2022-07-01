@@ -16,6 +16,8 @@ import { Exchange } from "../Models/Exchange"
 import ConnectOauthExchange from "./connectOauthExchange"
 import ConnectApiKeyExchange from "./connectApiKeyExchange"
 import LayerswapMenu from "./LayerswapMenu"
+import Link from "next/link"
+import LayerSwapLogo from "./icons/layerSwapLogo"
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -137,10 +139,19 @@ function UserExchanges() {
             setLoading(false)
         }
     }
-console.log(exchanges)
+    console.log(exchanges)
     return (
         <div className={`bg-darkBlue text-white min-w-3xl shadow-card rounded-lg w-full overflow-hidden relative `}>
-            <div className="relative grid grid-cols-1 gap-4 place-content-end px-14 z-20 mt-3" >
+            <div className="relative flex items-center justify-between place-content-end px-14 z-20 mt-3" >
+                <div className='mt-12 mb-8 mx-auto px-4 overflow-hidden md:hidden'>
+                    <div className="flex justify-center">
+                        <Link href="/" key="Home" shallow={true}>
+                            <a>
+                                <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+                            </a>
+                        </Link>
+                    </div>
+                </div>
                 <LayerswapMenu />
             </div>
             <div className="px-6 md:px-12 relative inset-0 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
@@ -191,7 +202,7 @@ console.log(exchanges)
                                                 <div className="ml-4 flex-auto">
                                                     <div className='text-lg font-medium'>
                                                         {item.name}
-                                                        {(!item.authorization_flow || item.authorization_flow == "none" )&& <div className="text-sm text-emerald-600">No action required</div>}
+                                                        {(!item.authorization_flow || item.authorization_flow == "none") && <div className="text-sm text-emerald-600">No action required</div>}
                                                         {
                                                             item.authorization_flow && item.authorization_flow !== "none" && item.is_enabled &&
                                                             <>
@@ -204,7 +215,7 @@ console.log(exchanges)
                                                 </div>
                                                 <div className="p-4 rounded-md hover:bg-darkblue-300 cursor-pointer">
                                                     {
-                                                        (!item.authorization_flow || item.authorization_flow == "none") && 
+                                                        (!item.authorization_flow || item.authorization_flow == "none") &&
                                                         <CheckIcon className="h-8 w-8 fill-green-400" />
                                                     }
                                                     {

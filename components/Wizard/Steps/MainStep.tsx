@@ -223,7 +223,7 @@ export default function MainStep() {
     const settings = useSettingsState();
     const query = useQueryState();
     const [addressSource, setAddressSource] = useState("")
-    const { updateSwapFormData } = useSwapDataUpdate()
+    const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
     const { getUserExchanges } = useUserExchangeDataUpdate()
 
     useEffect(() => {
@@ -249,6 +249,7 @@ export default function MainStep() {
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             setLoading(true)
+            clearSwap()
             await updateSwapFormData(values)
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken)

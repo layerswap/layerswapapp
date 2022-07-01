@@ -1,29 +1,48 @@
-import React, { useEffect, useState } from "react";
+import React, { forwardRef, ReactNode, useEffect, useImperativeHandle, useState } from "react";
+import { useCallback } from "react";
 import { useSwipeable } from "react-swipeable";
 
 
 export const CarouselItem = ({ children, width }) => {
     return (
-        <div className={`inline-flex items-center justify-center flex-col p-3 bg-darkblue-600 h-100%`} style={{ width: width }}>
-            {children}
+        <div className={`rounded-xl inline-flex items-center justify-center flex-col p-3 pb-0 bg-gradient-to-b from-darkBlue to-darkblue-600 h-100%`} style={{ width: width }}>
+            <>
+                <div></div>
+                {children}
+            </>
         </div>
     );
 };
+interface Props {
+    children?: ReactNode;
+    onLast: (value) => void;
+}
 
-const Carousel = ({ children }) => {
+export type CarouselRef = {
+    next: () => void;
+    hasNext: boolean;
+};
+
+const Carousel = forwardRef<CarouselRef, Props>((props, ref) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const [paused, setPaused] = useState(false);
-
+    const children: any = props.children
     const updateIndex = (newIndex) => {
-
-        if (newIndex < 0) {
-            newIndex = React.Children.count(children) - 1;
-        } else if (newIndex >= React.Children.count(children)) {
-            newIndex = 0;
+        props.onLast(false)
+        if (newIndex >= 0 && newIndex <= React.Children.count(children) - 1) {
+            setActiveIndex(newIndex);
         }
-        
-        setActiveIndex(newIndex);
+        if (newIndex >= React.Children.count(children) - 1)
+            props.onLast(true)
     };
+
+    useImperativeHandle(ref, () => ({
+        next: () => {
+            updateIndex(activeIndex + 1)
+        },
+        hasNext: activeIndex < React.Children.count(children) - 1
+
+    }), [activeIndex]);
 
     // useEffect(() => {
     //     const interval = setInterval(() => {
@@ -41,8 +60,9 @@ const Carousel = ({ children }) => {
 
     const handlers = useSwipeable({
         onSwipedLeft: () => updateIndex(activeIndex + 1),
-        onSwipedRight: () => updateIndex(activeIndex - 1)
+        onSwipedRight: () => updateIndex(activeIndex - 1),
     });
+
 
     return (
         <div
@@ -76,6 +96,6 @@ const Carousel = ({ children }) => {
             </div>
         </div>
     );
-};
+});
 
 export default Carousel;

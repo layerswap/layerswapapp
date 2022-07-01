@@ -15,7 +15,7 @@ import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
 import { Popover } from '@headlessui/react';
 import AmountAndFeeDetails from '../../amountAndFeeDetailsComponent';
-import { SwapFormValues } from '../../DTOs/SwapFormValues'; 
+import { SwapFormValues } from '../../DTOs/SwapFormValues';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -63,13 +63,13 @@ const WithdrawExchangeStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-6 grid grid-flow-row text-pink-primary-300">
+            <div className="w-full px-6 py-6 md:grid md:grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
-                    <h3 className="block text-lg font-medium leading-6 mb-12 flex text-left items-center">
+                    <h3 className="block text-lg font-medium leading-6 mb-12 text-left">
                         Go to
                         {
                             exchange_logo_url &&
-                            <div className="inline-block mx-1">
+                            <div className="inline-block mx-1" style={{position:"relative",top:'6px'}}>
                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                     <Image
                                         src={exchange_logo_url}
@@ -103,9 +103,9 @@ const WithdrawExchangeStep: FC = () => {
                             type="text"
                             name="address"
                             id="address"
-                            value={swap?.destination_address}
+                            value={swap?.payment?.manual_flow_context?.address}
                             disabled={true}
-                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
+                            className="h-12 pb-1 pt-0 text-xs md:text-sm focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                         <div className='absolute inset-y-2 right-2.5'>
@@ -191,9 +191,7 @@ const WithdrawExchangeStep: FC = () => {
                             </Popover>
                         </div>
                     </div>
-                    <div className="w-full">
-                        <AmountAndFeeDetails swapFormData={swapFormData}/>
-                    </div>
+
                     {
                         payment?.note_flow_context?.note &&
                         <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
@@ -212,42 +210,32 @@ const WithdrawExchangeStep: FC = () => {
                             />
                             <div className='absolute inset-y-2 right-2.5'>
                                 <Popover>
-                                        <Popover.Button>
-                                            <button className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={() => { copyTextToClipboard(payment?.note_flow_context?.note) }}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
-                                                    <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
-                                                </svg>
-                                            </button>
-                                        </Popover.Button>
-                                        <Popover.Panel>
-                                            <div className="ml-1 text-white">
-                                                <div className="relative">
-                                                    <div className="w-14 absolute flex right-0.5 bottom-6 flex-col mb-3">
-                                                        <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
-                                                            Copied!
-                                                        </span>
-                                                        <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100"></div>
-                                                    </div>
+                                    <Popover.Button>
+                                        <button className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={() => { copyTextToClipboard(payment?.note_flow_context?.note) }}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
+                                                <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
+                                            </svg>
+                                        </button>
+                                    </Popover.Button>
+                                    <Popover.Panel>
+                                        <div className="ml-1 text-white">
+                                            <div className="relative">
+                                                <div className="w-14 absolute flex right-0.5 bottom-6 flex-col mb-3">
+                                                    <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
+                                                        Copied!
+                                                    </span>
+                                                    <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100"></div>
                                                 </div>
                                             </div>
-                                        </Popover.Panel>
-                                    </Popover>
+                                        </div>
+                                    </Popover.Panel>
+                                </Popover>
                             </div>
                         </div>
                     }
 
-                    {/* <div className='mt-1 md:mt-7 block text-base font-lighter leading-6 text-white'>
-                        <ul className='list-disc ml-5'>
-                            {
-                                payment?.manual_flow_context?.is_fee_refundable &&
-                                <li>
-                                    Transaction fee <strong>({payment?.manual_flow_context?.withdrawal_fee} {swap?.currency})</strong> will be refunded to your exchange account.
-                                </li>
-                            }
-                            <li>
-                                Make sure that <strong>Receive amount</strong> is precisely <strong>{payment?.manual_flow_context?.total_withdrawal_amount || payment?.amount} {swap?.currency}</strong>
-                            </li>
-                        </ul>
+                    {/* <div className="w-full">
+                        <AmountAndFeeDetails swapFormData={swapFormData} />
                     </div> */}
                 </div>
                 {

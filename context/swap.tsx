@@ -13,6 +13,8 @@ const SwapDataUpdateContext = React.createContext<UpdateInterface>(null);
 type UpdateInterface = {
     updateSwapFormData: (data: SwapFormValues) => void,
     createSwap: (data: CreateSwapParams) => Promise<SwapDetailsResponse>,
+    //TODO this is stupid need to clean data in confirm step or even do not store it
+    clearSwap: () => void,
     processPayment: (swap: SwapDetailsResponse, twoFactorCode?: string) => void,
     getSwap: (id: string) => Promise<SwapDetailsResponse>
 }
@@ -29,6 +31,7 @@ export function SwapDataProvider({ children }) {
     const { getAuthData } = useAuthDataUpdate();
 
     const updateFns: UpdateInterface = {
+        clearSwap: () => setSwap(undefined),
         updateSwapFormData: (data: SwapFormValues) => {
             setSwapFormData(data)
         },

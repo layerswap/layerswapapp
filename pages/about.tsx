@@ -9,7 +9,7 @@ import { MDXRemote } from 'next-mdx-remote'
 export default function About(props) {
     return (
         <Layout>
-            <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+            <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-xl">
 
                 <Head>
                     <title>About LayerSwap</title>

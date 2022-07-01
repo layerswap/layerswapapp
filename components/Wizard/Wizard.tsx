@@ -7,6 +7,8 @@ import { BaseWizard, FormSteps, FormWizardSteps, SwapWizardSteps } from '../../M
 import { useAuthState } from '../../context/auth';
 import TokenService from '../../lib/TokenService';
 import LayerswapMenu from '../LayerswapMenu';
+import Link from 'next/link';
+import LayerSwapLogo from '../icons/layerSwapLogo';
 
 
 function classNames(...classes) {
@@ -93,16 +95,21 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
    const { goBack } = useFormWizardaUpdate()
    const { wizard, currentStep } = useFormWizardState<BaseWizard>()
 
-
-
    return <>
-
-      <div className="grid grid-cols-2 gap-4 place-content-end px-8 mt-3 h-[44px]" >
+      <div className="w-full flex items-center justify-between px-8 mt-3 h-[44px]" >
          <>
             <button onClick={goBack} className="justify-self-start" style={{ visibility: wizard[currentStep].navigationDisabled ? 'hidden' : 'visible' }}>
                <ArrowLeftIcon className='h-5 w-5 text-pink-primary-300 hover:text-ouline-blue cursor-pointer' />
             </button>
-
+            <div className='mt-12 mb-8 mx-auto px-4 overflow-hidden md:hidden'>
+               <div className="flex justify-center">
+                  <Link href="/" key="Home" shallow={true}>
+                     <a>
+                        <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+                     </a>
+                  </Link>
+               </div>
+            </div>
             <LayerswapMenu />
          </>
       </div>

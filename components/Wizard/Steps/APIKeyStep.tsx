@@ -1,11 +1,11 @@
-import { CheckIcon, ExclamationIcon } from '@heroicons/react/outline';
+import { ExclamationIcon } from '@heroicons/react/outline';
+import { swap } from 'formik';
 import Link from 'next/link';
 import { FC, useCallback, useState } from 'react'
 import { useAuthDataUpdate } from '../../../context/auth';
-import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
+import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
-import { useWizardState } from '../../../context/wizard';
-import { BransferApiClient } from '../../../lib/bransferApiClients';
+import { BransferApiClient, UserExchangesResponse } from '../../../lib/bransferApiClients';
 import { FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 
@@ -13,11 +13,14 @@ const APIKeyStep: FC = () => {
 
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
+    const [keyphrase, setKeyphrase] = useState("")
+
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false);
     const { swapFormData } = useSwapDataState()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const { getAuthData } = useAuthDataUpdate()
+
 
     const handleKeyChange = (e) => {
         setKey(e?.target?.value)
@@ -25,13 +28,15 @@ const APIKeyStep: FC = () => {
     const handleSecretChange = (e) => {
         setSecret(e?.target?.value)
     }
-
+    const handleKeyphraseChange = (e) => {
+        setKeyphrase(e?.target?.value)
+    }
     const connect = useCallback(async () => {
         try {
             setLoading(true)
             const bransferApiClient = new BransferApiClient();
             const authData = getAuthData()
-            const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: swapFormData?.exchange?.id, api_key: key, api_secret: secret }, authData.access_token)
+            const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: swapFormData?.exchange?.id, api_key: key, api_secret: secret, keyphrase: keyphrase }, authData.access_token)
             if (res.is_success)
                 goToStep("SwapConfirmation")
         }
@@ -47,11 +52,13 @@ const APIKeyStep: FC = () => {
         finally {
             setLoading(false)
         }
-    }, [key, secret, swapFormData, getAuthData])
+    }, [key, secret, keyphrase, swapFormData, getAuthData])
+
+    const dataIsValid = secret && key && (swapFormData?.exchange?.baseObject?.has_keyphrase ? keyphrase : true)
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-6 grid grid-flow-row text-pink-primary-300">
+            <div className="w-full px-8 py-6 grid grid-flow-row text-pink-primary-300">
                 {
                     error &&
                     <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">
@@ -141,9 +148,30 @@ const APIKeyStep: FC = () => {
                             placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
+                    {
+                        swapFormData?.exchange?.baseObject?.has_keyphrase &&
+                        <>
+                            <label htmlFor="apiKey" className="block font-normal text-sm">
+                                {swapFormData?.exchange?.baseObject?.keyphrase_display_name}
+                            </label>
+                            <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
+                                <input
+                                    autoComplete="off"
+                                    placeholder={`Your ${swapFormData?.exchange?.baseObject?.keyphrase_display_name}`}
+                                    autoCorrect="off"
+                                    type="text"
+                                    name="apiKey"
+                                    onChange={handleKeyphraseChange}
+                                    id="apiKey"
+                                    className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 block
+                             placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                />
+                            </div>
+                        </>
+                    }
                 </div>
                 <div className="text-white text-base mt-3">
-                    <SubmitButton isDisabled={false} icon="" isSubmitting={loading} onClick={connect}>
+                    <SubmitButton isDisabled={!dataIsValid || loading} icon="" isSubmitting={loading} onClick={connect}>
                         Connect
                     </SubmitButton>
                 </div>

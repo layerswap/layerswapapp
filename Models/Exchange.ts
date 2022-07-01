@@ -8,4 +8,6 @@ export class Exchange {
     fee_percentage: number;
     authorization_flow: "o_auth2" | "api_credentials" | "none" | null;
     oauth_redirect_url: string;
+    has_keyphrase:boolean;
+    keyphrase_display_name:string;
 }

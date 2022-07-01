@@ -47,9 +47,10 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const handleTwoFACodeChange = (e) => {
         setTwoFactorCode(e?.target?.value)
     }
-    const handleStartEditingAddress = () => {
-        setEditingAddress(true)
-    }
+    const handleStartEditingAddress = useCallback(() => {
+        if (!loading)
+            setEditingAddress(true)
+    }, [loading])
     const handleAddressInputChange = useCallback((e) => {
         setAddressInputError("")
         setAddressInputValue(e?.target?.value)
@@ -125,7 +126,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-6 pt-1 grid grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
+            <div className="w-full px-8 py-6 pt-1 md:grid md:grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
                 <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please confirm your swap
                 </h3>
@@ -162,7 +163,10 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                 />
                             </div>
                             <div className='text-w'>
-                                <div>{swapFormData?.destination_address} <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></div>
+                                <div>
+                                    <span className='hidden md:inline-block'>{swapFormData?.destination_address}</span>
+                                    <span className='md:hidden'> {`${swapFormData?.destination_address?.substr(0, 5)}...${swapFormData?.destination_address?.substr(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</span>
+                                    <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></div>
                                 <div>{swapFormData?.amount} {swapFormData?.currency?.name}</div>
                             </div>
                         </div>
@@ -170,7 +174,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
                 </div>
 
-                <p className='mt-4 pt-2 text-lg leading-6 text-center md:text-left font-roboto text-white'>
+                <p className='mt-4 pt-2 text-lg leading-6 md:text-center md:text-left font-roboto text-white'>
                     To continue, you have to confirm that
                 </p>
 

@@ -22,6 +22,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const router = useRouter();
+    const [keyphrase, setKeyphrase] = useState("")
 
     useEffect(() => {
         setLoading(false)
@@ -33,6 +34,9 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
     const handleSecretChange = (e) => {
         setSecret(e?.target?.value)
     }
+    const handleKeyphraseChange = (e) => {
+        setKeyphrase(e?.target?.value)
+    }
 
     const connect = useCallback(async () => {
         try {
@@ -40,7 +44,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
             setLoading(true)
             const bransferApiClient = new BransferApiClient();
 
-            const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret }, access_token)
+            const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase }, access_token)
             if (res.is_success)
                 onClose()
             //TODO handle error
@@ -51,12 +55,13 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
         finally {
             setLoading(false)
         }
-    }, [key, secret, exchange])
+    }, [key, secret, keyphrase, exchange])
 
+    const dataIsValid = secret && key && (exchange?.has_keyphrase ? keyphrase : true)
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
+            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row text-left">
                 {
                     error &&
                     <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">
@@ -134,9 +139,30 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
+                    {
+                        exchange?.has_keyphrase &&
+                        <>
+                            <label htmlFor="apiKey" className="block font-normal text-light-blue text-sm">
+                                {exchange?.keyphrase_display_name}
+                            </label>
+                            <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
+                                <input
+                                    autoComplete="off"
+                                    placeholder={`Your ${exchange?.keyphrase_display_name}`}
+                                    autoCorrect="off"
+                                    type="text"
+                                    name="apiKey"
+                                    onChange={handleKeyphraseChange}
+                                    id="apiKey"
+                                    className="h-12 pb-1 pt-0 text-white focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
+                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                />
+                            </div>
+                        </>
+                    }
                 </div>
                 <div className="text-white text-base mt-3">
-                    <SubmitButton isDisabled={loading} icon="" isSubmitting={loading} onClick={connect}>
+                    <SubmitButton isDisabled={!dataIsValid || loading} icon="" isSubmitting={loading} onClick={connect}>
                         Connect
                     </SubmitButton>
                 </div>
