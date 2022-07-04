@@ -151,7 +151,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             isDefault: n.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
-
+    console.log(settings.networks)
     if (exchange && !network)
         ref.current?.focus()
 
