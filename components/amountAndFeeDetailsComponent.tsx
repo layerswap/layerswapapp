@@ -51,7 +51,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                                 {receive_amount}
                                                 <span>
                                                     {
-                                                        ` ${currency?.name || ""}`
+                                                        ` ${currency?.asset || ""}`
                                                     }
                                                 </span>
                                             </span>
@@ -73,7 +73,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                         </label>
                                         <span className="font-normal text-center text-white">
                                             {fee.toLocaleString()}
-                                            <span>  {currency?.name} </span>
+                                            <span>  {currency?.asset} </span>
                                         </span>
                                     </div>
                                     <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
@@ -88,7 +88,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                                 }
                                                 return "0";
                                             })()}
-                                            <span>  {currency?.name} {exchange?.internal_name === "binance" && <span className='inline-flex'>( Refundable {Tooltip("test")} )</span>}</span>
+                                            <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex'>( Refundable {Tooltip("test")} )</span>}</span>
                                         </span>
                                     </div>
                                     <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
