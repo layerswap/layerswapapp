@@ -146,7 +146,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             id: n.code,
             name: n.name,
             imgSrc: n.logo_url,
-            isAvailable: true,
+            isAvailable: !n.is_test_net,
             isEnabled: n.is_enabled,
             isDefault: n.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
