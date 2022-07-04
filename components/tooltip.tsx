@@ -1,14 +1,14 @@
 import { InformationCircleIcon } from "@heroicons/react/outline";
 
 
-export default function Tooltip(value) {
+export default function Tooltip({text}:{text:string}) {
     return (
         <>
             <div className="ml-1 text-white inset-y-0 -right-4 flex items-center group">
                 <div className="absolute flex flex-col items-center">
                     <div className="w-36 md:w-40 lg:w-40 absolute -right-6 bottom-0 flex-col items-right mb-3 hidden group-hover:flex">
                         <span className="leading-4 min z-10 p-2 text-xs text-left text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
-                            {value}
+                            {text}
                         </span>
                         <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100"></div>
                     </div>

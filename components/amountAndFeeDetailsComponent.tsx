@@ -28,7 +28,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
 
     let fee = amount ? Number(calculateFee(Number(amount), currency, exchange)?.toFixed(currency?.precision)) : 0;
 
-    
+
     let receive_amount = 0;
     let fee_amount = Number(amount?.toString()?.replace(",", "."));
     if (fee_amount >= currency?.min_amount) {
@@ -78,7 +78,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                     <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
                                         <label className="inline-flex font-normal text-pink-primary-300 text-left">
                                             Exchange Fee
-                                            {Tooltip("Some exchanges charge a fee to cover gas fees of on-chain transfers.")}
+                                            <Tooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                         </label>
                                         <span className="font-normal text-center text-white">
                                             {(() => {
@@ -87,7 +87,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                                 }
                                                 return "0";
                                             })()}
-                                            <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex'>( Refundable {Tooltip("After initiating the withdrawal, this fee will be refunded to your Binance account.")} )</span>}</span>
+                                            <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex text-pink-primary-300'>(Refundable) <Tooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." /></span>}</span>
                                         </span>
                                     </div>
                                     <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">

@@ -135,7 +135,7 @@ const CodeStep: FC = () => {
                                 <label className="block font-lighter leading-6 text-center">
                                     Didn't receive it?
                                     <button className="pl-1 font-lighter  strong-highlight hightlight-animation highlight-link hover:cursor-pointer" onClick={handleResendCode}>
-                                        Resend again
+                                        Send again
                                     </button>
                                 </label>
                         }

@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { Fragment, useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { Swap } from "../lib/layerSwapApiClient"
+import LayerSwapApiClient, { Swap, SwapDetailsResponse } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
 import { ClockIcon } from '@heroicons/react/solid';
@@ -16,8 +16,9 @@ import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
 
 
-function statusIcon(status: SwapStatus) {
-  if (status === 'failed') {
+export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
+  console.log("swww", swap)
+  if (swap.status === 'failed') {
     return (<>
       <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-4 h-4 lg:h-9 lg:w-9" viewBox="0 0 60 60" fill="none">
         <circle cx="30" cy="30" r="30" fill="#E43636" />
@@ -34,10 +35,8 @@ function statusIcon(status: SwapStatus) {
           </div>
         </div>
       </div>
-    </>
-
-    )
-  } else if (status === 'completed') {
+    </>)
+  } else if (swap.status === 'completed') {
     return (
       <>
         <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-4 h-4 lg:h-9 lg:w-9" viewBox="0 0 60 60" fill="none">
@@ -55,9 +54,26 @@ function statusIcon(status: SwapStatus) {
           </div>
         </div>
       </>
-
     )
   }
+  else if (swap?.payment?.status == "closed")
+    return (<>
+      <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-4 h-4 lg:h-9 lg:w-9" viewBox="0 0 60 60" fill="none">
+        <circle cx="30" cy="30" r="30" fill="#E43636" />
+        <path d="M20 41L40 20" stroke="white" strokeWidth="3.15789" stroke-linecap="round" />
+        <path d="M20 20L40 41" stroke="white" strokeWidth="3.15789" stroke-linecap="round" />
+      </svg>
+      <div className="text-white absolute inset-y-0 right-0 flex items-center px-4">
+        <div className="relative flex flex-col items-center group">
+          <div className="w-48 absolute right-0 bottom-0 flex flex-col items-right hidden mb-3 group-hover:flex">
+            <span className="leading-4 min z-10 p-2 text-xs text-white whitespace-no-wrap bg-gray-600 shadow-lg rounded-md">
+              Payment closed
+            </span>
+            <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-gray-600"></div>
+          </div>
+        </div>
+      </div>
+    </>)
   else {
     return <>
       <ClockIcon className="mr-1.5 w-4 h-4 lg:h-9 lg:w-9 fill-yellow-400" />
@@ -82,7 +98,7 @@ function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const { exchanges, networks } = useSettingsState()
   const [isLastPage, setIsLastPage] = useState(false)
-  const [swaps, setSwaps] = useState<Swap[]>()
+  const [swaps, setSwaps] = useState<SwapDetailsResponse[]>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const router = useRouter();
@@ -209,7 +225,7 @@ function TransactionsHistory() {
                         scope="col"
                         className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
                       >
-                        TX Id
+                        Address
                       </th>
                       <th
                         scope="col"
@@ -268,7 +284,7 @@ function TransactionsHistory() {
                           </div>
                           <div className="flex items-center mt-1 text-white sm:block lg:hidden">
                             <span className="flex items-center">
-                              {statusIcon(swap.status)}
+                              {<StatusIcon swap={swap} />}
                               {/* {plan.from} - {plan.to} */}
                             </span>
                             <span className="block lg:hidden">{(new Date(swap.created_date)).toLocaleString()}</span>
@@ -318,7 +334,7 @@ function TransactionsHistory() {
                             'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                           )}
                         >
-                          {swap.id}
+                          {swap.destination_address}
                         </td>
                         <td
                           className={classNames(
@@ -326,7 +342,7 @@ function TransactionsHistory() {
                             'relative px-3 py-3.5 text-sm text-white hidden lg:table-cell group'
                           )}
                         >
-                          {statusIcon(swap.status)}
+                          {<StatusIcon swap={swap} />}
 
                         </td>
                         <td
@@ -409,15 +425,26 @@ function TransactionsHistory() {
                       <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-darkBlue shadow-card text-center align-middle shadow-xl transition-all">
 
                         <SwapDetails id={selectedSwap?.id} />
-
-                        <div className="mt-4">
+                        <div className="w-full px-3 md:px-8 py-6 grid grid-flow-row">
                           <button
                             type="button"
-                            className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            className="group text-white disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
                             onClick={handleClose}
                           >
                             OK
                           </button>
+                          <div className="text-white text-sm md:mt-3 mt-0">
+                            {
+                              networks && selectedSwap?.transaction_id &&
+                              <a href={networks.filter(x => x.code === selectedSwap?.network)[0]?.explorer_template.replace("{0}", selectedSwap?.transaction_id)}
+                                target="_blank"
+                                className="text-sm flex justify-center w-full flex justify-center py-3 px-4 rounded-md text-pink-primary border border-pink-primary uppercase">
+                                View in Explorer
+                                <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                              </a>
+                            }
+
+                          </div>
                         </div>
                       </Dialog.Panel>
                     </Transition.Child>

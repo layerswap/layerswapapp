@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Exchange } from "../Models/Exchange";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { SwapStatus } from "../Models/SwapStatus";
 import authInterceptor from "./axiosInterceptor"
@@ -51,7 +52,7 @@ export type Swap = {
     "created_date": Date,
     "currency": string,
     "network": string,
-    "exchange":string,
+    "exchange": string,
     "offramp_info": string
 }
 
@@ -59,10 +60,11 @@ export type SwapDetailsResponse = {
     id: string,
     amount: number,
     status: SwapStatus,
+    exchange: string,
     type: string,
     destination_address: string,
     external_payment_id: string,
-    payment: Payment,
+    payment?: Payment,
     external_payout_id: string,
     message: string,
     transaction_id: string,
@@ -81,7 +83,9 @@ export type Payment = {
     currency: string,
     exchange: string,
     message: string,
+    withdrawal_fee: number,
     manual_flow_context?: {
+        current_withdrawal_fee: number,
         require_select_internal: boolean,
         display_network: boolean,
         is_fee_refundable: boolean,
