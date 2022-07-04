@@ -85,7 +85,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 </div>
                             </div>
                         }
-                        <span className="ml-3 block font-medium text-pink-primary-300 truncate flex-auto items-center">
+                        <span className="ml-3 block font-medium text-pink-primary-300 flex-auto items-center">
                             {selectedItem?.name || placeholder}
                         </span>
                     </span>
