@@ -101,7 +101,7 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
             <button onClick={goBack} className="justify-self-start" style={{ visibility: wizard[currentStep].navigationDisabled ? 'hidden' : 'visible' }}>
                <ArrowLeftIcon className='h-5 w-5 text-pink-primary-300 hover:text-ouline-blue cursor-pointer' />
             </button>
-            <div className='mt-12 mb-8 mx-auto px-4 overflow-hidden md:hidden'>
+            <div className='mx-auto px-4 overflow-hidden md:hidden'>
                <div className="flex justify-center">
                   <Link href="/" key="Home" shallow={true}>
                      <a>

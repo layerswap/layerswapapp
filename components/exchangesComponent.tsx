@@ -142,7 +142,7 @@ function UserExchanges() {
     return (
         <div className={`bg-darkBlue text-white min-w-3xl shadow-card rounded-lg w-full overflow-hidden relative `}>
             <div className="relative flex items-center justify-between place-content-end px-14 z-20 mt-3" >
-                <div className='mt-12 mb-8 mx-auto px-4 overflow-hidden md:hidden'>
+                <div className='mx-auto px-4 overflow-hidden md:hidden'>
                     <div className="flex justify-center">
                         <Link href="/" key="Home" shallow={true}>
                             <a>
@@ -151,6 +151,7 @@ function UserExchanges() {
                         </Link>
                     </div>
                 </div>
+                <div></div>
                 <LayerswapMenu />
             </div>
             <div className="px-6 md:px-12 relative inset-0 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">

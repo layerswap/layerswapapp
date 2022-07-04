@@ -10,6 +10,8 @@ import { SwapStatus } from "../Models/SwapStatus"
 import { Dialog, Transition } from "@headlessui/react"
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
+import Link from "next/link"
+import LayerSwapLogo from "./icons/layerSwapLogo"
 
 
 function statusIcon(status: SwapStatus) {
@@ -152,7 +154,17 @@ function TransactionsHistory() {
 
   return (
     <div className={`bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
-      <div className="relative grid grid-cols-1 gap-4 place-content-end z-20 px-6 md:px-12 mt-3" >
+      <div className="relative flex items-center justify-between place-content-end px-14 z-20 mt-3" >
+        <div className='mx-auto px-4 overflow-hidden md:hidden'>
+          <div className="flex justify-center">
+            <Link href="/" key="Home" shallow={true}>
+              <a>
+                <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+              </a>
+            </Link>
+          </div>
+        </div>
+        <div></div>
         <LayerswapMenu />
       </div>
 

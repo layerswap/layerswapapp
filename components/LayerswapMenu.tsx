@@ -22,7 +22,7 @@ export default function () {
         router.push('/', '/signedout', { shallow: true })
     }
 
-    return <span className="justify-self-end text-pink-primary-300 cursor-pointer relative ">
+    return <span className="justify-self-end place-self-end text-pink-primary-300 cursor-pointer relative ">
         {
             <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
                 <div>
