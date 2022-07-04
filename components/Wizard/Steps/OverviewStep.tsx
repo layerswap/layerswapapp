@@ -1,18 +1,11 @@
-import { CheckIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/solid';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { useWizardState } from '../../../context/wizard';
-import { useInterval } from '../../../hooks/useInyterval';
-import { BransferApiClient } from '../../../lib/bransferApiClients';
-import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
 import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { SwapWizardSteps } from '../../../Models/Wizard';
-import SubmitButton from '../../buttons/submitButton';
 
 type Props = {
     current: boolean
