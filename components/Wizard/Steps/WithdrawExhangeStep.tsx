@@ -61,6 +61,18 @@ const WithdrawExchangeStep: FC = () => {
     const exchange_name = exchange?.name || ' '
     const exchange_logo_url = exchange?.logo_url
 
+    const handleCopyAddress = useCallback(() => {
+        copyTextToClipboard(swap?.destination_address)
+    }, [swap?.destination_address])
+
+    const handleCopyAmount = useCallback(() => {
+        copyTextToClipboard(swap?.amount)
+    }, [swap?.amount])
+
+    const handleCopyNote = useCallback(() => {
+        copyTextToClipboard(payment?.note_flow_context?.note)
+    }, [payment?.note_flow_context?.note])
+
     return (
         <>
             <div className="w-full px-6 py-6 md:grid md:grid-flow-row text-pink-primary-300">
@@ -69,7 +81,7 @@ const WithdrawExchangeStep: FC = () => {
                         Go to
                         {
                             exchange_logo_url &&
-                            <div className="inline-block mx-1" style={{position:"relative",top:'6px'}}>
+                            <div className="inline-block mx-1" style={{ position: "relative", top: '6px' }}>
                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                     <Image
                                         src={exchange_logo_url}
@@ -111,7 +123,7 @@ const WithdrawExchangeStep: FC = () => {
                         <div className='absolute inset-y-2 right-2.5'>
                             <Popover>
                                 <Popover.Button>
-                                    <button className=' rounded bg bg-darkblue-50 p-2' onClick={() => { copyTextToClipboard(payment?.note_flow_context?.note) }}>
+                                    <button className=' rounded bg bg-darkblue-50 p-2' onClick={handleCopyAddress}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
                                             <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
                                         </svg>
@@ -163,14 +175,14 @@ const WithdrawExchangeStep: FC = () => {
                             name="withdrawlAmount"
                             id="withdrawlAmount"
                             disabled={true}
-                            value={payment?.manual_flow_context?.total_withdrawal_amount || payment?.amount}
+                            value={swap?.amount}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
                             placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                         <div className='absolute inset-y-2 right-2.5'>
                             <Popover>
                                 <Popover.Button>
-                                    <button className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={() => { copyTextToClipboard(payment?.note_flow_context?.note) }}>
+                                    <button className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={handleCopyAmount}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
                                             <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
                                         </svg>
@@ -211,7 +223,7 @@ const WithdrawExchangeStep: FC = () => {
                             <div className='absolute inset-y-2 right-2.5'>
                                 <Popover>
                                     <Popover.Button>
-                                        <button className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={() => { copyTextToClipboard(payment?.note_flow_context?.note) }}>
+                                        <button className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={handleCopyNote}>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
                                                 <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
                                             </svg>
