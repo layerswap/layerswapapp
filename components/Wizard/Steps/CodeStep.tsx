@@ -100,7 +100,7 @@ const CodeStep: FC = () => {
                     <label htmlFor="amount" className="block font-normal text-sm">
                         Your Email Code
                     </label>
-                    <div className="relative rounded-md shadow-sm mt-2 mb-4">
+                    <div className="relative rounded-md shadow-sm mt-2 mb-4 leading-none">
                         <input
                             inputMode="decimal"
                             autoComplete="off"
@@ -110,7 +110,7 @@ const CodeStep: FC = () => {
                             maxLength={6}
                             name="Code"
                             id="Code"
-                            className="h-12 text-2xl pl-5 focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
+                            className="leading-none h-12 text-2xl pl-5 focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
                              placeholder:text-2xl placeholder:h-12 placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
                             onKeyPress={e => {
                                 isNaN(Number(e.key)) && e.preventDefault()
