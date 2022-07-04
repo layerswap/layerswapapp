@@ -3,33 +3,38 @@ import { Disclosure } from "@headlessui/react";
 import Tooltip from './tooltip';
 import { SwapFormValues } from './DTOs/SwapFormValues';
 import { useSwapDataState } from '../context/swap';
+import { Currency } from '../Models/Currency';
+import { Exchange } from '../Models/Exchange';
 
-function exchangeFee(values: SwapFormValues): number {
-    return values?.currency?.baseObject.exchanges?.find(e => e.exchangeId == values.exchange.baseObject.id)?.fee || 0;
+function exchangeFee(currency: Currency, exchange: Exchange): number {
+    return currency?.exchanges?.find(e => e.exchange_id == exchange.id)?.fee || 0;
 }
 
-function calculateFee(values: SwapFormValues): number {
-    let currencyObject = values?.currency?.baseObject;
-    let exchangeObject = values?.exchange?.baseObject;
+function calculateFee(amount: number, currency: Currency, exchange: Exchange): number {
 
-    var exchangeFee = Number(values?.amount?.toString()?.replace(",", ".")) * exchangeObject?.fee_percentage;
-    var overallFee = currencyObject?.fee + exchangeFee;
+    var exchangeFee = Number(amount?.toString()?.replace(",", ".")) * exchange?.fee_percentage;
+    var overallFee = currency?.fee + exchangeFee;
 
     return overallFee || 0;
 }
 
-export default function AmountAndFeeDetails({ swapFormData }: { swapFormData: SwapFormValues }) {
+type Props = {
+    amount: string,
+    currency: Currency,
+    exchange: Exchange
+}
 
-    let fee = swapFormData?.amount ? Number(calculateFee(swapFormData)?.toFixed(swapFormData?.currency?.baseObject?.precision)) : 0;
+export default function AmountAndFeeDetails({ amount, currency, exchange }: Props) {
 
+    let fee = amount ? Number(calculateFee(Number(amount), currency, exchange)?.toFixed(currency?.precision)) : 0;
 
+    
     let receive_amount = 0;
-    let amount = Number(swapFormData?.amount?.toString()?.replace(",", "."));
-    let currencyObject = swapFormData?.currency?.baseObject;
-    if (amount >= currencyObject?.min_amount) {
-        var exFee = exchangeFee(swapFormData);
-        var result = amount - fee - exFee;
-        receive_amount = Number(result.toFixed(currencyObject.precision));
+    let fee_amount = Number(amount?.toString()?.replace(",", "."));
+    if (fee_amount >= currency?.min_amount) {
+        var exFee = exchangeFee(currency, exchange);
+        var result = fee_amount - fee - exFee;
+        receive_amount = Number(result.toFixed(currency?.precision));
     }
     return (
         <>
@@ -46,7 +51,7 @@ export default function AmountAndFeeDetails({ swapFormData }: { swapFormData: Sw
                                                 {receive_amount}
                                                 <span>
                                                     {
-                                                        ` ${swapFormData?.currency?.name || ""}`
+                                                        ` ${currency?.name || ""}`
                                                     }
                                                 </span>
                                             </span>
@@ -68,7 +73,7 @@ export default function AmountAndFeeDetails({ swapFormData }: { swapFormData: Sw
                                         </label>
                                         <span className="font-normal text-center text-white">
                                             {fee.toLocaleString()}
-                                            <span>  {swapFormData?.currency?.name} </span>
+                                            <span>  {currency?.name} </span>
                                         </span>
                                     </div>
                                     <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
@@ -78,12 +83,12 @@ export default function AmountAndFeeDetails({ swapFormData }: { swapFormData: Sw
                                         </label>
                                         <span className="font-normal text-center text-white">
                                             {(() => {
-                                                if (swapFormData?.amount && swapFormData?.amount != "") {
-                                                    return exchangeFee(swapFormData)
+                                                if (amount) {
+                                                    return exchangeFee(currency, exchange)
                                                 }
                                                 return "0";
                                             })()}
-                                            <span>  {swapFormData?.currency?.name} {swapFormData?.exchange?.baseObject?.internal_name === "binance" && <span className='inline-flex'>( Refundable {Tooltip("test")} )</span>}</span>
+                                            <span>  {currency?.name} {exchange?.internal_name === "binance" && <span className='inline-flex'>( Refundable {Tooltip("test")} )</span>}</span>
                                         </span>
                                     </div>
                                     <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">

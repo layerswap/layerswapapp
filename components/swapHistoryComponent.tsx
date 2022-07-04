@@ -12,6 +12,8 @@ import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
 import Link from "next/link"
 import LayerSwapLogo from "./icons/layerSwapLogo"
+import { useSettingsState } from "../context/settings"
+import Image from 'next/image'
 
 
 function statusIcon(status: SwapStatus) {
@@ -78,6 +80,7 @@ function classNames(...classes) {
 }
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
+  const { exchanges, networks } = useSettingsState()
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<Swap[]>()
   const [loading, setLoading] = useState(false)
@@ -227,18 +230,43 @@ function TransactionsHistory() {
                     </tr>
                   </thead>
                   <tbody>
-                    {swaps?.map((swap, index) => (
-                      <tr key={swap.id}>
+                    {swaps?.map((swap, index) => {
+                      const exchange = exchanges?.find(e => e.internal_name === swap?.exchange)
+                      const network = networks?.find(n => n.code === swap?.network)
+                      return <tr key={swap.id}>
                         <td
                           className={classNames(
                             index === 0 ? '' : 'border-t border-transparent',
                             'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
                           )}
                         >
-                          <div className="text-white hidden lg:block">
-                            {swap.exchange}
+                          <div className="text-white ">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-5 w-5 relative">
+                                <Image
+                                  src={exchange?.logo_url}
+                                  alt="Exchange Logo"
+                                  height="60"
+                                  width="60"
+                                  layout="responsive"
+                                  className="rounded-md object-contain"
+                                />
+                              </div>
+                              <div className="mx-1">{exchange?.name}</div>
+                              <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
+                                <Image
+                                  src={network?.logo_url}
+                                  alt="Exchange Logo"
+                                  height="60"
+                                  width="60"
+                                  layout="responsive"
+                                  className="rounded-md object-contain"
+                                />
+                              </div>
+                              <div className="mx-1 block lg:hidden">{network?.name}</div>
+                            </div>
                           </div>
-                          <div className="mt-1 flex flex-col text-white sm:block lg:hidden">
+                          <div className="flex items-center mt-1 text-white sm:block lg:hidden">
                             <span className="flex items-center">
                               {statusIcon(swap.status)}
                               {/* {plan.from} - {plan.to} */}
@@ -253,7 +281,20 @@ function TransactionsHistory() {
                             'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                           )}
                         >
-                          {swap.network}
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-5 w-5 relative">
+                              <Image
+                                src={network?.logo_url}
+                                alt="Exchange Logo"
+                                height="60"
+                                width="60"
+                                layout="responsive"
+                                className="rounded-md object-contain"
+                              />
+                            </div>
+                            <div className="ml-1">{network?.name}</div>
+                          </div>
+
                         </td>
                         <td
                           className={classNames(
@@ -264,13 +305,13 @@ function TransactionsHistory() {
                           {swap.amount} {swap.currency}
                         </td>
                         {/* <td
-                  className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
-                    'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
-                  )}
-                >
-                  {swap.fee} {swap.currency} 
-                </td> */}
+                className={classNames(
+                  index === 0 ? '' : 'border-t border-darkblue-100',
+                  'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
+                )}
+              >
+                {swap.fee} {swap.currency} 
+              </td> */}
                         <td
                           className={classNames(
                             index === 0 ? '' : 'border-t border-darkblue-100',
@@ -312,7 +353,7 @@ function TransactionsHistory() {
                           {index !== 0 ? <div className="absolute right-6 left-0 -top-px h-px bg-darkblue-100" /> : null}
                         </td>
                       </tr>
-                    ))}
+                    })}
                   </tbody>
                 </table>
               </div>

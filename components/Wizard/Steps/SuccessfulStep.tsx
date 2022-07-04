@@ -1,19 +1,13 @@
 import { CheckIcon, ExternalLinkIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { FC, useCallback, useState } from 'react'
-import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
-import { useWizardState } from '../../../context/wizard';
-import { SwapWizardSteps } from '../../../Models/Wizard';
-import SubmitButton from '../../buttons/submitButton';
 
 const SuccessfulStep: FC = () => {
 
-    const { networks } = useSettingsState()
+    const { networks,exchanges } = useSettingsState()
     const { swap } = useSwapDataState()
-    const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
-    setLoadingWizard(false)
 
     return (
         <>
