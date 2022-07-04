@@ -122,7 +122,6 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             isDefault: e.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
-    console.log(settings.exchanges)
     return (<>
         <label htmlFor="exchange" className="block font-normal text-pink-primary-300 text-sm">
             From

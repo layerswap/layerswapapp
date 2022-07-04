@@ -139,7 +139,6 @@ function UserExchanges() {
             setLoading(false)
         }
     }
-    console.log(exchanges)
     return (
         <div className={`bg-darkBlue text-white min-w-3xl shadow-card rounded-lg w-full overflow-hidden relative `}>
             <div className="relative flex items-center justify-between place-content-end px-14 z-20 mt-3" >
