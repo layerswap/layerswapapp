@@ -62,7 +62,7 @@ const WithdrawExchangeStep: FC = () => {
     const exchange_logo_url = exchange?.logo_url
 
     const handleCopyAddress = useCallback(() => {
-        copyTextToClipboard(swap?.destination_address)
+        copyTextToClipboard(swap?.payment?.manual_flow_context?.address)
     }, [swap?.destination_address])
 
     const handleCopyAmount = useCallback(() => {
