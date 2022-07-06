@@ -263,7 +263,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     <span className='relative z-40 overflow-hidden bg-darkBlue p-10 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
                             <span className="justify-self-end text-light-blue cursor-pointer">
-                                <div className="hidden sm:block ">
+                                <div className="">
                                     <button
                                         type="button"
                                         className="rounded-md text-darkblue-200 focus:ring-2 hover:text-light-blue"

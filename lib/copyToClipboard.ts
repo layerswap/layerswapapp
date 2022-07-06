@@ -11,6 +11,29 @@ function fallbackCopyTextToClipboard(text) {
     textArea.focus();
     textArea.select();
 
+    var isiOSDevice = navigator.userAgent.match(/ipad|iphone/i);
+
+    if (isiOSDevice) {
+
+        var editable = textArea.contentEditable;
+        var readOnly = textArea.readOnly;
+
+        textArea.contentEditable = 'true';
+        textArea.readOnly = false;
+
+        var range = document.createRange();
+        range.selectNodeContents(textArea);
+
+        var selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        textArea.setSelectionRange(0, 999999);
+        textArea.contentEditable = editable;
+        textArea.readOnly = readOnly;
+
+    }
+
     try {
         var successful = document.execCommand('copy');
         var msg = successful ? 'successful' : 'unsuccessful';
@@ -22,6 +45,7 @@ function fallbackCopyTextToClipboard(text) {
     document.body.removeChild(textArea);
 }
 export function copyTextToClipboard(text) {
+
     if (!navigator.clipboard) {
         fallbackCopyTextToClipboard(text);
         return;
