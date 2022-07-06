@@ -225,7 +225,7 @@ function TransactionsHistory() {
                         scope="col"
                         className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
                       >
-                        Address
+                        TX Id
                       </th>
                       <th
                         scope="col"
@@ -334,7 +334,7 @@ function TransactionsHistory() {
                             'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                           )}
                         >
-                          {swap.destination_address}
+                          {swap.id}
                         </td>
                         <td
                           className={classNames(
