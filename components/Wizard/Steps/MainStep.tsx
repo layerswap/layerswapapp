@@ -33,7 +33,7 @@ import AmountAndFeeDetails from "../../amountAndFeeDetailsComponent";
 import ConnectImmutableX from "./ConnectImmutableX";
 import ConnectDeversifi from "../../ConnectDeversifi";
 import SendFeedback from "../../sendFeedback";
-import SlideOver, { SildeOVerRef } from "../../SlideOver";
+import SlideOver, { SildeOverRef } from "../../SlideOver";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';

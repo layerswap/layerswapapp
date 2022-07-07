@@ -4,15 +4,16 @@ import React from "react";
 import { FC, forwardRef, Fragment, ReactNode, useImperativeHandle, useState } from "react"
 
 type Props = {
-    opener: ReactNode,
+    opener?: ReactNode,
     children?: ReactNode;
+    moreClassNames?: string;
 }
-export type SildeOVerRef = {
+export type SildeOverRef = {
     close: () => void;
     open: () => void;
 };
 
-const SlideOver = forwardRef<SildeOVerRef, Props>(({ opener, children }, ref) => {
+const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, children }, ref) => {
     const [open, setOpen] = useState(false)
     const handleClose = () => setOpen(false)
     const handleOpen = () => setOpen(true)
@@ -35,7 +36,7 @@ const SlideOver = forwardRef<SildeOVerRef, Props>(({ opener, children }, ref) =>
                 leave="ease-in duration-200"
                 leaveFrom="translate-y-0"
                 leaveTo="translate-y-full">
-                <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkBlue'>
+                <div className={`absolute inset-0 z-40 flex flex-col w-full bg-darkBlue ${moreClassNames}`}>
                     <span className='relative z-40 overflow-hidden bg-darkBlue p-10 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
                             <span className="justify-self-end text-light-blue cursor-pointer">
