@@ -77,7 +77,7 @@ const AccountConnectStep: FC = () => {
 
                 <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please connect your {exchange_name} account
-                    <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-sm text-pink-primary-300 font-light'>
+                    <p className='pt-2 text-base text-center md:text-left font-roboto text-sm text-pink-primary-300 font-light'>
                         You will leave Layerswap and be securely redirected to <span className='strong-highlight'>{exchange_name}</span> authorization page.
                     </p>
                     {/* <div className="flex items-center text-pink-primary-300 border-2 p-4 rounded-md border-ouline-blue border-dashed">
