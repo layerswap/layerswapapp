@@ -1,14 +1,30 @@
 import { Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
-import { FC, Fragment, useState } from "react"
+import React from "react";
+import { FC, forwardRef, Fragment, ReactNode, useImperativeHandle, useState } from "react"
 
-const SlideOver: FC = () => {
+type Props = {
+    opener: ReactNode,
+    children?: ReactNode;
+}
+export type SildeOVerRef = {
+    close: () => void;
+    open: () => void;
+};
+
+const SlideOver = forwardRef<SildeOVerRef, Props>(({ opener, children }, ref) => {
     const [open, setOpen] = useState(false)
     const handleClose = () => setOpen(false)
+    const handleOpen = () => setOpen(true)
 
-    
+    useImperativeHandle(ref, () => ({
+        close: handleClose,
+        open: handleOpen
+    }), []);
+
     return (
         <>
+            <span onClick={handleOpen}>{opener}</span>
             <Transition
                 appear
                 show={open}
@@ -60,7 +76,7 @@ const SlideOver: FC = () => {
                                 >
 
                                     <div className='pb-12 grid grid-flow-row min-h-[480px] text-pink-primary-300'>
-
+                                        {children}
                                     </div>
                                 </Transition.Child>
                             </div>
@@ -70,6 +86,6 @@ const SlideOver: FC = () => {
             </Transition>
         </>
     )
-}
+})
 
 export default SlideOver;

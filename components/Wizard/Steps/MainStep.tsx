@@ -22,7 +22,7 @@ import { useSwapDataUpdate } from "../../../context/swap";
 import Select from "../../Select/Select";
 import React from "react";
 import { useInterval } from "../../../hooks/useInyterval";
-import { useFormWizardaUpdate } from "../../../context/formWizardProvider";
+import { useFormWizardaUpdate, useFormWizardState } from "../../../context/formWizardProvider";
 import { ExchangeAuthorizationSteps, FormWizardSteps } from "../../../Models/Wizard";
 import TokenService from "../../../lib/TokenService";
 import { useUserExchangeDataUpdate } from "../../../context/userExchange";
@@ -33,6 +33,7 @@ import AmountAndFeeDetails from "../../amountAndFeeDetailsComponent";
 import ConnectImmutableX from "./ConnectImmutableX";
 import ConnectDeversifi from "../../ConnectDeversifi";
 import SendFeedback from "../../sendFeedback";
+import SlideOver, { SildeOVerRef } from "../../SlideOver";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -214,9 +215,11 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
 export default function MainStep() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     // const { nextStep } = useWizardState();
-    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
+    const { goToStep,setLoading: setLoadingWizard } = useFormWizardaUpdate<FormWizardSteps>()
+    const { currentStep } = useFormWizardState<FormWizardSteps>()
+
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState();
+    const [error, setError] = useState("");
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
     const [connectDeversifiIsOpen, setConnectDeversifiIsOpen] = useState(false);
 
@@ -227,6 +230,12 @@ export default function MainStep() {
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
     const { getUserExchanges } = useUserExchangeDataUpdate()
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoadingWizard(false)
+        }, 500);
+    }, [])
 
     useEffect(() => {
         let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
@@ -474,7 +483,10 @@ export default function MainStep() {
                         <div className="w-full">
                             <AmountAndFeeDetails amount={values?.amount} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
                         </div>
-
+                        {/* <SlideOver opener={<span>HEy hey hey</span>} >
+                            <span>How to transfer blblblabb crypto from your exchange account to Arbitrum, zkSync, Loopring and many more L2 networks?</span>
+                            <span>from inside</span>
+                        </SlideOver> */}
                         <div className="mt-6">
                             <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors)}

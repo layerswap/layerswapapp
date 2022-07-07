@@ -47,7 +47,7 @@ const Swap: FC = () => {
           <MenuProvider>
             <SwapDataProvider >
               <UserExchangeProvider>
-                <FormWizardProvider wizard={FormWizard} initialStep={"SwapForm"}>
+                <FormWizardProvider wizard={FormWizard} initialStep={"SwapForm"} initialLoading={true}>
                   <Wizard />
                   <TestComp />
                 </FormWizardProvider >

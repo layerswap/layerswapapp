@@ -23,7 +23,7 @@ export function useSettingsState() {
     const data = React.useContext(SettingsStateContext);
   
     if (data === undefined) {
-      throw new Error('useMissionsState must be used within a MissionsProvider');
+      throw new Error('useSettingsState must be used within a SettingsProvider');
     }
   
     return data;
