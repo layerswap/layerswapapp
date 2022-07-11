@@ -39,11 +39,11 @@ const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, chi
                 <div className={`absolute inset-0 z-40 flex flex-col w-full bg-darkBlue ${moreClassNames}`}>
                     <span className='relative z-40 overflow-hidden bg-darkBlue p-8 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                            <span className="justify-self-end text-light-blue cursor-pointer">
+                            <span className="justify-self-end text-pink-primary-300 cursor-pointer">
                                 <div className="">
                                     <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200 focus:ring-2 hover:text-light-blue"
+                                        className="rounded-md text-darkblue-200 focus:ring-2 hover:text-pink-primary-300"
                                         onClick={handleClose}
                                     >
                                         <span className="sr-only">Close</span>

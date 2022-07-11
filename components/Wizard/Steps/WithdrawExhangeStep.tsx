@@ -118,7 +118,7 @@ const WithdrawExchangeStep: FC = () => {
                             value={swap?.payment?.manual_flow_context?.address}
                             disabled={true}
                             className="h-12 pb-1 pt-0 text-xs md:text-sm focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                         <div className='absolute inset-y-2 right-2.5'>
                             <Popover>
@@ -159,7 +159,7 @@ const WithdrawExchangeStep: FC = () => {
                             disabled={true}
                             value={payment?.manual_flow_context?.network_display_name}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
                     <label htmlFor="withdrawlAmount" className="block font-normal text-sm">
@@ -177,7 +177,7 @@ const WithdrawExchangeStep: FC = () => {
                             disabled={true}
                             value={swap?.amount}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                         <div className='absolute inset-y-2 right-2.5'>
                             <Popover>
@@ -218,7 +218,7 @@ const WithdrawExchangeStep: FC = () => {
                                 disabled={true}
                                 value={payment?.note_flow_context?.note}
                                 className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                             />
                             <div className='absolute inset-y-2 right-2.5'>
                                 <Popover>

@@ -21,7 +21,7 @@ const SuccessfulStep: FC = () => {
                     </svg>
                 </div>
                 <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">
-                    <label className="block text-lg font-lighter leading-6 text-light-blue">Your swap successfully completed. You can view it in the explorer, or go ahead swap more!</label>
+                    <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Your swap successfully completed. You can view it in the explorer, or go ahead swap more!</label>
                 </div>
                 <div className="mb-2.5 md:-6 w-full justify-center">
                     <Link key="/" href="/">

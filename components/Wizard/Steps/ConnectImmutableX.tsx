@@ -70,7 +70,7 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                             <div className="hidden sm:block ">
                                 <button
                                     type="button"
-                                    className="rounded-md text-pink-primary-300 focus:ring-2 hover:text-light-blue"
+                                    className="rounded-md text-pink-primary-300 focus:ring-2 hover:text-pink-primary-300"
                                     onClick={onClose}
                                 >
                                     <span className="sr-only">Close</span>
@@ -122,7 +122,7 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                                                     <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
                                                 </div>
                                                 <div className="ml-3">
-                                                    <p className="text-xl text-light-blue font-normal">
+                                                    <p className="text-xl text-pink-primary-300 font-normal">
                                                         {error}
                                                     </p>
                                                 </div>

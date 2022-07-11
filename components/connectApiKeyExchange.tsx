@@ -2,11 +2,7 @@ import { ExclamationIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useState } from 'react'
-import { useSwapDataState, useSwapDataUpdate } from '../context/swap';
-import { useInterval } from '../hooks/useInyterval';
 import { BransferApiClient } from '../lib/bransferApiClients';
-import { parseJwt } from '../lib/jwtParser';
-import LayerSwapApiClient, { Swap, SwapDetailsResponse } from '../lib/layerSwapApiClient';
 import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
@@ -61,7 +57,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row text-left">
+            <div className="w-full grid grid-flow-row text-left">
                 {
                     error &&
                     <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">
@@ -70,7 +66,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
                                 <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
                             </div>
                             <div className="ml-3">
-                                <p className="text-sm text-light-blue">
+                                <p className="text-sm text-pink-primary-300">
                                     {error}
                                 </p>
                             </div>
@@ -85,7 +81,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
                         <label className="block text-lg font-medium leading-6 text-white"> Why </label>
                     </div>
                     <div className="flex items-center">
-                        <label className="block text-lg font-normal leading-6 text-light-blue"> Layerswap uses your API keys to access your withrawal history and verify your payments. </label>
+                        <label className="block text-lg font-normal leading-6 text-pink-primary-300"> Layerswap uses your API keys to access your withrawal history and verify your payments. </label>
                     </div>
                     <div className="flex items-center mt-5">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-pink-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -94,7 +90,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
                         <label className="block text-lg font-medium leading-6 text-white"> Note </label>
                     </div>
                     <div className="flex items-center">
-                        <label className="block text-lg font-normal leading-6 text-light-blue"> Read-only API keys can't used to initiate withrawal or place a trade. </label>
+                        <label className="block text-lg font-normal leading-6 text-pink-primary-300"> Read-only API keys can't used to initiate withrawal or place a trade. </label>
                     </div>
                     <div className="flex items-center mt-6">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-pink-primary mr-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2}>
@@ -103,11 +99,11 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
                         <label className="block text-lg font-medium leading-6 text-white"> How to get API keys </label>
                     </div>
                     <div className="flex items-center">
-                        <label className="block text-lg font-normal leading-6 text-light-blue"> Follow this <Link key="userGuide" href="/userguide"><a className="font-lighter text-darkblue underline hover:cursor-pointer">Step by step guide</a></Link> to generate your API keys. </label>
+                        <label className="block text-lg font-normal leading-6 text-pink-primary-300"> Follow this <Link key="userGuide" href="/userguide"><a className="font-lighter text-darkblue underline hover:cursor-pointer">Step by step guide</a></Link> to generate your API keys. </label>
                     </div>
                 </div>
                 <div className='mt-10'>
-                    <label htmlFor="apiKey" className="block font-normal text-light-blue text-sm">
+                    <label htmlFor="apiKey" className="block font-normal text-pink-primary-300 text-sm">
                         API Key
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
@@ -120,10 +116,10 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
                             id="apiKey"
                             onChange={handleKeyChange}
                             className="h-12 pb-1 pt-0 text-white focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
-                    <label htmlFor="withdrawlAmount" className="block font-normal text-light-blue text-sm">
+                    <label htmlFor="withdrawlAmount" className="block font-normal text-pink-primary-300 text-sm">
                         API Secret
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
@@ -136,13 +132,13 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
                             id="apiSecret"
                             onChange={handleSecretChange}
                             className="h-12 pb-1 pt-0 text-white focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
                     {
                         exchange?.has_keyphrase &&
                         <>
-                            <label htmlFor="apiKey" className="block font-normal text-light-blue text-sm">
+                            <label htmlFor="apiKey" className="block font-normal text-pink-primary-300 text-sm">
                                 {exchange?.keyphrase_display_name}
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
@@ -155,7 +151,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
                                     onChange={handleKeyphraseChange}
                                     id="apiKey"
                                     className="h-12 pb-1 pt-0 text-white focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                             </div>
                         </>

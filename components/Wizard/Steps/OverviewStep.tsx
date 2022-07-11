@@ -100,7 +100,7 @@ const OverviewStep: FC<Props> = ({ current }) => {
                                 <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
                             </div>
                             <div className="ml-3">
-                                <p className="text-sm text-light-blue">
+                                <p className="text-sm text-pink-primary-300">
                                     {error}
                                 </p>
                             </div>

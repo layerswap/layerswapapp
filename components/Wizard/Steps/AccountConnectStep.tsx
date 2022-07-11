@@ -95,7 +95,7 @@ const AccountConnectStep: FC = () => {
                                 <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
                             </div>
                             <div className="ml-3">
-                                <p className="text-xl text-light-blue font-normal">
+                                <p className="text-xl text-pink-primary-300 font-normal">
                                     {error}
                                 </p>
                             </div>

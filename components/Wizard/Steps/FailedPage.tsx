@@ -19,7 +19,7 @@ const FailedPage: FC = () => {
                     </svg>
                 </div>
                 <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24 text-center grow">
-                    <label className="block text-lg font-lighter leading-6 text-light-blue text-center grow">{swap ? "Swap failed":"Swap not found"}</label>
+                    <label className="block text-lg font-lighter leading-6 text-pink-primary-300 text-center grow">{swap ? "Swap failed":"Swap not found"}</label>
                 </div>
                 <a href="https://discord.com/invite/KhwYN35sHy" className="group disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                     Open Discord
