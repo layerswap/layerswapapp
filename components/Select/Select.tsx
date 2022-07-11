@@ -32,6 +32,8 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
     useEffect(() => {
         if (value)
             setSelectedItem(value)
+        else
+            setSelectedItem(undefined)
     }, [value])
 
     function closeModal() {
@@ -106,7 +108,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                 leaveFrom="translate-y-0"
                 leaveTo="translate-y-full">
                 <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkBlue'>
-                <div className='relative z-40 overflow-hidden bg-darkBlue p-6 pt-0'>
+                    <div className='relative z-40 overflow-hidden bg-darkBlue p-6 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
                             <span className="justify-self-end text-pink-primary-300 cursor-pointer">
                                 <div className="block ">

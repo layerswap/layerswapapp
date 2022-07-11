@@ -24,6 +24,7 @@
     "bn.js": "^5.2.0",
     "formik": "^2.2.9",
     "gray-matter": "^4.0.3",
+    "iframe-resizer-react": "^1.1.0",
     "js-sha3": "^0.8.0",
     "next": "^11.0.0",
     "next-mdx-remote": "^3.0.8",

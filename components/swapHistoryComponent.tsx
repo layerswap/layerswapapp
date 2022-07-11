@@ -14,6 +14,7 @@ import Link from "next/link"
 import LayerSwapLogo from "./icons/layerSwapLogo"
 import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
+import SlideOver from "./SlideOver"
 
 
 export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
@@ -173,20 +174,20 @@ function TransactionsHistory() {
 
   return (
     <div className={`bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
-      <div className="relative flex items-center justify-between place-content-end px-14 z-20 mt-3" >
-        <div className='mx-auto px-4 overflow-hidden md:hidden'>
-          <div className="flex justify-center">
-            <Link href="/" key="Home" shallow={true}>
-              <a>
-                <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
-              </a>
-            </Link>
-          </div>
-        </div>
-        <div></div>
-        <LayerswapMenu />
+      <div className="w-full flex items-center justify-between px-8 mt-3 h-[44px]" >
+         <>
+            <div className='mx-auto px-4 overflow-hidden md:hidden'>
+               <div className="flex justify-center">
+                  <Link href="/" key="Home" shallow={true}>
+                     <a>
+                        <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+                     </a>
+                  </Link>
+               </div>
+            </div>
+            <LayerswapMenu />
+         </>
       </div>
-
       {
         swaps?.length > 0 ?
           <>

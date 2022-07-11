@@ -95,16 +95,12 @@ export type Payment = {
         network_display_name: string,
         withdrawal_fee: number,
         withdrawal_amount: number,
-        total_withdrawal_amount: number
+        total_withdrawal_amount: number,
+        note: string,
+        require_note: boolean
     },
     external_flow_context: {
         payment_url: string;
-    },
-    note_flow_context: {
-        address: string,
-        memo: string,
-        has_memo: string,
-        note: string,
     },
     sequence_number: string,
 }

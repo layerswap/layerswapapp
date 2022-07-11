@@ -1,13 +1,15 @@
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { swap } from 'formik';
 import Link from 'next/link';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useRef, useState } from 'react'
 import { useAuthDataUpdate } from '../../../context/auth';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
 import { BransferApiClient, UserExchangesResponse } from '../../../lib/bransferApiClients';
 import { FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
+import { DocIframe } from '../../docInIframe';
+import SlideOver, { SildeOverRef } from '../../SlideOver';
 
 const APIKeyStep: FC = () => {
 
@@ -21,6 +23,11 @@ const APIKeyStep: FC = () => {
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const { getAuthData } = useAuthDataUpdate()
 
+    const slideoverRef = useRef<SildeOverRef>()
+
+    const handleCloseSlideover = useCallback(() => {
+        slideoverRef.current.close()
+    }, [slideoverRef])
 
     const handleKeyChange = (e) => {
         setKey(e?.target?.value)
@@ -89,7 +96,11 @@ const APIKeyStep: FC = () => {
                             <label className="block text-base font-medium leading-6"> How to get API keys </label>
                         </div>
                         <div className="flex items-center ml-6 pl-2.5">
-                            <label className="block text-base font-normal leading-6"> Follow this <Link key="userGuide" href="/userguide"><a className="strong-highlight highlight-link hightlight-animation text-base">Step by step guide</a></Link> to generate your API keys. </label>
+                            <span className="block text-base font-normal leading-6"> Follow this
+                                <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className=" text-base cursor-pointer underline decoration-pink-primary">Step by step guide</span>&nbsp;</>} moreClassNames="-mt-11">
+                                    <DocIframe onConfirm={handleCloseSlideover} URl="/blog/guide/How_to_transfer_crypto_from_Binance_to_L2" />
+                                </SlideOver>
+                                to generate your API keys. </span>
                         </div>
                     </div>
                     <div className='mb-5'>
@@ -176,7 +187,6 @@ const APIKeyStep: FC = () => {
                     </SubmitButton>
                 </div>
             </div>
-
         </>
     )
 }

@@ -1,163 +1,79 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import IframeResizer from 'iframe-resizer-react';
+import SubmitButton from "./buttons/submitButton";
 
 type Props = {
     URl: string;
-
+    onConfirm?: () => void
 }
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
-export function DocIframe({ URl }: Props) {
-    const [loading, setLoading] = useState(false)
-    const handleIframeLoaded = () => setLoading(false)
+export function DocIframe({ URl, onConfirm }: Props) {
+    const [loading, setLoading] = useState(true)
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false)
+        }, 2000);
+    }, [])
 
-    if (loading)
-        return <Sceleton />
-        
-    return <div className="text-white text-base">
-        <div className='relative pb-96'>
-            <iframe onLoad={handleIframeLoaded} src={URl} className='scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50 border-0 self-center absolute w-full h-full'></iframe>
+    return <>
+        <div className="text-white text-base scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+            <div className={`relative ${loading ? '' : 'pb-96'} scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50`}>
+                {
+                    loading && <Sceleton />
+                }
+                <iframe src={URl} className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down'} scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50 border-0 self-center absolute w-full h-full`}></iframe>
+                {
+                    !loading &&
+                    <>
+                        <IframeResizer></IframeResizer>
+                    </>
+                }
+            </div>
         </div>
-    </div>
+        {
+            !loading &&
+            <>
+                <button
+                    type="button"
+                    onClick={onConfirm}
+                    className="mt-3 group disabled:white disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                >
+                    Got it
+                </button>
+            </>
+        }
+    </>
 }
 
 const Sceleton = () => {
-    return <div className={`bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative`}>
-        <div className="px-4 sm:px-6 lg:px-8 mb-2">
+    return <div className="shadow rounded-md w-full mx-auto px-8">
+        <div className="animate-pulse flex space-x-4">
+            <div className="flex-1 items-center space-y-6 py-1 content-start">
+                <div className="h-4 mx-auto w-1/2 place-self-center justify-self-center self-center bg-slate-700 rounded mb-4"></div>
+                <div className="space-y-6">
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="h-2 bg-slate-700 rounded col-span-2"></div>
+                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
+                    </div>
+                    <div className="h-2 bg-slate-700 rounded"></div>
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="h-2 bg-slate-700 rounded col-span-2"></div>
+                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
+                    </div>
+                    <div className="h-2 bg-slate-700 rounded"></div>
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="h-2 bg-slate-700 rounded col-span-2"></div>
+                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
+                    </div>
+                    <div className="h-2 bg-slate-700 rounded"></div>
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="h-2 bg-slate-700 rounded col-span-2"></div>
+                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
+                    </div>
+                    <div className="h-2 bg-slate-700 rounded"></div>
 
-            <div className="animate-pulse">
-                <div className="-mx-4 mt-10 ring-1 ring-darkblue-100 sm:-mx-6 md:mx-0 md:rounded-lg bg-darkblue-600">
-                    <table className="min-w-full divide-y divide-darkblue-100">
-                        <thead>
-                            <tr>
-                                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-500 sm:pl-6">
-                                    <div className="hidden lg:block">
-                                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                    </div>
-                                    <div className="block lg:hidden">
-                                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                    </div>
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-                                >
-                                    <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-500 "
-                                >
-                                    <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                </th>
-                                {/* <th
-            scope="col"
-            className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-          >
-            Fee
-          </th> */}
-                                <th
-                                    scope="col"
-                                    className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-                                >
-                                    <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-                                >
-                                    <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                </th>
-
-                                <th
-                                    scope="col"
-                                    className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-                                >
-                                    <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                </th>
-                                <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                                    <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {[...Array(5)]?.map((item, index) => (
-                                <tr key={index}>
-                                    <td
-                                        className={classNames(
-                                            index === 0 ? '' : 'border-t border-transparent',
-                                            'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
-                                        )}
-                                    >
-                                        <div className="text-white hidden lg:block">
-                                            <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                        </div>
-                                        <div className="mt-1 flex flex-col text-white sm:block lg:hidden">
-                                            <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                        </div>
-                                        {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-100" /> : null}
-                                    </td>
-                                    <td
-                                        className={classNames(
-                                            index === 0 ? '' : 'border-t border-darkblue-100',
-                                            'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
-                                        )}
-                                    >
-                                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                    </td>
-                                    <td
-                                        className={classNames(
-                                            index === 0 ? '' : 'border-t border-darkblue-100',
-                                            'px-3 py-3.5 text-sm text-white table-cell'
-                                        )}
-                                    >
-                                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                    </td>
-                                    {/* <td
-              className={classNames(
-                index === 0 ? '' : 'border-t border-darkblue-100',
-                'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
-              )}
-            >
-              {swap.fee} {swap.currency} 
-            </td> */}
-                                    <td
-                                        className={classNames(
-                                            index === 0 ? '' : 'border-t border-darkblue-100',
-                                            'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
-                                        )}
-                                    >
-                                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                    </td>
-                                    <td
-                                        className={classNames(
-                                            index === 0 ? '' : 'border-t border-darkblue-100',
-                                            'relative px-3 py-3.5 text-sm text-white hidden lg:table-cell group'
-                                        )}
-                                    >
-                                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-
-                                    </td>
-                                    <td
-                                        className={classNames(
-                                            index === 0 ? '' : 'border-t border-darkblue-100',
-                                            'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
-                                        )}
-                                    >
-                                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                    </td>
-                                    <td
-                                        className={classNames(
-                                            index === 0 ? '' : 'border-t border-transparent',
-                                            'relative py-3.5 pl-3 pr-4 sm:pr-6 text-right text-sm font-medium'
-                                        )}
-                                    >
-                                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
