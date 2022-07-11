@@ -34,6 +34,7 @@ import ConnectImmutableX from "./ConnectImmutableX";
 import ConnectDeversifi from "../../ConnectDeversifi";
 import SendFeedback from "../../sendFeedback";
 import SlideOver, { SildeOverRef } from "../../SlideOver";
+import { DocIframe } from "../../docInIframe";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -215,7 +216,7 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
 export default function MainStep() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     // const { nextStep } = useWizardState();
-    const { goToStep,setLoading: setLoadingWizard } = useFormWizardaUpdate<FormWizardSteps>()
+    const { goToStep, setLoading: setLoadingWizard } = useFormWizardaUpdate<FormWizardSteps>()
     const { currentStep } = useFormWizardState<FormWizardSteps>()
 
     const [loading, setLoading] = useState(false)
@@ -483,9 +484,8 @@ export default function MainStep() {
                         <div className="w-full">
                             <AmountAndFeeDetails amount={values?.amount} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
                         </div>
-                        {/* <SlideOver opener={<span>HEy hey hey</span>} >
-                            <span>How to transfer blblblabb crypto from your exchange account to Arbitrum, zkSync, Loopring and many more L2 networks?</span>
-                            <span>from inside</span>
+                        {/* <SlideOver opener={<span>HEy hey hey</span>} moreClassNames="-mt-11">
+                            <DocIframe URl="/blog/guide/How_to_transfer_crypto_from_Binance_to_L2"/>
                         </SlideOver> */}
                         <div className="mt-6">
                             <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={loading}>
