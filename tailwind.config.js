@@ -32,7 +32,6 @@ module.exports = {
         coolGray: colors.coolGray,
         darkBlue: '#111827',
         'ouline-blue': '#1A2949',
-        'light-blue': '#74AAC8',
         'darkblue': '#4771FF',
         'darkblue-600': '#131E36',
         'darkblue-500': '#121D33',

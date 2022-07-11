@@ -222,7 +222,7 @@ const WithdrawExchangeStep: FC = () => {
                                     disabled={true}
                                     value={payment?.manual_flow_context?.note}
                                     className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                                        placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                        placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                                 <div className='absolute inset-y-2 right-2.5'>
                                     <Popover>
