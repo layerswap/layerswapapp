@@ -114,7 +114,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 <div className="block ">
                                     <button
                                         type="button"
-                                        className="rounded-md text-pink-primary-300 focus:ring-2 hover:text-light-blue"
+                                        className="rounded-md text-pink-primary-300 focus:ring-2 hover:text-pink-primary-300"
                                         onClick={closeModal}
                                     >
                                         <span className="sr-only">Close</span>
@@ -154,11 +154,11 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                     >
                                         <div className="relative mb-5">
                                             <SearchIcon
-                                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-light-blue"
+                                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-pink-primary-300"
                                                 aria-hidden="true"
                                             />
                                             <Combobox.Input
-                                                className="h-12 w-full bg-darkblue-500 rounded-lg border-ouline-blue pl-11 pr-4 text-light-blue placeholder-light-blue focus:ring-0 sm:text-sm"
+                                                className="h-12 w-full bg-darkblue-500 rounded-lg border-ouline-blue pl-11 pr-4 text-pink-primary-300 placeholder-pink-primary-300 focus:ring-0 sm:text-sm"
                                                 placeholder="Search..."
                                                 onChange={handleQueryInputChange}
                                                 value={query}
@@ -212,7 +212,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 <ExclamationCircleIcon
                                                     type="outline"
                                                     name="exclamation-circle"
-                                                    className="mx-auto h-6 w-6 text-light-blue"
+                                                    className="mx-auto h-6 w-6 text-pink-primary-300"
                                                 />
                                                 <p className="mt-4 font-semibold text-gray-900">No results found</p>
                                                 <p className="mt-2 text-gray-500">No components found for this search term. Please try again.</p>

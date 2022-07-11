@@ -38,11 +38,11 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
     }
     return (
         <>
-            <div className="mx-auto w-full rounded-lg bg-darkblue-500 p-2">
+            <div className="mx-auto w-full rounded-lg border border-darkblue-100 hover:border-darkblue-200 bg-darkblue-500 p-2">
                 <Disclosure>
                     {({ open }) => (
                         <>
-                            <Disclosure.Button className="items-center flex w-full relative justify-between rounded-lg p-1.5 text-left text-base font-medium border border-darkblue-500 hover:border-darkblue-100">
+                            <Disclosure.Button className="items-center flex w-full relative justify-between rounded-lg p-1.5 text-left text-base font-medium">
                                 <span className="font-medium text-pink-primary-300">You will receive</span>
                                 <span className="absolute right-9">
                                     {
@@ -61,7 +61,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                 </span>
                                 <ChevronDownIcon
                                     className={`${open ? 'rotate-180 transform' : ''
-                                        } h-4 w-4 text-light-blue`}
+                                        } h-4 w-4 text-pink-primary-300`}
                                 />
                             </Disclosure.Button>
                             <Disclosure.Panel className="p-2 text-sm">

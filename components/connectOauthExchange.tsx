@@ -1,12 +1,9 @@
 import { ExclamationIcon } from '@heroicons/react/outline';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
-import { useSwapDataState, useSwapDataUpdate } from '../context/swap';
 import { useInterval } from '../hooks/useInyterval';
 import { BransferApiClient } from '../lib/bransferApiClients';
 import { parseJwt } from '../lib/jwtParser';
-import LayerSwapApiClient, { Swap, SwapDetailsResponse } from '../lib/layerSwapApiClient';
 import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
@@ -78,7 +75,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row text-pink-primary-300">
+            <div className="w-full grid grid-flow-row text-pink-primary-300">
                 {
                     error &&
                     <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">
@@ -105,7 +102,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-pink-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <label className="block font-lighter text-left leading-6"> Even after authorization Bransfer can't initiate a withdrawal without your explicit confirmation.</label>
+                    <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
                 </div>
                 
                 {/* <div>

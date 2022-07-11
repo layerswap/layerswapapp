@@ -21,7 +21,6 @@ export default function Transactions({ data }: InferGetServerSidePropsType<typeo
               </MenuProvider>
             </AuthProvider>
           </SettingsProvider>
-          <IntroCard />
         </div>
       </div>
     </Layout>

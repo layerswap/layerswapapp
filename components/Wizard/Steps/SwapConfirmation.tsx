@@ -130,14 +130,14 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please confirm your swap
                 </h3>
-                <h3 className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-sm'>
-                    You are requesting a transfer of <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from your {swapFormData?.exchange?.name} exchange account to your {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substr(0, 5)}...${swapFormData?.destination_address?.substr(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></span>)
+                <h3 className='mb-10 pt-2 text-center md:text-left font-roboto text-sm'>
+                    You are requesting a transfer of <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from your {swapFormData?.exchange?.name} exchange account to your {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></span>)
                 </h3>
 
                 <div className="mx-auto w-full rounded-lg bg-darkblue-500 p-2 font-normal">
                     {
                         swapFormData?.exchange?.imgSrc &&
-                        <div className="inline-block mx-1 flex">
+                        <div className="mx-1 flex">
                             <div className="flex-shrink-0 h-12 w-12 relative rounded-full border-4 border-darkblue-500">
                                 <Image
                                     src={swapFormData?.exchange?.imgSrc}
@@ -165,7 +165,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             <div className='text-w'>
                                 <div>
                                     <span className='hidden md:inline-block'>{swapFormData?.destination_address}</span>
-                                    <span className='md:hidden'> {`${swapFormData?.destination_address?.substr(0, 5)}...${swapFormData?.destination_address?.substr(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</span>
+                                    <span className='md:hidden'> {`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</span>
                                     <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></div>
                                 <div>{swapFormData?.amount} {swapFormData?.currency?.name}</div>
                             </div>
@@ -214,7 +214,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     name="TwoFACode"
                                     id="TwoFACode"
                                     className="h-12 text-2xl pl-5 focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
-                            placeholder:text-light-blue placeholder:text-2xl placeholder:h-12 placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-2xl placeholder:h-12 placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                                     onKeyPress={e => {
                                         isNaN(Number(e.key)) && e.preventDefault()
                                     }}
@@ -232,7 +232,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                 <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
                             </div>
                             <div className="ml-3">
-                                <p className="text-xl text-light-blue font-normal">
+                                <p className="text-xl text-pink-primary-300 font-normal">
                                     {error}
                                 </p>
                             </div>
@@ -262,11 +262,11 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkBlue'>
                     <span className='relative z-40 overflow-hidden bg-darkBlue p-10 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                            <span className="justify-self-end text-light-blue cursor-pointer">
+                            <span className="justify-self-end text-pink-primary-300 cursor-pointer">
                                 <div className="">
                                     <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200 focus:ring-2 hover:text-light-blue"
+                                        className="rounded-md text-darkblue-200 focus:ring-2 hover:text-pink-primary-300"
                                         onClick={handleClose}
                                     >
                                         <span className="sr-only">Close</span>
