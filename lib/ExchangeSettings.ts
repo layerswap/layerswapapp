@@ -1,4 +1,3 @@
-import { tr } from "@markdoc/markdoc/dist/src/schema";
 import KnownIds from "./knownIds";
 
 export default class ExchangeSettings {
