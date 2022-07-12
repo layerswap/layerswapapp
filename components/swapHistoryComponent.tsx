@@ -16,6 +16,7 @@ import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
 import { copyTextToClipboard } from "../lib/copyToClipboard"
 import { useAuthState } from "../context/auth"
+import toast from "react-hot-toast"
 
 
 export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
@@ -99,7 +100,7 @@ function TransactionsHistory() {
           setIsLastPage(true)
       }
       catch (e) {
-        setError(e.message)
+        toast.error(e.message)
       }
       finally {
         setLoading(false)
@@ -127,7 +128,7 @@ function TransactionsHistory() {
         setIsLastPage(true)
     }
     catch (e) {
-      setError(e.message)
+      toast.error(e.message)
     }
     finally {
       setLoading(false)

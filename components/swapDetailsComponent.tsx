@@ -11,6 +11,7 @@ import { CryptoNetwork } from '../Models/CryptoNetwork';
 import { Popover } from '@headlessui/react';
 import { DuplicateIcon } from '@heroicons/react/outline';
 import { copyTextToClipboard } from '../lib/copyToClipboard';
+import toast from 'react-hot-toast';
 
 type Props = {
     id: string
@@ -44,7 +45,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                 setSwap(swap)
             }
             catch (e) {
-                setError(e.message)
+                toast.error(e.message)
             }
             finally {
                 setLoading(false)

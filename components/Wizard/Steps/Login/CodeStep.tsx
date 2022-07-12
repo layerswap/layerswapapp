@@ -68,7 +68,6 @@ const CodeStep: FC = () => {
     const handleResendCode = useCallback(async () => {
         setLoadingResend(true)
         try {
-            setError("")
             const apiClient = new LayerSwapAuthApiClient();
             const res = await apiClient.getCodeAsync(email)
         }
@@ -89,21 +88,6 @@ const CodeStep: FC = () => {
     return (
         <>
             <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row min-h-[480px] text-pink-primary-300">
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-pink-primary-300">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div>
                     <label htmlFor="amount" className="block font-normal text-sm">
                         Your Email Code

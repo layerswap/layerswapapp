@@ -85,21 +85,6 @@ const AccountConnectStep: FC = () => {
                         <label className="block text-lg font-lighter leading-6 "> Make sure to authorize at least <span className='strong-highlight text-white'>{minimalAuthorizeAmount}$</span>. Follow this <Link key="userGuide" href="/userguide"><a className="strong-highlight hightlight-animation highlight-link hover:cursor-pointer">Step by step guide</a></Link></label>
                     </div> */}
                 </h3>
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5 flex items-center">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-xl text-pink-primary-300 font-normal">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div className="w-full">
                     <Carousel onLast={onCarouselLast} ref={carouselRef}>
                         <CarouselItem width={100} >

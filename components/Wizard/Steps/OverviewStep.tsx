@@ -29,7 +29,6 @@ const OverviewStep: FC<Props> = ({ current }) => {
         (async () => {
             try {
                 if (currentStep == "Overview") {
-                    setError("")
                     const authData = TokenService.getAuthData();
                     if (!authData) {
                         await goToStep("Email")
@@ -80,7 +79,7 @@ const OverviewStep: FC<Props> = ({ current }) => {
         }
         catch (e) {
             if (e?.response?.status === 404)
-                setError("Swap not found")
+                toast.error("Swap not found")
             toast.error(e.message)
             setTimeout(() => {
                 setLoadingWizard(false)

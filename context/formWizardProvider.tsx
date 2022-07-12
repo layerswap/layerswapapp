@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import toast from 'react-hot-toast';
 import { BaseWizard } from '../Models/Wizard';
 
 
@@ -28,7 +29,6 @@ export function FormWizardProvider<Type extends BaseWizard>({ children, wizard, 
     const [error, setError] = useState("")
 
     const goToStep = useCallback((step: keyof Type) => {
-        setError("")
         const currentPosition = Object.keys(wizard).findIndex(k => k === currentStep)
         const nextPosition = Object.keys(wizard).findIndex(k => k === step)
         setmoving(currentPosition < nextPosition ? "right" : "left")
@@ -45,7 +45,7 @@ export function FormWizardProvider<Type extends BaseWizard>({ children, wizard, 
     }
 
     const setWizardError = (error) => {
-        setError(error)
+        toast.error(error)
     }
 
     const goBack = useCallback(() => {

@@ -62,7 +62,6 @@ const CodeStep: FC = () => {
     const handleResendCode = useCallback(async () => {
         setLoadingResend(true)
         try {
-            setError("")
             const apiClient = new LayerSwapAuthApiClient();
             const res = await apiClient.getCodeAsync(email)
         }

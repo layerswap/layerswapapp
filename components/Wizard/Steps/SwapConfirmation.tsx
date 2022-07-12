@@ -36,7 +36,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     }, [destination_address])
 
     useEffect(() => {
-        setError("")
     }, [current])
 
     const handleConfirm_right_wallet = (e) => {
@@ -64,7 +63,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const handleSubmit = useCallback(async () => {
         setLoading(true)
-        setError("")
         setTwoFARequired(false)
         try {
             const data = {
@@ -225,21 +223,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                         </div>
                     }
                 </div>
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5 flex items-center mb-4">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-xl text-pink-primary-300 font-normal">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div className="text-white text-sm mt-auto">
                     <div className="flex items-center mb-2">
                         <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
