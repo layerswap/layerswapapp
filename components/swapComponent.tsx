@@ -30,7 +30,7 @@ import { MenuProvider } from '../context/menu';
 import ConnectImmutableX from './Wizard/Steps/ConnectImmutableX';
 
 const FormWizard: FormWizardSteps = {
-  "SwapForm": { title: "Swap", content: CodeStep, navigationDisabled: true, positionPercent: 0 },
+  "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true, positionPercent: 0 },
   "Email": { title: "Email confirmation", content: EmailStep, dismissOnBack: true, positionPercent: 30 },
   "Code": { title: "Code", content: CodeStep, dismissOnBack: true, navigationDisabled: true, positionPercent: 35 },
   "ExchangeOAuth": { title: "OAuth flow", content: AccountConnectStep, dismissOnBack: true, positionPercent: 45 },
