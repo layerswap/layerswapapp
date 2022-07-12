@@ -34,9 +34,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setAddressInputValue(destination_address)
     }, [destination_address])
 
-    useEffect(() => {
-    }, [current])
-
     const handleConfirm_right_wallet = (e) => {
         setConfirm_right_wallet(e.target.checked)
     }
