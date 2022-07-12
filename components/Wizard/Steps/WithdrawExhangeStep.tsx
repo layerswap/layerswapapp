@@ -1,4 +1,4 @@
-import { CheckIcon } from '@heroicons/react/outline';
+import { CheckIcon, InformationCircleIcon } from '@heroicons/react/outline';
 import { FC, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
@@ -16,6 +16,7 @@ import Image from 'next/image'
 import { Popover } from '@headlessui/react';
 import AmountAndFeeDetails from '../../amountAndFeeDetailsComponent';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
+import ExchangeSettings from '../../../lib/ExchangeSettings';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -59,6 +60,7 @@ const WithdrawExchangeStep: FC = () => {
     const network_name = networks?.find(n => n.code === swap?.network)?.name || ' '
     const exchange = exchanges?.find(n => n.internal_name === payment?.exchange)
     const exchange_name = exchange?.name || ' '
+    const exchange_id = exchange?.id
     const exchange_logo_url = exchange?.logo_url
 
     const handleCopyAddress = useCallback(() => {
@@ -75,9 +77,9 @@ const WithdrawExchangeStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-6 py-6 md:grid md:grid-flow-row text-pink-primary-300">
+            <div className="w-full px-6 py-6 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
-                    <h3 className="block text-lg font-medium leading-6 mb-12 text-left">
+                    <h3 className="block text-lg font-medium leading-6 text-left">
                         Go to
                         {
                             exchange_logo_url &&
@@ -101,6 +103,34 @@ const WithdrawExchangeStep: FC = () => {
                         </span> and do a withdrawal to the provided address.
                     </h3>
                 </div>
+                {console.log(exchange_id)}
+                {
+                    ExchangeSettings.KnownSettings[exchange_id]?.RequireSelectInternal &&
+                    <div className='mb-5'>
+                        <div className="flex items-center">
+                            <InformationCircleIcon className='w-6 h-6 mr-1 text-pink-primary-600' />
+                            <label className="block text-base font-medium leading-6"> Important </label>
+                        </div>
+                        <div className="flex items-center">
+                            <label className="block text-base font-normal leading-6">Make sure the 'Internal Transfer' checkbox is checked</label>
+                        </div>
+                    </div>
+                }
+                {
+                    ExchangeSettings.KnownSettings[exchange_id]?.WithdrawalWarningMessage &&
+                    <div className='flex-col w-full rounded-md bg-red-700 shadow-lg p-2'>
+                        <div className='flex items-center'>
+                            <div className='mr-2 p-2 rounded-lg bg-red-600'>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <p className='font-normal text-sm text-white'>
+                                {ExchangeSettings.KnownSettings[exchange_id]?.WithdrawalWarningMessage}
+                            </p>
+                        </div>
+                    </div>
+                }
 
                 <div className='mb-12'>
                     <label htmlFor="address" className="block font-normal text-sm">
@@ -248,9 +278,9 @@ const WithdrawExchangeStep: FC = () => {
                                     </Popover>
                                 </div>
                             </div>
-                            <div className='flex-col w-full rounded-md bg-yellow-500 shadow-lg p-2'>
+                            <div className='flex-col w-full rounded-md bg-teal-700 shadow-lg p-2'>
                                 <div className='flex items-center'>
-                                    <div className='mr-2 p-2 rounded-lg bg-yellow-600'>
+                                    <div className='mr-2 p-2 rounded-lg bg-teal-600'>
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                         </svg>
@@ -279,7 +309,7 @@ const WithdrawExchangeStep: FC = () => {
                         </div>
                         :
                         <div className="text-white text-base">
-                            <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConfirm}>
+                            <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConfirm} >
                                 I Did The Transfer
                             </SubmitButton>
                             <div className='flex place-content-center items-center mt-8'>

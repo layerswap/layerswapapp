@@ -1,12 +1,9 @@
-import { ExclamationIcon } from '@heroicons/react/outline';
-import { swap } from 'formik';
-import Link from 'next/link';
 import { FC, useCallback, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate } from '../../../context/auth';
-import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
-import { BransferApiClient, UserExchangesResponse } from '../../../lib/bransferApiClients';
+import { BransferApiClient } from '../../../lib/bransferApiClients';
 import { FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import { DocIframe } from '../../docInIframe';
