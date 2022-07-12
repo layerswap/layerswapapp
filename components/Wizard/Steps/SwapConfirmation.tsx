@@ -120,7 +120,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setEditingAddress(false)
     }, [addressInputValue, swapFormData])
 
-    const receive_amount = CalculateReceiveAmount(Number(swapFormData.amount), swapFormData.currency?.baseObject, swapFormData.exchange?.baseObject)
+    const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject)
     return (
         <>
             <div className="w-full px-8 py-6 pt-1 md:grid md:grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
