@@ -131,7 +131,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     Please confirm your swap
                 </h3>
                 <h3 className='mb-10 pt-2 text-center md:text-left font-roboto text-sm'>
-                    You are requesting a transfer of <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from your {swapFormData?.exchange?.name} exchange account to your {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></span>)
+                    You are requesting a transfer of <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from your {swapFormData?.exchange?.name} exchange account to your {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer text-pink-primary-800 hover:text-pink-primary' /></span>)
                 </h3>
 
                 <div className="mx-auto w-full rounded-lg bg-darkblue-500 p-2 font-normal">
@@ -166,7 +166,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                 <div>
                                     <span className='hidden md:inline-block'>{swapFormData?.destination_address}</span>
                                     <span className='md:hidden'> {`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</span>
-                                    <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></div>
+                                    <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer text-pink-primary-800 hover:text-pink-primary' /></div>
                                 <div>{swapFormData?.amount} {swapFormData?.currency?.name}</div>
                             </div>
                         </div>
