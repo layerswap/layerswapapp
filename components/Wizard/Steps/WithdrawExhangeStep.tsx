@@ -235,7 +235,7 @@ const WithdrawExchangeStep: FC = () => {
                     </div>
 
                     {
-                        payment?.manual_flow_context?.note &&
+                        payment?.manual_flow_context?.require_note &&
                         <>
                             <label htmlFor="payment_note" className="block font-normal text-sm">
                                 Remarks

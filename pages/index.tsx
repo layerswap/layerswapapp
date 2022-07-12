@@ -7,12 +7,10 @@ import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { useEffect, useState } from 'react'
-import NavRadio, { NavRadioOption } from '../components/navRadio'
-import Banner from '../components/banner'
+import { NavRadioOption } from '../components/navRadio'
 import { SettingsProvider } from '../context/settings'
 import { QueryProvider } from '../context/query'
 import { AccountProvider } from '../context/account'
-
 
 const swapOptions: NavRadioOption[] = [
   { name: "onramp", displayName: 'On-ramp', isEnabled: true, isNew: false },
