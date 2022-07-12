@@ -57,7 +57,7 @@ export default function Layout({ hasSideShapes, children }: Props) {
       <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpg" />
       <script defer data-domain="layerswap.io" src="https://plausible.io/js/plausible.js"></script>
     </Head>
-    <body className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+    <div className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
       <main className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
         <div className="overflow-hidden relative font-robo">
           <div className="top-backdrop"></div>
@@ -68,6 +68,6 @@ export default function Layout({ hasSideShapes, children }: Props) {
           <FooterComponent />
         </div>
       </main>
-    </body>
+    </div>
   </>)
 }
