@@ -20,7 +20,6 @@ const App: FC = () => {
                 </div>
             </div>
         </AuthProvider>
-        <IntroCard />
     </>
 }
 function TestComp() {
@@ -36,7 +35,7 @@ function AppHeader() {
         <div className="absolute w-full grid grid-cols-2 gap-4 place-content-end p-2" >
             <>
                 <span></span>
-                <span className="justify-self-end text-light-blue cursor-pointer">
+                <span className="justify-self-end text-pink-primary-300 cursor-pointer">
                     <Menu as="div" className="relative inline-block text-left">
                         <div>
                             <Menu.Button className="inline-flex justify-center w-full rounded-md shadow-sm px-4 py-2 bg-darkblue-600  text-sm font-medium text-darkblue-200">
@@ -66,7 +65,7 @@ function AppHeader() {
                                                         href="#"
                                                         className={classNames(
                                                             active ? 'bg-darkblue-300' : '',
-                                                            'block px-4 py-2 text-sm text-light-blue'
+                                                            'block px-4 py-2 text-sm text-pink-primary-300'
                                                         )}
                                                     >
                                                         <TestComp/>
@@ -81,7 +80,7 @@ function AppHeader() {
                                                 href="#"
                                                 className={classNames(
                                                     active ? 'bg-darkblue-300' : '',
-                                                    'block px-4 py-2 text-sm text-light-blue'
+                                                    'block px-4 py-2 text-sm text-pink-primary-300'
                                                 )}
                                             >
                                                 Transactions
@@ -94,7 +93,7 @@ function AppHeader() {
                                                 href="#"
                                                 className={classNames(
                                                     active ? 'bg-darkblue-300' : '',
-                                                    'block px-4 py-2 text-sm text-light-blue'
+                                                    'block px-4 py-2 text-sm text-pink-primary-300'
                                                 )}
                                             >
                                                 Exchanges
@@ -110,7 +109,7 @@ function AppHeader() {
                                                         type="submit"
                                                         className={classNames(
                                                             active ? 'bg-darkblue-300' : '',
-                                                            'block w-full text-left px-4 py-2 text-sm text-light-blue'
+                                                            'block w-full text-left px-4 py-2 text-sm text-pink-primary-300'
                                                         )}
                                                     >
                                                         Sign out

@@ -1,13 +1,13 @@
-import { ExclamationIcon } from '@heroicons/react/outline';
-import { swap } from 'formik';
-import Link from 'next/link';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useRef, useState } from 'react'
+import toast from 'react-hot-toast';
 import { useAuthDataUpdate } from '../../../context/auth';
-import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
-import { BransferApiClient, UserExchangesResponse } from '../../../lib/bransferApiClients';
+import { BransferApiClient } from '../../../lib/bransferApiClients';
 import { FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
+import { DocIframe } from '../../docInIframe';
+import SlideOver, { SildeOverRef } from '../../SlideOver';
 
 const APIKeyStep: FC = () => {
 
@@ -15,12 +15,16 @@ const APIKeyStep: FC = () => {
     const [secret, setSecret] = useState("")
     const [keyphrase, setKeyphrase] = useState("")
 
-    const [error, setError] = useState("")
     const [loading, setLoading] = useState(false);
     const { swapFormData } = useSwapDataState()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const { getAuthData } = useAuthDataUpdate()
 
+    const slideoverRef = useRef<SildeOverRef>()
+
+    const handleCloseSlideover = useCallback(() => {
+        slideoverRef.current.close()
+    }, [slideoverRef])
 
     const handleKeyChange = (e) => {
         setKey(e?.target?.value)
@@ -43,10 +47,10 @@ const APIKeyStep: FC = () => {
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
                 const message = error.response.data.errors.map(e => e.message).join(", ")
-                setError(message)
+                toast.error(message)
             }
             else {
-                setError(error.message)
+                toast.error(error.message)
             }
         }
         finally {
@@ -59,21 +63,6 @@ const APIKeyStep: FC = () => {
     return (
         <>
             <div className="w-full px-8 py-6 grid grid-flow-row text-pink-primary-300">
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-light-blue">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium leading-6 mb-12 text-white">
@@ -89,7 +78,11 @@ const APIKeyStep: FC = () => {
                             <label className="block text-base font-medium leading-6"> How to get API keys </label>
                         </div>
                         <div className="flex items-center ml-6 pl-2.5">
-                            <label className="block text-base font-normal leading-6"> Follow this <Link key="userGuide" href="/userguide"><a className="strong-highlight highlight-link hightlight-animation text-base">Step by step guide</a></Link> to generate your API keys. </label>
+                            <span className="block text-base font-normal leading-6"> Follow this
+                                <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className=" text-base cursor-pointer underline decoration-pink-primary">Step by step guide</span>&nbsp;</>} moreClassNames="-mt-11">
+                                    <DocIframe onConfirm={handleCloseSlideover} URl="/blog/guide/How_to_transfer_crypto_from_Binance_to_L2" />
+                                </SlideOver>
+                                to generate your API keys. </span>
                         </div>
                     </div>
                     <div className='mb-5'>
@@ -164,7 +157,7 @@ const APIKeyStep: FC = () => {
                                     onChange={handleKeyphraseChange}
                                     id="apiKey"
                                     className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 block
-                             placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                             placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                             </div>
                         </>
@@ -176,7 +169,6 @@ const APIKeyStep: FC = () => {
                     </SubmitButton>
                 </div>
             </div>
-
         </>
     )
 }

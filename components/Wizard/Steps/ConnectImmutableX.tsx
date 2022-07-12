@@ -1,14 +1,11 @@
-import { FC, Fragment, useEffect, useState } from 'react'
+import { FC, Fragment, useState } from 'react'
 import { Link } from '@imtbl/imx-sdk';
-import { ExclamationIcon, LinkIcon, XIcon } from '@heroicons/react/outline';
+import { LinkIcon, XIcon } from '@heroicons/react/outline';
 import SubmitButton from '../../buttons/submitButton';
 import TokenService from '../../../lib/TokenService';
-import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
-import { ExchangeAuthorizationSteps, FormWizardSteps } from '../../../Models/Wizard';
-import { useSwapDataState } from '../../../context/swap';
 import { Combobox, Transition } from '@headlessui/react';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
+import toast from 'react-hot-toast';
 
 
 const linkAddress = 'https://link.x.immutable.com';
@@ -19,17 +16,6 @@ type Props = {
 }
 const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string>(null);
-
-
-    const modalDescription = () => {
-        return (
-            <div className='text-base'>
-                <span>
-                    Immutable X account for the provided address does not exist. To create one, you need to connect your wallet to Immutable X.
-                </span>
-            </div>)
-    }
 
     async function onImmutableConnectClick() {
         try {
@@ -42,7 +28,7 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
             if (connected && connected.address)
                 onClose()
         } catch (error) {
-            setError(error.message);
+            toast.error(error.message);
         }
         finally {
             setLoading(false)
@@ -70,7 +56,7 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                             <div className="hidden sm:block ">
                                 <button
                                     type="button"
-                                    className="rounded-md text-pink-primary-300 focus:ring-2 hover:text-light-blue"
+                                    className="rounded-md text-pink-primary-300 focus:ring-2 hover:text-pink-primary-300"
                                     onClick={onClose}
                                 >
                                     <span className="sr-only">Close</span>
@@ -114,21 +100,6 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                                         </p>
                                     </h3>
 
-                                    {
-                                        error &&
-                                        <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5 flex items-center">
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0">
-                                                    <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
-                                                </div>
-                                                <div className="ml-3">
-                                                    <p className="text-xl text-light-blue font-normal">
-                                                        {error}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
                                     <div className="mt-3 sm:mt-6 text-white text-sm">
                                         <SubmitButton icon={connectButtonIcon} isDisabled={loading} isSubmitting={loading} onClick={async () => await onImmutableConnectClick()}>
                                             Connect

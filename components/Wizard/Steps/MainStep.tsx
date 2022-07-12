@@ -34,6 +34,8 @@ import ConnectImmutableX from "./ConnectImmutableX";
 import ConnectDeversifi from "../../ConnectDeversifi";
 import SendFeedback from "../../sendFeedback";
 import SlideOver, { SildeOverRef } from "../../SlideOver";
+import { DocIframe } from "../../docInIframe";
+import toast from "react-hot-toast";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -66,18 +68,18 @@ const CurrenciesField: FC = () => {
     } = useFormikContext<SwapFormValues>();
 
     const name = "currency"
-    const settings = useSettingsState();
-    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? settings.currencies
+    const { currencies, exchanges } = useSettingsState();
+
+    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? currencies
         .filter(x => x.network_id === network.baseObject.id)
         .map(c => ({
             baseObject: c,
             id: c.id,
             name: c.asset,
             imgSrc: c.logo_url,
-            isAvailable: true,
+            isAvailable: c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
             isEnabled: c.is_enabled,
             isDefault: c.is_default,
-
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)))
         : []
@@ -85,19 +87,35 @@ const CurrenciesField: FC = () => {
     // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
 
     useEffect(() => {
-
-        if (network && (!currency || !currencyMenuItems.some(c => c.id == currency.id))) {
+        if (network) {
             // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
-            const defaultValue = currencyMenuItems?.find(c => c.isDefault && c.isEnabled)
+            const default_currency = currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
+
+
             // if(alternativeToSelectedValue){
             //     setFieldValue(name, alternativeToSelectedValue)
             // }
             // else{
-            setFieldValue(name, defaultValue || currencyMenuItems[0])
+            if (default_currency) {
+                const defaultValue: SelectMenuItem<Currency> = {
+                    baseObject: default_currency,
+                    id: default_currency.id,
+                    name: default_currency.asset,
+                    imgSrc: default_currency.logo_url,
+                    isAvailable: default_currency.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
+                    isEnabled: default_currency.is_enabled,
+                    isDefault: default_currency.is_default,
+                }
+                setFieldValue(name, defaultValue)
+            }
+            else {
+                setFieldValue(name, null)
+            }
+
             // }
         }
 
-    }, [network, setFieldValue])
+    }, [network, setFieldValue, exchange, currencies, exchanges])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} />
@@ -118,11 +136,12 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             id: e.internal_name,
             name: e.name,
             imgSrc: e.logo_url,
-            isAvailable: true, //currency?.baseObject?.exchanges?.some(ce => ce.exchangeId === e.id),
+            isAvailable: true,
             isEnabled: e.is_enabled,
             isDefault: e.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
+
     return (<>
         <label htmlFor="exchange" className="block font-normal text-pink-primary-300 text-sm">
             From
@@ -138,23 +157,25 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
         values: { exchange, network, currency },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
+    const name = "network"
 
-    const settings = useSettingsState();
+    const { currencies, networks } = useSettingsState();
 
-    const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = settings.networks
+    const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = networks
         .map(n => ({
             baseObject: n,
             id: n.code,
             name: n.name,
             imgSrc: n.logo_url,
             isAvailable: !n.is_test_net,
-            isEnabled: n.is_enabled,
+            isEnabled: n.is_enabled && currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
             isDefault: n.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
-    console.log(settings.networks)
+
     if (exchange && !network)
         ref.current?.focus()
+
 
     return (<>
         <label htmlFor="network" className="block font-normal text-pink-primary-300 text-sm">
@@ -215,11 +236,9 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
 export default function MainStep() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     // const { nextStep } = useWizardState();
-    const { goToStep,setLoading: setLoadingWizard } = useFormWizardaUpdate<FormWizardSteps>()
-    const { currentStep } = useFormWizardState<FormWizardSteps>()
+    const { goToStep, setLoading: setLoadingWizard } = useFormWizardaUpdate<FormWizardSteps>()
 
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("");
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
     const [connectDeversifiIsOpen, setConnectDeversifiIsOpen] = useState(false);
 
@@ -292,7 +311,7 @@ export default function MainStep() {
             }
         }
         catch (e) {
-            setError(e.message)
+            toast.error(e.message)
         }
         finally {
             setLoading(false)
@@ -419,21 +438,6 @@ export default function MainStep() {
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
                 <Form>
                     <div className="px-8 relative">
-                        {
-                            error &&
-                            <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
-                                <div className="flex">
-                                    <div className="flex-shrink-0">
-                                        <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-pink-primary-300">
-                                            {error}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        }
                         <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4">
                             <div className="flex flex-col md:w-80 w-full">
                                 {
@@ -483,10 +487,6 @@ export default function MainStep() {
                         <div className="w-full">
                             <AmountAndFeeDetails amount={values?.amount} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
                         </div>
-                        {/* <SlideOver opener={<span>HEy hey hey</span>} >
-                            <span>How to transfer blblblabb crypto from your exchange account to Arbitrum, zkSync, Loopring and many more L2 networks?</span>
-                            <span>from inside</span>
-                        </SlideOver> */}
                         <div className="mt-6">
                             <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors)}

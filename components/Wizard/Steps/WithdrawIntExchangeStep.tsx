@@ -35,7 +35,7 @@ const WithdrawIntExchangeStep: FC = () => {
                     </div>
                 </div>
                 <div className='mb-12'>
-                    <label htmlFor="address" className="block font-normal text-light-blue text-sm">
+                    <label htmlFor="address" className="block font-normal text-pink-primary-300 text-sm">
                         Address
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
@@ -49,7 +49,7 @@ const WithdrawIntExchangeStep: FC = () => {
                             id="address"
                             disabled={true}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                         />
                         <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-12'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -62,7 +62,7 @@ const WithdrawIntExchangeStep: FC = () => {
                             </svg>
                         </button>
                     </div>
-                    <label htmlFor="network" className="block font-normal text-light-blue text-sm">
+                    <label htmlFor="network" className="block font-normal text-pink-primary-300 text-sm">
                         Network
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
@@ -76,10 +76,10 @@ const WithdrawIntExchangeStep: FC = () => {
                             id="network"
                             disabled={true}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
-                    <label htmlFor="withdrawlAmount" className="block font-normal text-light-blue text-sm">
+                    <label htmlFor="withdrawlAmount" className="block font-normal text-pink-primary-300 text-sm">
                         Withdrawl amount in LRC
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
@@ -93,7 +93,7 @@ const WithdrawIntExchangeStep: FC = () => {
                             id="withdrawlAmount"
                             disabled={true}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                         />
                         <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-2.5'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
@@ -101,7 +101,7 @@ const WithdrawIntExchangeStep: FC = () => {
                             </svg>
                         </button>
                     </div>
-                    <label htmlFor="remarks" className="block font-normal text-light-blue text-sm">
+                    <label htmlFor="remarks" className="block font-normal text-pink-primary-300 text-sm">
                         Remarks
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-2 md:mb-1">
@@ -115,7 +115,7 @@ const WithdrawIntExchangeStep: FC = () => {
                             id="remarks"
                             disabled={true}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                         />
                         <button className='absolute rounded bg bg-darkblue-50 p-2 inset-y-2 right-2.5'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">

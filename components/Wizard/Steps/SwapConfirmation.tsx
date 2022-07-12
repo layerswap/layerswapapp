@@ -10,6 +10,8 @@ import { isValidAddress } from '../../../lib/etherAddressValidator';
 import { BaseStepProps, FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
+import toast from 'react-hot-toast';
+import { CalculateReceiveAmount } from '../../../lib/fees';
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
@@ -17,12 +19,11 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [towFactorCode, setTwoFactorCode] = useState("")
 
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const [twoFARequired, setTwoFARequired] = useState(false)
 
     const { swapFormData, swap } = useSwapDataState()
     const { createSwap, processPayment, updateSwapFormData } = useSwapDataUpdate()
-    const { goToStep, setWizardError } = useFormWizardaUpdate<FormWizardSteps>()
+    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState("")
     const [addressInputError, setAddressInputError] = useState("")
@@ -33,10 +34,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     useEffect(() => {
         setAddressInputValue(destination_address)
     }, [destination_address])
-
-    useEffect(() => {
-        setError("")
-    }, [current])
 
     const handleConfirm_right_wallet = (e) => {
         setConfirm_right_wallet(e.target.checked)
@@ -63,7 +60,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const handleSubmit = useCallback(async () => {
         setLoading(true)
-        setError("")
         setTwoFARequired(false)
         try {
             const data = {
@@ -93,18 +89,18 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error?.message || error?.response?.data?.message || error.message)
 
             if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
-                await goToStep("ExchangeOAuth")
-                setWizardError(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
+                goToStep("ExchangeOAuth")
+                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {
-                setError("Two factor authentication is required")
+                toast.error("Two factor authentication is required")
                 setTwoFARequired(true)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {
-                setError(`${swapFormData.exchange.name} error: You don't have that much.`)
+                toast.error(`${swapFormData.exchange.name} error: You don't have that much.`)
             }
             else {
-                setError(errorMessage)
+                toast.error(errorMessage)
             }
             setLoading(false)
         }
@@ -124,20 +120,18 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setEditingAddress(false)
     }, [addressInputValue, swapFormData])
 
+    const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject)
     return (
         <>
             <div className="w-full px-8 py-6 pt-1 md:grid md:grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
                 <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please confirm your swap
                 </h3>
-                <h3 className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-sm'>
-                    You are requesting a transfer of <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from your {swapFormData?.exchange?.name} exchange account to your {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substr(0, 5)}...${swapFormData?.destination_address?.substr(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></span>)
-                </h3>
 
                 <div className="mx-auto w-full rounded-lg bg-darkblue-500 p-2 font-normal">
                     {
                         swapFormData?.exchange?.imgSrc &&
-                        <div className="inline-block mx-1 flex">
+                        <div className="mx-1 flex">
                             <div className="flex-shrink-0 h-12 w-12 relative rounded-full border-4 border-darkblue-500">
                                 <Image
                                     src={swapFormData?.exchange?.imgSrc}
@@ -165,8 +159,8 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             <div className='text-w'>
                                 <div>
                                     <span className='hidden md:inline-block'>{swapFormData?.destination_address}</span>
-                                    <span className='md:hidden'> {`${swapFormData?.destination_address?.substr(0, 5)}...${swapFormData?.destination_address?.substr(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</span>
-                                    <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer hover:text-pink-primary-800' /></div>
+                                    <span className='md:hidden'> {`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</span>
+                                    <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer text-pink-primary-800 hover:text-pink-primary' /></div>
                                 <div>{swapFormData?.amount} {swapFormData?.currency?.name}</div>
                             </div>
                         </div>
@@ -174,7 +168,11 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
                 </div>
 
-                <p className='mt-4 pt-2 text-lg leading-6 md:text-center md:text-left font-roboto text-white'>
+                <h3 className='mb-4 pt-2 text-center md:text-left font-roboto text-sm'>
+                    Transfering <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from {swapFormData?.exchange?.name} to {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer text-pink-primary-800 hover:text-pink-primary' /></span>) and will receive <span className='whitespace-nowrap strong-highlight font-semibold'>{receive_amount} {swapFormData?.currency?.name}</span>
+                </h3>
+
+                <p className='mt-4 pt-2 text-lg leading-6 md:text-left font-roboto text-white'>
                     To continue, you have to confirm that
                 </p>
 
@@ -214,7 +212,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     name="TwoFACode"
                                     id="TwoFACode"
                                     className="h-12 text-2xl pl-5 focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
-                            placeholder:text-light-blue placeholder:text-2xl placeholder:h-12 placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            placeholder:text-pink-primary-300 placeholder:text-2xl placeholder:h-12 placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                                     onKeyPress={e => {
                                         isNaN(Number(e.key)) && e.preventDefault()
                                     }}
@@ -224,21 +222,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                         </div>
                     }
                 </div>
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5 flex items-center mb-4">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-xl text-light-blue font-normal">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div className="text-white text-sm mt-auto">
                     <div className="flex items-center mb-2">
                         <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
@@ -262,11 +245,11 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkBlue'>
                     <span className='relative z-40 overflow-hidden bg-darkBlue p-10 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                            <span className="justify-self-end text-light-blue cursor-pointer">
+                            <span className="justify-self-end text-pink-primary-300 cursor-pointer">
                                 <div className="">
                                     <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200 focus:ring-2 hover:text-light-blue"
+                                        className="rounded-md text-darkblue-200 focus:ring-2 hover:text-pink-primary-300"
                                         onClick={handleClose}
                                     >
                                         <span className="sr-only">Close</span>

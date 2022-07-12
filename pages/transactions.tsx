@@ -14,14 +14,13 @@ export default function Transactions({ data }: InferGetServerSidePropsType<typeo
     <Layout>
       <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8">
         <div className="flex flex-col space-y-6 text-white">
-          <AuthProvider>
-            <SettingsProvider data={data}>
+          <SettingsProvider data={data}>
+            <AuthProvider>
               <MenuProvider>
                 <TransactionsHistory />
               </MenuProvider>
-            </SettingsProvider>
-          </AuthProvider>
-          <IntroCard />
+            </AuthProvider>
+          </SettingsProvider>
         </div>
       </div>
     </Layout>
