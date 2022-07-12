@@ -18,7 +18,6 @@ const APIKeyStep: FC = () => {
     const [secret, setSecret] = useState("")
     const [keyphrase, setKeyphrase] = useState("")
 
-    const [error, setError] = useState("")
     const [loading, setLoading] = useState(false);
     const { swapFormData } = useSwapDataState()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()

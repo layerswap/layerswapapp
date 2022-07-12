@@ -18,7 +18,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [towFactorCode, setTwoFactorCode] = useState("")
 
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const [twoFARequired, setTwoFARequired] = useState(false)
 
     const { swapFormData, swap } = useSwapDataState()
@@ -173,7 +172,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
                 </div>
 
-                <p className='mt-4 pt-2 text-lg leading-6 md:text-center md:text-left font-roboto text-white'>
+                <p className='mt-4 pt-2 text-lg leading-6 md:text-left font-roboto text-white'>
                     To continue, you have to confirm that
                 </p>
 

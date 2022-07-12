@@ -16,7 +16,6 @@ const CodeStep: FC = () => {
     const [code, setCode] = useState("")
     // const { nextStep } = useWizardState();
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const [loadingResend, setLoadingResend] = useState(false)
 
     const nextTime = TokenService.getCodeNextTime()

@@ -32,7 +32,6 @@ function UserExchanges() {
     const { exchanges } = useSettingsState()
     const [userExchanges, setUserExchanges] = useState<UserExchange[]>()
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(false)
     const router = useRouter();
     const [query, setQuery] = useState('')
     const [exchangeToConnect, setExchangeToConnect] = useState<Exchange>()

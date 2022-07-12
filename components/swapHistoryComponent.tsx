@@ -74,7 +74,6 @@ function TransactionsHistory() {
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapDetailsResponse[]>()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(false)
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapDetailsResponse | undefined>()
   const { email } = useAuthState()

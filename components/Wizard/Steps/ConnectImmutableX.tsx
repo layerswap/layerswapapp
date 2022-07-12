@@ -20,17 +20,6 @@ type Props = {
 }
 const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string>(null);
-
-
-    const modalDescription = () => {
-        return (
-            <div className='text-base'>
-                <span>
-                    Immutable X account for the provided address does not exist. To create one, you need to connect your wallet to Immutable X.
-                </span>
-            </div>)
-    }
 
     async function onImmutableConnectClick() {
         try {

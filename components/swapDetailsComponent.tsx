@@ -20,7 +20,6 @@ type Props = {
 const SwapDetails: FC<Props> = ({ id }) => {
     const { exchanges, networks, currencies } = useSettingsState()
     const [swap, setSwap] = useState<SwapDetailsResponse>()
-    const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
     const router = useRouter();
     const exchange = exchanges?.find(e => e.internal_name == swap?.payment?.exchange)

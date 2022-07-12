@@ -13,7 +13,6 @@ type Props = {
 
 const ConnectDeversifi: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string>(null);
 
     const connectButtonIcon = <LinkIcon className='h-5 w-5'></LinkIcon>
     

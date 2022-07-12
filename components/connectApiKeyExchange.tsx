@@ -17,7 +17,6 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const router = useRouter();
     const [keyphrase, setKeyphrase] = useState("")
 

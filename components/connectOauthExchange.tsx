@@ -16,7 +16,6 @@ type Props = {
 
 const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const router = useRouter();
     const authWindowRef = useRef(null);
 

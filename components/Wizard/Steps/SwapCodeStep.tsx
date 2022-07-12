@@ -17,7 +17,6 @@ const CodeStep: FC = () => {
     const [code, setCode] = useState("")
     // const { nextStep } = useWizardState();
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const { swapFormData } = useSwapDataState()
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()

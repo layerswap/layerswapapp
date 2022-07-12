@@ -21,7 +21,6 @@ const EmailStep: FC = () => {
     const formikRef = useRef<FormikProps<EmailFormValues>>(null);
 
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState()
     const { updateEmail } = useAuthDataUpdate()
     const { goToStep, setLoading: setWizardLoading } = useFormWizardaUpdate<LoginWizardSteps>()
 

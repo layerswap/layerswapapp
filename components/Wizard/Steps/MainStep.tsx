@@ -239,7 +239,6 @@ export default function MainStep() {
     const { currentStep } = useFormWizardState<FormWizardSteps>()
 
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("");
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
     const [connectDeversifiIsOpen, setConnectDeversifiIsOpen] = useState(false);
 

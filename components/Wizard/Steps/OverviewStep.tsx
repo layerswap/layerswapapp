@@ -14,7 +14,6 @@ type Props = {
 
 const OverviewStep: FC<Props> = ({ current }) => {
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const { swap } = useSwapDataState()
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
