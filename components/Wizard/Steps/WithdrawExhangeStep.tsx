@@ -48,7 +48,7 @@ const WithdrawExchangeStep: FC = () => {
             // else if (swapStatus == SwapStatus.Pending)
             //     await goToStep("Processing")
         }
-    }, [], 10000)
+    }, [currentStep], 10000)
 
 
     const handleConfirm = useCallback(async () => {
