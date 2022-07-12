@@ -1,12 +1,8 @@
-import { FC, Fragment, useEffect, useState } from 'react'
+import { FC, Fragment, useState } from 'react'
 import { Link } from '@imtbl/imx-sdk';
-import { ExclamationIcon, LinkIcon, XIcon } from '@heroicons/react/outline';
+import { LinkIcon, XIcon } from '@heroicons/react/outline';
 import SubmitButton from '../../buttons/submitButton';
 import TokenService from '../../../lib/TokenService';
-import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
-import { ExchangeAuthorizationSteps, FormWizardSteps } from '../../../Models/Wizard';
-import { useSwapDataState } from '../../../context/swap';
 import { Combobox, Transition } from '@headlessui/react';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
 import toast from 'react-hot-toast';

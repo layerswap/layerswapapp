@@ -1,25 +1,20 @@
-import { Transition } from '@headlessui/react';
-import { CheckIcon, ExclamationIcon } from '@heroicons/react/outline';
-import Link from 'next/link';
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useWizardState } from '../../../context/wizard';
 import { useInterval } from '../../../hooks/useInyterval';
 import { parseJwt } from '../../../lib/jwtParser';
 import TokenService from '../../../lib/TokenService';
-import { FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
+import { FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 
 const AccountConnectStep: FC = () => {
-    const [localError, setLocalError] = useState("")
     const { swapFormData } = useSwapDataState()
     const { oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
-    const { currentStep, error: wizardError } = useFormWizardState<FormWizardSteps>()
+    const { currentStep } = useFormWizardState<FormWizardSteps>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const [poll, setPoll] = useState(false)
     const [carouselFinished, setCarouselFinished] = useState(false)
@@ -63,8 +58,6 @@ const AccountConnectStep: FC = () => {
             toast.error(e.message)
         }
     }, [oauth_redirect_url, carouselRef, carouselFinished])
-    
-    if (wizardError) toast.error(wizardError);
 
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
     const exchange_name = swapFormData?.exchange?.name

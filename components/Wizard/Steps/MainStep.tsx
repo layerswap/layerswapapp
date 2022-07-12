@@ -236,7 +236,6 @@ export default function MainStep() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     // const { nextStep } = useWizardState();
     const { goToStep, setLoading: setLoadingWizard } = useFormWizardaUpdate<FormWizardSteps>()
-    const { currentStep } = useFormWizardState<FormWizardSteps>()
 
     const [loading, setLoading] = useState(false)
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);

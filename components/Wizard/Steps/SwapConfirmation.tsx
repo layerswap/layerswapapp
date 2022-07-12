@@ -22,7 +22,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     const { swapFormData, swap } = useSwapDataState()
     const { createSwap, processPayment, updateSwapFormData } = useSwapDataUpdate()
-    const { goToStep, setWizardError } = useFormWizardaUpdate<FormWizardSteps>()
+    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState("")
     const [addressInputError, setAddressInputError] = useState("")
@@ -91,8 +91,8 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error?.message || error?.response?.data?.message || error.message)
 
             if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
-                await goToStep("ExchangeOAuth")
-                setWizardError(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
+                goToStep("ExchangeOAuth")
+                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {
                 toast.error("Two factor authentication is required")

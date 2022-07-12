@@ -1,7 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import toast from 'react-hot-toast';
 import { BaseWizard } from '../Models/Wizard';
-
 
 const FormWizardStateContext = React.createContext(null);
 const FormWizardStateUpdateContext = React.createContext(null);
@@ -18,7 +16,6 @@ type UpdateInterface<Type> = {
     goToStep: (step: keyof Type) => void,
     goBack: () => void,
     setLoading: (value: boolean) => void,
-    setWizardError: (error: string) => void
 }
 
 export function FormWizardProvider<Type extends BaseWizard>({ children, wizard, initialStep, initialLoading }: { children, wizard: Type, initialStep: keyof Type, initialLoading?: boolean }) {
@@ -44,10 +41,6 @@ export function FormWizardProvider<Type extends BaseWizard>({ children, wizard, 
         return previousStep
     }
 
-    const setWizardError = (error) => {
-        toast.error(error)
-    }
-
     const goBack = useCallback(() => {
         const previousStep = getPreviousStep(currentStep)
         if (previousStep) {
@@ -57,8 +50,8 @@ export function FormWizardProvider<Type extends BaseWizard>({ children, wizard, 
     }, [currentStep])
 
     return (
-        <FormWizardStateContext.Provider value={{ currentStep, moving, loading, error, wizard }}>
-            <FormWizardStateUpdateContext.Provider value={{ goToStep, goBack, setLoading, setWizardError }}>
+        <FormWizardStateContext.Provider value={{ currentStep, moving, loading, wizard }}>
+            <FormWizardStateUpdateContext.Provider value={{ goToStep, goBack, setLoading }}>
                 {children}
             </FormWizardStateUpdateContext.Provider>
         </FormWizardStateContext.Provider >
