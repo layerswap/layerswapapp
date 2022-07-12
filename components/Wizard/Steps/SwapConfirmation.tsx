@@ -10,6 +10,7 @@ import { isValidAddress } from '../../../lib/etherAddressValidator';
 import { BaseStepProps, FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
+import toast from 'react-hot-toast';
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
@@ -97,14 +98,14 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 setWizardError(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {
-                setError("Two factor authentication is required")
+                toast.error("Two factor authentication is required")
                 setTwoFARequired(true)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {
-                setError(`${swapFormData.exchange.name} error: You don't have that much.`)
+                toast.error(`${swapFormData.exchange.name} error: You don't have that much.`)
             }
             else {
-                setError(errorMessage)
+                toast.error(errorMessage)
             }
             setLoading(false)
         }

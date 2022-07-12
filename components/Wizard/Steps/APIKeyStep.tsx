@@ -2,6 +2,7 @@ import { ExclamationIcon } from '@heroicons/react/outline';
 import { swap } from 'formik';
 import Link from 'next/link';
 import { FC, useCallback, useRef, useState } from 'react'
+import toast from 'react-hot-toast';
 import { useAuthDataUpdate } from '../../../context/auth';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
@@ -50,10 +51,10 @@ const APIKeyStep: FC = () => {
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
                 const message = error.response.data.errors.map(e => e.message).join(", ")
-                setError(message)
+                toast.error(message)
             }
             else {
-                setError(error.message)
+                toast.error(error.message)
             }
         }
         finally {
@@ -66,21 +67,6 @@ const APIKeyStep: FC = () => {
     return (
         <>
             <div className="w-full px-8 py-6 grid grid-flow-row text-pink-primary-300">
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-pink-primary-300">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium leading-6 mb-12 text-white">

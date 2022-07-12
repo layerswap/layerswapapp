@@ -1,6 +1,7 @@
 import { CheckIcon, ExclamationIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { FC, useCallback, useState } from 'react'
+import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../../../context/auth';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
@@ -41,10 +42,10 @@ const CodeStep: FC = () => {
         catch (error) {
             if (error.response?.data?.error_description) {
                 const message = error.response.data.error_description
-                setError(message)
+                toast.error(message)
             }
             else {
-                setError(error.message)
+                toast.error(error.message)
             }
         }
         finally {
@@ -63,10 +64,10 @@ const CodeStep: FC = () => {
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
                 const message = error.response.data.errors.map(e => e.message).join(", ")
-                setError(message)
+                toast.error(message)
             }
             else {
-                setError(error.message)
+                toast.error(error.message)
             }
         }
         finally {

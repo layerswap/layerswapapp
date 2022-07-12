@@ -3,6 +3,7 @@ import { UserIcon } from '@heroicons/react/solid';
 import { Field, Form, Formik, FormikErrors, FormikProps } from 'formik';
 import Link from 'next/link';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import toast from 'react-hot-toast';
 import { useAuthDataUpdate } from '../../../context/auth';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
@@ -42,10 +43,10 @@ const EmailStep: FC = () => {
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
                 const message = error.response.data.errors.map(e => e.message).join(", ")
-                setError(message)
+                toast.error(message)
             }
             else {
-                setError(error.message)
+                toast.error(error.message)
             }
         }
         finally {
@@ -80,21 +81,6 @@ const EmailStep: FC = () => {
                     {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
                         <Form className='flex flex-col items-stretch min-h-[480px] text-pink-primary-300'>
                             <div className="w-full px-3 md:px-8 pb-12 pt-4 flex-col flex-1 flex">
-                                { 
-                                    error &&
-                                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
-                                        <div className="flex">
-                                            <div className="flex-shrink-0">
-                                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                                            </div>
-                                            <div className="ml-3">
-                                                <p className="text-sm text-pink-primary-300">
-                                                    {error}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
                                 <UserIcon className='w-8 h-8 self-center' />
                                 <h4 className='mb-12 mt-2 pt-2 text-xl leading-6 text-white text-center font-roboto'>
                                     Let's get started

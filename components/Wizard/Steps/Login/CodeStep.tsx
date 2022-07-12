@@ -3,6 +3,7 @@ import { ExclamationIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useState } from 'react'
+import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../../../../context/auth';
 import { useInterval } from '../../../../hooks/useInyterval';
 import TokenService from '../../../../lib/TokenService';
@@ -52,10 +53,10 @@ const CodeStep: FC = () => {
         catch (error) {
             if (error.response?.data?.error_description) {
                 const message = error.response.data.error_description
-                setError(message)
+                toast.error(message)
             }
             else {
-                setError(error.message)
+                toast.error(error.message)
             }
         }
         finally {
@@ -74,10 +75,10 @@ const CodeStep: FC = () => {
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
                 const message = error.response.data.errors.map(e => e.message).join(", ")
-                setError(message)
+                toast.error(message)
             }
             else {
-                setError(error.message)
+                toast.error(error.message)
             }
         }
         finally {

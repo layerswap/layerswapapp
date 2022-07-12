@@ -1,6 +1,7 @@
 import { ExclamationIcon } from '@heroicons/react/solid';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useState } from 'react'
+import toast from 'react-hot-toast';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import TokenService from '../../../lib/TokenService';
@@ -80,7 +81,7 @@ const OverviewStep: FC<Props> = ({ current }) => {
         catch (e) {
             if (e?.response?.status === 404)
                 setError("Swap not found")
-            setError(e.message)
+            toast.error(e.message)
             setTimeout(() => {
                 setLoadingWizard(false)
             }, 500);

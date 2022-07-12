@@ -35,6 +35,7 @@ import ConnectDeversifi from "../../ConnectDeversifi";
 import SendFeedback from "../../sendFeedback";
 import SlideOver, { SildeOverRef } from "../../SlideOver";
 import { DocIframe } from "../../docInIframe";
+import toast from "react-hot-toast";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -311,7 +312,7 @@ export default function MainStep() {
             }
         }
         catch (e) {
-            setError(e.message)
+            toast.error(e.message)
         }
         finally {
             setLoading(false)
@@ -438,21 +439,6 @@ export default function MainStep() {
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
                 <Form>
                     <div className="px-8 relative">
-                        {
-                            error &&
-                            <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
-                                <div className="flex">
-                                    <div className="flex-shrink-0">
-                                        <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-pink-primary-300">
-                                            {error}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        }
                         <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4">
                             <div className="flex flex-col md:w-80 w-full">
                                 {

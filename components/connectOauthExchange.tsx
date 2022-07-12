@@ -1,6 +1,7 @@
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import toast from 'react-hot-toast';
 import { useInterval } from '../hooks/useInyterval';
 import { BransferApiClient } from '../lib/bransferApiClients';
 import { parseJwt } from '../lib/jwtParser';
@@ -44,7 +45,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                 }
             }
             catch (e) {
-                setError(e.message)
+                toast.error(e.message)
                 setLoading(false)
             }
         }
@@ -68,7 +69,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
             authWindowRef.current = authWindow
         }
         catch (e) {
-            setError(e.message)
+            toast.error(e.message)
         }
     }, [exchange])
 
@@ -76,28 +77,12 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
     return (
         <>
             <div className="w-full grid grid-flow-row text-pink-primary-300">
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 mb-12">
                         You will leave Layerswap and be securely redirected to Conibase authorization page.
                     </h3>
                 </div>
 
-                
                 <div className="flex mt-12 md:mt-5 font-normal text-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-pink-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

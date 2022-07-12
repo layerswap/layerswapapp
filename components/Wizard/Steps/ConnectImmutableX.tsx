@@ -9,6 +9,7 @@ import { ExchangeAuthorizationSteps, FormWizardSteps } from '../../../Models/Wiz
 import { useSwapDataState } from '../../../context/swap';
 import { Combobox, Transition } from '@headlessui/react';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
+import toast from 'react-hot-toast';
 
 
 const linkAddress = 'https://link.x.immutable.com';
@@ -42,7 +43,7 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
             if (connected && connected.address)
                 onClose()
         } catch (error) {
-            setError(error.message);
+            toast.error(error.message);
         }
         finally {
             setLoading(false)
@@ -114,21 +115,6 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                                         </p>
                                     </h3>
 
-                                    {
-                                        error &&
-                                        <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5 flex items-center">
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0">
-                                                    <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
-                                                </div>
-                                                <div className="ml-3">
-                                                    <p className="text-xl text-pink-primary-300 font-normal">
-                                                        {error}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
                                     <div className="mt-3 sm:mt-6 text-white text-sm">
                                         <SubmitButton icon={connectButtonIcon} isDisabled={loading} isSubmitting={loading} onClick={async () => await onImmutableConnectClick()}>
                                             Connect
