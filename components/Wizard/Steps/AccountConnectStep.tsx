@@ -63,11 +63,11 @@ const AccountConnectStep: FC = () => {
             toast.error(e.message)
         }
     }, [oauth_redirect_url, carouselRef, carouselFinished])
+    
+    if (wizardError) toast.error(wizardError);
 
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
     const exchange_name = swapFormData?.exchange?.name
-    const error = wizardError;
-
     const onCarouselLast = (value) => {
         setCarouselFinished(value)
     }
