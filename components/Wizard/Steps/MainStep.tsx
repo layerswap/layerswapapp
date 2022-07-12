@@ -89,7 +89,7 @@ const CurrenciesField: FC = () => {
     useEffect(() => {
         if (network) {
             // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
-            const default_currency = currencies.sort((x,y)=>Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
+            const default_currency = currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
 
 
             // if(alternativeToSelectedValue){
@@ -141,6 +141,7 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             isDefault: e.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
             || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
+
     return (<>
         <label htmlFor="exchange" className="block font-normal text-pink-primary-300 text-sm">
             From
