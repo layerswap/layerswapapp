@@ -1,6 +1,7 @@
 import { CheckIcon, ExclamationIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { FC, useCallback, useState } from 'react'
+import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../../../context/auth';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
@@ -16,7 +17,6 @@ const CodeStep: FC = () => {
     const [code, setCode] = useState("")
     // const { nextStep } = useWizardState();
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const { swapFormData } = useSwapDataState()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
@@ -46,10 +46,10 @@ const CodeStep: FC = () => {
         catch (error) {
             if (error.response?.data?.error_description) {
                 const message = error.response.data.error_description
-                setError(message)
+                toast.error(message)
             }
             else {
-                setError(error.message)
+                toast.error(error.message)
             }
         }
         finally {
@@ -61,17 +61,16 @@ const CodeStep: FC = () => {
     const handleResendCode = useCallback(async () => {
         setLoadingResend(true)
         try {
-            setError("")
             const apiClient = new LayerSwapAuthApiClient();
             const res = await apiClient.getCodeAsync(email)
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
                 const message = error.response.data.errors.map(e => e.message).join(", ")
-                setError(message)
+                toast.error(message)
             }
             else {
-                setError(error.message)
+                toast.error(error.message)
             }
         }
         finally {
@@ -81,21 +80,6 @@ const CodeStep: FC = () => {
     return (
         <>
             <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row min-h-[480px] text-pink-primary-300">
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-pink-primary-300">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div>
                     <label htmlFor="amount" className="block font-normal text-sm">
                         Your Email Code

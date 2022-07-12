@@ -2,6 +2,7 @@ import { ExclamationIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useState } from 'react'
+import toast from 'react-hot-toast';
 import { BransferApiClient } from '../lib/bransferApiClients';
 import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
@@ -16,7 +17,6 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const router = useRouter();
     const [keyphrase, setKeyphrase] = useState("")
 
@@ -46,7 +46,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
             //TODO handle error
         }
         catch (e) {
-            setError(e.message)
+            toast.error(e.message)
         }
         finally {
             setLoading(false)
@@ -58,21 +58,6 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
     return (
         <>
             <div className="w-full grid grid-flow-row text-left">
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-pink-primary-300">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div>
                     <div className="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-pink-primary mr-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2}>

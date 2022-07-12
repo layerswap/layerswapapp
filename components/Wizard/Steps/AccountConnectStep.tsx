@@ -1,24 +1,20 @@
-import { Transition } from '@headlessui/react';
-import { CheckIcon, ExclamationIcon } from '@heroicons/react/outline';
-import Link from 'next/link';
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useRef, useState } from 'react'
+import toast from 'react-hot-toast';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useWizardState } from '../../../context/wizard';
 import { useInterval } from '../../../hooks/useInyterval';
 import { parseJwt } from '../../../lib/jwtParser';
 import TokenService from '../../../lib/TokenService';
-import { FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
+import { FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 
 const AccountConnectStep: FC = () => {
-    const [localError, setLocalError] = useState("")
     const { swapFormData } = useSwapDataState()
     const { oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
-    const { currentStep, error: wizardError } = useFormWizardState<FormWizardSteps>()
+    const { currentStep } = useFormWizardState<FormWizardSteps>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const [poll, setPoll] = useState(false)
     const [carouselFinished, setCarouselFinished] = useState(false)
@@ -59,14 +55,12 @@ const AccountConnectStep: FC = () => {
             authWindowRef.current = authWindow
         }
         catch (e) {
-            setLocalError(e.message)
+            toast.error(e.message)
         }
     }, [oauth_redirect_url, carouselRef, carouselFinished])
 
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
     const exchange_name = swapFormData?.exchange?.name
-    const error = localError + wizardError;
-
     const onCarouselLast = (value) => {
         setCarouselFinished(value)
     }
@@ -77,9 +71,6 @@ const AccountConnectStep: FC = () => {
 
                 <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please connect your {exchange_name} account
-                    <p className='pt-2 text-base text-center md:text-left font-roboto text-sm text-pink-primary-300 font-light'>
-                        You will leave Layerswap and be securely redirected to <span className='strong-highlight'>{exchange_name}</span> authorization page.
-                    </p>
                     {/* <div className="flex items-center text-pink-primary-300 border-2 p-4 rounded-md border-ouline-blue border-dashed">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-pink-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -87,27 +78,12 @@ const AccountConnectStep: FC = () => {
                         <label className="block text-lg font-lighter leading-6 "> Make sure to authorize at least <span className='strong-highlight text-white'>{minimalAuthorizeAmount}$</span>. Follow this <Link key="userGuide" href="/userguide"><a className="strong-highlight hightlight-animation highlight-link hover:cursor-pointer">Step by step guide</a></Link></label>
                     </div> */}
                 </h3>
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5 flex items-center">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-xl text-pink-primary-300 font-normal">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div className="w-full">
                     <Carousel onLast={onCarouselLast} ref={carouselRef}>
                         <CarouselItem width={100} >
                             <div className='w-full whitespace-normal mb-3 text-pink-primary'>
-                                .01
-                                <div className='whitespace-normal text-white'>After clicking connect you will be taken to {exchange_name}</div>
+                                <span className='font-medium'>.01</span>
+                                <div className='whitespace-normal text-white font-normal'>After this guide, you'll be taken to {exchange_name} to connect your account. You'll be prompted to log in to your {exchange_name} account if you are not logged in yet</div>
                             </div>
                             <div className='w-full md:w-1/2'>
                                 <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -201,8 +177,8 @@ const AccountConnectStep: FC = () => {
                         </CarouselItem>
                         <CarouselItem width={100}>
                             <div className='w-full whitespace-normal mb-3 text-pink-primary'>
-                                .02
-                                <div className='whitespace-normal text-white'>In {exchange_name} click <span className='strong-highlight font-medium'>Change this amount</span></div>
+                                <span className='font-medium'>.02</span>
+                                <div className='whitespace-normal font-normal text-white'>When prompted to authorize Layerswap, click <span className='strong-highlight font-medium'>Change this amount</span></div>
                             </div>
                             <div className='w-full md:w-1/2'>
                                 <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -286,8 +262,8 @@ const AccountConnectStep: FC = () => {
                         </CarouselItem>
                         <CarouselItem width={100}>
                             <div className='w-full whitespace-normal mb-3 text-pink-primary'>
-                                .03
-                                <div className='whitespace-normal text-white'>Change the at least value to <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span></div>
+                                <span className='font-medium'>.03</span>
+                                <div className='whitespace-normal font-normal text-white'>Change the existing 1.0 value to <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click Save</div>
                             </div>
                             <div className='w-full md:w-1/2'>
                                 <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -479,8 +455,8 @@ const AccountConnectStep: FC = () => {
                         </CarouselItem>
                         <CarouselItem width={100}>
                             <div className='w-full whitespace-normal mb-3 text-pink-primary'>
-                                .04
-                                <div className='whitespace-normal text-white'>Click <span className='strong-highlight font-medium'>Save</span>, then click <span className='strong-highlight font-medium'>Authorize</span></div>
+                                <span className='font-medium'>.04</span>
+                                <div className='whitespace-normal font-normal text-white'>Make sure that the allowed amount is <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click <span className='strong-highlight font-medium'>Authorize</span></div>
                             </div>
                             <div className='w-full md:w-1/2'>
                                 <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -595,8 +571,8 @@ const AccountConnectStep: FC = () => {
                         </CarouselItem>
                         <CarouselItem width={100}>
                             <div className='w-full whitespace-normal mb-3 text-pink-primary'>
-                                .00
-                                <div className='whitespace-normal text-white'>Please do not forget those steps</div>
+                                <span className='font-medium'>.05</span>
+                                <div className='whitespace-normal font-medium text-white'>Please make sure to change the allowed amount to {minimalAuthorizeAmount}</div>
                             </div>
                             <div className='w-full md:w-1/2'>
                                 <svg viewBox="0 0 447 484" fill="none" xmlns="http://www.w3.org/2000/svg">

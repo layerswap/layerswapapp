@@ -16,6 +16,7 @@ import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
 import { copyTextToClipboard } from "../lib/copyToClipboard"
 import { useAuthState } from "../context/auth"
+import toast from "react-hot-toast"
 
 
 export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
@@ -73,7 +74,6 @@ function TransactionsHistory() {
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapDetailsResponse[]>()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(false)
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapDetailsResponse | undefined>()
   const { email } = useAuthState()
@@ -99,7 +99,7 @@ function TransactionsHistory() {
           setIsLastPage(true)
       }
       catch (e) {
-        setError(e.message)
+        toast.error(e.message)
       }
       finally {
         setLoading(false)
@@ -127,7 +127,7 @@ function TransactionsHistory() {
         setIsLastPage(true)
     }
     catch (e) {
-      setError(e.message)
+      toast.error(e.message)
     }
     finally {
       setLoading(false)
@@ -441,7 +441,7 @@ function TransactionsHistory() {
                       leaveFrom="opacity-100 scale-100"
                       leaveTo="opacity-0 scale-95"
                     >
-                      <Dialog.Panel className="w-full space-y-6 max-w-md p-7 transform overflow-hidden rounded-md bg-darkBlue shadow-card text-center align-middle shadow-xl transition-all">
+                      <Dialog.Panel className="w-full space-y-6 max-w-md p-7 transform overflow-hidden rounded-md bg-darkBlue text-center align-middle shadow-xl transition-all">
                         <div className="flex justify-between">
                           <div className='text-xl font-bold text-white'>Swap details</div>
                           <div className='relative grid grid-cols-1 gap-4 place-content-end z-40'>

@@ -17,6 +17,7 @@ import Link from "next/link"
 import LayerSwapLogo from "./icons/layerSwapLogo"
 import SubmitButton from "./buttons/submitButton";
 import { useAuthState } from "../context/auth";
+import toast from "react-hot-toast";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -31,7 +32,6 @@ function UserExchanges() {
     const { exchanges } = useSettingsState()
     const [userExchanges, setUserExchanges] = useState<UserExchange[]>()
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(false)
     const router = useRouter();
     const [query, setQuery] = useState('')
     const [exchangeToConnect, setExchangeToConnect] = useState<Exchange>()
@@ -55,7 +55,7 @@ function UserExchanges() {
                 await getAndMapExchanges(authData)
             }
             catch (e) {
-                setError(e.message)
+                toast.error(e.message)
             }
             finally {
                 setLoading(false)
@@ -107,7 +107,7 @@ function UserExchanges() {
             await getAndMapExchanges(authData)
         }
         catch (e) {
-            setError(e.message)
+            toast.error(e.message)
         }
         finally {
             setExchangeLoading(undefined)
@@ -133,7 +133,7 @@ function UserExchanges() {
             await getAndMapExchanges(authData)
         }
         catch (e) {
-            setError(e.message)
+            toast.error(e.message)
         }
         finally {
             setLoading(false)

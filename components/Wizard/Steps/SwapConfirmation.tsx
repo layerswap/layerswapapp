@@ -10,6 +10,7 @@ import { isValidAddress } from '../../../lib/etherAddressValidator';
 import { BaseStepProps, FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
+import toast from 'react-hot-toast';
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
@@ -17,12 +18,11 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [towFactorCode, setTwoFactorCode] = useState("")
 
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const [twoFARequired, setTwoFARequired] = useState(false)
 
     const { swapFormData, swap } = useSwapDataState()
     const { createSwap, processPayment, updateSwapFormData } = useSwapDataUpdate()
-    const { goToStep, setWizardError } = useFormWizardaUpdate<FormWizardSteps>()
+    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState("")
     const [addressInputError, setAddressInputError] = useState("")
@@ -33,10 +33,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     useEffect(() => {
         setAddressInputValue(destination_address)
     }, [destination_address])
-
-    useEffect(() => {
-        setError("")
-    }, [current])
 
     const handleConfirm_right_wallet = (e) => {
         setConfirm_right_wallet(e.target.checked)
@@ -63,7 +59,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const handleSubmit = useCallback(async () => {
         setLoading(true)
-        setError("")
         setTwoFARequired(false)
         try {
             const data = {
@@ -93,18 +88,18 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error?.message || error?.response?.data?.message || error.message)
 
             if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
-                await goToStep("ExchangeOAuth")
-                setWizardError(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
+                goToStep("ExchangeOAuth")
+                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {
-                setError("Two factor authentication is required")
+                toast.error("Two factor authentication is required")
                 setTwoFARequired(true)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {
-                setError(`${swapFormData.exchange.name} error: You don't have that much.`)
+                toast.error(`${swapFormData.exchange.name} error: You don't have that much.`)
             }
             else {
-                setError(errorMessage)
+                toast.error(errorMessage)
             }
             setLoading(false)
         }
@@ -174,7 +169,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
                 </div>
 
-                <p className='mt-4 pt-2 text-lg leading-6 md:text-center md:text-left font-roboto text-white'>
+                <p className='mt-4 pt-2 text-lg leading-6 md:text-left font-roboto text-white'>
                     To continue, you have to confirm that
                 </p>
 
@@ -224,21 +219,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                         </div>
                     }
                 </div>
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5 flex items-center mb-4">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-xl text-pink-primary-300 font-normal">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
                 <div className="text-white text-sm mt-auto">
                     <div className="flex items-center mb-2">
                         <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
