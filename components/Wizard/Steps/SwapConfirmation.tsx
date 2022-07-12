@@ -11,6 +11,7 @@ import { BaseStepProps, FormWizardSteps, SwapWizardSteps } from '../../../Models
 import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
+import { CalculateReceiveAmount } from '../../../lib/fees';
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
@@ -119,14 +120,12 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setEditingAddress(false)
     }, [addressInputValue, swapFormData])
 
+    const receive_amount = CalculateReceiveAmount(Number(swapFormData.amount), swapFormData.currency?.baseObject, swapFormData.exchange?.baseObject)
     return (
         <>
             <div className="w-full px-8 py-6 pt-1 md:grid md:grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
                 <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please confirm your swap
-                </h3>
-                <h3 className='mb-10 pt-2 text-center md:text-left font-roboto text-sm'>
-                    You are requesting a transfer of <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from your {swapFormData?.exchange?.name} exchange account to your {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer text-pink-primary-800 hover:text-pink-primary' /></span>)
                 </h3>
 
                 <div className="mx-auto w-full rounded-lg bg-darkblue-500 p-2 font-normal">
@@ -168,6 +167,10 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     }
 
                 </div>
+
+                <h3 className='mb-4 pt-2 text-center md:text-left font-roboto text-sm'>
+                    Transfering <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from {swapFormData?.exchange?.name} to {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer text-pink-primary-800 hover:text-pink-primary' /></span>) and will receive <span className='whitespace-nowrap strong-highlight font-semibold'>{receive_amount} {swapFormData?.currency?.name}</span>
+                </h3>
 
                 <p className='mt-4 pt-2 text-lg leading-6 md:text-left font-roboto text-white'>
                     To continue, you have to confirm that
