@@ -28,6 +28,8 @@ import SwapConfirmationStep from './Wizard/Steps/SwapConfirmation';
 import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
 import { MenuProvider } from '../context/menu';
 import ConnectImmutableX from './Wizard/Steps/ConnectImmutableX';
+import WithdrawExchangeStep from './Wizard/Steps/WithdrawExhangeStep';
+import SomeTestStep from './Wizard/Steps/SomeTestStep';
 
 const FormWizard: FormWizardSteps = {
   "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true, positionPercent: 0 },
