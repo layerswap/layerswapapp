@@ -46,7 +46,7 @@ const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, chi
                                 <div className="">
                                     <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200 focus:ring-2 hover:text-pink-primary-300"
+                                        className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
                                         onClick={handleClose}
                                     >
                                         <span className="sr-only">Close</span>

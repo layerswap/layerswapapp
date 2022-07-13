@@ -40,7 +40,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
             </h3>
             <div className="flex flex-wrap -mx-3 mb-6">
                 <div className="w-full px-3">
-                    <textarea id="feedback" className="no-resize appearance-none block w-full bg-darkblue-600 text-white border border-darkblue-100 rounded-md py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-darkblue-500 focus:border-darkblue-200 h-48 resize-none"></textarea>
+                    <textarea id="feedback" className="no-resize appearance-none block w-full bg-darkblue-600 text-white border border-darkblue-100 rounded-md py-3 px-4 mb-3 leading-tight focus:ring-0 focus:bg-darkblue-500 focus:border-darkblue-200 h-48 resize-none"></textarea>
                 </div>
             </div>
             <div className="mt-3 sm:mt-6 text-white text-sm">

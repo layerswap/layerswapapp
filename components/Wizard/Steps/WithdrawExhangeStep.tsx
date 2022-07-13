@@ -20,7 +20,7 @@ import ExchangeSettings from '../../../lib/ExchangeSettings';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const { swap, swapFormData } = useSwapDataState()
+    const { swap } = useSwapDataState()
     const { payment } = swap || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
     const { networks, exchanges } = useSettingsState()
@@ -103,7 +103,6 @@ const WithdrawExchangeStep: FC = () => {
                         </span> and do a withdrawal to the provided address.
                     </h3>
                 </div>
-                {console.log(exchange_id)}
                 {
                     ExchangeSettings.KnownSettings[exchange_id]?.RequireSelectInternal &&
                     <div className='mb-5'>
