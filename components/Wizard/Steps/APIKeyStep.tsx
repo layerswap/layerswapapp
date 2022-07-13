@@ -62,10 +62,11 @@ const APIKeyStep: FC = () => {
     }, [key, secret, keyphrase, swapFormData, getAuthData])
 
     const dataIsValid = secret && key && (swapFormData?.exchange?.baseObject?.has_keyphrase ? keyphrase : true)
-
+    console.log("exchange id", swapFormData?.exchange?.baseObject?.id)
+    const userGuideURL = ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject?.id]?.UserApiKeyGuideUrl
     return (
         <>
-            <div className="w-full px-8 py-6 space-y-5 grid grid-flow-row text-pink-primary-300">
+<div className="w-full px-8 py-6 space-y-5 grid grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 mb-5 text-white">
                         Please enter your 

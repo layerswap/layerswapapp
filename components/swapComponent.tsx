@@ -44,7 +44,7 @@ const Swap: FC = () => {
 
   return (
     <div>
-      <div className="flex flex-col space-y-6 text-white">
+      <div className="text-white">
         <AuthProvider>
           <MenuProvider>
             <SwapDataProvider >
