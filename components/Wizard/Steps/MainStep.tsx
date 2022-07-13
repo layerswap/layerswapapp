@@ -36,6 +36,7 @@ import SendFeedback from "../../sendFeedback";
 import SlideOver, { SildeOverRef } from "../../SlideOver";
 import { DocIframe } from "../../docInIframe";
 import toast from "react-hot-toast";
+import { BlacklistedAddress } from "../../../Models/BlacklistedAddress";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -136,7 +137,7 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             id: e.internal_name,
             name: e.name,
             imgSrc: e.logo_url,
-            isAvailable: true,
+            isAvailable: true, //currency?.baseObject?.exchanges?.some(ce => ce.exchangeId === e.id),
             isEnabled: e.is_enabled,
             isDefault: e.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
@@ -374,7 +375,6 @@ export default function MainStep() {
     const closeConnectDeversifi = () => {
         setConnectDeversifiIsOpen(false)
     }
-
     return <>
         <ConnectImmutableX isOpen={connectImmutableIsOpen} swapFormData={formValues} onClose={closeConnectImmutableX} />
         <ConnectDeversifi isOpen={connectDeversifiIsOpen} swapFormData={formValues} onClose={closeConnectDeversifi} />
@@ -400,6 +400,11 @@ export default function MainStep() {
                 }
                 else if (!isValidAddress(values.destination_address, values.network?.baseObject)) {
                     errors.amount = `Enter a valid ${values?.network?.name} address`
+                    if (!formikRef.current.getFieldMeta("destination_address").touched)
+                        addressRef?.current?.focus()
+                }
+                else if (settings.blacklistedAddresses.some(ba => ba.network_id === values.network?.baseObject?.id && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
+                    errors.amount = `You can not transfer to this address`
                     if (!formikRef.current.getFieldMeta("destination_address").touched)
                         addressRef?.current?.focus()
                 }

@@ -12,6 +12,7 @@ import { SettingsProvider } from '../context/settings'
 import { QueryProvider } from '../context/query'
 import { AccountProvider } from '../context/account'
 
+
 const swapOptions: NavRadioOption[] = [
   { name: "onramp", displayName: 'On-ramp', isEnabled: true, isNew: false },
   { name: "offramp", displayName: 'Off-ramp', isEnabled: true, isNew: true }
@@ -78,7 +79,7 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
 
   return (
     <Layout>
-      <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
+      <div className="content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
         <div className='flex flex-col space-y-5'>
           <SettingsProvider data={data}>
             <QueryProvider query={query}>
