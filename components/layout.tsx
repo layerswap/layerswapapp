@@ -61,7 +61,7 @@ export default function Layout({ hasSideShapes, children }: Props) {
     </Head>
     <div className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
       <main className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
-        <div className="overflow-hidden relative font-robo">
+        <div className="min-h-screen overflow-hidden relative font-robo">
           <Toaster position="bottom-right" toastOptions={{duration: 5000, style: {background: '#131E36', color: '#a4afc8'}, error: {position:'top-center'}}}/>
           <div className="top-backdrop"></div>
           <Navbar></Navbar>
