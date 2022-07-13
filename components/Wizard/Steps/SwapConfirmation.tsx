@@ -169,11 +169,11 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 </div>
 
                 <h3 className='mb-4 pt-2 text-center md:text-left font-roboto text-sm'>
-                    Transfering <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from {swapFormData?.exchange?.name} to {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer text-pink-primary-800 hover:text-pink-primary' /></span>) and will receive <span className='whitespace-nowrap strong-highlight font-semibold'>{receive_amount} {swapFormData?.currency?.name}</span>
+                    Transfering <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from {swapFormData?.exchange?.name} to {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer text-pink-primary-800 hover:text-pink-primary' /></span>) and receive <span className='whitespace-nowrap strong-highlight font-semibold'>{receive_amount} {swapFormData?.currency?.name}</span>
                 </h3>
 
                 <p className='mt-4 pt-2 text-lg leading-6 md:text-left font-roboto text-white'>
-                    To continue, you have to confirm that
+                    To continue, confirm that
                 </p>
 
                 <div className='mb-8'>
@@ -223,9 +223,9 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     }
                 </div>
                 <div className="text-white text-sm mt-auto">
-                    <div className="flex items-center mb-2">
+                    {/* <div className="flex items-center mb-2">
                         <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
-                    </div>
+                    </div> */}
                     <SubmitButton isDisabled={!confirm_right_wallet || !confirm_right_information || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
