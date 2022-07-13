@@ -66,11 +66,11 @@ const APIKeyStep: FC = () => {
     const userGuideURL = ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject?.id]?.UserApiKeyGuideUrl
     return (
         <>
-<div className="w-full px-8 py-6 space-y-5 grid grid-flow-row text-pink-primary-300">
+            <div className="w-full px-8 py-6 space-y-5 grid grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 mb-5 text-white">
-                        Please enter your 
-                        {ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject.id]?.ExchangeApiKeyPageUrl ? <a href={ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject.id]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{swapFormData?.exchange?.name}</a> : <span className='mx-1'>{swapFormData?.exchange?.name}</span>} 
+                        Please enter your
+                        {ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject.id]?.ExchangeApiKeyPageUrl ? <a href={ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject.id]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{swapFormData?.exchange?.name}</a> : <span className='mx-1'>{swapFormData?.exchange?.name}</span>}
                         API keys
                     </h3>
                 </div>
@@ -128,13 +128,16 @@ const APIKeyStep: FC = () => {
                             </div>
                         </>
                     }
-                    <div className="flex items-center">
-                        <span className="block text-base text-white font-normal leading-6"> Read about
-                            <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to get API Keys</span>&nbsp;</>} moreClassNames="-mt-11">
-                                <DocIframe onConfirm={handleCloseSlideover} URl="/blog/guide/How_to_transfer_crypto_from_Binance_to_L2" />
-                            </SlideOver>
-                        </span>
-                    </div>
+                    {
+                        userGuideURL && <div className="flex items-center">
+                            <span className="block text-base text-white font-normal leading-6"> Read about
+                                <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to get API Keys</span>&nbsp;</>} moreClassNames="-mt-11">
+                                    <DocIframe onConfirm={handleCloseSlideover} URl={userGuideURL} />
+                                </SlideOver>
+                            </span>
+                        </div>
+                    }
+
                 </div>
                 <div className='p-4 bg-darkblue-500 text-white rounded-lg border border-darkblue-100'>
                     <div className="flex items-center">
