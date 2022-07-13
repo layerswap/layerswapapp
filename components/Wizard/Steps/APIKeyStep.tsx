@@ -3,8 +3,10 @@ import { FC, useCallback, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate } from '../../../context/auth';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
+import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
 import { BransferApiClient } from '../../../lib/bransferApiClients';
+import ExchangeSettings from '../../../lib/ExchangeSettings';
 import { FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import { DocIframe } from '../../docInIframe';
@@ -66,7 +68,9 @@ const APIKeyStep: FC = () => {
             <div className="w-full px-8 py-6 space-y-5 grid grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 mb-5 text-white">
-                        Please enter your {swapFormData?.exchange?.name} API keys
+                        Please enter your 
+                        {ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject.id]?.ExchangeApiKeyPageUrl ? <a href={ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject.id]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{swapFormData?.exchange?.name}</a> : <span className='mx-1'>{swapFormData?.exchange?.name}</span>} 
+                        API keys
                     </h3>
                 </div>
                 <div className=''>
