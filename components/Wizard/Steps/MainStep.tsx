@@ -137,7 +137,7 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             id: e.internal_name,
             name: e.name,
             imgSrc: e.logo_url,
-            isAvailable: true,
+            isAvailable: true, //currency?.baseObject?.exchanges?.some(ce => ce.exchangeId === e.id),
             isEnabled: e.is_enabled,
             isDefault: e.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
