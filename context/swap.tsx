@@ -47,7 +47,7 @@ export function SwapDataProvider({ children }) {
                     destination_address: swapFormData.destination_address
                 }, authData?.access_token)
 
-                if (swap.statusCode !== 200)
+                if (swap?.statusCode !== 200)
                     throw new Error(swap.value)
 
                 const swapId = swap.value?.swap_id;
