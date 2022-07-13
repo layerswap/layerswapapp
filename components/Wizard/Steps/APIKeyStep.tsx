@@ -4,6 +4,7 @@ import { useAuthDataUpdate } from '../../../context/auth';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
 import { BransferApiClient } from '../../../lib/bransferApiClients';
+import ExchangeSettings from '../../../lib/ExchangeSettings';
 import { FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import { DocIframe } from '../../docInIframe';
@@ -59,7 +60,8 @@ const APIKeyStep: FC = () => {
     }, [key, secret, keyphrase, swapFormData, getAuthData])
 
     const dataIsValid = secret && key && (swapFormData?.exchange?.baseObject?.has_keyphrase ? keyphrase : true)
-
+    console.log("exchange id", swapFormData?.exchange?.baseObject?.id)
+    const userGuideURL = ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject?.id]?.UserApiKeyGuideUrl
     return (
         <>
             <div className="w-full px-8 py-6 grid grid-flow-row text-pink-primary-300">
@@ -69,22 +71,24 @@ const APIKeyStep: FC = () => {
                             Please enter your {swapFormData?.exchange?.name} API keys
                         </h3>
                     </div>
+                    {
+                        userGuideURL && <div className='mb-5'>
+                            <div className="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-pink-primary-600 mr-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                </svg>
+                                <label className="block text-base font-medium leading-6"> How to get API keys </label>
+                            </div>
+                            <div className="flex items-center ml-6 pl-2.5">
+                                <span className="block text-base font-normal leading-6"> Follow this
+                                    <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className=" text-base cursor-pointer underline decoration-pink-primary">Step by step guide</span>&nbsp;</>} moreClassNames="-mt-11">
+                                        <DocIframe onConfirm={handleCloseSlideover} URl={userGuideURL} />
+                                    </SlideOver>
+                                    to generate your API keys. </span>
+                            </div>
+                        </div>
+                    }
 
-                    <div className='mb-5'>
-                        <div className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-pink-primary-600 mr-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                            </svg>
-                            <label className="block text-base font-medium leading-6"> How to get API keys </label>
-                        </div>
-                        <div className="flex items-center ml-6 pl-2.5">
-                            <span className="block text-base font-normal leading-6"> Follow this
-                                <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className=" text-base cursor-pointer underline decoration-pink-primary">Step by step guide</span>&nbsp;</>} moreClassNames="-mt-11">
-                                    <DocIframe onConfirm={handleCloseSlideover} URl="/blog/guide/How_to_transfer_crypto_from_Binance_to_L2" />
-                                </SlideOver>
-                                to generate your API keys. </span>
-                        </div>
-                    </div>
                     <div className='mb-5'>
                         <div className="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-pink-primary-600 mr-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2}>
