@@ -114,7 +114,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 <div className="block ">
                                     <button
                                         type="button"
-                                        className="rounded-md text-pink-primary-300 focus:ring-2 hover:text-pink-primary-300"
+                                        className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
                                         onClick={closeModal}
                                     >
                                         <span className="sr-only">Close</span>
