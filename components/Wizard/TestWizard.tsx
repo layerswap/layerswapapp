@@ -192,8 +192,8 @@ function App() {
         </div>
         <div className={`mt-2`}>
           <p className="text-sm font-medium mb-1 mt-3 text-center">
-            Step {steps.findIndex((step) => step.status === "current") + 1} of{" "}
-            {steps.length}
+            {/* Step {steps.findIndex((step) => step.status === "current") + 1} of{" "}
+            {steps.length} */}
           </p>
           <nav
             className="flex items-center justify-center"

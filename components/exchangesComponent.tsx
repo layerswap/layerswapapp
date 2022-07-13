@@ -140,7 +140,7 @@ function UserExchanges() {
         }
     }
 
-    
+
     return (
         <div className='bg-darkBlue px-8 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative min-h'>
             <div className="mt-3 flex items-center justify-between z-20" >
@@ -179,48 +179,54 @@ function UserExchanges() {
                                 value={query}
                             />
                         </div>
-                        {filteredItems?.length > 0 && (
-                            <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2">
-                                {filteredItems.map((item) => (
-                                    <Combobox.Option
-                                        key={item.id}
-                                        value={item}
-                                        disabled={!item.is_enabled || !item.is_enabled}
-                                        className={`bg-darkblue-500 ${!item.is_enabled ? 'opacity-35 cursor-not-allowed' : ''}  select-none rounded-lg p-3`}
-                                        onClick={() => { }}
-                                    >
-                                        {({ active }) => (
-                                            <div className="py-1 px-2 grid grid-cols-3 grid-rows-1 gap-3">
-                                                <div className="flex items-center col-span-2 space-x-3">
-                                                    <Image
-                                                        src={item.logo_url}
-                                                        alt="Exchange Logo"
-                                                        height="30"
-                                                        width="30"
-                                                        layout="fixed"
-                                                        className="rounded-md h-8 w-8 object-contain"
-                                                    />
+                        <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {
+                                loading ? <Sceleton />
+                                    :
+                                    <>
+                                        {filteredItems?.length > 0 && (
+                                            filteredItems.map((item) => (
+                                                <Combobox.Option
+                                                    key={item.id}
+                                                    value={item}
+                                                    disabled={!item.is_enabled || !item.is_enabled}
+                                                    className={`bg-darkblue-500 ${!item.is_enabled ? 'opacity-35 cursor-not-allowed' : ''}  select-none rounded-lg p-3`}
+                                                    onClick={() => { }}
+                                                >
+                                                    {({ active }) => (
+                                                        <div className="py-1 px-2 grid grid-cols-3 grid-rows-1 gap-3">
+                                                            <div className="flex items-center col-span-2 space-x-3">
+                                                                <Image
+                                                                    src={item.logo_url}
+                                                                    alt="Exchange Logo"
+                                                                    height="30"
+                                                                    width="30"
+                                                                    layout="fixed"
+                                                                    className="rounded-md h-8 w-8 object-contain"
+                                                                />
 
-                                                    <span className="text-base font-medium">{item.name}</span>
-                                                </div>
-                                                <div className="text-xs">
-                                                    {
-                                                        item.authorization_flow && item.authorization_flow !== "none" && item.is_enabled && exchangeLoading?.id !== item.id &&
-                                                        <>
-                                                            {
-                                                                item.is_connected ?
-                                                                    <SubmitButton onClick={() => handleDisconnectExchange(item)} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Disconnect</SubmitButton>
-                                                                    : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Connect</SubmitButton>
-                                                            }
-                                                        </>
-                                                    }
-                                                </div>
-                                            </div>
+                                                                <span className="text-base font-medium">{item.name}</span>
+                                                            </div>
+                                                            <div className="text-xs">
+                                                                {
+                                                                    item.authorization_flow && item.authorization_flow !== "none" && item.is_enabled && exchangeLoading?.id !== item.id &&
+                                                                    <>
+                                                                        {
+                                                                            item.is_connected ?
+                                                                                <SubmitButton onClick={() => handleDisconnectExchange(item)} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Disconnect</SubmitButton>
+                                                                                : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Connect</SubmitButton>
+                                                                        }
+                                                                    </>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </Combobox.Option>
+                                            ))
                                         )}
-                                    </Combobox.Option>
-                                ))}
-                            </Combobox.Options>
-                        )}
+                                    </>
+                            }
+                        </Combobox.Options>
 
                         {query !== '' && filteredItems?.length === 0 && (
                             <div className="py-14 px-6 text-center text-sm sm:px-14">
@@ -298,6 +304,27 @@ function UserExchanges() {
             </Transition>
         </div>
     )
+}
+
+const Sceleton = () => {
+
+    return <>
+        {[...Array(6)]?.map((item, index) =>
+            <div className="animate-pulse bg-darkblue-500 select-none rounded-lg p-3">
+                <div className="flex justify-between px-2">
+                    <div className="flex space-x-2">
+                        <div className="rounded-full bg-slate-700 h-8 w-8"></div>
+                        <div className="grid grid-cols-4 items-center">
+                            <div className="h-2 w-20 bg-slate-700 rounded col-span-3"></div>
+                        </div>
+                    </div>
+
+                    <div className="rounded bg-slate-700 h-8 w-20 place-self-end py-3 px-4"></div>
+                </div>
+            </div>
+        )}
+    </>
+
 }
 
 

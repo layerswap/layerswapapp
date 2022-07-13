@@ -56,7 +56,7 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                             <div className="hidden sm:block ">
                                 <button
                                     type="button"
-                                    className="rounded-md text-pink-primary-300 focus:ring-2 hover:text-pink-primary-300"
+                                    className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
                                     onClick={onClose}
                                 >
                                     <span className="sr-only">Close</span>

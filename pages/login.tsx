@@ -31,7 +31,7 @@ export default function Transactions() {
 
   return (
     <Layout>
-      <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+      <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
         <div className="flex flex-col space-y-6 text-white">
           <AuthProvider>
             <MenuProvider>

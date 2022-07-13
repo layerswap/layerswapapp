@@ -26,7 +26,7 @@ const ConfirmationStep: FC = () => {
                     <fieldset className="">
                         <legend className="sr-only">Confirm Swap</legend>
                     </fieldset>
-                    <p className='text-white mt-4 pt-2 border-t-2 border-indigo-300'>First time here? Please read the  <Link key="userGuide" href="/userguide"><a className="text-indigo-400 font-semibold underline hover:cursor-pointer"> User Guide</a></Link></p>
+                    {/* <p className='text-white mt-4 pt-2 border-t-2 border-indigo-300'>First time here? Please read the  <Link key="userGuide" href="/userguide"><a className="text-indigo-400 font-semibold underline hover:cursor-pointer"> User Guide</a></Link></p> */}
                     <div className="mt-3 sm:mt-6 text-white text-sm">
                         <SubmitButton isDisabled={false} icon={checkButtonIcon} isSubmitting={false} onClick={()=>{}}>
                             Confirm
