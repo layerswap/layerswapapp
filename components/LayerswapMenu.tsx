@@ -31,7 +31,7 @@ export default function () {
     const handleFeedbackSent = useCallback(()=>{
         slideoverRef.current.close()
     },[slideoverRef])
-
+ 
     return <>
         {
             authData?.access_token &&
@@ -43,7 +43,7 @@ export default function () {
             {
                 <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
                     <div>
-                        <Menu.Button className="inline-flex justify-center w-full rounded-md shadow-sm mt-2 hover:bg-darkblue-600 text-sm font-medium">
+                        <Menu.Button className="inline-flex justify-center w-full rounded-md shadow-sm mt-2  text-sm font-medium">
                             <MenuIcon className='h-7 w-7 text-pink-primary-300 cursor-pointer' />
                         </Menu.Button>
                     </div>
