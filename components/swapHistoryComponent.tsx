@@ -489,8 +489,6 @@ function TransactionsHistory() {
             }
           </>
       }
-
-
     </div>
   )
 }
