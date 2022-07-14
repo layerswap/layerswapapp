@@ -144,11 +144,11 @@ const WithdrawExchangeStep: FC = () => {
                         <div className='absolute inset-y-2 right-2.5'>
                             <Popover>
                                 <Popover.Button>
-                                    <button className=' rounded bg bg-darkblue-50 p-2' onClick={handleCopyAddress}>
+                                    <div className=' rounded bg bg-darkblue-50 p-2' onClick={handleCopyAddress}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
                                             <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
                                         </svg>
-                                    </button>
+                                    </div>
                                 </Popover.Button>
                                 <Popover.Panel>
                                     <div className="ml-1 text-white">
@@ -203,11 +203,11 @@ const WithdrawExchangeStep: FC = () => {
                         <div className='absolute inset-y-2 right-2.5'>
                             <Popover>
                                 <Popover.Button>
-                                    <button className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={handleCopyAmount}>
+                                    <div className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={handleCopyAmount}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
                                             <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
                                         </svg>
-                                    </button>
+                                    </div>
                                 </Popover.Button>
                                 <Popover.Panel>
                                     <div className="ml-1 text-white">
@@ -248,11 +248,11 @@ const WithdrawExchangeStep: FC = () => {
                                 <div className='absolute inset-y-2 right-2.5'>
                                     <Popover>
                                         <Popover.Button>
-                                            <button className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={handleCopyNote}>
+                                            <div className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={handleCopyNote}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
                                                     <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
                                                 </svg>
-                                            </button>
+                                            </div>
                                         </Popover.Button>
                                         <Popover.Panel>
                                             <div className="ml-1 text-white">

@@ -75,13 +75,13 @@ const Carousel = forwardRef<CarouselRef, Props>((props, ref) => {
                 className="whitespace-nowrap transition-transform duration-500 inner"
                 style={{ transform: `translateX(-${activeIndex * 100}%)` }}
             >
-                {React.Children.map(children, (child, index) => {
+                {children && React.Children.map(children, (child, index) => {
                     return React.cloneElement(child, { width: "100%" });
                 })}
             </div>
             <div className="flex justify-center">
 
-                {React.Children.map(children, (child, index) => {
+                {children && React.Children.map(children, (child, index) => {
                     return (
                         <button
                             className={`${index === activeIndex ? "bg-pink-primary" : "bg-pink-primary-300"} w-3 h-3 m-3 rounded-full`}
