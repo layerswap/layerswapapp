@@ -159,7 +159,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = "network"
-
+    const { lockNetwork } = useQueryState()
     const { currencies, networks } = useSettingsState();
 
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = networks
@@ -168,7 +168,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             id: n.code,
             name: n.name,
             imgSrc: n.logo_url,
-            isAvailable: !n.is_test_net,
+            isAvailable: !lockNetwork && !n.is_test_net,
             isEnabled: n.is_enabled && currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
             isDefault: n.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
@@ -176,7 +176,6 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
 
     if (exchange && !network)
         ref.current?.focus()
-
 
     return (<>
         <label htmlFor="network" className="block font-normal text-pink-primary-300 text-sm">
@@ -356,7 +355,7 @@ export default function MainStep() {
         availableNetworks.forEach(x => {
             if (x != initialNetwork)
                 x.isEnabled = false;
-        });
+        })
     }
 
     let initialAddress = destAddress && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
@@ -403,7 +402,7 @@ export default function MainStep() {
                     if (!formikRef.current.getFieldMeta("destination_address").touched)
                         addressRef?.current?.focus()
                 }
-                else if (settings.blacklistedAddresses.some(ba => ba.network_id === values.network?.baseObject?.id && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
+                else if (settings.blacklistedAddresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
                     errors.amount = `You can not transfer to this address`
                     if (!formikRef.current.getFieldMeta("destination_address").touched)
                         addressRef?.current?.focus()
@@ -478,7 +477,7 @@ export default function MainStep() {
                                                 name="destination_address"
                                                 id="destination_address"
                                                 disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
-                                                className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
+                                                className={joinClassNames(isPartnerWallet ? 'pl-11' : '', lockAddress ? 'disabled:bg-darkblue-disabled' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
                                             />
                                         )}
                                     </Field>
