@@ -27,7 +27,7 @@ export function isValidAddress(address: string, network: CryptoNetwork): boolean
 
 export function isBlacklistedAddress(address: string, network: CryptoNetwork, blacklistedAddresses: BlacklistedAddress[]) : boolean {
     var blacklistedRecord = blacklistedAddresses.find(x=> x.address.toLowerCase() == address);
-    if (blacklistedRecord != undefined && blacklistedRecord.networkId == network.id)
+    if (blacklistedRecord != undefined && blacklistedRecord.network_id == network.id)
     {
         return true;
     }
