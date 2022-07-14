@@ -1,6 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react';
-import { CheckIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
-import { ExclamationIcon } from '@heroicons/react/solid';
+import { ArrowCircleRightIcon, ArrowRightIcon, CheckIcon, ClipboardCopyIcon, DuplicateIcon, ExternalLinkIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
+import { ExclamationIcon } from '@heroicons/react/outline';
 import Router, { useRouter } from 'next/router';
 import { FC, Fragment, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
@@ -12,6 +12,8 @@ import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
 import { CalculateReceiveAmount } from '../../../lib/fees';
+import { copyTextToClipboard } from '../../../lib/copyToClipboard';
+import ToggleButton from '../../buttons/toggleButton';
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
@@ -35,9 +37,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setAddressInputValue(destination_address)
     }, [destination_address])
 
-    const handleConfirm_right_wallet = (e) => {
-        setConfirm_right_wallet(e.target.checked)
-    }
     const handleConfirm_right_information = (e) => {
         setConfirm_right_information(e.target.checked)
     }
@@ -123,28 +122,70 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject)
     return (
         <>
-            <div className="w-full px-8 py-6 pt-1 md:grid md:grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
+            <div className="px-8 h-full flex flex-col justify-between">
                 <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please confirm your swap
                 </h3>
 
-                <div className="mx-auto w-full rounded-lg bg-darkblue-500 p-2 font-normal">
+                <div className="w-full grid grid-flow-row animate-fade-in">
+                    <div className="rounded-md w-full grid grid-flow-row">
+                        <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-pink-primary-300">
+                            {swapFormData?.exchange?.imgSrc &&
+                                <div className="flex justify-between items-center px-4 py-3">
+                                    <span className="text-left flex"><span className='hidden md:block'>From</span>
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
+                                                <Image
+                                                    src={swapFormData?.exchange?.imgSrc}
+                                                    alt="Exchange Logo"
+                                                    height="60"
+                                                    width="60"
+                                                    layout="responsive"
+                                                    className="rounded-md object-contain"
+                                                />
+                                            </div>
+                                            <div className="mx-1 text-white">{swapFormData?.exchange?.name.toUpperCase()}</div>
+                                        </div>
+                                    </span>
+                                    <ArrowRightIcon className='h-5 w-5 block md:hidden' />
+                                    <span className="flex"><span className='hidden md:block'>To</span>
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
+                                                <Image
+                                                    src={swapFormData?.network?.imgSrc}
+                                                    alt="Exchange Logo"
+                                                    height="60"
+                                                    width="60"
+                                                    layout="responsive"
+                                                    className="rounded-md object-contain"
+                                                />
+                                            </div>
+                                            <div className="ml-1 text-white">{swapFormData?.network?.name.toUpperCase()}</div>
+                                        </div>
+                                    </span>
+                                </div>
+                            }
+                            <div className="flex justify-between bg-darkblue-500 px-4 py-3 rounded-lg  items-baseline">
+                                <span className="text-left">Amount</span>
+                                <span className="text-white">{swapFormData?.amount} {swapFormData?.currency?.name}
+                                </span>
+                            </div>
+                            <div className="flex justify-between px-4 py-3 items-baseline">
+                                <span className="text-left">Fee</span>
+                                <span className="text-white">{(Number(swapFormData?.amount) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
+                            </div>
+                            <div className="flex justify-between bg-darkblue-500 px-4 py-3 rounded-lg  items-baseline">
+                                <span className="text-left">You will recieve</span>
+                                <span className="text-white">{receive_amount} {swapFormData?.currency?.name}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="mx-auto w-full rounded-lg my-5 font-normal">
                     {
                         swapFormData?.exchange?.imgSrc &&
-                        <div className="mx-1 flex">
-                            <div className="flex-shrink-0 h-12 w-12 relative rounded-full border-4 border-darkblue-500">
-                                <Image
-                                    src={swapFormData?.exchange?.imgSrc}
-                                    alt="Exchange Logo"
-                                    height="40"
-                                    width="40"
-                                    loading="eager"
-                                    priority
-                                    layout="responsive"
-                                    className="rounded-full object-contain"
-                                />
-                            </div>
-                            <div className="flex-shrink-0 h-12 w-12 relative -left-3 rounded-full border-4 border-darkblue-500">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0 h-11 w-11 rounded-full">
                                 <Image
                                     src={swapFormData?.network?.imgSrc}
                                     alt="Exchange Logo"
@@ -156,82 +197,69 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     className="object-contain rounded-full overflow-hidden "
                                 />
                             </div>
-                            <div className='text-w'>
-                                <div>
-                                    <span className='hidden md:inline-block'>{swapFormData?.destination_address}</span>
-                                    <span className='md:hidden'> {`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</span>
-                                    <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer text-pink-primary-800 hover:text-pink-primary' /></div>
-                                <div>{swapFormData?.amount} {swapFormData?.currency?.name}</div>
+                            <div className='text-w ml-2'>
+                                <div className='flex items-center'>
+                                    <p className='text-base font-medium'> {`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</p>
+                                    <a target='_blank' href={swapFormData?.network?.baseObject.account_explorer_template}><ExternalLinkIcon className='inline-block h-5 w-5 ml-2 cursor-pointer text-pink-primary-300 hover:text-white' /></a>
+                                </div>
+                                <div className='hidden md:block items-center'>
+                                    <p className='text-sm font-normal md:inline-block'>{swapFormData?.destination_address}</p>
+                                    <DuplicateIcon onClick={() => copyTextToClipboard(swapFormData?.destination_address)} className='inline-block h-4 w-4 ml-2 cursor-pointer text-pink-primary-300 hover:text-white' />
+                                </div>
                             </div>
+
                         </div>
                     }
-
+                    <div className='flex mt-4 justify-between'>
+                        <div className='flex items-center text-xs md:text-sm font-medium'>
+                            <ExclamationIcon className='h-6 w-6 ml-2.5 mr-2' />
+                            I am the owner of this address
+                        </div>
+                        <div className='flex items-center space-x-4'>
+                            <ToggleButton onChange={setConfirm_right_wallet} isChecked={confirm_right_wallet} />
+                            <SubmitButton size='small' buttonStyle='outline' isDisabled={false} icon="" isSubmitting={false} onClick={handleStartEditingAddress}>
+                                Edit
+                            </SubmitButton>
+                        </div>
+                    </div>
                 </div>
 
-                <h3 className='mb-4 pt-2 text-center md:text-left font-roboto text-sm'>
-                    Transfering <span className='strong-highlight font-semibold'>{swapFormData?.amount} {swapFormData?.currency?.name}</span> from {swapFormData?.exchange?.name} to {swapFormData?.network?.name} wallet (<span className='strong-highlight font-semibold'>{`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}<PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-5 w-5 ml-2 mb-2 cursor-pointer text-pink-primary-800 hover:text-pink-primary' /></span>) and receive <span className='whitespace-nowrap strong-highlight font-semibold'>{receive_amount} {swapFormData?.currency?.name}</span>
-                </h3>
-
-                <p className='mt-4 pt-2 text-lg leading-6 md:text-left font-roboto text-white'>
-                    To continue, confirm that
-                </p>
-
-                <div className='mb-8'>
-                    <div className="flex items-center">
-                        <input
-                            onChange={handleConfirm_right_wallet}
-                            id="confirm_right_wallet_"
-                            name="confirm_right_wallet_"
-                            type="checkbox"
-                            className="cursor-pointer h-4 w-4 focus:ring-pink-primary text-pink-primary  rounded" />
-                        <label htmlFor='confirm_right_wallet_' className="cursor-pointer  ml-3 block text-base leading-6"> The provided address is your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address </label>
-                    </div>
-                    <div className="flex items-center">
-                        <input
-                            onChange={handleConfirm_right_information}
-                            id="confirm_right_information"
-                            name="confirm_right_information"
-                            type="checkbox"
-                            className="cursor-pointer h-4 w-4 focus:ring-pink-primary text-pink-primary  rounded" />
-                        <label htmlFor='confirm_right_information' className="cursor-pointer ml-3 block text-md leading-6 "> Providing wrong information will result in a loss of funds </label>
-                    </div>
-                    {
-                        twoFARequired &&
-                        <div>
-                            <label htmlFor="amount" className="block font-normal text-sm">
-                                Your verification code
-                            </label>
-                            <div className="relative rounded-md shadow-sm mt-2 mb-4">
-                                <input
-                                    inputMode="decimal"
-                                    autoComplete="off"
-                                    placeholder="XXXXXXX"
-                                    autoCorrect="off"
-                                    type="text"
-                                    maxLength={7}
-                                    name="TwoFACode"
-                                    id="TwoFACode"
-                                    className="h-12 text-2xl pl-5 focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
+                {
+                    twoFARequired &&
+                    <div className='mb-4'>
+                        <label htmlFor="amount" className="block font-normal text-sm">
+                            Your verification code
+                        </label>
+                        <div className="relative rounded-md shadow-sm mt-2 mb-4">
+                            <input
+                                inputMode="decimal"
+                                autoComplete="off"
+                                placeholder="XXXXXXX"
+                                autoCorrect="off"
+                                type="text"
+                                maxLength={7}
+                                name="TwoFACode"
+                                id="TwoFACode"
+                                className="h-12 text-2xl pl-5 focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
                             placeholder:text-pink-primary-300 placeholder:text-2xl placeholder:h-12 placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
-                                    onKeyPress={e => {
-                                        isNaN(Number(e.key)) && e.preventDefault()
-                                    }}
-                                    onChange={handleTwoFACodeChange}
-                                />
-                            </div>
+                                onKeyPress={e => {
+                                    isNaN(Number(e.key)) && e.preventDefault()
+                                }}
+                                onChange={handleTwoFACodeChange}
+                            />
                         </div>
-                    }
-                </div>
-                <div className="text-white text-sm mt-auto">
+                    </div>
+                }
+
+                <div className="text-white text-sm mt-2">
                     {/* <div className="flex items-center mb-2">
                         <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
                     </div> */}
-                    <SubmitButton isDisabled={!confirm_right_wallet || !confirm_right_information || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
+                    <SubmitButton isDisabled={!confirm_right_wallet || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
                 </div>
             </div>
-
             <Transition
                 appear
                 show={editingAddress}
@@ -321,9 +349,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     </span>
                 </div>
             </Transition>
-
-
-
         </>
     )
 }

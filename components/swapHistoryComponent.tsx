@@ -352,7 +352,7 @@ function TransactionsHistory() {
                                 {swap?.transaction_id ?
                                   <>
                                     <div className="underline hover:no-underline">
-                                      <a target={"_blank"} href={networks.filter(x => x.code === swap?.network)[0]?.explorer_template?.replace("{0}", swap?.transaction_id)}>{swap?.transaction_id?.substring(0, 5)}...{swap?.transaction_id?.substring(swap?.transaction_id?.length - 4, swap?.transaction_id?.length - 1)}</a>
+                                      <a target={"_blank"} href={networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id)}>{swap?.transaction_id?.substring(0, 5)}...{swap?.transaction_id?.substring(swap?.transaction_id?.length - 4, swap?.transaction_id?.length - 1)}</a>
                                     </div>
                                   </>
                                   : <div>-</div>
@@ -468,7 +468,7 @@ function TransactionsHistory() {
                               {
                                 networks && selectedSwap?.transaction_id &&
                                 <div className="text-white text-sm">
-                                  <a href={networks.filter(x => x.code === selectedSwap?.network)[0]?.explorer_template?.replace("{0}", selectedSwap?.transaction_id)}
+                                  <a href={networks.filter(x => x.code === selectedSwap?.network)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
                                     target="_blank"
                                     className="shadowed-button group text-white disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                                     View in Explorer
