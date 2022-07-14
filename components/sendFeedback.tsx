@@ -1,4 +1,5 @@
 import { FC, useState, Fragment, useEffect, useCallback } from 'react'
+import toast from 'react-hot-toast';
 import { useAuthState } from '../context/auth';
 import TokenService from '../lib/TokenService';
 import SubmitButton from './buttons/submitButton';
@@ -11,24 +12,22 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
     const token = "5497557256:AAHOgmIi549pH8uiBvFsGmgH16kkBxSFtRA";
     const token2 = "5366632516:AAHRlo58yEgoAj2-qe2poJOR19ybOuGMBpQ"
     const chat_id = "-677284250";
-    let api = new XMLHttpRequest();
     const { email } = useAuthState()
 
-    const handleSendFeedback = useCallback(() => {
+    const handleSendFeedback = useCallback(async () => {
         try {
             setLoading(true)
-            api.open("GET", `https://api.telegram.org/bot${token2}/sendMessage?chat_id=${chat_id}&text=${email} %0A ${(document.getElementById("feedback") as HTMLInputElement).value}`, true);
-            api.send()
-            onSend()
+            const res = await (await fetch(`https://api.telegram.org/bot${token2}/sendMessage?chat_id=${chat_id}&text=${email} %0A ${(document.getElementById("feedback") as HTMLInputElement).value}`)).json()
+            if (!res.ok)
+               throw new Error(res.description || "Could nont send feedback, something went wrong")
         }
         catch (e) {
-            //TODO handle error
-            console.log(e)
+            toast.error(e.message)
         }
         finally {
             setLoading(false)
         }
-    }, [api])
+    }, [])
 
     return (
         <>
