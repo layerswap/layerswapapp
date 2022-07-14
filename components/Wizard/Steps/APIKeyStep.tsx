@@ -66,10 +66,10 @@ const APIKeyStep: FC = () => {
     const userGuideURL = ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject?.id]?.UserApiKeyGuideUrl
     return (
         <>
-            <div className="w-full px-8 py-6 space-y-5 grid grid-flow-row text-pink-primary-300">
+            <div className="w-full px-8 py-4 space-y-5 grid grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
-                    <h3 className="block text-lg font-medium leading-6 mb-5 text-white">
-                        Please enter your
+                    <h3 className="block text-lg font-medium leading-6 text-white">
+                        Please enter
                         {ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject.id]?.ExchangeApiKeyPageUrl ? <a href={ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject.id]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{swapFormData?.exchange?.name}</a> : <span className='mx-1'>{swapFormData?.exchange?.name}</span>}
                         API keys
                     </h3>
@@ -129,6 +129,21 @@ const APIKeyStep: FC = () => {
                         </>
                     }
                     {
+                        ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject?.id]?.AuthorizationNote &&
+                        <div className='flex-col w-full rounded-md bg-pink-700 shadow-lg p-2 mb-5'>
+                            <div className='flex items-center'>
+                                <div className='mr-2 p-2 rounded-lg bg-pink-600'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <p className='font-normal text-sm text-white'>
+                                    {ExchangeSettings.KnownSettings[swapFormData?.exchange?.baseObject?.id]?.AuthorizationNote}
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    {
                         userGuideURL && <div className="flex items-center">
                             <span className="block text-base text-white font-normal leading-6"> Read about
                                 <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to get API Keys</span>&nbsp;</>} moreClassNames="-mt-11">
@@ -142,11 +157,11 @@ const APIKeyStep: FC = () => {
                 <div className='p-4 bg-darkblue-500 text-white rounded-lg border border-darkblue-100'>
                     <div className="flex items-center">
                         <InformationCircleIcon className='h-5 w-5 text-pink-primary-600 mr-3' />
-                        <label className="block text-sm md:text-base font-medium leading-6">We're requesting <span className='font-bold'>Read-Only</span> api keys</label>
+                        <label className="block text-sm md:text-base font-medium leading-6">We're requesting <span className='font-bold'>Read-Only</span> API Keys</label>
                     </div>
-                    <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-1 ml-8">
-                        <li>We use it to get your withdrawal history and match with our records</li>
+                    <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8">
                         <li>They <strong>DON'T</strong> allow us to place a trade or initiate a withdrawal</li>
+                        <li>We use it to get your withdrawal history and match with our records</li>
                     </ul>
                 </div>
                 <div className="text-white text-base mt-3">
