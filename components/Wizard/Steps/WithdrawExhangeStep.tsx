@@ -276,9 +276,15 @@ const WithdrawExchangeStep: FC = () => {
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                         </svg>
                                     </div>
-                                    <p className='font-normal text-sm text-darkblue-600'>
-                                        Please include the "Remarks" field - it identifies the transfer with your account and is required for a successful deposit.
-                                    </p>
+                                    <div>
+                                        <p className='font-normal text-sm text-darkblue-600'>
+                                            - Please include the "Remarks" field - it is required for a successful deposit.
+                                        </p>
+                                        <p className='font-normal text-sm text-darkblue-600'>
+                                            - Please make sure the "Internal transfer" checkbox is checked.
+                                        </p>
+                                    </div>
+
                                 </div>
                             </div>
                         </>
@@ -292,7 +298,7 @@ const WithdrawExchangeStep: FC = () => {
                 {
                     transferDone ?
                         <div>
-                            <div className='flex place-content-center mb-16 md:mb-8'>
+                            <div className='flex place-content-center mb-16 mt-3 md:mb-8'>
                                 <div className='relative'>
                                     <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
                                     <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
@@ -300,8 +306,19 @@ const WithdrawExchangeStep: FC = () => {
                                 </div>
                             </div>
                             <div className="flex text-center place-content-center mt-1 md:mt-1">
-                                <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Waiting for Exchange transaction.</label>
+                                <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Waiting for a transaction from the exchange</label>
                             </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    boot();
+                                    show();
+                                    updateWithProps()
+                                }}
+                                className="mt-3 text-center w-full disabled:text-pink-primary-600 text-pink-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                            >
+                                Need help?
+                            </button>
                         </div>
 
                         :
@@ -317,17 +334,7 @@ const WithdrawExchangeStep: FC = () => {
                             </div> */}
                         </div>
                 }
-                <button
-                    type="button"
-                    onClick={() => {
-                        boot();
-                        show();
-                        updateWithProps()
-                    }}
-                    className="group disabled:text-pink-primary-600 text-pink-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
-                >
-                    Load more
-                </button>
+
             </div>
 
         </>
