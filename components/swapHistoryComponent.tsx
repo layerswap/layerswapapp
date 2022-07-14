@@ -19,7 +19,6 @@ import { useAuthState } from "../context/auth"
 
 
 export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
-  console.log("swww", swap)
   if (swap?.status === 'failed') {
     return (
       <>

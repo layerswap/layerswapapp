@@ -55,7 +55,6 @@ const SwapDetails: FC<Props> = ({ id }) => {
     if (loading)
         return <Sceleton />
 
-    console.log("swapDe", swap)
     return (
         <>
             <div className="w-full grid grid-flow-row animate-fade-in">
