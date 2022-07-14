@@ -80,7 +80,7 @@ const EmailStep: FC<Props> = ({onSend}) => {
                                     Let's get started
                                 </h4>
                                 <p className='text-center text-sm mb-12'>
-                                    With LayerSwap, you can send crypto from your crypto exchange account directly to Layer 2 networks without paying high Gas fees.
+                                    With Layerswap, you can send crypto from your crypto exchange account directly to Layer 2 networks without paying high Gas fees.
                                 </p>
                                 <div className=''>
                                     <label htmlFor="email" className="block font-normal text-sm">

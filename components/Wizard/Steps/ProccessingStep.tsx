@@ -54,7 +54,7 @@ const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
                     </div>
                 </div>
                 <div className="flex text-center place-content-center mt-1 md:mt-1">
-                    <label className="block text-lg font-lighter leading-6 text-pink-primary-300">CEX transaction processed.</label>
+                    <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Exchange transaction processed.</label>
                 </div>
                 {
                     payment?.status == "completed" && <div className="flex text-center place-content-center mt-1 md:mt-1">
