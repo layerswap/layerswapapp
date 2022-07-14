@@ -37,6 +37,7 @@ import SlideOver, { SildeOverRef } from "../../SlideOver";
 import { DocIframe } from "../../docInIframe";
 import toast from "react-hot-toast";
 import { BlacklistedAddress } from "../../../Models/BlacklistedAddress";
+import { InjectedConnector } from "@web3-react/injected-connector";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -159,7 +160,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = "network"
-
+    const { lockNetwork } = useQueryState()
     const { currencies, networks } = useSettingsState();
 
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = networks
@@ -168,7 +169,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             id: n.code,
             name: n.name,
             imgSrc: n.logo_url,
-            isAvailable: !n.is_test_net,
+            isAvailable: !lockNetwork && !n.is_test_net,
             isEnabled: n.is_enabled && currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
             isDefault: n.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
@@ -176,7 +177,6 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
 
     if (exchange && !network)
         ref.current?.focus()
-
 
     return (<>
         <label htmlFor="network" className="block font-normal text-pink-primary-300 text-sm">
@@ -236,6 +236,8 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
 
 export default function MainStep() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
+    const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
+
     // const { nextStep } = useWizardState();
     const { goToStep, setLoading: setLoadingWizard } = useFormWizardaUpdate<FormWizardSteps>()
 
@@ -257,13 +259,42 @@ export default function MainStep() {
         }, 500);
     }, [])
 
+
     useEffect(() => {
+        console.log("blah")
         let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
         let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
-        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
-    }, [query])
 
-    const { account, chainId } = useAccountState();
+        if (isImtoken || isTokenPocket) {
+            if (isImtoken) {
+                setAddressSource("imtoken");
+            }
+            else if (isTokenPocket) {
+                setAddressSource("tokenpocket");
+            }
+            const injected = new InjectedConnector({
+                // Commented to allow visitors from other networks to use this page
+                //supportedChainIds: supportedNetworks.map(x => x.chain_id)
+            });
+
+            if (!active) {
+                console.log("active")
+                activate(injected, onerror => {
+                    if (onerror.message.includes('user_canceled')) {
+                        new Error('You canceled the operation, please refresh and try to reauthorize.')
+                        return
+                    }
+                    else if (onerror.message.includes('Unsupported chain')) {
+                        // Do nothing
+                    }
+                    else {
+                        new Error(`Failed to connect: ${onerror.message}`)
+                        return
+                    }
+                });
+            }
+        }
+    }, [settings])
 
     let availableCurrencies = settings.currencies
         .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.logo_url, c.is_enabled, c.is_default))
@@ -317,23 +348,6 @@ export default function MainStep() {
         finally {
             setLoading(false)
         }
-        // if (values.network.baseObject.code.toLowerCase().includes("immutablex")) {
-        //     ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
-        //         .then(client => {
-        //             client.isRegistered({ user: values.destination_address })
-        //                 .then(isRegistered => {
-        //                     // if (isRegistered) {
-        //                     //     setIsConfirmModalOpen(true);
-        //                     // }
-        //                     // else {
-        //                     //     setIsImmutableModalOpen(true);
-        //                     // }
-        //                 })
-        //         })
-        // }
-        // else {
-        //     // setIsConfirmModalOpen(true);
-        // }
     }, [updateSwapFormData])
 
     let destAddress: string = account || query.destAddress;
@@ -356,10 +370,10 @@ export default function MainStep() {
         availableNetworks.forEach(x => {
             if (x != initialNetwork)
                 x.isEnabled = false;
-        });
+        })
     }
 
-    let initialAddress = destAddress && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
+    let initialAddress = destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
 
     let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
     const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
@@ -403,7 +417,7 @@ export default function MainStep() {
                     if (!formikRef.current.getFieldMeta("destination_address").touched)
                         addressRef?.current?.focus()
                 }
-                else if (settings.blacklistedAddresses.some(ba => ba.network_id === values.network?.baseObject?.id && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
+                else if (settings.blacklistedAddresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
                     errors.amount = `You can not transfer to this address`
                     if (!formikRef.current.getFieldMeta("destination_address").touched)
                         addressRef?.current?.focus()
@@ -455,6 +469,7 @@ export default function MainStep() {
                                         <NetworkField ref={networkRef} />
                                     }
                                 </div>
+
                             </div>
                             <div className="w-full mb-3.5 leading-4">
                                 <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
@@ -484,6 +499,7 @@ export default function MainStep() {
                                             )}
                                         </Field>
                                     </div>
+
                                 </div>
                             </div >
                             <div className="mb-6 leading-4">
