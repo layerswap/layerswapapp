@@ -12,7 +12,7 @@ function IntroCard(props) {
                     <p className="py-4">
                         <span className="text-sm font-semibold mr-2 rounded-md py-1 px-2 text-pink-primary border border-pink-primary uppercase">New</span>
                         <span className="md:hidden">
-                            Immutable X!
+                            StarkNet!
                         </span>
                         <span className="hidden md:inline">
                             Everything is new 😅 <a target='_blank' className='underline hover:no-underline' href='/'>Learn more</a>
