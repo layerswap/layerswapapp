@@ -159,7 +159,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = "network"
-
+    const { lockNetwork } = useQueryState()
     const { currencies, networks } = useSettingsState();
 
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = networks
@@ -168,7 +168,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             id: n.code,
             name: n.name,
             imgSrc: n.logo_url,
-            isAvailable: !n.is_test_net,
+            isAvailable: !lockNetwork && !n.is_test_net,
             isEnabled: n.is_enabled && currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
             isDefault: n.is_default
         })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
@@ -176,7 +176,6 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
 
     if (exchange && !network)
         ref.current?.focus()
-
 
     return (<>
         <label htmlFor="network" className="block font-normal text-pink-primary-300 text-sm">
@@ -356,7 +355,7 @@ export default function MainStep() {
         availableNetworks.forEach(x => {
             if (x != initialNetwork)
                 x.isEnabled = false;
-        });
+        })
     }
 
     let initialAddress = destAddress && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
