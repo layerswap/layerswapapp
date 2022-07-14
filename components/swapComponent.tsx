@@ -14,11 +14,7 @@ import APIKeyStep from './Wizard/Steps/APIKeyStep';
 import SwapConfirmationStep from './Wizard/Steps/SwapConfirmation';
 import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
 import { MenuProvider } from '../context/menu';
-<<<<<<< HEAD
-import ConnectImmutableX from './Wizard/Steps/ConnectImmutableX';
-=======
 
->>>>>>> 7316eca087fd7d4cf9a3da11690c3410636f9e87
 
 const FormWizard: FormWizardSteps = {
   "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true, positionPercent: 0 },
