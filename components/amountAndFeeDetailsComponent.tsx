@@ -66,7 +66,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                             </Disclosure.Button>
                             <Disclosure.Panel className="p-2 text-sm">
                                 <>
-                                    <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
+                                    <div className="mt-2 flex flex-row items-baseline justify-between">
                                         <label className="inline-flex font-normal items-center text-pink-primary-300 text-left">
                                             Layerswap Fee
                                         </label>
@@ -75,7 +75,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                             <span>  {currency?.asset} </span>
                                         </span>
                                     </div>
-                                    <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
+                                    <div className="mt-2 flex flex-row items-baseline justify-between">
                                         <label className="inline-flex font-normal text-pink-primary-300 text-left">
                                             Exchange Fee
                                             <Tooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
@@ -90,9 +90,9 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                             <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex text-pink-primary-300'>(Refundable) <Tooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." /></span>}</span>
                                         </span>
                                     </div>
-                                    <div className="mt-2 flex flex-col md:flex-row items-baseline justify-between">
+                                    <div className="mt-2 flex flex-row items-baseline justify-between">
                                         <label className="block font-normal text-pink-primary-300 text-center">
-                                            Estimated Time Of Arrival
+                                            Time Of Arrival
                                         </label>
                                         <span className="font-normal text-center text-white">
                                             ~1-2 minutes
