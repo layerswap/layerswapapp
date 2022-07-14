@@ -40,18 +40,7 @@ export default function Layout({ hasSideShapes, children }: Props) {
       <link rel="manifest" href="favicon/site.webmanifest" />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content="#111827" />
-<<<<<<< HEAD
-<<<<<<< HEAD
-
       <meta name="description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
-=======
- 
-      <meta name="description" content="Move crypto from CEX to L2. Instant and gasless." />
->>>>>>> main
-=======
-
-      <meta name="description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
->>>>>>> 7316eca087fd7d4cf9a3da11690c3410636f9e87
 
       {/* Facebook Meta Tags */}
       <meta property="og:url" content="https://www.layerswap.io/" />
