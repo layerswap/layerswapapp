@@ -12,7 +12,7 @@ title: Global Terms of Service
 
 ### **Registration and logging in**
 
-1. Registration and logging into LayerSwap Application is possible via the following website: https://connect.bransfer.io/.
+1. Registration and logging into LayerSwap Application is possible via the following website: https://layerswap.io/.
 2. In order for the User to register or log in to LayerSwap Application, such a User needs to provide only an email address and password.
 
 ### LayerSwap **Application – service description**
