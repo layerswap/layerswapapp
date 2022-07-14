@@ -374,8 +374,7 @@ export default function MainStep() {
 
 
     let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
-    let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].is_wallet;
-
+    let isPartnerWallet = isPartnerAddress && availablePartners[addressSource]?.is_wallet;
     
     let initialNetwork =
         availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
