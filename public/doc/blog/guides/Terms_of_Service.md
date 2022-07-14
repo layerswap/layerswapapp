@@ -4,13 +4,6 @@ title: Global Terms of Service
 
 ## Global Terms of Service
 
-### LayerSwap **- who we are**
-
-1. This LayerSwap application ('LayerSwap Application’) is offered to you by Bransfer, Inc.
-2. Bransfer, Inc., LayerSwap shall be jointly referred to as 'LayerSwap'.
-3. Liquidity Provider - our individual partners who provide liquidity in exchanges and chains.
-4. For more information on LayerSwap, please see our website: https://layerswap.io/
-
 ### **The roles in the process**
 
 1. LayerSwap acts as SaaS for matching users swaping digital assets across crypto exchanges and different chains.
