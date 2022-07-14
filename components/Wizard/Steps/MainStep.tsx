@@ -455,62 +455,60 @@ export default function MainStep() {
             onSubmit={handleSubmit}
         >
             {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
-                <Form>
-                    <div className="px-8 relative">
-                        <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4">
-                            {/* <div className="flex flex-col md:w-80 w-full">chainId:{chainId}</div>
-                            <div className="flex flex-col md:w-80 w-full">account:{account}</div>
-                            {
-                                settings.networks.map((n, index) => <div key={index} className="flex flex-col md:w-80 w-full">code{n.code}, chain_id:{n.chain_id}</div>)
-                            } */}
-
-                            <div className="flex flex-col md:w-80 w-full">
-                                {
-                                    <ExchangesField ref={exchangeRef} />
-                                }
-                            </div>
-                            <div className="flex flex-col md:w-80 w-full">
-                                {
-                                    <NetworkField ref={networkRef} />
-                                }
-                            </div>
-                        </div>
-                        <div className="w-full mb-3.5 leading-4">
-                            <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
-                                {`To ${values?.network?.name || ''} address`}
-                                {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
-                            </label>
-                            <div className="relative rounded-md shadow-sm mt-1.5">
-                                {isPartnerWallet &&
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Image className='rounded-md object-contain' src={availablePartners[addressSource].imgSrc} width="24" height="24"></Image>
-                                    </div>
-                                }
-                                <div>
-                                    <Field name="destination_address">
-                                        {({ field }) => (
-                                            <input
-                                                {...field}
-                                                ref={addressRef}
-                                                placeholder={"0x123...ab56c"}
-                                                autoCorrect="off"
-                                                type={"text"}
-                                                name="destination_address"
-                                                id="destination_address"
-                                                disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
-                                                className={joinClassNames(isPartnerWallet ? 'pl-11' : '', lockAddress ? 'disabled:bg-darkblue-disabled' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
-                                            />
-                                        )}
-                                    </Field>
+                <Form className="h-full">
+                    <div className="px-8 h-full flex flex-col justify-between">
+                        <div>
+                            <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4">
+                                <div className="flex flex-col md:w-80 w-full">
+                                    {
+                                        <ExchangesField ref={exchangeRef} />
+                                    }
                                 </div>
-                            </div>
-                        </div >
-                        <div className="mb-6 leading-4">
-                            <AmountField ref={amountRef} />
-                        </div>
+                                <div className="flex flex-col md:w-80 w-full">
+                                    {
+                                        <NetworkField ref={networkRef} />
+                                    }
+                                </div>
 
-                        <div className="w-full">
-                            <AmountAndFeeDetails amount={values?.amount} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
+                            </div>
+                            <div className="w-full mb-3.5 leading-4">
+                                <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
+                                    {`To ${values?.network?.name || ''} address`}
+                                    {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
+                                </label>
+                                <div className="relative rounded-md shadow-sm mt-1.5">
+                                    {isPartnerWallet &&
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Image className='rounded-md object-contain' src={availablePartners[addressSource].imgSrc} width="24" height="24"></Image>
+                                        </div>
+                                    }
+                                    <div>
+                                        <Field name="destination_address">
+                                            {({ field }) => (
+                                                <input
+                                                    {...field}
+                                                    ref={addressRef}
+                                                    placeholder={"0x123...ab56c"}
+                                                    autoCorrect="off"
+                                                    type={"text"}
+                                                    name="destination_address"
+                                                    id="destination_address"
+                                                    disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
+                                                    className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
+                                                />
+                                            )}
+                                        </Field>
+                                    </div>
+
+                                </div>
+                            </div >
+                            <div className="mb-6 leading-4">
+                                <AmountField ref={amountRef} />
+                            </div>
+
+                            <div className="w-full">
+                                <AmountAndFeeDetails amount={values?.amount} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
+                            </div>
                         </div>
                         <div className="mt-6">
                             <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={loading}>

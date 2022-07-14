@@ -53,7 +53,7 @@ export default class ExchangeSettings {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/20cb5137d12941328a8b6fbd7bd24d7c?iframe",
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.KrakenId] = {
-            AuthorizationNote: "Make sure that the 'Query Ledger Entries' key permission is checked.",
+            AuthorizationNote: "When generating the API keys, make sure that the 'Query Ledger Entries' key permission is checked.",
             ExchangeWithdrawalPageUrl: "https://www.kraken.com/u/funding/withdraw",
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/6e1326b93076475ebe183d9f615a44c0?iframe",
         };
