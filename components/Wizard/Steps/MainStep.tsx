@@ -287,6 +287,12 @@ export default function MainStep() {
         }
     }, [settings])
 
+    useEffect(() => {
+        let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
+        let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
+        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
+    }, [query])
+
     let availableCurrencies = settings.currencies
         .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.logo_url, c.is_enabled, c.is_default))
         .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
@@ -348,7 +354,7 @@ export default function MainStep() {
     let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
     let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].baseObject.is_wallet;
 
-
+    
     let initialNetwork =
         availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
 
