@@ -6,7 +6,6 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useAccountState } from "../../../context/account";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
-import { isValidAddress } from "../../../lib/etherAddressValidator";
 import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { Currency } from "../../../Models/Currency";
 import { Exchange } from "../../../Models/Exchange";
@@ -38,6 +37,7 @@ import { DocIframe } from "../../docInIframe";
 import toast from "react-hot-toast";
 import { BlacklistedAddress } from "../../../Models/BlacklistedAddress";
 import { InjectedConnector } from "@web3-react/injected-connector";
+import { isValidAddress } from "../../../lib/addressValidator";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';

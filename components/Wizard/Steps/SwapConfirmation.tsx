@@ -5,7 +5,6 @@ import { useRouter } from 'next/router';
 import { FC, Fragment, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { isValidAddress } from '../../../lib/etherAddressValidator';
 import { BaseStepProps, FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
@@ -13,6 +12,7 @@ import toast from 'react-hot-toast';
 import { CalculateReceiveAmount } from '../../../lib/fees';
 import { copyTextToClipboard } from '../../../lib/copyToClipboard';
 import ToggleButton from '../../buttons/toggleButton';
+import { isValidAddress } from '../../../lib/addressValidator';
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
