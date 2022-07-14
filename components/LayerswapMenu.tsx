@@ -3,6 +3,7 @@ import { MenuIcon } from "@heroicons/react/outline";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Fragment, useCallback, useRef, useState } from "react";
+import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../context/auth";
 import { useMenuState } from "../context/menu";
 import TokenService from "../lib/TokenService";
@@ -18,6 +19,8 @@ export default function () {
     const { email, authData } = useAuthState()
     const router = useRouter();
     const { menuVisible } = useMenuState()
+    const { boot, show, update } = useIntercom()
+    const updateWithProps = () => update({ customAttributes: { LayerswapEmail: email } })
     const handleLogout = () => {
         TokenService.removeAuthData()
         router.push('/', '/signedout', { shallow: true })
@@ -28,15 +31,15 @@ export default function () {
         slideoverRef.current.open()
     }, [slideoverRef])
 
-    const handleFeedbackSent = useCallback(()=>{
+    const handleFeedbackSent = useCallback(() => {
         slideoverRef.current.close()
-    },[slideoverRef])
- 
+    }, [slideoverRef])
+
     return <>
         {
             authData?.access_token &&
             <SlideOver ref={slideoverRef} moreClassNames="pt-5">
-                <SendFeedback onSend={handleFeedbackSent}/>
+                <SendFeedback onSend={handleFeedbackSent} />
             </SlideOver>
         }
         <span className=" text-pink-primary-300 cursor-pointer relative ">
@@ -106,7 +109,7 @@ export default function () {
                                                                 'block px-4 py-2 text-sm text-pink-primary-300 hover:bg-darkblue-300 whitespace-nowrap'
                                                             )}
                                                         >
-                                                            CEX Accounts
+                                                            Exchange Accounts
                                                         </a>
                                                     </Link>
                                                 )}
@@ -122,6 +125,24 @@ export default function () {
                                                         )}
                                                     >
                                                         Send Feedback
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={() => {
+                                                            boot();
+                                                            show();
+                                                            updateWithProps()
+                                                        }}
+                                                        type="button"
+                                                        className={classNames(
+                                                            active ? 'bg-darkblue-300' : '',
+                                                            'font-bold block w-full text-left px-4 py-2 text-sm text-pink-primary-300 whitespace-nowrap'
+                                                        )}
+                                                    >
+                                                        Get Help
                                                     </button>
                                                 )}
                                             </Menu.Item>

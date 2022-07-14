@@ -17,7 +17,7 @@ export default function Salon() {
                             </svg>
                         </div>
                         <div className="flex text-center place-content-center mt-1 md:mt-1">
-                            <p className="block text-lg font-lighter leading-6 text-pink-primary-300"> CEX account successfully connected </p>
+                            <p className="block text-lg font-lighter leading-6 text-pink-primary-300"> Exchange account successfully connected </p>
                         </div>
                         <div className="flex text-center place-content-center mt-1 md:mt-1">
                             <p className="block text-lg font-lighter leading-6 text-pink-primary-300"> You may close this window </p>

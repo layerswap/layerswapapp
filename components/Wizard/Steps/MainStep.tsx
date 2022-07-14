@@ -71,12 +71,19 @@ const CurrenciesField: FC = () => {
             baseObject: c,
             id: c.id,
             name: c.asset,
+            order: c.order,
             imgSrc: c.logo_url,
             isAvailable: c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
             isEnabled: c.is_enabled,
             isDefault: c.is_default,
-        })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
-            || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)))
+        })).sort((x, y) => {
+            if (!y.isEnabled) {
+                y.order = 100;
+            } else if (!x.isEnabled) {
+                x.order = 100;
+            };
+            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
+        })
         : []
 
     // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
@@ -96,6 +103,7 @@ const CurrenciesField: FC = () => {
                     baseObject: default_currency,
                     id: default_currency.id,
                     name: default_currency.asset,
+                    order: default_currency.order,
                     imgSrc: default_currency.logo_url,
                     isAvailable: default_currency.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
                     isEnabled: default_currency.is_enabled,
@@ -130,12 +138,19 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             baseObject: e,
             id: e.internal_name,
             name: e.name,
+            order: e.order,
             imgSrc: e.logo_url,
             isAvailable: true, //currency?.baseObject?.exchanges?.some(ce => ce.exchangeId === e.id),
             isEnabled: e.is_enabled,
             isDefault: e.is_default
-        })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
-            || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
+        })).sort((x, y) => {
+            if (!y.isEnabled) {
+                y.order = 100;
+            } else if (!x.isEnabled) {
+                x.order = 100;
+            };
+            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
+        });
 
     return (<>
         <label htmlFor="exchange" className="block font-normal text-pink-primary-300 text-sm">
@@ -161,12 +176,19 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             baseObject: n,
             id: n.code,
             name: n.name,
+            order: n.order,
             imgSrc: n.logo_url,
             isAvailable: !lockNetwork && !n.is_test_net,
             isEnabled: n.is_enabled && currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
             isDefault: n.is_default
-        })).sort((x, y) => (Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isEnabled) - Number(x.isEnabled)))
-            || Number(y.isAvailable) - Number(x.isAvailable) + (Number(y.isAvailable) - Number(x.isAvailable)));
+        })).sort((x, y) => {
+            if (!y.isEnabled) {
+                y.order = 100;
+            } else if (!x.isEnabled) {
+                x.order = 100;
+            };
+            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
+        });
 
     if (exchange && !network)
         ref.current?.focus()
@@ -294,16 +316,16 @@ export default function MainStep() {
     }, [query])
 
     let availableCurrencies = settings.currencies
-        .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.logo_url, c.is_enabled, c.is_default))
+        .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.order, c.logo_url, c.is_enabled, c.is_default))
         .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
     let availableExchanges = settings.exchanges
-        .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.logo_url, c.is_enabled, c.is_default))
+        .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
         .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
     let availableNetworks = settings.networks
-        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.logo_url, c.is_enabled, c.is_default))
+        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
         .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
 
-    const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), new SelectMenuItem<Partner>(c, c.name, c.display_name, c.logo_url, c.is_enabled)]));
+    const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), c]));
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
@@ -352,8 +374,7 @@ export default function MainStep() {
 
 
     let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
-    let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].baseObject.is_wallet;
-
+    let isPartnerWallet = isPartnerAddress && availablePartners[addressSource]?.is_wallet;
     
     let initialNetwork =
         availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
@@ -476,7 +497,7 @@ export default function MainStep() {
                                 <div className="relative rounded-md shadow-sm mt-1.5">
                                     {isPartnerWallet &&
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Image className='rounded-md object-contain' src={availablePartners[addressSource].imgSrc} width="24" height="24"></Image>
+                                            <Image className='rounded-md object-contain' src={availablePartners[addressSource].logo_url} width="24" height="24"></Image>
                                         </div>
                                     }
                                     <div>
