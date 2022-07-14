@@ -36,9 +36,9 @@ const SuccessfulStep: FC = () => {
                 <div className="text-white text-sm md:mt-3 mt-0">
                     {
                         networks && swap?.transaction_id &&
-                        <a href={networks.filter(x => x.code === swap?.network)[0]?.explorer_template.replace("{0}", swap?.transaction_id)}
+                        <a href={networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id)}
                             target="_blank"
-                            className="text-sm flex justify-center w-full flex justify-center py-3 px-4 rounded-md text-pink-primary border border-pink-primary uppercase">
+                            className="text-sm w-full flex justify-center py-3 px-4 rounded-md text-pink-primary border border-pink-primary uppercase">
                             View in Explorer
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
                         </a>
