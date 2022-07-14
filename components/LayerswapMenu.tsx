@@ -3,6 +3,7 @@ import { MenuIcon } from "@heroicons/react/outline";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Fragment, useCallback, useRef, useState } from "react";
+import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../context/auth";
 import { useMenuState } from "../context/menu";
 import TokenService from "../lib/TokenService";
@@ -32,6 +33,9 @@ export default function () {
         slideoverRef.current.close()
     },[slideoverRef])
  
+    const { boot, show, update } = useIntercom()
+    const updateWithProps = () => update({ customAttributes: {LayerswapEmail: email} });
+
     return <>
         {
             authData?.access_token &&
@@ -106,7 +110,7 @@ export default function () {
                                                                 'block px-4 py-2 text-sm text-pink-primary-300 hover:bg-darkblue-300 whitespace-nowrap'
                                                             )}
                                                         >
-                                                            CEX Accounts
+                                                            Exchange Accounts
                                                         </a>
                                                     </Link>
                                                 )}
@@ -122,6 +126,24 @@ export default function () {
                                                         )}
                                                     >
                                                         Send Feedback
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={() => {
+                                                            boot();
+                                                            show();
+                                                            updateWithProps()
+                                                        }}
+                                                        type="button"
+                                                        className={classNames(
+                                                            active ? 'bg-darkblue-300' : '',
+                                                            'font-bold block w-full text-left px-4 py-2 text-sm text-pink-primary-300 whitespace-nowrap'
+                                                        )}
+                                                    >
+                                                        Get Help
                                                     </button>
                                                 )}
                                             </Menu.Item>

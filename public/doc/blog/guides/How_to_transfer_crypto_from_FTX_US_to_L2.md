@@ -4,7 +4,7 @@ title: How to transfer crypto from Ftx.us to Loopring or zkSync?
 
 ## How to transfer crypto from Ftx.us to Loopring or zkSync?
 
-With [LayerSwap](/), you can bridge crypto from your crypto exchange account directly to a Layer 2 network with low fees. <br />
+With [Layerswap](/), you can bridge crypto from your crypto exchange account directly to a Layer 2 network with low fees. <br />
 
 After filling in the **amount** and **asset** you want to send, the source **exchange**, destination **network** and your L2 wallet **address**, you will be redirected to Bransfer to complete your transfer.
 

@@ -46,7 +46,7 @@ export default function Layout({ hasSideShapes, children }: Props) {
       {/* Facebook Meta Tags */}
       <meta property="og:url" content="https://www.layerswap.io/" />
       <meta property="og:type" content="website" />
-      <meta property="og:title" content="LayerSwap - Move crypto to Layer 2" />
+      <meta property="og:title" content="Layerswap - Move crypto to Layer 2" />
       <meta property="og:description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
       <meta property="og:image" content="https://layerswap.io/opengraph.jpg" />
 
@@ -54,7 +54,7 @@ export default function Layout({ hasSideShapes, children }: Props) {
       <meta name="twitter:card" content="summary_large_image" />
       <meta property="twitter:domain" content="layerswap.io" />
       <meta property="twitter:url" content="https://www.layerswap.io/" />
-      <meta name="twitter:title" content="LayerSwap - Move crypto to Layer 2" />
+      <meta name="twitter:title" content="Layerswap - Move crypto to Layer 2" />
       <meta name="twitter:description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
       <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpg" />
       <script defer data-domain="layerswap.io" src="https://plausible.io/js/plausible.js"></script>
