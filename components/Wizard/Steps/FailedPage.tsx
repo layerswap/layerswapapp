@@ -5,7 +5,6 @@ import SubmitButton from '../../buttons/submitButton';
 
 const FailedPage: FC = () => {
     const { swap } = useSwapDataState()
-    console.log("swap",swap)
     return (
         <>
             <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">

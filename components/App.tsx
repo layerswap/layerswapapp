@@ -23,7 +23,6 @@ const App: FC = () => {
     </>
 }
 function TestComp() {
-    console.log("Test compnent rerendered")
     return <></>
   }
 

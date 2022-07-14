@@ -179,8 +179,6 @@ async function getNextPart({ currentPart, wizard, userExchanges, swapFormData, g
                 return WizardPartType.Auth
             }
             const exchanges = userExchanges?.data || await (await getUserExchanges(authData?.access_token))?.data
-            console.log(exchanges)
-            console.log(swapFormData?.exchange?.id && exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled))
             if (swapFormData?.exchange?.id && exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)) {
                 return await getNextPart({ currentPart: nextStep, wizard, userExchanges, swapFormData, getUserExchanges })
             }

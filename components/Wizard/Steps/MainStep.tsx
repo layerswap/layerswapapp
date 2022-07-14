@@ -44,13 +44,6 @@ const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 const Logger = () => {
     const formik = useFormikContext();
     useEffect(() => {
-        console.group("Formik State");
-        console.log("values", formik.values);
-        console.log("errors", formik.errors);
-        console.log("touched", formik.touched);
-        console.log("isSubmitting", formik.isSubmitting);
-        console.log("isValidating", formik.isValidating);
-        console.log("submitCount", formik.submitCount);
         console.groupEnd();
     }, [
         formik.values,
@@ -261,7 +254,6 @@ export default function MainStep() {
 
 
     useEffect(() => {
-        console.log("blah")
         let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
         let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
 
@@ -278,7 +270,6 @@ export default function MainStep() {
             });
 
             if (!active) {
-                console.log("active")
                 activate(injected, onerror => {
                     if (onerror.message.includes('user_canceled')) {
                         new Error('You canceled the operation, please refresh and try to reauthorize.')

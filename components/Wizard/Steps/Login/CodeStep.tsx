@@ -45,7 +45,6 @@ const CodeStep: FC = () => {
             var apiClient = new LayerSwapAuthApiClient();
             const res = await apiClient.connectAsync(email, code)
             await updateAuthData(res)
-            console.log(res)
             await router.push(redirect?.toString() || '/')
 
         }
