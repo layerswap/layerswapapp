@@ -10,4 +10,6 @@ export class Exchange {
     oauth_redirect_url: string;
     has_keyphrase:boolean;
     keyphrase_display_name:string;
+    transaction_explorer_template: string;
+    account_explorer_template: string
 }

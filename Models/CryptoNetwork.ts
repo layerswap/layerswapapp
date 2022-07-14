@@ -6,6 +6,7 @@ export class CryptoNetwork {
     is_enabled: boolean;
     is_test_net: boolean;
     is_default: boolean;
-    explorer_template: string;
+    transaction_explorer_template: string;
+    account_explorer_template: string;
     chain_id: number;
 }
