@@ -17,6 +17,8 @@ import { Popover } from '@headlessui/react';
 import AmountAndFeeDetails from '../../amountAndFeeDetailsComponent';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
 import ExchangeSettings from '../../../lib/ExchangeSettings';
+import { useIntercom } from 'react-use-intercom';
+import { useAuthState } from '../../../context/auth';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -28,6 +30,9 @@ const WithdrawExchangeStep: FC = () => {
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
+    const { email } = useAuthState()
+    const { boot, show, update } = useIntercom()
+    const updateWithProps = () => update({ customAttributes: { layerswapEmail: email, swapId: swapId } })
 
     useInterval(async () => {
         if (currentStep === "Withdrawal") {
@@ -295,7 +300,7 @@ const WithdrawExchangeStep: FC = () => {
                                 </div>
                             </div>
                             <div className="flex text-center place-content-center mt-1 md:mt-1">
-                                <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Waiting for CEX transaction.</label>
+                                <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Waiting for Exchange transaction.</label>
                             </div>
                         </div>
 
@@ -312,7 +317,17 @@ const WithdrawExchangeStep: FC = () => {
                             </div> */}
                         </div>
                 }
-
+                <button
+                    type="button"
+                    onClick={() => {
+                        boot();
+                        show();
+                        updateWithProps()
+                    }}
+                    className="group disabled:text-pink-primary-600 text-pink-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                >
+                    Load more
+                </button>
             </div>
 
         </>

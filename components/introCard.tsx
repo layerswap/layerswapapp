@@ -15,7 +15,7 @@ function IntroCard(props) {
                             StarkNet!
                         </span>
                         <span className="hidden md:inline">
-                            Everything is new 😅 <a target='_blank' className='underline hover:no-underline' href='/'>Learn more</a>
+                            Everything is new 😅 <a target='_blank' className='underline hover:no-underline' href='https://twitter.com/layerswap/status/1547707319202373640'>Learn more</a>
                             {/* <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1480921959252774918">Join the discussion</a> */}
                         </span>
                     </p>

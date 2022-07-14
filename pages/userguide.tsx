@@ -86,7 +86,7 @@ export default function UserGuide(props) {
         <Layout>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
                 <Head>
-                    <title>LayerSwap User Guide</title>
+                    <title>Layerswap User Guide</title>
                 </Head>
                 <main>
                     <div className="flex justify-center">
