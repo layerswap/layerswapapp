@@ -299,13 +299,19 @@ const WithdrawExchangeStep: FC = () => {
                 </div>
                 {
                     transferDone ?
-                        <div className='flex place-content-center mb-16 md:mb-8'>
-                            <div className='relative'>
-                                <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
-                                <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
-                                <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-pink-primary-800 rounded-full'></div>
+                        <div>
+                            <div className='flex place-content-center mb-16 md:mb-8'>
+                                <div className='relative'>
+                                    <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
+                                    <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
+                                    <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-pink-primary-800 rounded-full'></div>
+                                </div>
+                            </div>
+                            <div className="flex text-center place-content-center mt-1 md:mt-1">
+                                <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Waiting for CEX transaction.</label>
                             </div>
                         </div>
+
                         :
                         <div className="text-white text-base">
                             <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConfirm} >
