@@ -477,7 +477,7 @@ export default function MainStep() {
                                                 name="destination_address"
                                                 id="destination_address"
                                                 disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
-                                                className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
+                                                className={joinClassNames(isPartnerWallet ? 'pl-11' : '', lockAddress ? 'disabled:bg-darkblue-disabled' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
                                             />
                                         )}
                                     </Field>
