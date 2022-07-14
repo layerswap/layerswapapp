@@ -37,6 +37,7 @@ import SlideOver, { SildeOverRef } from "../../SlideOver";
 import { DocIframe } from "../../docInIframe";
 import toast from "react-hot-toast";
 import { BlacklistedAddress } from "../../../Models/BlacklistedAddress";
+import { InjectedConnector } from "@web3-react/injected-connector";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -235,6 +236,8 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
 
 export default function MainStep() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
+    const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
+
     // const { nextStep } = useWizardState();
     const { goToStep, setLoading: setLoadingWizard } = useFormWizardaUpdate<FormWizardSteps>()
 
@@ -256,13 +259,42 @@ export default function MainStep() {
         }, 500);
     }, [])
 
+
     useEffect(() => {
+        console.log("blah")
         let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
         let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
-        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
-    }, [query])
 
-    const { account, chainId } = useAccountState();
+        if (isImtoken || isTokenPocket) {
+            if (isImtoken) {
+                setAddressSource("imtoken");
+            }
+            else if (isTokenPocket) {
+                setAddressSource("tokenpocket");
+            }
+            const injected = new InjectedConnector({
+                // Commented to allow visitors from other networks to use this page
+                //supportedChainIds: supportedNetworks.map(x => x.chain_id)
+            });
+
+            if (!active) {
+                console.log("active")
+                activate(injected, onerror => {
+                    if (onerror.message.includes('user_canceled')) {
+                        new Error('You canceled the operation, please refresh and try to reauthorize.')
+                        return
+                    }
+                    else if (onerror.message.includes('Unsupported chain')) {
+                        // Do nothing
+                    }
+                    else {
+                        new Error(`Failed to connect: ${onerror.message}`)
+                        return
+                    }
+                });
+            }
+        }
+    }, [settings])
 
     let availableCurrencies = settings.currencies
         .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.logo_url, c.is_enabled, c.is_default))
@@ -316,23 +348,6 @@ export default function MainStep() {
         finally {
             setLoading(false)
         }
-        // if (values.network.baseObject.code.toLowerCase().includes("immutablex")) {
-        //     ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
-        //         .then(client => {
-        //             client.isRegistered({ user: values.destination_address })
-        //                 .then(isRegistered => {
-        //                     // if (isRegistered) {
-        //                     //     setIsConfirmModalOpen(true);
-        //                     // }
-        //                     // else {
-        //                     //     setIsImmutableModalOpen(true);
-        //                     // }
-        //                 })
-        //         })
-        // }
-        // else {
-        //     // setIsConfirmModalOpen(true);
-        // }
     }, [updateSwapFormData])
 
     let destAddress: string = account || query.destAddress;
@@ -358,7 +373,7 @@ export default function MainStep() {
         })
     }
 
-    let initialAddress = destAddress && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
+    let initialAddress = destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
 
     let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
     const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
@@ -443,6 +458,12 @@ export default function MainStep() {
                 <Form>
                     <div className="px-8 relative">
                         <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4">
+                            {/* <div className="flex flex-col md:w-80 w-full">chainId:{chainId}</div>
+                            <div className="flex flex-col md:w-80 w-full">account:{account}</div>
+                            {
+                                settings.networks.map((n, index) => <div key={index} className="flex flex-col md:w-80 w-full">code{n.code}, chain_id:{n.chain_id}</div>)
+                            } */}
+
                             <div className="flex flex-col md:w-80 w-full">
                                 {
                                     <ExchangesField ref={exchangeRef} />

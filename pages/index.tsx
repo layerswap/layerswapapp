@@ -19,63 +19,6 @@ const swapOptions: NavRadioOption[] = [
 ];
 
 export default function Home({ data, query, isOfframpEnabled }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
-
-  let preSelectedNetwork: string = query.destNetwork;
-  let lockNetwork: boolean = query.lockNetwork;
-  let preSelectedAddress: string = query.destAddress;
-  let lockAddress: boolean = query.lockAddress;
-
-  const [addressSource, setAddressSource] = useState(query.addressSource);
-
-  useEffect(() => {
-    let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
-    let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
-
-    if (isImtoken || isTokenPocket) {
-      if (isImtoken) {
-        setAddressSource("imtoken");
-      }
-      else if (isTokenPocket) {
-        setAddressSource("tokenpocket");
-      }
-      let supportedNetworks = data.networks.filter(x => x.chain_id != -1 && x.is_enabled);
-      const injected = new InjectedConnector({
-        // Commented to allow visitors from other networks to use this page
-        // supportedChainIds: supportedNetworks.map(x => x.chain_id)
-      });
-
-      if (!active) {
-        activate(injected, onerror => {
-          if (onerror.message.includes('user_canceled')) {
-            return alert('You canceled the operation, please refresh and try to reauthorize.')
-          }
-          else if (onerror.message.includes('Unsupported chain')) {
-            // Do nothing
-          }
-          else {
-            alert(`Failed to connect: ${onerror.message}`)
-          }
-        });
-      }
-    }
-  })
-
-  if (chainId) {
-    let network = data.networks.find(x => x.chain_id == chainId);
-    if (network) {
-      preSelectedNetwork = network.code;
-      lockNetwork = true;
-    }
-  }
-
-  if (account) {
-    preSelectedAddress = account;
-    lockAddress = true;
-  }
-
-  const [swapOption, setSwapOption] = useState(swapOptions[0]);
-  const [isShowing, setIsShowing] = useState(false)
 
   return (
     <Layout>
@@ -83,9 +26,7 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
         <div className='flex flex-col space-y-5'>
           <SettingsProvider data={data}>
             <QueryProvider query={query}>
-              <AccountProvider data={{ account, chainId }}>
                 <Swap />
-              </AccountProvider>
             </QueryProvider>
           </SettingsProvider>
         </div>
