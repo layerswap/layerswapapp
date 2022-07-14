@@ -46,17 +46,17 @@ export default function Layout({ hasSideShapes, children }: Props) {
       {/* Facebook Meta Tags */}
       <meta property="og:url" content="https://www.layerswap.io/" />
       <meta property="og:type" content="website" />
-      <meta property="og:title" content="LayerSwap - Move crypto to Layer 2" />
+      <meta property="og:title" content="Layerswap - Accelerating L2 migration" />
       <meta property="og:description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
-      <meta property="og:image" content="https://layerswap.io/opengraph.jpg" />
+      <meta property="og:image" content="https://layerswap.io/opengraph.jpeg" />
 
       {/* Twitter Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta property="twitter:domain" content="layerswap.io" />
       <meta property="twitter:url" content="https://www.layerswap.io/" />
-      <meta name="twitter:title" content="LayerSwap - Move crypto to Layer 2" />
+      <meta name="twitter:title" content="Layerswap - Accelerating L2 migration" />
       <meta name="twitter:description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
-      <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpg" />
+      <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpeg" />
       <script defer data-domain="layerswap.io" src="https://plausible.io/js/plausible.js"></script>
     </Head>
     <div className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
