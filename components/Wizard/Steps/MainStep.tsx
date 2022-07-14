@@ -6,7 +6,6 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useAccountState } from "../../../context/account";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
-import { isValidAddress } from "../../../lib/etherAddressValidator";
 import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { Currency } from "../../../Models/Currency";
 import { Exchange } from "../../../Models/Exchange";
@@ -38,6 +37,7 @@ import { DocIframe } from "../../docInIframe";
 import toast from "react-hot-toast";
 import { BlacklistedAddress } from "../../../Models/BlacklistedAddress";
 import { InjectedConnector } from "@web3-react/injected-connector";
+import { isValidAddress } from "../../../lib/addressValidator";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -287,6 +287,12 @@ export default function MainStep() {
         }
     }, [settings])
 
+    useEffect(() => {
+        let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
+        let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
+        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
+    }, [query])
+
     let availableCurrencies = settings.currencies
         .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.logo_url, c.is_enabled, c.is_default))
         .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
@@ -348,7 +354,7 @@ export default function MainStep() {
     let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
     let isPartnerWallet = isPartnerAddress && availablePartners[addressSource].baseObject.is_wallet;
 
-
+    
     let initialNetwork =
         availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
 
