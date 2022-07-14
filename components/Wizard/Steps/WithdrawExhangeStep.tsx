@@ -302,6 +302,17 @@ const WithdrawExchangeStep: FC = () => {
                             <div className="flex text-center place-content-center mt-1 md:mt-1">
                                 <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Waiting for Exchange transaction.</label>
                             </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    boot();
+                                    show();
+                                    updateWithProps()
+                                }}
+                                className="mt-3 text-center w-full disabled:text-pink-primary-600 text-pink-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                            >
+                                Need help?
+                            </button>
                         </div>
 
                         :
@@ -317,17 +328,7 @@ const WithdrawExchangeStep: FC = () => {
                             </div> */}
                         </div>
                 }
-                <button
-                    type="button"
-                    onClick={() => {
-                        boot();
-                        show();
-                        updateWithProps()
-                    }}
-                    className="group disabled:text-pink-primary-600 text-pink-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
-                >
-                    Load more
-                </button>
+
             </div>
 
         </>
