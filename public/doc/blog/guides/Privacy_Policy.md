@@ -4,7 +4,7 @@ title: Privacy Policy
 
 ## Privacy Policy
 
-Your privacy is important to us. It is Bransfer's policy to respect your privacy and comply with any applicable law and regulation regarding any personal information we may collect about you, including across our website, https://bransfer.io, and other sites we own and operate.
+Your privacy is important to us. It is Layerswap's policy to respect your privacy and comply with any applicable law and regulation regarding any personal information we may collect about you, including across our website and other sites we own and operate.
 This policy is effective as of 15 April 2021 and was last updated on 18 January 2022.
 
 ### Information We Collect

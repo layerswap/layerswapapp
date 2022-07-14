@@ -19,10 +19,10 @@ const TransactionLoadingPage: FC = () => {
                     </div>
                 </div>
                 <div className="flex text-center place-content-center mt-2">
-                    <label className="block text-lg font-lighter leading-6 text-light-blue"> Please wait. </label>
+                    <label className="block text-lg font-lighter leading-6 text-pink-primary-300"> Please wait. </label>
                 </div>
                 <div className="flex text-center place-content-center mt-4 md:mt-2">
-                    <label className="block text-lg font-lighter leading-6 text-light-blue"> We'ar checking your transacton, It'll just take a moment. </label>
+                    <label className="block text-lg font-lighter leading-6 text-pink-primary-300"> We'ar checking your transacton, It'll just take a moment. </label>
                 </div>
             </div>
 

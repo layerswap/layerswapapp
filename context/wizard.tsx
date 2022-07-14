@@ -161,7 +161,7 @@ export type StepPath = {
     index: number,
 }
 
-export function WizardProvider({ children }) {
+export function WizardProvider() {
 
     const [wrapperWidth, setWrapperWidth] = useState(1);
 
@@ -187,12 +187,8 @@ export function WizardProvider({ children }) {
 
     const wrapper = useRef(null);
 
-
     return (
-        <WizardStateContext.Provider value={{ nextStep, prevStep, data }}>
-            {children}
-        </WizardStateContext.Provider >
-
+        <WizardStateContext.Provider value={{ nextStep, prevStep, data }} />
     );
 }
 

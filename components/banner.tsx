@@ -42,7 +42,7 @@ const Banner: FC<BannerProps> = ({localStorageId, desktopMessage, mobileMessage,
                         <button
                             type="button"
                             onClick={()=> onClickClose()}
-                            className="-mr-1 flex p-2 rounded-md hover:bg-pink-500 focus:outline-none focus:ring-2 focus:ring-white"
+                            className="-mr-1 flex p-2 rounded-md hover:bg-pink-500 focus:outline-none"
                         >
                             <span className="sr-only">Dismiss</span>
                             <XIcon className="h-4 w-5 text-white" aria-hidden="true" />

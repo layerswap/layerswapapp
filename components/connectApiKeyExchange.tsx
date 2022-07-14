@@ -1,29 +1,32 @@
-import { ExclamationIcon } from '@heroicons/react/outline';
+import { ExclamationIcon, InformationCircleIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { FC, useCallback, useEffect, useState } from 'react'
-import { useSwapDataState, useSwapDataUpdate } from '../context/swap';
-import { useInterval } from '../hooks/useInyterval';
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import toast from 'react-hot-toast';
 import { BransferApiClient } from '../lib/bransferApiClients';
-import { parseJwt } from '../lib/jwtParser';
-import LayerSwapApiClient, { Swap, SwapDetailsResponse } from '../lib/layerSwapApiClient';
+import ExchangeSettings from '../lib/ExchangeSettings';
 import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
+import { DocIframe } from './docInIframe';
+import SlideOver, { SildeOverRef } from './SlideOver';
 
 type Props = {
     exchange: Exchange,
-    onClose: () => void
+    onSuccess: () => void
 }
 
-const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
+const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const router = useRouter();
     const [keyphrase, setKeyphrase] = useState("")
+    const slideoverRef = useRef<SildeOverRef>()
 
+    const handleCloseSlideover = useCallback(() => {
+        slideoverRef.current.close()
+    }, [slideoverRef])
     useEffect(() => {
         setLoading(false)
     }, [exchange])
@@ -37,20 +40,22 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
     const handleKeyphraseChange = (e) => {
         setKeyphrase(e?.target?.value)
     }
-
     const connect = useCallback(async () => {
         try {
-            const { access_token } = TokenService.getAuthData() || {};
             setLoading(true)
             const bransferApiClient = new BransferApiClient();
-
+            const { access_token } = TokenService.getAuthData() || {};
             const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase }, access_token)
-            if (res.is_success)
-                onClose()
-            //TODO handle error
+            onSuccess()
         }
-        catch (e) {
-            setError(e.message)
+        catch (error) {
+            if (error.response?.data?.errors?.length > 0) {
+                const message = error.response.data.errors.map(e => e.message).join(", ")
+                toast.error(message)
+            }
+            else {
+                toast.error(error.message)
+            }
         }
         finally {
             setLoading(false)
@@ -58,56 +63,20 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
     }, [key, secret, keyphrase, exchange])
 
     const dataIsValid = secret && key && (exchange?.has_keyphrase ? keyphrase : true)
+    const userGuideURL = ExchangeSettings.KnownSettings[exchange?.id]?.UserApiKeyGuideUrl
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row text-left">
-                {
-                    error &&
-                    <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <ExclamationIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-light-blue">
-                                    {error}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
-                <div>
-                    <div className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-pink-primary mr-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <label className="block text-lg font-medium leading-6 text-white"> Why </label>
-                    </div>
-                    <div className="flex items-center">
-                        <label className="block text-lg font-normal leading-6 text-light-blue"> Layerswap uses your API keys to access your withrawal history and verify your payments. </label>
-                    </div>
-                    <div className="flex items-center mt-5">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-pink-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <label className="block text-lg font-medium leading-6 text-white"> Note </label>
-                    </div>
-                    <div className="flex items-center">
-                        <label className="block text-lg font-normal leading-6 text-light-blue"> Read-only API keys can't used to initiate withrawal or place a trade. </label>
-                    </div>
-                    <div className="flex items-center mt-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-pink-primary mr-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                        </svg>
-                        <label className="block text-lg font-medium leading-6 text-white"> How to get API keys </label>
-                    </div>
-                    <div className="flex items-center">
-                        <label className="block text-lg font-normal leading-6 text-light-blue"> Follow this <Link key="userGuide" href="/userguide"><a className="font-lighter text-darkblue underline hover:cursor-pointer">Step by step guide</a></Link> to generate your API keys. </label>
-                    </div>
+            <div className="w-full px-8 py-4 space-y-5 grid grid-flow-row text-pink-primary-300">
+                <div className="flex items-center">
+                    <h3 className="block text-lg font-medium leading-6 text-white">
+                        Please enter
+                        {ExchangeSettings.KnownSettings[exchange?.id]?.ExchangeApiKeyPageUrl ? <a href={ExchangeSettings.KnownSettings[exchange.id]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.name}</a> : <span className='mx-1'>{exchange?.name}</span>}
+                        API keys
+                    </h3>
                 </div>
-                <div className='mt-10'>
-                    <label htmlFor="apiKey" className="block font-normal text-light-blue text-sm">
+                <div className=''>
+                    <label htmlFor="apiKey" className="block font-normal text-sm">
                         API Key
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
@@ -119,11 +88,11 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
                             name="apiKey"
                             id="apiKey"
                             onChange={handleKeyChange}
-                            className="h-12 pb-1 pt-0 text-white focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 block
+                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
-                    <label htmlFor="withdrawlAmount" className="block font-normal text-light-blue text-sm">
+                    <label htmlFor="withdrawlAmount" className="block font-normal text-sm">
                         API Secret
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
@@ -135,14 +104,14 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
                             name="apiSecret"
                             id="apiSecret"
                             onChange={handleSecretChange}
-                            className="h-12 pb-1 pt-0 text-white focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 block
+                        placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
                     {
                         exchange?.has_keyphrase &&
                         <>
-                            <label htmlFor="apiKey" className="block font-normal text-light-blue text-sm">
+                            <label htmlFor="apiKey" className="block font-normal text-sm">
                                 {exchange?.keyphrase_display_name}
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
@@ -154,12 +123,47 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onClose }) => {
                                     name="apiKey"
                                     onChange={handleKeyphraseChange}
                                     id="apiKey"
-                                    className="h-12 pb-1 pt-0 text-white focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                            placeholder:text-light-blue placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 border-gray-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                    className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 block
+                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                             </div>
                         </>
                     }
+                    {
+                        ExchangeSettings.KnownSettings[exchange?.id]?.AuthorizationNote &&
+                        <div className='flex-col w-full rounded-md bg-pink-700 shadow-lg p-2 mb-5'>
+                            <div className='flex items-center'>
+                                <div className='mr-2 p-2 rounded-lg bg-pink-600'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <p className='font-normal text-sm text-white'>
+                                    {ExchangeSettings.KnownSettings[exchange?.id]?.AuthorizationNote}
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    {
+                        userGuideURL && <div className="flex items-center">
+                            <span className="block text-base text-white font-normal leading-6"> Read about
+                                <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to get API Keys</span>&nbsp;</>} moreClassNames="-mt-11">
+                                    <DocIframe onConfirm={handleCloseSlideover} URl={userGuideURL} />
+                                </SlideOver>
+                            </span>
+                        </div>
+                    }
+
+                </div>
+                <div className='p-4 bg-darkblue-500 text-white rounded-lg border border-darkblue-100'>
+                    <div className="flex items-center">
+                        <InformationCircleIcon className='h-5 w-5 text-pink-primary-600 mr-3' />
+                        <label className="block text-sm md:text-base font-medium leading-6">We're requesting <span className='font-bold'>Read-Only</span> API Keys</label>
+                    </div>
+                    <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8">
+                        <li>They <strong>DON'T</strong> allow us to place a trade or initiate a withdrawal</li>
+                        <li>We use it to get your withdrawal history and match with our records</li>
+                    </ul>
                 </div>
                 <div className="text-white text-base mt-3">
                     <SubmitButton isDisabled={!dataIsValid || loading} icon="" isSubmitting={loading} onClick={connect}>

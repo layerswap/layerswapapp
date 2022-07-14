@@ -1,8 +1,8 @@
 import BN from 'bn.js';
 
-const ZERO = toBN(0);
 const TWO = toBN(2);
 const MASK_251 = TWO.pow(toBN(251));
+const MASK_221 = TWO.pow(toBN(221));
 
 type BigNumberish = string | number | BN;
 
@@ -11,7 +11,7 @@ export function validateAndParseAddress(address: string): boolean {
         return false;
     }
 
-    if (!assertInRange(address, ZERO, MASK_251)) {
+    if (!assertInRange(address, MASK_221, MASK_251)) {
         return false;
     }
 

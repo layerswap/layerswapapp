@@ -13,7 +13,6 @@ type Props = {
 
 const ConnectDeversifi: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string>(null);
 
     const connectButtonIcon = <LinkIcon className='h-5 w-5'></LinkIcon>
     
@@ -46,7 +45,7 @@ const ConnectDeversifi: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                             <div className="hidden sm:block ">
                                 <button
                                     type="button"
-                                    className="rounded-md text-pink-primary-300 focus:ring-2 hover:text-light-blue"
+                                    className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
                                     onClick={onClose}
                                 >
                                     <span className="sr-only">Close</span>
@@ -90,21 +89,6 @@ const ConnectDeversifi: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                                         </p>
                                     </h3>
 
-                                    {
-                                        error &&
-                                        <div className="bg-[#3d1341] border-l-4 border-[#f7008e] p-4 mb-5 flex items-center">
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0">
-                                                    <ExclamationIcon className="h-6 w-6 text-yellow-400" aria-hidden="true" />
-                                                </div>
-                                                <div className="ml-3">
-                                                    <p className="text-xl text-light-blue font-normal">
-                                                        {error}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
                                     <div className="mt-3 sm:mt-6 text-white text-sm">
                                         <SubmitButton icon={connectButtonIcon} isDisabled={loading} isSubmitting={loading} onClick={() =>  window.open('https://app.deversifi.com/', '_blank')}>
                                             Connect

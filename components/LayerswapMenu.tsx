@@ -31,7 +31,7 @@ export default function () {
     const handleFeedbackSent = useCallback(()=>{
         slideoverRef.current.close()
     },[slideoverRef])
-
+ 
     return <>
         {
             authData?.access_token &&
@@ -39,11 +39,11 @@ export default function () {
                 <SendFeedback onSend={handleFeedbackSent}/>
             </SlideOver>
         }
-        <span className="justify-self-end place-self-end text-pink-primary-300 cursor-pointer relative ">
+        <span className=" text-pink-primary-300 cursor-pointer relative ">
             {
                 <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
                     <div>
-                        <Menu.Button className="inline-flex justify-center w-full rounded-md shadow-sm mt-2 hover:bg-darkblue-600 text-sm font-medium">
+                        <Menu.Button className="inline-flex justify-center w-full rounded-md shadow-sm mt-2  text-sm font-medium">
                             <MenuIcon className='h-7 w-7 text-pink-primary-300 cursor-pointer' />
                         </Menu.Button>
                     </div>
@@ -57,10 +57,10 @@ export default function () {
                             leaveFrom="transform opacity-100 scale-100"
                             leaveTo="transform opacity-0 scale-95"
                         >
-                            <Menu.Items className=" font-bold border border-ouline-blue origin-top-right absolute right-0 mt-2 min-w-56 rounded-md shadow-lg bg-darkblue-600 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <Menu.Items className=" font-bold border border-darkblue-200 origin-top-right absolute right-0 mt-2 min-w-56 rounded-md shadow-lg bg-darkBlue ring-1 ring-black ring-opacity-5 focus:outline-none">
                                 <div className="relative z-30 py-1">
                                     {
-                                        authData?.access_token ? <div className='font-light block w-full text-left px-4 py-2 text-sm text-light-blue'>
+                                        authData?.access_token ? <div className='font-light block w-full text-left px-4 py-2 text-sm text-pink-primary-300'>
                                             {email}
                                         </div>
                                             :
@@ -70,7 +70,7 @@ export default function () {
                                                         <a
                                                             className={classNames(
                                                                 active ? 'bg-darkblue-300' : '',
-                                                                'block px-4 py-2 text-sm text-light-blue whitespace-nowrap'
+                                                                'block px-4 py-2 text-sm text-pink-primary-300 whitespace-nowrap'
                                                             )}
                                                         >
                                                             Login
@@ -88,7 +88,7 @@ export default function () {
                                                         <a
                                                             className={classNames(
                                                                 active ? 'bg-darkblue-300' : '',
-                                                                'block px-4 py-2 text-sm text-light-blue hover:bg-darkblue-300 whitespace-nowrap'
+                                                                'block px-4 py-2 text-sm text-pink-primary-300 hover:bg-darkblue-300 whitespace-nowrap'
                                                             )}
                                                         >
                                                             Swap history
@@ -103,7 +103,7 @@ export default function () {
                                                             href="/exchanges"
                                                             className={classNames(
                                                                 active ? 'bg-darkblue-300' : '',
-                                                                'block px-4 py-2 text-sm text-light-blue hover:bg-darkblue-300 whitespace-nowrap'
+                                                                'block px-4 py-2 text-sm text-pink-primary-300 hover:bg-darkblue-300 whitespace-nowrap'
                                                             )}
                                                         >
                                                             CEX Accounts
@@ -118,7 +118,7 @@ export default function () {
                                                         type="button"
                                                         className={classNames(
                                                             active ? 'bg-darkblue-300' : '',
-                                                            'font-bold block w-full text-left px-4 py-2 text-sm text-light-blue whitespace-nowrap'
+                                                            'font-bold block w-full text-left px-4 py-2 text-sm text-pink-primary-300 whitespace-nowrap'
                                                         )}
                                                     >
                                                         Send Feedback
@@ -134,7 +134,7 @@ export default function () {
                                                             onClick={handleLogout}
                                                             className={classNames(
                                                                 active ? 'bg-darkblue-300' : '',
-                                                                'font-bold block w-full text-left px-4 py-2 text-sm text-light-blue whitespace-nowrap'
+                                                                'font-bold block w-full text-left px-4 py-2 text-sm text-pink-primary-300 whitespace-nowrap'
                                                             )}
                                                         >
                                                             Sign out

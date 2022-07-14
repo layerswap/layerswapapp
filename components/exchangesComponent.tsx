@@ -1,16 +1,13 @@
 import { useRouter } from "next/router"
 import { Fragment, useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { Swap } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { CheckIcon, ClockIcon } from '@heroicons/react/solid';
-import { ChevronRightIcon, ExclamationCircleIcon, ExternalLinkIcon, RefreshIcon, SearchIcon } from '@heroicons/react/outline';
+import { CheckIcon } from '@heroicons/react/solid';
+import { ExclamationCircleIcon, SearchIcon, XIcon } from '@heroicons/react/outline';
 import { ScissorsIcon, LinkIcon } from '@heroicons/react/solid';
-import { SwapStatus } from "../Models/SwapStatus"
 import { Combobox, Dialog, Transition } from "@headlessui/react"
-import SwapDetails from "./swapDetailsComponent"
 import { useSettingsState } from "../context/settings"
-import { BransferApiClient, UserExchangesResponse } from "../lib/bransferApiClients"
+import { BransferApiClient } from "../lib/bransferApiClients"
 import Image from 'next/image'
 import { Exchange } from "../Models/Exchange"
 import ConnectOauthExchange from "./connectOauthExchange"
@@ -18,6 +15,9 @@ import ConnectApiKeyExchange from "./connectApiKeyExchange"
 import LayerswapMenu from "./LayerswapMenu"
 import Link from "next/link"
 import LayerSwapLogo from "./icons/layerSwapLogo"
+import SubmitButton from "./buttons/submitButton";
+import { useAuthState } from "../context/auth";
+import toast from "react-hot-toast";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -32,11 +32,12 @@ function UserExchanges() {
     const { exchanges } = useSettingsState()
     const [userExchanges, setUserExchanges] = useState<UserExchange[]>()
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(false)
     const router = useRouter();
     const [query, setQuery] = useState('')
     const [exchangeToConnect, setExchangeToConnect] = useState<Exchange>()
     const [exchangeLoading, setExchangeLoading] = useState<Exchange>()
+    const { email } = useAuthState()
+
 
     useEffect(() => {
 
@@ -54,7 +55,7 @@ function UserExchanges() {
                 await getAndMapExchanges(authData)
             }
             catch (e) {
-                setError(e.message)
+                toast.error(e.message)
             }
             finally {
                 setLoading(false)
@@ -65,8 +66,7 @@ function UserExchanges() {
     const getAndMapExchanges = useCallback(async (authData) => {
         const bransferApiClient = new BransferApiClient()
         const userExchanges = await bransferApiClient.GetExchangeAccounts(authData.access_token)
-
-        const mappedExchanges = exchanges.map(e => {
+        const mappedExchanges = exchanges.filter(x => x.authorization_flow != 'none' && x.is_enabled).map(e => {
             return {
                 ...e,
                 is_connected: userExchanges.data?.some(ue => ue.exchange === e.internal_name && ue.is_enabled)
@@ -107,7 +107,7 @@ function UserExchanges() {
             await getAndMapExchanges(authData)
         }
         catch (e) {
-            setError(e.message)
+            toast.error(e.message)
         }
         finally {
             setExchangeLoading(undefined)
@@ -133,15 +133,21 @@ function UserExchanges() {
             await getAndMapExchanges(authData)
         }
         catch (e) {
-            setError(e.message)
+            toast.error(e.message)
         }
         finally {
             setLoading(false)
         }
     }
+
+
     return (
-        <div className={`bg-darkBlue text-white min-w-3xl shadow-card rounded-lg w-full overflow-hidden relative `}>
-            <div className="relative flex items-center justify-between place-content-end px-14 z-20 mt-3" >
+        <div className='bg-darkBlue px-8 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative min-h'>
+            <div className="mt-3 flex items-center justify-between z-20" >
+                <div className="hidden md:block">
+                    <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
+                    <span className="text-gray-500 font-medium">{email}</span>
+                </div>
                 <div className='mx-auto px-4 overflow-hidden md:hidden'>
                     <div className="flex justify-center">
                         <Link href="/" key="Home" shallow={true}>
@@ -151,11 +157,10 @@ function UserExchanges() {
                         </Link>
                     </div>
                 </div>
-                <div></div>
                 <LayerswapMenu />
             </div>
-            <div className="px-6 md:px-12 relative inset-0 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
-                <div className="relative min-h-full items-center justify-center p-4 text-center">
+            <div className="relative mb-6 mt-10 inset-0 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                <div className="relative min-h-full items-center justify-center text-center">
                     <Combobox
                         as="div"
                         className="transform  transition-all "
@@ -164,92 +169,71 @@ function UserExchanges() {
                     >
                         <div className="relative mb-5">
                             <SearchIcon
-                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-light-blue"
+                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-pink-primary-300"
                                 aria-hidden="true"
                             />
                             <Combobox.Input
-                                className="h-12 w-full bg-darkblue-500 rounded-lg border-ouline-blue pl-11 pr-4 text-light-blue placeholder-light-blue focus:ring-0 sm:text-sm"
+                                className="h-12 w-full bg-darkblue-500 rounded-lg border-ouline-blue pl-11 pr-4 text-pink-primary-300 placeholder-pink-primary-300 focus:ring-0 sm:text-sm"
                                 placeholder="Search..."
                                 onChange={handleQueryInputChange}
                                 value={query}
                             />
                         </div>
-                        {filteredItems?.length > 0 && (
-                            <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2">
-                                {filteredItems.map((item) => (
-                                    <Combobox.Option
-                                        key={item.id}
-                                        value={item}
-                                        disabled={!item.is_enabled || !item.is_enabled}
-                                        className={`flex text-left bg-darkblue-500 ${!item.is_enabled ? 'opacity-35 cursor-not-allowed' : ''}  select-none rounded-lg p-3`}
-                                        onClick={() => { }}
-                                    >
-                                        {({ active }) => (
-                                            <>
-                                                <div className="flex items-center">
-                                                    <div className="flex-shrink-0 h-8 w-8 relative">
-                                                        <Image
-                                                            src={item.logo_url}
-                                                            alt="Exchange Logo"
-                                                            height="60"
-                                                            width="60"
-                                                            layout="responsive"
-                                                            className="rounded-md object-contain"
-                                                        />
-                                                    </div>
-                                                </div>
+                        <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {
+                                loading ? <Sceleton />
+                                    :
+                                    <>
+                                        {filteredItems?.length > 0 && (
+                                            filteredItems.map((item) => (
+                                                <Combobox.Option
+                                                    key={item.id}
+                                                    value={item}
+                                                    disabled={!item.is_enabled || !item.is_enabled}
+                                                    className={`bg-darkblue-500 ${!item.is_enabled ? 'opacity-35 cursor-not-allowed' : ''}  select-none rounded-lg p-3`}
+                                                    onClick={() => { }}
+                                                >
+                                                    {({ active }) => (
+                                                        <div className="py-1 px-2 grid grid-cols-3 grid-rows-1 gap-3">
+                                                            <div className="flex items-center col-span-2 space-x-3">
+                                                                <Image
+                                                                    src={item.logo_url}
+                                                                    alt="Exchange Logo"
+                                                                    height="30"
+                                                                    width="30"
+                                                                    layout="fixed"
+                                                                    className="rounded-md h-8 w-8 object-contain"
+                                                                />
 
-                                                <div className="ml-4 flex-auto">
-                                                    <div className='text-lg font-medium'>
-                                                        {item.name}
-                                                        {(!item.authorization_flow || item.authorization_flow == "none") && <div className="text-sm text-emerald-600">No action required</div>}
-                                                        {
-                                                            item.authorization_flow && item.authorization_flow !== "none" && item.is_enabled &&
-                                                            <>
-                                                                {item.is_connected ? <div className="text-sm text-emerald-600">Connected</div> : <div className="text-sm text-slate-600">Not beeing used</div>}
-                                                            </>
-                                                        }
-                                                        {!item.is_enabled && <div className="text-sm text-yellow-600">Currently not available</div>}
-
-                                                    </div>
-                                                </div>
-                                                <div className="p-4 rounded-md hover:bg-darkblue-300 cursor-pointer">
-                                                    {
-                                                        (!item.authorization_flow || item.authorization_flow == "none") &&
-                                                        <CheckIcon className="h-8 w-8 fill-green-400" />
-                                                    }
-                                                    {
-                                                        item.authorization_flow && item.authorization_flow !== "none" && item.is_enabled && exchangeLoading?.id !== item.id &&
-                                                        <>
-                                                            {
-                                                                item.is_connected ?
-                                                                    <span onClick={() => handleDisconnectExchange(item)}><ScissorsIcon className="h-8 w-8 fill-red-400" /></span>
-                                                                    : <span onClick={() => handleConnectExchange(item)}><LinkIcon className="h-8 w-8 fill-green-400" /></span>
-                                                            }
-                                                        </>
-                                                    }
-                                                    {
-                                                        exchangeLoading?.id === item.id &&
-                                                        <span className="flex items-center pl-3">
-                                                            <SpinIcon className="animate-spin h-5 w-5" />
-                                                        </span>
-                                                    }
-
-                                                </div>
-
-                                            </>
+                                                                <span className="text-base font-medium">{item.name}</span>
+                                                            </div>
+                                                            <div className="text-xs">
+                                                                {
+                                                                    item.authorization_flow && item.authorization_flow !== "none" && item.is_enabled && exchangeLoading?.id !== item.id &&
+                                                                    <>
+                                                                        {
+                                                                            item.is_connected ?
+                                                                                <SubmitButton onClick={() => handleDisconnectExchange(item)} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Disconnect</SubmitButton>
+                                                                                : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Connect</SubmitButton>
+                                                                        }
+                                                                    </>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </Combobox.Option>
+                                            ))
                                         )}
-                                    </Combobox.Option>
-                                ))}
-                            </Combobox.Options>
-                        )}
+                                    </>
+                            }
+                        </Combobox.Options>
 
                         {query !== '' && filteredItems?.length === 0 && (
                             <div className="py-14 px-6 text-center text-sm sm:px-14">
                                 <ExclamationCircleIcon
                                     type="outline"
                                     name="exclamation-circle"
-                                    className="mx-auto h-6 w-6 text-light-blue"
+                                    className="mx-auto h-6 w-6 text-pink-primary-300"
                                 />
                                 <p className="mt-4 font-semibold text-gray-900">No results found</p>
                                 <p className="mt-2 text-gray-500">No components found for this search term. Please try again.</p>
@@ -259,7 +243,7 @@ function UserExchanges() {
                 </div>
             </div>
             <Transition appear show={!!exchangeToConnect} as={Fragment}>
-                <Dialog as="div" className="relative z-10" onClose={handleClose}>
+                <Dialog as="div" className="relative z-40" onClose={handleClose}>
                     <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
                     <Transition.Child
                         as={Fragment}
@@ -274,7 +258,7 @@ function UserExchanges() {
                     </Transition.Child>
 
                     <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                        <div className="flex min-h-full items-center justify-center p-4">
                             <Transition.Child
                                 as={Fragment}
                                 enter="ease-out duration-300"
@@ -284,15 +268,34 @@ function UserExchanges() {
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-darkBlue shadow-card text-center align-middle shadow-xl transition-all">
-                                    {
-                                        exchangeToConnect?.authorization_flow === "o_auth2" &&
-                                        <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
-                                    }
-                                    {
-                                        exchangeToConnect?.authorization_flow === "api_credentials" &&
-                                        <ConnectApiKeyExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
-                                    }
+                                <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-md bg-darkBlue shadow-card align-middle shadow-xl transition-all">
+                                    <div className="py-6 md:py-8">
+                                        <div className="flex mb-6 justify-between  px-6 md:px-8">
+                                            <div className='text-lg font-semibold text-white'>Connect {exchangeToConnect?.name}</div>
+                                            <div className='relative grid grid-cols-1 gap-4 place-content-end z-40'>
+                                                <span className="justify-self-end text-pink-primary-300 cursor-pointer">
+                                                    <div className="">
+                                                        <button
+                                                            type="button"
+                                                            className="rounded-md text-darkblue-200  hover:text-pink-primary-300"
+                                                            onClick={handleClose}
+                                                        >
+                                                            <span className="sr-only">Close</span>
+                                                            <XIcon className="h-6 w-6" aria-hidden="true" />
+                                                        </button>
+                                                    </div>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {
+                                            exchangeToConnect?.authorization_flow === "o_auth2" &&
+                                            <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
+                                        }
+                                        {
+                                            exchangeToConnect?.authorization_flow === "api_credentials" &&
+                                            <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} />
+                                        }
+                                    </div>
                                 </Dialog.Panel>
                             </Transition.Child>
                         </div>
@@ -301,6 +304,27 @@ function UserExchanges() {
             </Transition>
         </div>
     )
+}
+
+const Sceleton = () => {
+
+    return <>
+        {[...Array(6)]?.map((item, index) =>
+            <div className="animate-pulse bg-darkblue-500 select-none rounded-lg p-3">
+                <div className="flex justify-between px-2">
+                    <div className="flex space-x-2">
+                        <div className="rounded-full bg-slate-700 h-8 w-8"></div>
+                        <div className="grid grid-cols-4">
+                            <div className="h-2 w-20 bg-slate-700 rounded col-span-3"></div>
+                        </div>
+                    </div>
+
+                    <div className="rounded bg-slate-700 h-8 w-20 place-self-end py-3 px-4"></div>
+                </div>
+            </div>
+        )}
+    </>
+
 }
 
 

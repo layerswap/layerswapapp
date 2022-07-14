@@ -1,11 +1,9 @@
-import axios from "axios";
-import { Exchange } from "../Models/Exchange";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { SwapStatus } from "../Models/SwapStatus";
 import authInterceptor from "./axiosInterceptor"
 
 export default class LayerSwapApiClient {
-    static apiBaseEndpoint: string = "https://layerswap-core-functions-6.azurewebsites.net/api"; // "http://localhost:7071/api";
+    static apiBaseEndpoint: string = "https://api2.layerswap.io";
 
     apiFetcher = (url: string) => authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + url).then(res => res.data);
 
@@ -19,7 +17,7 @@ export default class LayerSwapApiClient {
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
-    async getSwaps(page: number, token: string): Promise<Swap[]> {
+    async getSwaps(page: number, token: string): Promise<SwapDetailsResponse[]> {
         return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/swaps?page=${page}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
@@ -39,26 +37,11 @@ export type CreateSwapParams = {
     destination_address: string
 }
 
-export type Swap = {
-    "id": string,
-    "amount": number,
-    "status": SwapStatus,
-    "type": string,
-    "destination_address": string,
-    "external_payment_id": string,
-    "external_payout_id": string,
-    "message": string,
-    "transaction_id": string,
-    "created_date": Date,
-    "currency": string,
-    "network": string,
-    "exchange": string,
-    "offramp_info": string
-}
 
 export type SwapDetailsResponse = {
     id: string,
     amount: number,
+    fee: number,
     status: SwapStatus,
     exchange: string,
     type: string,
@@ -70,7 +53,9 @@ export type SwapDetailsResponse = {
     transaction_id: string,
     created_date: Date,
     currency: string,
+    currency_id: string,
     network: string,
+    network_id: string,
     offramp_info: string
 }
 
@@ -95,16 +80,12 @@ export type Payment = {
         network_display_name: string,
         withdrawal_fee: number,
         withdrawal_amount: number,
-        total_withdrawal_amount: number
+        total_withdrawal_amount: number,
+        note: string,
+        require_note: boolean
     },
     external_flow_context: {
         payment_url: string;
-    },
-    note_flow_context: {
-        address: string,
-        memo: string,
-        has_memo: string,
-        note: string,
     },
     sequence_number: string,
 }

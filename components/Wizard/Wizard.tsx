@@ -34,11 +34,8 @@ const Wizard: FC = () => {
       return () => window.removeEventListener("resize", handleResize);
    }, []);
 
-   console.log("currentStep", currentStep)
-   console.log("wizard currentStep", wizard[currentStep])
-
    return <>
-      <div className={`bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
+      <div className={`mb-10 pb-3 bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-ouline-blue">
                <div style={{ width: `${wizard[currentStep].positionPercent}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-pink-primary"></div>
@@ -78,7 +75,7 @@ const Wizard: FC = () => {
                            as="div"
                         >
                            <div
-                              style={{ width: `${wrapperWidth}px`, minHeight: '480px' }}>
+                              style={{ width: `${wrapperWidth}px`, minHeight: '504px', height: '100%' }}>
                               <Content current={step === currentStep} />
                            </div>
                         </Transition>

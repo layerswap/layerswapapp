@@ -32,6 +32,8 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
     useEffect(() => {
         if (value)
             setSelectedItem(value)
+        else
+            setSelectedItem(undefined)
     }, [value])
 
     function closeModal() {
@@ -106,13 +108,13 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                 leaveFrom="translate-y-0"
                 leaveTo="translate-y-full">
                 <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkBlue'>
-                <div className='relative z-40 overflow-hidden bg-darkBlue p-6 pt-0'>
+                    <div className='relative z-40 overflow-hidden bg-darkBlue p-6 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
                             <span className="justify-self-end text-pink-primary-300 cursor-pointer">
                                 <div className="block ">
                                     <button
                                         type="button"
-                                        className="rounded-md text-pink-primary-300 focus:ring-2 hover:text-light-blue"
+                                        className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
                                         onClick={closeModal}
                                     >
                                         <span className="sr-only">Close</span>
@@ -133,7 +135,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                             <div className="relative inset-0" ></div>
                         </Transition.Child>
 
-                        <div className="relative inset-0 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                        <div className="relative inset-0 flex flex-col">
                             <div className="relative min-h-full items-center justify-center p-4 pt-0 text-center">
                                 <Transition.Child
                                     as={Fragment}
@@ -152,18 +154,18 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                     >
                                         <div className="relative mb-5">
                                             <SearchIcon
-                                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-light-blue"
+                                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-pink-primary-300"
                                                 aria-hidden="true"
                                             />
                                             <Combobox.Input
-                                                className="h-12 w-full bg-darkblue-500 rounded-lg border-ouline-blue pl-11 pr-4 text-light-blue placeholder-light-blue focus:ring-0 sm:text-sm"
+                                                className="h-12 w-full bg-darkblue-500 rounded-lg border-ouline-blue pl-11 pr-4 text-pink-primary-300 placeholder-pink-primary-300 focus:ring-0 sm:text-sm"
                                                 placeholder="Search..."
                                                 onChange={handleQueryInputChange}
                                                 value={query}
                                             />
                                         </div>
                                         {filteredItems.length > 0 && (
-                                            <Combobox.Options static className="border-0 max-h-96  grid grid-cols-1 md:grid-cols-2 gap-2">
+                                            <Combobox.Options static className="border-0 max-h-96  grid grid-cols-1 md:grid-cols-2 gap-2  overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
                                                 {filteredItems.map((item) => (
                                                     <Combobox.Option
                                                         key={item.id}
@@ -210,7 +212,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 <ExclamationCircleIcon
                                                     type="outline"
                                                     name="exclamation-circle"
-                                                    className="mx-auto h-6 w-6 text-light-blue"
+                                                    className="mx-auto h-6 w-6 text-pink-primary-300"
                                                 />
                                                 <p className="mt-4 font-semibold text-gray-900">No results found</p>
                                                 <p className="mt-2 text-gray-500">No components found for this search term. Please try again.</p>
