@@ -1,11 +1,10 @@
-import { Dialog, Transition } from '@headlessui/react';
-import { ArrowCircleRightIcon, ArrowRightIcon, CheckIcon, ClipboardCopyIcon, DuplicateIcon, ExternalLinkIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
+import { Transition } from '@headlessui/react';
+import {  ArrowRightIcon, DuplicateIcon, ExternalLinkIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/outline';
-import Router, { useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import { FC, Fragment, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { useWizardState } from '../../../context/wizard';
 import { isValidAddress } from '../../../lib/etherAddressValidator';
 import { BaseStepProps, FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
