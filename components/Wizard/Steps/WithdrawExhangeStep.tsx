@@ -104,18 +104,6 @@ const WithdrawExchangeStep: FC = () => {
                     </h3>
                 </div>
                 {
-                    ExchangeSettings.KnownSettings[exchange_id]?.RequireSelectInternal &&
-                    <div className='mb-5'>
-                        <div className="flex items-center">
-                            <InformationCircleIcon className='w-6 h-6 mr-1 text-pink-primary-600' />
-                            <label className="block text-base font-medium leading-6"> Important </label>
-                        </div>
-                        <div className="flex items-center">
-                            <label className="block text-base font-normal leading-6">Make sure the 'Internal Transfer' checkbox is checked</label>
-                        </div>
-                    </div>
-                }
-                {
                     ExchangeSettings.KnownSettings[exchange_id]?.WithdrawalWarningMessage &&
                     <div className='flex-col w-full rounded-md bg-pink-700 shadow-lg p-2'>
                         <div className='flex items-center'>
@@ -130,7 +118,6 @@ const WithdrawExchangeStep: FC = () => {
                         </div>
                     </div>
                 }
-
                 <div className='mb-12'>
                     <label htmlFor="address" className="block font-normal text-sm">
                         Address
