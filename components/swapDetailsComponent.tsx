@@ -67,9 +67,9 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <span className="mr-2">{swap?.id?.substring(0, 5)}...{swap?.id?.substring(swap?.id?.length - 4, swap?.id?.length - 1)}</span>
                                     <Popover>
                                         <Popover.Button>
-                                            <button className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
+                                            <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
                                                 <DuplicateIcon className="h-4 w-4 text-gray-600" />
-                                            </button>
+                                            </div>
                                         </Popover.Button>
                                         <Popover.Panel>
                                             <div className="ml-1 text-white">
