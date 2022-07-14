@@ -11,7 +11,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
     const [loading, setLoading] = useState(false);
     const token = "5497557256:AAHOgmIi549pH8uiBvFsGmgH16kkBxSFtRA";
     const token2 = "5366632516:AAHRlo58yEgoAj2-qe2poJOR19ybOuGMBpQ"
-    const chat_id = "-677284250";
+    const chat_id = "-625244679";
     const { email } = useAuthState()
 
     const handleSendFeedback = useCallback(async () => {
