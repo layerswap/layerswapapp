@@ -122,10 +122,12 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject)
     return (
         <>
-            <div className="w-full px-8 py-6 pt-1 md:grid md:grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
-                <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
-                    Please confirm your swap
-                </h3>
+            <div className='flex flex-grow h-full'>
+                <div className="px-8 flex flex-col justify-between text-pink-primary-300">
+                    <div>
+                        <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
+                            Please confirm your swap
+                        </h3>
 
                 <div className="w-full grid grid-flow-row animate-fade-in">
                     <div className="rounded-md w-full grid grid-flow-row">
@@ -260,7 +262,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     </SubmitButton>
                 </div>
             </div>
-
             <Transition
                 appear
                 show={editingAddress}
@@ -350,9 +351,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     </span>
                 </div>
             </Transition>
-
-
-
         </>
     )
 }

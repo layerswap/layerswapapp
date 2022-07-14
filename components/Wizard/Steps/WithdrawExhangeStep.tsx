@@ -104,22 +104,10 @@ const WithdrawExchangeStep: FC = () => {
                     </h3>
                 </div>
                 {
-                    ExchangeSettings.KnownSettings[exchange_id]?.RequireSelectInternal &&
-                    <div className='mb-5'>
-                        <div className="flex items-center">
-                            <InformationCircleIcon className='w-6 h-6 mr-1 text-pink-primary-600' />
-                            <label className="block text-base font-medium leading-6"> Important </label>
-                        </div>
-                        <div className="flex items-center">
-                            <label className="block text-base font-normal leading-6">Make sure the 'Internal Transfer' checkbox is checked</label>
-                        </div>
-                    </div>
-                }
-                {
                     ExchangeSettings.KnownSettings[exchange_id]?.WithdrawalWarningMessage &&
-                    <div className='flex-col w-full rounded-md bg-red-700 shadow-lg p-2'>
+                    <div className='flex-col w-full rounded-md bg-pink-700 shadow-lg p-2'>
                         <div className='flex items-center'>
-                            <div className='mr-2 p-2 rounded-lg bg-red-600'>
+                            <div className='mr-2 p-2 rounded-lg bg-pink-600'>
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
@@ -130,7 +118,6 @@ const WithdrawExchangeStep: FC = () => {
                         </div>
                     </div>
                 }
-
                 <div className='mb-12'>
                     <label htmlFor="address" className="block font-normal text-sm">
                         Address
@@ -277,14 +264,14 @@ const WithdrawExchangeStep: FC = () => {
                                     </Popover>
                                 </div>
                             </div>
-                            <div className='flex-col w-full rounded-md bg-teal-700 shadow-lg p-2'>
+                            <div className='flex-col w-full rounded-md bg-yellow-400 shadow-lg p-2'>
                                 <div className='flex items-center'>
-                                    <div className='mr-2 p-2 rounded-lg bg-teal-600'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
+                                    <div className='mr-2 p-2 rounded-lg bg-yellow-500'>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="black" strokeWidth={2}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                         </svg>
                                     </div>
-                                    <p className='font-normal text-sm text-white'>
+                                    <p className='font-normal text-sm text-darkblue-600'>
                                         Please include the "Remarks" field - it identifies the transfer with your account and is required for a successful deposit.
                                     </p>
                                 </div>
@@ -299,13 +286,19 @@ const WithdrawExchangeStep: FC = () => {
                 </div>
                 {
                     transferDone ?
-                        <div className='flex place-content-center mb-16 md:mb-8'>
-                            <div className='relative'>
-                                <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
-                                <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
-                                <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-pink-primary-800 rounded-full'></div>
+                        <div>
+                            <div className='flex place-content-center mb-16 md:mb-8'>
+                                <div className='relative'>
+                                    <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
+                                    <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
+                                    <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-pink-primary-800 rounded-full'></div>
+                                </div>
+                            </div>
+                            <div className="flex text-center place-content-center mt-1 md:mt-1">
+                                <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Waiting for CEX transaction.</label>
                             </div>
                         </div>
+
                         :
                         <div className="text-white text-base">
                             <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConfirm} >

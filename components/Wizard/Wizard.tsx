@@ -78,7 +78,7 @@ const Wizard: FC = () => {
                            as="div"
                         >
                            <div
-                              style={{ width: `${wrapperWidth}px`, minHeight: '480px' }}>
+                              style={{ width: `${wrapperWidth}px`, minHeight: '504px', height: '100%' }}>
                               <Content current={step === currentStep} />
                            </div>
                         </Transition>

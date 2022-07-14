@@ -258,7 +258,7 @@ function UserExchanges() {
                     </Transition.Child>
 
                     <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                        <div className="flex min-h-full items-center justify-center p-4">
                             <Transition.Child
                                 as={Fragment}
                                 enter="ease-out duration-300"
@@ -268,9 +268,9 @@ function UserExchanges() {
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-md bg-darkBlue shadow-card text-center align-middle shadow-xl transition-all">
-                                    <div className="p-6 md:p-8">
-                                        <div className="flex mb-6 justify-between">
+                                <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-md bg-darkBlue shadow-card align-middle shadow-xl transition-all">
+                                    <div className="py-6 md:py-8">
+                                        <div className="flex mb-6 justify-between  px-6 md:px-8">
                                             <div className='text-lg font-semibold text-white'>Connect {exchangeToConnect?.name}</div>
                                             <div className='relative grid grid-cols-1 gap-4 place-content-end z-40'>
                                                 <span className="justify-self-end text-pink-primary-300 cursor-pointer">
@@ -293,7 +293,7 @@ function UserExchanges() {
                                         }
                                         {
                                             exchangeToConnect?.authorization_flow === "api_credentials" &&
-                                            <ConnectApiKeyExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
+                                            <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} />
                                         }
                                     </div>
                                 </Dialog.Panel>
@@ -314,7 +314,7 @@ const Sceleton = () => {
                 <div className="flex justify-between px-2">
                     <div className="flex space-x-2">
                         <div className="rounded-full bg-slate-700 h-8 w-8"></div>
-                        <div className="grid grid-cols-4 items-center">
+                        <div className="grid grid-cols-4">
                             <div className="h-2 w-20 bg-slate-700 rounded col-span-3"></div>
                         </div>
                     </div>
