@@ -79,8 +79,8 @@ const WithdrawIntExchangeStep: FC = () => {
                             placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
-                    <label htmlFor="withdrawlAmount" className="block font-normal text-pink-primary-300 text-sm">
-                        Withdrawl amount in LRC
+                    <label htmlFor="withdrawalAmount" className="block font-normal text-pink-primary-300 text-sm">
+                        Withdrawal amount in LRC
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                         <input
@@ -89,8 +89,8 @@ const WithdrawIntExchangeStep: FC = () => {
                             placeholder=""
                             autoCorrect="off"
                             type="number"
-                            name="withdrawlAmount"
-                            id="withdrawlAmount"
+                            name="withdrawalAmount"
+                            id="withdrawalAmount"
                             disabled={true}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
                             placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"

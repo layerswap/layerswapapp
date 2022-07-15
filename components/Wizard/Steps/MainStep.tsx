@@ -66,7 +66,7 @@ const CurrenciesField: FC = () => {
     const { currencies, exchanges } = useSettingsState();
 
     const currencyMenuItems: SelectMenuItem<Currency>[] = network ? currencies
-        .filter(x => x.network_id === network.baseObject.id)
+        .filter(x => x.network_id === network?.baseObject?.id && x?.exchanges?.some(e=>e.exchange_id === exchange?.baseObject?.id))
         .map(c => ({
             baseObject: c,
             id: c.id,
@@ -77,9 +77,9 @@ const CurrenciesField: FC = () => {
             isEnabled: c.is_enabled,
             isDefault: c.is_default,
         })).sort((x, y) => {
-            if (!y.isEnabled) {
+            if (!y.isEnabled || !y.isAvailable) {
                 y.order = 100;
-            } else if (!x.isEnabled) {
+            } else if (!x.isEnabled || !x.isAvailable) {
                 x.order = 100;
             };
             return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
@@ -375,7 +375,7 @@ export default function MainStep() {
 
     let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
     let isPartnerWallet = isPartnerAddress && availablePartners[addressSource]?.is_wallet;
-    
+
     let initialNetwork =
         availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
 
