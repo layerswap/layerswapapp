@@ -1,5 +1,5 @@
 import { Transition } from '@headlessui/react';
-import {  ArrowRightIcon, DuplicateIcon, ExternalLinkIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, DuplicateIcon, ExternalLinkIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 import { FC, Fragment, useCallback, useEffect, useState } from 'react'
@@ -180,33 +180,34 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                         </div>
                     </div>
                 </div>
-                <div className="mx-auto w-full rounded-lg my-5 font-normal">
+                <div className="mx-auto w-full rounded-lg mb-5 font-normal">
                     {
                         swapFormData?.exchange?.imgSrc &&
                         <div className="flex items-center">
-                            <div className="flex-shrink-0 h-11 w-11 rounded-full">
-                                <Image
-                                    src={swapFormData?.network?.imgSrc}
-                                    alt="Exchange Logo"
-                                    height="40"
-                                    width="40"
-                                    loading="eager"
-                                    priority
-                                    layout="responsive"
-                                    className="object-contain rounded-full overflow-hidden "
-                                />
-                            </div>
                             <div className='text-w ml-2'>
-                                <div className='flex items-center'>
-                                    <p className='text-base font-medium'> {`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</p>
-                                    <a target='_blank' href={swapFormData?.network?.baseObject.account_explorer_template}><ExternalLinkIcon className='inline-block h-5 w-5 ml-2 cursor-pointer text-pink-primary-300 hover:text-white' /></a>
-                                </div>
+                                <span className="flex">
+                                    <div className="flex items-center">
+                                        <div className="flex-shrink-0 h-5 w-5 mr-1 relative">
+                                            <Image
+                                                src={swapFormData?.network?.imgSrc}
+                                                alt="Exchange Logo"
+                                                height="60"
+                                                width="60"
+                                                layout="responsive"
+                                                className="rounded-md object-contain"
+                                            />
+                                        </div>
+                                        <div className='flex items-center'>
+                                            <p className='text-base font-medium'> {`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</p>
+                                            <a target='_blank' href={swapFormData?.network?.baseObject.account_explorer_template}><ExternalLinkIcon className='inline-block h-5 w-5 ml-2 cursor-pointer text-pink-primary-300 hover:text-white' /></a>
+                                        </div>
+                                    </div>
+                                </span>
                                 <div className='hidden md:block items-center'>
                                     <p className='text-sm font-normal md:inline-block'>{swapFormData?.destination_address}</p>
                                     <DuplicateIcon onClick={() => copyTextToClipboard(swapFormData?.destination_address)} className='inline-block h-4 w-4 ml-2 cursor-pointer text-pink-primary-300 hover:text-white' />
                                 </div>
                             </div>
-
                         </div>
                     }
                     <div className='flex mt-4 justify-between'>
