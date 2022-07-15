@@ -92,7 +92,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
                          placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                     </div>
-                    <label htmlFor="withdrawlAmount" className="block font-normal text-sm">
+                    <label htmlFor="apiSecret" className="block font-normal text-sm">
                         API Secret
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
