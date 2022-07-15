@@ -11,6 +11,7 @@ import { NavRadioOption } from '../components/navRadio'
 import { SettingsProvider } from '../context/settings'
 import { QueryProvider } from '../context/query'
 import { AccountProvider } from '../context/account'
+import KnownIds from '../lib/knownIds'
 
 
 const swapOptions: NavRadioOption[] = [
@@ -26,7 +27,7 @@ export default function Home({ data, query, isOfframpEnabled }: InferGetServerSi
         <div className='flex flex-col space-y-5'>
           <SettingsProvider data={data}>
             <QueryProvider query={query}>
-                <Swap />
+              <Swap />
             </QueryProvider>
           </SettingsProvider>
         </div>
@@ -45,14 +46,9 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
-  if (!process.env.IS_TESTING) {
-    data.networks.forEach((element) => {
-      if (!element.is_test_net) networks.push(element);
-    });
-  }
-  else {
-    networks = data.networks;
-  }
+  data.networks.forEach((element) => {
+    if (!element.is_test_net || element.id.toLowerCase() == KnownIds.Networks.RhinofiMainnetId) networks.push(element);
+  });
 
   data.networks = networks;
   let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";

@@ -178,7 +178,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             name: n.name,
             order: n.order,
             imgSrc: n.logo_url,
-            isAvailable: !lockNetwork && !n.is_test_net,
+            isAvailable: !lockNetwork,
             isEnabled: n.is_enabled && currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
             isDefault: n.is_default
         })).sort((x, y) => {
