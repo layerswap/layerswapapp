@@ -66,7 +66,7 @@ const CurrenciesField: FC = () => {
     const { currencies, exchanges } = useSettingsState();
 
     const currencyMenuItems: SelectMenuItem<Currency>[] = network ? currencies
-        .filter(x => x.network_id === network?.baseObject?.id && x?.exchanges?.some(e=>e.exchange_id === exchange?.baseObject?.id))
+        .filter(x => x.network_id === network?.baseObject?.id && x?.exchanges?.some(e => e.exchange_id === exchange?.baseObject?.id))
         .map(c => ({
             baseObject: c,
             id: c.id,
@@ -121,7 +121,7 @@ const CurrenciesField: FC = () => {
     }, [network, setFieldValue, exchange, currencies, exchanges])
 
     return (<>
-        <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} />
+        <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />
     </>)
 };
 
