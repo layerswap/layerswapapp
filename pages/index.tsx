@@ -47,7 +47,7 @@ export async function getServerSideProps(context) {
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
   data.networks.forEach((element) => {
-    if (!element.is_test_net || element.id.toLowerCase() == KnownIds.Networks.RhinofiMainnetId) networks.push(element);
+    if (!element.is_test_net || element.id.toLowerCase() == KnownIds.Networks.StarkNetGoerliId) networks.push(element);
   });
 
   data.networks = networks;
