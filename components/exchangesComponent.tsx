@@ -37,7 +37,7 @@ function UserExchanges() {
     const [exchangeToConnect, setExchangeToConnect] = useState<Exchange>()
     const [exchangeLoading, setExchangeLoading] = useState<Exchange>()
     const { email } = useAuthState()
-
+    const [exchangeToDisconnect, setExchangeToDisconnect] = useState<Exchange>()
 
     useEffect(() => {
 
@@ -72,7 +72,7 @@ function UserExchanges() {
                 is_connected: userExchanges.data?.some(ue => ue.exchange === e.internal_name && ue.is_enabled)
             }
         })
-        mappedExchanges.sort((a, b) => (+b.is_enabled) - (+a.is_enabled) || (+b.is_connected) - (+a.is_connected))
+        mappedExchanges.sort((a, b) => (+a.order) - (+b.order))
 
         setUserExchanges(mappedExchanges)
     }, [exchanges])
@@ -115,7 +115,8 @@ function UserExchanges() {
     }
 
     const handleClose = () => {
-        setExchangeToConnect(undefined)
+        setExchangeToConnect(undefined);
+        setExchangeToDisconnect(undefined)
     }
 
     const handleExchangeConnected = async () => {
@@ -213,7 +214,7 @@ function UserExchanges() {
                                                                     <>
                                                                         {
                                                                             item.is_connected ?
-                                                                                <SubmitButton onClick={() => handleDisconnectExchange(item)} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Disconnect</SubmitButton>
+                                                                                <SubmitButton onClick={() => setExchangeToDisconnect(item)} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Disconnect</SubmitButton>
                                                                                 : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Connect</SubmitButton>
                                                                         }
                                                                     </>
@@ -242,7 +243,7 @@ function UserExchanges() {
                     </Combobox>
                 </div>
             </div>
-            <Transition appear show={!!exchangeToConnect} as={Fragment}>
+            <Transition appear show={!!exchangeToConnect || !!exchangeToDisconnect} as={Fragment}>
                 <Dialog as="div" className="relative z-40" onClose={handleClose}>
                     <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
                     <Transition.Child
@@ -268,10 +269,14 @@ function UserExchanges() {
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-md bg-darkBlue shadow-card align-middle shadow-xl transition-all">
+                                <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-md bg-darkBlue align-middle shadow-xl transition-all">
                                     <div className="py-6 md:py-8">
-                                        <div className="flex mb-6 justify-between  px-6 md:px-8">
-                                            <div className='text-lg font-semibold text-white'>Connect {exchangeToConnect?.name}</div>
+                                        <div className="flex mb-6 justify-between px-6 md:px-8">
+                                            <div className='text-lg font-semibold text-white'>
+                                                {
+                                                    exchangeToDisconnect? <>Are you sure?</> : <>Connect {exchangeToConnect?.name}</>
+                                                }
+                                            </div>
                                             <div className='relative grid grid-cols-1 gap-4 place-content-end z-40'>
                                                 <span className="justify-self-end text-pink-primary-300 cursor-pointer">
                                                     <div className="">
@@ -294,6 +299,13 @@ function UserExchanges() {
                                         {
                                             exchangeToConnect?.authorization_flow === "api_credentials" &&
                                             <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} />
+                                        }
+                                        {
+                                            exchangeToDisconnect &&
+                                            <div className="flex justify-items-center space-x-3 max-w-xs px-6 md:px-8">
+                                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose }} buttonStyle='outline' size="small" icon={""} >Yes</SubmitButton>
+                                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small' icon={""}>No</SubmitButton>
+                                            </div>
                                         }
                                     </div>
                                 </Dialog.Panel>

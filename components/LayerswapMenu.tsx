@@ -38,7 +38,7 @@ export default function () {
     return <>
         {
             authData?.access_token &&
-            <SlideOver ref={slideoverRef} moreClassNames="pt-5">
+            <SlideOver ref={slideoverRef}>
                 <SendFeedback onSend={handleFeedbackSent} />
             </SlideOver>
         }

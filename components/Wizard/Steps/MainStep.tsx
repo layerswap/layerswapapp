@@ -528,7 +528,7 @@ export default function MainStep() {
                                 <AmountAndFeeDetails amount={values?.amount} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
                             </div>
                         </div>
-                        <div className="mt-6">
+                        <div className="mt-6 mb-3">
                             <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors)}
                             </SwapButton>
