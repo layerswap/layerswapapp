@@ -1,9 +1,9 @@
-import axios from "axios";
+import AppSettings from "./AppSettings"
 import authInterceptor from "./axiosInterceptor"
 
 
 export class BransferApiClient {
-    static apiBaseEndpoint: string = "https://api2.bransfer.io";
+    static apiBaseEndpoint: string = AppSettings.BransferApiUri;
 
     async GetExchangeAccounts(token: string): Promise<UserExchangesResponse> {
         return await authInterceptor.get(BransferApiClient.apiBaseEndpoint + '/api/exchange_accounts')
