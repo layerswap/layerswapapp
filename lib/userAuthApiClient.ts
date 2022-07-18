@@ -1,10 +1,11 @@
 import axios from "axios";
 import { AuthGetCodeResponse, AuthConnectResponse } from "../Models/LayerSwapAuth";
+import AppSettings from "./AppSettings";
 
 
 export default class LayerSwapAuthApiClient {
-    static apiBaseEndpoint: string = "https://api2.bransfer.io";
-    static identityBaseEndpoint: string = "https://identity.bransfer.io";
+    static apiBaseEndpoint: string = AppSettings.BransferApiUri;;
+    static identityBaseEndpoint: string = AppSettings.IdentityApiUri;
 
     async getCodeAsync(email): Promise<AuthGetCodeResponse> {
         return await axios.post(LayerSwapAuthApiClient.apiBaseEndpoint + '/api/auth/get_code',
