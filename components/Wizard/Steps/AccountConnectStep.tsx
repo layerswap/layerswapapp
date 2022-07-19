@@ -60,7 +60,7 @@ const AccountConnectStep: FC = () => {
             if (!access_token)
                 goToStep("Email")
             const { sub } = parseJwt(access_token) || {}
-            if (addressSource) {
+            if (addressSource === "loopringIos" || addressSource === "loopringAndroid") {
                 sessionStorage.setItem("swap_data", JSON.stringify({ ...swapFormData, date: new Date() }))
                 window.location.href = oauth_redirect_url + sub;
             }
