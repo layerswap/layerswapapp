@@ -1,6 +1,5 @@
 import React from 'react';
 import { FC } from 'react'
-import IntroCard from './introCard';
 import MainStep from './Wizard/Steps/MainStep';
 import { SwapDataProvider } from '../context/swap';
 import { AuthProvider } from '../context/auth';
@@ -42,7 +41,6 @@ const Swap: FC = () => {
             </SwapDataProvider >
           </MenuProvider>
         </AuthProvider>
-        <IntroCard />
       </div >
     </div >
   )

@@ -79,7 +79,7 @@ const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, chi
                                     leaveTo="opacity-0 scale-95"
                                 >
 
-                                    <div className='pb-12 grid grid-flow-row min-h-[480px] text-pink-primary-300'>
+                                    <div className='grid grid-flow-row min-h-[480px] text-pink-primary-300'>
                                         {children}
                                     </div>
                                 </Transition.Child>

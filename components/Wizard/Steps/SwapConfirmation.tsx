@@ -251,7 +251,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     </div>
                 }
 
-                <div className="text-white text-sm mt-2">
+                <div className="text-white text-sm mt-2 mb-3">
                     {/* <div className="flex items-center mb-2">
                         <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
                     </div> */}
