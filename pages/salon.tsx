@@ -8,13 +8,12 @@ export default function Salon() {
 
     useEffect(() => {
         const data = JSON.parse(sessionStorage.getItem("swap_data"))
-        const five_minutes_before = new Date(new Date()).setMinutes(-5)
-        if ((data as any)?.date >= five_minutes_before) {
+        const five_minutes_before = new Date(new Date().setMinutes(-5))
+        if (new Date((data as any)?.date) >= five_minutes_before) {
             router.push({
                 pathname: "/",
                 query: { coinbase_redirect: true }
-            },
-                "/", { shallow: true })
+            })
         }
     }, [])
 
