@@ -269,10 +269,19 @@ export default function MainStep() {
     const { getUserExchanges } = useUserExchangeDataUpdate()
 
     useEffect(() => {
-        setTimeout(() => {
+        if (query.coinbase_redirect) {
+            const data: SwapFormValues = JSON.parse(sessionStorage.getItem("swap_data"))
+            const five_minutes_before= new Date(new Date()).setMinutes(-5)
+            if ((data as any)?.date >= five_minutes_before){
+                formikRef.current.setValues(data)
+                updateSwapFormData(data)
+                goToStep("SwapConfirmation")
+            }
+        }
+        setTimeout(() => {   
             setLoadingWizard(false)
         }, 500);
-    }, [])
+    }, [query])
 
 
     useEffect(() => {

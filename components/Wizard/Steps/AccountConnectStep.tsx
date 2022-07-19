@@ -1,6 +1,7 @@
-import { FC, useCallback, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
 import { useInterval } from '../../../hooks/useInyterval';
@@ -17,9 +18,17 @@ const AccountConnectStep: FC = () => {
     const { currentStep } = useFormWizardState<FormWizardSteps>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const [poll, setPoll] = useState(false)
+    const [addressSource, setAddressSource] = useState("")
     const [carouselFinished, setCarouselFinished] = useState(false)
     const authWindowRef = useRef(null);
     const carouselRef = useRef<CarouselRef>()
+    const query = useQueryState()
+
+    useEffect(() => {
+        let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
+        let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
+        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
+    }, [query])
 
     useInterval(async () => {
         if (currentStep === "ExchangeOAuth" && poll) {
@@ -51,13 +60,19 @@ const AccountConnectStep: FC = () => {
             if (!access_token)
                 goToStep("Email")
             const { sub } = parseJwt(access_token) || {}
-            const authWindow = window.open(oauth_redirect_url + sub, '_blank', 'width=420,height=720')
-            authWindowRef.current = authWindow
+            if (addressSource) {
+                sessionStorage.setItem("swap_data", JSON.stringify({ ...swapFormData, date: new Date() }))
+                window.location.href = oauth_redirect_url + sub;
+            }
+            else {
+                const authWindow = window.open(oauth_redirect_url + sub, '_blank', 'width=420,height=720')
+                authWindowRef.current = authWindow
+            }
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_redirect_url, carouselRef, carouselFinished])
+    }, [oauth_redirect_url, carouselRef, carouselFinished, addressSource])
 
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
     const exchange_name = swapFormData?.exchange?.name
@@ -715,7 +730,7 @@ const AccountConnectStep: FC = () => {
 
                     <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConnect}>
                         {
-                            carouselFinished ?  "Connect" : "Next"
+                            carouselFinished ? "Connect" : "Next"
                         }
                     </SubmitButton>
                 </div>
