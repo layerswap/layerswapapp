@@ -3,22 +3,10 @@ import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
-import { useWeb3React } from '@web3-react/core';
-import { Web3Provider } from '@ethersproject/providers';
-import { InjectedConnector } from '@web3-react/injected-connector';
-import { useEffect, useState } from 'react'
-import { NavRadioOption } from '../components/navRadio'
 import { SettingsProvider } from '../context/settings'
 import { QueryProvider } from '../context/query'
-import { AccountProvider } from '../context/account'
 
-
-const swapOptions: NavRadioOption[] = [
-  { name: "onramp", displayName: 'On-ramp', isEnabled: true, isNew: false },
-  { name: "offramp", displayName: 'Off-ramp', isEnabled: true, isNew: true }
-];
-
-export default function Home({ data, query, isOfframpEnabled }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ data, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
   return (
     <Layout>
@@ -45,7 +33,7 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
-  if (!process.env.IS_TESTING) {
+  if (process.env.IS_TESTING == "false") {
     data.networks.forEach((element) => {
       if (!element.is_test_net) networks.push(element);
     });
@@ -55,9 +43,7 @@ export async function getServerSideProps(context) {
   }
 
   data.networks = networks;
-  let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
-
   return {
-    props: { data, query, isOfframpEnabled },
+    props: { data, query },
   }
 }
