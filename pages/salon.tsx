@@ -7,7 +7,6 @@ export default function Salon() {
     const router = useRouter();
 
     useEffect(() => {
-        debugger
         const data = JSON.parse(sessionStorage.getItem("swap_data"))
         const five_minutes_before = new Date(new Date().setMinutes(-5))
         if (new Date((data as any)?.date) >= five_minutes_before) {
