@@ -269,7 +269,6 @@ export default function MainStep() {
     const { getUserExchanges } = useUserExchangeDataUpdate()
 
     useEffect(() => {
-        debugger
         if (query.coinbase_redirect) {
             const data: SwapFormValues = JSON.parse(sessionStorage.getItem("swap_data"))
             const five_minutes_before = new Date(new Date().setMinutes(-5))
