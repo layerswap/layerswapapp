@@ -1,9 +1,10 @@
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { SwapStatus } from "../Models/SwapStatus";
+import AppSettings from "./AppSettings";
 import authInterceptor from "./axiosInterceptor"
 
 export default class LayerSwapApiClient {
-    static apiBaseEndpoint: string = "https://api2.layerswap.io";
+    static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
 
     apiFetcher = (url: string) => authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + url).then(res => res.data);
 

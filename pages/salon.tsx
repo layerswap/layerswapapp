@@ -1,7 +1,22 @@
 import Layout from '../components/layout'
-import React from 'react'
+import React, { useEffect } from 'react'
+import IntroCard from '../components/introCard';
+import { useRouter } from 'next/router';
 
 export default function Salon() {
+    const router = useRouter();
+
+    useEffect(() => {
+        const data = JSON.parse(sessionStorage.getItem("swap_data"))
+        const five_minutes_before = new Date(new Date().setMinutes(-5))
+        if (new Date((data as any)?.date) >= five_minutes_before) {
+            router.push({
+                pathname: "/",
+                query: { coinbase_redirect: true }
+            })
+        }
+    }, [])
+
     return (
         <Layout>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">

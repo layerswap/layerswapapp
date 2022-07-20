@@ -4,10 +4,10 @@ To integrate Layerswap in your wallet or app, direct users to Layerswap and cust
 
 Example: [Loopring & FTX.COM](https://www.layerswap.io/?destNetwork=LOOPRING_MAINNET&sourceExchangeName=ftxcom).
 
-- *sourceExchangeName* - Pre-select the source exchange. Avilable values are: ***binance***, ***coinbase***, ***ftxcom***, ***ftxus***, ***huobi***, ***okex***, ***kucoin***, ***bitfinex***, ***bittrex global***, ***cdc exchange*** and ***kraken***.
+- *sourceExchangeName* - Pre-select the source exchange. Avilable values are: ***binance***, ***coinbase***, ***ftxcom***, ***ftxus***, ***huobi***, ***okex***, ***kucoin***, ***bitfinex***, ***bittrex***, ***cryptocom*** and ***kraken***.
 
 
-- *destNetwork* - Pre-select the destination network(L2, sidechain etc.). Avilable values are at a <a href='#bottom'>bottom of a page</a>.
+- *destNetwork* - Pre-select the destination network(L2, sidechain etc.). Avilable values are at the <a href='#bottom'>bottom of the page</a>.
    
 - *lockAddress = true* - To lock the provided address, to not allow user to change it.
 
@@ -43,8 +43,6 @@ If you're integrating Layerswap to your wallet, and want your users to see where
 | Ronin             | RONIN_MAINNET      |
 | Boba              | BOBA_MAINNET       | 
 | Optimism          | OPTIMISM_MAINNET   |
-| Polygon           | POLYGON_MAINNET    |
-| Moonbeam          | MOONBEAM_MAINNET   | 
 | Immutable X       | IMMUTABLEX_MAINNET |
 | StarkNet          | STARKNET_MAINNET   |
 
