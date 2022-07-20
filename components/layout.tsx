@@ -1,9 +1,12 @@
 import Navbar from "./navbar"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import Head from "next/head"
 import FooterComponent from "./footerComponent"
 import { useRouter } from "next/router";
 import { Toaster } from 'react-hot-toast';
+import SlideOver, { SildeOverRef } from "./SlideOver";
+import LayerswapMenu from "./LayerswapMenu";
+import LayerSwapLogo from "./icons/layerSwapLogo";
 
 
 type Props = {
@@ -15,6 +18,7 @@ export default function Layout({ hasSideShapes, children }: Props) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const slideoverRef = useRef<SildeOverRef>()
 
   useEffect(() => {
     const handleStart = (url) => (url !== router.asPath) && setLoading(true);
@@ -61,15 +65,28 @@ export default function Layout({ hasSideShapes, children }: Props) {
     <div className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
       <main className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
         <div className="min-h-screen overflow-hidden relative font-robo">
-          <Toaster position="bottom-right" toastOptions={{duration: 5000, style: {background: '#131E36', color: '#a4afc8'}, error: {position:'top-center'}}}/>
-          <div className="top-backdrop"></div>
+          <Toaster position="bottom-right" toastOptions={{ duration: 5000, style: { background: '#131E36', color: '#a4afc8' }, error: { position: 'top-center' } }} />
+          <div className={`top-backdrop ${loading ? 'animate-pulse' : ''}`}></div>
           <Navbar></Navbar>
-          <>
+          <div className={loading ? "animate-pulse" : ""}>
             {children}
-          </>
+          </div>
           <FooterComponent />
         </div>
       </main>
     </div>
   </>)
+}
+
+
+const Sceleton = () => {
+  return <div className="animate-pulse opacity-60 w-full px-3 md:px-8 py-12 rounded-lg  bg-darkBlue max-w-2xl mx-auto shadow-card align-middle shadow-xl transition-all">
+    <div className='flex place-content-center mt-20 mb-16 md:mb-8'>
+      <div className='relative'>
+        <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
+        <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
+        <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-pink-primary-800 rounded-full'></div>
+      </div>
+    </div>
+  </div>
 }

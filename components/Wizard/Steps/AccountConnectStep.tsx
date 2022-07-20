@@ -6,6 +6,7 @@ import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
 import { useInterval } from '../../../hooks/useInyterval';
 import { parseJwt } from '../../../lib/jwtParser';
+import { OpenLink } from '../../../lib/openLink';
 import TokenService from '../../../lib/TokenService';
 import { FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
@@ -60,19 +61,12 @@ const AccountConnectStep: FC = () => {
             if (!access_token)
                 goToStep("Email")
             const { sub } = parseJwt(access_token) || {}
-            if (addressSource === "loopringIos" || addressSource === "loopringAndroid") {
-                sessionStorage.setItem("swap_data", JSON.stringify({ ...swapFormData, date: new Date() }))
-                window.location.href = oauth_redirect_url + sub;
-            }
-            else {
-                const authWindow = window.open(oauth_redirect_url + sub, '_blank', 'width=420,height=720')
-                authWindowRef.current = authWindow
-            }
+            authWindowRef.current = OpenLink({ link: oauth_redirect_url + sub, swap_data: swapFormData, query })
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_redirect_url, carouselRef, carouselFinished, addressSource])
+    }, [oauth_redirect_url, carouselRef, carouselFinished, addressSource, query])
 
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
     const exchange_name = swapFormData?.exchange?.name
