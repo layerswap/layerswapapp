@@ -50,7 +50,7 @@ module.exports = {
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
-        'fade-in': 'fade-in 1s ease-in',
+        'fade-in': 'fade-in 0.5s ease-in',
         'fade-in-down': 'fade-in-down 0.5s ease-in'
       },
       keyframes: {
