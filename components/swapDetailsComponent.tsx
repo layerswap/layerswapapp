@@ -12,6 +12,7 @@ import { Popover } from '@headlessui/react';
 import { DuplicateIcon } from '@heroicons/react/outline';
 import { copyTextToClipboard } from '../lib/copyToClipboard';
 import toast from 'react-hot-toast';
+import ClickTooltip from './Tooltips/ClickTooltip';
 
 type Props = {
     id: string
@@ -64,29 +65,13 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Id </span>
                             <span className="text-white">
                                 <div className='inline-flex items-center'>
-                                    <span className="mr-2">{swap?.id?.substring(0, 5)}...{swap?.id?.substring(swap?.id?.length - 4, swap?.id?.length - 1)}</span>
-                                    <Popover>
-                                        <Popover.Button>
-                                            <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
-                                                <DuplicateIcon className="h-4 w-4 text-gray-600" />
-                                            </div>
-                                        </Popover.Button>
-                                        <Popover.Panel>
-                                            <div className="ml-1 text-white">
-                                                <div className="relative">
-                                                    <div className="w-14 absolute flex -right-0.5 bottom-4 flex-col mb-3">
-                                                        <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
-                                                            Copied!
-                                                        </span>
-                                                        <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Popover.Panel>
-                                    </Popover>
+                                    <ClickTooltip text='Copied!'>
+                                        <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
+                                            <DuplicateIcon className="h-4 w-4 text-gray-600" />
+                                        </div>
+                                    </ClickTooltip>
                                 </div>
                             </span>
-
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between p items-baseline">

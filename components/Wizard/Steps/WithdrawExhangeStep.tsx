@@ -14,7 +14,6 @@ import { copyTextToClipboard } from '../../../lib/copyToClipboard';
 import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
 import { Popover } from '@headlessui/react';
-import AmountAndFeeDetails from '../../amountAndFeeDetailsComponent';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
 import ExchangeSettings from '../../../lib/ExchangeSettings';
 import { useIntercom } from 'react-use-intercom';
