@@ -20,7 +20,8 @@ export default function () {
     const router = useRouter();
     const { menuVisible } = useMenuState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ customAttributes: { LayerswapEmail: email } })
+
+    const updateWithProps = () => update({ email: email })
 
     const slideoverRef = useRef<SildeOverRef>()
 
