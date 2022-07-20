@@ -54,14 +54,14 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     }, [network])
 
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
+    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount?.toString()?.replace(",",".")) + 5)
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const handleSubmit = useCallback(async () => {
         setLoading(true)
         setTwoFARequired(false)
         try {
             const data = {
-                Amount: Number(swapFormData.amount),
+                Amount: Number(swapFormData.amount?.toString()?.replace(",",".")),
                 Exchange: swapFormData.exchange?.id,
                 Network: swapFormData.network.id,
                 currency: swapFormData.currency.baseObject.asset,
@@ -118,7 +118,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setEditingAddress(false)
     }, [addressInputValue, swapFormData])
 
-    const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject)
+    const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount?.toString()?.replace(",",".")), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject)
     return (
         <>
             <div className="px-8 h-full flex flex-col justify-between">
@@ -171,7 +171,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             </div>
                             <div className="flex justify-between px-4 py-3 items-baseline">
                                 <span className="text-left">Fee</span>
-                                <span className="text-white">{(Number(swapFormData?.amount) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
+                                <span className="text-white">{(Number(swapFormData?.amount?.toString()?.replace(",",".")) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
                             </div>
                             <div className="flex justify-between bg-darkblue-500 px-4 py-3 rounded-lg  items-baseline">
                                 <span className="text-left">You will recieve</span>
