@@ -20,11 +20,9 @@ export default function () {
     const router = useRouter();
     const { menuVisible } = useMenuState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ customAttributes: { LayerswapEmail: email } })
-    const handleLogout = () => {
-        TokenService.removeAuthData()
-        router.push('/', '/signedout', { shallow: true })
-    }
+
+    const updateWithProps = () => update({ email: email })
+
     const slideoverRef = useRef<SildeOverRef>()
 
     const handleOpenSendFeedback = useCallback(() => {
@@ -34,6 +32,26 @@ export default function () {
     const handleFeedbackSent = useCallback(() => {
         slideoverRef.current.close()
     }, [slideoverRef])
+
+    const goToLink = (path: string, query: any) => {
+        router.push({
+            pathname: path,
+            query: query
+        })
+    }
+
+
+    const goToLogin = useCallback(() => goToLink("/login", router.query), [router.query])
+    const goToTransactions = useCallback(() => goToLink("/transactions", router.query), [router.query])
+    const goToExchanges = useCallback(() => goToLink("/exchanges", router.query), [router.query])
+
+    const handleLogout = useCallback(() => {
+        TokenService.removeAuthData()
+        router.push({
+            pathname: "/",
+            query: router.query
+        }, '/signedout', { shallow: true })
+    }, [router.query])
 
     return <>
         {
@@ -69,16 +87,14 @@ export default function () {
                                             :
                                             <Menu.Item>
                                                 {({ active }) => (
-                                                    <Link key="login" href="/login">
-                                                        <a
-                                                            className={classNames(
-                                                                active ? 'bg-darkblue-300' : '',
-                                                                'block px-4 py-2 text-sm text-pink-primary-300 whitespace-nowrap'
-                                                            )}
-                                                        >
-                                                            Login
-                                                        </a>
-                                                    </Link>
+                                                    <a onClick={goToLogin}
+                                                        className={classNames(
+                                                            active ? 'bg-darkblue-300' : '',
+                                                            'block px-4 py-2 text-sm text-pink-primary-300 whitespace-nowrap'
+                                                        )}
+                                                    >
+                                                        Login
+                                                    </a>
                                                 )}
                                             </Menu.Item>
                                     }
@@ -87,31 +103,28 @@ export default function () {
                                         <>
                                             <Menu.Item>
                                                 {({ active }) => (
-                                                    <Link key="transactions" href="/transactions">
-                                                        <a
-                                                            className={classNames(
-                                                                active ? 'bg-darkblue-300' : '',
-                                                                'block px-4 py-2 text-sm text-pink-primary-300 hover:bg-darkblue-300 whitespace-nowrap'
-                                                            )}
-                                                        >
-                                                            Swap history
-                                                        </a>
-                                                    </Link>
+                                                    <a
+                                                        onClick={goToTransactions}
+                                                        className={classNames(
+                                                            active ? 'bg-darkblue-300' : '',
+                                                            'block px-4 py-2 text-sm text-pink-primary-300 hover:bg-darkblue-300 whitespace-nowrap'
+                                                        )}
+                                                    >
+                                                        Swap history
+                                                    </a>
                                                 )}
                                             </Menu.Item>
                                             <Menu.Item>
                                                 {({ active }) => (
-                                                    <Link key="exchanges" href="/exchanges">
-                                                        <a
-                                                            href="/exchanges"
-                                                            className={classNames(
-                                                                active ? 'bg-darkblue-300' : '',
-                                                                'block px-4 py-2 text-sm text-pink-primary-300 hover:bg-darkblue-300 whitespace-nowrap'
-                                                            )}
-                                                        >
-                                                            Exchange Accounts
-                                                        </a>
-                                                    </Link>
+                                                    <a
+                                                        onClick={goToExchanges}
+                                                        className={classNames(
+                                                            active ? 'bg-darkblue-300' : '',
+                                                            'block px-4 py-2 text-sm text-pink-primary-300 hover:bg-darkblue-300 whitespace-nowrap'
+                                                        )}
+                                                    >
+                                                        Exchange Accounts
+                                                    </a>
                                                 )}
                                             </Menu.Item>
                                             <Menu.Item>

@@ -1,20 +1,11 @@
-import Swap from '../components/swapComponent'
 import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
-import { useWeb3React } from '@web3-react/core';
-import { Web3Provider } from '@ethersproject/providers';
-import { InjectedConnector } from '@web3-react/injected-connector';
-import { useEffect, useState } from 'react'
 import NavRadio, { NavRadioOption } from '../components/navRadio'
-import Banner from '../components/banner'
 import { SettingsProvider } from '../context/settings'
-import { QueryProvider } from '../context/query'
-import { AccountProvider } from '../context/account'
 import { AuthProvider } from '../context/auth'
 import UserExchanges from '../components/exchangesComponent'
-import LayerswapMenu from '../components/LayerswapMenu'
 import { MenuProvider } from '../context/menu'
 
 
@@ -24,13 +15,10 @@ const swapOptions: NavRadioOption[] = [
 ];
 
 export default function Home({ data }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-
-
     return (
         <Layout>
-      <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8">
-        <div className="flex flex-col space-y-6 text-white">
-
+            <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8">
+                <div className="flex flex-col space-y-6 text-white animate-fade-in">
                     <SettingsProvider data={data}>
                         <AuthProvider>
                             <MenuProvider>

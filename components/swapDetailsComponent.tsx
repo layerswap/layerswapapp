@@ -35,7 +35,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                 if (!authData) {
                     router.push({
                         pathname: '/login',
-                        query: { redirect: '/transactions' }
+                        query: { ...(router.query), redirect: '/transactions' }
                     })
                     return;
                 }
@@ -50,7 +50,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                 setLoading(false)
             }
         })()
-    }, [id])
+    }, [id, router.query])
 
     if (loading)
         return <Sceleton />

@@ -86,7 +86,7 @@ function TransactionsHistory() {
         if (!authData) {
           router.push({
             pathname: '/login',
-            query: { redirect: '/transactions' }
+            query: { ...(router.query), redirect: '/transactions' }
           })
           return;
         }
@@ -104,7 +104,7 @@ function TransactionsHistory() {
         setLoading(false)
       }
     })()
-  }, [])
+  }, [router.query])
 
 
   const handleLoadMore = useCallback(async () => {
@@ -142,6 +142,12 @@ function TransactionsHistory() {
   }
 
 
+  const handleGoHome = useCallback(() => {
+    router.push({
+      pathname: "/",
+      query: router.query
+    })
+  }, [router.query])
 
   return (
     <div className={`bg-darkBlue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
@@ -152,17 +158,15 @@ function TransactionsHistory() {
         </div>
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
           <div className="flex justify-center">
-            <Link href="/" key="Home" shallow={true}>
-              <a>
-                <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
-              </a>
-            </Link>
+            <a onClick={handleGoHome}>
+              <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+            </a>
           </div>
         </div>
         <LayerswapMenu />
       </div>
       {
-        page== 0 && loading ?
+        page == 0 && loading ?
           <Sceleton />
           : <>
             {
@@ -655,7 +659,7 @@ const Sceleton = () => {
                     <ChevronRightIcon className="h-5 w-5 text-slate-700" />
                   </div>
                 </td>
-                
+
               </tr>
             ))}
           </tbody>

@@ -36,6 +36,14 @@ function UserExchanges() {
     const { email } = useAuthState()
     const [exchangeToDisconnect, setExchangeToDisconnect] = useState<Exchange>()
 
+    const handleGoHome = useCallback(() => {
+        debugger
+        router.push({
+            pathname: "/",
+            query: router.query
+        })
+    }, [router.query])
+
     useEffect(() => {
 
         (async () => {
@@ -45,7 +53,7 @@ function UserExchanges() {
                 if (!authData) {
                     router.push({
                         pathname: '/login',
-                        query: { redirect: '/exchanges' }
+                        query: { ...router.query, redirect: '/exchanges' }
                     })
                     return;
                 }
@@ -58,7 +66,7 @@ function UserExchanges() {
                 setLoading(false)
             }
         })()
-    }, [])
+    }, [router.query])
 
     const getAndMapExchanges = useCallback(async (authData) => {
         const bransferApiClient = new BransferApiClient()
@@ -88,14 +96,14 @@ function UserExchanges() {
     const handleConnectExchange = (exchange: Exchange) => {
         setExchangeToConnect(exchange)
     }
-    const handleDisconnectExchange = async (exchange: Exchange) => {
+    const handleDisconnectExchange = useCallback(async (exchange: Exchange) => {
         setExchangeLoading(exchange)
         try {
             const authData = TokenService.getAuthData();
             if (!authData) {
                 router.push({
                     pathname: '/login',
-                    query: { redirect: '/exchanges' }
+                    query: { ...(router.query), redirect: '/exchanges' }
                 })
                 return;
             }
@@ -109,14 +117,14 @@ function UserExchanges() {
         finally {
             setExchangeLoading(undefined)
         }
-    }
+    }, [router.query])
 
     const handleClose = () => {
         setExchangeToConnect(undefined);
         setExchangeToDisconnect(undefined)
     }
 
-    const handleExchangeConnected = async () => {
+    const handleExchangeConnected = useCallback(async () => {
         setLoading(true)
         setExchangeToConnect(undefined)
         try {
@@ -124,7 +132,7 @@ function UserExchanges() {
             if (!authData) {
                 router.push({
                     pathname: '/login',
-                    query: { redirect: '/exchanges' }
+                    query: { ...(router.query), redirect: '/exchanges' }
                 })
                 return;
             }
@@ -136,7 +144,7 @@ function UserExchanges() {
         finally {
             setLoading(false)
         }
-    }
+    }, [router.query])
 
 
     return (
@@ -148,11 +156,9 @@ function UserExchanges() {
                 </div>
                 <div className='mx-auto px-4 overflow-hidden md:hidden'>
                     <div className="flex justify-center">
-                        <Link href="/" key="Home" shallow={true}>
-                            <a>
-                                <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
-                            </a>
-                        </Link>
+                        <a onClick={handleGoHome}>
+                            <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+                        </a>
                     </div>
                 </div>
                 <LayerswapMenu />

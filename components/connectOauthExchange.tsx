@@ -30,7 +30,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                 if (!access_token) {
                     router.push({
                         pathname: '/login',
-                        query: { redirect: '/exchanges' }
+                        query: { ...(router.query), redirect: '/exchanges' }
                     })
                     return;
                 }
@@ -48,7 +48,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                 setLoading(false)
             }
         }
-    }, [exchange, loading, authWindowRef], 2000)
+    }, [exchange, loading, authWindowRef, router.query], 2000)
 
 
     const handleConnect = useCallback(() => {
@@ -58,7 +58,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
             if (!access_token) {
                 router.push({
                     pathname: '/login',
-                    query: { redirect: '/exchanges' }
+                    query: { ...(router.query), redirect: '/exchanges' }
                 })
                 return;
             }
@@ -70,7 +70,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
         catch (e) {
             toast.error(e.message)
         }
-    }, [exchange])
+    }, [exchange, router.query])
 
 
     return (
@@ -88,7 +88,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                     </svg>
                     <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
                 </div>
-                
+
                 {/* <div>
                     <label className="block font-normal text-sm mt-12">
                         You will leave Layerswap and be securely redirected to Coinbase authorization page.

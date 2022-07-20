@@ -7,13 +7,14 @@ type Props = {
     opener?: ReactNode,
     children?: ReactNode;
     moreClassNames?: string;
+    slide?: boolean;
 }
 export type SildeOverRef = {
     close: () => void;
     open: () => void;
 };
 
-const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, children }, ref) => {
+const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, children, slide = true }, ref) => {
     const [open, setOpen] = useState(false)
     const handleClose = () => {
         setOpen(false)
@@ -34,11 +35,11 @@ const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, chi
                 show={open}
                 as={Fragment}
                 enter="ease-in-out duration-300"
-                enterFrom="translate-y-full"
-                enterTo="translate-y-0"
+                enterFrom={slide ? "translate-y-full" : "opacity-0"}
+                enterTo={slide ? "translate-y-0" : "opacity-100"}
                 leave="ease-in duration-200"
-                leaveFrom="translate-y-0"
-                leaveTo="translate-y-full">
+                leaveFrom={slide ? "translate-y-0" : "opacity-100"}
+                leaveTo={slide ? "translate-y-full" : "opacity-0"}>
                 <div className={`absolute inset-0 z-40 flex flex-col w-full bg-darkBlue ${moreClassNames}`}>
                     <span className='relative z-40 overflow-hidden bg-darkBlue p-8 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>

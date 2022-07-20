@@ -38,6 +38,7 @@ import toast from "react-hot-toast";
 import { BlacklistedAddress } from "../../../Models/BlacklistedAddress";
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { isValidAddress } from "../../../lib/addressValidator";
+import { clearTempData, getTempData } from "../../../lib/openLink";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -270,12 +271,12 @@ export default function MainStep() {
 
     useEffect(() => {
         if (query.coinbase_redirect) {
-            const data: SwapFormValues = JSON.parse(sessionStorage.getItem("swap_data"))
+            const temp_data = getTempData()
             const five_minutes_before = new Date(new Date().setMinutes(-5))
-            if (new Date((data as any)?.date) >= five_minutes_before) {
-                localStorage.setItem("swap_data", null)
-                formikRef.current.setValues(data)
-                updateSwapFormData(data)
+            if (new Date(temp_data?.date) >= five_minutes_before) {
+                clearTempData()
+                formikRef.current.setValues(temp_data.swap_data)
+                updateSwapFormData(temp_data.swap_data)
                 goToStep("SwapConfirmation")
             }
         }

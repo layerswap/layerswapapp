@@ -50,16 +50,16 @@ module.exports = {
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
-        'fade-in': 'fade-in 1s ease-out',
-        'fade-in-down': 'fade-in-down 0.5s ease-out'
+        'fade-in': 'fade-in 0.5s ease-in',
+        'fade-in-down': 'fade-in-down 0.5s ease-in'
       },
       keyframes: {
         'fade-in': {
           '0%': {
             opacity: '0',
           },
-          '50%': {
-            opacity: '0.3',
+          '20%': {
+            opacity: '0.6',
           },
           '100%': {
             opacity: '1',
