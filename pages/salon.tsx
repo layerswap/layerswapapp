@@ -2,17 +2,18 @@ import Layout from '../components/layout'
 import React, { useEffect } from 'react'
 import IntroCard from '../components/introCard';
 import { useRouter } from 'next/router';
+import { getTempData, TEMP_DATA_ITEM_NAME } from '../lib/openLink';
 
 export default function Salon() {
     const router = useRouter();
 
     useEffect(() => {
-        const data = JSON.parse(sessionStorage.getItem("swap_data"))
+        const temp_data = getTempData()
         const five_minutes_before = new Date(new Date().setMinutes(-5))
-        if (new Date((data as any)?.date) >= five_minutes_before) {
+        if (new Date(temp_data?.date) >= five_minutes_before) {
             router.push({
                 pathname: "/",
-                query: { coinbase_redirect: true }
+                query: { ...(temp_data?.query || {}), coinbase_redirect: true }
             })
         }
     }, [])
@@ -20,7 +21,7 @@ export default function Salon() {
     return (
         <Layout>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
-                <div className='flex flex-col space-y-5'>
+                <div className='flex flex-col space-y-5 animate-fade-in'>
                     <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row bg-darkBlue shadow-card">
                         <div className='flex place-content-center mb-12 md:mb-4'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="116" height="116" viewBox="0 0 116 116" fill="none">

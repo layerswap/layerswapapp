@@ -11,7 +11,7 @@ export default function Home({ data, query }: InferGetServerSidePropsType<typeof
   return (
     <Layout>
       <div className="content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
-        <div className='flex flex-col space-y-5'>
+        <div className='flex flex-col space-y-5 animate-fade-in'>
           <SettingsProvider data={data}>
             <QueryProvider query={query}>
                 <Swap />
