@@ -165,16 +165,16 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                         </span>
                                     </div>
                                 }
-                                <div className="flex justify-between px-4 py-3 rounded-lg  items-baseline">
+                                <div className="flex justify-between px-4 py-3 items-baseline">
                                     <span className="text-left">Amount</span>
                                     <span className="text-white">{swapFormData?.amount} {swapFormData?.currency?.name}
                                     </span>
                                 </div>
-                                <div className="flex justify-between bg-darkblue-500 px-4 py-3 items-baseline">
+                                <div className="flex justify-between bg-darkblue-500 rounded-md px-4 py-3 items-baseline">
                                     <span className="text-left">Fee</span>
                                     <span className="text-white">{(Number(swapFormData?.amount?.toString()?.replace(",", ".")) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
                                 </div>
-                                <div className="flex justify-between  px-4 py-3 rounded-lg  items-baseline">
+                                <div className="flex justify-between px-4 py-3  items-baseline">
                                     <span className="text-left">You will recieve</span>
                                     <span className="text-white">{receive_amount} {swapFormData?.currency?.name}</span>
                                 </div>

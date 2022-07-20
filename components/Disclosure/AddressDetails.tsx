@@ -59,7 +59,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                             <Disclosure.Panel className="p-1.5 text-sm">
                                 <>
                                     <div className="flex items-center flex-wrap space-y-1 md:space-y-0 md:space-x-5">
-                                        <a href={swapFormData?.network?.baseObject.account_explorer_template} target='_blank' className='mr-5 md:mr-0 flex text-pink-primary-300 cursor-pointer items-center hover:text-white' >
+                                        <a href={swapFormData?.network?.baseObject.account_explorer_template.replace("{0}", swapFormData?.destination_address)} target='_blank' className='mr-5 md:mr-0 flex text-pink-primary-300 cursor-pointer items-center hover:text-white' >
                                             <ExternalLinkIcon className='h-4 w-4 mr-2' />
                                             <p className=''>View In Explorer</p>
                                         </a>
