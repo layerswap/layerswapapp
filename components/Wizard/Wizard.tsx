@@ -1,4 +1,4 @@
-import { FC, Fragment, useEffect, useRef, useState } from 'react'
+import { FC, Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import { Step, StepPath, useWizardState, WizardPart, WizardParts, WizardPartType } from '../../context/wizard';
 import { ArrowLeftIcon, MenuIcon, XIcon } from '@heroicons/react/solid';
@@ -9,6 +9,7 @@ import TokenService from '../../lib/TokenService';
 import LayerswapMenu from '../LayerswapMenu';
 import Link from 'next/link';
 import LayerSwapLogo from '../icons/layerSwapLogo';
+import { useRouter } from 'next/router';
 
 
 function classNames(...classes) {
@@ -91,6 +92,14 @@ const Wizard: FC = () => {
 function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
    const { goBack } = useFormWizardaUpdate()
    const { wizard, currentStep } = useFormWizardState<BaseWizard>()
+   const router = useRouter();
+
+   const handleGoHome = useCallback(() => {
+      router.push({
+          pathname: "/",
+          query: router.query
+      })
+  }, [router.query])
 
    return <>
       <div className="w-full flex items-center justify-between px-8 mt-3 h-[44px]" >
@@ -100,11 +109,9 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
             </button>
             <div className='mx-auto px-4 overflow-hidden md:hidden'>
                <div className="flex justify-center">
-                  <Link href="/" key="Home" shallow={true}>
-                     <a>
-                        <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
-                     </a>
-                  </Link>
+                  <a onClick={handleGoHome}>
+                     <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+                  </a>
                </div>
             </div>
             <LayerswapMenu />
