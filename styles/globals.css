@@ -293,3 +293,7 @@ body::-webkit-scrollbar-thumb {
 body::-webkit-scrollbar-thumb {
   border-radius: 0.25rem !important;
 }
+input:disabled, textarea:disabled, input:disabled::placeholder, textarea:disabled::placeholder {
+  -webkit-text-fill-color: #a4afc8; /* 1. sets text fill to 'pink-primary-300': '#a4afc8' */
+  opacity: 1; /* 2. correct opacity on iOS */
+}

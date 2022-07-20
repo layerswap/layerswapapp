@@ -31,7 +31,7 @@ const WithdrawExchangeStep: FC = () => {
     const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ customAttributes: { layerswapEmail: email, swapId: swapId } })
+    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap.payment?.id } })
 
     useInterval(async () => {
         if (currentStep === "Withdrawal") {

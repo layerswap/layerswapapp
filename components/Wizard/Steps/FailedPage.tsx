@@ -1,10 +1,14 @@
-import Link from 'next/link';
 import { FC } from 'react'
 import { useSwapDataState } from '../../../context/swap';
+import { useIntercom } from 'react-use-intercom';
 import SubmitButton from '../../buttons/submitButton';
+import { useAuthState } from '../../../context/auth';
 
 const FailedPage: FC = () => {
     const { swap } = useSwapDataState()
+    const { email } = useAuthState()
+    const { boot, show, update } = useIntercom()
+    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap.payment?.id } })
     return (
         <>
             <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
@@ -17,12 +21,16 @@ const FailedPage: FC = () => {
                         <path d="M48 48L68 69" stroke="white" strokeWidth="3.15789" strokeLinecap="round" />
                     </svg>
                 </div>
-                <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24 text-center grow">
-                    <label className="block text-lg font-lighter leading-6 text-pink-primary-300 text-center grow">{swap ? "Swap failed":"Swap not found"}</label>
+                <div className="flex items-center mb-14 md:mb-6 mx-5 md:mx-24 text-center grow">
+                    <label className="block text-lg font-lighter leading-6 text-pink-primary-300 text-center grow">{swap ? "Swap failed" : "Swap not found"}</label>
                 </div>
-                <a href="https://discord.com/invite/KhwYN35sHy" className="shadowed-button group disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none focus:ring-0 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                    Open Discord
-                </a>
+                <SubmitButton icon={''} isDisabled={false} isSubmitting={false} onClick={() => {
+                    boot();
+                    show();
+                    updateWithProps()
+                }}>
+                    Contact Support
+                </SubmitButton>
             </div>
         </>
     )

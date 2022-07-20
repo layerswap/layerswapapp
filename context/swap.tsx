@@ -40,7 +40,7 @@ export function SwapDataProvider({ children }) {
                 const layerswapApiClient = new LayerSwapApiClient()
                 const authData = getAuthData()
                 const swap = await layerswapApiClient.createSwap({
-                    Amount: Number(swapFormData.amount),
+                    Amount: Number(swapFormData.amount?.toString()?.replace(",",".")),
                     Exchange: swapFormData.exchange?.id,
                     Network: swapFormData.network.id,
                     currency: swapFormData.currency.baseObject.asset,
