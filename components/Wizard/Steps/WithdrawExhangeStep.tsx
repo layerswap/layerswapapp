@@ -1,4 +1,4 @@
-import { CheckIcon, InformationCircleIcon } from '@heroicons/react/outline';
+import { CheckIcon, DocumentDuplicateIcon, InformationCircleIcon } from '@heroicons/react/outline';
 import { FC, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
@@ -18,6 +18,7 @@ import { SwapFormValues } from '../../DTOs/SwapFormValues';
 import ExchangeSettings from '../../../lib/ExchangeSettings';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/auth';
+import ClickTooltip from '../../Tooltips/ClickTooltip';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -66,18 +67,6 @@ const WithdrawExchangeStep: FC = () => {
     const exchange_name = exchange?.name || ' '
     const exchange_id = exchange?.id
     const exchange_logo_url = exchange?.logo_url
-
-    const handleCopyAddress = useCallback(() => {
-        copyTextToClipboard(swap?.payment?.manual_flow_context?.address)
-    }, [swap?.destination_address])
-
-    const handleCopyAmount = useCallback(() => {
-        copyTextToClipboard(swap?.amount)
-    }, [swap?.amount])
-
-    const handleCopyNote = useCallback(() => {
-        copyTextToClipboard(payment?.manual_flow_context?.note)
-    }, [payment?.manual_flow_context?.note])
 
     return (
         <>
@@ -141,27 +130,11 @@ const WithdrawExchangeStep: FC = () => {
                             placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                         <div className='absolute inset-y-2 right-2.5'>
-                            <Popover>
-                                <Popover.Button>
-                                    <div className=' rounded bg bg-darkblue-50 p-2' onClick={() => copyTextToClipboard(swap?.payment?.manual_flow_context?.address)}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
-                                            <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
-                                        </svg>
-                                    </div>
-                                </Popover.Button>
-                                <Popover.Panel>
-                                    <div className="ml-1 text-white">
-                                        <div className="relative">
-                                            <div className="w-14 absolute flex right-0.5 bottom-6 flex-col mb-3">
-                                                <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
-                                                    Copied!
-                                                </span>
-                                                <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Popover.Panel>
-                            </Popover>
+                            <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
+                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.payment?.manual_flow_context?.address)}>
+                                    <DocumentDuplicateIcon className='h-6 w-5' />
+                                </div>
+                            </ClickTooltip>
                         </div>
                     </div>
                     <label htmlFor="network" className="block font-normal text-sm">
@@ -200,27 +173,11 @@ const WithdrawExchangeStep: FC = () => {
                             placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                         <div className='absolute inset-y-2 right-2.5'>
-                            <Popover>
-                                <Popover.Button>
-                                    <div className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={() => copyTextToClipboard(swap?.amount)}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
-                                            <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
-                                        </svg>
-                                    </div>
-                                </Popover.Button>
-                                <Popover.Panel>
-                                    <div className="ml-1 text-white">
-                                        <div className="relative">
-                                            <div className="w-14 absolute flex right-0.5 bottom-6 flex-col mb-3">
-                                                <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
-                                                    Copied!
-                                                </span>
-                                                <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Popover.Panel>
-                            </Popover>
+                            <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
+                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.amount)}>
+                                    <DocumentDuplicateIcon className='h-6 w-5' />
+                                </div>
+                            </ClickTooltip>
                         </div>
                     </div>
 
@@ -245,27 +202,11 @@ const WithdrawExchangeStep: FC = () => {
                                         placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                                 <div className='absolute inset-y-2 right-2.5'>
-                                    <Popover>
-                                        <Popover.Button>
-                                            <div className=' rounded bg bg-darkblue-50 p-2 right-2.5' onClick={() => copyTextToClipboard(payment?.manual_flow_context?.note)}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
-                                                    <path opacity="0.7" d="M10.3158 0H1.47368C0.663158 0 0 0.654545 0 1.45455V11.6364H1.47368V1.45455H10.3158V0ZM12.5263 2.90909H4.42105C3.61053 2.90909 2.94737 3.56364 2.94737 4.36364V14.5455C2.94737 15.3455 3.61053 16 4.42105 16H12.5263C13.3368 16 14 15.3455 14 14.5455V4.36364C14 3.56364 13.3368 2.90909 12.5263 2.90909ZM12.5263 14.5455H4.42105V4.36364H12.5263V14.5455Z" fill="#74AAC8" />
-                                                </svg>
-                                            </div>
-                                        </Popover.Button>
-                                        <Popover.Panel>
-                                            <div className="ml-1 text-white">
-                                                <div className="relative">
-                                                    <div className="w-14 absolute flex right-0.5 bottom-6 flex-col mb-3">
-                                                        <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
-                                                            Copied!
-                                                        </span>
-                                                        <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Popover.Panel>
-                                    </Popover>
+                                    <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
+                                        <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(payment?.manual_flow_context?.note)}>
+                                            <DocumentDuplicateIcon className='h-6 w-5' />
+                                        </div>
+                                    </ClickTooltip>
                                 </div>
                             </div>
                             <div className='flex-col w-full rounded-md bg-yellow-400 shadow-lg p-2'>

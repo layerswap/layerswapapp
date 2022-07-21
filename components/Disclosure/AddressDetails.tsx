@@ -1,6 +1,6 @@
-import { ChevronDownIcon, DuplicateIcon, ExternalLinkIcon, InformationCircleIcon, PencilAltIcon } from '@heroicons/react/outline'
+import { ChevronDownIcon, DocumentDuplicateIcon, DuplicateIcon, ExternalLinkIcon, InformationCircleIcon, PencilAltIcon } from '@heroicons/react/outline'
 import { Disclosure, Popover } from "@headlessui/react";
-import Tooltip from '../Tooltips/tooltip';
+import HoverTooltip from '../Tooltips/HoverTooltip';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { useSwapDataState } from '../../context/swap';
 import { Currency } from '../../Models/Currency';
@@ -64,9 +64,9 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                             <p className=''>View In Explorer</p>
                                         </a>
                                         <div className='cursor-pointer text-pink-primary-300 hover:text-white block items-center'>
-                                            <ClickTooltip text='Copied!'>
+                                            <ClickTooltip text='Copied!' moreClassNames='-right-1 bottom-3'>
                                                 <div onClick={() => copyTextToClipboard(swapFormData?.destination_address)}>
-                                                    <DuplicateIcon className='inline-block h-4 w-4 mr-2' />
+                                                    <DocumentDuplicateIcon className='inline-block h-4 w-4 mr-2' />
                                                     <span className='text-sm font-normal'>Copy Full Address</span>
                                                 </div>
                                             </ClickTooltip>
