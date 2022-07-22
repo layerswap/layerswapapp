@@ -218,6 +218,21 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
 
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
 
+    function limitDecimalPlaces(e, count) {
+        if (e.target.value.indexOf('.') == -1) { return; }
+        if ((e.target.value.length - e.target.value.indexOf('.')) > count) {
+            e.target.value = parseFloat(e.target.value).toFixed(count);
+        }
+    }
+    
+    function replaceComma(i) {
+        var val = (document.getElementById(i) as HTMLInputElement).value;
+        if (val.match(/\,/)) {
+            val = val.replace(/\,/g, '.');
+            (document.getElementById(i) as HTMLInputElement).value = val;
+        }
+    }
+
     return (<>
         <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
             Amount
@@ -233,6 +248,7 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
                 autoCorrect="off"
                 min={currency?.baseObject?.min_amount}
                 max={currency?.baseObject?.max_amount}
+                onInput={() => { replaceComma('amount'); limitDecimalPlaces(event, currency?.baseObject?.precision) }}
                 type="text"
                 step={isNaN(step) ? 0.01 : step}
                 name={name}
