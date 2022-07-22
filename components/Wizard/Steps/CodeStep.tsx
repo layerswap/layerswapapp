@@ -79,11 +79,11 @@ const CodeStep: FC = () => {
     }, [email])
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row min-h-[480px] text-pink-primary-300">
-                <div>
-                    <label htmlFor="amount" className="block font-normal text-sm">
-                        Your Email Code
-                    </label>
+            <div className="w-full px-3 md:px-8 content-center flex flex-col justify-between min-h-[480px] text-pink-primary-300">
+                <div className='mt-auto text-center'>
+                    <p className='text-lg'>Please enter the 6 digit code sent to <p className='font-medium text-white'>{email}</p></p>
+                </div>
+                <div className='content-center mt-auto'>
                     <div className="relative rounded-md shadow-sm mt-2 mb-4 leading-none">
                         <input
                             inputMode="decimal"
@@ -111,7 +111,7 @@ const CodeStep: FC = () => {
                                 :
                                 <label className="block font-lighter leading-6 text-center">
                                     Didn't receive it?
-                                    <button className="pl-1 font-lighter strong-highlight hightlight-animation highlight-link hover:cursor-pointer" onClick={handleResendCode}>
+                                    <button className="pl-1 font-lighter decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer" onClick={handleResendCode}>
                                         Send again
                                     </button>
                                 </label>
@@ -119,10 +119,10 @@ const CodeStep: FC = () => {
                     </div>
                 </div>
 
-                <div className='mt-auto'>
-                    <div className="text-white text-sm mt-auto mb-4 mt-4">
+                <div className='mt-20'>
+                    <div className="text-white text-sm mt-4">
                         <p className='mb-5 text-pink-primary-300'>
-                            By clicking continue to create an account, you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='strong-highlight hightlight-animation text-base'> Terms of Conditions</a></Link> and <Link href="/blog/guide/Terms_of_Service"><a className='strong-highlight hightlight-animation text-base'>Privacy Policy</a></Link>
+                            By clicking continue to create an account, you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'> Terms of Conditions</a></Link> and <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
                         </p>
                         <SubmitButton isDisabled={code?.length != 6 || loading} icon="" isSubmitting={loading} onClick={verifyCode}>
                             Confirm
