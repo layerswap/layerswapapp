@@ -26,6 +26,7 @@ export default function Transactions() {
               </FormWizardProvider >
             </MenuProvider>
           </AuthProvider>
+          <IntroCard/>
         </div>
       </div>
     </Layout>

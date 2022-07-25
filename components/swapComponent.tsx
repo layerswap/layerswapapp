@@ -13,6 +13,7 @@ import APIKeyStep from './Wizard/Steps/APIKeyStep';
 import SwapConfirmationStep from './Wizard/Steps/SwapConfirmation';
 import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
 import { MenuProvider } from '../context/menu';
+import IntroCard from './introCard';
 
 
 const FormWizard: FormWizardSteps = {
@@ -41,6 +42,7 @@ const Swap: FC = () => {
             </SwapDataProvider >
           </MenuProvider>
         </AuthProvider>
+        <IntroCard />
       </div >
     </div >
   )
