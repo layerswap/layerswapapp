@@ -17,6 +17,7 @@ import Image from 'next/image'
 import { copyTextToClipboard } from "../lib/copyToClipboard"
 import { useAuthState } from "../context/auth"
 import ClickTooltip from "./Tooltips/ClickTooltip"
+import shortenAddress from "./ShortenAddress"
 
 
 export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
@@ -247,7 +248,7 @@ function TransactionsHistory() {
                                 )}
                               >
                                 <div className='inline-flex items-center'>
-                                  <span className="mr-2">{swap?.id?.substring(0, 5)}...{swap?.id?.substring(swap?.id?.length - 4, swap?.id?.length - 1)}</span>
+                                  <span className="mr-2">{shortenAddress(swap?.id)}</span>
                                   <ClickTooltip text='Copied!'>
                                     <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
                                       <DuplicateIcon className="h-4 w-4 text-gray-600" />
@@ -342,7 +343,7 @@ function TransactionsHistory() {
                                 {swap?.transaction_id ?
                                   <>
                                     <div className="underline hover:no-underline">
-                                      <a target={"_blank"} href={networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id)}>{swap?.transaction_id?.substring(0, 5)}...{swap?.transaction_id?.substring(swap?.transaction_id?.length - 4, swap?.transaction_id?.length - 1)}</a>
+                                      <a target={"_blank"} href={networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id)}>{shortenAddress(swap?.transaction_id)}</a>
                                     </div>
                                   </>
                                   : <div>-</div>

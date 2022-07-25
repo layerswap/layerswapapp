@@ -13,6 +13,7 @@ import { DuplicateIcon } from '@heroicons/react/outline';
 import { copyTextToClipboard } from '../lib/copyToClipboard';
 import toast from 'react-hot-toast';
 import ClickTooltip from './Tooltips/ClickTooltip';
+import shortenAddress from './ShortenAddress';
 
 type Props = {
     id: string
@@ -65,6 +66,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Id </span>
                             <span className="text-white">
                                 <div className='inline-flex items-center'>
+                                    <span className="mr-2">{shortenAddress(swap?.id)}</span>
                                     <ClickTooltip text='Copied!'>
                                         <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
                                             <DuplicateIcon className="h-4 w-4 text-gray-600" />

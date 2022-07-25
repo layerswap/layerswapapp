@@ -10,6 +10,7 @@ import { copyTextToClipboard } from '../../lib/copyToClipboard';
 import SubmitButton from '../buttons/submitButton';
 import { FC, MouseEventHandler } from 'react';
 import ClickTooltip from '../Tooltips/ClickTooltip';
+import shortenAddress from '../ShortenAddress';
 
 export class AddressDetailsProps {
     onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
@@ -44,7 +45,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                                                 className="rounded-md object-contain"
                                                             />
                                                         </div>
-                                                        <p className='text-base font-medium'> {`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</p>
+                                                        <p className='text-base font-medium'> {shortenAddress(swapFormData?.destination_address)} </p>
                                                     </div>
                                                 </span>
                                             </div>
