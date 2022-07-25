@@ -67,7 +67,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
 
     return (
         <>
-            <div className="w-full flex flex-col justify-between h-full px-8 pt-4 space-y-5  text-pink-primary-300">
+            <div className="w-full flex flex-col justify-between h-full px-6 md:px-8 pt-4 space-y-5  text-pink-primary-300">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 text-white">
                         Please enter

@@ -272,28 +272,24 @@ function UserExchanges() {
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-md bg-darkBlue align-middle shadow-xl transition-all">
+                                <Dialog.Panel className="w-fit max-w-xl transform overflow-hidden rounded-md bg-darkBlue align-middle shadow-xl transition-all">
                                     <div className="py-6 md:py-8">
-                                        <div className="flex mb-6 justify-between px-6 md:px-8">
-                                            <div className='text-lg font-semibold text-white'>
+                                        <div className="flex mb-6 items-center justify-between px-6 md:px-8">
+                                            <div className='text-lg font-semibold mr-10 text-white'>
                                                 {
-                                                    exchangeToDisconnect? <>Are you sure?</> : <>Connect {exchangeToConnect?.name}</>
+                                                    exchangeToDisconnect ? <>Are you sure?</> : <>Connect {exchangeToConnect?.name}</>
                                                 }
                                             </div>
-                                            <div className='relative grid grid-cols-1 gap-4 place-content-end z-40'>
-                                                <span className="justify-self-end text-pink-primary-300 cursor-pointer">
-                                                    <div className="">
-                                                        <button
-                                                            type="button"
-                                                            className="rounded-md text-darkblue-200  hover:text-pink-primary-300"
-                                                            onClick={handleClose}
-                                                        >
-                                                            <span className="sr-only">Close</span>
-                                                            <XIcon className="h-6 w-6" aria-hidden="true" />
-                                                        </button>
-                                                    </div>
-                                                </span>
-                                            </div>
+                                            <span className="relative grid grid-cols-1 gap-4 place-content-end z-40 justify-self-end text-pink-primary-300 cursor-pointer">
+                                                <button
+                                                    type="button"
+                                                    className="rounded-md text-darkblue-200  hover:text-pink-primary-300"
+                                                    onClick={handleClose}
+                                                >
+                                                    <span className="sr-only">Close</span>
+                                                    <XIcon className="h-6 w-6" aria-hidden="true" />
+                                                </button>
+                                            </span>
                                         </div>
                                         {
                                             exchangeToConnect?.authorization_flow === "o_auth2" &&
