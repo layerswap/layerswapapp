@@ -86,9 +86,6 @@ const Wizard: FC = () => {
             </div>
          </div>
       </div>
-      <IntroCard className={classNames(
-         wizard[currentStep].positionPercent > 0 ? 'hidden' : '','block'
-      )}/>
    </>
 }
 
