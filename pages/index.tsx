@@ -30,7 +30,7 @@ export async function getServerSideProps(context) {
   );
 
   var query = context.query;
-  query.addressSource = query.addressSource?.toLowerCase();
+  query.addressSource = query.addressSource?.toLowerCase() ?? null;
   var apiClient = new LayerSwapApiClient();
   const data = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
