@@ -12,7 +12,7 @@ import { ExchangeAuthorizationSteps, FormWizardSteps, SwapWizardSteps } from '..
 import SubmitButton from '../../buttons/submitButton';
 import SpinIcon from '../../icons/spinIcon';
 
-const CodeStep: FC = () => {
+const  CodeStep: FC = () => {
 
     const [code, setCode] = useState("")
     // const { nextStep } = useWizardState();

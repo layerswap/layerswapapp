@@ -59,7 +59,6 @@ export default class ExchangeSettings {
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.KucoinId] = {
             ExchangeWithdrawalPageUrl: "https://www.kucoin.com/assets/withdraw",
-            WithdrawalWarningMessage: "Transfers from *KuCoin Android* app are temporarily not supported. Please use the website/iOS app instead.",
             RequireSelectInternal: true,
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.OkexId] = {

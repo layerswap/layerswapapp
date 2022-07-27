@@ -4,7 +4,7 @@ import LayerSwapApiClient, { SwapDetailsResponse } from "../lib/layerSwapApiClie
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
 import { ClockIcon } from '@heroicons/react/solid';
-import { ChevronRightIcon, DuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
+import { ChevronRightIcon, DocumentDuplicateIcon, DuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 
 import { SwapStatus } from "../Models/SwapStatus"
 import { Dialog, Transition, Popover } from "@headlessui/react"
@@ -16,6 +16,7 @@ import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
 import { copyTextToClipboard } from "../lib/copyToClipboard"
 import { useAuthState } from "../context/auth"
+import ClickTooltip from "./Tooltips/ClickTooltip"
 
 
 export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
@@ -247,25 +248,11 @@ function TransactionsHistory() {
                               >
                                 <div className='inline-flex items-center'>
                                   <span className="mr-2">{swap?.id?.substring(0, 5)}...{swap?.id?.substring(swap?.id?.length - 4, swap?.id?.length - 1)}</span>
-                                  <Popover>
-                                    <Popover.Button>
-                                      <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
-                                        <DuplicateIcon className="h-4 w-4 text-gray-600" />
-                                      </div>
-                                    </Popover.Button>
-                                    <Popover.Panel>
-                                      <div className="ml-1 text-white">
-                                        <div className="relative">
-                                          <div className="w-14 absolute flex -right-0.5 bottom-4 flex-col mb-3">
-                                            <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
-                                              Copied!
-                                            </span>
-                                            <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100"></div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </Popover.Panel>
-                                  </Popover>
+                                  <ClickTooltip text='Copied!' moreClassNames="-right-1 bottom-3">
+                                    <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
+                                      <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
+                                    </div>
+                                  </ClickTooltip>
                                 </div>
                               </td>
                               <td

@@ -93,7 +93,7 @@ const EmailStep: FC<Props> = ({onSend}) => {
                                                     {...field}
                                                     placeholder="john@example.com"
                                                     autoCorrect="off"
-                                                    type="text"
+                                                    type="email"
                                                     name="email"
                                                     id="email"
                                                     className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block

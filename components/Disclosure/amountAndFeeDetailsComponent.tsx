@@ -1,10 +1,8 @@
-import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/outline'
+import { ChevronDownIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
-import Tooltip from './tooltip';
-import { SwapFormValues } from './DTOs/SwapFormValues';
-import { useSwapDataState } from '../context/swap';
-import { Currency } from '../Models/Currency';
-import { Exchange } from '../Models/Exchange';
+import HoverTooltip from '.././Tooltips/HoverTooltip';
+import { Currency } from '../../Models/Currency';
+import { Exchange } from '../../Models/Exchange';
 
 function exchangeFee(currency: Currency, exchange: Exchange): number {
     return currency?.exchanges?.find(e => e.exchange_id == exchange.id)?.fee || 0;
@@ -78,7 +76,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                     <div className="mt-2 flex flex-row items-baseline justify-between">
                                         <label className="inline-flex font-normal text-pink-primary-300 text-left">
                                             Exchange Fee
-                                            <Tooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
+                                            <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36 md:w-40 lg:w-40'/>
                                         </label>
                                         <span className="font-normal text-center text-white">
                                             {(() => {
@@ -87,7 +85,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                                 }
                                                 return "0";
                                             })()}
-                                            <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex text-pink-primary-300'>(Refundable) <Tooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." /></span>}</span>
+                                            <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex text-pink-primary-300'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." /></span>}</span>
                                         </span>
                                     </div>
                                     <div className="mt-2 flex flex-row items-baseline justify-between">
