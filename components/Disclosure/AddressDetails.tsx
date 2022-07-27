@@ -1,4 +1,4 @@
-import { ChevronDownIcon, DuplicateIcon, ExternalLinkIcon, PencilAltIcon } from '@heroicons/react/outline'
+import { ChevronDownIcon, DocumentDuplicateIcon, ExternalLinkIcon, PencilAltIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
 import { useSwapDataState } from '../../context/swap';
 import Image from 'next/dist/client/image';
@@ -84,9 +84,9 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                                 Edit Address
                                             </button>
                                             <div className='cursor-pointer text-pink-primary-300 hover:text-white flex items-center m-1.5'>
-                                                <ClickTooltip text='Copied!'>
+                                                <ClickTooltip text='Copied!'  moreClassNames='-right-1 bottom-3'>
                                                     <div onClick={() => copyTextToClipboard(swapFormData?.destination_address)}>
-                                                        <DuplicateIcon className='inline-block h-4 w-4 mr-2' />
+                                                        <DocumentDuplicateIcon className='inline-block h-4 w-4 mr-2' />
                                                         <span className='text-sm font-normal'>Copy Full Address</span>
                                                     </div>
                                                 </ClickTooltip>
