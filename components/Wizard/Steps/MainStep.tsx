@@ -39,6 +39,7 @@ import { BlacklistedAddress } from "../../../Models/BlacklistedAddress";
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { clearTempData, getTempData } from "../../../lib/openLink";
+import NumericInput from "../../Input/NumericInput";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -212,8 +213,6 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
 
     const name = "amount"
 
-    const [field, meta, helpers] = useField(name)
-
     const placeholder = currency ? `${currency?.baseObject?.min_amount} - ${currency?.baseObject?.max_amount}` : '0.01234'
 
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
@@ -224,7 +223,7 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
             e.target.value = parseFloat(e.target.value).toFixed(count);
         }
     }
-    
+
     function replaceComma(i) {
         var val = (document.getElementById(i) as HTMLInputElement).value;
         if (val.match(/\,/)) {
@@ -234,35 +233,22 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
     }
 
     return (<>
-        <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
-            Amount
-        </label>
-        <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-600 border-ouline-blue border ">
-            <input
-                {...field}
-                pattern="^[0-9]*[.,]?[0-9]*$"
-                inputMode="decimal"
-                autoComplete="off"
-                disabled={!currency}
-                placeholder={placeholder}
-                autoCorrect="off"
-                min={currency?.baseObject?.min_amount}
-                max={currency?.baseObject?.max_amount}
-                onInput={() => { replaceComma('amount'); limitDecimalPlaces(event, currency?.baseObject?.precision) }}
-                type="text"
-                step={isNaN(step) ? 0.01 : step}
-                name={name}
-                id="amount"
-                ref={ref}
-                className="disabled:cursor-not-allowed h-12 bg-darkblue-600 focus:ring-pink-primary focus:border-pink-primary flex-grow block w-full min-w-0 rounded-none rounded-l-md sm:text-sm font-semibold placeholder-gray-400 border-0"
-                onChange={e => {
-                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
-                }}
-            />
-            <span className="ml-1 inline-flex items-center">
-                <CurrenciesField />
-            </span>
-        </div>
+        <NumericInput
+            label='Amount'
+            disabled={!currency}
+            placeholder={placeholder}
+            min={currency?.baseObject?.min_amount}
+            max={currency?.baseObject?.max_amount}
+            step={isNaN(step) ? 0.01 : step}
+            name={name}
+            onChange={e => {
+                /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
+            }}
+            onInput={() => { replaceComma('amount'); limitDecimalPlaces(event, currency?.baseObject?.precision) }}
+            
+        >
+            <CurrenciesField />
+        </NumericInput>
     </>)
 });
 
