@@ -1,10 +1,8 @@
-import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/outline'
+import { ChevronDownIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
-import HoverTooltip from './Tooltips/HoverTooltip';
-import { SwapFormValues } from './DTOs/SwapFormValues';
-import { useSwapDataState } from '../context/swap';
-import { Currency } from '../Models/Currency';
-import { Exchange } from '../Models/Exchange';
+import HoverTooltip from '.././Tooltips/HoverTooltip';
+import { Currency } from '../../Models/Currency';
+import { Exchange } from '../../Models/Exchange';
 
 function exchangeFee(currency: Currency, exchange: Exchange): number {
     return currency?.exchanges?.find(e => e.exchange_id == exchange.id)?.fee || 0;
