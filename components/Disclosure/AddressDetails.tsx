@@ -80,12 +80,12 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                 </Disclosure.Button>
                                 <Disclosure.Panel className="p-1.5 text-sm">
                                     <>
-                                        <div className="flex items-center flex-wrap space-y-1 md:space-y-0 md:space-x-5">
-                                            <a href={swapFormData?.network?.baseObject.account_explorer_template.replace("{0}", swapFormData?.destination_address)} target='_blank' className='mr-5 md:mr-0 flex text-pink-primary-300 cursor-pointer items-center hover:text-white' >
+                                        <div className="flex items-center flex-wrap space-y-1 sm:space-y-0 sm:space-x-5">
+                                            <a href={swapFormData?.network?.baseObject.account_explorer_template.replace("{0}", swapFormData?.destination_address)} target='_blank' className='mr-5 sm:mr-0 flex text-pink-primary-300 cursor-pointer items-center hover:text-white' >
                                                 <ExternalLinkIcon className='h-4 w-4 mr-2' />
                                                 <p className=''>View In Explorer</p>
                                             </a>
-                                            <div className='cursor-pointer text-pink-primary-300 hover:text-white block items-center'>
+                                            <div className='cursor-pointer text-pink-primary-300 mr-5 sm:mr-0 hover:text-white flex items-center '>
                                                 <ClickTooltip text='Copied!'>
                                                     <div onClick={() => copyTextToClipboard(swapFormData?.destination_address)}>
                                                         <DuplicateIcon className='inline-block h-4 w-4 mr-2' />
@@ -93,7 +93,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                                     </div>
                                                 </ClickTooltip>
                                             </div>
-                                            <button onClick={onClick} className="text-sm font-normal md:inline-block text-pink-primary-300 cursor-pointer items-center hover:text-white">
+                                            <button onClick={onClick} className="text-sm font-normal flex text-pink-primary-300 cursor-pointer items-center hover:text-white">
                                                 <PencilAltIcon className='inline-block h-4 w-4 mr-2' />
                                                 Edit Address
                                             </button>
