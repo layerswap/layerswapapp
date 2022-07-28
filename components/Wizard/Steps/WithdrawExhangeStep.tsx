@@ -72,7 +72,7 @@ const WithdrawExchangeStep: FC = () => {
         <>
             <div className="w-full px-6 py-6 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
-                    <h3 className="block text-lg font-medium leading-6 text-left">
+                    <h3 className="block text-lg font-medium text-white leading-6 text-left">
                         Go to
                         {
                             exchange_logo_url &&
