@@ -1,8 +1,5 @@
-import { CheckIcon, InformationCircleIcon } from '@heroicons/react/outline';
-import { FC, useCallback, useEffect, useState } from 'react'
-import Link from 'next/link';
+import { FC, useCallback, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { useWizardState, WizardPartType } from '../../../context/wizard';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInyterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
@@ -14,7 +11,6 @@ import { copyTextToClipboard } from '../../../lib/copyToClipboard';
 import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
 import { Popover } from '@headlessui/react';
-import { SwapFormValues } from '../../DTOs/SwapFormValues';
 import ExchangeSettings from '../../../lib/ExchangeSettings';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/auth';
@@ -31,13 +27,13 @@ const WithdrawExchangeStep: FC = () => {
     const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap.payment?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.payment?.id } })
 
     useInterval(async () => {
         if (currentStep === "Withdrawal") {
             const authData = TokenService.getAuthData();
             if (!authData) {
-                await goToStep("Email")
+                goToStep("Email")
                 return;
             }
             const swap = await getSwap(swapId.toString())
@@ -45,11 +41,11 @@ const WithdrawExchangeStep: FC = () => {
             const swapStatus = swap?.status;
             const paymentStatus = payment?.status
             if (swapStatus == SwapStatus.Completed)
-                await goToStep("Success")
+                goToStep("Success")
             else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
-                await goToStep("Failed")
+                goToStep("Failed")
             else if (payment?.status == "completed")
-                await goToStep("Processing")
+                goToStep("Processing")
             // else if (swapStatus == SwapStatus.Pending)
             //     await goToStep("Processing")
         }

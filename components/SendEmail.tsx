@@ -1,8 +1,6 @@
-import { ExclamationIcon } from '@heroicons/react/outline';
 import { UserIcon } from '@heroicons/react/solid';
-import { Field, Form, Formik, FormikErrors, FormikProps } from 'formik';
-import Link from 'next/link';
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { Field, Form, Formik, FormikProps } from 'formik';
+import { FC, useCallback, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate } from '../context/auth';
 import TokenService from '../lib/TokenService';
@@ -15,16 +13,16 @@ type EmailFormValues = {
     email_confirm_right_wallet?: boolean;
     email_confirm_right_information?: boolean;
 }
+
 type Props = {
     onSend: () => void
 }
+
 const EmailStep: FC<Props> = ({ onSend }) => {
     const formikRef = useRef<FormikProps<EmailFormValues>>(null);
 
     const [loading, setLoading] = useState(false)
     const { updateEmail } = useAuthDataUpdate()
-
-
 
     const sendEmail = useCallback(async (values) => {
         setLoading(true)

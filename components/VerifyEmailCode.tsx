@@ -1,52 +1,35 @@
-
-import { ExclamationIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useAuthDataUpdate, useAuthState } from '../../../../context/auth';
-import { useInterval } from '../../../../hooks/useInyterval';
-import TokenService from '../../../../lib/TokenService';
-import LayerSwapAuthApiClient from '../../../../lib/userAuthApiClient';
-import SubmitButton from '../../../buttons/submitButton';
-import SpinIcon from '../../../icons/spinIcon';
+import { useAuthDataUpdate, useAuthState } from '../context/auth';
+import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
+import { AuthConnectResponse } from '../Models/LayerSwapAuth';
+import SubmitButton from './buttons/submitButton';
+import SpinIcon from './icons/spinIcon';
 
-const CodeStep: FC = () => {
+interface VerifyEmailCodeProps {
+    onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
+}
 
+const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     const [code, setCode] = useState("")
-    // const { nextStep } = useWizardState();
     const [loading, setLoading] = useState(false)
     const [loadingResend, setLoadingResend] = useState(false)
 
-    const nextTime = TokenService.getCodeNextTime()
-
-    const router = useRouter();
-    const { redirect } = router.query;
-
-    const [resendTimeLeft, setResendTimeLeft] = useState(nextTime ? new Date(nextTime).getTime() - new Date().getTime() : 0)
-
-    const { email, authData } = useAuthState();
-
+    const { email } = useAuthState();
     const { updateAuthData } = useAuthDataUpdate()
     const handleInputChange = (e) => {
         setCode(e?.target?.value)
     }
-
-    useInterval(() => {
-        if (nextTime && new Date(nextTime).getTime() > new Date().getTime())
-            setResendTimeLeft(new Date(nextTime).getTime() - new Date().getTime())
-        else
-            setResendTimeLeft(0)
-    }, [nextTime], 1000)
 
     const verifyCode = useCallback(async () => {
         try {
             setLoading(true)
             var apiClient = new LayerSwapAuthApiClient();
             const res = await apiClient.connectAsync(email, code)
-            await updateAuthData(res)
-            await router.push(redirect?.toString() || '/')
-
+            updateAuthData(res)
+            setLoading(false)
+            await onSuccessfullVerify(res);
         }
         catch (error) {
             if (error.response?.data?.error_description) {
@@ -61,7 +44,7 @@ const CodeStep: FC = () => {
             setLoading(false)
         }
 
-    }, [email, code, redirect])
+    }, [email, code])
 
     const handleResendCode = useCallback(async () => {
         setLoadingResend(true)
@@ -142,4 +125,4 @@ const CodeStep: FC = () => {
     )
 }
 
-export default CodeStep;
+export default VerifyEmailCode;

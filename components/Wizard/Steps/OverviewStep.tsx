@@ -1,20 +1,12 @@
-import { ExclamationIcon } from '@heroicons/react/solid';
 import { useRouter } from 'next/router';
-import { FC, useCallback, useEffect, useState } from 'react'
-import toast from 'react-hot-toast';
+import { FC, useEffect } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
+import { useSwapDataUpdate } from '../../../context/swap';
 import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { SwapWizardSteps } from '../../../Models/Wizard';
 
-type Props = {
-    current: boolean
-}
-
-const OverviewStep: FC<Props> = ({ current }) => {
-    const [loading, setLoading] = useState(false)
-    const { swap } = useSwapDataState()
+const OverviewStep: FC= () => {
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
 
@@ -23,14 +15,13 @@ const OverviewStep: FC<Props> = ({ current }) => {
 
     const { getSwap } = useSwapDataUpdate()
 
-    const { payment } = swap || {}
     useEffect(() => {
         (async () => {
             try {
                 if (currentStep == "Overview") {
                     const authData = TokenService.getAuthData();
                     if (!authData) {
-                        await goToStep("Email")
+                        goToStep("Email")
                         setLoadingWizard(false)
                         return;
                     }
@@ -39,11 +30,11 @@ const OverviewStep: FC<Props> = ({ current }) => {
                     const swapStatus = swap?.status;
                     const paymentStatus = payment?.status
                     if (swapStatus == SwapStatus.Completed)
-                        await goToStep("Success")
+                        goToStep("Success")
                     else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
-                        await goToStep("Failed")
+                        goToStep("Failed")
                     else if (swapStatus == SwapStatus.Pending)
-                        await goToStep("Processing")
+                        goToStep("Processing")
                     else {
                         if (payment.external_flow_context)
                             goToStep("ExternalPayment")
@@ -58,35 +49,14 @@ const OverviewStep: FC<Props> = ({ current }) => {
                 }
             }
             catch (e) {
-                await goToStep("Failed")
+                goToStep("Failed")
                 setTimeout(() => {
                     setLoadingWizard(false)
                 }, 500);
             }
 
         })()
-    }, [swapId, currentStep])
-
-    const handleConfirm = useCallback(async () => {
-        try {
-            if (payment.external_flow_context)
-                goToStep("ExternalPayment")
-            else if (payment.manual_flow_context)
-                goToStep("Withdrawal")
-            else
-                goToStep("Processing")
-        }
-        catch (e) {
-            if (e?.response?.status === 404)
-                toast.error("Swap not found")
-            toast.error(e.message)
-            setTimeout(() => {
-                setLoadingWizard(false)
-            }, 500);
-        }
-        finally {
-        }
-    }, [payment])
+    }, [swapId, currentStep, router.query])
 
     return (
         <>
