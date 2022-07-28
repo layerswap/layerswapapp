@@ -1,29 +1,16 @@
-import { Transition } from '@headlessui/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import ConfirmationStep from '../components/Wizard/Steps/ConfirmationStep';
+import React, { useEffect, useRef, useState } from 'react'
 import MainStep from '../components/Wizard/Steps/MainStep';
-import SomeTestStep from '../components/Wizard/Steps/SomeTestStep';
 import EmailStep from '../components/Wizard/Steps/EmailStep';
 import CodeStep from '../components/Wizard/Steps/CodeStep';
-import TransactionLoadingPage from '../components/Wizard/Steps/TransactionLoadingPage';
 import OverviewStep from '../components/Wizard/Steps/OverviewStep';
 import ProccessingStep from '../components/Wizard/Steps/ProccessingStep';
 import SuccessfulStep from '../components/Wizard/Steps/SuccessfulStep';
 import FailedPage from '../components/Wizard/Steps/FailedPage';
 import AccountConnectStep from '../components/Wizard/Steps/AccountConnectStep';
-import { ArrowRightIcon, ArrowLeftIcon } from '@heroicons/react/solid';
 import SwapConfirmationStep from '../components/Wizard/Steps/SwapConfirmation';
-import WithdrawIntExchangeStep from '../components/Wizard/Steps/WithdrawIntExchangeStep';
 import WithdrawExchangeStep from '../components/Wizard/Steps/WithdrawExhangeStep';
 import APIKeyStep from '../components/Wizard/Steps/APIKeyStep';
-import { AuthData, useAuthDataUpdate, useAuthState } from './auth';
-import Wizard from '../components/Wizard/Wizard';
-import { useUserExchangeDataUpdate, useUserExchangeState } from './userExchange';
-import { UserExchangesResponse } from '../lib/bransferApiClients';
-import TokenService from '../lib/TokenService';
-import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import Router, { useRouter } from 'next/router';
-import { useInterval } from '../hooks/useInyterval';
+import { useRouter } from 'next/router';
 import { useWizardNavigation, WizardState } from '../hooks/useWizardNavigation';
 
 const WizardStateContext = React.createContext<WizardProvider>(null);

@@ -1,19 +1,12 @@
-import { useRouter } from 'next/router'
-import useSWR from 'swr';
-import CardContainer from '../components/cardContainer';
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
-import { SwapInfo, SwapOffRampInfo } from '../Models/SwapInfo';
-import { SwapStatus } from '../Models/SwapStatus';
+import { SwapOffRampInfo } from '../Models/SwapInfo';
 import { CheckIcon, XIcon } from '@heroicons/react/outline'
-import Link from 'next/link'
 import SpinIcon from '../components/icons/spinIcon';
 import Layout from '../components/layout';
-import { useRef, useState } from 'react';
 import fs from 'fs';
 import path from 'path';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
-import { AxiosError } from "axios";
 import React from 'react';
 import IntroCard from '../components/introCard';
 import { AuthProvider } from '../context/auth';
@@ -78,81 +71,6 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
       </div >
     </Layout>
   )
-}
-
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
-}
-
-function renderIndicator(swapPageStatus: SwapPageStatus) {
-  let baseBackground = "mx-auto flex items-center justify-center h-16 w-16 md:h-20 md:w-20 rounded-full sm:mx-0 ";
-  let baseIcon = "h-8 w-8 md:h-16 md:w-16 ";
-  switch (swapPageStatus) {
-    case SwapPageStatus.NotFound:
-    case SwapPageStatus.Failed: {
-      return <div className={baseBackground + 'bg-red-100'}>
-        <XIcon className={baseIcon + "text-red-500"} />
-      </div>;
-    }
-    default:
-    case SwapPageStatus.Processing: {
-      return <div className={baseBackground + 'bg-green-500'}>
-        <SpinIcon className={baseIcon + "text-green-100 animate-spin"} />
-      </div>;
-    }
-    case SwapPageStatus.Success: {
-      return <div className={baseBackground + 'bg-green-500'}>
-        <CheckIcon className={baseIcon + "text-green-100"} />
-      </div>;
-    }
-  }
-}
-
-function renderHeading(swapPageStatus: SwapPageStatus, offRampInfo?: SwapOffRampInfo) {
-  switch (swapPageStatus) {
-    case SwapPageStatus.NotFound: {
-      return "Swap not found.";
-    }
-    case SwapPageStatus.Failed: {
-      return "Something went wrong.";
-    }
-    default:
-    case SwapPageStatus.Processing: {
-      if (offRampInfo) {
-        return "Waiting..."
-      }
-      return "Processing...";
-    }
-    case SwapPageStatus.Success: {
-      return "Swap successful";
-    }
-  }
-}
-
-function renderDescription(swapPageStatus: SwapPageStatus, offRampInfo?: SwapOffRampInfo) {
-  switch (swapPageStatus) {
-    case SwapPageStatus.NotFound: {
-      return "Ooops looks like you landed on a wrong page. If you believe that's not the case plase contact us through our Discord";
-    }
-    case SwapPageStatus.Failed: {
-      return "We are sorry but there was an issue with your swap. Please contact us through our Discord";
-    }
-    default:
-    case SwapPageStatus.Processing: {
-      if (offRampInfo) {
-        return <span>We are waiting for a deposit on Address <span className='font-bold text-pink-300 text-xs md:text-sm'>{offRampInfo.deposit_address}</span> with Memo  <span className='font-bold text-pink-300 text-xs md:text-sm'>{offRampInfo.memo}</span>.</span>
-      }
-      else {
-        return "We are submitting your transaction to the network. You'll see the transaction id when it's published.";
-      }
-    }
-    case SwapPageStatus.Success: {
-      if (offRampInfo) {
-        return "Your swap successfully completed. You can see it in your exchange account, or go ahead swap more! "
-      }
-      return "Your swap successfully completed. You can view it in the explorer, or go ahead swap more!"
-    }
-  }
 }
 
 const CACHE_PATH = ".settings";
