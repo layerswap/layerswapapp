@@ -1,26 +1,27 @@
 import { useField } from "formik";
-import { FC, forwardRef } from "react";
+import { ChangeEvent, FC, forwardRef } from "react";
 import { classNames } from '../classNames'
 
-interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as'> {
+interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     label?: string
     disabled: boolean;
     placeholder: string;
     min: number;
     max: number;
+    precision: number;
     step: number;
     name: string;
     className?: string;
     children?: JSX.Element | JSX.Element[];
     ref?: any;
-    onChange: (e: any) => void;
-    onInput?: (e: any) => void
+    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ label, disabled, placeholder, min, max, step, name, className, children, onInput, onChange }, ref) => {
-
+    ({ label, disabled, placeholder, min, max, precision, step, name, className, children, onChange }, ref) => {
+        
         const [field, meta, helpers] = useField(name)
+
 
         return (<>
             {label &&
@@ -39,7 +40,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     autoCorrect="off"
                     min={min}
                     max={max}
-                    onInput={() => onInput}
+                    onInput={(event: React.ChangeEvent<HTMLInputElement>) => { replaceComma('amount'); limitDecimalPlaces(event, precision) }}
                     type="text"
                     step={step}
                     name={name}
@@ -59,5 +60,20 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
             </div>
         </>)
     });
+
+function limitDecimalPlaces(e, count) {
+    if (e.target.value.indexOf('.') == -1) { return; }
+    if ((e.target.value.length - e.target.value.indexOf('.')) > count) {
+        e.target.value = parseFloat(e.target.value).toFixed(count);
+    }
+}
+
+function replaceComma(i) {
+    var val = (document.getElementById(i) as HTMLInputElement).value;
+    if (val.match(/\,/)) {
+        val = val.replace(/\,/g, '.');
+        (document.getElementById(i) as HTMLInputElement).value = val;
+    }
+}
 
 export default NumericInput
