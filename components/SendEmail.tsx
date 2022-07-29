@@ -86,6 +86,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                                             <input
                                                 {...field}
                                                 placeholder="john@example.com"
+                                                autocomplete="home email"
                                                 autoCorrect="off"
                                                 type="email"
                                                 name="email"
