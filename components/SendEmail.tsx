@@ -71,7 +71,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                     onSubmit={sendEmail}
                 >
                     {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
-                        <Form className='flex flex-col items-stretch min-h-[480px] text-pink-primary-300'>
+                        <Form className='flex flex-col items-stretch min-h-[500px] text-pink-primary-300'>
                             <div className="w-full px-3 md:px-8 pt-4 flex-col flex-1 flex">
                                 <UserIcon className='w-12 h-12 mt-auto text-pink-primary self-center' />
                                 <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
@@ -87,7 +87,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                                                 {...field}
                                                 placeholder="john@example.com"
                                                 autoCorrect="off"
-                                                type="text"
+                                                type="email"
                                                 name="email"
                                                 id="email"
                                                 className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
@@ -97,7 +97,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                                     </Field>
                                 </div>
                                 <div className="text-white text-sm mt-auto">
-                                    <SubmitButton isDisabled={loading || !!errors.email || !!errors.email_confirm_right_information || !!errors.email_confirm_right_wallet} icon="" isSubmitting={loading} onClick={() => { }}>
+                                    <SubmitButton isDisabled={loading || !!errors.email || !!errors.email_confirm_right_information || !!errors.email_confirm_right_wallet} icon="" isSubmitting={loading} >
                                         Continue
                                     </SubmitButton>
                                 </div>

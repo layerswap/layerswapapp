@@ -4,7 +4,7 @@ import LayerSwapApiClient, { SwapDetailsResponse } from "../lib/layerSwapApiClie
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
 import { ClockIcon } from '@heroicons/react/solid';
-import { ChevronRightIcon, DuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
+import { ChevronRightIcon, DocumentDuplicateIcon, DuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 
 import { SwapStatus } from "../Models/SwapStatus"
 import { Dialog, Transition, Popover } from "@headlessui/react"
@@ -248,9 +248,9 @@ function TransactionsHistory() {
                               >
                                 <div className='inline-flex items-center'>
                                   <span className="mr-2">{swap?.id?.substring(0, 5)}...{swap?.id?.substring(swap?.id?.length - 4, swap?.id?.length - 1)}</span>
-                                  <ClickTooltip text='Copied!'>
+                                  <ClickTooltip text='Copied!' moreClassNames="-right-1 bottom-3">
                                     <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
-                                      <DuplicateIcon className="h-4 w-4 text-gray-600" />
+                                      <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
                                     </div>
                                   </ClickTooltip>
                                 </div>
