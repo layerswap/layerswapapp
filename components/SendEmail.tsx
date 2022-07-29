@@ -66,7 +66,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                 <Formik
                     enableReinitialize={true}
                     innerRef={formikRef}
-                    initialValues={{ email: "" }}
+                    initialValues={{ email: undefined }}
                     validateOnMount={true}
                     onSubmit={sendEmail}
                 >
@@ -86,7 +86,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                                             <input
                                                 {...field}
                                                 placeholder="john@example.com"
-                                                autocomplete="home email"
+                                                autoComplete="home email"
                                                 autoCorrect="off"
                                                 type="email"
                                                 name="email"
