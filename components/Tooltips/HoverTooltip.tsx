@@ -7,12 +7,12 @@ type Props = {
     moreClassNames?: string;
 }
 
-const Tooltip: FC<Props> = (({text, moreClassNames}) => { 
+const HoverTooltip: FC<Props> = (({text, moreClassNames}) => { 
     return (
         <>
             <div className="ml-1 text-white inset-y-0 -right-4 flex items-center group">
                 <div className="absolute flex flex-col items-center">
-                    <div className={` absolute -right-6 bottom-0 flex-col items-right mb-3 hidden group-hover:flex ${moreClassNames}`}>
+                    <div className={`absolute min-w-full -right-6 bottom-0 flex-col items-right mb-3 hidden group-hover:flex ${moreClassNames}`}>
                         <span className="leading-4 min z-50 p-2 text-xs text-left text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
                             {text}
                         </span>
@@ -27,4 +27,4 @@ const Tooltip: FC<Props> = (({text, moreClassNames}) => {
     )
 })
 
-export default Tooltip
+export default HoverTooltip

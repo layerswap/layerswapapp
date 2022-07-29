@@ -36,7 +36,7 @@ const Wizard: FC = () => {
    }, []);
 
    return <>
-      <div className={`pb-6 bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
+      <div className={`mb-10 pb-6 bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-ouline-blue">
                <div style={{ width: `${wizard[currentStep].positionPercent}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-pink-primary"></div>

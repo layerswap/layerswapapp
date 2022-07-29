@@ -19,7 +19,7 @@ const ClickTooltip: FC<Props> = (({ children, text, moreClassNames }) => {
                 <Popover.Panel>
                     <div className="ml-1 text-white">
                         <div className="relative">
-                            <div className={`w-14 absolute flex -right-1 bottom-3 flex-col mb-3 ${moreClassNames}`}>
+                            <div className={`w-fit absolute flex flex-col mb-3 ${moreClassNames}`}>
                                 <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
                                     {text}
                                 </span>
