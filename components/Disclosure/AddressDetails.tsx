@@ -64,7 +64,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                                         </span>
                                                     </div>
                                                     :
-                                                    <p className='text-base font-medium'> {`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</p>
+                                                    <p className='text-base font-medium'> {shortenAddress(swapFormData?.destination_address)}</p>
                                             }
                                         </div>
                                     }

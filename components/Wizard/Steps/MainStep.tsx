@@ -28,6 +28,7 @@ import { InjectedConnector } from "@web3-react/injected-connector";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { clearTempData, getTempData } from "../../../lib/openLink";
 import NumericInput from "../../Input/NumericInput";
+import AddressInput from "../../Input/AddressInput";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -486,23 +487,13 @@ export default function MainStep() {
                                         </div>
                                     }
                                     <div>
-                                        <Field name="destination_address">
-                                            {({ field }) => (
-                                                <input
-                                                    {...field}
-                                                    ref={addressRef}
-                                                    placeholder={"0x123...ab56c"}
-                                                    autoCorrect="off"
-                                                    type={"text"}
-                                                    name="destination_address"
-                                                    id="destination_address"
-                                                    disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
-                                                    className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
-                                                />
-                                            )}
-                                        </Field>
+                                        <AddressInput
+                                            disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
+                                            name={"destination_address"}
+                                            className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
+                                            ref={addressRef}
+                                        />
                                     </div>
-
                                 </div>
                             </div >
                             <div className="mb-6 leading-4">
