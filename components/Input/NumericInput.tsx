@@ -20,8 +20,7 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
     ({ label, disabled, placeholder, min, max, precision, step, name, className, children, onChange }, ref) => {
         
-        const [field, meta, helpers] = useField(name)
-
+        const [field] = useField(name)
 
         return (<>
             {label &&
@@ -40,7 +39,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     autoCorrect="off"
                     min={min}
                     max={max}
-                    onInput={(event: React.ChangeEvent<HTMLInputElement>) => { replaceComma('amount'); limitDecimalPlaces(event, precision) }}
+                    onInput={(event: React.ChangeEvent<HTMLInputElement>) => { replaceComma(event); limitDecimalPlaces(event, precision) }}
                     type="text"
                     step={step}
                     name={name}
@@ -68,11 +67,11 @@ function limitDecimalPlaces(e, count) {
     }
 }
 
-function replaceComma(i) {
-    var val = (document.getElementById(i) as HTMLInputElement).value;
+function replaceComma(e) {
+    var val = e.target.value;
     if (val.match(/\,/)) {
         val = val.replace(/\,/g, '.');
-        (document.getElementById(i) as HTMLInputElement).value = val;
+        e.target.value = val;
     }
 }
 
