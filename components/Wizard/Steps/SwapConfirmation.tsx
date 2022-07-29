@@ -185,7 +185,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             twoFARequired &&
                             <div className='mt-4'>
                                 <label htmlFor="amount" className="block font-normal text-pink-primary-300 text-sm">
-                                    Your verification code
+                                    Your Coinbase 2FA code
                                 </label>
                                 <div className="relative rounded-md shadow-sm mt-2 mb-4">
                                     <input
