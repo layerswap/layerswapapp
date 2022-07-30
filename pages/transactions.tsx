@@ -1,6 +1,5 @@
 import Layout from '../components/layout'
 import { AuthProvider } from '../context/auth'
-import IntroCard from '../components/introCard'
 import TransactionsHistory from '../components/swapHistoryComponent'
 import { MenuProvider } from '../context/menu'
 import { SettingsProvider } from '../context/settings'

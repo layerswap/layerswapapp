@@ -9,8 +9,8 @@ import TokenService from '../../lib/TokenService';
 import LayerswapMenu from '../LayerswapMenu';
 import Link from 'next/link';
 import LayerSwapLogo from '../icons/layerSwapLogo';
+import IntroCard from '../introCard';
 import { useRouter } from 'next/router';
-
 
 function classNames(...classes) {
    return classes.filter(Boolean).join(' ')

@@ -65,7 +65,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
                 </MenuProvider>
               </SettingsProvider>
             </AuthProvider>
-            <IntroCard />
+            <IntroCard/>
           </div >
         </div >
       </div >

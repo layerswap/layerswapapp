@@ -16,7 +16,7 @@ const navigation = {
     },
     {
       name: 'GitHub',
-      href: 'https://github.com/bransfer/layerswapapp',
+      href: 'https://github.com/layerswap/layerswapapp',
       icon: (props) => (
         <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
           <path

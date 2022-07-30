@@ -1,8 +1,7 @@
-import { FC, Fragment, useEffect, useRef, useState } from 'react'
-import { Dialog, Menu, Transition } from "@headlessui/react";
-import { ArrowLeftIcon, MenuIcon, XIcon } from '@heroicons/react/solid';
+import { FC, Fragment } from 'react'
+import { Menu, Transition } from "@headlessui/react";
+import { MenuIcon } from '@heroicons/react/solid';
 import Swap from './swapComponent';
-import IntroCard from './introCard';
 import { AuthProvider, useAuthState } from '../context/auth';
 
 function classNames(...classes) {

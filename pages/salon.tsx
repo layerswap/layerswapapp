@@ -22,7 +22,7 @@ export default function Salon() {
         <Layout>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
                 <div className='flex flex-col space-y-5 animate-fade-in'>
-                    <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row bg-darkBlue shadow-card">
+                    <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row shadow-card">
                         <div className='flex place-content-center mb-12 md:mb-4'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="116" height="116" viewBox="0 0 116 116" fill="none">
                                 <circle cx="58" cy="58" r="58" fill="#55B585" fillOpacity="0.1" />

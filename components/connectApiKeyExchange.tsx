@@ -67,7 +67,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
 
     return (
         <>
-            <div className="w-full px-8 py-4 space-y-5 grid grid-flow-row text-pink-primary-300">
+            <div className="w-full flex flex-col justify-between h-full px-6 md:px-8 pt-4 space-y-5  text-pink-primary-300">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 text-white">
                         Please enter
@@ -147,7 +147,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
                     {
                         userGuideURL && <div className="flex items-center">
                             <span className="block text-base text-white font-normal leading-6"> Read about
-                                <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to get API Keys</span>&nbsp;</>} moreClassNames="-mt-11">
+                                <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to get API Keys</span>&nbsp;</>} moreClassNames="-mt-11 md:-mt-8">
                                     <DocIframe onConfirm={handleCloseSlideover} URl={userGuideURL} />
                                 </SlideOver>
                             </span>
