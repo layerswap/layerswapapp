@@ -79,7 +79,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                         <div className="w-full px-3 md:px-8 pt-4 flex-col flex-1 flex">
                             <MailOpenIcon className='w-12 h-12 mt-auto text-pink-primary self-center' />
                             <div className='text-center mt-5'>
-                                <p className='text-lg'>Please enter the 6 digit code sent to <p className='font-medium text-white'>{email}</p></p>
+                                <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{email}</span></p>
                             </div>
                             <div className="relative rounded-md shadow-sm mt-5">
                                 <Field name="Code">
