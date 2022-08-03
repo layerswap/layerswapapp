@@ -9,7 +9,7 @@ import {
     ChevronDownIcon,
     CheckIcon,
 } from '@heroicons/react/outline'
-import { SelectMenuItem } from '../selectMenu/selectMenuItem'
+import { SelectMenuItem } from './selectMenuItem'
 export interface SelectProps<T> {
     name: string;
     value: SelectMenuItem<T>;

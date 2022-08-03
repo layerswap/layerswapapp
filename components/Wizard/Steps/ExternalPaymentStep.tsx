@@ -1,16 +1,12 @@
-import { CheckIcon } from '@heroicons/react/outline';
-import { FC, useCallback, useEffect, useState } from 'react'
-import Link from 'next/link';
+import { FC, useCallback } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { useWizardState, WizardPartType } from '../../../context/wizard';
 import SubmitButton from '../../buttons/submitButton';
-import { useInterval } from '../../../hooks/useInyterval';
+import { useInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { SwapWizardSteps } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
-import { copyTextToClipboard } from '../../../lib/copyToClipboard';
 
 const ExternalPaumentStep: FC = () => {
 
@@ -27,7 +23,7 @@ const ExternalPaumentStep: FC = () => {
         if (currentStep === "ExternalPayment") {
             const authData = TokenService.getAuthData();
             if (!authData) {
-                await goToStep("Email")
+                goToStep("Email")
                 return;
             }
             const swap = await getSwap(swapId.toString())
@@ -35,9 +31,9 @@ const ExternalPaumentStep: FC = () => {
             const swapStatus = swap?.status;
             const paymentStatus = payment?.status
             if (swapStatus == SwapStatus.Completed)
-                await goToStep("Success")
+                goToStep("Success")
             else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
-                await goToStep("Failed")
+                goToStep("Failed")
             // else if (swapStatus == SwapStatus.Pending)
             //     await goToStep("Processing")
         }

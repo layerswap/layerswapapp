@@ -1,7 +1,7 @@
 import { CryptoNetwork } from "../../Models/CryptoNetwork";
 import { Currency } from "../../Models/Currency";
 import { Exchange } from "../../Models/Exchange";
-import { SelectMenuItem } from "../selectMenu/selectMenuItem";
+import { SelectMenuItem } from "../Select/selectMenuItem";
 
 export interface SwapFormValues {
     amount: string;

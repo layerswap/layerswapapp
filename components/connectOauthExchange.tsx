@@ -2,7 +2,7 @@ import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useInterval } from '../hooks/useInyterval';
+import { useInterval } from '../hooks/useInterval';
 import { BransferApiClient } from '../lib/bransferApiClients';
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';

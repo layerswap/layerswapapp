@@ -1,6 +1,6 @@
 import { useField } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
-import { classNames } from '../classNames'
+import { classNames } from '../utils/classNames'
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     label?: string

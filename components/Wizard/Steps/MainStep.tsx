@@ -9,7 +9,7 @@ import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { Currency } from "../../../Models/Currency";
 import { Exchange } from "../../../Models/Exchange";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { SelectMenuItem } from "../../selectMenu/selectMenuItem";
+import { SelectMenuItem } from "../../Select/selectMenuItem";
 import Image from 'next/image'
 import SwapButton from "../../buttons/swapButton";
 import { useSwapDataUpdate } from "../../../context/swap";
@@ -29,6 +29,7 @@ import { isValidAddress } from "../../../lib/addressValidator";
 import { clearTempData, getTempData } from "../../../lib/openLink";
 import NumericInput from "../../Input/NumericInput";
 import AddressInput from "../../Input/AddressInput";
+import { classNames } from "../../utils/classNames";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -490,7 +491,7 @@ export default function MainStep() {
                                         <AddressInput
                                             disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
                                             name={"destination_address"}
-                                            className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
+                                            className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
                                             ref={addressRef}
                                         />
                                     </div>
@@ -523,8 +524,4 @@ function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
     else {
         return "Swap now";
     }
-}
-
-function joinClassNames(...classes: string[]) {
-    return classes.filter(Boolean).join(' ')
 }
