@@ -24,8 +24,8 @@ import { SettingsProvider } from '../context/settings';
 import SwapCodeStep from '../components/Wizard/Steps/SwapCodeStep';
 
 const SwapWizard: SwapWizardSteps = {
-  "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 70 },
-  "Code": { title: "Code", content: SwapCodeStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 75 },
+  "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, positionPercent: 70 },
+  "Code": { title: "Code", content: SwapCodeStep, positionPercent: 75 },
   "Overview": { title: "Payment overview", content: OverviewStep, navigationDisabled: true, positionPercent: 80 },
   "ExternalPayment": { title: "Withdrawal", content: ExternalPaumentStep, navigationDisabled: true, positionPercent: 90 },
   "Withdrawal": { title: "Withdrawal", content: WithdrawExchangeStep, positionPercent: 90, navigationDisabled: true },

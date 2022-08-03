@@ -60,7 +60,7 @@ export const authSteps: WizardPart = {
     type: WizardPartType.Auth,
     steps: [
         { title: "Email confirmation", status: StepStatus.Upcoming, content: EmailStep },
-        { title: "Code", status: StepStatus.Upcoming, content: CodeStep, navigationDisabled: true },
+        { title: "Code", status: StepStatus.Upcoming, content: CodeStep },
     ]
 }
 

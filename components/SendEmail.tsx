@@ -1,7 +1,8 @@
 import { UserIcon } from '@heroicons/react/solid';
-import { Field, Form, Formik, FormikProps } from 'formik';
-import { FC, useCallback, useRef, useState } from 'react'
+import { Field, Form, Formik, FormikErrors } from 'formik';
+import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
+import { useAuthState } from '../context/auth';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
@@ -13,21 +14,25 @@ type EmailFormValues = {
 }
 
 type Props = {
-    onSend: (email:string) => void
+    onSend: (email: string) => void
 }
 
 const EmailStep: FC<Props> = ({ onSend }) => {
     const initialValues: EmailFormValues = { emailz: undefined };
+    const { email } = useAuthState();
 
     const sendEmail = useCallback(async (values: EmailFormValues) => {
         try {
-            const apiClient = new LayerSwapAuthApiClient();
-            const email = values.emailz;
-            const res = await apiClient.getCodeAsync(email)
-            if (!res.is_success)
-                throw new Error(res.errors)
-            TokenService.setCodeNextTime(res?.data?.next)
-            onSend(email)
+            const inputEmail = values.emailz;
+            if (inputEmail != email) {
+                const apiClient = new LayerSwapAuthApiClient();
+                const res = await apiClient.getCodeAsync(inputEmail)
+                if (!res.is_success)
+                    throw new Error(res.errors)
+                TokenService.setCodeNextTime(res?.data?.next)
+            }
+
+            onSend(inputEmail)
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
@@ -38,14 +43,14 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                 toast.error(error.message)
             }
         }
-    }, [])
+    }, [email])
 
     function validateEmail(values: EmailFormValues) {
-        let error;
+        let error: FormikErrors<EmailFormValues> = {};
         if (!values.emailz) {
-            error = 'Required';
+            error.emailz = 'Required';
         } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.emailz)) {
-            error = 'Invalid email address';
+            error.emailz = 'Invalid email address';
         }
         return error;
     }
@@ -55,6 +60,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
             <Formik
                 initialValues={initialValues}
                 onSubmit={sendEmail}
+                validateOnMount={true}
                 validate={validateEmail}
             >
                 {({ isValid, isSubmitting }) => (

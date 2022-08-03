@@ -57,10 +57,8 @@ textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
-  border: 1px solid #1A2949;
-  -webkit-text-fill-color: #f8fdff;
-  -webkit-box-shadow: 0 0 0px 1000px #131e36 inset;
-  transition: background-color 5000s ease-in-out 0s;
+  transition: all 5000s ease-in-out 0s;
+  transition-property: background-color, color;
 }
 
 .shadowed-button{

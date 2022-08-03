@@ -78,6 +78,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         <>
             <Formik
                 initialValues={initialValues}
+                validateOnMount={true}
                 validate={(values: CodeFormValues) => {
                     const errors: FormikErrors<CodeFormValues> = {};
 
@@ -90,10 +91,10 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
 
                     return errors;
                 }}
-                onSubmit={async () => {
+                onSubmit={async (values: CodeFormValues) => {
                     try {
                         var apiClient = new LayerSwapAuthApiClient();
-                        const res = await apiClient.connectAsync(email, initialValues.Code)
+                        const res = await apiClient.connectAsync(email, values.Code)
                         updateAuthData(res)
                         await onSuccessfullVerify(res);
                     }
