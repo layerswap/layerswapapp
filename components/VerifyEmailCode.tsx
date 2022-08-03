@@ -78,6 +78,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         <>
             <Formik
                 initialValues={initialValues}
+                validateOnMount={true}
                 validate={(values: CodeFormValues) => {
                     const errors: FormikErrors<CodeFormValues> = {};
 

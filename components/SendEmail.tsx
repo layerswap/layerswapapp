@@ -1,5 +1,5 @@
 import { UserIcon } from '@heroicons/react/solid';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthState } from '../context/auth';
@@ -46,11 +46,11 @@ const EmailStep: FC<Props> = ({ onSend }) => {
     }, [email])
 
     function validateEmail(values: EmailFormValues) {
-        let error;
+        let error: FormikErrors<EmailFormValues> = {};
         if (!values.emailz) {
-            error = 'Required';
+            error.emailz = 'Required';
         } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.emailz)) {
-            error = 'Invalid email address';
+            error.emailz = 'Invalid email address';
         }
         return error;
     }
@@ -60,6 +60,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
             <Formik
                 initialValues={initialValues}
                 onSubmit={sendEmail}
+                validateOnMount={true}
                 validate={validateEmail}
             >
                 {({ isValid, isSubmitting }) => (
