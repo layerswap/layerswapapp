@@ -1,6 +1,6 @@
 import { UserIcon } from '@heroicons/react/solid';
 import { Field, Form, Formik, FormikErrors } from 'formik';
-import { FC, useCallback } from 'react'
+import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthState } from '../context/auth';
 import TokenService from '../lib/TokenService';
@@ -18,20 +18,20 @@ type Props = {
 }
 
 const EmailStep: FC<Props> = ({ onSend }) => {
-    const initialValues: EmailFormValues = { emailz: undefined };
-    const { email } = useAuthState();
+    const initialValues: EmailFormValues = { emailz: undefined }; 
+    const [storedEmail, setStoredEmail] = useState<string>(undefined);
 
     const sendEmail = useCallback(async (values: EmailFormValues) => {
         try {
             const inputEmail = values.emailz;
-            if (inputEmail != email) {
+            if (inputEmail != storedEmail) {
                 const apiClient = new LayerSwapAuthApiClient();
                 const res = await apiClient.getCodeAsync(inputEmail)
                 if (!res.is_success)
                     throw new Error(res.errors)
                 TokenService.setCodeNextTime(res?.data?.next)
             }
-
+            setStoredEmail(inputEmail);
             onSend(inputEmail)
         }
         catch (error) {
@@ -43,7 +43,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                 toast.error(error.message)
             }
         }
-    }, [email])
+    }, [storedEmail])
 
     function validateEmail(values: EmailFormValues) {
         let error: FormikErrors<EmailFormValues> = {};
@@ -83,7 +83,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                                                 placeholder="john@example.com"
                                                 autoComplete="email"
                                                 type="email"
-                                                className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-42 block
+                                                className="h-12 pb-1 pt-0 text-white  focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-42 block
                                                    placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                                             />
                                         )}

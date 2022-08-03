@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react'
-import Link from 'next/link'
 import LayerSwapLogo from './icons/layerSwapLogo'
 import { useRouter } from 'next/router';
 

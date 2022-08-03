@@ -1,20 +1,11 @@
-import { FC, Fragment, useCallback, useEffect, useRef, useState } from 'react'
-import { Dialog, Menu, Transition } from "@headlessui/react";
-import { Step, StepPath, useWizardState, WizardPart, WizardParts, WizardPartType } from '../../context/wizard';
-import { ArrowLeftIcon, MenuIcon, XIcon } from '@heroicons/react/solid';
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { Transition } from "@headlessui/react";
+import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
-import { BaseWizard, FormSteps, FormWizardSteps, SwapWizardSteps } from '../../Models/Wizard';
-import { useAuthState } from '../../context/auth';
-import TokenService from '../../lib/TokenService';
+import { BaseWizard } from '../../Models/Wizard';
 import LayerswapMenu from '../LayerswapMenu';
-import Link from 'next/link';
 import LayerSwapLogo from '../icons/layerSwapLogo';
 import { useRouter } from 'next/router';
-
-
-function classNames(...classes) {
-   return classes.filter(Boolean).join(' ')
-}
 
 const Wizard: FC = () => {
 

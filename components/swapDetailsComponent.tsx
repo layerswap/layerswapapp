@@ -10,10 +10,10 @@ import { Currency } from '../Models/Currency';
 import { CryptoNetwork } from '../Models/CryptoNetwork';
 import { Popover } from '@headlessui/react';
 import { DocumentDuplicateIcon, DuplicateIcon } from '@heroicons/react/outline';
-import { copyTextToClipboard } from '../lib/copyToClipboard';
+import { copyTextToClipboard } from './utils/copyToClipboard';
 import toast from 'react-hot-toast';
 import ClickTooltip from './Tooltips/ClickTooltip';
-import shortenAddress from './ShortenAddress';
+import shortenAddress from './utils/ShortenAddress';
 
 type Props = {
     id: string

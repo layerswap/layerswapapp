@@ -4,7 +4,7 @@ import { useIntercom } from 'react-use-intercom';
 import SubmitButton from '../../buttons/submitButton';
 import { useAuthState } from '../../../context/auth';
 
-const FailedPage: FC = () => {
+const FailedStep: FC = () => {
     const { swap } = useSwapDataState()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
@@ -36,4 +36,4 @@ const FailedPage: FC = () => {
     )
 }
 
-export default FailedPage;
+export default FailedStep;

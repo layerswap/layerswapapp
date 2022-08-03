@@ -2,10 +2,10 @@ import { ChevronDownIcon, DocumentDuplicateIcon, ExternalLinkIcon, PencilAltIcon
 import { Disclosure } from "@headlessui/react";
 import { useSwapDataState } from '../../context/swap';
 import Image from 'next/dist/client/image';
-import { copyTextToClipboard } from '../../lib/copyToClipboard';
+import { copyTextToClipboard } from '../utils/copyToClipboard';
 import { FC, MouseEventHandler, useEffect } from 'react';
 import ClickTooltip from '../Tooltips/ClickTooltip';
-import shortenAddress from '../ShortenAddress';
+import shortenAddress from '../utils/ShortenAddress';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 
 export class AddressDetailsProps {

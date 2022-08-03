@@ -23,7 +23,6 @@ export function FormWizardProvider<Type extends BaseWizard>({ children, wizard, 
     const [currentStep, setCurrentStep] = useState<keyof Type>(initialStep)
     const [moving, setmoving] = useState("right")
     const [loading, setLoading] = useState(initialLoading)
-    const [error, setError] = useState("")
 
     const goToStep = useCallback((step: keyof Type) => {
         const currentPosition = Object.keys(wizard).findIndex(k => k === currentStep)
