@@ -1,7 +1,7 @@
 import { MailOpenIcon } from '@heroicons/react/outline';
-import { Field, Form, Formik, FormikProps } from 'formik';
+import { Field, Form, Formik, FormikErrors, FormikProps } from 'formik';
 import Link from 'next/link';
-import { FC, useCallback, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/auth';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
@@ -13,43 +13,49 @@ interface VerifyEmailCodeProps {
     onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
 }
 
+interface CodeFormValues {
+    Code: string
+}
+
 const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
-    const [code, setCode] = useState("")
-    const [loading, setLoading] = useState(false)
     const [loadingResend, setLoadingResend] = useState(false)
+    const initialValues: CodeFormValues = { Code: '' }
 
     const { email } = useAuthState();
     const { updateAuthData } = useAuthDataUpdate()
-    const handleInputChange = (e) => {
-        setCode(e?.target?.value)
+
+    const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
+    const [status, setStatus] = useState(STATUS.STOPPED)
+
+    const secondsToDisplay = secondsRemaining % 60
+    const minutesRemaining = (secondsRemaining - secondsToDisplay) / 60
+    const minutesToDisplay = minutesRemaining % 60
+
+    const handleStart = () => {
+        setStatus(STATUS.STARTED)
+    }
+    const handleStop = () => {
+        setStatus(STATUS.STOPPED)
+    }
+    const handleReset = () => {
+        setStatus(STATUS.STOPPED)
+        setSecondsRemaining(INITIAL_COUNT)
     }
 
-    const verifyCode = useCallback(async () => {
-        try {
-            setLoading(true)
-            var apiClient = new LayerSwapAuthApiClient();
-            const res = await apiClient.connectAsync(email, code)
-            updateAuthData(res)
-            setLoading(false)
-            await onSuccessfullVerify(res);
-        }
-        catch (error) {
-            if (error.response?.data?.error_description) {
-                const message = error.response.data.error_description
-                toast.error(message)
+    useInterval(
+        () => {
+            if (secondsRemaining > 0) {
+                setSecondsRemaining(secondsRemaining - 1)
+            } else {
+                setStatus(STATUS.STOPPED)
             }
-            else {
-                toast.error(error.message)
-            }
-        }
-        finally {
-            setLoading(false)
-        }
-
-    }, [email, code])
+        },
+        status === STATUS.STARTED ? 1000 : null)
 
     const handleResendCode = useCallback(async () => {
         setLoadingResend(true)
+        handleReset()
+        handleStart()
         try {
             const apiClient = new LayerSwapAuthApiClient();
             const res = await apiClient.getCodeAsync(email)
@@ -71,10 +77,38 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     return (
         <>
             <Formik
-                initialValues={{ code: '' }}
-                onSubmit={verifyCode}
+                initialValues={initialValues}
+                validate={(values: CodeFormValues) => {
+                    const errors: FormikErrors<CodeFormValues> = {};
+
+                    if (!/^[0-9]*$/.test(values.Code)) {
+                        errors.Code = "Value should be numeric";
+                    }
+                    else if (values.Code.length != 6) {
+                        errors.Code = `The length should be 6 instead of ${values.Code.length}`;
+                    }
+
+                    return errors;
+                }}
+                onSubmit={async () => {
+                    try {
+                        var apiClient = new LayerSwapAuthApiClient();
+                        const res = await apiClient.connectAsync(email, initialValues.Code)
+                        updateAuthData(res)
+                        await onSuccessfullVerify(res);
+                    }
+                    catch (error) {
+                        if (error.response?.data?.error_description) {
+                            const message = error.response.data.error_description
+                            toast.error(message)
+                        }
+                        else {
+                            toast.error(error.message)
+                        }
+                    }
+                }}
             >
-                {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
+                {({ isValid, isSubmitting, errors }) => (
                     <Form className='flex flex-col items-stretch min-h-[500px] text-pink-primary-300'>
                         <div className="w-full px-3 md:px-8 pt-4 flex-col flex-1 flex">
                             <MailOpenIcon className='w-12 h-12 mt-auto text-pink-primary self-center' />
@@ -86,6 +120,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     {({ field }) => (
                                         <input
                                             {...field}
+                                            pattern="^[0-9]*$"
                                             inputMode="decimal"
                                             autoComplete="off"
                                             placeholder="XXXXXX"
@@ -96,34 +131,32 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                             id="Code"
                                             className="leading-none h-12 text-2xl pl-5 focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
                                          placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
-                                            onKeyPress={e => {
-                                                isNaN(Number(e.key)) && e.preventDefault()
-                                            }}
-                                            onChange={handleInputChange}
                                         />
                                     )}
                                 </Field>
                             </div>
-                            <div className="flex items-center mt-5">
-                                {
-                                    loadingResend ?
-                                        <span className="flex items-center pl-3">
-                                            <SpinIcon className="animate-spin h-5 w-5 mr-3" />
-                                        </span>
-                                        :
-                                        <label className="block font-lighter leading-6 text-center">
-                                            Didn't receive it?
-                                            <span className="pl-1 font-lighter decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer" onClick={handleResendCode}>
+                            <div className="mt-5">
+                                <p className=" flex font-lighter leading-6 text-center">
+                                    Didn't receive it?
+                                    {
+                                        status == STATUS.STARTED ?
+                                            <span className="flex items-center">
+                                                <SpinIcon className="animate-spin h-5 w-5 mx-1" />
+                                                {twoDigits(minutesToDisplay)}:
+                                                {twoDigits(secondsToDisplay)}
+                                            </span>
+                                            :
+                                            <span className="ml-1 font-lighter decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer" onClick={handleResendCode}>
                                                 Send again
                                             </span>
-                                        </label>
-                                }
+                                    }
+                                </p>
                             </div>
                             <div className="text-white text-sm mt-auto">
                                 <p className='mb-5 text-pink-primary-300'>
                                     By clicking continue to create an account, you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'> Terms of Conditions</a></Link> and <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
                                 </p>
-                                <SubmitButton type="submit" isDisabled={code?.length != 6 || loading} icon="" isSubmitting={loading}>
+                                <SubmitButton type="submit" isDisabled={!isValid} icon="" isSubmitting={isSubmitting}>
                                     Confirm
                                 </SubmitButton>
                             </div>
@@ -134,5 +167,30 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         </>
     )
 }
+
+function useInterval(callback, delay) {
+    const savedCallback = useRef(undefined)
+
+    useEffect(() => {
+        savedCallback.current = callback
+    }, [callback])
+
+    useEffect(() => {
+        function tick() {
+            savedCallback.current()
+        }
+        if (delay !== null) {
+            let id = setInterval(tick, delay)
+            return () => clearInterval(id)
+        }
+    }, [delay])
+}
+
+const twoDigits = (num) => String(num).padStart(2, '0')
+const STATUS = {
+    STARTED: 'Started',
+    STOPPED: 'Stopped',
+}
+const INITIAL_COUNT = 60
 
 export default VerifyEmailCode;

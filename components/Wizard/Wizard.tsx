@@ -110,7 +110,7 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
             <div className='mx-auto px-4 overflow-hidden md:hidden'>
                <div className="flex justify-center">
                   <a onClick={handleGoHome}>
-                     <LayerSwapLogo className="h-8 w-auto text-white cursor-pointer opacity-50" />
+                     <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
                   </a>
                </div>
             </div>
