@@ -18,7 +18,6 @@ interface CodeFormValues {
 }
 
 const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
-    const [loadingResend, setLoadingResend] = useState(false)
     const initialValues: CodeFormValues = { Code: '' }
 
     const { email } = useAuthState();
@@ -53,7 +52,6 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         status === STATUS.STARTED ? 1000 : null)
 
     const handleResendCode = useCallback(async () => {
-        setLoadingResend(true)
         handleReset()
         handleStart()
         try {
@@ -69,9 +67,11 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                 toast.error(error.message)
             }
         }
-        finally {
-            setLoadingResend(false)
-        }
+    }, [email])
+
+    useEffect(()=> {
+        handleReset();
+        handleStart();
     }, [email])
 
     return (
@@ -153,11 +153,10 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                             </span>
                                         </p>
                                 }
-
                             </div>
                             <div className="text-white text-sm mt-auto">
                                 <p className='mb-5 text-pink-primary-300'>
-                                    By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'> Terms of Conditions</a></Link> and <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
+                                    By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'> Terms of Service</a></Link> and <Link href="/blog/guide/Privacy_Policy"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
                                 </p>
                                 <SubmitButton type="submit" isDisabled={!isValid} icon="" isSubmitting={isSubmitting}>
                                     Confirm
