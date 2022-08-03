@@ -83,7 +83,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                                                 placeholder="john@example.com"
                                                 autoComplete="email"
                                                 type="email"
-                                                className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-42 block
+                                                className="h-12 pb-1 pt-0 text-white  focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-42 block
                                                    placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                                             />
                                         )}

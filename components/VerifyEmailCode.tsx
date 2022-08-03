@@ -130,7 +130,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                             maxLength={6}
                                             name="Code"
                                             id="Code"
-                                            className="leading-none h-12 text-2xl pl-5 focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
+                                            className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
                                          placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                                         />
                                     )}
