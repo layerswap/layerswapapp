@@ -1,5 +1,5 @@
 import { Field, useField } from "formik";
-import { ChangeEvent, FC, forwardRef, useCallback, useState } from "react";
+import { ChangeEvent, FC, forwardRef, useCallback, useState, useEffect } from "react";
 import { classNames } from '../classNames'
 import { debounce } from "lodash";
 const { default: Resolution } = require('@unstoppabledomains/resolution');
@@ -38,6 +38,12 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                   });
             }
         }, 1000), [])
+
+        useEffect(() => {
+            return () => {
+              debouncedDomainLookup.cancel();
+            }
+        }, []);
 
         return (<>
             {label &&
