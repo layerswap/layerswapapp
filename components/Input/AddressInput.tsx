@@ -1,6 +1,8 @@
 import { Field, useField } from "formik";
-import { ChangeEvent, FC, forwardRef } from "react";
+import { ChangeEvent, FC, forwardRef, useCallback, useState } from "react";
 import { classNames } from '../classNames'
+import { debounce } from "lodash";
+const { default: Resolution } = require('@unstoppabledomains/resolution');
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     label?: string
@@ -16,6 +18,26 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
     ({ label, disabled, name, className, onChange }, ref) => {
 
         const [field, meta, helpers] = useField(name)
+        const [value, setValue] = useState("")
+
+        const udResolution = new Resolution();
+        const supportedUDDomains = [".zil", ".crypto", ".nft", ".blockchain", ".bitcoin", "coin", "wallet", ".888", ".dao", ".x"]
+
+        const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+            debouncedDomainLookup(e.target.value)
+            setValue(e.target.value)
+        }
+
+        const debouncedDomainLookup = useCallback(debounce((value: any) => {
+            if (supportedUDDomains.some(postfix => value.endsWith(postfix))) {
+                // try resolve ud domain
+                udResolution.addr(value, "ETH")
+                  .then((address) => setValue(address))
+                  .catch(e => {
+                      console.warn("Failed to resolve a possible UD domain", e)
+                  });
+            }
+        }, 1000), [])
 
         return (<>
             {label &&
@@ -29,6 +51,8 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         <input
                             {...field}
                             ref={ref}
+                            value={value}
+                            onChange={handleChange}
                             placeholder={"0x123...ab56c"}
                             autoCorrect="off"
                             type={"text"}
