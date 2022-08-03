@@ -136,25 +136,28 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                 </Field>
                             </div>
                             <div className="mt-5">
-                                <p className=" flex font-lighter leading-6 text-center">
-                                    Didn't receive it?
-                                    {
-                                        status == STATUS.STARTED ?
-                                            <span className="flex items-center">
-                                                <SpinIcon className="animate-spin h-5 w-5 mx-1" />
+                                {
+                                    status == STATUS.STARTED ?
+                                        <span className="flex items-center">
+                                            Send again in
+                                            <span className='ml-1'>
                                                 {twoDigits(minutesToDisplay)}:
                                                 {twoDigits(secondsToDisplay)}
                                             </span>
-                                            :
+                                        </span>
+                                        :
+                                        <p className=" flex font-lighter leading-6 text-center">
+                                            Didn't receive it?
                                             <span className="ml-1 font-lighter decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer" onClick={handleResendCode}>
                                                 Send again
                                             </span>
-                                    }
-                                </p>
+                                        </p>
+                                }
+
                             </div>
                             <div className="text-white text-sm mt-auto">
                                 <p className='mb-5 text-pink-primary-300'>
-                                    By clicking continue to create an account, you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'> Terms of Conditions</a></Link> and <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
+                                    By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'> Terms of Conditions</a></Link> and <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
                                 </p>
                                 <SubmitButton type="submit" isDisabled={!isValid} icon="" isSubmitting={isSubmitting}>
                                     Confirm

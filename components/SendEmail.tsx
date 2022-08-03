@@ -13,7 +13,7 @@ type EmailFormValues = {
 }
 
 type Props = {
-    onSend: () => void
+    onSend: (email:string) => void
 }
 
 const EmailStep: FC<Props> = ({ onSend }) => {
@@ -27,7 +27,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
             if (!res.is_success)
                 throw new Error(res.errors)
             TokenService.setCodeNextTime(res?.data?.next)
-            onSend()
+            onSend(email)
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
@@ -83,7 +83,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                                         )}
                                     </Field>
                                 </div>
-                                <div className="text-white text-sm mt-24 sm:mt-32">
+                                <div className="text-white text-sm mt-24 sm:mt-28">
                                     <SubmitButton isDisabled={!isValid} icon="" isSubmitting={isSubmitting} >
                                         Continue
                                     </SubmitButton>

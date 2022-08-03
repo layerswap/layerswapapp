@@ -5,8 +5,8 @@ import Wizard from '../components/Wizard/Wizard'
 import { FormWizardProvider } from '../context/formWizardProvider'
 import { LoginWizardSteps } from '../Models/Wizard'
 import EmailStep from '../components/Wizard/Steps/Login/EmailStep'
-import LoginCodeStep from '../components/Wizard/Steps/Login/LoginCodeStep'
 import { MenuProvider } from '../context/menu'
+import LoginCodeStep from '../components/Wizard/Steps/Login/LoginCodeStep'
 
 const loginWizard: LoginWizardSteps = {
   "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, positionPercent: 50 },
