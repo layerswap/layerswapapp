@@ -1,5 +1,5 @@
 import { MailOpenIcon } from '@heroicons/react/outline';
-import { Field, Form, Formik, FormikErrors, FormikProps } from 'formik';
+import { Field, Form, Formik, FormikErrors } from 'formik';
 import Link from 'next/link';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
@@ -7,7 +7,6 @@ import { useAuthDataUpdate, useAuthState } from '../context/auth';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
-import SpinIcon from './icons/spinIcon';
 
 interface VerifyEmailCodeProps {
     onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
@@ -32,9 +31,6 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
 
     const handleStart = () => {
         setStatus(STATUS.STARTED)
-    }
-    const handleStop = () => {
-        setStatus(STATUS.STOPPED)
     }
     const handleReset = () => {
         setStatus(STATUS.STOPPED)
@@ -148,9 +144,8 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                         </span>
                                         :
                                         <p className=" flex font-lighter leading-6 text-center">
-                                            Didn't receive it?
                                             <span className="ml-1 font-lighter decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer" onClick={handleResendCode}>
-                                                Send again
+                                                Resend code
                                             </span>
                                         </p>
                                 }
