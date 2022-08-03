@@ -1,30 +1,16 @@
-import Swap from '../components/swapComponent'
 import Layout from '../components/layout'
-import LayerSwapApiClient from '../lib/layerSwapApiClient'
-import { InferGetServerSidePropsType } from 'next'
-import { CryptoNetwork } from '../Models/CryptoNetwork'
-import { useWeb3React } from '@web3-react/core';
-import { Web3Provider } from '@ethersproject/providers';
-import { InjectedConnector } from '@web3-react/injected-connector';
-import { useEffect, useState } from 'react'
-import NavRadio, { NavRadioOption } from '../components/navRadio'
-import Banner from '../components/banner'
-import { SettingsProvider } from '../context/settings'
-import { QueryProvider } from '../context/query'
-import { AccountProvider } from '../context/account'
 import { AuthProvider } from '../context/auth'
 import IntroCard from '../components/introCard'
-import TransactionsHistory from '../components/swapHistoryComponent'
 import Wizard from '../components/Wizard/Wizard'
 import { FormWizardProvider } from '../context/formWizardProvider'
 import { LoginWizardSteps } from '../Models/Wizard'
 import EmailStep from '../components/Wizard/Steps/Login/EmailStep'
-import CodeStep from '../components/Wizard/Steps/Login/CodeStep'
 import { MenuProvider } from '../context/menu'
+import LoginCodeStep from '../components/Wizard/Steps/Login/LoginCodeStep'
 
 const loginWizard: LoginWizardSteps = {
   "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, positionPercent: 50 },
-  "Code": { title: "Code", content: CodeStep, positionPercent: 75 },
+  "Code": { title: "Code", content: LoginCodeStep, positionPercent: 75 },
 }
 
 export default function Transactions() {

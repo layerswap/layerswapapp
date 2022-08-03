@@ -11,7 +11,7 @@ import EmailStep from './Wizard/Steps/EmailStep';
 import CodeStep from './Wizard/Steps/CodeStep';
 import { FormWizardProvider } from '../context/formWizardProvider';
 import APIKeyStep from './Wizard/Steps/APIKeyStep';
-import SwapConfirmationStep from './Wizard/Steps/SwapConfirmation';
+import SwapConfirmationStep from './Wizard/Steps/SwapConfirmationStep';
 import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
 import { MenuProvider } from '../context/menu';
 

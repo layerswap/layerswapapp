@@ -4,11 +4,11 @@ import { useIntercom } from 'react-use-intercom';
 import SubmitButton from '../../buttons/submitButton';
 import { useAuthState } from '../../../context/auth';
 
-const FailedPage: FC = () => {
+const FailedStep: FC = () => {
     const { swap } = useSwapDataState()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap.payment?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.payment?.id } })
     return (
         <>
             <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
@@ -36,4 +36,4 @@ const FailedPage: FC = () => {
     )
 }
 
-export default FailedPage;
+export default FailedStep;

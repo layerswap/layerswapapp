@@ -1,10 +1,7 @@
 import { useRouter } from "next/router"
 import { Fragment, useCallback, useEffect, useState } from "react"
 import TokenService from "../lib/TokenService"
-import SpinIcon from "./icons/spinIcon"
-import { CheckIcon } from '@heroicons/react/solid';
 import { ExclamationCircleIcon, SearchIcon, XIcon } from '@heroicons/react/outline';
-import { ScissorsIcon, LinkIcon } from '@heroicons/react/solid';
 import { Combobox, Dialog, Transition } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
 import { BransferApiClient } from "../lib/bransferApiClients"
@@ -13,15 +10,10 @@ import { Exchange } from "../Models/Exchange"
 import ConnectOauthExchange from "./connectOauthExchange"
 import ConnectApiKeyExchange from "./connectApiKeyExchange"
 import LayerswapMenu from "./LayerswapMenu"
-import Link from "next/link"
 import LayerSwapLogo from "./icons/layerSwapLogo"
 import SubmitButton from "./buttons/submitButton";
 import { useAuthState } from "../context/auth";
 import toast from "react-hot-toast";
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
 
 interface UserExchange extends Exchange {
     is_connected: boolean
@@ -159,7 +151,7 @@ function UserExchanges() {
                 <div className='mx-auto px-4 overflow-hidden md:hidden'>
                     <div className="flex justify-center">
                         <a onClick={handleGoHome}>
-                            <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+                            <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
                         </a>
                     </div>
                 </div>

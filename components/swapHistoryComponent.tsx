@@ -14,10 +14,11 @@ import Link from "next/link"
 import LayerSwapLogo from "./icons/layerSwapLogo"
 import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
-import { copyTextToClipboard } from "../lib/copyToClipboard"
+import { copyTextToClipboard } from "./utils/copyToClipboard"
 import { useAuthState } from "../context/auth"
 import ClickTooltip from "./Tooltips/ClickTooltip"
-import shortenAddress from "./ShortenAddress"
+import shortenAddress from "./utils/ShortenAddress"
+import { classNames } from "./utils/classNames"
 
 
 export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
@@ -65,9 +66,6 @@ export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
   }
 }
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const { exchanges, networks } = useSettingsState()
@@ -161,7 +159,7 @@ function TransactionsHistory() {
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
           <div className="flex justify-center">
             <a onClick={handleGoHome}>
-              <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+              <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
             </a>
           </div>
         </div>
