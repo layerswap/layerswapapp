@@ -30,6 +30,7 @@ import { clearTempData, getTempData } from "../../../lib/openLink";
 import NumericInput from "../../Input/NumericInput";
 import AddressInput from "../../Input/AddressInput";
 import { classNames } from "../../utils/classNames";
+import KnownIds from "../../../lib/knownIds";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -302,9 +303,6 @@ export default function MainStep() {
         setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
     }, [query])
 
-    let availableCurrencies = settings.currencies
-        .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, c.order, c.logo_url, c.is_enabled, c.is_default))
-        .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
     let availableExchanges = settings.exchanges
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
         .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
@@ -318,12 +316,12 @@ export default function MainStep() {
         try {
             setLoading(true)
             clearSwap()
-            await updateSwapFormData(values)
+            updateSwapFormData(values)
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken)
                 goToStep("Email")
             else {
-                if (values.network.baseObject.code.toLowerCase().includes("immutablex")) {
+                if (values.network.baseObject.id == KnownIds.Networks.ImmutableXId) {
                     const client = await ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
                     const isRegistered = await client.isRegistered({ user: values.destination_address })
                     if (!isRegistered) {
@@ -331,7 +329,7 @@ export default function MainStep() {
                         setLoading(false)
                         return
                     }
-                } else if (values.network.baseObject.id.includes("82024449-400c-40cf-a466-57b24ea611e2")) {
+                } else if (values.network.baseObject.id == KnownIds.Networks.RhinoFiMainnetId) {
                     const client = await axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
                     const isRegistered = await client.data?.isRegisteredOnDeversifi
                     if (!isRegistered) {
@@ -340,7 +338,7 @@ export default function MainStep() {
                         return
                     }
                 }
-                const exchanges = await (await getUserExchanges(accessToken))?.data
+                const exchanges = (await getUserExchanges(accessToken))?.data
                 const exchangeIsEnabled = exchanges?.some(e => e.exchange === values?.exchange?.id && e.is_enabled)
                 if (values?.exchange?.baseObject?.authorization_flow === "none" || !values?.exchange?.baseObject?.authorization_flow || exchangeIsEnabled)
                     goToStep("SwapConfirmation")
@@ -387,8 +385,11 @@ export default function MainStep() {
     const addressRef: any = useRef();
     const amountRef: any = useRef();
 
-    const closeConnectImmutableX = () => {
+    const closeConnectImmutableX = (address: string) => {
         setConnectImmutableIsOpen(false)
+        if (address) {
+            formValues.destination_address = address;
+        }
     }
 
     const closeConnectDeversifi = () => {
