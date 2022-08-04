@@ -2,7 +2,7 @@ import { FC } from 'react'
 import { useSwapDataState } from '../../../context/swap';
 import { useIntercom } from 'react-use-intercom';
 import SubmitButton from '../../buttons/submitButton';
-import { useAuthState } from '../../../context/auth';
+import { useAuthState } from '../../../context/authContext';
 
 const FailedStep: FC = () => {
     const { swap } = useSwapDataState()

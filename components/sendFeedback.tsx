@@ -1,7 +1,6 @@
-import { FC, useState, Fragment, useEffect, useCallback } from 'react'
+import { FC, useState, useCallback } from 'react'
 import toast from 'react-hot-toast';
-import { useAuthState } from '../context/auth';
-import TokenService from '../lib/TokenService';
+import { useAuthState } from '../context/authContext';
 import SubmitButton from './buttons/submitButton';
 
 type Props = {

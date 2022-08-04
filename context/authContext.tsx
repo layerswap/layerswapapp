@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect } from 'react'
-import useStorage from '../hooks/useStorage';
 import TokenService from '../lib/TokenService';
 
 const AuthStateContext = React.createContext<any>(null);
@@ -10,19 +9,21 @@ export type UpdateInterface = {
     updateEmail: (email: string) => void,
     updateAuthData: (data: any) => void,
     getAuthData: () => (AuthData | undefined)
+    setCodeRequested(codeSubmitted: boolean): void;
 }
 
 export function AuthProvider({ children }) {
 
     const [email, setEmail] = React.useState<string | undefined>()
     const [authData, setAuthData] = React.useState<AuthData>({})
+    const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
 
     const setData = () => {
         setEmail(TokenService.getEmail())
         setAuthData(TokenService.getAuthData())
     }
 
-    useEffect(setData,[])
+    useEffect(setData, [])
 
     useEffect(() => {
         document.addEventListener(
@@ -44,11 +45,12 @@ export function AuthProvider({ children }) {
         }, []),
         getAuthData: useCallback(() => {
             return TokenService.getAuthData()
-        }, [])
+        }, []),
+        setCodeRequested: useCallback((codeRequested: boolean) => setCodeRequested(codeRequested),[codeRequested])
     };
 
     return (
-        <AuthStateContext.Provider value={{ email, authData }}>
+        <AuthStateContext.Provider value={{ email, authData, codeRequested }}>
             <AuthDataUpdateContext.Provider value={updateFns}>
                 {children}
             </AuthDataUpdateContext.Provider>
@@ -57,7 +59,7 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuthState() {
-    const data = React.useContext<{ authData: AuthData, email: string }>(AuthStateContext);
+    const data = React.useContext<{ authData: AuthData, email: string, codeRequested: boolean }>(AuthStateContext);
 
     if (data === undefined) {
         throw new Error('useAuthState must be used within a AuthStateProvider');

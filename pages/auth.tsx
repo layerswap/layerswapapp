@@ -1,5 +1,5 @@
 import Layout from '../components/layout'
-import { AuthProvider } from '../context/auth'
+import { AuthProvider } from '../context/authContext'
 import IntroCard from '../components/introCard'
 import Wizard from '../components/Wizard/Wizard'
 import { FormWizardProvider } from '../context/formWizardProvider'
@@ -13,7 +13,7 @@ const loginWizard: LoginWizardSteps = {
   "Code": { title: "Code", content: LoginCodeStep, positionPercent: 75 },
 }
 
-export default function Transactions() {
+export default function AuthPage() {
 
   return (
     <Layout>

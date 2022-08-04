@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import { useAuthDataUpdate } from '../../../context/auth';
+import { useAuthDataUpdate } from '../../../context/authContext';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { FormWizardSteps } from '../../../Models/Wizard';
 import SendEmail from '../../SendEmail';

@@ -3,7 +3,7 @@ import { Field, Form, Formik, FormikErrors, useFormikContext } from 'formik';
 import Link from 'next/link';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useAuthDataUpdate, useAuthState } from '../context/auth';
+import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
@@ -21,7 +21,7 @@ interface CodeFormValues {
 const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     const initialValues: CodeFormValues = { Code: '' }
 
-    const { email } = useAuthState();
+    const { email, codeRequested } = useAuthState();
     const { updateAuthData } = useAuthDataUpdate()
 
     const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
@@ -67,10 +67,13 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         }
     }, [email])
 
-    useEffect(() => {
-        handleReset();
-        handleStart();
-    }, [email])
+    useEffect(()=> {
+        if (codeRequested){
+            handleReset();
+            handleStart();
+        }
+    
+    }, [codeRequested])
 
     return (
         <>

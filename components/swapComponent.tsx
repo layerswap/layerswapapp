@@ -3,7 +3,7 @@ import { FC } from 'react'
 import IntroCard from './introCard';
 import MainStep from './Wizard/Steps/MainStep';
 import { SwapDataProvider } from '../context/swap';
-import { AuthProvider } from '../context/auth';
+import { AuthProvider } from '../context/authContext';
 import { UserExchangeProvider } from '../context/userExchange';
 import Wizard from './Wizard/Wizard';
 import { FormWizardSteps } from '../Models/Wizard';
@@ -11,9 +11,9 @@ import EmailStep from './Wizard/Steps/EmailStep';
 import CodeStep from './Wizard/Steps/CodeStep';
 import { FormWizardProvider } from '../context/formWizardProvider';
 import APIKeyStep from './Wizard/Steps/APIKeyStep';
-import SwapConfirmationStep from './Wizard/Steps/SwapConfirmationStep';
 import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
 import { MenuProvider } from '../context/menu';
+import SwapConfirmationStep from './Wizard/Steps/SwapConfirmationStep';
 
 
 const FormWizard: FormWizardSteps = {
