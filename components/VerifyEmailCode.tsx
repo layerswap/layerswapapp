@@ -1,5 +1,5 @@
 import { MailOpenIcon } from '@heroicons/react/outline';
-import { Field, Form, Formik, FormikErrors } from 'formik';
+import { Field, Form, Formik, FormikErrors, useFormikContext } from 'formik';
 import Link from 'next/link';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
@@ -7,6 +7,8 @@ import { useAuthDataUpdate, useAuthState } from '../context/auth';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
+import { SwapFormValues } from './DTOs/SwapFormValues';
+import NumericInput from './Input/NumericInput';
 
 interface VerifyEmailCodeProps {
     onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
@@ -65,7 +67,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         }
     }, [email])
 
-    useEffect(()=> {
+    useEffect(() => {
         handleReset();
         handleStart();
     }, [email])
@@ -105,7 +107,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                     }
                 }}
             >
-                {({ isValid, isSubmitting, errors }) => (
+                {({ isValid, isSubmitting, errors, handleChange }) => (
                     <Form className='flex flex-col items-stretch min-h-[500px] text-pink-primary-300'>
                         <div className="w-full px-3 md:px-8 pt-4 flex-col flex-1 flex">
                             <MailOpenIcon className='w-16 h-16 mt-auto text-pink-primary self-center' />
@@ -113,7 +115,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                 <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{email}</span></p>
                             </div>
                             <div className="relative rounded-md shadow-sm mt-5">
-                                <Field name="Code">
+                                {/* <Field name="Code">
                                     {({ field }) => (
                                         <input
                                             {...field}
@@ -128,9 +130,23 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                             id="Code"
                                             className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
                                          placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
+                                            onChange={e => {
+                                                /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
+                                            }}
                                         />
                                     )}
-                                </Field>
+                                </Field> */}
+                                <NumericInput
+                                    pattern='^[0-9]*$'
+                                    placeholder="XXXXXX"
+                                    maxLength={6}
+                                    name='Code'
+                                    onChange={e => {
+                                        /^[0-9]*$/.test(e.target.value) && handleChange(e)
+                                    }}
+                                    className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
+                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
+                                />
                             </div>
                             <div className="mt-5">
                                 {
