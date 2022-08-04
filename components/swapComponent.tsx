@@ -36,7 +36,6 @@ const Swap: FC = () => {
               <UserExchangeProvider>
                 <FormWizardProvider wizard={FormWizard} initialStep={"SwapForm"} initialLoading={true}>
                   <Wizard />
-                  <TestComp />
                 </FormWizardProvider >
               </UserExchangeProvider>
             </SwapDataProvider >
@@ -47,10 +46,5 @@ const Swap: FC = () => {
     </div >
   )
 };
-
-function TestComp() {
-  return <></>
-}
-
 
 export default Swap;
