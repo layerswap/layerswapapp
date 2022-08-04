@@ -10,9 +10,10 @@ import { Currency } from '../Models/Currency';
 import { CryptoNetwork } from '../Models/CryptoNetwork';
 import { Popover } from '@headlessui/react';
 import { DocumentDuplicateIcon, DuplicateIcon } from '@heroicons/react/outline';
-import { copyTextToClipboard } from '../lib/copyToClipboard';
+import { copyTextToClipboard } from './utils/copyToClipboard';
 import toast from 'react-hot-toast';
 import ClickTooltip from './Tooltips/ClickTooltip';
+import shortenAddress from './utils/ShortenAddress';
 
 type Props = {
     id: string
@@ -65,8 +66,8 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Id </span>
                             <span className="text-white">
                                 <div className='inline-flex items-center'>
-                                    <span className="mr-2">{swap?.id?.substring(0, 5)}...{swap?.id?.substring(swap?.id?.length - 4, swap?.id?.length - 1)}</span>
-                                    <ClickTooltip text='Copied!' moreClassNames='bottom-3 right-0'>
+                                    <span className="mr-2">{shortenAddress(swap?.id)}</span>
+                                    <ClickTooltip text='Copied!'>
                                         <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
                                             <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
                                         </div>

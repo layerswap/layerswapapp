@@ -5,7 +5,7 @@ import LayerSwapApiClient, { CreateSwapParams, SwapDetailsResponse } from '../li
 import { useAuthDataUpdate, useAuthState } from './auth';
 import Router, { useRouter } from 'next/router'
 import TokenService from '../lib/TokenService';
-import { useInterval } from '../hooks/useInyterval';
+import { useInterval } from '../hooks/useInterval';
 
 const SwapDataStateContext = React.createContext<SwapData>(null);
 const SwapDataUpdateContext = React.createContext<UpdateInterface>(null);

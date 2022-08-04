@@ -9,17 +9,20 @@ type Props = {
 }
 const SendFeedback: FC<Props> = ({ onSend }) => {
     const [loading, setLoading] = useState(false);
-    const token = "5497557256:AAHOgmIi549pH8uiBvFsGmgH16kkBxSFtRA";
-    const token2 = "5366632516:AAHRlo58yEgoAj2-qe2poJOR19ybOuGMBpQ"
-    const chat_id = "-625244679";
+    const token = "5366632516:AAHRlo58yEgoAj2-qe2poJOR19ybOuGMBpQ"
+    const chat_id = "-1001625192521";
     const { email } = useAuthState()
 
     const handleSendFeedback = useCallback(async () => {
         try {
             setLoading(true)
-            const res = await (await fetch(`https://api.telegram.org/bot${token2}/sendMessage?chat_id=${chat_id}&text=${email} %0A ${(document.getElementById("feedback") as HTMLInputElement).value}`)).json()
-            if (!res.ok)
-               throw new Error(res.description || "Could nont send feedback, something went wrong")
+            const res = await (await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${email} %0A ${(document.getElementById("feedback") as HTMLInputElement).value}`)).json()
+            if (!res.ok) {
+                throw new Error(res.description || "Could nont send feedback, something went wrong")
+
+            } else {
+                toast.success("Thank you for reaching out and providing us with valuable feedback.")
+            }
         }
         catch (e) {
             toast.error(e.message)

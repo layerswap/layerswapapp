@@ -25,16 +25,6 @@ export function isValidAddress(address: string, network: CryptoNetwork): boolean
     }
 }
 
-export function isBlacklistedAddress(address: string, network: CryptoNetwork, blacklistedAddresses: BlacklistedAddress[]) : boolean {
-    var blacklistedRecord = blacklistedAddresses.find(x=> x.address.toLowerCase() == address);
-    if (blacklistedRecord != undefined && blacklistedRecord.network_id == network.id)
-    {
-        return true;
-    }
-
-    return false;
-}
-
 function isValidEtherAddress(address: string): boolean {
     if (!/^(0x)?[0-9a-f]{40}$/i.test(address)) {
         // check if it has the basic requirements of an address

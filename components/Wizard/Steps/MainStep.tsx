@@ -9,7 +9,7 @@ import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { Currency } from "../../../Models/Currency";
 import { Exchange } from "../../../Models/Exchange";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { SelectMenuItem } from "../../selectMenu/selectMenuItem";
+import { SelectMenuItem } from "../../Select/selectMenuItem";
 import Image from 'next/image'
 import SwapButton from "../../buttons/swapButton";
 import { useSwapDataUpdate } from "../../../context/swap";
@@ -27,6 +27,9 @@ import toast from "react-hot-toast";
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { clearTempData, getTempData } from "../../../lib/openLink";
+import NumericInput from "../../Input/NumericInput";
+import AddressInput from "../../Input/AddressInput";
+import { classNames } from "../../utils/classNames";
 
 
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
@@ -200,41 +203,26 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
 
     const name = "amount"
 
-    const [field, meta, helpers] = useField(name)
-
     const placeholder = currency ? `${currency?.baseObject?.min_amount} - ${currency?.baseObject?.max_amount}` : '0.01234'
 
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
 
     return (<>
-        <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
-            Amount
-        </label>
-        <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-600 border-ouline-blue border ">
-            <input
-                {...field}
-                pattern="^[0-9]*[.,]?[0-9]*$"
-                inputMode="decimal"
-                autoComplete="off"
-                disabled={!currency}
-                placeholder={placeholder}
-                autoCorrect="off"
-                min={currency?.baseObject?.min_amount}
-                max={currency?.baseObject?.max_amount}
-                type="text"
-                step={isNaN(step) ? 0.01 : step}
-                name={name}
-                id="amount"
-                ref={ref}
-                className="disabled:cursor-not-allowed h-12 bg-darkblue-600 focus:ring-pink-primary focus:border-pink-primary flex-grow block w-full min-w-0 rounded-none rounded-l-md sm:text-sm font-semibold placeholder-gray-400 border-0"
-                onChange={e => {
-                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
-                }}
-            />
-            <span className="ml-1 inline-flex items-center">
-                <CurrenciesField />
-            </span>
-        </div>
+        <NumericInput
+            label='Amount'
+            disabled={!currency}
+            placeholder={placeholder}
+            min={currency?.baseObject?.min_amount}
+            max={currency?.baseObject?.max_amount}
+            step={isNaN(step) ? 0.01 : step}
+            name={name}
+            onChange={e => {
+                /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
+            }}
+            precision={currency?.baseObject.precision}
+        >
+            <CurrenciesField />
+        </NumericInput>
     </>)
 });
 
@@ -500,23 +488,13 @@ export default function MainStep() {
                                         </div>
                                     }
                                     <div>
-                                        <Field name="destination_address">
-                                            {({ field }) => (
-                                                <input
-                                                    {...field}
-                                                    ref={addressRef}
-                                                    placeholder={"0x123...ab56c"}
-                                                    autoCorrect="off"
-                                                    type={"text"}
-                                                    name="destination_address"
-                                                    id="destination_address"
-                                                    disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
-                                                    className={joinClassNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
-                                                />
-                                            )}
-                                        </Field>
+                                        <AddressInput
+                                            disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
+                                            name={"destination_address"}
+                                            className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
+                                            ref={addressRef}
+                                        />
                                     </div>
-
                                 </div>
                             </div >
                             <div className="mb-6 leading-4">
@@ -546,8 +524,4 @@ function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
     else {
         return "Swap now";
     }
-}
-
-function joinClassNames(...classes: string[]) {
-    return classes.filter(Boolean).join(' ')
 }

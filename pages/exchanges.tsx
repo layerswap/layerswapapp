@@ -2,17 +2,10 @@ import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
-import NavRadio, { NavRadioOption } from '../components/navRadio'
 import { SettingsProvider } from '../context/settings'
 import { AuthProvider } from '../context/auth'
 import UserExchanges from '../components/exchangesComponent'
 import { MenuProvider } from '../context/menu'
-
-
-const swapOptions: NavRadioOption[] = [
-    { name: "onramp", displayName: 'On-ramp', isEnabled: true, isNew: false },
-    { name: "offramp", displayName: 'Off-ramp', isEnabled: true, isNew: true }
-];
 
 export default function Home({ data }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     return (

@@ -1,7 +1,6 @@
 import { FC, MouseEventHandler } from "react";
 import SpinIcon from "../icons/spinIcon";
 
-
 type buttonStyle = 'outline' | 'filled';
 type buttonSize = 'small' | 'medium' | 'large';
 
@@ -13,10 +12,6 @@ export class SubmitButtonProps {
     icon: React.ReactNode;
     buttonStyle?: buttonStyle = 'filled';
     size?: buttonSize = 'medium'
-}
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
 }
 
 function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {

@@ -5,12 +5,12 @@ import Wizard from '../components/Wizard/Wizard'
 import { FormWizardProvider } from '../context/formWizardProvider'
 import { LoginWizardSteps } from '../Models/Wizard'
 import EmailStep from '../components/Wizard/Steps/Login/EmailStep'
-import CodeStep from '../components/Wizard/Steps/Login/CodeStep'
 import { MenuProvider } from '../context/menu'
+import LoginCodeStep from '../components/Wizard/Steps/Login/LoginCodeStep'
 
 const loginWizard: LoginWizardSteps = {
   "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, positionPercent: 50 },
-  "Code": { title: "Code", content: CodeStep, positionPercent: 75 },
+  "Code": { title: "Code", content: LoginCodeStep, positionPercent: 75 },
 }
 
 export default function Transactions() {

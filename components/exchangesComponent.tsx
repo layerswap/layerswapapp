@@ -10,15 +10,10 @@ import { Exchange } from "../Models/Exchange"
 import ConnectOauthExchange from "./connectOauthExchange"
 import ConnectApiKeyExchange from "./connectApiKeyExchange"
 import LayerswapMenu from "./LayerswapMenu"
-import Link from "next/link"
 import LayerSwapLogo from "./icons/layerSwapLogo"
 import SubmitButton from "./buttons/submitButton";
 import { useAuthState } from "../context/auth";
 import toast from "react-hot-toast";
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
 
 interface UserExchange extends Exchange {
     is_connected: boolean
@@ -157,7 +152,7 @@ function UserExchanges() {
                 <div className='mx-auto px-4 overflow-hidden md:hidden'>
                     <div className="flex justify-center">
                         <a onClick={handleGoHome}>
-                            <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+                            <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
                         </a>
                     </div>
                 </div>
