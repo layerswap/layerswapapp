@@ -1,19 +1,21 @@
-import React, { forwardRef, ReactNode, useEffect, useImperativeHandle, useState } from "react";
-import { useCallback } from "react";
+import React, { forwardRef, ReactNode, useImperativeHandle, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 
 
-export const CarouselItem = ({ children, width }) => {
+interface CarouselItemProps {
+    children?: JSX.Element | JSX.Element[];
+    width: number;
+}
+
+export const CarouselItem: React.FC<CarouselItemProps> = ({ children, width }) => {
     return (
         <div className={`rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkBlue to-darkblue-600 h-100%`} style={{ width: width }}>
-            <>
-                <div></div>
-                {children}
-            </>
+            {children}
         </div>
     );
 };
-interface Props {
+
+interface CarouselProps {
     children?: ReactNode;
     onLast: (value) => void;
 }
@@ -23,7 +25,7 @@ export type CarouselRef = {
     hasNext: boolean;
 };
 
-const Carousel = forwardRef<CarouselRef, Props>((props, ref) => {
+const Carousel = forwardRef<CarouselRef, CarouselProps>((props, ref) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const [paused, setPaused] = useState(false);
     const children: any = props.children

@@ -67,12 +67,12 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         }
     }, [email])
 
-    useEffect(()=> {
-        if (codeRequested){
+    useEffect(() => {
+        if (codeRequested) {
             handleReset();
             handleStart();
         }
-    
+
     }, [codeRequested])
 
     return (
