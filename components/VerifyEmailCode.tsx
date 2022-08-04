@@ -115,27 +115,6 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                 <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{email}</span></p>
                             </div>
                             <div className="relative rounded-md shadow-sm mt-5">
-                                {/* <Field name="Code">
-                                    {({ field }) => (
-                                        <input
-                                            {...field}
-                                            pattern="^[0-9]*$"
-                                            inputMode="decimal"
-                                            autoComplete="off"
-                                            placeholder="XXXXXX"
-                                            autoCorrect="off"
-                                            type="text"
-                                            maxLength={6}
-                                            name="Code"
-                                            id="Code"
-                                            className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
-                                         placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
-                                            onChange={e => {
-                                                /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e)
-                                            }}
-                                        />
-                                    )}
-                                </Field> */}
                                 <NumericInput
                                     pattern='^[0-9]*$'
                                     placeholder="XXXXXX"
