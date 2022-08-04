@@ -1,5 +1,5 @@
 import { MailOpenIcon } from '@heroicons/react/outline';
-import { Field, Form, Formik, FormikErrors, useFormikContext } from 'formik';
+import { Form, Formik, FormikErrors } from 'formik';
 import Link from 'next/link';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
@@ -7,7 +7,6 @@ import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
-import { SwapFormValues } from './DTOs/SwapFormValues';
 import NumericInput from './Input/NumericInput';
 
 interface VerifyEmailCodeProps {
