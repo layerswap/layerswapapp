@@ -3,19 +3,16 @@ import { Fragment, useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapDetailsResponse } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { ClockIcon } from '@heroicons/react/solid';
-import { ChevronRightIcon, DocumentDuplicateIcon, DuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
+import { ChevronRightIcon, DocumentDuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 
-import { SwapStatus } from "../Models/SwapStatus"
-import { Dialog, Transition, Popover } from "@headlessui/react"
+import { Dialog, Transition } from "@headlessui/react"
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
-import Link from "next/link"
 import LayerSwapLogo from "./icons/layerSwapLogo"
 import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
 import { copyTextToClipboard } from "./utils/copyToClipboard"
-import { useAuthState } from "../context/auth"
+import { useAuthState } from "../context/authContext"
 import ClickTooltip from "./Tooltips/ClickTooltip"
 import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
@@ -85,7 +82,7 @@ function TransactionsHistory() {
         const authData = TokenService.getAuthData();
         if (!authData) {
           router.push({
-            pathname: '/login',
+            pathname: '/auth',
             query: { ...(router.query), redirect: '/transactions' }
           })
           return;
@@ -114,7 +111,7 @@ function TransactionsHistory() {
       setLoading(true)
       const authData = TokenService.getAuthData();
       if (!authData) {
-        router.push('/login')
+        router.push('/auth')
         return;
       }
       const layerswapApiClient = new LayerSwapApiClient()

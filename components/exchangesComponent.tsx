@@ -12,7 +12,7 @@ import ConnectApiKeyExchange from "./connectApiKeyExchange"
 import LayerswapMenu from "./LayerswapMenu"
 import LayerSwapLogo from "./icons/layerSwapLogo"
 import SubmitButton from "./buttons/submitButton";
-import { useAuthState } from "../context/auth";
+import { useAuthState } from "../context/authContext";
 import toast from "react-hot-toast";
 
 interface UserExchange extends Exchange {
@@ -47,7 +47,7 @@ function UserExchanges() {
                 const authData = TokenService.getAuthData();
                 if (!authData) {
                     router.push({
-                        pathname: '/login',
+                        pathname: '/auth',
                         query: { ...router.query, redirect: '/exchanges' }
                     })
                     return;
@@ -97,7 +97,7 @@ function UserExchanges() {
             const authData = TokenService.getAuthData();
             if (!authData) {
                 router.push({
-                    pathname: '/login',
+                    pathname: '/auth',
                     query: { ...(router.query), redirect: '/exchanges' }
                 })
                 return;
@@ -125,7 +125,7 @@ function UserExchanges() {
             const authData = TokenService.getAuthData();
             if (!authData) {
                 router.push({
-                    pathname: '/login',
+                    pathname: '/auth',
                     query: { ...(router.query), redirect: '/exchanges' }
                 })
                 return;

@@ -2,15 +2,14 @@ import { UserIcon } from '@heroicons/react/solid';
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useAuthState } from '../context/auth';
+import { useAuthDataUpdate } from '../context/authContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
 
 
 type EmailFormValues = {
-    // The field name can't be email, breaks safari's autocomplete
-    emailz: string;
+    email: string;
 }
 
 type Props = {
@@ -18,18 +17,20 @@ type Props = {
 }
 
 const EmailStep: FC<Props> = ({ onSend }) => {
-    const initialValues: EmailFormValues = { emailz: undefined }; 
+    const initialValues: EmailFormValues = { email: '' };
     const [storedEmail, setStoredEmail] = useState<string>(undefined);
+    const { setCodeRequested } = useAuthDataUpdate();
 
     const sendEmail = useCallback(async (values: EmailFormValues) => {
         try {
-            const inputEmail = values.emailz;
+            const inputEmail = values.email;
             if (inputEmail != storedEmail) {
                 const apiClient = new LayerSwapAuthApiClient();
                 const res = await apiClient.getCodeAsync(inputEmail)
                 if (!res.is_success)
                     throw new Error(res.errors)
                 TokenService.setCodeNextTime(res?.data?.next)
+                setCodeRequested(true);
             }
             setStoredEmail(inputEmail);
             onSend(inputEmail)
@@ -47,10 +48,10 @@ const EmailStep: FC<Props> = ({ onSend }) => {
 
     function validateEmail(values: EmailFormValues) {
         let error: FormikErrors<EmailFormValues> = {};
-        if (!values.emailz) {
-            error.emailz = 'Required';
-        } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.emailz)) {
-            error.emailz = 'Invalid email address';
+        if (!values.email) {
+            error.email = 'Required';
+        } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
+            error.email = 'Invalid email address';
         }
         return error;
     }
@@ -74,12 +75,13 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                             <p className='text-center text-base mb-6 px-2'>
                                 With your email, your exchange credentials will stay linked to your account and you can access your entire transfer history.
                             </p>
-                            <Form>
+                            <Form autoComplete='true'>
                                 <div className="relative rounded-md shadow-sm mt-1 mb-12 md:mb-11">
-                                    <Field name="emailz">
+                                    <Field name="email">
                                         {({ field }) => (
                                             <input
                                                 {...field}
+                                                id='email'
                                                 placeholder="john@example.com"
                                                 autoComplete="email"
                                                 type="email"

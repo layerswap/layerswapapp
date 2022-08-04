@@ -3,7 +3,7 @@ import { Field, Form, Formik, FormikErrors } from 'formik';
 import Link from 'next/link';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useAuthDataUpdate, useAuthState } from '../context/auth';
+import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
@@ -19,7 +19,7 @@ interface CodeFormValues {
 const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     const initialValues: CodeFormValues = { Code: '' }
 
-    const { email } = useAuthState();
+    const { email, codeRequested } = useAuthState();
     const { updateAuthData } = useAuthDataUpdate()
 
     const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
@@ -66,9 +66,12 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     }, [email])
 
     useEffect(()=> {
-        handleReset();
-        handleStart();
-    }, [email])
+        if (codeRequested){
+            handleReset();
+            handleStart();
+        }
+    
+    }, [codeRequested])
 
     return (
         <>
@@ -189,6 +192,6 @@ const STATUS = {
     STARTED: 'Started',
     STOPPED: 'Stopped',
 }
-const INITIAL_COUNT = 60
+const INITIAL_COUNT = 6
 
 export default VerifyEmailCode;
