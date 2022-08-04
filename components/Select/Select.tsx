@@ -163,11 +163,17 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 </div>
                             </div>
                         }
-                        <span className="ml-3 block font-medium text-pink-primary-300 flex-auto items-center">
-                            {selectedItem?.name || placeholder}
-                        </span>
+                        {selectedItem
+                            ?
+                            <span className="ml-3 block font-medium text-white flex-auto items-center">
+                                {selectedItem?.name}
+                            </span>
+                            :
+                            <span className="ml-3 block font-medium text-pink-primary-300 flex-auto items-center">
+                                {placeholder}
+                            </span>}
                     </span>
-                    <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-pink-primary-300">
+                    <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-white">
                         <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
                     </span>
                 </button>
