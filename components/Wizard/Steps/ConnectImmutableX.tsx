@@ -2,7 +2,6 @@ import { FC, Fragment, useState } from 'react'
 import { Link } from '@imtbl/imx-sdk';
 import { LinkIcon, XIcon } from '@heroicons/react/outline';
 import SubmitButton from '../../buttons/submitButton';
-import TokenService from '../../../lib/TokenService';
 import { Combobox, Transition } from '@headlessui/react';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
 import toast from 'react-hot-toast';
@@ -12,21 +11,18 @@ const linkAddress = 'https://link.x.immutable.com';
 type Props = {
     isOpen: boolean,
     swapFormData: SwapFormValues,
-    onClose: () => void
+    onClose: (address?: string) => void
 }
-const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
+const ConnectImmutableX: FC<Props> = ({ isOpen, onClose }) => {
     const [loading, setLoading] = useState(false)
 
     async function onImmutableConnectClick() {
         try {
             setLoading(true)
-            const accessToken = TokenService.getAuthData()?.access_token
-            // if (!accessToken)
-            // goToStep("Email")
             const linkSdk = new Link(linkAddress);
             var connected = await linkSdk.setup({});
             if (connected && connected.address)
-                onClose()
+                onClose(connected.address)
         } catch (error) {
             toast.error(error.message);
         }
@@ -57,7 +53,7 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                                 <button
                                     type="button"
                                     className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
-                                    onClick={onClose}
+                                    onClick={() => onClose(null)}
                                 >
                                     <span className="sr-only">Close</span>
                                     <XIcon className="h-6 w-6" aria-hidden="true" />
@@ -95,7 +91,7 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                                 >
                                     <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                                         Please connect your ImmutableX wallet
-                                        <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-sm text-pink-primary-300 font-light'>
+                                        <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-pink-primary-300 font-light'>
                                             Immutable X account for the provided address does not exist. To create one, you need to connect your wallet to Immutable X.
                                         </p>
                                     </h3>

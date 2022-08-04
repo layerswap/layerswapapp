@@ -69,6 +69,8 @@ export default class KnownIds {
         public static readonly AstarMainnetId: string = "E81C954C-7BB0-4774-AF35-6A363D4C32B7".toLowerCase();
 
         public static readonly NahmiiMainnetId: string = "B2ADD231-902B-4467-9220-5C7EAE5B78F6".toLowerCase();
+
+        public static readonly RhinoFiMainnetId: string = "82024449-400c-40cf-a466-57b24ea611e2".toLowerCase();
     }
 
     static LiquidityProviders = class {

@@ -1,5 +1,4 @@
 const colors = require("tailwindcss/colors");
-const defaultTheme = require('tailwindcss/defaultTheme')
 const plugin = require('tailwindcss/plugin')
 
 const round = (num) =>
@@ -11,8 +10,8 @@ const rem = (px) => `${round(px / 16)}rem`
 const em = (px, base) => `${round(px / base)}em`
 
 module.exports = {
-  purge: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
-  darkMode: false, // or 'media' or 'class'
+  content: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
+  darkMode: 'media',
   theme: {
     extend: {
       transitionDuration: {
@@ -28,8 +27,8 @@ module.exports = {
       colors: {
         cyan: colors.cyan,
         pink: colors.pink,
-        blueGray: colors.blueGray,
-        coolGray: colors.coolGray,
+        blueGray: colors.slate,
+        coolGray: colors.gray,
         darkBlue: '#111827',
         'ouline-blue': '#1A2949',
         'darkblue': '#4771FF',

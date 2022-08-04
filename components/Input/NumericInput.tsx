@@ -1,15 +1,19 @@
+import { MintBodyCodec } from "@imtbl/imx-sdk";
 import { useField } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
 import { classNames } from '../utils/classNames'
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     label?: string
-    disabled: boolean;
+    pattern?: string;
+    disabled?: boolean;
     placeholder: string;
-    min: number;
-    max: number;
-    precision: number;
-    step: number;
+    min?: number;
+    max?: number;
+    minLength?: number;
+    maxLength?: number;
+    precision?: number;
+    step?: number;
     name: string;
     className?: string;
     children?: JSX.Element | JSX.Element[];
@@ -18,7 +22,7 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
 }
 
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ label, disabled, placeholder, min, max, precision, step, name, className, children, onChange }, ref) => {
+    ({ label, pattern, disabled, placeholder, min, max, minLength, maxLength, precision, step, name, className, children, onChange }, ref) => {
         
         const [field] = useField(name)
 
@@ -31,7 +35,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
             <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-600 border-ouline-blue border ">
                 <input
                     {...field}
-                    pattern="^[0-9]*[.,]?[0-9]*$"
+                    pattern={pattern ? pattern : "^[0-9]*[.,]?[0-9]*$"}
                     inputMode="decimal"
                     autoComplete="off"
                     disabled={disabled}
@@ -39,6 +43,8 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     autoCorrect="off"
                     min={min}
                     max={max}
+                    minLength={minLength}
+                    maxLength={maxLength}
                     onInput={(event: React.ChangeEvent<HTMLInputElement>) => { replaceComma(event); limitDecimalPlaces(event, precision) }}
                     type="text"
                     step={step}
