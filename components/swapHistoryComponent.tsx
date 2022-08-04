@@ -3,20 +3,19 @@ import { Fragment, useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapDetailsResponse } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { ClockIcon } from '@heroicons/react/solid';
-import { ChevronRightIcon, DocumentDuplicateIcon, DuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
+import { ChevronRightIcon, DocumentDuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 
-import { SwapStatus } from "../Models/SwapStatus"
-import { Dialog, Transition, Popover } from "@headlessui/react"
+import { Dialog, Transition } from "@headlessui/react"
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
-import Link from "next/link"
 import LayerSwapLogo from "./icons/layerSwapLogo"
 import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
-import { copyTextToClipboard } from "../lib/copyToClipboard"
-import { useAuthState } from "../context/auth"
+import { copyTextToClipboard } from "./utils/copyToClipboard"
+import { useAuthState } from "../context/authContext"
 import ClickTooltip from "./Tooltips/ClickTooltip"
+import shortenAddress from "./utils/ShortenAddress"
+import { classNames } from "./utils/classNames"
 
 
 export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
@@ -64,9 +63,6 @@ export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
   }
 }
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const { exchanges, networks } = useSettingsState()
@@ -86,7 +82,7 @@ function TransactionsHistory() {
         const authData = TokenService.getAuthData();
         if (!authData) {
           router.push({
-            pathname: '/login',
+            pathname: '/auth',
             query: { ...(router.query), redirect: '/transactions' }
           })
           return;
@@ -115,7 +111,7 @@ function TransactionsHistory() {
       setLoading(true)
       const authData = TokenService.getAuthData();
       if (!authData) {
-        router.push('/login')
+        router.push('/auth')
         return;
       }
       const layerswapApiClient = new LayerSwapApiClient()
@@ -160,7 +156,7 @@ function TransactionsHistory() {
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
           <div className="flex justify-center">
             <a onClick={handleGoHome}>
-              <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+              <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
             </a>
           </div>
         </div>
@@ -247,8 +243,8 @@ function TransactionsHistory() {
                                 )}
                               >
                                 <div className='inline-flex items-center'>
-                                  <span className="mr-2">{swap?.id?.substring(0, 5)}...{swap?.id?.substring(swap?.id?.length - 4, swap?.id?.length - 1)}</span>
-                                  <ClickTooltip text='Copied!' moreClassNames="-right-1 bottom-3">
+                                  <span className="mr-2">{shortenAddress(swap?.id)}</span>
+                                  <ClickTooltip text='Copied!'>
                                     <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
                                       <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
                                     </div>
@@ -342,7 +338,7 @@ function TransactionsHistory() {
                                 {swap?.transaction_id ?
                                   <>
                                     <div className="underline hover:no-underline">
-                                      <a target={"_blank"} href={networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id)}>{swap?.transaction_id?.substring(0, 5)}...{swap?.transaction_id?.substring(swap?.transaction_id?.length - 4, swap?.transaction_id?.length - 1)}</a>
+                                      <a target={"_blank"} href={networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id)}>{shortenAddress(swap?.transaction_id)}</a>
                                     </div>
                                   </>
                                   : <div>-</div>

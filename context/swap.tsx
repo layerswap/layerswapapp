@@ -1,11 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { BransferApiClient } from '../lib/bransferApiClients';
 import LayerSwapApiClient, { CreateSwapParams, SwapDetailsResponse } from '../lib/layerSwapApiClient';
-import { useAuthDataUpdate, useAuthState } from './auth';
-import Router, { useRouter } from 'next/router'
+import { useAuthDataUpdate } from './authContext';
 import TokenService from '../lib/TokenService';
-import { useInterval } from '../hooks/useInyterval';
 
 const SwapDataStateContext = React.createContext<SwapData>(null);
 const SwapDataUpdateContext = React.createContext<UpdateInterface>(null);

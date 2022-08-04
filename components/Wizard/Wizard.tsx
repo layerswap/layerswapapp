@@ -1,20 +1,11 @@
-import { FC, Fragment, useCallback, useEffect, useRef, useState } from 'react'
-import { Dialog, Menu, Transition } from "@headlessui/react";
-import { Step, StepPath, useWizardState, WizardPart, WizardParts, WizardPartType } from '../../context/wizard';
-import { ArrowLeftIcon, MenuIcon, XIcon } from '@heroicons/react/solid';
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { Transition } from "@headlessui/react";
+import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
-import { BaseWizard, FormSteps, FormWizardSteps, SwapWizardSteps } from '../../Models/Wizard';
-import { useAuthState } from '../../context/auth';
-import TokenService from '../../lib/TokenService';
+import { BaseWizard } from '../../Models/Wizard';
 import LayerswapMenu from '../LayerswapMenu';
-import Link from 'next/link';
 import LayerSwapLogo from '../icons/layerSwapLogo';
 import { useRouter } from 'next/router';
-
-
-function classNames(...classes) {
-   return classes.filter(Boolean).join(' ')
-}
 
 const Wizard: FC = () => {
 
@@ -36,7 +27,7 @@ const Wizard: FC = () => {
    }, []);
 
    return <>
-      <div className={`mb-10 pb-3 bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
+      <div className={`mb-10 pb-6 bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-ouline-blue">
                <div style={{ width: `${wizard[currentStep].positionPercent}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-pink-primary"></div>
@@ -110,7 +101,7 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
             <div className='mx-auto px-4 overflow-hidden md:hidden'>
                <div className="flex justify-center">
                   <a onClick={handleGoHome}>
-                     <LayerSwapLogo className="h-8 w-auto text-white  opacity-50" />
+                     <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
                   </a>
                </div>
             </div>

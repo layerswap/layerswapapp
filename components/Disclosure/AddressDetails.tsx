@@ -2,12 +2,18 @@ import { ChevronDownIcon, DocumentDuplicateIcon, ExternalLinkIcon, PencilAltIcon
 import { Disclosure } from "@headlessui/react";
 import { useSwapDataState } from '../../context/swap';
 import Image from 'next/dist/client/image';
-import { copyTextToClipboard } from '../../lib/copyToClipboard';
+import { copyTextToClipboard } from '../utils/copyToClipboard';
 import { FC, MouseEventHandler, useEffect } from 'react';
 import ClickTooltip from '../Tooltips/ClickTooltip';
+import shortenAddress from '../utils/ShortenAddress';
+import { SwapFormValues } from '../DTOs/SwapFormValues';
 
 export class AddressDetailsProps {
     onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
+}
+
+function constructExplorerUrl(swapFormData: SwapFormValues): string {
+    return swapFormData?.network?.baseObject.account_explorer_template.replace("{0}", swapFormData?.destination_address.startsWith('zksync:') ? swapFormData?.destination_address.replace('zksync:', '') : swapFormData?.destination_address);
 }
 
 const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
@@ -63,7 +69,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                                         </span>
                                                     </div>
                                                     :
-                                                    <p className='text-base font-medium'> {`${swapFormData?.destination_address?.substring(0, 5)}...${swapFormData?.destination_address?.substring(swapFormData?.destination_address?.length - 4, swapFormData?.destination_address?.length - 1)}`}</p>
+                                                    <p className='text-base font-medium'> {shortenAddress(swapFormData?.destination_address)}</p>
                                             }
                                         </div>
                                     }
@@ -75,7 +81,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                 <Disclosure.Panel className="text-sm">
                                     <>
                                         <div className="flex items-center flex-wrap">
-                                            <a className='m-1.5 flex text-pink-primary-300 cursor-pointer items-center hover:text-white' href={swapFormData?.network?.baseObject.account_explorer_template.replace("{0}", swapFormData?.destination_address)} target='_blank'  >
+                                            <a className='m-1.5 flex text-pink-primary-300 cursor-pointer items-center hover:text-white' href={constructExplorerUrl(swapFormData)} target='_blank'  >
                                                 <ExternalLinkIcon className='h-4 w-4 mr-2' />
                                                 <p className=''>View In Explorer</p>
                                             </a>
@@ -84,7 +90,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                                 Edit Address
                                             </button>
                                             <div className='cursor-pointer text-pink-primary-300 hover:text-white flex items-center m-1.5'>
-                                                <ClickTooltip text='Copied!'  moreClassNames='-right-1 bottom-3'>
+                                                <ClickTooltip text='Copied!' moreClassNames='-right-1 bottom-3'>
                                                     <div onClick={() => copyTextToClipboard(swapFormData?.destination_address)}>
                                                         <DocumentDuplicateIcon className='inline-block h-4 w-4 mr-2' />
                                                         <span className='text-sm font-normal'>Copy Full Address</span>

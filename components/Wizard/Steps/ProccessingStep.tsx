@@ -1,17 +1,11 @@
-import { CheckIcon } from '@heroicons/react/outline';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { FC, useEffect, useState } from 'react'
+import { FC } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { useWizardState, WizardPartType } from '../../../context/wizard';
-import { useInterval } from '../../../hooks/useInyterval';
-import { BransferApiClient } from '../../../lib/bransferApiClients';
-import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
+import { useInterval } from '../../../hooks/useInterval';
 import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { SwapWizardSteps } from '../../../Models/Wizard';
-import SubmitButton from '../../buttons/submitButton';
 
 const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
 
