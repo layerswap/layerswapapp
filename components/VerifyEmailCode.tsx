@@ -192,6 +192,6 @@ const STATUS = {
     STARTED: 'Started',
     STOPPED: 'Stopped',
 }
-const INITIAL_COUNT = 6
+const INITIAL_COUNT = 60
 
 export default VerifyEmailCode;
