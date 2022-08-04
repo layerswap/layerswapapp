@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import Swap from './swapComponent';
-import { AuthProvider } from '../context/auth';
+import { AuthProvider } from '../context/authContext';
 
 const App: FC = () => {
 

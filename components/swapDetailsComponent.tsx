@@ -1,15 +1,11 @@
 import { useRouter } from 'next/router';
 import { FC, useEffect, useState } from 'react'
 import { useSettingsState } from '../context/settings';
-import { useSwapDataState, useSwapDataUpdate } from '../context/swap';
 import LayerSwapApiClient, { SwapDetailsResponse } from '../lib/layerSwapApiClient';
 import TokenService from '../lib/TokenService';
 import { StatusIcon } from './swapHistoryComponent';
 import Image from 'next/image'
-import { Currency } from '../Models/Currency';
-import { CryptoNetwork } from '../Models/CryptoNetwork';
-import { Popover } from '@headlessui/react';
-import { DocumentDuplicateIcon, DuplicateIcon } from '@heroicons/react/outline';
+import { DocumentDuplicateIcon } from '@heroicons/react/outline';
 import { copyTextToClipboard } from './utils/copyToClipboard';
 import toast from 'react-hot-toast';
 import ClickTooltip from './Tooltips/ClickTooltip';
@@ -36,7 +32,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                 const authData = TokenService.getAuthData();
                 if (!authData) {
                     router.push({
-                        pathname: '/login',
+                        pathname: '/auth',
                         query: { ...(router.query), redirect: '/transactions' }
                     })
                     return;

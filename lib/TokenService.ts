@@ -1,4 +1,4 @@
-import { AuthData } from "../context/auth";
+import { AuthData } from "../context/authContext";
 
 class TokenService {
     getAuthData(): (AuthData | undefined | null) {
