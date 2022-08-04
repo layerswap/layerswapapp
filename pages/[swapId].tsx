@@ -1,7 +1,4 @@
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
-import { SwapOffRampInfo } from '../Models/SwapInfo';
-import { CheckIcon, XIcon } from '@heroicons/react/outline'
-import SpinIcon from '../components/icons/spinIcon';
 import Layout from '../components/layout';
 import fs from 'fs';
 import path from 'path';
@@ -19,19 +16,12 @@ import OverviewStep from '../components/Wizard/Steps/OverviewStep';
 import WithdrawExchangeStep from '../components/Wizard/Steps/WithdrawExhangeStep';
 import ProccessingStep from '../components/Wizard/Steps/ProccessingStep';
 import SuccessfulStep from '../components/Wizard/Steps/SuccessfulStep';
-import FailedPage from '../components/Wizard/Steps/FailedPage';
+import FailedStep from '../components/Wizard/Steps/FailedStep';
 import EmailStep from '../components/Wizard/Steps/EmailStep';
-import SwapCodeStep from '../components/Wizard/Steps/SwapCodeStep';
 import ExternalPaumentStep from '../components/Wizard/Steps/ExternalPaymentStep';
 import { MenuProvider } from '../context/menu';
 import { SettingsProvider } from '../context/settings';
-
-enum SwapPageStatus {
-  Processing,
-  Failed,
-  Success,
-  NotFound
-}
+import SwapCodeStep from '../components/Wizard/Steps/SwapCodeStep';
 
 const SwapWizard: SwapWizardSteps = {
   "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 70 },
@@ -41,9 +31,8 @@ const SwapWizard: SwapWizardSteps = {
   "Withdrawal": { title: "Withdrawal", content: WithdrawExchangeStep, positionPercent: 90, navigationDisabled: true },
   "Processing": { title: "", content: ProccessingStep, positionPercent: 95 },
   "Success": { title: "", content: SuccessfulStep, navigationDisabled: true, positionPercent: 100 },
-  "Failed": { title: "", content: FailedPage, navigationDisabled: true, positionPercent: 100 },
+  "Failed": { title: "", content: FailedStep, navigationDisabled: true, positionPercent: 100 },
 }
-
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 

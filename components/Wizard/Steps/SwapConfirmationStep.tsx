@@ -10,7 +10,7 @@ import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
 import { CalculateReceiveAmount } from '../../../lib/fees';
-import { copyTextToClipboard } from '../../../lib/copyToClipboard';
+import { copyTextToClipboard } from '../../utils/copyToClipboard';
 import ToggleButton from '../../buttons/toggleButton';
 import { isValidAddress } from '../../../lib/addressValidator';
 import AddressDetails from '../../Disclosure/AddressDetails';
@@ -92,7 +92,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {
-                toast.error("Two factor authentication is required")
+                toast("Coinbase 2FA code required")
                 setTwoFARequired(true)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {

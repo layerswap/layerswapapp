@@ -62,7 +62,7 @@ export default class ExchangeSettings {
             RequireSelectInternal: true,
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.OkexId] = {
-            WithdrawalWarningMessage: "Please select 'internal' withdrowal method.",
+            WithdrawalWarningMessage: "Please select the 'internal' withdrawal method.",
             RequireSelectInternal: true,
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/19ac54e0-ccc3-4a4b-b8a9-996a28fb3aa2?iframe",
         };
