@@ -2,7 +2,7 @@ import React from 'react';
 import { FC } from 'react'
 import MainStep from './Wizard/Steps/MainStep';
 import { SwapDataProvider } from '../context/swap';
-import { AuthProvider } from '../context/auth';
+import { AuthProvider } from '../context/authContext';
 import { UserExchangeProvider } from '../context/userExchange';
 import Wizard from './Wizard/Wizard';
 import { FormWizardSteps } from '../Models/Wizard';
@@ -10,10 +10,10 @@ import EmailStep from './Wizard/Steps/EmailStep';
 import CodeStep from './Wizard/Steps/CodeStep';
 import { FormWizardProvider } from '../context/formWizardProvider';
 import APIKeyStep from './Wizard/Steps/APIKeyStep';
-import SwapConfirmationStep from './Wizard/Steps/SwapConfirmationStep';
 import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
 import { MenuProvider } from '../context/menu';
 import IntroCard from './introCard';
+import SwapConfirmationStep from './Wizard/Steps/SwapConfirmationStep';
 
 
 const FormWizard: FormWizardSteps = {
@@ -36,7 +36,6 @@ const Swap: FC = () => {
               <UserExchangeProvider>
                 <FormWizardProvider wizard={FormWizard} initialStep={"SwapForm"} initialLoading={true}>
                   <Wizard />
-                  <TestComp />
                 </FormWizardProvider >
               </UserExchangeProvider>
             </SwapDataProvider >
@@ -47,10 +46,5 @@ const Swap: FC = () => {
     </div >
   )
 };
-
-function TestComp() {
-  return <></>
-}
-
 
 export default Swap;

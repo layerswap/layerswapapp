@@ -1,10 +1,9 @@
 import { Menu, Transition } from "@headlessui/react";
 import { MenuIcon } from "@heroicons/react/outline";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { Fragment, useCallback, useRef, useState } from "react";
 import { useIntercom } from "react-use-intercom";
-import { useAuthState } from "../context/auth";
+import { useAuthState } from "../context/authContext";
 import { useMenuState } from "../context/menu";
 import TokenService from "../lib/TokenService";
 import SendFeedback from './sendFeedback'
@@ -41,7 +40,7 @@ export default function () {
     }
 
 
-    const goToLogin = useCallback(() => goToLink("/login", router.query), [router.query])
+    const goToLogin = useCallback(() => goToLink("/auth", router.query), [router.query])
     const goToTransactions = useCallback(() => goToLink("/transactions", router.query), [router.query])
     const goToExchanges = useCallback(() => goToLink("/exchanges", router.query), [router.query])
 

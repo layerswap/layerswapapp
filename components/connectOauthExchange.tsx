@@ -1,4 +1,3 @@
-import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
@@ -29,7 +28,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                 const { access_token } = TokenService.getAuthData() || {};
                 if (!access_token) {
                     router.push({
-                        pathname: '/login',
+                        pathname: '/auth',
                         query: { ...(router.query), redirect: '/exchanges' }
                     })
                     return;
@@ -57,7 +56,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
             const access_token = TokenService.getAuthData()?.access_token
             if (!access_token) {
                 router.push({
-                    pathname: '/login',
+                    pathname: '/auth',
                     query: { ...(router.query), redirect: '/exchanges' }
                 })
                 return;

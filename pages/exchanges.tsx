@@ -3,7 +3,7 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { SettingsProvider } from '../context/settings'
-import { AuthProvider } from '../context/auth'
+import { AuthProvider } from '../context/authContext'
 import UserExchanges from '../components/exchangesComponent'
 import { MenuProvider } from '../context/menu'
 

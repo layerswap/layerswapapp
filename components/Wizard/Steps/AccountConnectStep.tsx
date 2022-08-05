@@ -68,10 +68,15 @@ const AccountConnectStep: FC = () => {
         }
     }, [oauth_redirect_url, carouselRef, carouselFinished, addressSource, query])
 
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount?.toString()?.replace(",",".")) + 5)
+    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount?.toString()?.replace(",", ".")) + 5)
+
     const exchange_name = swapFormData?.exchange?.name
     const onCarouselLast = (value) => {
         setCarouselFinished(value)
+    }
+
+    if (!(minimalAuthorizeAmount > 0)) {
+        return null;
     }
 
     return (
@@ -80,12 +85,6 @@ const AccountConnectStep: FC = () => {
 
                 <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please connect your {exchange_name} account
-                    {/* <div className="flex items-center text-pink-primary-300 border-2 p-4 rounded-md border-ouline-blue border-dashed">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-pink-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        <label className="block text-lg font-lighter leading-6 "> Make sure to authorize at least <span className='strong-highlight text-white'>{minimalAuthorizeAmount}$</span>. Follow this <Link key="userGuide" href="/userguide"><a className="strong-highlight hightlight-animation highlight-link hover:cursor-pointer">Step by step guide</a></Link></label>
-                    </div> */}
                 </h3>
                 <div className="w-full">
                     <Carousel onLast={onCarouselLast} ref={carouselRef}>

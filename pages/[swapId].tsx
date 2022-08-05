@@ -6,7 +6,7 @@ import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import IntroCard from '../components/introCard';
-import { AuthProvider } from '../context/auth';
+import { AuthProvider } from '../context/authContext';
 import { SwapDataProvider } from '../context/swap';
 import { UserExchangeProvider } from '../context/userExchange';
 import { FormWizardProvider } from '../context/formWizardProvider';

@@ -13,7 +13,7 @@ import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
 import ExchangeSettings from '../../../lib/ExchangeSettings';
 import { useIntercom } from 'react-use-intercom';
-import { useAuthState } from '../../../context/auth';
+import { useAuthState } from '../../../context/authContext';
 import ClickTooltip from '../../Tooltips/ClickTooltip';
 
 const WithdrawExchangeStep: FC = () => {
