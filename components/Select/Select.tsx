@@ -2,30 +2,23 @@ import { Combobox, Listbox, Transition } from '@headlessui/react'
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import { SearchIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
-
-import {
-    ExclamationCircleIcon,
-    XIcon,
-    ChevronDownIcon,
-    CheckIcon,
-} from '@heroicons/react/outline'
+import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon } from '@heroicons/react/outline'
 import { SelectMenuItem } from './selectMenuItem'
+import { classNames } from '../utils/classNames'
 export interface SelectProps<T> {
     name: string;
     value: SelectMenuItem<T>;
     values: SelectMenuItem<T>[];
     disabled: boolean;
     placeholder: string;
-    showNotAvailableMessage?: boolean;
     smallDropdown?: boolean;
     setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void
 }
 
-export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, showNotAvailableMessage = false, smallDropdown = false }: SelectProps<T>) {
+export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
     const [query, setQuery] = useState('')
 
-    const initialValue = value ? values?.find(v => v.id === value.id) : undefined
     const [selectedItem, setSelectedItem] = useState<SelectMenuItem<T> | undefined>(value || undefined)
 
     function onChangeHandler(newValue: string) {
@@ -276,24 +269,6 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                                     <p className='text-sm font-medium'>
                                                                         {item.name}
                                                                     </p>
-                                                                    {/* {
-                                                                        showNotAvailableMessage && disabled &&
-                                                                        <>
-                                                                            <div className="text-white absolute inset-y-0 -right-4 flex items-center px-4 group">
-                                                                                <div className="absolute flex flex-col items-center">
-                                                                                    <div className="w-48 absolute -right-6 bottom-0 flex flex-col items-right mb-3 hidden group-hover:flex">
-                                                                                        <span className="leading-4 min z-10 p-2 text-xs text-white whitespace-no-wrap bg-gray-600 shadow-lg rounded-md">
-                                                                                            {Messages[item.id] || Messages.DEFAULT}
-                                                                                        </span>
-                                                                                        <div className="absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-gray-600"></div>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div className="justify-self-end">
-                                                                                    <InformationCircleIcon className="h-6 w-6 opacity-20" aria-hidden="true" />
-                                                                                </div>
-                                                                            </div>
-                                                                        </>
-                                                                    } */}
                                                                 </div>
                                                                 {
                                                                     item.id === selectedItem?.id && <div className="justify-self-end">
@@ -328,10 +303,6 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
             </Transition>
         </>
     )
-}
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
 }
 
 
