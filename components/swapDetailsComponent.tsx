@@ -63,7 +63,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-white">
                                 <div className='inline-flex items-center'>
                                     <span className="mr-2">{shortenAddress(swap?.id)}</span>
-                                    <ClickTooltip text='Copied!'>
+                                    <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
                                         <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
                                             <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
                                         </div>
