@@ -1,9 +1,5 @@
 import Layout from '../components/layout'
-<<<<<<< HEAD
-import { AuthProvider } from '../context/auth'
-=======
 import { AuthProvider } from '../context/authContext'
->>>>>>> dev
 import TransactionsHistory from '../components/swapHistoryComponent'
 import { MenuProvider } from '../context/menu'
 import { SettingsProvider } from '../context/settings'
