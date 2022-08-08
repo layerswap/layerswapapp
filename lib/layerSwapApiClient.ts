@@ -92,9 +92,7 @@ export type Payment = {
 }
 
 type CreateSwapSuccessResponse = {
-    value: {
-        swap_id: string
-    },
+    swap_id: string
     statusCode: 200
 }
 

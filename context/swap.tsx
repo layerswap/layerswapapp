@@ -48,7 +48,7 @@ export function SwapDataProvider({ children }) {
                 if (swap?.statusCode !== 200)
                     throw new Error(swap.value)
 
-                const swapId = swap.value?.swap_id;
+                const swapId = swap.swap_id;
                 const swapDetails = await layerswapApiClient.getSwapDetails(swapId, authData?.access_token)
                 setSwap(swapDetails)
                 return swapDetails;
