@@ -6,13 +6,13 @@ import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { SettingsProvider } from '../context/settings'
 import { QueryProvider } from '../context/query'
 
-export default function Home({ data, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ response, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
   return (
     <Layout>
       <div className="content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
         <div className='flex flex-col space-y-5 animate-fade-in'>
-          <SettingsProvider data={data}>
+          <SettingsProvider data={response}>
             <QueryProvider query={query}>
                 <Swap />
             </QueryProvider>
@@ -32,19 +32,19 @@ export async function getServerSideProps(context) {
   var query = context.query;
   query.addressSource && (query.addressSource = query.addressSource?.toLowerCase());
   var apiClient = new LayerSwapApiClient();
-  const data = await apiClient.fetchSettingsAsync()
+  const response = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
   if (process.env.IS_TESTING == "false") {
-    data.networks.forEach((element) => {
+    response.data.networks.forEach((element) => {
       if (!element.is_test_net) networks.push(element);
     });
   }
   else {
-    networks = data.networks;
+    networks = response.data.networks;
   }
 
-  data.networks = networks;
+  response.data.networks = networks;
   return {
-    props: { data, query },
+    props: { response, query },
   }
 }

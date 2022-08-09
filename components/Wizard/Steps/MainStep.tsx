@@ -41,9 +41,9 @@ const CurrenciesField: FC = () => {
     } = useFormikContext<SwapFormValues>();
 
     const name = "currency"
-    const { currencies, exchanges } = useSettingsState();
+    const { data } = useSettingsState();
 
-    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? currencies
+    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? data.currencies
         .filter(x => x.network_id === network?.baseObject?.id && x?.exchanges?.some(e => e.exchange_id === exchange?.baseObject?.id))
         .map(c => ({
             baseObject: c,
@@ -62,7 +62,7 @@ const CurrenciesField: FC = () => {
     useEffect(() => {
         if (network) {
             // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
-            const default_currency = currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
+            const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
             // if(alternativeToSelectedValue){
             //     setFieldValue(name, alternativeToSelectedValue)
             // }
@@ -87,7 +87,7 @@ const CurrenciesField: FC = () => {
             // }
         }
 
-    }, [network, setFieldValue, exchange, currencies, exchanges])
+    }, [network, setFieldValue, exchange, data.currencies, data.exchanges])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />
@@ -102,7 +102,7 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
     const name = 'exchange'
     const settings = useSettingsState();
 
-    const exchangeMenuItems: SelectMenuItem<Exchange>[] = settings.exchanges
+    const exchangeMenuItems: SelectMenuItem<Exchange>[] = settings.data.exchanges
         .map(e => ({
             baseObject: e,
             id: e.internal_name,
@@ -131,9 +131,9 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
     } = useFormikContext<SwapFormValues>();
     const name = "network"
     const { lockNetwork } = useQueryState()
-    const { currencies, networks } = useSettingsState();
+    const { data } = useSettingsState();
 
-    const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = networks
+    const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
         .map(n => ({
             baseObject: n,
             id: n.code,
@@ -141,7 +141,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             order: n.order,
             imgSrc: n.logo_url,
             isAvailable: !lockNetwork && !n.is_test_net,
-            isEnabled: n.is_enabled && currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
+            isEnabled: n.is_enabled && data.currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
             isDefault: n.is_default
         })).sort(sortingByOrder);
 
@@ -257,12 +257,12 @@ export default function MainStep() {
         setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
     }, [query])
 
-    let availableExchanges = settings.exchanges
+    let availableExchanges = settings.data.exchanges
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
-    let availableNetworks = settings.networks
+    let availableNetworks = settings.data.networks
         .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
 
-    const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), c]));
+    const availablePartners = Object.fromEntries(settings.data.partners.map(c => [c.name.toLowerCase(), c]));
 
     const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
@@ -309,7 +309,7 @@ export default function MainStep() {
     }, [updateSwapFormData])
 
     let destAddress: string = account || query.destAddress;
-    let destNetwork: string = (chainId && settings.networks.find(x => x.chain_id == chainId)?.code) || query.destNetwork;
+    let destNetwork: string = (chainId && settings.data.networks.find(x => x.chain_id == chainId)?.code) || query.destNetwork;
 
 
     let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;

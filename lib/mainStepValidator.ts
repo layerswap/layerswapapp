@@ -24,7 +24,7 @@ export default function MainStepValidation(formikRef: React.MutableRefObject<For
             if (!formikRef.current.getFieldMeta("destination_address").touched)
                 addressRef?.current?.focus();
         }
-        else if (settings.blacklistedAddresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
+        else if (settings.data.blacklistedAddresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
             errors.amount = `You can not transfer to this address`;
             if (!formikRef.current.getFieldMeta("destination_address").touched)
                 addressRef?.current?.focus();

@@ -21,7 +21,7 @@ const WithdrawExchangeStep: FC = () => {
     const { swap } = useSwapDataState()
     const { payment } = swap || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
-    const { networks, exchanges } = useSettingsState()
+    const { data } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
     const router = useRouter();
     const { swapId } = router.query;
@@ -58,8 +58,8 @@ const WithdrawExchangeStep: FC = () => {
     }, [])
 
     const contextFlow = payment?.external_flow_context || payment?.manual_flow_context
-    const network_name = networks?.find(n => n.code === swap?.network)?.name || ' '
-    const exchange = exchanges?.find(n => n.internal_name === payment?.exchange)
+    const network_name = data.networks?.find(n => n.code === swap?.network)?.name || ' '
+    const exchange = data.exchanges?.find(n => n.internal_name === payment?.exchange)
     const exchange_name = exchange?.name || ' '
     const exchange_id = exchange?.id
     const exchange_logo_url = exchange?.logo_url
@@ -178,7 +178,6 @@ const WithdrawExchangeStep: FC = () => {
                     </div>
 
                     {
-                        payment?.manual_flow_context?.require_note &&
                         <>
                             <label htmlFor="payment_note" className="block font-normal text-sm">
                                 Remarks
@@ -194,8 +193,8 @@ const WithdrawExchangeStep: FC = () => {
                                     id="payment_note"
                                     disabled={true}
                                     value={payment?.manual_flow_context?.note}
-                                    className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-36 block
-                                        placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                    className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                                 <div className='absolute inset-y-2 right-2.5'>
                                     <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
