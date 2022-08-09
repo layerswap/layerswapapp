@@ -6,9 +6,11 @@ import { Partner } from "./Partner";
 
 
 export class LayerSwapSettings {
-    exchanges: Exchange[];
-    networks: CryptoNetwork[];
-    currencies: Currency[];
-    partners: Partner[];
-    blacklistedAddresses: BlacklistedAddress[]
+    data: {
+        exchanges: Exchange[];
+        networks: CryptoNetwork[];
+        currencies: Currency[];
+        partners: Partner[];
+        blacklistedAddresses: BlacklistedAddress[]
+    }
 }
