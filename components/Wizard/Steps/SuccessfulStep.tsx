@@ -35,8 +35,8 @@ const SuccessfulStep: FC = () => {
                 </div>
                 <div className="text-white text-sm md:mt-3 mt-0">
                     {
-                        data.networks && swap?.transaction_id &&
-                        <a href={data.networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id)}
+                        data.networks && swap?.data?.transaction_id &&
+                        <a href={data.networks.filter(x => x.code === swap?.data?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.data?.transaction_id)}
                             target="_blank"
                             className="text-sm w-full flex justify-center py-3 px-4 rounded-md text-pink-primary border border-pink-primary uppercase">
                             View in Explorer

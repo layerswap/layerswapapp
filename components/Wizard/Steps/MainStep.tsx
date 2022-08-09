@@ -44,7 +44,6 @@ const CurrenciesField: FC = () => {
     const { data } = useSettingsState();
 
     const currencyMenuItems: SelectMenuItem<Currency>[] = network ? data.currencies
-        .filter(x => x.network_id === network?.baseObject?.id && x?.exchanges?.some(e => e.exchange_id === exchange?.baseObject?.id))
         .map(c => ({
             baseObject: c,
             id: c.id,

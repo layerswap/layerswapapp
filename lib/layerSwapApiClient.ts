@@ -12,18 +12,18 @@ export default class LayerSwapApiClient {
         return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + '/settings').then(res => res.data);
     }
 
-    async createSwap(params: CreateSwapParams, token: string): Promise<CreateSwapFailedResponse | CreateSwapSuccessResponse> {
+    async createSwap(params: CreateSwapParams, token: string): Promise<CreateSwapResponse> {
         return await authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/swaps',
             params,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
-    async getSwaps(page: number, token: string): Promise<SwapDetailsResponse[]> {
+    async getSwaps(page: number, token: string): Promise<SwapListResponse> {
         return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/swaps?page=${page}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
-    async getSwapDetails(id: string, token: string): Promise<SwapDetailsResponse> {
+    async getSwapDetails(id: string, token: string): Promise<SwapItemResponse> {
         return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/swaps/${id}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
@@ -39,7 +39,18 @@ export type CreateSwapParams = {
 }
 
 
-export type SwapDetailsResponse = {
+export type SwapItemResponse = {
+    data: SwapItem,
+    error: string,
+    is_success: boolean
+}
+
+export type SwapListResponse = {
+    data: SwapItem[],
+    error: string,
+    is_success: boolean
+}
+export type SwapItem = {
     id: string,
     amount: number,
     fee: number,
@@ -91,14 +102,13 @@ export type Payment = {
     sequence_number: string,
 }
 
-type CreateSwapSuccessResponse = {
-    swap_id: string
-    statusCode: 200
+type CreateSwapResponse = {
+    data: {
+        swap_id: string
+    },
+    is_success: boolean,
+    error: string
 }
 
-type CreateSwapFailedResponse = {
-    value: string,
-    statusCode: 500 | 400
-}
 
 

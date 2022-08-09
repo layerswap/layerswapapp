@@ -14,7 +14,6 @@ import APIKeyStep from './Wizard/Steps/APIKeyStep';
 import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
 import { MenuProvider } from '../context/menu';
 import SwapConfirmationStep from './Wizard/Steps/SwapConfirmationStep';
-import WithdrawExchangeStep from './Wizard/Steps/WithdrawExhangeStep';
 
 
 const FormWizard: FormWizardSteps = {
@@ -23,7 +22,7 @@ const FormWizard: FormWizardSteps = {
   "Code": { title: "Code", content: CodeStep, dismissOnBack: true, navigationDisabled: true, positionPercent: 35 },
   "ExchangeOAuth": { title: "OAuth flow", content: AccountConnectStep, dismissOnBack: true, positionPercent: 45 },
   "ExchangeApiCredentials": { title: "Please provide Read-only API keys", content: APIKeyStep, dismissOnBack: true, positionPercent: 50 },
-  "SwapConfirmation": { title: "Swap confirmation", content: WithdrawExchangeStep, positionPercent: 60 },
+  "SwapConfirmation": { title: "Swap confirmation", content: SwapConfirmationStep, positionPercent: 60 },
 }
 
 const Swap: FC = () => {
