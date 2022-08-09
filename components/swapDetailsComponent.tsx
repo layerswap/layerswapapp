@@ -16,13 +16,13 @@ type Props = {
 }
 
 const SwapDetails: FC<Props> = ({ id }) => {
-    const { exchanges, networks, currencies } = useSettingsState()
+    const { data } = useSettingsState()
     const [swap, setSwap] = useState<SwapDetailsResponse>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
-    const exchange = exchanges?.find(e => e.internal_name == swap?.payment?.exchange)
-    const network = networks.find(n => n.code === swap?.network)
-    const currency = currencies.find(x => x.id == swap?.currency_id)
+    const exchange = data.exchanges?.find(e => e.internal_name == swap?.payment?.exchange)
+    const network = data.networks.find(n => n.code === swap?.network)
+    const currency = data.currencies.find(x => x.id == swap?.currency_id)
     useEffect(() => {
         (async () => {
             if (!id)
