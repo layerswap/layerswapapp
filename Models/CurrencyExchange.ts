@@ -1,5 +1,5 @@
 export class CurrencyExchange {
     exchange_id: string;
     fee: number;
-    isOffRampEnabled: boolean;
+    is_off_ramp_enabled: boolean;
 }

@@ -1,7 +1,7 @@
 import { Web3Provider } from "@ethersproject/providers";
 import { ImmutableXClient } from "@imtbl/imx-sdk";
 import { useWeb3React } from "@web3-react/core";
-import { Field, Form, Formik, FormikErrors, FormikProps, useField, useFormikContext } from "formik";
+import { Field, Form, Formik, FormikErrors, FormikProps, swap, useField, useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
@@ -33,6 +33,8 @@ import { classNames } from "../../utils/classNames";
 import KnownIds from "../../../lib/knownIds";
 import { LayerSwapSettings } from "../../../Models/LayerSwapSettings";
 import MainStepValidation from "../../../lib/mainStepValidator";
+import SwapOptionsToggle from "../../SwapOptionsToggle";
+import { BransferApiClient } from "../../../lib/bransferApiClients";
 
 const CurrenciesField: FC = () => {
     const {
@@ -96,7 +98,7 @@ const CurrenciesField: FC = () => {
 
 const ExchangesField = React.forwardRef((props: any, ref: any) => {
     const {
-        values: { exchange, currency },
+        values: { exchange, currency, swapType },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = 'exchange'
@@ -109,14 +111,14 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             name: e.name,
             order: e.order,
             imgSrc: e.logo_url,
-            isAvailable: true, //currency?.baseObject?.exchanges?.some(ce => ce.exchangeId === e.id),
+            isAvailable: settings.data.currencies.some(c => c.exchanges?.some(ce => ce.exchange_id === e.id && (swapType === "onramp" || ce.is_off_ramp_enabled))),
             isEnabled: e.is_enabled,
             isDefault: e.is_default
         })).sort(sortingByOrder);
 
     return (<>
         <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
-            From
+            {swapType === "onramp" ? "From" : "To"}
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
             <Field name={name} placeholder="Choose exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
@@ -126,7 +128,7 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
 
 const NetworkField = React.forwardRef((props: any, ref: any) => {
     const {
-        values: { exchange, network },
+        values: { exchange, network, swapType },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = "network"
@@ -141,7 +143,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             order: n.order,
             imgSrc: n.logo_url,
             isAvailable: !lockNetwork && !n.is_test_net,
-            isEnabled: n.is_enabled && data.currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
+            isEnabled: n.is_enabled && data.currencies.some(c => c.is_enabled && c.network_id === n.id && (swapType === "offramp" || c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))),
             isDefault: n.is_default
         })).sort(sortingByOrder);
 
@@ -150,7 +152,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
 
     return (<>
         <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
-            To
+            {swapType === "onramp" ? "To" : "From"}
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 ${exchange && !network ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
             <Field name={name} placeholder="Choose network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
@@ -274,6 +276,18 @@ export default function MainStep() {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken)
                 goToStep("Email")
+            else if (values.swapType === "offramp" && values.exchange.baseObject.id === KnownIds.Exchanges.CoinbaseId) {
+                const bransferApiClient = new BransferApiClient()
+                const response = await bransferApiClient.GetExchangeDepositAddress(values.exchange?.baseObject?.internal_name, values.currency?.baseObject?.asset?.toUpperCase(), accessToken)
+                if (response.is_success) {
+                    updateSwapFormData({ ...values, destination_address: response.data })
+                    goToStep("SwapConfirmation")
+                }
+                else {
+                    await bransferApiClient.DeleteExchange(values.exchange.baseObject.internal_name, accessToken)
+                    goToStep(ExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
+                }
+            }
             else {
                 if (values.network.baseObject.id == KnownIds.Networks.ImmutableXId) {
                     const client = await ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
@@ -332,7 +346,7 @@ export default function MainStep() {
     let initialAddress = destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
 
     let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
-    const initialValues: SwapFormValues = { swapType: "offramp", amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
+    const initialValues: SwapFormValues = { swapType: "onramp", amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
     const addressRef: any = useRef();
@@ -362,7 +376,10 @@ export default function MainStep() {
                 <Form className="h-full">
                     <div className="px-8 h-full flex flex-col justify-between">
                         <div>
-                            <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4">
+                            <div className='flex justify-left mb-5'>
+                                <SwapOptionsToggle />
+                            </div>
+                            <div className={classNames(values.swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex  justify-between w-full space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
                                 <div className="flex flex-col md:w-80 w-full">
                                     {
                                         <ExchangesField ref={exchangeRef} />
@@ -373,29 +390,32 @@ export default function MainStep() {
                                         <NetworkField ref={networkRef} />
                                     }
                                 </div>
-
                             </div>
-                            <div className="w-full mb-3.5 leading-4">
-                                <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
-                                    {`To ${values?.network?.name || ''} address`}
-                                    {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
-                                </label>
-                                <div className="relative rounded-md shadow-sm mt-1.5">
-                                    {isPartnerWallet &&
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Image className='rounded-md object-contain' src={availablePartners[addressSource].logo_url} width="24" height="24"></Image>
+                            {
+                                values.swapType === "onramp" &&
+                                <div className="w-full mb-3.5 leading-4">
+                                    <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
+                                        {`To ${values?.network?.name || ''} address`}
+                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
+                                    </label>
+                                    <div className="relative rounded-md shadow-sm mt-1.5">
+                                        {isPartnerWallet &&
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <Image className='rounded-md object-contain' src={availablePartners[addressSource].logo_url} width="24" height="24"></Image>
+                                            </div>
+                                        }
+                                        <div>
+                                            <AddressInput
+                                                disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
+                                                name={"destination_address"}
+                                                className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
+                                                ref={addressRef}
+                                            />
                                         </div>
-                                    }
-                                    <div>
-                                        <AddressInput
-                                            disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
-                                            name={"destination_address"}
-                                            className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
-                                            ref={addressRef}
-                                        />
                                     </div>
                                 </div>
-                            </div >
+                            }
+
                             <div className="mb-6 leading-4">
                                 <AmountField ref={amountRef} />
                             </div>

@@ -35,7 +35,8 @@ export type CreateSwapParams = {
     Network: string,
     Exchange: string,
     currency: string,
-    destination_address: string
+    destination_address: string,
+    to_exchange: boolean,
 }
 
 

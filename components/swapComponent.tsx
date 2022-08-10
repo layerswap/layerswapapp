@@ -23,7 +23,7 @@ const FormWizard: FormWizardSteps = {
   "Code": { title: "Code", content: CodeStep, dismissOnBack: true, navigationDisabled: true, positionPercent: 35 },
   "ExchangeOAuth": { title: "OAuth flow", content: AccountConnectStep, dismissOnBack: true, positionPercent: 45 },
   "ExchangeApiCredentials": { title: "Please provide Read-only API keys", content: APIKeyStep, dismissOnBack: true, positionPercent: 50 },
-  "SwapConfirmation": { title: "Swap confirmation", content: WithdrawExchangeStep, positionPercent: 60 },
+  "SwapConfirmation": { title: "Swap confirmation", content: SwapConfirmationStep, positionPercent: 60 },
 }
 
 const Swap: FC = () => {
