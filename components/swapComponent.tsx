@@ -14,8 +14,6 @@ import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
 import { MenuProvider } from '../context/menu';
 import IntroCard from './introCard';
 import SwapConfirmationStep from './Wizard/Steps/SwapConfirmationStep';
-import WithdrawExchangeStep from './Wizard/Steps/WithdrawExhangeStep';
-
 
 const FormWizard: FormWizardSteps = {
   "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true, positionPercent: 0 },
