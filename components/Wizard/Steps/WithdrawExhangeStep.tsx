@@ -58,7 +58,11 @@ const WithdrawExchangeStep: FC = () => {
     }, [])
 
     const contextFlow = payment?.external_flow_context || payment?.manual_flow_context
-    const network_name = data.networks?.find(n => n.code === swap?.data?.network)?.name || ' '
+    const network = data.networks?.find(n => n.code === swap?.data?.network)
+    const network_name = network?.name || ' '
+    const network_id = network?.id
+    const network_logo_url = network?.logo_url
+
     const exchange = data.exchanges?.find(n => n.internal_name === payment?.exchange)
     const exchange_name = exchange?.name || ' '
     const exchange_id = exchange?.id
@@ -71,29 +75,53 @@ const WithdrawExchangeStep: FC = () => {
                     <h3 className="block text-lg font-medium text-white leading-6 text-left">
                         Go to
                         {
-                            exchange_logo_url &&
-                            <div className="inline-block mx-1" style={{ position: "relative", top: '6px' }}>
-                                <div className="flex-shrink-0 h-6 w-6 relative">
-                                    <Image
-                                        src={exchange_logo_url}
-                                        alt="Project Logo"
-                                        height="40"
-                                        width="40"
-                                        loading="eager"
-                                        priority
-                                        layout="responsive"
-                                        className="rounded-md object-contain"
-                                    />
-                                </div>
-                            </div>
+                            swap?.data?.type === "off_ramp" ?
+                                <>
+                                    {
+                                        network_logo_url &&
+                                        <div className="inline-block mx-1" style={{ position: "relative", top: '6px' }}>
+                                            <div className="flex-shrink-0 h-6 w-6 relative">
+                                                <Image
+                                                    src={network_logo_url}
+                                                    alt="Network Logo"
+                                                    height="40"
+                                                    width="40"
+                                                    loading="eager"
+                                                    priority
+                                                    layout="responsive"
+                                                    className="rounded-md object-contain"
+                                                />
+                                            </div>
+                                        </div>
+                                    }
+                                </>
+                                : <>
+                                    {
+                                        exchange_logo_url &&
+                                        <div className="inline-block mx-1" style={{ position: "relative", top: '6px' }}>
+                                            <div className="flex-shrink-0 h-6 w-6 relative">
+                                                <Image
+                                                    src={exchange_logo_url}
+                                                    alt="Exchange Logo"
+                                                    height="40"
+                                                    width="40"
+                                                    loading="eager"
+                                                    priority
+                                                    layout="responsive"
+                                                    className="rounded-md object-contain"
+                                                />
+                                            </div>
+                                        </div>
+                                    }
+                                </>
                         }
                         <span className='strong-highlight mr-1'>
-                            {exchange_name}
+                            {swap?.data?.type === "off_ramp" ? network_name : exchange_name}
                         </span> and do a withdrawal to the provided address.
                     </h3>
                 </div>
                 {
-                    ExchangeSettings.KnownSettings[exchange_id]?.WithdrawalWarningMessage &&
+                    swap?.data?.type === "on_ramp" && ExchangeSettings.KnownSettings[exchange_id]?.WithdrawalWarningMessage &&
                     <div className='flex-col w-full rounded-md bg-pink-700 shadow-lg p-2'>
                         <div className='flex items-center'>
                             <div className='mr-2 p-2 rounded-lg bg-pink-600'>
@@ -120,7 +148,7 @@ const WithdrawExchangeStep: FC = () => {
                             type="text"
                             name="address"
                             id="address"
-                            value={swap?.data?.payment?.manual_flow_context?.address}
+                            value={swap?.data.type === "on_ramp" ? swap?.data?.payment?.manual_flow_context?.address : swap?.data.offramp_info.deposit_address}
                             disabled={true}
                             className="h-12 pb-1 pt-0 text-xs md:text-sm focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
                             placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
@@ -133,24 +161,59 @@ const WithdrawExchangeStep: FC = () => {
                             </ClickTooltip>
                         </div>
                     </div>
-                    <label htmlFor="network" className="block font-normal text-sm">
-                        Network
-                    </label>
-                    <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
-                        <input
-                            inputMode="decimal"
-                            autoComplete="off"
-                            placeholder=""
-                            autoCorrect="off"
-                            type="text"
-                            name="network"
-                            id="network"
-                            disabled={true}
-                            value={payment?.manual_flow_context?.network_display_name}
-                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
+                    {
+                        swap?.data?.type === "on_ramp" &&
+                        <>
+                            <label htmlFor="network" className="block font-normal text-sm">
+                                Network
+                            </label>
+                            <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
+                                <input
+                                    inputMode="decimal"
+                                    autoComplete="off"
+                                    placeholder=""
+                                    autoCorrect="off"
+                                    type="text"
+                                    name="network"
+                                    id="network"
+                                    disabled={true}
+                                    value={payment?.manual_flow_context?.network_display_name}
+                                    className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
                             placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
-                        />
-                    </div>
+                                />
+                            </div>
+                        </>
+                    }
+                    {
+                        swap?.data?.type === "off_ramp" &&
+                        <>
+                            <label htmlFor="memo" className="block font-normal text-sm">
+                                Memo
+                            </label>
+                            <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
+                                <input
+                                    inputMode="decimal"
+                                    autoComplete="off"
+                                    placeholder=""
+                                    autoCorrect="off"
+                                    type="text"
+                                    name="memo"
+                                    id="memo"
+                                    disabled={true}
+                                    value={swap?.data?.offramp_info?.memo}
+                                    className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                />
+                                <div className='absolute inset-y-2 right-2.5'>
+                                    <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
+                                        <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.offramp_info?.memo)}>
+                                            <DocumentDuplicateIcon className='h-6 w-5' />
+                                        </div>
+                                    </ClickTooltip>
+                                </div>
+                            </div>
+                        </>
+                    }
                     <label htmlFor="withdrawalAmount" className="block font-normal text-sm">
                         Withdrawal amount in {swap?.data?.currency}
                     </label>

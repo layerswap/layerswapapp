@@ -69,7 +69,10 @@ export type SwapItem = {
     currency_id: string,
     network: string,
     network_id: string,
-    offramp_info: string
+    offramp_info: {
+        deposit_address: string,
+        memo: string,
+    }
 }
 
 export type Payment = {
