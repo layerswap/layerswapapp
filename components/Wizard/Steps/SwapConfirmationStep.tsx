@@ -48,7 +48,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 }
                 const bransferApiClient = new BransferApiClient()
                 const response = await bransferApiClient.GetExchangeDepositAddress(swapFormData?.exchange?.baseObject?.internal_name, swapFormData.currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
-                updateSwapFormData((old)=>({ ...old, destination_address: response.data }))
+                updateSwapFormData((old) => ({ ...old, destination_address: response.data }))
             }
         })()
     }, [currentStep])
@@ -151,7 +151,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     <div className="w-full">
                         <div className="rounded-md w-full mb-3">
                             <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-pink-primary-300">
-
                                 <div className={classNames(swapFormData?.swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex justify-between bg-darkblue-500 rounded-md items-center px-4 py-3')}>
                                     <span className="text-left flex"><span className='hidden md:block'>{swapFormData?.swapType === "onramp" ? "From" : "To"}</span>
                                         <div className="flex items-center">
@@ -201,7 +200,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     <span className="text-white">{(Number(swapFormData?.amount?.toString()?.replace(",", ".")) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
                                 </div>
                                 <div className="flex justify-between px-4 py-3  items-baseline">
-                                    <span className="text-left">You will recieve</span>
+                                    <span className="text-left">You will receive</span>
                                     <span className="text-white">{receive_amount} {swapFormData?.currency?.name}</span>
                                 </div>
                             </div>
@@ -235,25 +234,30 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                         }
                     </div>
                 </div>
+
                 <div className="text-white text-sm mt-2">
-                    <div className="mx-auto w-full rounded-lg font-normal">
-                        <div className='flex justify-between mb-4 md:mb-8'>
-                            <div className='flex items-center text-xs md:text-sm font-medium'>
-                                <ExclamationIcon className='h-6 w-6 mr-2' />
-                                I am the owner of this address
-                            </div>
-                            <div className='flex items-center space-x-4'>
-                                <ToggleButton onChange={setConfirm_right_wallet} isChecked={confirm_right_wallet} />
+                    {
+                        swapFormData?.swapType === "onramp" &&
+                        <div className="mx-auto w-full rounded-lg font-normal">
+                            <div className='flex justify-between mb-4 md:mb-8'>
+                                <div className='flex items-center text-xs md:text-sm font-medium'>
+                                    <ExclamationIcon className='h-6 w-6 mr-2' />
+                                    I am the owner of this address
+                                </div>
+                                <div className='flex items-center space-x-4'>
+                                    <ToggleButton onChange={setConfirm_right_wallet} isChecked={confirm_right_wallet} />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
                     {/* <div className="flex items-center mb-2">
                         <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
                     </div> */}
-                    <SubmitButton isDisabled={!confirm_right_wallet || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
+                    <SubmitButton isDisabled={(swapFormData?.swapType === "onramp" && !confirm_right_wallet) || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
                 </div>
+
             </div>
             <Transition
                 appear
@@ -304,7 +308,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     leaveFrom="opacity-100 scale-100"
                                     leaveTo="opacity-0 scale-95"
                                 >
-
                                     <div className='pb-12 grid grid-flow-row min-h-[480px] text-pink-primary-300'>
                                         <h4 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
                                             <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mb-1' /> Editing your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address

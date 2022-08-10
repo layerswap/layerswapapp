@@ -421,7 +421,7 @@ export default function MainStep() {
                             </div>
 
                             <div className="w-full">
-                                <AmountAndFeeDetails amount={values?.amount} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
+                                <AmountAndFeeDetails amount={values?.amount} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
                             </div>
                         </div>
                         <div className="mt-6">

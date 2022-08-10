@@ -37,7 +37,9 @@ const OverviewStep: FC = () => {
                     else if (swapStatus == SwapStatus.Pending)
                         goToStep("Processing")
                     else {
-                        if (swap?.data?.type === "off_ramp" || payment?.manual_flow_context)
+                        if (swap?.data?.type === "off_ramp")
+                            goToStep("OffRampWithdrawal")
+                        else if (payment?.manual_flow_context)
                             goToStep("Withdrawal")
                         else if (payment?.external_flow_context)
                             goToStep("ExternalPayment")

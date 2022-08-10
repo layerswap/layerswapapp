@@ -19,7 +19,7 @@ export type Step = {
 
 export type FormSteps = "SwapForm" | "Email" | "Code" | "ExchangeOAuth" | "ExchangeApiCredentials" | "SwapConfirmation"
 
-export type SwapSteps = "Email" | "Code" | "Overview" | "Withdrawal" | "Processing" | "Success" | "Failed" | "ExternalPayment"
+export type SwapSteps = "Email" | "Code" | "Overview" | "Withdrawal" | "OffRampWithdrawal" | "Processing" | "Success" | "Failed" | "ExternalPayment"
 export type LoginSteps = "Email" | "Code"
 
 export type BaseWizard = {
