@@ -1,6 +1,5 @@
 import React from 'react';
 import { FC } from 'react'
-import IntroCard from './introCard';
 import MainStep from './Wizard/Steps/MainStep';
 import { SwapDataProvider } from '../context/swap';
 import { AuthProvider } from '../context/authContext';
@@ -13,9 +12,8 @@ import { FormWizardProvider } from '../context/formWizardProvider';
 import APIKeyStep from './Wizard/Steps/APIKeyStep';
 import AccountConnectStep from './Wizard/Steps/AccountConnectStep';
 import { MenuProvider } from '../context/menu';
+import IntroCard from './introCard';
 import SwapConfirmationStep from './Wizard/Steps/SwapConfirmationStep';
-import WithdrawExchangeStep from './Wizard/Steps/WithdrawExhangeStep';
-
 
 const FormWizard: FormWizardSteps = {
   "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true, positionPercent: 0 },

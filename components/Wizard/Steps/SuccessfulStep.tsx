@@ -1,8 +1,9 @@
-import { CheckIcon, ExternalLinkIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, CheckIcon, ExternalLinkIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
 import { FC, useCallback, useState } from 'react'
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
+import SubmitButton from '../../buttons/submitButton';
 
 const SuccessfulStep: FC = () => {
 
@@ -23,30 +24,16 @@ const SuccessfulStep: FC = () => {
                 <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">
                     <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Your swap successfully completed. You can view it in the explorer, or go ahead swap more!</label>
                 </div>
-                <div className="mb-2.5 md:-6 w-full justify-center">
-                    <Link key="/" href="/">
-                        <a className="shadowed-button group disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none focus:ring-0 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                            Swap more
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
-                        </a>
-                    </Link>
-                </div>
-                <div className="text-white text-sm md:mt-3 mt-0">
+                <div className="text-white mb-2.5 md:mb-5 md:mt-3 mt-0">
                     {
                         data.networks && swap?.transaction_id &&
-                        <a href={data.networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id)}
-                            target="_blank"
-                            className="text-sm w-full flex justify-center py-3 px-4 rounded-md text-pink-primary border border-pink-primary uppercase">
-                            View in Explorer
-                            <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                        </a>
+                        <SubmitButton buttonStyle='filled' isDisabled={false} isSubmitting={false} icon={ExternalLinkIcon} onClick={() =>  window.open(data.networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id), '_blank' )}>View in Explorer <ExternalLinkIcon className='ml-2 h-5 w-5' /></SubmitButton>
                     }
-
+                </div>
+                <div className="w-full justify-center">
+                    <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={''} onClick={() =>  window.open('/')}>Swap more <ArrowRightIcon className='ml-2 h-5 w-5'/></SubmitButton>
                 </div>
             </div>
-
         </>
     )
 }
