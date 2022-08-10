@@ -7,7 +7,7 @@ import SubmitButton from '../../buttons/submitButton';
 
 const SuccessfulStep: FC = () => {
 
-    const { networks, exchanges } = useSettingsState()
+    const { data } = useSettingsState()
     const { swap } = useSwapDataState()
 
     return (
@@ -26,8 +26,9 @@ const SuccessfulStep: FC = () => {
                 </div>
                 <div className="text-white mb-2.5 md:mb-5 md:mt-3 mt-0">
                     {
-                        networks && swap?.transaction_id &&
-                        <SubmitButton buttonStyle='filled' isDisabled={false} isSubmitting={false} icon={ExternalLinkIcon} onClick={() =>  window.open(networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id), '_blank' )}>View in Explorer <ExternalLinkIcon className='ml-2 h-5 w-5' /></SubmitButton>
+                        data.networks && swap?.transaction_id &&
+                        <SubmitButton buttonStyle='filled' isDisabled={false} isSubmitting={false} icon={ExternalLinkIcon} onClick={() =>  window.open(data.networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id), '_blank' )}>View in Explorer <ExternalLinkIcon className='ml-2 h-5 w-5' /></SubmitButton>
+
                     }
                 </div>
                 <div className="w-full justify-center">

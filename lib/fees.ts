@@ -15,7 +15,7 @@ export function calculateFee(amount: number, currency: Currency, exchange: Excha
 
 export function CalculateReceiveAmount(amount: number, currency: Currency, exchange: Exchange) {
 
-    let fee = amount ? Number(calculateFee(Number(amount?.toString()?.replace(",",".")), currency, exchange)?.toFixed(currency?.precision)) : 0;
+    let fee = amount ? Number(calculateFee(Number(amount), currency, exchange)?.toFixed(currency?.precision)) : 0;
 
     let receive_amount = 0;
     let fee_amount = Number(amount?.toString()?.replace(",", "."));

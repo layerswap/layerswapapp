@@ -24,7 +24,7 @@ type Props = {
 
 export default function AmountAndFeeDetails({ amount, currency, exchange }: Props) {
 
-    let fee = amount ? Number(calculateFee(Number(amount?.toString()?.replace(",",".")), currency, exchange)?.toFixed(currency?.precision)) : 0;
+    let fee = amount ? Number(calculateFee(Number(amount), currency, exchange)?.toFixed(currency?.precision)) : 0;
 
 
     let receive_amount = 0;

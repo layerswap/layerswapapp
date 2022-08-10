@@ -31,34 +31,19 @@ import NumericInput from "../../Input/NumericInput";
 import AddressInput from "../../Input/AddressInput";
 import { classNames } from "../../utils/classNames";
 import KnownIds from "../../../lib/knownIds";
+import { LayerSwapSettings } from "../../../Models/LayerSwapSettings";
+import MainStepValidation from "../../../lib/mainStepValidator";
 
-
-const immutableXApiAddress = 'https://api.x.immutable.com/v1';
-const Logger = () => {
-    const formik = useFormikContext();
-    useEffect(() => {
-        console.groupEnd();
-    }, [
-        formik.values,
-        formik.errors,
-        formik.touched,
-        formik.isSubmitting,
-        formik.isValidating,
-        formik.submitCount
-    ]);
-    return null;
-};
 const CurrenciesField: FC = () => {
     const {
         values: { network, currency, exchange },
         setFieldValue,
-        touched,
     } = useFormikContext<SwapFormValues>();
 
     const name = "currency"
-    const { currencies, exchanges } = useSettingsState();
+    const { data } = useSettingsState();
 
-    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? currencies
+    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? data.currencies
         .filter(x => x.network_id === network?.baseObject?.id && x?.exchanges?.some(e => e.exchange_id === exchange?.baseObject?.id))
         .map(c => ({
             baseObject: c,
@@ -69,24 +54,15 @@ const CurrenciesField: FC = () => {
             isAvailable: c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
             isEnabled: c.is_enabled,
             isDefault: c.is_default,
-        })).sort((x, y) => {
-            if (!y.isEnabled || !y.isAvailable) {
-                y.order = 100;
-            } else if (!x.isEnabled || !x.isAvailable) {
-                x.order = 100;
-            };
-            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
-        })
+        })).sort(sortingByOrder)
         : []
 
     // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
 
     useEffect(() => {
-        if (network) {
+        if (network && !currency) {
             // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
-            const default_currency = currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
-
-
+            const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
             // if(alternativeToSelectedValue){
             //     setFieldValue(name, alternativeToSelectedValue)
             // }
@@ -111,7 +87,7 @@ const CurrenciesField: FC = () => {
             // }
         }
 
-    }, [network, setFieldValue, exchange, currencies, exchanges])
+    }, [network, exchange, currency, data.currencies, data.exchanges])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />
@@ -123,10 +99,10 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
         values: { exchange, currency },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-
+    const name = 'exchange'
     const settings = useSettingsState();
 
-    const exchangeMenuItems: SelectMenuItem<Exchange>[] = settings.exchanges
+    const exchangeMenuItems: SelectMenuItem<Exchange>[] = settings.data.exchanges
         .map(e => ({
             baseObject: e,
             id: e.internal_name,
@@ -136,35 +112,28 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             isAvailable: true, //currency?.baseObject?.exchanges?.some(ce => ce.exchangeId === e.id),
             isEnabled: e.is_enabled,
             isDefault: e.is_default
-        })).sort((x, y) => {
-            if (!y.isEnabled) {
-                y.order = 100;
-            } else if (!x.isEnabled) {
-                x.order = 100;
-            };
-            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
-        });
+        })).sort(sortingByOrder);
 
     return (<>
-        <label htmlFor="exchange" className="block font-normal text-pink-primary-300 text-sm">
+        <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
             From
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
-            <Field name="exchange" placeholder="Choose exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
+            <Field name={name} placeholder="Choose exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });
 
 const NetworkField = React.forwardRef((props: any, ref: any) => {
     const {
-        values: { exchange, network, currency },
+        values: { exchange, network },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = "network"
     const { lockNetwork } = useQueryState()
-    const { currencies, networks } = useSettingsState();
+    const { data } = useSettingsState();
 
-    const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = networks
+    const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
         .map(n => ({
             baseObject: n,
             id: n.code,
@@ -172,40 +141,28 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             order: n.order,
             imgSrc: n.logo_url,
             isAvailable: !lockNetwork && !n.is_test_net,
-            isEnabled: n.is_enabled && currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
+            isEnabled: n.is_enabled && data.currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
             isDefault: n.is_default
-        })).sort((x, y) => {
-            if (!y.isEnabled) {
-                y.order = 100;
-            } else if (!x.isEnabled) {
-                x.order = 100;
-            };
-            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
-        });
+        })).sort(sortingByOrder);
 
     if (exchange && !network)
         ref.current?.focus()
 
     return (<>
-        <label htmlFor="network" className="block font-normal text-pink-primary-300 text-sm">
+        <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
             To
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 ${exchange && !network ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
-            <Field name="network" placeholder="Choose network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
+            <Field name={name} placeholder="Choose network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });
 
 const AmountField = React.forwardRef((props: any, ref: any) => {
-    const {
-        values: { network, currency },
-        handleChange,
-    } = useFormikContext<SwapFormValues>();
 
+    const { values: { currency } } = useFormikContext<SwapFormValues>();
     const name = "amount"
-
     const placeholder = currency ? `${currency?.baseObject?.min_amount} - ${currency?.baseObject?.max_amount}` : '0.01234'
-
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
 
     return (<>
@@ -217,9 +174,6 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
             max={currency?.baseObject?.max_amount}
             step={isNaN(step) ? 0.01 : step}
             name={name}
-            onChange={e => {
-                /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-            }}
             precision={currency?.baseObject.precision}
         >
             <CurrenciesField />
@@ -303,14 +257,14 @@ export default function MainStep() {
         setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
     }, [query])
 
-    let availableExchanges = settings.exchanges
+    let availableExchanges = settings.data.exchanges
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
-        .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
-    let availableNetworks = settings.networks
+    let availableNetworks = settings.data.networks
         .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
-        .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
 
-    const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), c]));
+    const availablePartners = Object.fromEntries(settings.data.partners.map(c => [c.name.toLowerCase(), c]));
+
+    const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
@@ -355,7 +309,7 @@ export default function MainStep() {
     }, [updateSwapFormData])
 
     let destAddress: string = account || query.destAddress;
-    let destNetwork: string = (chainId && settings.networks.find(x => x.chain_id == chainId)?.code) || query.destNetwork;
+    let destNetwork: string = (chainId && settings.data.networks.find(x => x.chain_id == chainId)?.code) || query.destNetwork;
 
 
     let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
@@ -365,7 +319,6 @@ export default function MainStep() {
         availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
 
     const lockNetwork = !!chainId
-    const asset = query.asset
     const sourceExchangeName = query.sourceExchangeName
     const lockAddress = !!account || query.lockAddress
 
@@ -379,7 +332,7 @@ export default function MainStep() {
     let initialAddress = destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
 
     let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
-    const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
+    const initialValues: SwapFormValues = { swapType: "offramp", amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
     const addressRef: any = useRef();
@@ -391,7 +344,6 @@ export default function MainStep() {
             formValues.destination_address = address;
         }
     }
-
     const closeConnectDeversifi = () => {
         setConnectDeversifiIsOpen(false)
     }
@@ -403,64 +355,10 @@ export default function MainStep() {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={values => {
-                let errors: FormikErrors<SwapFormValues> = {};
-                let amount = Number(values.amount?.toString()?.replace(",", "."));
-
-                if (!values.exchange) {
-                    errors.amount = 'Select exchange'
-                }
-                else if (!values.network) {
-                    errors.amount = 'Select network'
-                }
-                else if (!values.destination_address) {
-                    errors.amount = `Enter ${values?.network?.name} address`
-                    if (!formikRef.current.getFieldMeta("destination_address").touched)
-                        addressRef?.current?.focus()
-                }
-                else if (!isValidAddress(values.destination_address, values.network?.baseObject)) {
-                    errors.amount = `Enter a valid ${values?.network?.name} address`
-                    if (!formikRef.current.getFieldMeta("destination_address").touched)
-                        addressRef?.current?.focus()
-                }
-                else if (settings.blacklistedAddresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
-                    errors.amount = `You can not transfer to this address`
-                    if (!formikRef.current.getFieldMeta("destination_address").touched)
-                        addressRef?.current?.focus()
-                }
-                else if (!amount) {
-                    errors.amount = 'Enter an amount'
-                    if (!formikRef.current.getFieldMeta("amount").touched)
-                        amountRef?.current?.focus()
-                }
-                else if (
-                    !/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())
-                ) {
-                    errors.amount = 'Invalid amount'
-                    if (!formikRef.current.getFieldMeta("amount").touched)
-                        amountRef?.current?.focus()
-                }
-                else if (amount < 0) {
-                    errors.amount = "Can't be negative"
-                    if (!formikRef.current.getFieldMeta("amount").touched)
-                        amountRef?.current?.focus()
-                }
-                else if (amount > values.currency?.baseObject.max_amount) {
-                    errors.amount = `Max amount is ${values.currency.baseObject.max_amount}`
-                    if (!formikRef.current.getFieldMeta("amount").touched)
-                        amountRef?.current?.focus()
-                }
-                else if (amount < values.currency?.baseObject.min_amount) {
-                    errors.amount = `Min amount is ${values.currency?.baseObject.min_amount}`
-                    if (!formikRef.current.getFieldMeta("amount").touched)
-                        amountRef?.current?.focus()
-                }
-
-                return errors;
-            }}
+            validate={MainStepValidation(formikRef, addressRef, settings, amountRef)}
             onSubmit={handleSubmit}
         >
-            {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
+            {({ values, errors }) => (
                 <Form className="h-full">
                     <div className="px-8 h-full flex flex-col justify-between">
                         <div>
@@ -518,6 +416,7 @@ export default function MainStep() {
     </>
 }
 
+
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
     if (errors.amount) {
         return errors.amount;
@@ -525,4 +424,13 @@ function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
     else {
         return "Swap now";
     }
+}
+
+function sortingByOrder(x: any, y: any) {
+    if (!y.isEnabled) {
+        y.order += 100;
+    } else if (!x.isEnabled) {
+        x.order += 100;
+    };
+    return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
 }

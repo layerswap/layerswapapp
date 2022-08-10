@@ -16,13 +16,13 @@ type Props = {
 }
 
 const SwapDetails: FC<Props> = ({ id }) => {
-    const { exchanges, networks, currencies } = useSettingsState()
+    const { data } = useSettingsState()
     const [swap, setSwap] = useState<SwapDetailsResponse>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
-    const exchange = exchanges?.find(e => e.internal_name == swap?.payment?.exchange)
-    const network = networks.find(n => n.code === swap?.network)
-    const currency = currencies.find(x => x.id == swap?.currency_id)
+    const exchange = data.exchanges?.find(e => e.internal_name == swap?.payment?.exchange)
+    const network = data.networks.find(n => n.code === swap?.network)
+    const currency = data.currencies.find(x => x.id == swap?.currency_id)
     useEffect(() => {
         (async () => {
             if (!id)
@@ -63,7 +63,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-white">
                                 <div className='inline-flex items-center'>
                                     <span className="mr-2">{shortenAddress(swap?.id)}</span>
-                                    <ClickTooltip text='Copied!'>
+                                    <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
                                         <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
                                             <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
                                         </div>

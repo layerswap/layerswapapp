@@ -21,7 +21,7 @@ interface UserExchange extends Exchange {
 
 function UserExchanges() {
 
-    const { exchanges } = useSettingsState()
+    const { data } = useSettingsState()
     const [userExchanges, setUserExchanges] = useState<UserExchange[]>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
@@ -66,7 +66,7 @@ function UserExchanges() {
     const getAndMapExchanges = useCallback(async (authData) => {
         const bransferApiClient = new BransferApiClient()
         const userExchanges = await bransferApiClient.GetExchangeAccounts(authData.access_token)
-        const mappedExchanges = exchanges.filter(x => x.authorization_flow != 'none' && x.is_enabled).map(e => {
+        const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none' && x.is_enabled).map(e => {
             return {
                 ...e,
                 is_connected: userExchanges.data?.some(ue => ue.exchange === e.internal_name && ue.is_enabled)
@@ -75,7 +75,7 @@ function UserExchanges() {
         mappedExchanges.sort((a, b) => (+a.order) - (+b.order))
 
         setUserExchanges(mappedExchanges)
-    }, [exchanges])
+    }, [data.exchanges])
 
 
     const filteredItems =
