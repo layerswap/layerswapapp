@@ -5,6 +5,7 @@ import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWiza
 import { BaseWizard } from '../../Models/Wizard';
 import LayerswapMenu from '../LayerswapMenu';
 import LayerSwapLogo from '../icons/layerSwapLogo';
+import IntroCard from '../introCard';
 import { useRouter } from 'next/router';
 
 const Wizard: FC = () => {

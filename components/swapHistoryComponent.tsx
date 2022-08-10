@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { Fragment, useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { SwapDetailsResponse } from "../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapListResponse, SwapItem } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
 import { ChevronRightIcon, DocumentDuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
@@ -18,7 +18,7 @@ import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
 
 
-export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
+export function StatusIcon({ swap }: { swap: SwapItem }) {
   if (swap?.status === 'failed') {
     return (
       <>
@@ -67,11 +67,11 @@ function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const { data } = useSettingsState()
   const [isLastPage, setIsLastPage] = useState(false)
-  const [swaps, setSwaps] = useState<SwapDetailsResponse[]>()
+  const [swaps, setSwaps] = useState<SwapListResponse>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const router = useRouter();
-  const [selectedSwap, setSelectedSwap] = useState<SwapDetailsResponse | undefined>()
+  const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const { email } = useAuthState()
 
   useEffect(() => {
@@ -91,7 +91,7 @@ function TransactionsHistory() {
         const swaps = await layerswapApiClient.getSwaps(1, authData.access_token)
         setSwaps(swaps)
         setPage(1)
-        if (swaps?.length < 5)
+        if (swaps?.data.length < 5)
           setIsLastPage(true)
       }
       catch (e) {
@@ -115,11 +115,11 @@ function TransactionsHistory() {
         return;
       }
       const layerswapApiClient = new LayerSwapApiClient()
-      const swaps = await layerswapApiClient.getSwaps(nextPage, authData.access_token)
+      const response = await layerswapApiClient.getSwaps(nextPage, authData.access_token)
 
-      setSwaps(old => [...(old ? old : []), ...(swaps ? swaps : [])])
+      setSwaps(old => ({ ...response, data: [...(old?.data ? old?.data : []), ...(response.data ? response.data : [])] }))
       setPage(nextPage)
-      if (swaps?.length < 5)
+      if (response?.data.length < 5)
         setIsLastPage(true)
     }
     catch (e) {
@@ -134,7 +134,7 @@ function TransactionsHistory() {
     setSelectedSwap(undefined)
   }
 
-  const handleopenSwapDetails = (swap: SwapDetailsResponse) => {
+  const handleopenSwapDetails = (swap: SwapItem) => {
     setSelectedSwap(swap)
   }
 
@@ -167,7 +167,7 @@ function TransactionsHistory() {
           <Sceleton />
           : <>
             {
-              swaps?.length > 0 ?
+              swaps?.data.length > 0 ?
                 <>
                   <div className=" mb-2 ">
 
@@ -232,9 +232,9 @@ function TransactionsHistory() {
                           </tr>
                         </thead>
                         <tbody>
-                          {swaps?.map((swap, index) => {
+                          {swaps?.data.map((swap, index) => {
                             const exchange = data.exchanges?.find(e => e.internal_name === swap?.exchange)
-                            const network = data.networks?.find(n => n.code === swap?.network)
+                            const network = data.networks?.find(n => n.code === swap.network)
                             return <tr key={swap.id}>
                               <td
                                 className={classNames(
@@ -243,9 +243,9 @@ function TransactionsHistory() {
                                 )}
                               >
                                 <div className='inline-flex items-center'>
-                                  <span className="mr-2">{shortenAddress(swap?.id)}</span>
+                                  <span className="mr-2">{shortenAddress(swap.id)}</span>
                                   <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
-                                    <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
+                                    <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap.id)}>
                                       <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
                                     </div>
                                   </ClickTooltip>
@@ -335,10 +335,10 @@ function TransactionsHistory() {
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
-                                {swap?.transaction_id ?
+                                {swap.transaction_id ?
                                   <>
                                     <div className="underline hover:no-underline">
-                                      <a target={"_blank"} href={data.networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id)}>{shortenAddress(swap?.transaction_id)}</a>
+                                      <a target={"_blank"} href={data.networks.filter(x => x.code === swap.network)[0]?.transaction_explorer_template.replace("{0}", swap.transaction_id)}>{shortenAddress(swap.transaction_id)}</a>
                                     </div>
                                   </>
                                   : <div>-</div>

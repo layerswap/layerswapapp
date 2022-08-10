@@ -11,7 +11,7 @@ const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
 
     // const { prevStep, nextStep, goToStep } = useWizardState();
     const { swap } = useSwapDataState()
-    const { payment } = swap || {}
+    const { payment } = swap?.data || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
 
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
@@ -27,8 +27,8 @@ const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
                 return;
             }
             const swap = await getSwap(swapId.toString())
-            const { payment } = swap || {}
-            const swapStatus = swap?.status;
+            const { payment } = swap?.data || {}
+            const swapStatus = swap?.data?.status;
             const paymentStatus = payment?.status
             if (swapStatus == SwapStatus.Completed)
                 await goToStep("Success")

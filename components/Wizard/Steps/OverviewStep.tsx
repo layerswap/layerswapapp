@@ -26,8 +26,8 @@ const OverviewStep: FC= () => {
                         return;
                     }
                     const swap = await getSwap(swapId.toString())
-                    const { payment } = swap || {};
-                    const swapStatus = swap?.status;
+                    const { payment } = swap?.data || {};
+                    const swapStatus = swap?.data?.status;
                     const paymentStatus = payment?.status
                     if (swapStatus == SwapStatus.Completed)
                         goToStep("Success")

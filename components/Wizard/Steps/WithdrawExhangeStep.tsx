@@ -19,7 +19,7 @@ import ClickTooltip from '../../Tooltips/ClickTooltip';
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
-    const { payment } = swap || {}
+    const { payment } = swap?.data || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
     const { data } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
@@ -28,7 +28,7 @@ const WithdrawExchangeStep: FC = () => {
     const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.payment?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.data?.payment?.id } })
 
     useInterval(async () => {
         if (currentStep === "Withdrawal") {
@@ -38,8 +38,8 @@ const WithdrawExchangeStep: FC = () => {
                 return;
             }
             const swap = await getSwap(swapId.toString())
-            const { payment } = swap || {}
-            const swapStatus = swap?.status;
+            const { payment } = swap?.data || {}
+            const swapStatus = swap?.data.status;
             const paymentStatus = payment?.status
             if (swapStatus == SwapStatus.Completed)
                 goToStep("Success")
@@ -58,7 +58,7 @@ const WithdrawExchangeStep: FC = () => {
     }, [])
 
     const contextFlow = payment?.external_flow_context || payment?.manual_flow_context
-    const network_name = data.networks?.find(n => n.code === swap?.network)?.name || ' '
+    const network_name = data.networks?.find(n => n.code === swap?.data?.network)?.name || ' '
     const exchange = data.exchanges?.find(n => n.internal_name === payment?.exchange)
     const exchange_name = exchange?.name || ' '
     const exchange_id = exchange?.id
@@ -66,7 +66,7 @@ const WithdrawExchangeStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-6 py-6 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
+            <div className="w-full px-6  space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium text-white leading-6 text-left">
                         Go to
@@ -120,14 +120,14 @@ const WithdrawExchangeStep: FC = () => {
                             type="text"
                             name="address"
                             id="address"
-                            value={swap?.payment?.manual_flow_context?.address}
+                            value={swap?.data?.payment?.manual_flow_context?.address}
                             disabled={true}
                             className="h-12 pb-1 pt-0 text-xs md:text-sm focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
                             placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                         <div className='absolute inset-y-2 right-2.5'>
                             <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.payment?.manual_flow_context?.address)}>
+                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.payment?.manual_flow_context?.address)}>
                                     <DocumentDuplicateIcon className='h-6 w-5' />
                                 </div>
                             </ClickTooltip>
@@ -152,7 +152,7 @@ const WithdrawExchangeStep: FC = () => {
                         />
                     </div>
                     <label htmlFor="withdrawalAmount" className="block font-normal text-sm">
-                        Withdrawal amount in {swap?.currency}
+                        Withdrawal amount in {swap?.data?.currency}
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                         <input
@@ -164,13 +164,13 @@ const WithdrawExchangeStep: FC = () => {
                             name="withdrawalAmount"
                             id="withdrawalAmount"
                             disabled={true}
-                            value={swap?.amount}
+                            value={swap?.data?.amount}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
                             placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
                         <div className='absolute inset-y-2 right-2.5'>
                             <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.amount)}>
+                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.amount)}>
                                     <DocumentDuplicateIcon className='h-6 w-5' />
                                 </div>
                             </ClickTooltip>
@@ -178,6 +178,7 @@ const WithdrawExchangeStep: FC = () => {
                     </div>
 
                     {
+                        payment?.manual_flow_context?.require_note &&
                         <>
                             <label htmlFor="payment_note" className="block font-normal text-sm">
                                 Remarks

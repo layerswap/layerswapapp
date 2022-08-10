@@ -62,7 +62,7 @@ const CurrenciesField: FC = () => {
     // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
 
     useEffect(() => {
-        if (network) {
+        if (network && !currency) {
             // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
             const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
             // if(alternativeToSelectedValue){
@@ -89,7 +89,7 @@ const CurrenciesField: FC = () => {
             // }
         }
 
-    }, [network, setFieldValue, exchange, data.currencies, data.exchanges])
+    }, [network, exchange, currency, data.currencies, data.exchanges])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />

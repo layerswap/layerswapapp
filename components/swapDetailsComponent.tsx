@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { FC, useEffect, useState } from 'react'
 import { useSettingsState } from '../context/settings';
-import LayerSwapApiClient, { SwapDetailsResponse } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItemResponse } from '../lib/layerSwapApiClient';
 import TokenService from '../lib/TokenService';
 import { StatusIcon } from './swapHistoryComponent';
 import Image from 'next/image'
@@ -17,12 +17,12 @@ type Props = {
 
 const SwapDetails: FC<Props> = ({ id }) => {
     const { data } = useSettingsState()
-    const [swap, setSwap] = useState<SwapDetailsResponse>()
+    const [swap, setSwap] = useState<SwapItemResponse>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
-    const exchange = data.exchanges?.find(e => e.internal_name == swap?.payment?.exchange)
-    const network = data.networks.find(n => n.code === swap?.network)
-    const currency = data.currencies.find(x => x.id == swap?.currency_id)
+    const exchange = data.exchanges?.find(e => e.internal_name == swap?.data?.payment?.exchange)
+    const network = data.networks.find(n => n.code === swap?.data?.network)
+    const currency = data.currencies.find(x => x.id == swap?.data?.currency_id)
     useEffect(() => {
         (async () => {
             if (!id)
@@ -62,9 +62,9 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Id </span>
                             <span className="text-white">
                                 <div className='inline-flex items-center'>
-                                    <span className="mr-2">{shortenAddress(swap?.id)}</span>
+                                    <span className="mr-2">{shortenAddress(swap?.data?.id)}</span>
                                     <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
-                                        <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
+                                        <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.data?.id)}>
                                             <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
                                         </div>
                                     </ClickTooltip>
@@ -75,13 +75,13 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         <div className="flex justify-between p items-baseline">
                             <span className="text-left">Status </span>
                             <span className="text-white">
-                                {swap && <StatusIcon swap={swap} />}
+                                {swap && <StatusIcon swap={swap.data} />}
                             </span>
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Date </span>
-                            <span className='text-white font-normal'>{(new Date(swap?.created_date)).toLocaleString()}</span>
+                            <span className='text-white font-normal'>{(new Date(swap?.data?.created_date)).toLocaleString()}</span>
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
@@ -124,22 +124,22 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Address </span>
-                            <span className='text-white font-normal'>{swap?.destination_address.slice(0, 8) + "..." + swap?.destination_address.slice(swap?.destination_address.length - 5, swap?.destination_address.length)}</span>
+                            <span className='text-white font-normal'>{swap?.data?.destination_address.slice(0, 8) + "..." + swap?.data?.destination_address.slice(swap?.data?.destination_address.length - 5, swap?.data?.destination_address.length)}</span>
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Amount </span>
-                            <span className='text-white font-normal'>{swap?.amount} {currency?.asset}</span>
+                            <span className='text-white font-normal'>{swap?.data?.amount} {currency?.asset}</span>
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Layerswap Fee </span>
-                            <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currency?.precision))} {currency?.asset}</span>
+                            <span className='text-white font-normal'>{parseFloat(swap?.data?.fee?.toFixed(currency?.precision))} {currency?.asset}</span>
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Exchange Fee </span>
-                            <span className='text-white font-normal'>{parseFloat(swap?.payment?.withdrawal_fee?.toFixed(currency?.precision))} {currency?.asset}</span>
+                            <span className='text-white font-normal'>{parseFloat(swap?.data?.payment?.withdrawal_fee?.toFixed(currency?.precision))} {currency?.asset}</span>
                         </div>
                     </div>
                 </div>
