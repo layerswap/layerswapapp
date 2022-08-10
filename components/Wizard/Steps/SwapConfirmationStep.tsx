@@ -69,7 +69,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 destination_address: swapFormData.destination_address
             }
             const _swap = swap || await createSwap(data)
-            const { payment } = _swap
+            const { payment } = _swap.data
             if (payment?.status === 'created')
                 await processPayment(_swap, towFactorCode)
             ///TODO grdon code please refactor
@@ -77,10 +77,10 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 const newSwap = await createSwap(data)
                 const newPayment = newSwap
                 await processPayment(newSwap, towFactorCode)
-                router.push(`/${newSwap.id}`)
+                router.push(`/${newSwap.data.id}`)
                 return
             }
-            router.push(`/${_swap.id}`)
+            router.push(`/${_swap.data.id}`)
         }
         catch (error) {
             ///TODO newline may not work, will not defenitaly fix this

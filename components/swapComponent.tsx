@@ -15,6 +15,7 @@ import { MenuProvider } from '../context/menu';
 import IntroCard from './introCard';
 import SwapConfirmationStep from './Wizard/Steps/SwapConfirmationStep';
 
+
 const FormWizard: FormWizardSteps = {
   "SwapForm": { title: "Swap", content: MainStep, navigationDisabled: true, positionPercent: 0 },
   "Email": { title: "Email confirmation", content: EmailStep, dismissOnBack: true, positionPercent: 30 },
