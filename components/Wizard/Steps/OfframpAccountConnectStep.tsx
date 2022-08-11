@@ -16,7 +16,7 @@ import { ExternalLinkIcon } from '@heroicons/react/outline';
 
 const OfframpAccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
-    const { oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
+    const { oauth_login_redirect_url } = swapFormData?.exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const { currentStep } = useFormWizardState<FormWizardSteps>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
@@ -58,25 +58,24 @@ const OfframpAccountConnectStep: FC = () => {
             if (!access_token)
                 goToStep("Email")
             const { sub } = parseJwt(access_token) || {}
-            authWindowRef.current = OpenLink({ link: oauth_redirect_url + sub, swap_data: swapFormData, query })
+            authWindowRef.current = OpenLink({ link: oauth_login_redirect_url + sub, swap_data: swapFormData, query })
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_redirect_url, addressSource, query])
+    }, [oauth_login_redirect_url, addressSource, query])
 
     const exchange_name = swapFormData?.exchange?.name
 
     return (
         <>
             <div className="w-full px-8 md:grid md:grid-flow-row min-h-[480px] font-semibold font-roboto text-[#d7d7d7]">
-
                 <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left  text-white'>
                     Please connect your {exchange_name} account
                 </h3>
                 <div className="w-full color-white">
-                    <div className="flex justify-center items-center mb-5">
-                        <div className="flex-shrink-0 h-12 w-12 relative ">
+                    <div className="flex justify-center items-center m-8">
+                        <div className="flex-shrink-0 h-14 w-14 relative ">
                             <Image
                                 src="/images/coinbase.svg"
                                 alt="Exchange Logo"
@@ -86,7 +85,7 @@ const OfframpAccountConnectStep: FC = () => {
                                 className="object-contain"
                             />
                         </div>
-                        <div className="flex-shrink-0 h-12 w-12 relative -left-2 -top-2">
+                        <div className="flex-shrink-0 h-14 w-14 relative -left-2 -top-2">
                             <Image
                                 src="/images/layerswap.svg"
                                 alt="Network Logo"
@@ -117,7 +116,6 @@ const OfframpAccountConnectStep: FC = () => {
                     </SubmitButton>
                 </div>
             </div>
-
         </>
     )
 }

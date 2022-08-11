@@ -14,7 +14,7 @@ import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 
 const AccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
-    const { oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
+    const { oauth_authorization_redirect_url: oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const { currentStep } = useFormWizardState<FormWizardSteps>()
     const { getUserExchanges } = useUserExchangeDataUpdate()

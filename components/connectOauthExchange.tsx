@@ -63,7 +63,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
             }
 
             const { sub } = parseJwt(access_token) || {}
-            const authWindow = window.open(exchange.oauth_redirect_url + sub, '_blank', 'width=420,height=720')
+            const authWindow = window.open(exchange.oauth_authorization_redirect_url + sub, '_blank', 'width=420,height=720')
             authWindowRef.current = authWindow
         }
         catch (e) {
