@@ -105,6 +105,7 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
     const settings = useSettingsState();
 
     const exchangeMenuItems: SelectMenuItem<Exchange>[] = settings.data.exchanges
+        .filter(e => swapType === "onramp" || settings?.data?.currencies?.some(c => c.exchanges?.some(ce => ce.exchange_id === e.id && ce.is_off_ramp_enabled)))
         .map(e => ({
             baseObject: e,
             id: e.internal_name,
@@ -115,6 +116,7 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             isEnabled: e.is_enabled,
             isDefault: e.is_default
         })).sort(sortingByOrder);
+
 
     return (<>
         <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
@@ -136,6 +138,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
     const { data } = useSettingsState();
 
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
+        .filter(n => swapType === "onramp" ||  data?.currencies?.some(c => c.network_id === n.id && c.exchanges.some(ce=>ce.is_off_ramp_enabled)))
         .map(n => ({
             baseObject: n,
             id: n.code,
