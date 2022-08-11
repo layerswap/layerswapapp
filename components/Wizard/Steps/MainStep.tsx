@@ -16,7 +16,7 @@ import { useSwapDataUpdate } from "../../../context/swap";
 import Select from "../../Select/Select";
 import React from "react";
 import { useFormWizardaUpdate } from "../../../context/formWizardProvider";
-import { ExchangeAuthorizationSteps, FormWizardSteps } from "../../../Models/Wizard";
+import { ExchangeAuthorizationSteps, FormWizardSteps, OfframpExchangeAuthorizationSteps } from "../../../Models/Wizard";
 import TokenService from "../../../lib/TokenService";
 import { useUserExchangeDataUpdate } from "../../../context/userExchange";
 import axios from "axios";
@@ -62,7 +62,7 @@ const CurrenciesField: FC = () => {
     // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
 
     useEffect(() => {
-        if (network && !currency) {
+        if (network) {
             // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
             const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
             // if(alternativeToSelectedValue){
@@ -88,8 +88,7 @@ const CurrenciesField: FC = () => {
 
             // }
         }
-
-    }, [network, exchange, currency, data.currencies, data.exchanges])
+    }, [network, exchange])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />
@@ -138,7 +137,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
     const { data } = useSettingsState();
 
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
-        .filter(n => swapType === "onramp" ||  data?.currencies?.some(c => c.network_id === n.id && c.exchanges.some(ce=>ce.is_off_ramp_enabled)))
+        .filter(n => swapType === "onramp" || data?.currencies?.some(c => c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled)))
         .map(n => ({
             baseObject: n,
             id: n.code,
@@ -281,14 +280,19 @@ export default function MainStep() {
                 goToStep("Email")
             else if (values.swapType === "offramp" && values.exchange.baseObject.id === KnownIds.Exchanges.CoinbaseId) {
                 const bransferApiClient = new BransferApiClient()
-                const response = await bransferApiClient.GetExchangeDepositAddress(values.exchange?.baseObject?.internal_name, values.currency?.baseObject?.asset?.toUpperCase(), accessToken)
-                if (response.is_success) {
-                    updateSwapFormData({ ...values, destination_address: response.data })
-                    goToStep("SwapConfirmation")
+                try {
+                    const response = await bransferApiClient.GetExchangeDepositAddress(values.exchange?.baseObject?.internal_name, values.currency?.baseObject?.asset?.toUpperCase(), accessToken)
+                    if (response.is_success) {
+                        updateSwapFormData({ ...values, destination_address: response.data })
+                        goToStep("SwapConfirmation")
+                    }
+                    else {
+                        throw Error("Could not get exchange deposit address")
+                    }
                 }
-                else {
+                catch (e) {
                     await bransferApiClient.DeleteExchange(values.exchange.baseObject.internal_name, accessToken)
-                    goToStep(ExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
+                    goToStep(OfframpExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
                 }
             }
             else {
