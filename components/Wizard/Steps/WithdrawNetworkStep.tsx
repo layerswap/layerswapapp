@@ -30,16 +30,14 @@ const WithdrawNetworkStep: FC = () => {
     const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.data?.payment?.id } })
 
     useInterval(async () => {
-        if (currentStep === "Withdrawal") {
+        if (currentStep === "OffRampWithdrawal") {
             const authData = TokenService.getAuthData();
             if (!authData) {
                 goToStep("Email")
                 return;
             }
             const swap = await getSwap(swapId.toString())
-            const { payment } = swap?.data || {}
             const swapStatus = swap?.data.status;
-            const paymentStatus = payment?.status
             if (swapStatus == SwapStatus.Completed)
                 goToStep("Success")
             else if (swapStatus == SwapStatus.Failed)
@@ -103,7 +101,7 @@ const WithdrawNetworkStep: FC = () => {
                         />
                         <div className='absolute inset-y-2 right-2.5'>
                             <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.payment?.manual_flow_context?.address)}>
+                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data.offramp_info.deposit_address)}>
                                     <DocumentDuplicateIcon className='h-6 w-5' />
                                 </div>
                             </ClickTooltip>
