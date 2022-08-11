@@ -4,6 +4,10 @@ export const ExchangeAuthorizationSteps: { [key: string]: FormSteps } = {
     "api_credentials": "ExchangeApiCredentials",
     "o_auth2": "ExchangeOAuth"
 }
+export const OfframpExchangeAuthorizationSteps: { [key: string]: FormSteps } = {
+    "api_credentials": "ExchangeApiCredentials",
+    "o_auth2": "OffRampExchangeOAuth"
+}
 
 export type BaseStepProps = {
     current: boolean
@@ -17,7 +21,7 @@ export type Step = {
     dismissOnBack?: boolean,
 }
 
-export type FormSteps = "SwapForm" | "Email" | "Code" | "ExchangeOAuth" | "ExchangeApiCredentials" | "SwapConfirmation"
+export type FormSteps = "SwapForm" | "Email" | "Code"| "OffRampExchangeOAuth" | "ExchangeOAuth" | "ExchangeApiCredentials" | "SwapConfirmation"
 
 export type SwapSteps = "Email" | "Code" | "Overview" | "Withdrawal" | "OffRampWithdrawal" | "Processing" | "Success" | "Failed" | "ExternalPayment"
 export type LoginSteps = "Email" | "Code"
