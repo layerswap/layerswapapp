@@ -27,7 +27,7 @@ const SuccessfulStep: FC = () => {
                         </div>
                         :
                         <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">
-                            <span className="block text-lg font-lighter leading-6 text-pink-primary-300">Your swap successfully completed. You can go ahead swap more!</span>
+                            <span className="block text-lg font-lighter leading-6 text-pink-primary-300">Your swap successfully completed. Your assets are on their way to your exchange account.</span>
                         </div>
                 }
 
