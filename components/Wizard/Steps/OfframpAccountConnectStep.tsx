@@ -69,36 +69,28 @@ const OfframpAccountConnectStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-8 md:grid md:grid-flow-row min-h-[480px] font-semibold font-roboto text-[#d7d7d7]">
+            <div className="w-full px-8 md:grid md:grid-flow-row min-h-[480px] font-semibold font-roboto text-pink-primary-300">
                 <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left  text-white'>
                     Please connect your {exchange_name} account
                 </h3>
+                <p>
+                    Allow Layerswap to read your Coinbase account’s <span className='text-white'>email address.</span>
+                </p>
                 <div className="w-full color-white">
-                    <div className="flex justify-center items-center m-8">
-                        <div className="flex-shrink-0 h-14 w-14 relative ">
+                    <div className="flex justify-center items-center m-7">
+                        <div className="flex-shrink-0 w-56 relative">
                             <Image
-                                src="/images/coinbase.svg"
+                                src="/images/coinbase_layerswap.png"
                                 alt="Exchange Logo"
-                                height="60"
-                                width="60"
-                                layout="responsive"
-                                className="object-contain"
-                            />
-                        </div>
-                        <div className="flex-shrink-0 h-14 w-14 relative -left-2 -top-2">
-                            <Image
-                                src="/images/layerswap.svg"
-                                alt="Network Logo"
-                                height="60"
-                                width="60"
+                                height="108"
+                                width="268"
                                 layout="responsive"
                                 className="object-contain"
                             />
                         </div>
                     </div>
-                    <p className='mb-10'>
-                        To continue you need to allow Layerswap to read your Coinbase account’s <span className='text-white'>email address.</span>
-                    </p>
+                </div>
+                <div>
                     <div className='text-pink-primary'>
                         Why
                     </div>
