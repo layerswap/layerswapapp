@@ -25,7 +25,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                     toast.success("Thank you for reaching out and providing us with valuable feedback.")
                 }
             } else if (feedback.length == 0) {
-                toast.error("feedback gri ara")
+                toast.error("This field is required and cannot be empty")
             }
         }
         catch (e) {
