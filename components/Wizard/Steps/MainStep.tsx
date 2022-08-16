@@ -97,7 +97,7 @@ const CurrenciesField: FC = () => {
 
 const ExchangesField = React.forwardRef((props: any, ref: any) => {
     const {
-        values: { exchange, currency, swapType },
+        values: { exchange, currency, swapType, network },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = 'exchange'
@@ -121,7 +121,7 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
         <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
             {swapType === "onramp" ? "From" : "To"}
         </label>
-        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
+        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange && (swapType === "onramp" || network) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
             <Field name={name} placeholder="Choose exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
@@ -156,7 +156,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
         <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
             {swapType === "onramp" ? "To" : "From"}
         </label>
-        <div ref={ref} tabIndex={0} className={`mt-1.5 ${exchange && !network ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
+        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!network && (swapType === "offramp" || exchange) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
             <Field name={name} placeholder="Choose network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
@@ -178,6 +178,7 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
             max={currency?.baseObject?.max_amount}
             step={isNaN(step) ? 0.01 : step}
             name={name}
+            ref={ref}
             precision={currency?.baseObject.precision}
         >
             <CurrenciesField />
