@@ -265,7 +265,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
                                         {
                                             status == STATUS.STARTED ?
-                                                <span className="flex text-sm leading-6 items-center mt-1">
+                                                <span className="flex text-sm leading-6 items-center mt-1.5">
                                                     Send again in
                                                     <span className='ml-1'>
                                                         {twoDigits(minutesToDisplay)}:
@@ -273,7 +273,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                                     </span>
                                                 </span>
                                                 :
-                                                <span onClick={handleResendTwoFACode} className="text-sm leading-6 mt-1 decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
+                                                <span onClick={handleResendTwoFACode} className="text-sm leading-6 mt-1.5 decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
                                                     Resend code
                                                 </span>
                                         }
