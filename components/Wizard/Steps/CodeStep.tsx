@@ -32,7 +32,8 @@ const CodeStep: FC = () => {
                 }
             }
             catch (e) {
-                await bransferApiClient.DeleteExchange(swapFormData.exchange.baseObject.internal_name, res.access_token)
+                if (exchanges.some(e => e.exchange === swapFormData.exchange.baseObject.internal_name))
+                    await bransferApiClient.DeleteExchange(swapFormData.exchange.baseObject.internal_name, res.access_token)
                 goToStep(OfframpExchangeAuthorizationSteps[swapFormData?.exchange?.baseObject?.authorization_flow])
             }
         }

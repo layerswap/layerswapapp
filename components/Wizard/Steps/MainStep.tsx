@@ -292,7 +292,9 @@ export default function MainStep() {
                     }
                 }
                 catch (e) {
-                    await bransferApiClient.DeleteExchange(values.exchange.baseObject.internal_name, accessToken)
+                    const exchanges = (await getUserExchanges(accessToken))?.data
+                    if (exchanges.some(e => e.exchange === values.exchange.baseObject.internal_name))
+                        await bransferApiClient.DeleteExchange(values.exchange.baseObject.internal_name, accessToken)
                     goToStep(OfframpExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
                 }
             }
