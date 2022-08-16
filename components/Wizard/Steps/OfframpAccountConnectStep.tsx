@@ -32,7 +32,7 @@ const OfframpAccountConnectStep: FC = () => {
     }, [query])
 
     useInterval(async () => {
-        if (currentStep === "ExchangeOAuth" && poll) {
+        if (currentStep === "OffRampExchangeOAuth" && poll) {
             const { access_token } = TokenService.getAuthData() || {};
             if (!access_token) {
                 await goToStep("Email")
