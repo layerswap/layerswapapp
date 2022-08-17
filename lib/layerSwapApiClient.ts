@@ -57,7 +57,7 @@ export type SwapItem = {
     fee: number,
     status: SwapStatus,
     exchange: string,
-    type: string,
+    type: "off_ramp" | "on_ramp",
     destination_address: string,
     external_payment_id: string,
     payment?: Payment,
