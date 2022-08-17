@@ -18,7 +18,7 @@ export default function Salon() {
     }, [])
 
     return (
-        <Layout hideFooter={true}>
+        <Layout hideFooter={true} hideNavbar={true}>
             <div className="h-full min-h-screen flex flex-col justify-center">
                 <div className='flex place-content-center mb-4'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 116 116" fill="none">
