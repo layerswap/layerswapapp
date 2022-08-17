@@ -33,6 +33,7 @@ import { classNames } from "../../utils/classNames";
 import KnownIds from "../../../lib/knownIds";
 import { LayerSwapSettings } from "../../../Models/LayerSwapSettings";
 import MainStepValidation from "../../../lib/mainStepValidator";
+import roundDecimals from "../../utils/RoundDecimals";
 
 const CurrenciesField: FC = () => {
     const {
@@ -60,7 +61,7 @@ const CurrenciesField: FC = () => {
     // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
 
     useEffect(() => {
-        if (network && !currency) {
+        if(!network) return;
             // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
             const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
             // if(alternativeToSelectedValue){
@@ -85,9 +86,8 @@ const CurrenciesField: FC = () => {
             }
 
             // }
-        }
-
-    }, [network, exchange, currency, data.currencies, data.exchanges])
+        
+    }, [network, exchange, data.currencies, data.exchanges])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />
@@ -160,9 +160,11 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
 
 const AmountField = React.forwardRef((props: any, ref: any) => {
 
-    const { values: { currency } } = useFormikContext<SwapFormValues>();
+    const { values: { currency, exchange } } = useFormikContext<SwapFormValues>();
     const name = "amount"
-    const placeholder = currency ? `${currency?.baseObject?.min_amount} - ${currency?.baseObject?.max_amount}` : '0.01234'
+    const minWithdrawalAmount = currency?.baseObject?.exchanges.find(ce => ce.exchange_id === exchange.baseObject.id).min_withdrawal_amount
+    const roundedMinWithdrawalAmount = roundDecimals(minWithdrawalAmount, currency?.baseObject.price_in_usdt.toFixed().length)
+    const placeholder = currency ? `${minWithdrawalAmount ? roundedMinWithdrawalAmount : currency?.baseObject?.min_amount} - ${currency?.baseObject?.max_amount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
 
     return (<>
@@ -170,7 +172,7 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
             label='Amount'
             disabled={!currency}
             placeholder={placeholder}
-            min={currency?.baseObject?.min_amount}
+            min={minWithdrawalAmount ? roundedMinWithdrawalAmount : currency?.baseObject?.min_amount}
             max={currency?.baseObject?.max_amount}
             step={isNaN(step) ? 0.01 : step}
             name={name}

@@ -3,6 +3,7 @@ import { Disclosure } from "@headlessui/react";
 import HoverTooltip from '.././Tooltips/HoverTooltip';
 import { Currency } from '../../Models/Currency';
 import { Exchange } from '../../Models/Exchange';
+import roundDecimals from '../utils/RoundDecimals';
 
 function exchangeFee(currency: Currency, exchange: Exchange): number {
     return currency?.exchanges?.find(e => e.exchange_id == exchange.id)?.fee || 0;
@@ -26,10 +27,12 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
 
     let fee = amount ? Number(calculateFee(Number(amount), currency, exchange)?.toFixed(currency?.precision)) : 0;
 
-
+    const minWithdrawalAmount = currency?.exchanges.find(ce => ce.exchange_id === exchange.id).min_withdrawal_amount
+    const roundedMinWithdrawalAmount = roundDecimals(minWithdrawalAmount, currency?.price_in_usdt.toFixed().length)
+    
     let receive_amount = 0;
     let fee_amount = Number(amount?.toString()?.replace(",", "."));
-    if (fee_amount >= currency?.min_amount) {
+    if (fee_amount >= (minWithdrawalAmount ? roundedMinWithdrawalAmount : currency?.min_amount)) {
         var exFee = exchangeFee(currency, exchange);
         var result = fee_amount - fee - exFee;
         receive_amount = Number(result.toFixed(currency?.precision));

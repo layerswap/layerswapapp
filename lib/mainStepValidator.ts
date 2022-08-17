@@ -1,5 +1,6 @@
 import { FormikProps, FormikErrors } from "formik";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
+import roundDecimals from "../components/utils/RoundDecimals";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { isValidAddress } from "./addressValidator";
 
@@ -7,6 +8,8 @@ export default function MainStepValidation(formikRef: React.MutableRefObject<For
     return values => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount?.toString()?.replace(",", "."));
+        const minWithdrawalAmount = values?.currency?.baseObject?.exchanges.find(ce => ce.exchange_id === values?.exchange.baseObject.id).min_withdrawal_amount
+        const roundedMinWithdrawalAmount = roundDecimals(minWithdrawalAmount, values?.currency?.baseObject.price_in_usdt.toFixed().length)
 
         if (!values.exchange) {
             errors.amount = 'Select exchange';
@@ -49,8 +52,8 @@ export default function MainStepValidation(formikRef: React.MutableRefObject<For
             if (!formikRef.current.getFieldMeta("amount").touched)
                 amountRef?.current?.focus();
         }
-        else if (amount < values.currency?.baseObject.min_amount) {
-            errors.amount = `Min amount is ${values.currency?.baseObject.min_amount}`;
+        else if (amount < (minWithdrawalAmount ? roundedMinWithdrawalAmount : values.currency?.baseObject?.min_amount)) {
+            errors.amount = `Min amount is ${minWithdrawalAmount ? roundedMinWithdrawalAmount : values.currency?.baseObject.min_amount}`;
             if (!formikRef.current.getFieldMeta("amount").touched)
                 amountRef?.current?.focus();
         }
