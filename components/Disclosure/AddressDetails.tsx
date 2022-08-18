@@ -19,6 +19,34 @@ function constructExplorerUrl(swapFormData: SwapFormValues): string {
 const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
     const { swapFormData } = useSwapDataState()
 
+    if (swapFormData?.swapType === "offramp")
+        return <>
+            <div className="mx-auto w-full rounded-lg border border-darkblue-100 hover:border-darkblue-200 bg-darkblue-500 p-2">
+                <div className="flex items-center min-w-0 flex-1">
+                    {
+                        swapFormData?.exchange?.imgSrc &&
+                        <div className="flex-shrink-0 h-5 w-5 mr-1 relative">
+                            <Image
+                                src={swapFormData?.exchange?.imgSrc}
+                                alt="Exchange Logo"
+                                height="60"
+                                width="60"
+                                layout="responsive"
+                                className="rounded-md object-contain"
+                            />
+                        </div>
+                    }
+                    {
+                        <div className='flex min-w-0 flex-1 mr-1' id='containerOfTextContainer'>
+                            <span className='text-base font-medium' id='textContainer'>
+                                {swapFormData?.destination_address}
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </>
+
     return (
         <>
             <div className="mx-auto w-full rounded-lg border border-darkblue-100 hover:border-darkblue-200 bg-darkblue-500 p-2">
@@ -48,9 +76,11 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                         return (
                             <>
                                 <Disclosure.Button className="items-center min-w-0 flex w-full relative justify-between rounded-lg p-1.5 text-left text-base font-medium">
-                                    {
-                                        swapFormData?.exchange?.imgSrc &&
-                                        <div className="flex items-center min-w-0 flex-1">
+
+
+                                    <div className="flex items-center min-w-0 flex-1">
+                                        {
+                                            swapFormData?.network?.imgSrc &&
                                             <div className="flex-shrink-0 h-5 w-5 mr-1 relative">
                                                 <Image
                                                     src={swapFormData?.network?.imgSrc}
@@ -61,18 +91,19 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                                     className="rounded-md object-contain"
                                                 />
                                             </div>
-                                            {
-                                                open ?
-                                                    <div className='flex min-w-0 flex-1 mr-1' id='containerOfTextContainer'>
-                                                        <span className='text-base font-medium' id='textContainer'>
-                                                            {swapFormData?.destination_address}
-                                                        </span>
-                                                    </div>
-                                                    :
-                                                    <p className='text-base font-medium'> {shortenAddress(swapFormData?.destination_address)}</p>
-                                            }
-                                        </div>
-                                    }
+                                        }
+                                        {
+                                            open ?
+                                                <div className='flex min-w-0 flex-1 mr-1' id='containerOfTextContainer'>
+                                                    <span className='text-base font-medium' id='textContainer'>
+                                                        {swapFormData?.destination_address}
+                                                    </span>
+                                                </div>
+                                                :
+                                                <p className='text-base font-medium'> {shortenAddress(swapFormData?.destination_address)}</p>
+                                        }
+                                    </div>
+
                                     <ChevronDownIcon
                                         className={`${open ? 'rotate-180 transform' : ''
                                             } h-4 w-4 text-pink-primary-300`}

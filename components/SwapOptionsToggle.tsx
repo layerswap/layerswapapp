@@ -1,19 +1,27 @@
-import { FC, useState } from "react";
+import { Field, useFormikContext } from "formik";
+import { FC, forwardRef, useState } from "react";
+import { SwapFormValues } from "./DTOs/SwapFormValues";
 import OptionToggle, { NavRadioOption } from "./OptionToggle"
 
 const swapOptions: NavRadioOption[] = [
-    { value: "onramp", displayName: 'On-ramp', isEnabled: true },
-    { value: "offramp", displayName: 'Off-ramp', isEnabled: true }
+    { value: "onramp", displayName: 'Exchange->L2', isEnabled: true },
+    { value: "offramp", displayName: 'L2->Exchange', isEnabled: true }
 ];
-type Props = {
-    onChange: (value: string) => void
-}
-const SwapOptionsToggle: FC<Props> = ({ onChange }) => {
-    const [swapOption, setSwapOption] = useState<string>(swapOptions[0].value);
-    const handleChange = (value: string) => {
-        onChange(value)
-        setSwapOption(value)
+
+const SwapOptionsToggle = forwardRef((props, ref: any) => {
+    const {
+        values: { swapType },
+        setFieldValue,
+        resetForm,
+    } = useFormikContext<SwapFormValues>();
+    const name = 'swapType'
+
+    const handleFieldChange = (value: string) => {
+        resetForm()
+        setFieldValue(name, value)
     }
-    return <OptionToggle items={swapOptions} label="Choose a memory option" value={swapOption} setSelected={handleChange} />
-}
+    return <div ref={ref} tabIndex={0} >
+        <Field name={name} placeholder="Choose exchange" label="Choose a memory option" value={swapType} items={swapOptions} as={OptionToggle} setSelected={handleFieldChange} />
+    </div>
+})
 export default SwapOptionsToggle

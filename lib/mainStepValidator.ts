@@ -5,7 +5,7 @@ import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { isValidAddress } from "./addressValidator";
 
 export default function MainStepValidation(formikRef: React.MutableRefObject<FormikProps<SwapFormValues>>, addressRef: any, settings: LayerSwapSettings, amountRef: any): ((values: SwapFormValues) => void | object | Promise<FormikErrors<SwapFormValues>>) & ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
-    return values => {
+    return (values:SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount?.toString()?.replace(",", "."));
         const minWithdrawalAmount = values?.currency?.baseObject?.exchanges.find(ce => ce.exchange_id === values?.exchange.baseObject.id).min_withdrawal_amount
@@ -17,20 +17,22 @@ export default function MainStepValidation(formikRef: React.MutableRefObject<For
         else if (!values.network) {
             errors.amount = 'Select network';
         }
-        else if (!values.destination_address) {
-            errors.amount = `Enter ${values?.network?.name} address`;
-            if (!formikRef.current.getFieldMeta("destination_address").touched)
-                addressRef?.current?.focus();
-        }
-        else if (!isValidAddress(values.destination_address, values.network?.baseObject)) {
-            errors.amount = `Enter a valid ${values?.network?.name} address`;
-            if (!formikRef.current.getFieldMeta("destination_address").touched)
-                addressRef?.current?.focus();
-        }
-        else if (settings.data.blacklistedAddresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
-            errors.amount = `You can not transfer to this address`;
-            if (!formikRef.current.getFieldMeta("destination_address").touched)
-                addressRef?.current?.focus();
+        else if(values.swapType === "onramp"){
+            if (!values.destination_address) {
+                errors.amount = `Enter ${values?.network?.name} address`;
+                if (!formikRef.current.getFieldMeta("destination_address").touched)
+                    addressRef?.current?.focus();
+            }
+            else if (!isValidAddress(values.destination_address, values.network?.baseObject)) {
+                errors.amount = `Enter a valid ${values?.network?.name} address`;
+                if (!formikRef.current.getFieldMeta("destination_address").touched)
+                    addressRef?.current?.focus();
+            }
+            else if (settings.data.blacklistedAddresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
+                errors.amount = `You can not transfer to this address`;
+                if (!formikRef.current.getFieldMeta("destination_address").touched)
+                    addressRef?.current?.focus();
+            }
         }
         else if (!amount) {
             errors.amount = 'Enter an amount';

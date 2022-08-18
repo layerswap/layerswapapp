@@ -32,7 +32,6 @@ function UserExchanges() {
     const [exchangeToDisconnect, setExchangeToDisconnect] = useState<Exchange>()
 
     const handleGoHome = useCallback(() => {
-        debugger
         router.push({
             pathname: "/",
             query: router.query
