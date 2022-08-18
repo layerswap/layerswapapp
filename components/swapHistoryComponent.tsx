@@ -434,7 +434,7 @@ function TransactionsHistory() {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                           >
-                            <Dialog.Panel className="w-full space-y-6 max-w-md p-7 transform overflow-hidden rounded-md bg-darkBlue shadow-card text-center align-middle shadow-xl transition-all">
+                            <Dialog.Panel className="w-full space-y-6 max-w-md p-7 transform overflow-hidden rounded-md bg-darkBlue shadow-card text-center align-middle transition-all">
                               <div className="flex justify-between">
                                 <div className='text-xl font-bold text-white'>Swap details</div>
                                 <div className='relative grid grid-cols-1 gap-4 place-content-end z-40'>
