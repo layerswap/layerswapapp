@@ -9,10 +9,10 @@ export default function MainStepValidation(formikRef: React.MutableRefObject<For
         let amount = Number(values.amount?.toString()?.replace(",", "."));
 
         if (!values.exchange) {
-            errors.amount = 'Select exchange';
+            errors.amount = 'Select an exchange';
         }
         else if (!values.network) {
-            errors.amount = 'Select network';
+            errors.amount = 'Select a network';
         }
         else if(values.swapType === "onramp"){
             if (!values.destination_address) {
