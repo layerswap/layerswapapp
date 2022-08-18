@@ -31,7 +31,6 @@ import NumericInput from "../../Input/NumericInput";
 import AddressInput from "../../Input/AddressInput";
 import { classNames } from "../../utils/classNames";
 import KnownIds from "../../../lib/knownIds";
-import { LayerSwapSettings } from "../../../Models/LayerSwapSettings";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
@@ -386,7 +385,7 @@ export default function MainStep() {
                 <Form className="h-full">
                     <div className="px-8 h-full flex flex-col justify-between">
                         <div>
-                            <div className='flex justify-left mb-5'>
+                            <div className='my-4'>
                                 <SwapOptionsToggle />
                             </div>
                             <div className={classNames(values.swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex  justify-between w-full space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>

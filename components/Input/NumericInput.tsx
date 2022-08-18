@@ -1,4 +1,3 @@
-import { MintBodyCodec } from "@imtbl/imx-sdk";
 import { useField, useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
