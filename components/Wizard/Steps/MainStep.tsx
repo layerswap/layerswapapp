@@ -1,7 +1,7 @@
 import { Web3Provider } from "@ethersproject/providers";
 import { ImmutableXClient } from "@imtbl/imx-sdk";
 import { useWeb3React } from "@web3-react/core";
-import { Field, Form, Formik, FormikErrors, FormikProps, swap, useField, useFormikContext } from "formik";
+import { Field, Form, Formik, FormikErrors, FormikProps, useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
@@ -10,7 +10,7 @@ import { Currency } from "../../../Models/Currency";
 import { Exchange } from "../../../Models/Exchange";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../../Select/selectMenuItem";
-import Image from 'next/image'
+import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
 import { useSwapDataUpdate } from "../../../context/swap";
 import Select from "../../Select/Select";
@@ -32,9 +32,9 @@ import AddressInput from "../../Input/AddressInput";
 import { classNames } from "../../utils/classNames";
 import KnownIds from "../../../lib/knownIds";
 import MainStepValidation from "../../../lib/mainStepValidator";
-import roundDecimals from "../../utils/RoundDecimals";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
+import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
 
 const CurrenciesField: FC = () => {
     const {
@@ -62,32 +62,32 @@ const CurrenciesField: FC = () => {
     // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
 
     useEffect(() => {
-        if(!network) return;
-            // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
-            const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
-            // if(alternativeToSelectedValue){
-            //     setFieldValue(name, alternativeToSelectedValue)
-            // }
-            // else{
-            if (default_currency) {
-                const defaultValue: SelectMenuItem<Currency> = {
-                    baseObject: default_currency,
-                    id: default_currency.id,
-                    name: default_currency.asset,
-                    order: default_currency.order,
-                    imgSrc: default_currency.logo_url,
-                    isAvailable: default_currency.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
-                    isEnabled: default_currency.is_enabled,
-                    isDefault: default_currency.is_default,
-                }
-                setFieldValue(name, defaultValue)
+        if (!network) return;
+        // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
+        const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
+        // if(alternativeToSelectedValue){
+        //     setFieldValue(name, alternativeToSelectedValue)
+        // }
+        // else{
+        if (default_currency) {
+            const defaultValue: SelectMenuItem<Currency> = {
+                baseObject: default_currency,
+                id: default_currency.id,
+                name: default_currency.asset,
+                order: default_currency.order,
+                imgSrc: default_currency.logo_url,
+                isAvailable: default_currency.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
+                isEnabled: default_currency.is_enabled,
+                isDefault: default_currency.is_default,
             }
-            else {
-                setFieldValue(name, null)
-            }
+            setFieldValue(name, defaultValue)
+        }
+        else {
+            setFieldValue(name, null)
+        }
 
-            // }
-        
+        // }
+
     }, [network, exchange, data.currencies, data.exchanges])
 
     return (<>
@@ -166,10 +166,8 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
 
     const { values: { currency, exchange, swapType } } = useFormikContext<SwapFormValues>();
     const name = "amount"
-    let exchangeMinWithdrawalAmount = currency?.baseObject?.exchanges.find(ce => ce.exchange_id === exchange.baseObject.id).min_withdrawal_amount
-    let roundedExchangeMinWithdrawalAmount = exchangeMinWithdrawalAmount  != null ? roundDecimals(exchangeMinWithdrawalAmount, currency?.baseObject.price_in_usdt.toFixed().length) : null;
-    let minAllowedAmount = roundedExchangeMinWithdrawalAmount ?? (swapType == "onramp" ? currency?.baseObject?.min_amount : currency?.baseObject.off_ramp_min_amount);
-    let maxAllowedAmount = swapType == "onramp" ? currency?.baseObject?.max_amount : currency?.baseObject.off_ramp_max_amount;
+    let minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, swapType);
+    let maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, swapType);
 
     const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
@@ -387,7 +385,7 @@ export default function MainStep() {
             validate={MainStepValidation(formikRef, addressRef, settings, amountRef)}
             onSubmit={handleSubmit}
         >
-            {({ values, errors }) => (
+            {({ values, errors, isValid }) => (
                 <Form className="h-full">
                     <div className="px-8 h-full flex flex-col justify-between">
                         <div>
@@ -432,11 +430,11 @@ export default function MainStep() {
                             </div>
 
                             <div className="w-full">
-                                <AmountAndFeeDetails amount={values?.amount} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
+                                <AmountAndFeeDetails amount={Number(values?.amount)} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
                             </div>
                         </div>
                         <div className="mt-6">
-                            <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={loading}>
+                            <SwapButton type='submit' isDisabled={!isValid} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors)}
                             </SwapButton>
                         </div>
@@ -446,7 +444,6 @@ export default function MainStep() {
         </Formik >
     </>
 }
-
 
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
     if (errors.amount) {

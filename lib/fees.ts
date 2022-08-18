@@ -1,28 +1,59 @@
+import { SwapType } from "../components/DTOs/SwapFormValues";
+import roundDecimals from "../components/utils/RoundDecimals";
 import { Currency } from "../Models/Currency";
 import { Exchange } from "../Models/Exchange";
 
-export function exchangeFee(currency: Currency, exchange: Exchange): number {
-    return currency?.exchanges?.find(e => e.exchange_id == exchange.id)?.fee || 0;
+export function CalculateExchangeFee(amount: number, currency: Currency, exchange: Exchange): number {
+    var currencyExchange = currency?.exchanges?.find(e => e.exchange_id == exchange.id);
+    if (!currencyExchange)
+    {
+        return 0;
+    }
+
+    var percentageFee = amount * exchange?.fee_percentage;
+    
+    return currencyExchange.fee + percentageFee;
 }
 
-export function calculateFee(amount: number, currency: Currency, exchange: Exchange): number {
+export function CalculateFee(amount: number, currency: Currency, exchange: Exchange): number {
+    if (!currency || !exchange)
+    {
+        return 0;
+    }
 
-    var exchangeFee = Number(amount?.toString()?.replace(",", ".")) * exchange?.fee_percentage;
-    var overallFee = currency?.fee + exchangeFee;
-
-    return overallFee || 0;
+    var fee =  currency.fee + CalculateExchangeFee(amount, currency, exchange);
+    return Number(fee.toFixed(currency?.precision));
 }
 
-export function CalculateReceiveAmount(amount: number, currency: Currency, exchange: Exchange) {
+export function CalculateReceiveAmount(amount: number, currency: Currency, exchange: Exchange, swapType: SwapType) {
 
-    let fee = amount ? Number(calculateFee(Number(amount), currency, exchange)?.toFixed(currency?.precision)) : 0;
+    if (!amount) return 0;
+
+    let fee = CalculateFee(amount, currency, exchange);
 
     let receive_amount = 0;
-    let fee_amount = Number(amount?.toString()?.replace(",", "."));
-    if (fee_amount >= currency?.min_amount) {
-        var exFee = exchangeFee(currency, exchange);
-        var result = fee_amount - fee - exFee;
+    let minAllowedAmount = CalculateMinAllowedAmount(currency, exchange, swapType);
+
+    if (amount >= minAllowedAmount)
+    {
+        var result = amount - fee;
         receive_amount = Number(result.toFixed(currency?.precision));
+
+        if (swapType == 'onramp'){
+            var exFee = CalculateExchangeFee(amount, currency, exchange);
+            receive_amount -= exFee;
+        }
     }
-    return receive_amount
+
+    return receive_amount;
+}
+
+export function CalculateMaxAllowedAmount(currency: Currency, swapType: string) {
+    return swapType == "onramp" ? currency?.max_amount : currency?.off_ramp_max_amount;;
+}
+export function CalculateMinAllowedAmount(currency: Currency, exchange: Exchange, swapType: string) {
+    let exchangeMinWithdrawalAmount = currency?.exchanges.find(ce => ce.exchange_id === exchange.id).min_withdrawal_amount;
+    let roundedExchangeMinWithdrawalAmount = exchangeMinWithdrawalAmount ? roundDecimals(exchangeMinWithdrawalAmount, currency?.price_in_usdt.toFixed().length) : null;
+    let minAllowedAmount = roundedExchangeMinWithdrawalAmount ?? (swapType == "onramp" ? currency?.min_amount : currency?.off_ramp_min_amount);
+    return minAllowedAmount;
 }

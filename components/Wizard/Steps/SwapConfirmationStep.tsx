@@ -1,16 +1,15 @@
 import { Transition } from '@headlessui/react';
-import { ArrowRightIcon, DuplicateIcon, ExternalLinkIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 import { FC, Fragment, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { BaseStepProps, FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
+import { BaseStepProps, FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
 import { CalculateReceiveAmount } from '../../../lib/fees';
-import { copyTextToClipboard } from '../../utils/copyToClipboard';
 import ToggleButton from '../../buttons/toggleButton';
 import { isValidAddress } from '../../../lib/addressValidator';
 import AddressDetails from '../../Disclosure/AddressDetails';
@@ -20,15 +19,18 @@ import { BransferApiClient } from '../../../lib/bransferApiClients';
 import { CreateSwapParams } from '../../../lib/layerSwapApiClient';
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
+    const { swapFormData, swap } = useSwapDataState()
+    if (!swapFormData) {
+        return null;
+    }
+
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
-    const [confirm_right_information, setConfirm_right_information] = useState(false)
     const [towFactorCode, setTwoFactorCode] = useState("")
 
     const [loading, setLoading] = useState(false)
     const [twoFARequired, setTwoFARequired] = useState(false)
     const { currentStep } = useFormWizardState<FormWizardSteps>()
 
-    const { swapFormData, swap } = useSwapDataState()
     const { createSwap, processPayment, updateSwapFormData } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const [editingAddress, setEditingAddress] = useState(false)
@@ -57,9 +59,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setAddressInputValue(destination_address)
     }, [destination_address])
 
-    const handleConfirm_right_information = (e) => {
-        setConfirm_right_information(e.target.checked)
-    }
     const handleTwoFACodeChange = (e) => {
         setTwoFactorCode(e?.target?.value)
     }
@@ -140,7 +139,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setEditingAddress(false)
     }, [addressInputValue, swapFormData])
 
-    const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount?.toString()?.replace(",", ".")), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject)
+    const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject, swapFormData?.swapType)
     return (
         <>
             <div className="px-8 h-full flex flex-col justify-between">
@@ -197,7 +196,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                 </div>
                                 <div className="flex justify-between bg-darkblue-500 rounded-md px-4 py-3 items-baseline">
                                     <span className="text-left">Fee</span>
-                                    <span className="text-white">{(Number(swapFormData?.amount?.toString()?.replace(",", ".")) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
+                                    <span className="text-white">{(Number(swapFormData?.amount) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
                                 </div>
                                 <div className="flex justify-between px-4 py-3  items-baseline">
                                     <span className="text-left">You will receive</span>
