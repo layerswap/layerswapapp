@@ -49,7 +49,7 @@ export function CalculateReceiveAmount(amount: number, currency: Currency, excha
 }
 
 export function CalculateMaxAllowedAmount(currency: Currency, swapType: string) {
-    return swapType == "onramp" ? currency?.max_amount : currency?.off_ramp_max_amount;;
+    return swapType == "onramp" ? currency?.max_amount : currency?.off_ramp_max_amount;
 }
 export function CalculateMinAllowedAmount(currency: Currency, exchange: Exchange, swapType: string) {
     let exchangeMinWithdrawalAmount = currency?.exchanges.find(ce => ce.exchange_id === exchange.id).min_withdrawal_amount;

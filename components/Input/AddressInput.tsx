@@ -1,5 +1,7 @@
-import { Field, useField } from "formik";
-import { ChangeEvent, FC, forwardRef } from "react";
+import { Field, useField, useFormikContext } from "formik";
+import { ChangeEvent, FC, forwardRef, useCallback } from "react";
+import { isValidAddress } from "../../lib/addressValidator";
+import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
@@ -13,9 +15,32 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
 }
 
 const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ label, disabled, name, className, onChange }, ref) => {
+    ({ label, disabled, name, className, onChange }, ref: any) => {
 
         const [field, meta, helpers] = useField(name)
+        const {
+            values: { exchange, currency, swapType, network, destination_address },
+            setFieldValue,
+            touched
+        } = useFormikContext<SwapFormValues>();
+
+            
+        const validate = (value) => {
+            if (swapType === "onramp" && !value) {
+                !touched.destination_address && ref.current.focus()
+                return `Enter ${network?.name} address`;
+            }
+            else if (swapType === "onramp" && !isValidAddress(value, network?.baseObject)) {
+                !touched.destination_address && ref.current.focus()
+                return `Enter a valid ${network?.name} address`;
+            }
+            // else if (values.swapType === "onramp" && settings.data.blacklistedAddresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
+            //     errors.amount = `You can not transfer to this address`;
+            //     if (!formikRef.current.getFieldMeta("destination_address").touched)
+            //         addressRef?.current?.focus();
+            // }
+            return ""
+        }
 
         return (<>
             {label &&
@@ -24,7 +49,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 </label>
             }
             <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-600">
-                <Field name={name}>
+                <Field name={name} validate={validate}>
                     {({ field }) => (
                         <input
                             {...field}

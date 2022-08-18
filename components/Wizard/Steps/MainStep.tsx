@@ -116,13 +116,16 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             isDefault: e.is_default
         })).sort(sortingByOrder);
 
+    const validate = (value) => {
+        return !value && 'Select an exchange'
+    }
 
     return (<>
         <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
             {swapType === "onramp" ? "From" : "To"}
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange && (swapType === "onramp" || network) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
-            <Field name={name} placeholder="Exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
+            <Field validate={validate} name={name} placeholder="Exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });
@@ -132,7 +135,9 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
         values: { exchange, network, swapType },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
+
     const name = "network"
+
     const { lockNetwork } = useQueryState()
     const { data } = useSettingsState();
 
@@ -152,19 +157,23 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
     if (exchange && !network)
         ref.current?.focus()
 
+    const validate = (value) => {
+        return !value && 'Select a network'
+    }
+
     return (<>
         <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
             {swapType === "onramp" ? "To" : "From"}
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 ${!network && (swapType === "offramp" || exchange) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
-            <Field name={name} placeholder="Network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
+            <Field validate={validate} name={name} placeholder="Network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });
 
 const AmountField = React.forwardRef((props: any, ref: any) => {
 
-    const { values: { currency, exchange, swapType } } = useFormikContext<SwapFormValues>();
+    const { values: { currency, exchange, swapType, destination_address }, touched, errors } = useFormikContext<SwapFormValues>();
     const name = "amount"
     let minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, swapType);
     let maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, swapType);
@@ -172,20 +181,48 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
     const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
 
+
+    const validate = (value) => {
+        let error = ""
+        if (!value) {
+            error = 'Enter an amount';
+        }
+        else if (!/^[0-9]*[.,]?[0-9]*$/i.test(value.toString())) {
+            error = 'Invalid amount';
+        }
+        else if (value < 0) {
+            error = "Can't be negative";
+        }
+        else if (maxAllowedAmount && value > maxAllowedAmount) {
+            error = `Max amount is ${maxAllowedAmount}`;
+        }
+        else if (minAllowedAmount && value < minAllowedAmount) {
+            error = `Min amount is ${minAllowedAmount}`;
+        }
+        if (swapType == "offramp" && !errors.exchange && errors.amount)
+            setTimeout(() => ref.current?.focus(), 0)
+        return error
+    }
+
     return (<>
-        <NumericInput
-            label='Amount'
-            disabled={!currency}
-            placeholder={placeholder}
-            min={minAllowedAmount}
-            max={maxAllowedAmount}
-            step={isNaN(step) ? 0.01 : step}
-            name={name}
-            ref={ref}
-            precision={currency?.baseObject.precision}
-        >
-            <CurrenciesField />
-        </NumericInput>
+        <Field name={name} validate={validate}>
+            {({ field }) => (
+                <NumericInput
+                    label='Amount'
+                    disabled={!currency}
+                    placeholder={placeholder}
+                    min={minAllowedAmount}
+                    max={maxAllowedAmount}
+                    step={isNaN(step) ? 0.01 : step}
+                    name={name}
+                    ref={ref}
+                    precision={currency?.baseObject.precision}
+                >
+                    <CurrenciesField />
+                </NumericInput>
+            )}
+        </Field>
+
     </>)
 });
 
@@ -382,11 +419,17 @@ export default function MainStep() {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={MainStepValidation(formikRef, addressRef, settings, amountRef)}
             onSubmit={handleSubmit}
         >
-            {({ values, errors, isValid }) => (
-                <Form className="h-full">
+            {({ values, errors, isValid, touched }) => {
+                if (values.swapType == "onramp" && !errors.network && errors.destination_address && !touched.destination_address)
+                    addressRef.current?.focus()
+                else if (values.swapType == "offramp" && !touched.amount)
+                    setTimeout(() => amountRef.current?.focus(), 0)
+                else if (!errors.destination_address && errors.amount && !touched.amount)
+                    setTimeout(() => amountRef.current?.focus(), 0)
+
+                return <Form className="h-full">
                     <div className="px-8 h-full flex flex-col justify-between">
                         <div>
                             <div className='my-4'>
@@ -440,18 +483,14 @@ export default function MainStep() {
                         </div>
                     </div >
                 </Form >
-            )}
+            }}
         </Formik >
     </>
 }
 
+
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
-    if (errors.amount) {
-        return errors.amount;
-    }
-    else {
-        return "Swap now";
-    }
+    return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
 }
 
 function sortingByOrder(x: any, y: any) {
