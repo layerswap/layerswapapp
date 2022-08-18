@@ -31,7 +31,6 @@ import NumericInput from "../../Input/NumericInput";
 import AddressInput from "../../Input/AddressInput";
 import { classNames } from "../../utils/classNames";
 import KnownIds from "../../../lib/knownIds";
-import { LayerSwapSettings } from "../../../Models/LayerSwapSettings";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
@@ -122,7 +121,7 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
             {swapType === "onramp" ? "From" : "To"}
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange && (swapType === "onramp" || network) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
-            <Field name={name} placeholder="Choose exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
+            <Field name={name} placeholder="Exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });
@@ -157,7 +156,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             {swapType === "onramp" ? "To" : "From"}
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 ${!network && (swapType === "offramp" || exchange) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
-            <Field name={name} placeholder="Choose network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
+            <Field name={name} placeholder="Network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });
@@ -386,19 +385,15 @@ export default function MainStep() {
                 <Form className="h-full">
                     <div className="px-8 h-full flex flex-col justify-between">
                         <div>
-                            <div className='flex justify-left mb-5'>
+                            <div className='my-4'>
                                 <SwapOptionsToggle />
                             </div>
-                            <div className={classNames(values.swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex  justify-between w-full space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
+                            <div className={classNames(values.swapType === "offramp" ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
                                 <div className="flex flex-col md:w-80 w-full">
-                                    {
-                                        <ExchangesField ref={exchangeRef} />
-                                    }
+                                    <ExchangesField ref={exchangeRef} />
                                 </div>
                                 <div className="flex flex-col md:w-80 w-full">
-                                    {
-                                        <NetworkField ref={networkRef} />
-                                    }
+                                    <NetworkField ref={networkRef} />
                                 </div>
                             </div>
                             {

@@ -20,8 +20,8 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const [swap, setSwap] = useState<SwapItemResponse>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
-    const exchange = data.exchanges?.find(e => e.internal_name == swap?.data?.payment?.exchange)
-    const network = data.networks.find(n => n.code === swap?.data?.network)
+    const exchange = data.exchanges?.find(e => e.internal_name === swap?.data?.exchange)
+    const network = data.networks?.find(n => n.code === swap?.data?.network)
     const currency = data.currencies.find(x => x.id == swap?.data?.currency_id)
     useEffect(() => {
         (async () => {
@@ -136,11 +136,16 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Layerswap Fee </span>
                             <span className='text-white font-normal'>{parseFloat(swap?.data?.fee?.toFixed(currency?.precision))} {currency?.asset}</span>
                         </div>
-                        <hr className='horizontal-gradient' />
-                        <div className="flex justify-between items-baseline">
-                            <span className="text-left">Exchange Fee </span>
-                            <span className='text-white font-normal'>{parseFloat(swap?.data?.payment?.withdrawal_fee?.toFixed(currency?.precision))} {currency?.asset}</span>
-                        </div>
+                        {
+                            swap?.data?.type === 'on_ramp' &&
+                            <>
+                                <hr className='horizontal-gradient' />
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-left">Exchange Fee </span>
+                                    <span className='text-white font-normal'>{parseFloat(swap?.data?.payment?.withdrawal_fee?.toFixed(currency?.precision))} {currency?.asset}</span>
+                                </div>
+                            </>
+                        }
                     </div>
                 </div>
             </div>
@@ -156,51 +161,15 @@ const Sceleton = () => {
                     <div className="h-2 m-2 w-1/4 bg-slate-400 rounded col-span-1"></div>
                     <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
                 </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
+                {[...Array(9)]?.map((item, index) => (
+                    <>
+                        <hr className='horizontal-gradient my-1' />
+                        <div className="flex justify-between items-baseline">
+                            <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
+                            <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
+                        </div>
+                    </>
+                ))}
             </div>
         </div>
     </div>
