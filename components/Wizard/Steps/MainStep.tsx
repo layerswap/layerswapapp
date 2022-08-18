@@ -164,11 +164,14 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
 
 const AmountField = React.forwardRef((props: any, ref: any) => {
 
-    const { values: { currency, exchange } } = useFormikContext<SwapFormValues>();
+    const { values: { currency, exchange, swapType } } = useFormikContext<SwapFormValues>();
     const name = "amount"
-    const minWithdrawalAmount = currency?.baseObject?.exchanges.find(ce => ce.exchange_id === exchange.baseObject.id).min_withdrawal_amount
-    const roundedMinWithdrawalAmount = roundDecimals(minWithdrawalAmount, currency?.baseObject.price_in_usdt.toFixed().length)
-    const placeholder = currency ? `${minWithdrawalAmount ? roundedMinWithdrawalAmount : currency?.baseObject?.min_amount} - ${currency?.baseObject?.max_amount}` : '0.01234'
+    let exchangeMinWithdrawalAmount = currency?.baseObject?.exchanges.find(ce => ce.exchange_id === exchange.baseObject.id).min_withdrawal_amount
+    let roundedExchangeMinWithdrawalAmount = exchangeMinWithdrawalAmount  != null ? roundDecimals(exchangeMinWithdrawalAmount, currency?.baseObject.price_in_usdt.toFixed().length) : null;
+    let minAllowedAmount = roundedExchangeMinWithdrawalAmount ?? (swapType == "onramp" ? currency?.baseObject?.min_amount : currency?.baseObject.off_ramp_min_amount);
+    let maxAllowedAmount = swapType == "onramp" ? currency?.baseObject?.max_amount : currency?.baseObject.off_ramp_max_amount;
+
+    const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
 
     return (<>
@@ -176,8 +179,8 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
             label='Amount'
             disabled={!currency}
             placeholder={placeholder}
-            min={minWithdrawalAmount ? roundedMinWithdrawalAmount : currency?.baseObject?.min_amount}
-            max={currency?.baseObject?.max_amount}
+            min={minAllowedAmount}
+            max={maxAllowedAmount}
             step={isNaN(step) ? 0.01 : step}
             name={name}
             ref={ref}

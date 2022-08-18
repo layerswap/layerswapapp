@@ -34,7 +34,6 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
     let roundedExchangeMinWithdrawalAmount = exchangeMinWithdrawalAmount ? roundDecimals(exchangeMinWithdrawalAmount, currency?.price_in_usdt.toFixed().length) : null;
     let minAllowedAmount = roundedExchangeMinWithdrawalAmount ?? (swapType == "onramp" ? currency?.min_amount : currency?.off_ramp_min_amount);
 
-
     let sanitizedAmount = Number(amount);
     if (sanitizedAmount >= minAllowedAmount)
     {
