@@ -30,9 +30,12 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
 
     let receive_amount = 0;
     let fee_amount = Number(amount?.toString()?.replace(",", "."));
-    if (fee_amount >= currency?.min_amount) {
+    if (fee_amount >= currency?.min_amount && swapType === 'onramp') {
         var exFee = exchangeFee(currency, exchange);
         var result = fee_amount - fee - exFee;
+        receive_amount = Number(result.toFixed(currency?.precision));
+    } else if (fee_amount >= currency?.min_amount && swapType === 'offramp') {
+        var result = fee_amount - fee;
         receive_amount = Number(result.toFixed(currency?.precision));
     }
     return (
