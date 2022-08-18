@@ -7,15 +7,17 @@ import { isValidAddress } from "./addressValidator";
 export default function MainStepValidation(formikRef: React.MutableRefObject<FormikProps<SwapFormValues>>, addressRef: any, settings: LayerSwapSettings, amountRef: any): ((values: SwapFormValues) => void | object | Promise<FormikErrors<SwapFormValues>>) & ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
     return (values:SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
-        let amount = Number(values.amount?.toString()?.replace(",", "."));
-        const minWithdrawalAmount = values?.currency?.baseObject?.exchanges.find(ce => ce.exchange_id === values?.exchange.baseObject.id).min_withdrawal_amount
-        const roundedMinWithdrawalAmount = roundDecimals(minWithdrawalAmount, values?.currency?.baseObject.price_in_usdt.toFixed().length)
+        let amount = Number(values.amount);
+        let exchangeMinWithdrawalAmount = values?.currency?.baseObject?.exchanges.find(ce => ce.exchange_id === values?.exchange.baseObject.id).min_withdrawal_amount
+        let roundedExchangeMinWithdrawalAmount = exchangeMinWithdrawalAmount  != null ? roundDecimals(exchangeMinWithdrawalAmount, values?.currency?.baseObject.price_in_usdt.toFixed().length) : null;
+        let minAllowedAmount = roundedExchangeMinWithdrawalAmount ?? (values.swapType == "onramp" ? values.currency?.baseObject?.min_amount : values.currency?.baseObject.off_ramp_min_amount);
+        let maxAllowedAmount = values.swapType == "onramp" ? values.currency?.baseObject?.max_amount : values.currency?.baseObject.off_ramp_max_amount;
 
         if (!values.exchange) {
-            errors.amount = 'Select exchange';
+            errors.amount = 'Select an exchange';
         }
         else if (!values.network) {
-            errors.amount = 'Select network';
+            errors.amount = 'Select a network';
         }
         else if(values.swapType === "onramp"){
             if (!values.destination_address) {
@@ -49,13 +51,13 @@ export default function MainStepValidation(formikRef: React.MutableRefObject<For
             if (!formikRef.current.getFieldMeta("amount").touched)
                 amountRef?.current?.focus();
         }
-        else if (amount > values.currency?.baseObject.max_amount) {
-            errors.amount = `Max amount is ${values.currency.baseObject.max_amount}`;
+        else if (amount > maxAllowedAmount) {
+            errors.amount = `Max amount is ${maxAllowedAmount}`;
             if (!formikRef.current.getFieldMeta("amount").touched)
                 amountRef?.current?.focus();
         }
-        else if (amount < (minWithdrawalAmount ? roundedMinWithdrawalAmount : values.currency?.baseObject?.min_amount)) {
-            errors.amount = `Min amount is ${minWithdrawalAmount ? roundedMinWithdrawalAmount : values.currency?.baseObject.min_amount}`;
+        else if (amount < minAllowedAmount) {
+            errors.amount = `Min amount is ${minAllowedAmount}`;
             if (!formikRef.current.getFieldMeta("amount").touched)
                 amountRef?.current?.focus();
         }

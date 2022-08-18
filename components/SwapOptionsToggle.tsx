@@ -4,8 +4,8 @@ import { SwapFormValues } from "./DTOs/SwapFormValues";
 import OptionToggle, { NavRadioOption } from "./OptionToggle"
 
 const swapOptions: NavRadioOption[] = [
-    { value: "onramp", displayName: 'Exchange->L2', isEnabled: true },
-    { value: "offramp", displayName: 'L2->Exchange', isEnabled: true }
+    { value: "onramp", isEnabled: true, isHighlighted: false },
+    { value: "offramp", isEnabled: true, isHighlighted: true }
 ];
 
 const SwapOptionsToggle = forwardRef((props, ref: any) => {
@@ -21,7 +21,7 @@ const SwapOptionsToggle = forwardRef((props, ref: any) => {
         setFieldValue(name, value)
     }
     return <div ref={ref} tabIndex={0} >
-        <Field name={name} placeholder="Choose exchange" label="Choose a memory option" value={swapType} items={swapOptions} as={OptionToggle} setSelected={handleFieldChange} />
+        <Field name={name} value={swapType} items={swapOptions} as={OptionToggle} setSelected={handleFieldChange} />
     </div>
 })
 export default SwapOptionsToggle

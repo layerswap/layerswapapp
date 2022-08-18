@@ -1,4 +1,4 @@
-import { DocumentDuplicateIcon } from '@heroicons/react/outline';
+import { DocumentDuplicateIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
 import { FC, useCallback, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
@@ -53,6 +53,11 @@ const WithdrawNetworkStep: FC = () => {
     const network_name = network?.name || ' '
     const network_logo_url = network?.logo_url
 
+    if (!swap?.data?.offramp_info)
+    {
+        return null;
+    }
+
     return (
         <>
             <div className="w-full px-6 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
@@ -61,7 +66,7 @@ const WithdrawNetworkStep: FC = () => {
                         Go to
                         {
                             network_logo_url &&
-                            <div className="inline-block mx-1" style={{ position: "relative", top: '6px' }}>
+                            <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                     <Image
                                         src={network_logo_url}
@@ -76,14 +81,34 @@ const WithdrawNetworkStep: FC = () => {
                                 </div>
                             </div>
                         }
-                        <span className='strong-highlight mr-1'>
+                        <span className='strong-highlight'>
                             {network_name}
-                        </span> and do a withdrawal to the provided address.
+                        </span> and send {swap?.data.currency} to the provided L2 address
                     </h3>
                 </div>
                 <div className='mb-12'>
+                    <label htmlFor="selectAs" className="block font-normal text-sm">
+                        Select as "Where would you like to send your crypto to"
+                    </label>
+                    <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
+                        <input
+                            inputMode="decimal"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            type="text"
+                            name="selectAs"
+                            id="selectAs"
+                            disabled={true}
+                            value={'     To Another Loopring L2 Account'}
+                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                        />
+                        <div className='absolute top-4 left-2.5'>
+                            <SwitchHorizontalIcon className='h-4 w-4'/>
+                        </div>
+                    </div>
                     <label htmlFor="address" className="block font-normal text-sm">
-                        Address
+                        Recipient
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                         <input
@@ -106,6 +131,23 @@ const WithdrawNetworkStep: FC = () => {
                                 </div>
                             </ClickTooltip>
                         </div>
+                    </div>
+                    <label htmlFor="addressType" className="block font-normal text-sm">
+                        Address Type
+                    </label>
+                    <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
+                        <input
+                            inputMode="decimal"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            type="text"
+                            name="addressType"
+                            id="addressType"
+                            disabled={true}
+                            value={'EOA Wallet'}
+                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                        />
                     </div>
                     {
                         swap?.data?.offramp_info?.memo &&
@@ -139,7 +181,7 @@ const WithdrawNetworkStep: FC = () => {
                     }
 
                     <label htmlFor="withdrawalAmount" className="block font-normal text-sm">
-                        Withdrawal amount in {swap?.data?.currency}
+                        Amount
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                         <input

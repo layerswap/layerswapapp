@@ -29,16 +29,24 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
 
     let fee = amount ? Number(calculateFee(Number(amount), currency, exchange)?.toFixed(currency?.precision)) : 0;
 
-    const minWithdrawalAmount = currency?.exchanges.find(ce => ce.exchange_id === exchange.id).min_withdrawal_amount
-    const roundedMinWithdrawalAmount = roundDecimals(minWithdrawalAmount, currency?.price_in_usdt.toFixed().length)
-    
     let receive_amount = 0;
-    let fee_amount = Number(amount?.toString()?.replace(",", "."));
-    if (fee_amount >= (minWithdrawalAmount ? roundedMinWithdrawalAmount : currency?.min_amount)) {
-        var exFee = exchangeFee(currency, exchange);
-        var result = fee_amount - fee - exFee;
+    let exchangeMinWithdrawalAmount = currency?.exchanges.find(ce => ce.exchange_id === exchange.id).min_withdrawal_amount
+    let roundedExchangeMinWithdrawalAmount = exchangeMinWithdrawalAmount ? roundDecimals(exchangeMinWithdrawalAmount, currency?.price_in_usdt.toFixed().length) : null;
+    let minAllowedAmount = roundedExchangeMinWithdrawalAmount ?? (swapType == "onramp" ? currency?.min_amount : currency?.off_ramp_min_amount);
+
+
+    let sanitizedAmount = Number(amount);
+    if (sanitizedAmount >= minAllowedAmount)
+    {
+        var result = sanitizedAmount - fee;
         receive_amount = Number(result.toFixed(currency?.precision));
+
+        if (swapType == 'onramp'){
+            var exFee = exchangeFee(currency, exchange);
+            receive_amount -= exFee;
+        }
     }
+
     return (
         <>
             <div className="mx-auto w-full rounded-lg border border-darkblue-100 hover:border-darkblue-200 bg-darkblue-500 p-2">
