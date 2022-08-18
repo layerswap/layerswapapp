@@ -53,6 +53,11 @@ const WithdrawNetworkStep: FC = () => {
     const network_name = network?.name || ' '
     const network_logo_url = network?.logo_url
 
+    if (!swap?.data?.offramp_info)
+    {
+        return null;
+    }
+
     return (
         <>
             <div className="w-full px-6 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
