@@ -35,6 +35,7 @@ import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
+import { ConnectedFocusError } from "../../../lib/external";
 
 const CurrenciesField: FC = () => {
     const {
@@ -59,16 +60,10 @@ const CurrenciesField: FC = () => {
         })).sort(sortingByOrder)
         : []
 
-    // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
-
     useEffect(() => {
         if (!network) return;
-        // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
         const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
-        // if(alternativeToSelectedValue){
-        //     setFieldValue(name, alternativeToSelectedValue)
-        // }
-        // else{
+
         if (default_currency) {
             const defaultValue: SelectMenuItem<Currency> = {
                 baseObject: default_currency,
@@ -86,8 +81,6 @@ const CurrenciesField: FC = () => {
             setFieldValue(name, null)
         }
 
-        // }
-
     }, [network, exchange, data.currencies, data.exchanges])
 
     return (<>
@@ -97,7 +90,7 @@ const CurrenciesField: FC = () => {
 
 const ExchangesField = React.forwardRef((props: any, ref: any) => {
     const {
-        values: { exchange, currency, swapType, network },
+        values: { exchange, swapType, network },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = 'exchange'
@@ -148,9 +141,6 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             isEnabled: n.is_enabled && data.currencies.some(c => c.is_enabled && c.network_id === n.id && (swapType === "offramp" || c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))),
             isDefault: n.is_default
         })).sort(sortingByOrder);
-
-    if (exchange && !network)
-        ref.current?.focus()
 
     return (<>
         <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
@@ -387,6 +377,7 @@ export default function MainStep() {
         >
             {({ values, errors, isValid }) => (
                 <Form className="h-full">
+                    <ConnectedFocusError />
                     <div className="px-8 h-full flex flex-col justify-between">
                         <div>
                             <div className='my-4'>
