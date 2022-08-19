@@ -35,7 +35,8 @@ export type CreateSwapParams = {
     Network: string,
     Exchange: string,
     currency: string,
-    destination_address: string
+    destination_address: string,
+    to_exchange: boolean,
 }
 
 
@@ -56,7 +57,7 @@ export type SwapItem = {
     fee: number,
     status: SwapStatus,
     exchange: string,
-    type: string,
+    type: "off_ramp" | "on_ramp",
     destination_address: string,
     external_payment_id: string,
     payment?: Payment,
@@ -68,7 +69,10 @@ export type SwapItem = {
     currency_id: string,
     network: string,
     network_id: string,
-    offramp_info: string
+    offramp_info: {
+        deposit_address: string,
+        memo: string,
+    }
 }
 
 export type Payment = {

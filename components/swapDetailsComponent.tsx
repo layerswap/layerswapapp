@@ -20,8 +20,10 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const [swap, setSwap] = useState<SwapItemResponse>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
-    const exchange = data.exchanges?.find(e => e.internal_name == swap?.data?.payment?.exchange)
-    const network = data.networks.find(n => n.code === swap?.data?.network)
+    const exchange = data.exchanges?.find(e => e.internal_name === swap?.data?.exchange)
+    const network = data.networks?.find(n => n.code === swap?.data?.network)
+    const source = swap?.data?.type == "on_ramp" ? exchange : network;
+    const destination = swap?.data?.type == "on_ramp" ? network : exchange;
     const currency = data.currencies.find(x => x.id == swap?.data?.currency_id)
     useEffect(() => {
         (async () => {
@@ -85,12 +87,12 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">Exchange </span>
+                            <span className="text-left">From {swap?.data?.type === 'on_ramp' ? 'Exchange' : "Network"} </span>
                             {
-                                exchange && <div className="flex items-center">
+                                source && <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         <Image
-                                            src={exchange?.logo_url}
+                                            src={source?.logo_url}
                                             alt="Exchange Logo"
                                             height="60"
                                             width="60"
@@ -98,18 +100,18 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                             className="rounded-md object-contain"
                                         />
                                     </div>
-                                    <div className="mx-1 text-white">{exchange?.name}</div>
+                                    <div className="mx-1 text-white">{source?.name}</div>
                                 </div>
                             }
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">Network </span>
+                            <span className="text-left">To {swap?.data?.type === 'on_ramp' ? 'Network' : "Exchange"} </span>
                             {
-                                network && <div className="flex items-center">
+                                destination && <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         <Image
-                                            src={network?.logo_url}
+                                            src={destination?.logo_url}
                                             alt="Exchange Logo"
                                             height="60"
                                             width="60"
@@ -117,7 +119,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                             className="rounded-md object-contain"
                                         />
                                     </div>
-                                    <div className="mx-1 text-white">{network?.name}</div>
+                                    <div className="mx-1 text-white">{destination?.name}</div>
                                 </div>
                             }
                         </div>
@@ -136,11 +138,16 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Layerswap Fee </span>
                             <span className='text-white font-normal'>{parseFloat(swap?.data?.fee?.toFixed(currency?.precision))} {currency?.asset}</span>
                         </div>
-                        <hr className='horizontal-gradient' />
-                        <div className="flex justify-between items-baseline">
-                            <span className="text-left">Exchange Fee </span>
-                            <span className='text-white font-normal'>{parseFloat(swap?.data?.payment?.withdrawal_fee?.toFixed(currency?.precision))} {currency?.asset}</span>
-                        </div>
+                        {
+                            swap?.data?.type === 'on_ramp' &&
+                            <>
+                                <hr className='horizontal-gradient' />
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-left">Exchange Fee </span>
+                                    <span className='text-white font-normal'>{parseFloat(swap?.data?.payment?.withdrawal_fee?.toFixed(currency?.precision))} {currency?.asset}</span>
+                                </div>
+                            </>
+                        }
                     </div>
                 </div>
             </div>
@@ -156,51 +163,15 @@ const Sceleton = () => {
                     <div className="h-2 m-2 w-1/4 bg-slate-400 rounded col-span-1"></div>
                     <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
                 </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
+                {[...Array(9)]?.map((item, index) => (
+                    <>
+                        <hr className='horizontal-gradient my-1' />
+                        <div className="flex justify-between items-baseline">
+                            <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
+                            <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
+                        </div>
+                    </>
+                ))}
             </div>
         </div>
     </div>
