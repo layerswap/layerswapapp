@@ -4,7 +4,7 @@ import HoverTooltip from '.././Tooltips/HoverTooltip';
 import { Currency } from '../../Models/Currency';
 import { Exchange } from '../../Models/Exchange';
 import { SwapType } from '../DTOs/SwapFormValues';
-import { CalculateExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
+import { CalculateFullExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
 
 type Props = {
     amount: number,
@@ -14,8 +14,8 @@ type Props = {
 }
 
 export default function AmountAndFeeDetails({ amount, currency, exchange, swapType }: Props) {
-    let exchangeFee = CalculateExchangeFee(amount, currency, exchange);
-    let fee = CalculateFee(amount, currency, exchange);
+    let exchangeFee = CalculateFullExchangeFee(amount, currency, exchange);
+    let fee = CalculateFee(amount, currency, exchange, swapType);
     let receive_amount = CalculateReceiveAmount(amount, currency, exchange, swapType);
 
     return (

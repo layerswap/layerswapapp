@@ -4,7 +4,7 @@ import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { isValidAddress } from "./addressValidator";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "./fees";
 
-export default function MainStepValidation(formikRef: React.MutableRefObject<FormikProps<SwapFormValues>>, addressRef: any, settings: LayerSwapSettings, amountRef: any): ((values: SwapFormValues) => void | object | Promise<FormikErrors<SwapFormValues>>) & ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
+export default function MainStepValidation(settings: LayerSwapSettings): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
     return (values: SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
@@ -35,10 +35,10 @@ export default function MainStepValidation(formikRef: React.MutableRefObject<For
         else if (amount < 0) {
             errors.amount = "Can't be negative";
         }
-        else if (amount > maxAllowedAmount) {
+        else if (maxAllowedAmount != undefined && amount > maxAllowedAmount) {
             errors.amount = `Max amount is ${maxAllowedAmount}`;
         }
-        else if (amount < minAllowedAmount) {
+        else if (minAllowedAmount != undefined && amount < minAllowedAmount) {
             errors.amount = `Min amount is ${minAllowedAmount}`;
         }
 

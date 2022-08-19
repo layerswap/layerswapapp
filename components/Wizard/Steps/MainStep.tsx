@@ -8,7 +8,7 @@ import { useSettingsState } from "../../../context/settings";
 import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { Currency } from "../../../Models/Currency";
 import { Exchange } from "../../../Models/Exchange";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues, SwapType } from "../../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../../Select/selectMenuItem";
 import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
@@ -372,7 +372,7 @@ export default function MainStep() {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={MainStepValidation(formikRef, addressRef, settings, amountRef)}
+            validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
             {({ values, errors, isValid }) => (
@@ -426,7 +426,7 @@ export default function MainStep() {
                         </div>
                         <div className="mt-6">
                             <SwapButton type='submit' isDisabled={!isValid} isSubmitting={loading}>
-                                {displayErrorsOrSubmit(errors)}
+                                {displayErrorsOrSubmit(errors, values.swapType)}
                             </SwapButton>
                         </div>
                     </div >
@@ -436,12 +436,12 @@ export default function MainStep() {
     </>
 }
 
-function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
-    if (errors.amount) {
-        return errors.amount;
+function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
+    if (swapType == "onramp") {
+        return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
     }
     else {
-        return "Swap now";
+        return errors.network?.toString() || errors.exchange?.toString() || errors.amount || "Swap now"
     }
 }
 
