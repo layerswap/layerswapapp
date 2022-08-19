@@ -45,12 +45,12 @@ export function CalculateReceiveAmount(amount: number, currency: Currency, excha
 }
 
 export function CalculateMaxAllowedAmount(currency: Currency, swapType: string) {
-    return swapType == "onramp" ? currency?.max_amount : currency?.off_ramp_max_amount;;
+    return (swapType == "onramp" ? currency?.max_amount : currency?.off_ramp_max_amount) || 0;
 }
 
 export function CalculateMinAllowedAmount(currency: Currency, exchange: Exchange, swapType: string) {
     let exchangeMinWithdrawalAmount = currency?.exchanges.find(ce => ce.exchange_id === exchange.id).min_withdrawal_amount;
     exchangeMinWithdrawalAmount ??= swapType == "onramp" ? currency?.min_amount : currency?.off_ramp_min_amount;
-    return roundDecimals(exchangeMinWithdrawalAmount, currency?.price_in_usdt.toFixed().length);
+    return roundDecimals(exchangeMinWithdrawalAmount, currency?.price_in_usdt.toFixed().length) || 0;
 }
 
