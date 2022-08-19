@@ -33,8 +33,8 @@ const Banner: FC<BannerProps> = ({localStorageId, desktopMessage, mobileMessage,
                         <span className="flex p-1 text-lg rounded-lg bg-pink-800">
                         🥳
                         </span>
-                        <p className="ml-3 font-medium text-white truncate">
-                            <span className="md:hidden">{mobileMessage}</span>
+                        <p className="ml-3 font-medium text-white">
+                            <span className="md:hidden text-sm text-center">{mobileMessage}</span>
                             <span className="hidden md:inline">{desktopMessage}</span>
                         </p>
                     </div>

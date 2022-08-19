@@ -13,8 +13,7 @@ function IntroCard(props) {
                         <span className="text-sm font-semibold mr-2 rounded-md py-1 px-2 text-pink-primary border border-pink-primary uppercase">New</span>
 
                         <span className="inline">
-                            Everything is new 😅 <a target='_blank' className='underline hover:no-underline' href='https://twitter.com/layerswap/status/1547707319202373640'>Learn more</a>
-                            {/* <a className='underline text-indigo-300' target="_blank" href="https://twitter.com/layerswap/status/1480921959252774918">Join the discussion</a> */}
+                            Transfer from Loopring to Coinbase and Binance (  🥳  off-ramp)
                         </span>
                     </p>
                 </div>
