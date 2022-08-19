@@ -22,6 +22,8 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const router = useRouter();
     const exchange = data.exchanges?.find(e => e.internal_name === swap?.data?.exchange)
     const network = data.networks?.find(n => n.code === swap?.data?.network)
+    const source = swap?.data?.type == "on_ramp" ? exchange : network;
+    const destination = swap?.data?.type == "on_ramp" ? network : exchange;
     const currency = data.currencies.find(x => x.id == swap?.data?.currency_id)
     useEffect(() => {
         (async () => {
@@ -85,12 +87,12 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">Exchange </span>
+                            <span className="text-left">From {swap?.data?.type === 'on_ramp' ? 'Exchange' : "Network"} </span>
                             {
-                                exchange && <div className="flex items-center">
+                                source && <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         <Image
-                                            src={exchange?.logo_url}
+                                            src={source?.logo_url}
                                             alt="Exchange Logo"
                                             height="60"
                                             width="60"
@@ -98,18 +100,18 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                             className="rounded-md object-contain"
                                         />
                                     </div>
-                                    <div className="mx-1 text-white">{exchange?.name}</div>
+                                    <div className="mx-1 text-white">{source?.name}</div>
                                 </div>
                             }
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">Network </span>
+                            <span className="text-left">To {swap?.data?.type === 'on_ramp' ? 'Network' : "Exchange"} </span>
                             {
-                                network && <div className="flex items-center">
+                                destination && <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         <Image
-                                            src={network?.logo_url}
+                                            src={destination?.logo_url}
                                             alt="Exchange Logo"
                                             height="60"
                                             width="60"
@@ -117,7 +119,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                             className="rounded-md object-contain"
                                         />
                                     </div>
-                                    <div className="mx-1 text-white">{network?.name}</div>
+                                    <div className="mx-1 text-white">{destination?.name}</div>
                                 </div>
                             }
                         </div>
