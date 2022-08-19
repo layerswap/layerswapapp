@@ -1,16 +1,16 @@
 import { Web3Provider } from "@ethersproject/providers";
 import { ImmutableXClient } from "@imtbl/imx-sdk";
 import { useWeb3React } from "@web3-react/core";
-import { Field, Form, Formik, FormikErrors, FormikProps, swap, useField, useFormikContext } from "formik";
+import { Field, Form, Formik, FormikErrors, FormikProps, useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
 import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { Currency } from "../../../Models/Currency";
 import { Exchange } from "../../../Models/Exchange";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues, SwapType } from "../../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../../Select/selectMenuItem";
-import Image from 'next/image'
+import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
 import { useSwapDataUpdate } from "../../../context/swap";
 import Select from "../../Select/Select";
@@ -35,6 +35,8 @@ import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
 import Banner from "../../banner";
+import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
+import { ConnectedFocusError } from "../../../lib/external";
 
 const CurrenciesField: FC = () => {
     const {
@@ -59,36 +61,28 @@ const CurrenciesField: FC = () => {
         })).sort(sortingByOrder)
         : []
 
-    // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
-
     useEffect(() => {
-        if (network) {
-            // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
-            const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
-            // if(alternativeToSelectedValue){
-            //     setFieldValue(name, alternativeToSelectedValue)
-            // }
-            // else{
-            if (default_currency) {
-                const defaultValue: SelectMenuItem<Currency> = {
-                    baseObject: default_currency,
-                    id: default_currency.id,
-                    name: default_currency.asset,
-                    order: default_currency.order,
-                    imgSrc: default_currency.logo_url,
-                    isAvailable: default_currency.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
-                    isEnabled: default_currency.is_enabled,
-                    isDefault: default_currency.is_default,
-                }
-                setFieldValue(name, defaultValue)
-            }
-            else {
-                setFieldValue(name, null)
-            }
+        if (!network) return;
+        const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
 
-            // }
+        if (default_currency) {
+            const defaultValue: SelectMenuItem<Currency> = {
+                baseObject: default_currency,
+                id: default_currency.id,
+                name: default_currency.asset,
+                order: default_currency.order,
+                imgSrc: default_currency.logo_url,
+                isAvailable: default_currency.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
+                isEnabled: default_currency.is_enabled,
+                isDefault: default_currency.is_default,
+            }
+            setFieldValue(name, defaultValue)
         }
-    }, [network, exchange])
+        else {
+            setFieldValue(name, null)
+        }
+
+    }, [network, exchange, data.currencies, data.exchanges])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />
@@ -97,7 +91,7 @@ const CurrenciesField: FC = () => {
 
 const ExchangesField = React.forwardRef((props: any, ref: any) => {
     const {
-        values: { exchange, currency, swapType, network },
+        values: { exchange, swapType, network },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = 'exchange'
@@ -149,9 +143,6 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             isDefault: n.is_default
         })).sort(sortingByOrder);
 
-    if (exchange && !network)
-        ref.current?.focus()
-
     return (<>
         <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
             {swapType === "onramp" ? "To" : "From"}
@@ -164,9 +155,12 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
 
 const AmountField = React.forwardRef((props: any, ref: any) => {
 
-    const { values: { currency } } = useFormikContext<SwapFormValues>();
+    const { values: { currency, swapType, exchange } } = useFormikContext<SwapFormValues>();
     const name = "amount"
-    const placeholder = currency ? `${currency?.baseObject?.min_amount} - ${currency?.baseObject?.max_amount}` : '0.01234'
+    let minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, swapType);
+    let maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, swapType);
+
+    const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
 
     return (<>
@@ -174,8 +168,8 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
             label='Amount'
             disabled={!currency}
             placeholder={placeholder}
-            min={currency?.baseObject?.min_amount}
-            max={currency?.baseObject?.max_amount}
+            min={minAllowedAmount}
+            max={maxAllowedAmount}
             step={isNaN(step) ? 0.01 : step}
             name={name}
             ref={ref}
@@ -379,11 +373,12 @@ export default function MainStep() {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={MainStepValidation(formikRef, addressRef, settings, amountRef)}
+            validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            {({ values, errors }) => (
+            {({ values, errors, isValid }) => (
                 <Form className="h-full">
+                    <ConnectedFocusError />
                     <div className="px-8 h-full flex flex-col justify-between">
                         <div>
                             <div className='my-4'>
@@ -433,12 +428,12 @@ export default function MainStep() {
                             </div>
 
                             <div className="w-full">
-                                <AmountAndFeeDetails amount={values?.amount} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
+                                <AmountAndFeeDetails amount={Number(values?.amount)} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
                             </div>
                         </div>
                         <div className="mt-6">
-                            <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={loading}>
-                                {displayErrorsOrSubmit(errors)}
+                            <SwapButton type='submit' isDisabled={!isValid} isSubmitting={loading}>
+                                {displayErrorsOrSubmit(errors, values.swapType)}
                             </SwapButton>
                         </div>
                     </div >
@@ -448,13 +443,12 @@ export default function MainStep() {
     </>
 }
 
-
-function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
-    if (errors.amount) {
-        return errors.amount;
+function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
+    if (swapType == "onramp") {
+        return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
     }
     else {
-        return "Swap now";
+        return errors.network?.toString() || errors.exchange?.toString() || errors.amount || "Swap now"
     }
 }
 
