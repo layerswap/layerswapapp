@@ -387,7 +387,7 @@ export default function MainStep() {
                             {
                                 values.swapType === 'offramp' &&
                                 <div className='flex w-full'>
-                                    <Banner className='mb-3' localStorageId='WarningBetaProduct' desktopMessage='WOOOOOHOO! New' mobileMessage='WOOOOOHOO! New'></Banner>
+                                    <Banner className='mb-3' localStorageId='WarningBetaProduct' desktopMessage='WOOOOOHOO!' mobileMessage='WOOOOOHOO!'></Banner>
                                 </div>
                             }
                             <div className={classNames(values.swapType === "offramp" ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
