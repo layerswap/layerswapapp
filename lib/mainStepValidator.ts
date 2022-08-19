@@ -1,4 +1,4 @@
-import { FormikProps, FormikErrors } from "formik";
+import { FormikErrors } from "formik";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { isValidAddress } from "./addressValidator";

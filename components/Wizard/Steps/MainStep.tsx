@@ -154,7 +154,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
 
 const AmountField = React.forwardRef((props: any, ref: any) => {
 
-    const { values: { currency, exchange, swapType } } = useFormikContext<SwapFormValues>();
+    const { values: { currency, swapType, exchange } } = useFormikContext<SwapFormValues>();
     const name = "amount"
     let minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, swapType);
     let maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, swapType);

@@ -4,7 +4,7 @@ import HoverTooltip from '.././Tooltips/HoverTooltip';
 import { Currency } from '../../Models/Currency';
 import { Exchange } from '../../Models/Exchange';
 import { SwapType } from '../DTOs/SwapFormValues';
-import { CalculateFullExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
+import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
 
 type Props = {
     amount: number,
@@ -14,7 +14,7 @@ type Props = {
 }
 
 export default function AmountAndFeeDetails({ amount, currency, exchange, swapType }: Props) {
-    let exchangeFee = CalculateFullExchangeFee(amount, currency, exchange);
+    let exchangeFee = GetExchangeFee(currency, exchange);
     let fee = CalculateFee(amount, currency, exchange, swapType);
     let receive_amount = CalculateReceiveAmount(amount, currency, exchange, swapType);
 
@@ -30,7 +30,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
                                     {
                                         receive_amount ?
                                             <span className="font-medium text-center strong-highlight">
-                                                {receive_amount}
+                                                {receive_amount.toFixed(currency?.precision)}
                                                 <span>
                                                     {
                                                         ` ${currency?.asset || ""}`
@@ -53,7 +53,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
                                             Layerswap Fee
                                         </label>
                                         <span className="font-normal text-center text-white">
-                                            {fee.toLocaleString()}
+                                            {fee.toFixed(currency?.precision)}
                                             <span>  {currency?.asset} </span>
                                         </span>
                                     </div>
@@ -65,7 +65,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
                                                 <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36' />
                                             </label>
                                             <span className="font-normal text-center text-white">
-                                                {exchangeFee.toLocaleString()}
+                                                {exchangeFee.toFixed(currency?.precision)}
                                                 <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex text-pink-primary-300'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' /></span>}</span>
                                             </span>
                                         </div>
