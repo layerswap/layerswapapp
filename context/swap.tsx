@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { BransferApiClient } from '../lib/bransferApiClients';
-import LayerSwapApiClient, { CreateSwapParams, SwapDetailsResponse } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, SwapItemResponse } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate } from './authContext';
 import TokenService from '../lib/TokenService';
 
@@ -9,46 +9,45 @@ const SwapDataStateContext = React.createContext<SwapData>(null);
 const SwapDataUpdateContext = React.createContext<UpdateInterface>(null);
 
 type UpdateInterface = {
-    updateSwapFormData: (data: SwapFormValues) => void,
-    createSwap: (data: CreateSwapParams) => Promise<SwapDetailsResponse>,
+    updateSwapFormData: (value: React.SetStateAction<SwapFormValues>) => void,
+    createSwap: (data: CreateSwapParams) => Promise<SwapItemResponse>,
     //TODO this is stupid need to clean data in confirm step or even do not store it
     clearSwap: () => void,
-    processPayment: (swap: SwapDetailsResponse, twoFactorCode?: string) => void,
-    getSwap: (id: string) => Promise<SwapDetailsResponse>
+    processPayment: (swap: SwapItemResponse, twoFactorCode?: string) => void,
+    getSwap: (id: string) => Promise<SwapItemResponse>
 }
 
 type SwapData = {
     swapFormData: SwapFormValues,
-    swap: SwapDetailsResponse
+    swap: SwapItemResponse
 }
 
 export function SwapDataProvider({ children }) {
     const [swapFormData, setSwapFormData] = React.useState<SwapFormValues>();
-    const [swap, setSwap] = useState<SwapDetailsResponse>()
+    const [swap, setSwap] = useState<SwapItemResponse>()
 
     const { getAuthData } = useAuthDataUpdate();
 
     const updateFns: UpdateInterface = {
         clearSwap: () => setSwap(undefined),
-        updateSwapFormData: (data: SwapFormValues) => {
-            setSwapFormData(data)
-        },
+        updateSwapFormData: setSwapFormData,
         createSwap: useCallback(async (data: CreateSwapParams) => {
             try {
                 const layerswapApiClient = new LayerSwapApiClient()
                 const authData = getAuthData()
                 const swap = await layerswapApiClient.createSwap({
-                    Amount: Number(swapFormData.amount?.toString()?.replace(",",".")),
+                    Amount: Number(swapFormData.amount),
                     Exchange: swapFormData.exchange?.id,
                     Network: swapFormData.network.id,
                     currency: swapFormData.currency.baseObject.asset,
-                    destination_address: swapFormData.destination_address
+                    destination_address: swapFormData.destination_address,
+                    to_exchange: swapFormData.swapType === "offramp"
                 }, authData?.access_token)
 
-                if (swap?.statusCode !== 200)
-                    throw new Error(swap.value)
+                if (swap?.is_success !== true)
+                    throw new Error(swap.error)
 
-                const swapId = swap.value?.swap_id;
+                const swapId = swap.data.swap_id;
                 const swapDetails = await layerswapApiClient.getSwapDetails(swapId, authData?.access_token)
                 setSwap(swapDetails)
                 return swapDetails;
@@ -64,14 +63,14 @@ export function SwapDataProvider({ children }) {
             setSwap(swapDetails)
             return swapDetails
         }, []),
-        processPayment: useCallback(async (swap: SwapDetailsResponse, twoFactorCode?: string) => {
+        processPayment: useCallback(async (swap: SwapItemResponse, twoFactorCode?: string) => {
             const authData = getAuthData()
             const bransferApiClient = new BransferApiClient()
             const layerswapApiClient = new LayerSwapApiClient()
-            const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(swap.payment.id, authData?.access_token, twoFactorCode)
+            const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(swap.data.payment.id, authData?.access_token, twoFactorCode)
             if (!prcoessPaymentReponse.is_success)
                 throw new Error(prcoessPaymentReponse.errors)
-            const swapDetails = await layerswapApiClient.getSwapDetails(swap.id, authData?.access_token)
+            const swapDetails = await layerswapApiClient.getSwapDetails(swap.data.id, authData?.access_token)
             setSwap(swapDetails)
         }, [getAuthData]),
     };

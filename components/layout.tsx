@@ -8,15 +8,15 @@ import { SildeOverRef } from "./SlideOver";
 
 
 type Props = {
-  children: JSX.Element | JSX.Element[],
-  hasSideShapes?: boolean
+  children: JSX.Element | JSX.Element[];
+  hideFooter?: boolean;
+  hideNavbar?: boolean;
 };
 
-export default function Layout({ hasSideShapes, children }: Props) {
+export default function Layout({ hideFooter, hideNavbar, children }: Props) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-  const slideoverRef = useRef<SildeOverRef>()
 
   useEffect(() => {
     const handleStart = (url) => (url !== router.asPath) && setLoading(true);
@@ -65,11 +65,12 @@ export default function Layout({ hasSideShapes, children }: Props) {
         <div className="min-h-screen overflow-hidden relative font-robo">
           <Toaster position="top-center" toastOptions={{ duration: 5000, style: { background: '#131E36', color: '#a4afc8' }, error: { position: 'top-center' } }} />
           <div className={`top-backdrop ${loading ? 'animate-pulse' : ''}`}></div>
-          <Navbar></Navbar>
+
+          {hideNavbar ?? <Navbar />}
           <div className={loading ? "animate-pulse" : ""}>
             {children}
           </div>
-          <FooterComponent />
+          {hideFooter ?? <FooterComponent />}
         </div>
       </main>
     </div>

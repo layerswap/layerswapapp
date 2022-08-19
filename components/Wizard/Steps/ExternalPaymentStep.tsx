@@ -11,7 +11,7 @@ import { SwapStatus } from '../../../Models/SwapStatus';
 const ExternalPaumentStep: FC = () => {
 
     const { swap } = useSwapDataState()
-    const { payment } = swap || {}
+    const { payment } = swap?.data || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
 
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
@@ -27,8 +27,8 @@ const ExternalPaumentStep: FC = () => {
                 return;
             }
             const swap = await getSwap(swapId.toString())
-            const { payment } = swap || {}
-            const swapStatus = swap?.status;
+            const { payment } = swap?.data || {}
+            const swapStatus = swap?.data?.status;
             const paymentStatus = payment?.status
             if (swapStatus == SwapStatus.Completed)
                 goToStep("Success")
@@ -45,7 +45,7 @@ const ExternalPaumentStep: FC = () => {
         if (!access_token)
             goToStep("Email")
         const swap = await getSwap(swapId.toString())
-        const { payment } = swap ||{}
+        const { payment } = swap?.data ||{}
         //TODO handle no payment url
         const { payment_url } = payment.external_flow_context || {}
         window.open(payment_url, '_blank', 'width=420,height=720')

@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { FC, useEffect, useState } from 'react'
 import { useSettingsState } from '../context/settings';
-import LayerSwapApiClient, { SwapDetailsResponse } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItemResponse } from '../lib/layerSwapApiClient';
 import TokenService from '../lib/TokenService';
 import { StatusIcon } from './swapHistoryComponent';
 import Image from 'next/image'
@@ -16,13 +16,15 @@ type Props = {
 }
 
 const SwapDetails: FC<Props> = ({ id }) => {
-    const { exchanges, networks, currencies } = useSettingsState()
-    const [swap, setSwap] = useState<SwapDetailsResponse>()
+    const { data } = useSettingsState()
+    const [swap, setSwap] = useState<SwapItemResponse>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
-    const exchange = exchanges?.find(e => e.internal_name == swap?.payment?.exchange)
-    const network = networks.find(n => n.code === swap?.network)
-    const currency = currencies.find(x => x.id == swap?.currency_id)
+    const exchange = data.exchanges?.find(e => e.internal_name === swap?.data?.exchange)
+    const network = data.networks?.find(n => n.code === swap?.data?.network)
+    const source = swap?.data?.type == "on_ramp" ? exchange : network;
+    const destination = swap?.data?.type == "on_ramp" ? network : exchange;
+    const currency = data.currencies.find(x => x.id == swap?.data?.currency_id)
     useEffect(() => {
         (async () => {
             if (!id)
@@ -62,9 +64,9 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Id </span>
                             <span className="text-white">
                                 <div className='inline-flex items-center'>
-                                    <span className="mr-2">{shortenAddress(swap?.id)}</span>
-                                    <ClickTooltip text='Copied!'>
-                                        <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
+                                    <span className="mr-2">{shortenAddress(swap?.data?.id)}</span>
+                                    <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
+                                        <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.data?.id)}>
                                             <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
                                         </div>
                                     </ClickTooltip>
@@ -75,22 +77,22 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         <div className="flex justify-between p items-baseline">
                             <span className="text-left">Status </span>
                             <span className="text-white">
-                                {swap && <StatusIcon swap={swap} />}
+                                {swap && <StatusIcon swap={swap.data} />}
                             </span>
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Date </span>
-                            <span className='text-white font-normal'>{(new Date(swap?.created_date)).toLocaleString()}</span>
+                            <span className='text-white font-normal'>{(new Date(swap?.data?.created_date)).toLocaleString()}</span>
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">Exchange </span>
+                            <span className="text-left">From {swap?.data?.type === 'on_ramp' ? 'Exchange' : "Network"} </span>
                             {
-                                exchange && <div className="flex items-center">
+                                source && <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         <Image
-                                            src={exchange?.logo_url}
+                                            src={source?.logo_url}
                                             alt="Exchange Logo"
                                             height="60"
                                             width="60"
@@ -98,18 +100,18 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                             className="rounded-md object-contain"
                                         />
                                     </div>
-                                    <div className="mx-1 text-white">{exchange?.name}</div>
+                                    <div className="mx-1 text-white">{source?.name}</div>
                                 </div>
                             }
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">Network </span>
+                            <span className="text-left">To {swap?.data?.type === 'on_ramp' ? 'Network' : "Exchange"} </span>
                             {
-                                network && <div className="flex items-center">
+                                destination && <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         <Image
-                                            src={network?.logo_url}
+                                            src={destination?.logo_url}
                                             alt="Exchange Logo"
                                             height="60"
                                             width="60"
@@ -117,30 +119,35 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                             className="rounded-md object-contain"
                                         />
                                     </div>
-                                    <div className="mx-1 text-white">{network?.name}</div>
+                                    <div className="mx-1 text-white">{destination?.name}</div>
                                 </div>
                             }
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Address </span>
-                            <span className='text-white font-normal'>{swap?.destination_address.slice(0, 8) + "..." + swap?.destination_address.slice(swap?.destination_address.length - 5, swap?.destination_address.length)}</span>
+                            <span className='text-white font-normal'>{swap?.data?.destination_address.slice(0, 8) + "..." + swap?.data?.destination_address.slice(swap?.data?.destination_address.length - 5, swap?.data?.destination_address.length)}</span>
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Amount </span>
-                            <span className='text-white font-normal'>{swap?.amount} {currency?.asset}</span>
+                            <span className='text-white font-normal'>{swap?.data?.amount} {currency?.asset}</span>
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Layerswap Fee </span>
-                            <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currency?.precision))} {currency?.asset}</span>
+                            <span className='text-white font-normal'>{parseFloat(swap?.data?.fee?.toFixed(currency?.precision))} {currency?.asset}</span>
                         </div>
-                        <hr className='horizontal-gradient' />
-                        <div className="flex justify-between items-baseline">
-                            <span className="text-left">Exchange Fee </span>
-                            <span className='text-white font-normal'>{parseFloat(swap?.payment?.withdrawal_fee?.toFixed(currency?.precision))} {currency?.asset}</span>
-                        </div>
+                        {
+                            swap?.data?.type === 'on_ramp' &&
+                            <>
+                                <hr className='horizontal-gradient' />
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-left">Exchange Fee </span>
+                                    <span className='text-white font-normal'>{parseFloat(swap?.data?.payment?.withdrawal_fee?.toFixed(currency?.precision))} {currency?.asset}</span>
+                                </div>
+                            </>
+                        }
                     </div>
                 </div>
             </div>
@@ -156,51 +163,15 @@ const Sceleton = () => {
                     <div className="h-2 m-2 w-1/4 bg-slate-400 rounded col-span-1"></div>
                     <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
                 </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                <hr className='horizontal-gradient my-1' />
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
+                {[...Array(9)]?.map((item, index) => (
+                    <>
+                        <hr className='horizontal-gradient my-1' />
+                        <div className="flex justify-between items-baseline">
+                            <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
+                            <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
+                        </div>
+                    </>
+                ))}
             </div>
         </div>
     </div>

@@ -1,22 +1,22 @@
 import { Web3Provider } from "@ethersproject/providers";
 import { ImmutableXClient } from "@imtbl/imx-sdk";
 import { useWeb3React } from "@web3-react/core";
-import { Field, Form, Formik, FormikErrors, FormikProps, useField, useFormikContext } from "formik";
+import { Field, Form, Formik, FormikErrors, FormikProps, useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
 import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { Currency } from "../../../Models/Currency";
 import { Exchange } from "../../../Models/Exchange";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues, SwapType } from "../../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../../Select/selectMenuItem";
-import Image from 'next/image'
+import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
 import { useSwapDataUpdate } from "../../../context/swap";
 import Select from "../../Select/Select";
 import React from "react";
 import { useFormWizardaUpdate } from "../../../context/formWizardProvider";
-import { ExchangeAuthorizationSteps, FormWizardSteps } from "../../../Models/Wizard";
+import { ExchangeAuthorizationSteps, FormWizardSteps, OfframpExchangeAuthorizationSteps } from "../../../Models/Wizard";
 import TokenService from "../../../lib/TokenService";
 import { useUserExchangeDataUpdate } from "../../../context/userExchange";
 import axios from "axios";
@@ -31,35 +31,24 @@ import NumericInput from "../../Input/NumericInput";
 import AddressInput from "../../Input/AddressInput";
 import { classNames } from "../../utils/classNames";
 import KnownIds from "../../../lib/knownIds";
+import MainStepValidation from "../../../lib/mainStepValidator";
+import SwapOptionsToggle from "../../SwapOptionsToggle";
+import { BransferApiClient } from "../../../lib/bransferApiClients";
+import Banner from "../../banner";
+import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
+import { ConnectedFocusError } from "../../../lib/external";
 
-
-const immutableXApiAddress = 'https://api.x.immutable.com/v1';
-const Logger = () => {
-    const formik = useFormikContext();
-    useEffect(() => {
-        console.groupEnd();
-    }, [
-        formik.values,
-        formik.errors,
-        formik.touched,
-        formik.isSubmitting,
-        formik.isValidating,
-        formik.submitCount
-    ]);
-    return null;
-};
 const CurrenciesField: FC = () => {
     const {
-        values: { network, currency, exchange },
+        values: { network, currency, exchange, swapType },
         setFieldValue,
-        touched,
     } = useFormikContext<SwapFormValues>();
 
     const name = "currency"
-    const { currencies, exchanges } = useSettingsState();
+    const { data } = useSettingsState();
 
-    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? currencies
-        .filter(x => x.network_id === network?.baseObject?.id && x?.exchanges?.some(e => e.exchange_id === exchange?.baseObject?.id))
+    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? data.currencies
+        .filter(x => x.network_id === network?.baseObject?.id && x?.exchanges?.some(ce => ce.exchange_id === exchange?.baseObject?.id && (swapType === "onramp" || ce.is_off_ramp_enabled)))
         .map(c => ({
             baseObject: c,
             id: c.id,
@@ -69,49 +58,31 @@ const CurrenciesField: FC = () => {
             isAvailable: c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
             isEnabled: c.is_enabled,
             isDefault: c.is_default,
-        })).sort((x, y) => {
-            if (!y.isEnabled || !y.isAvailable) {
-                y.order = 100;
-            } else if (!x.isEnabled || !x.isAvailable) {
-                x.order = 100;
-            };
-            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
-        })
+        })).sort(sortingByOrder)
         : []
 
-    // ?.sort((x, y) => (Number(y.baseObject.is_default) - Number(x.baseObject.is_default) + (Number(y.baseObject.is_default) - Number(x.baseObject.is_default))))
-
     useEffect(() => {
-        if (network) {
-            // const alternativeToSelectedValue = currency && currencyMenuItems?.find(c => c.name === currency.name)
-            const default_currency = currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
+        if (!network) return;
+        const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
 
-
-            // if(alternativeToSelectedValue){
-            //     setFieldValue(name, alternativeToSelectedValue)
-            // }
-            // else{
-            if (default_currency) {
-                const defaultValue: SelectMenuItem<Currency> = {
-                    baseObject: default_currency,
-                    id: default_currency.id,
-                    name: default_currency.asset,
-                    order: default_currency.order,
-                    imgSrc: default_currency.logo_url,
-                    isAvailable: default_currency.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
-                    isEnabled: default_currency.is_enabled,
-                    isDefault: default_currency.is_default,
-                }
-                setFieldValue(name, defaultValue)
+        if (default_currency) {
+            const defaultValue: SelectMenuItem<Currency> = {
+                baseObject: default_currency,
+                id: default_currency.id,
+                name: default_currency.asset,
+                order: default_currency.order,
+                imgSrc: default_currency.logo_url,
+                isAvailable: default_currency.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
+                isEnabled: default_currency.is_enabled,
+                isDefault: default_currency.is_default,
             }
-            else {
-                setFieldValue(name, null)
-            }
-
-            // }
+            setFieldValue(name, defaultValue)
+        }
+        else {
+            setFieldValue(name, null)
         }
 
-    }, [network, setFieldValue, exchange, currencies, exchanges])
+    }, [network, exchange, data.currencies, data.exchanges])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />
@@ -120,51 +91,47 @@ const CurrenciesField: FC = () => {
 
 const ExchangesField = React.forwardRef((props: any, ref: any) => {
     const {
-        values: { exchange, currency },
+        values: { exchange, swapType, network },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-
+    const name = 'exchange'
     const settings = useSettingsState();
 
-    const exchangeMenuItems: SelectMenuItem<Exchange>[] = settings.exchanges
+    const exchangeMenuItems: SelectMenuItem<Exchange>[] = settings.data.exchanges
+        .filter(e => swapType === "onramp" || settings?.data?.currencies?.some(c => c.exchanges?.some(ce => ce.exchange_id === e.id && ce.is_off_ramp_enabled)))
         .map(e => ({
             baseObject: e,
             id: e.internal_name,
             name: e.name,
             order: e.order,
             imgSrc: e.logo_url,
-            isAvailable: true, //currency?.baseObject?.exchanges?.some(ce => ce.exchangeId === e.id),
+            isAvailable: settings.data.currencies.some(c => c.exchanges?.some(ce => ce.exchange_id === e.id && (swapType === "onramp" || ce.is_off_ramp_enabled))),
             isEnabled: e.is_enabled,
             isDefault: e.is_default
-        })).sort((x, y) => {
-            if (!y.isEnabled) {
-                y.order = 100;
-            } else if (!x.isEnabled) {
-                x.order = 100;
-            };
-            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
-        });
+        })).sort(sortingByOrder);
+
 
     return (<>
-        <label htmlFor="exchange" className="block font-normal text-pink-primary-300 text-sm">
-            From
+        <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
+            {swapType === "onramp" ? "From" : "To"}
         </label>
-        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
-            <Field name="exchange" placeholder="Choose exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
+        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange && (swapType === "onramp" || network) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
+            <Field name={name} placeholder="Exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });
 
 const NetworkField = React.forwardRef((props: any, ref: any) => {
     const {
-        values: { exchange, network, currency },
+        values: { exchange, network, swapType },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = "network"
     const { lockNetwork } = useQueryState()
-    const { currencies, networks } = useSettingsState();
+    const { data } = useSettingsState();
 
-    const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = networks
+    const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
+        .filter(n => swapType === "onramp" || data?.currencies?.some(c => c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled)))
         .map(n => ({
             baseObject: n,
             id: n.code,
@@ -172,40 +139,28 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             order: n.order,
             imgSrc: n.logo_url,
             isAvailable: !lockNetwork && !n.is_test_net,
-            isEnabled: n.is_enabled && currencies.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id)),
+            isEnabled: n.is_enabled && data.currencies.some(c => c.is_enabled && c.network_id === n.id && (swapType === "offramp" || c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))),
             isDefault: n.is_default
-        })).sort((x, y) => {
-            if (!y.isEnabled) {
-                y.order = 100;
-            } else if (!x.isEnabled) {
-                x.order = 100;
-            };
-            return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
-        });
-
-    if (exchange && !network)
-        ref.current?.focus()
+        })).sort(sortingByOrder);
 
     return (<>
-        <label htmlFor="network" className="block font-normal text-pink-primary-300 text-sm">
-            To
+        <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
+            {swapType === "onramp" ? "To" : "From"}
         </label>
-        <div ref={ref} tabIndex={0} className={`mt-1.5 ${exchange && !network ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
-            <Field name="network" placeholder="Choose network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
+        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!network && (swapType === "offramp" || exchange) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
+            <Field name={name} placeholder="Network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });
 
 const AmountField = React.forwardRef((props: any, ref: any) => {
-    const {
-        values: { network, currency },
-        handleChange,
-    } = useFormikContext<SwapFormValues>();
 
+    const { values: { currency, swapType, exchange } } = useFormikContext<SwapFormValues>();
     const name = "amount"
+    let minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, swapType);
+    let maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, swapType);
 
-    const placeholder = currency ? `${currency?.baseObject?.min_amount} - ${currency?.baseObject?.max_amount}` : '0.01234'
-
+    const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
 
     return (<>
@@ -213,13 +168,11 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
             label='Amount'
             disabled={!currency}
             placeholder={placeholder}
-            min={currency?.baseObject?.min_amount}
-            max={currency?.baseObject?.max_amount}
+            min={minAllowedAmount}
+            max={maxAllowedAmount}
             step={isNaN(step) ? 0.01 : step}
             name={name}
-            onChange={e => {
-                /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-            }}
+            ref={ref}
             precision={currency?.baseObject.precision}
         >
             <CurrenciesField />
@@ -303,14 +256,14 @@ export default function MainStep() {
         setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
     }, [query])
 
-    let availableExchanges = settings.exchanges
+    let availableExchanges = settings.data.exchanges
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
-        .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
-    let availableNetworks = settings.networks
+    let availableNetworks = settings.data.networks
         .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
-        .sort((x, y) => Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault)));
 
-    const availablePartners = Object.fromEntries(settings.partners.map(c => [c.name.toLowerCase(), c]));
+    const availablePartners = Object.fromEntries(settings.data.partners.map(c => [c.name.toLowerCase(), c]));
+
+    const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
@@ -320,6 +273,25 @@ export default function MainStep() {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken)
                 goToStep("Email")
+            else if (values.swapType === "offramp" && values.exchange.baseObject.id === KnownIds.Exchanges.CoinbaseId) {
+                const bransferApiClient = new BransferApiClient()
+                try {
+                    const response = await bransferApiClient.GetExchangeDepositAddress(values.exchange?.baseObject?.internal_name, values.currency?.baseObject?.asset?.toUpperCase(), accessToken)
+                    if (response.is_success) {
+                        updateSwapFormData({ ...values, destination_address: response.data })
+                        goToStep("SwapConfirmation")
+                    }
+                    else {
+                        throw Error("Could not get exchange deposit address")
+                    }
+                }
+                catch (e) {
+                    const exchanges = (await getUserExchanges(accessToken))?.data
+                    if (exchanges.some(e => e.exchange === values.exchange.baseObject.internal_name))
+                        await bransferApiClient.DeleteExchange(values.exchange.baseObject.internal_name, accessToken)
+                    goToStep(OfframpExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
+                }
+            }
             else {
                 if (values.network.baseObject.id == KnownIds.Networks.ImmutableXId) {
                     const client = await ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
@@ -355,7 +327,7 @@ export default function MainStep() {
     }, [updateSwapFormData])
 
     let destAddress: string = account || query.destAddress;
-    let destNetwork: string = (chainId && settings.networks.find(x => x.chain_id == chainId)?.code) || query.destNetwork;
+    let destNetwork: string = (chainId && settings.data.networks.find(x => x.chain_id == chainId)?.code) || query.destNetwork;
 
 
     let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
@@ -365,7 +337,6 @@ export default function MainStep() {
         availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isEnabled)
 
     const lockNetwork = !!chainId
-    const asset = query.asset
     const sourceExchangeName = query.sourceExchangeName
     const lockAddress = !!account || query.lockAddress
 
@@ -379,7 +350,7 @@ export default function MainStep() {
     let initialAddress = destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
 
     let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
-    const initialValues: SwapFormValues = { amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
+    const initialValues: SwapFormValues = { swapType: "onramp", amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
     const addressRef: any = useRef();
@@ -391,7 +362,6 @@ export default function MainStep() {
             formValues.destination_address = address;
         }
     }
-
     const closeConnectDeversifi = () => {
         setConnectDeversifiIsOpen(false)
     }
@@ -403,112 +373,67 @@ export default function MainStep() {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={values => {
-                let errors: FormikErrors<SwapFormValues> = {};
-                let amount = Number(values.amount?.toString()?.replace(",", "."));
-
-                if (!values.exchange) {
-                    errors.amount = 'Select exchange'
-                }
-                else if (!values.network) {
-                    errors.amount = 'Select network'
-                }
-                else if (!values.destination_address) {
-                    errors.amount = `Enter ${values?.network?.name} address`
-                    if (!formikRef.current.getFieldMeta("destination_address").touched)
-                        addressRef?.current?.focus()
-                }
-                else if (!isValidAddress(values.destination_address, values.network?.baseObject)) {
-                    errors.amount = `Enter a valid ${values?.network?.name} address`
-                    if (!formikRef.current.getFieldMeta("destination_address").touched)
-                        addressRef?.current?.focus()
-                }
-                else if (settings.blacklistedAddresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
-                    errors.amount = `You can not transfer to this address`
-                    if (!formikRef.current.getFieldMeta("destination_address").touched)
-                        addressRef?.current?.focus()
-                }
-                else if (!amount) {
-                    errors.amount = 'Enter an amount'
-                    if (!formikRef.current.getFieldMeta("amount").touched)
-                        amountRef?.current?.focus()
-                }
-                else if (
-                    !/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())
-                ) {
-                    errors.amount = 'Invalid amount'
-                    if (!formikRef.current.getFieldMeta("amount").touched)
-                        amountRef?.current?.focus()
-                }
-                else if (amount < 0) {
-                    errors.amount = "Can't be negative"
-                    if (!formikRef.current.getFieldMeta("amount").touched)
-                        amountRef?.current?.focus()
-                }
-                else if (amount > values.currency?.baseObject.max_amount) {
-                    errors.amount = `Max amount is ${values.currency.baseObject.max_amount}`
-                    if (!formikRef.current.getFieldMeta("amount").touched)
-                        amountRef?.current?.focus()
-                }
-                else if (amount < values.currency?.baseObject.min_amount) {
-                    errors.amount = `Min amount is ${values.currency?.baseObject.min_amount}`
-                    if (!formikRef.current.getFieldMeta("amount").touched)
-                        amountRef?.current?.focus()
-                }
-
-                return errors;
-            }}
+            validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            {({ values, setFieldValue, errors, isSubmitting, handleChange }) => (
+            {({ values, errors, isValid }) => (
                 <Form className="h-full">
+                    <ConnectedFocusError />
                     <div className="px-8 h-full flex flex-col justify-between">
                         <div>
-                            <div className="flex flex-col justify-between w-full md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4">
-                                <div className="flex flex-col md:w-80 w-full">
-                                    {
-                                        <ExchangesField ref={exchangeRef} />
-                                    }
-                                </div>
-                                <div className="flex flex-col md:w-80 w-full">
-                                    {
-                                        <NetworkField ref={networkRef} />
-                                    }
-                                </div>
-
+                            <div className='my-4'>
+                                <SwapOptionsToggle />
                             </div>
-                            <div className="w-full mb-3.5 leading-4">
-                                <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
-                                    {`To ${values?.network?.name || ''} address`}
-                                    {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
-                                </label>
-                                <div className="relative rounded-md shadow-sm mt-1.5">
-                                    {isPartnerWallet &&
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Image className='rounded-md object-contain' src={availablePartners[addressSource].logo_url} width="24" height="24"></Image>
+                            {
+                                values.swapType === 'offramp' &&
+                                <div className='flex w-full'>
+                                    <Banner className='mb-3' localStorageId='WarningBetaProduct' desktopMessage='WOOOOOHOO! New' mobileMessage='WOOOOOHOO! New'></Banner>
+                                </div>
+                            }
+                            <div className={classNames(values.swapType === "offramp" ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
+                                <div className="flex flex-col md:w-80 w-full">
+                                    <ExchangesField ref={exchangeRef} />
+                                </div>
+                                <div className="flex flex-col md:w-80 w-full">
+                                    <NetworkField ref={networkRef} />
+                                </div>
+                            </div>
+                            {
+                                values.swapType === "onramp" &&
+                                <div className="w-full mb-3.5 leading-4">
+                                    <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
+                                        {`To ${values?.network?.name || ''} address`}
+                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
+                                    </label>
+                                    <div className="relative rounded-md shadow-sm mt-1.5">
+                                        {isPartnerWallet &&
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <Image className='rounded-md object-contain' src={availablePartners[addressSource].logo_url} width="24" height="24"></Image>
+                                            </div>
+                                        }
+                                        <div>
+                                            <AddressInput
+                                                disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
+                                                name={"destination_address"}
+                                                className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
+                                                ref={addressRef}
+                                            />
                                         </div>
-                                    }
-                                    <div>
-                                        <AddressInput
-                                            disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
-                                            name={"destination_address"}
-                                            className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
-                                            ref={addressRef}
-                                        />
                                     </div>
                                 </div>
-                            </div >
+                            }
+
                             <div className="mb-6 leading-4">
                                 <AmountField ref={amountRef} />
                             </div>
 
                             <div className="w-full">
-                                <AmountAndFeeDetails amount={values?.amount} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
+                                <AmountAndFeeDetails amount={Number(values?.amount)} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
                             </div>
                         </div>
                         <div className="mt-6">
-                            <SwapButton type='submit' isDisabled={errors.amount != null || errors.destination_address != null} isSubmitting={loading}>
-                                {displayErrorsOrSubmit(errors)}
+                            <SwapButton type='submit' isDisabled={!isValid} isSubmitting={loading}>
+                                {displayErrorsOrSubmit(errors, values.swapType)}
                             </SwapButton>
                         </div>
                     </div >
@@ -518,11 +443,20 @@ export default function MainStep() {
     </>
 }
 
-function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
-    if (errors.amount) {
-        return errors.amount;
+function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
+    if (swapType == "onramp") {
+        return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
     }
     else {
-        return "Swap now";
+        return errors.network?.toString() || errors.exchange?.toString() || errors.amount || "Swap now"
     }
+}
+
+function sortingByOrder(x: any, y: any) {
+    if (!y.isEnabled) {
+        y.order += 100;
+    } else if (!x.isEnabled) {
+        x.order += 100;
+    };
+    return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
 }

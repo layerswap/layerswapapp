@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { Fragment, useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { SwapDetailsResponse } from "../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapListResponse, SwapItem } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
 import { ChevronRightIcon, DocumentDuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
@@ -18,7 +18,7 @@ import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
 
 
-export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
+export function StatusIcon({ swap }: { swap: SwapItem }) {
   if (swap?.status === 'failed') {
     return (
       <>
@@ -65,13 +65,13 @@ export function StatusIcon({ swap }: { swap: SwapDetailsResponse }) {
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
-  const { exchanges, networks } = useSettingsState()
+  const { data } = useSettingsState()
   const [isLastPage, setIsLastPage] = useState(false)
-  const [swaps, setSwaps] = useState<SwapDetailsResponse[]>()
+  const [swaps, setSwaps] = useState<SwapListResponse>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const router = useRouter();
-  const [selectedSwap, setSelectedSwap] = useState<SwapDetailsResponse | undefined>()
+  const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const { email } = useAuthState()
 
   useEffect(() => {
@@ -91,7 +91,7 @@ function TransactionsHistory() {
         const swaps = await layerswapApiClient.getSwaps(1, authData.access_token)
         setSwaps(swaps)
         setPage(1)
-        if (swaps?.length < 5)
+        if (swaps?.data.length < 5)
           setIsLastPage(true)
       }
       catch (e) {
@@ -115,11 +115,11 @@ function TransactionsHistory() {
         return;
       }
       const layerswapApiClient = new LayerSwapApiClient()
-      const swaps = await layerswapApiClient.getSwaps(nextPage, authData.access_token)
+      const response = await layerswapApiClient.getSwaps(nextPage, authData.access_token)
 
-      setSwaps(old => [...(old ? old : []), ...(swaps ? swaps : [])])
+      setSwaps(old => ({ ...response, data: [...(old?.data ? old?.data : []), ...(response.data ? response.data : [])] }))
       setPage(nextPage)
-      if (swaps?.length < 5)
+      if (response?.data.length < 5)
         setIsLastPage(true)
     }
     catch (e) {
@@ -134,7 +134,7 @@ function TransactionsHistory() {
     setSelectedSwap(undefined)
   }
 
-  const handleopenSwapDetails = (swap: SwapDetailsResponse) => {
+  const handleopenSwapDetails = (swap: SwapItem) => {
     setSelectedSwap(swap)
   }
 
@@ -145,6 +145,7 @@ function TransactionsHistory() {
       query: router.query
     })
   }, [router.query])
+
 
   return (
     <div className={`bg-darkBlue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
@@ -167,7 +168,7 @@ function TransactionsHistory() {
           <Sceleton />
           : <>
             {
-              swaps?.length > 0 ?
+              swaps?.data.length > 0 ?
                 <>
                   <div className=" mb-2 ">
 
@@ -232,9 +233,12 @@ function TransactionsHistory() {
                           </tr>
                         </thead>
                         <tbody>
-                          {swaps?.map((swap, index) => {
-                            const exchange = exchanges?.find(e => e.internal_name === swap?.exchange)
-                            const network = networks?.find(n => n.code === swap?.network)
+                          {swaps?.data.map((swap, index) => {
+                            const swapExchange = data.exchanges?.find(e => e.internal_name === swap?.exchange)
+                            const swapNetwork = data.networks?.find(n => n.code === swap.network)
+                            const source = swap.type == "on_ramp" ? swapExchange : swapNetwork;
+                            const destination = swap.type == "on_ramp" ? swapNetwork : swapExchange;
+
                             return <tr key={swap.id}>
                               <td
                                 className={classNames(
@@ -243,9 +247,9 @@ function TransactionsHistory() {
                                 )}
                               >
                                 <div className='inline-flex items-center'>
-                                  <span className="mr-2">{shortenAddress(swap?.id)}</span>
-                                  <ClickTooltip text='Copied!'>
-                                    <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.id)}>
+                                  <span className="mr-2">{shortenAddress(swap.id)}</span>
+                                  <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
+                                    <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap.id)}>
                                       <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
                                     </div>
                                   </ClickTooltip>
@@ -261,26 +265,26 @@ function TransactionsHistory() {
                                   <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                       <Image
-                                        src={exchange?.logo_url}
-                                        alt="Exchange Logo"
+                                        src={source?.logo_url}
+                                        alt="From Logo"
                                         height="60"
                                         width="60"
                                         layout="responsive"
                                         className="rounded-md object-contain"
                                       />
                                     </div>
-                                    <div className="mx-1">{exchange?.name}</div>
+                                    <div className="mx-1">{source?.name}</div>
                                     <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
                                       <Image
-                                        src={network?.logo_url}
-                                        alt="Exchange Logo"
+                                        src={destination?.logo_url}
+                                        alt="To Logo"
                                         height="60"
                                         width="60"
                                         layout="responsive"
                                         className="rounded-md object-contain"
                                       />
                                     </div>
-                                    <div className="mx-1 block lg:hidden">{network?.name}</div>
+                                    <div className="mx-1 block lg:hidden">{destination?.name}</div>
                                   </div>
                                 </div>
                                 <div className="flex items-center mt-1 text-white sm:block lg:hidden">
@@ -301,15 +305,15 @@ function TransactionsHistory() {
                                 <div className="flex items-center">
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     <Image
-                                      src={network?.logo_url}
-                                      alt="Exchange Logo"
+                                      src={destination?.logo_url}
+                                      alt="To Logo"
                                       height="60"
                                       width="60"
                                       layout="responsive"
                                       className="rounded-md object-contain"
                                     />
                                   </div>
-                                  <div className="ml-1">{network?.name}</div>
+                                  <div className="ml-1">{destination?.name}</div>
                                 </div>
 
                               </td>
@@ -335,10 +339,10 @@ function TransactionsHistory() {
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
-                                {swap?.transaction_id ?
+                                {swap.transaction_id ?
                                   <>
                                     <div className="underline hover:no-underline">
-                                      <a target={"_blank"} href={networks.filter(x => x.code === swap?.network)[0]?.transaction_explorer_template.replace("{0}", swap?.transaction_id)}>{shortenAddress(swap?.transaction_id)}</a>
+                                      <a target={"_blank"} href={data.networks.filter(x => x.code === swap.network)[0]?.transaction_explorer_template.replace("{0}", swap.transaction_id)}>{shortenAddress(swap.transaction_id)}</a>
                                     </div>
                                   </>
                                   : <div>-</div>
@@ -430,7 +434,7 @@ function TransactionsHistory() {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                           >
-                            <Dialog.Panel className="w-full space-y-6 max-w-md p-7 transform overflow-hidden rounded-md bg-darkBlue shadow-card text-center align-middle shadow-xl transition-all">
+                            <Dialog.Panel className="w-full space-y-6 max-w-md p-7 transform overflow-hidden rounded-md bg-darkBlue shadow-card text-center align-middle transition-all">
                               <div className="flex justify-between">
                                 <div className='text-xl font-bold text-white'>Swap details</div>
                                 <div className='relative grid grid-cols-1 gap-4 place-content-end z-40'>
@@ -452,9 +456,9 @@ function TransactionsHistory() {
 
                               <SwapDetails id={selectedSwap?.id} />
                               {
-                                networks && selectedSwap?.transaction_id &&
+                                data.networks && selectedSwap?.transaction_id &&
                                 <div className="text-white text-sm">
-                                  <a href={networks.filter(x => x.code === selectedSwap?.network)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
+                                  <a href={data.networks.filter(x => x.code === selectedSwap?.network)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
                                     target="_blank"
                                     className="shadowed-button group text-white disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                                     View in Explorer

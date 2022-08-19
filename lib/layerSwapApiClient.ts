@@ -12,18 +12,18 @@ export default class LayerSwapApiClient {
         return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + '/settings').then(res => res.data);
     }
 
-    async createSwap(params: CreateSwapParams, token: string): Promise<CreateSwapFailedResponse | CreateSwapSuccessResponse> {
+    async createSwap(params: CreateSwapParams, token: string): Promise<CreateSwapResponse> {
         return await authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/swaps',
             params,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
-    async getSwaps(page: number, token: string): Promise<SwapDetailsResponse[]> {
+    async getSwaps(page: number, token: string): Promise<SwapListResponse> {
         return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/swaps?page=${page}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
-    async getSwapDetails(id: string, token: string): Promise<SwapDetailsResponse> {
+    async getSwapDetails(id: string, token: string): Promise<SwapItemResponse> {
         return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/swaps/${id}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
@@ -35,17 +35,29 @@ export type CreateSwapParams = {
     Network: string,
     Exchange: string,
     currency: string,
-    destination_address: string
+    destination_address: string,
+    to_exchange: boolean,
 }
 
 
-export type SwapDetailsResponse = {
+export type SwapItemResponse = {
+    data: SwapItem,
+    error: string,
+    is_success: boolean
+}
+
+export type SwapListResponse = {
+    data: SwapItem[],
+    error: string,
+    is_success: boolean
+}
+export type SwapItem = {
     id: string,
     amount: number,
     fee: number,
     status: SwapStatus,
     exchange: string,
-    type: string,
+    type: "off_ramp" | "on_ramp",
     destination_address: string,
     external_payment_id: string,
     payment?: Payment,
@@ -57,7 +69,10 @@ export type SwapDetailsResponse = {
     currency_id: string,
     network: string,
     network_id: string,
-    offramp_info: string
+    offramp_info: {
+        deposit_address: string,
+        memo: string,
+    }
 }
 
 export type Payment = {
@@ -91,16 +106,13 @@ export type Payment = {
     sequence_number: string,
 }
 
-type CreateSwapSuccessResponse = {
-    value: {
+type CreateSwapResponse = {
+    data: {
         swap_id: string
     },
-    statusCode: 200
+    is_success: boolean,
+    error: string
 }
 
-type CreateSwapFailedResponse = {
-    value: string,
-    statusCode: 500 | 400
-}
 
 

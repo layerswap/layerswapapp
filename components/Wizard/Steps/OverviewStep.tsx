@@ -5,8 +5,9 @@ import { useSwapDataUpdate } from '../../../context/swap';
 import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { SwapWizardSteps } from '../../../Models/Wizard';
+import toast from "react-hot-toast";
 
-const OverviewStep: FC= () => {
+const OverviewStep: FC = () => {
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
 
@@ -26,8 +27,8 @@ const OverviewStep: FC= () => {
                         return;
                     }
                     const swap = await getSwap(swapId.toString())
-                    const { payment } = swap || {};
-                    const swapStatus = swap?.status;
+                    const { payment } = swap?.data || {};
+                    const swapStatus = swap?.data?.status;
                     const paymentStatus = payment?.status
                     if (swapStatus == SwapStatus.Completed)
                         goToStep("Success")
@@ -36,10 +37,12 @@ const OverviewStep: FC= () => {
                     else if (swapStatus == SwapStatus.Pending)
                         goToStep("Processing")
                     else {
-                        if (payment.external_flow_context)
-                            goToStep("ExternalPayment")
-                        else if (payment.manual_flow_context)
+                        if (swap?.data?.type === "off_ramp")
+                            goToStep("OffRampWithdrawal")
+                        else if (payment?.manual_flow_context)
                             goToStep("Withdrawal")
+                        else if (payment?.external_flow_context)
+                            goToStep("ExternalPayment")
                         else
                             goToStep("Processing")
                     }
@@ -50,6 +53,7 @@ const OverviewStep: FC= () => {
             }
             catch (e) {
                 goToStep("Failed")
+                toast.error(e.message)
                 setTimeout(() => {
                     setLoadingWizard(false)
                 }, 500);

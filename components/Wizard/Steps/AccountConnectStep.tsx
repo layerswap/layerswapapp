@@ -14,7 +14,7 @@ import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 
 const AccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
-    const { oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
+    const { oauth_authorization_redirect_url: oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const { currentStep } = useFormWizardState<FormWizardSteps>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
@@ -81,7 +81,7 @@ const AccountConnectStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-8 md:grid md:grid-flow-row py-6 pt-1 min-h-[480px] text-pink-primary-300 font-light">
+            <div className="w-full px-8 md:grid md:grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
 
                 <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please connect your {exchange_name} account

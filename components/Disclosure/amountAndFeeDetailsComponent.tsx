@@ -3,37 +3,21 @@ import { Disclosure } from "@headlessui/react";
 import HoverTooltip from '.././Tooltips/HoverTooltip';
 import { Currency } from '../../Models/Currency';
 import { Exchange } from '../../Models/Exchange';
-
-function exchangeFee(currency: Currency, exchange: Exchange): number {
-    return currency?.exchanges?.find(e => e.exchange_id == exchange.id)?.fee || 0;
-}
-
-function calculateFee(amount: number, currency: Currency, exchange: Exchange): number {
-
-    var exchangeFee = Number(amount?.toString()?.replace(",", ".")) * exchange?.fee_percentage;
-    var overallFee = currency?.fee + exchangeFee;
-
-    return overallFee || 0;
-}
+import { SwapType } from '../DTOs/SwapFormValues';
+import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
 
 type Props = {
-    amount: string,
+    amount: number,
     currency: Currency,
-    exchange: Exchange
+    exchange: Exchange,
+    swapType: SwapType,
 }
 
-export default function AmountAndFeeDetails({ amount, currency, exchange }: Props) {
+export default function AmountAndFeeDetails({ amount, currency, exchange, swapType }: Props) {
+    let exchangeFee = GetExchangeFee(currency, exchange);
+    let fee = CalculateFee(amount, currency, exchange, swapType);
+    let receive_amount = CalculateReceiveAmount(amount, currency, exchange, swapType);
 
-    let fee = amount ? Number(calculateFee(Number(amount?.toString()?.replace(",",".")), currency, exchange)?.toFixed(currency?.precision)) : 0;
-
-
-    let receive_amount = 0;
-    let fee_amount = Number(amount?.toString()?.replace(",", "."));
-    if (fee_amount >= currency?.min_amount) {
-        var exFee = exchangeFee(currency, exchange);
-        var result = fee_amount - fee - exFee;
-        receive_amount = Number(result.toFixed(currency?.precision));
-    }
     return (
         <>
             <div className="mx-auto w-full rounded-lg border border-darkblue-100 hover:border-darkblue-200 bg-darkblue-500 p-2">
@@ -46,7 +30,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                     {
                                         receive_amount ?
                                             <span className="font-medium text-center strong-highlight">
-                                                {receive_amount}
+                                                {receive_amount.toFixed(currency?.precision)}
                                                 <span>
                                                     {
                                                         ` ${currency?.asset || ""}`
@@ -69,25 +53,24 @@ export default function AmountAndFeeDetails({ amount, currency, exchange }: Prop
                                             Layerswap Fee
                                         </label>
                                         <span className="font-normal text-center text-white">
-                                            {fee.toLocaleString()}
+                                            {fee.toFixed(currency?.precision)}
                                             <span>  {currency?.asset} </span>
                                         </span>
                                     </div>
-                                    <div className="mt-2 flex flex-row items-baseline justify-between">
-                                        <label className="inline-flex font-normal text-pink-primary-300 text-left">
-                                            Exchange Fee
-                                            <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36'/>
-                                        </label>
-                                        <span className="font-normal text-center text-white">
-                                            {(() => {
-                                                if (amount) {
-                                                    return exchangeFee(currency, exchange)
-                                                }
-                                                return "0";
-                                            })()}
-                                            <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex text-pink-primary-300'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36'/></span>}</span>
-                                        </span>
-                                    </div>
+                                    {
+                                        swapType === "onramp" &&
+                                        <div className="mt-2 flex flex-row items-baseline justify-between">
+                                            <label className="inline-flex font-normal text-pink-primary-300 text-left">
+                                                Exchange Fee
+                                                <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36' />
+                                            </label>
+                                            <span className="font-normal text-center text-white">
+                                                {exchangeFee.toFixed(currency?.precision)}
+                                                <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex text-pink-primary-300'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' /></span>}</span>
+                                            </span>
+                                        </div>
+                                    }
+
                                     <div className="mt-2 flex flex-row items-baseline justify-between">
                                         <label className="block font-normal text-pink-primary-300 text-center">
                                             Time Of Arrival
