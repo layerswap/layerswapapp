@@ -15,7 +15,7 @@ type Props = {
 
 export default function AmountAndFeeDetails({ amount, currency, exchange, swapType }: Props) {
     let exchangeFee = CalculateExchangeFee(amount, currency, exchange);
-    let fee = CalculateFee(amount, currency, exchange);
+    let fee = CalculateFee(amount, currency, exchange, swapType);
     let receive_amount = CalculateReceiveAmount(amount, currency, exchange, swapType);
 
     return (

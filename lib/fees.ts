@@ -15,13 +15,18 @@ export function CalculateExchangeFee(amount: number, currency: Currency, exchang
     return currencyExchange.fee + percentageFee;
 }
 
-export function CalculateFee(amount: number, currency: Currency, exchange: Exchange): number {
+export function CalculateFee(amount: number, currency: Currency, exchange: Exchange, swapType: SwapType): number {
     if (!currency || !exchange)
     {
         return 0;
     }
 
-    var fee =  currency.fee + CalculateExchangeFee(amount, currency, exchange);
+    var fee =  currency.fee;
+    if (swapType == "onramp")
+    {
+        fee += CalculateExchangeFee(amount, currency, exchange);
+    }
+
     return Number(fee.toFixed(currency?.precision));
 }
 
@@ -29,7 +34,7 @@ export function CalculateReceiveAmount(amount: number, currency: Currency, excha
 
     if (!amount) return 0;
 
-    let fee = CalculateFee(amount, currency, exchange);
+    let fee = CalculateFee(amount, currency, exchange, swapType);
 
     let receive_amount = 0;
     let minAllowedAmount = CalculateMinAllowedAmount(currency, exchange, swapType);

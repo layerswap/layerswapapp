@@ -2,13 +2,13 @@ import { Web3Provider } from "@ethersproject/providers";
 import { ImmutableXClient } from "@imtbl/imx-sdk";
 import { useWeb3React } from "@web3-react/core";
 import { Field, Form, Formik, FormikErrors, FormikProps, useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FC, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
 import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { Currency } from "../../../Models/Currency";
 import { Exchange } from "../../../Models/Exchange";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues, SwapType } from "../../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../../Select/selectMenuItem";
 import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
@@ -31,7 +31,6 @@ import NumericInput from "../../Input/NumericInput";
 import AddressInput from "../../Input/AddressInput";
 import { classNames } from "../../utils/classNames";
 import KnownIds from "../../../lib/knownIds";
-import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
@@ -193,10 +192,10 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
         else if (value < 0) {
             error = "Can't be negative";
         }
-        else if (maxAllowedAmount && value > maxAllowedAmount) {
+        else if (maxAllowedAmount != undefined && value > maxAllowedAmount) {
             error = `Max amount is ${maxAllowedAmount}`;
         }
-        else if (minAllowedAmount && value < minAllowedAmount) {
+        else if (minAllowedAmount != undefined && value < minAllowedAmount) {
             error = `Min amount is ${minAllowedAmount}`;
         }
         if (swapType == "offramp" && !errors.exchange && errors.amount)
@@ -204,10 +203,11 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
         return error
     }
 
-    return (<>
+    return (
         <Field name={name} validate={validate}>
             {({ field }) => (
                 <NumericInput
+                    {...field}
                     label='Amount'
                     disabled={!currency}
                     placeholder={placeholder}
@@ -221,9 +221,7 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
                     <CurrenciesField />
                 </NumericInput>
             )}
-        </Field>
-
-    </>)
+        </Field>)
 });
 
 export default function MainStep() {
@@ -421,13 +419,12 @@ export default function MainStep() {
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
-            {({ values, errors, isValid, touched }) => {
-                if (values.swapType == "onramp" && !errors.network && errors.destination_address && !touched.destination_address)
-                    addressRef.current?.focus()
-                else if (values.swapType == "offramp" && !touched.amount)
-                    setTimeout(() => amountRef.current?.focus(), 0)
-                else if (!errors.destination_address && errors.amount && !touched.amount)
-                    setTimeout(() => amountRef.current?.focus(), 0)
+            {({ values, errors, isValid, validateForm }) => {
+                useEffect(() => {
+                    if (values.exchange && values.network) {
+                        validateForm(values);
+                    }
+                }, [values.exchange, values.network])
 
                 return <Form className="h-full">
                     <div className="px-8 h-full flex flex-col justify-between">
@@ -478,7 +475,7 @@ export default function MainStep() {
                         </div>
                         <div className="mt-6">
                             <SwapButton type='submit' isDisabled={!isValid} isSubmitting={loading}>
-                                {displayErrorsOrSubmit(errors)}
+                                {displayErrorsOrSubmit(errors, values.swapType)}
                             </SwapButton>
                         </div>
                     </div >
@@ -489,8 +486,13 @@ export default function MainStep() {
 }
 
 
-function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
-    return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
+function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
+    if (swapType == "onramp") {
+        return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
+    }
+    else {
+        return errors.network?.toString() || errors.exchange?.toString() || errors.amount || "Swap now"
+    }
 }
 
 function sortingByOrder(x: any, y: any) {
