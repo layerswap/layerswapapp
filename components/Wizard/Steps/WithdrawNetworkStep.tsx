@@ -53,8 +53,7 @@ const WithdrawNetworkStep: FC = () => {
     const network_name = network?.name || ' '
     const network_logo_url = network?.logo_url
 
-    if (!swap?.data?.offramp_info)
-    {
+    if (!swap?.data?.offramp_info) {
         return null;
     }
 
@@ -87,24 +86,55 @@ const WithdrawNetworkStep: FC = () => {
                     </h3>
                 </div>
                 <div className='mb-12'>
-                    <label htmlFor="selectAs" className="block font-normal text-sm">
-                        Select as "Where would you like to send your crypto to"
+                    {
+                        network_name.toLowerCase() === 'loopring' &&
+                        <>
+                            <label htmlFor="selectAs" className="block font-normal text-sm">
+                                Select as "Where would you like to send your crypto to"
+                            </label>
+                            <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
+                                <input
+                                    inputMode="decimal"
+                                    autoComplete="off"
+                                    autoCorrect="off"
+                                    type="text"
+                                    name="selectAs"
+                                    id="selectAs"
+                                    disabled={true}
+                                    value={'     To Another Loopring L2 Account'}
+                                    className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
+                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                />
+                                <div className='absolute top-4 left-2.5'>
+                                    <SwitchHorizontalIcon className='h-4 w-4' />
+                                </div>
+                            </div>
+                        </>
+                    }
+
+                    <label htmlFor="withdrawalAmount" className="block font-normal text-sm">
+                        Amount
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                         <input
                             inputMode="decimal"
                             autoComplete="off"
+                            placeholder=""
                             autoCorrect="off"
                             type="text"
-                            name="selectAs"
-                            id="selectAs"
+                            name="withdrawalAmount"
+                            id="withdrawalAmount"
                             disabled={true}
-                            value={'     To Another Loopring L2 Account'}
+                            value={`${swap?.data?.amount} ${swap?.data?.currency}`}
                             className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
                             placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                         />
-                        <div className='absolute top-4 left-2.5'>
-                            <SwitchHorizontalIcon className='h-4 w-4'/>
+                        <div className='absolute inset-y-2 right-2.5'>
+                            <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
+                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.amount)}>
+                                    <DocumentDuplicateIcon className='h-6 w-5' />
+                                </div>
+                            </ClickTooltip>
                         </div>
                     </div>
                     <label htmlFor="address" className="block font-normal text-sm">
@@ -179,32 +209,6 @@ const WithdrawNetworkStep: FC = () => {
                             </div>
                         </>
                     }
-
-                    <label htmlFor="withdrawalAmount" className="block font-normal text-sm">
-                        Amount
-                    </label>
-                    <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
-                        <input
-                            inputMode="decimal"
-                            autoComplete="off"
-                            placeholder=""
-                            autoCorrect="off"
-                            type="text"
-                            name="withdrawalAmount"
-                            id="withdrawalAmount"
-                            disabled={true}
-                            value={swap?.data?.amount}
-                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
-                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
-                        />
-                        <div className='absolute inset-y-2 right-2.5'>
-                            <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.amount)}>
-                                    <DocumentDuplicateIcon className='h-6 w-5' />
-                                </div>
-                            </ClickTooltip>
-                        </div>
-                    </div>
 
                     {
                         payment?.manual_flow_context?.require_note &&
