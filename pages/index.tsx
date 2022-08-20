@@ -5,6 +5,8 @@ import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { SettingsProvider } from '../context/settings'
 import { QueryProvider } from '../context/query'
+import { AccountProvider } from '../context/account'
+import KnownIds from '../lib/knownIds'
 
 export default function Home({ response, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
@@ -14,7 +16,7 @@ export default function Home({ response, query }: InferGetServerSidePropsType<ty
         <div className='flex flex-col space-y-5 animate-fade-in'>
           <SettingsProvider data={response}>
             <QueryProvider query={query}>
-                <Swap />
+              <Swap />
             </QueryProvider>
           </SettingsProvider>
         </div>
@@ -34,14 +36,9 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const response = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
-  if (process.env.IS_TESTING == "false") {
-    response.data.networks.forEach((element) => {
-      if (!element.is_test_net) networks.push(element);
-    });
-  }
-  else {
-    networks = response.data.networks;
-  }
+  data.networks.forEach((element) => {
+    if (!element.is_test_net || element.id.toLowerCase() == KnownIds.Networks.StarkNetGoerliId) networks.push(element);
+  });
 
   response.data.networks = networks;
   return {
