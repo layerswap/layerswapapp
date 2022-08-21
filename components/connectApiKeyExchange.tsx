@@ -62,7 +62,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
         }
     }, [key, secret, keyphrase, exchange])
 
-    const dataIsValid = secret && key && (ExchangeSettings.KnownSettings[exchange?.id]?.KeyphraseDisplayName ? keyphrase : true)
+    const dataIsValid = secret && key && (exchange?.has_keyphrase ? keyphrase : true)
     const userGuideURL = ExchangeSettings.KnownSettings[exchange?.id]?.UserApiKeyGuideUrl
 
     return (
@@ -109,7 +109,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
                         />
                     </div>
                     {
-                        ExchangeSettings.KnownSettings[exchange?.id]?.KeyphraseDisplayName &&
+                        exchange?.has_keyphrase &&
                         <>
                             <label htmlFor="apiKey" className="block font-normal text-sm">
                                 {ExchangeSettings.KnownSettings[exchange?.id]?.KeyphraseDisplayName}

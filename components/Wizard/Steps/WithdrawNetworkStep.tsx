@@ -59,7 +59,7 @@ const WithdrawNetworkStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-6 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
+            <div className="w-full px-8 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium text-white leading-6 text-left">
                         Go to
@@ -100,20 +100,32 @@ const WithdrawNetworkStep: FC = () => {
                             </div>
                         </div>
                     }
-                    <div>
-                        <p className="block font-normal text-sm">
-                            Amount
-                        </p>
-                        <div className="relative rounded-md px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
-                            <p>
-                                {`${swap?.data?.amount} ${swap?.data?.currency}`}
+                    <div className='flex space-x-5'>
+                        <div className='w-full'>
+                            <p className="block font-normal text-sm">
+                                Amount
                             </p>
-                            <div className='absolute inset-y-2 right-2.5'>
-                                <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                    <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.amount)}>
-                                        <DocumentDuplicateIcon className='h-6 w-5' />
-                                    </div>
-                                </ClickTooltip>
+                            <div className="relative rounded-md px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                                <p>
+                                    {swap?.data?.amount}
+                                </p>
+                                <div className='absolute inset-y-2 right-2.5'>
+                                    <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
+                                        <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.amount)}>
+                                            <DocumentDuplicateIcon className='h-6 w-5' />
+                                        </div>
+                                    </ClickTooltip>
+                                </div>
+                            </div>
+                        </div>
+                        <div className='w-full'>
+                            <p className="block font-normal text-sm">
+                                Asset
+                            </p>
+                            <div className="relative rounded-md px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                                <p>
+                                    {swap?.data?.currency}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -121,11 +133,11 @@ const WithdrawNetworkStep: FC = () => {
                         <p className="block font-normal text-sm">
                             Recipient
                         </p>
-                        <div className="relative text-sm rounded-md px-3 py-3.5 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                        <div className="relative break-all rounded-md items-center pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
                             <p>
                                 {swap?.data.offramp_info.deposit_address}
                             </p>
-                            <div className='absolute inset-y-2 right-2.5'>
+                            <div className='absolute inset-y-2 right-2.5 md:top-2 top-5'>
                                 <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
                                     <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data.offramp_info.deposit_address)}>
                                         <DocumentDuplicateIcon className='h-6 w-5' />
@@ -138,7 +150,7 @@ const WithdrawNetworkStep: FC = () => {
                         <p className="block font-normal text-sm">
                             Address Type
                         </p>
-                        <div className="rounded-md px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                        <div className="rounded-md items-center px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
                             <p>
                                 EOA Wallet
                             </p>
@@ -150,7 +162,7 @@ const WithdrawNetworkStep: FC = () => {
                             <p className="block font-normal text-sm">
                                 Memo
                             </p>
-                            <div className="relative text-sm rounded-md px-3 py-3.5 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                            <div className="relative rounded-md break-all pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
                                 <p>
                                     {swap?.data?.offramp_info?.memo}
                                 </p>
