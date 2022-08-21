@@ -138,7 +138,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
             name: n.name,
             order: n.order,
             imgSrc: n.logo_url,
-            isAvailable: !lockNetwork && !n.is_test_net,
+            isAvailable: !lockNetwork,
             isEnabled: n.is_enabled && data.currencies.some(c => c.is_enabled && c.network_id === n.id && (swapType === "offramp" || c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))),
             isDefault: n.is_default
         })).sort(sortingByOrder);
@@ -384,12 +384,6 @@ export default function MainStep() {
                             <div className='my-4'>
                                 <SwapOptionsToggle />
                             </div>
-                            {
-                                values.swapType === 'offramp' &&
-                                <div className='flex w-full'>
-                                    <Banner className='mb-3' localStorageId='WarningBetaProduct' desktopMessage='WOOOOOHOO!' mobileMessage='WOOOOOHOO!'></Banner>
-                                </div>
-                            }
                             <div className={classNames(values.swapType === "offramp" ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
                                 <div className="flex flex-col md:w-80 w-full">
                                     <ExchangesField ref={exchangeRef} />

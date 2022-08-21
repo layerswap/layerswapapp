@@ -48,7 +48,6 @@ export function FocusError({
           const selector = `[name="${errorKey}"]`;
           if (!errorElement) {
             errorElement = document.querySelector(selector);
-            console.log(errorElement);
             return;
           }
         });
