@@ -139,7 +139,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className='text-white font-normal'>{parseFloat(swap?.data?.fee?.toFixed(currency?.precision))} {currency?.asset}</span>
                         </div>
                         {
-                            swap?.data?.type === 'on_ramp' &&
+                            swap?.data?.type === 'on_ramp' && swap?.data?.payment?.withdrawal_fee >= 0 &&
                             <>
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
