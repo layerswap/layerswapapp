@@ -42,7 +42,6 @@ export async function getServerSideProps(context) {
   else {
     networks = response.data.networks;
   }
-
   response.data.networks = networks;
   return {
     props: { response, query },
