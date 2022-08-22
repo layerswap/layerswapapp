@@ -14,7 +14,7 @@ export default function Home({ response, query }: InferGetServerSidePropsType<ty
         <div className='flex flex-col space-y-5 animate-fade-in'>
           <SettingsProvider data={response}>
             <QueryProvider query={query}>
-                <Swap />
+              <Swap />
             </QueryProvider>
           </SettingsProvider>
         </div>
@@ -42,7 +42,6 @@ export async function getServerSideProps(context) {
   else {
     networks = response.data.networks;
   }
-
   response.data.networks = networks;
   return {
     props: { response, query },

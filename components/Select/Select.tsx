@@ -56,12 +56,11 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
     const handleComboboxChange = useCallback(() => { }, [])
     const handleQueryInputChange = useCallback((event) => setQuery(event.target.value), [])
-
     if (smallDropdown)
         return (
             <Listbox disabled={disabled} value={value?.id} onChange={onChangeHandler}>
                 <div className="mt-1 relative">
-                    <Listbox.Button className="focus:ring-indigo-500 focus:border-indigo-500 w-full py-0 pl-8 pr-12 border-transparent bg-transparent font-semibold rounded-md">
+                    <Listbox.Button name={name} className="focus:ring-indigo-500 focus:border-indigo-500 w-full py-0 pl-8 pr-12 border-transparent bg-transparent font-semibold rounded-md">
                         {
                             value &&
                             <>
@@ -134,9 +133,9 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
             <div className="flex items-center relative">
                 <button
                     type="button"
+                    name={name} 
                     onClick={openModal}
                     disabled={disabled}
-                    // ref={asdRef}
                     className="disabled:cursor-not-allowed disabled:hidden relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold rounded-none"
                 >
                     <span className='flex grow text-left items-center'>

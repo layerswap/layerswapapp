@@ -146,6 +146,7 @@ function TransactionsHistory() {
     })
   }, [router.query])
 
+
   return (
     <div className={`bg-darkBlue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
       <div className="mt-3 flex items-center justify-between z-20" >
@@ -233,8 +234,11 @@ function TransactionsHistory() {
                         </thead>
                         <tbody>
                           {swaps?.data.map((swap, index) => {
-                            const exchange = data.exchanges?.find(e => e.internal_name === swap?.exchange)
-                            const network = data.networks?.find(n => n.code === swap.network)
+                            const swapExchange = data.exchanges?.find(e => e.internal_name === swap?.exchange)
+                            const swapNetwork = data.networks?.find(n => n.code === swap.network)
+                            const source = swap.type == "on_ramp" ? swapExchange : swapNetwork;
+                            const destination = swap.type == "on_ramp" ? swapNetwork : swapExchange;
+
                             return <tr key={swap.id}>
                               <td
                                 className={classNames(
@@ -261,26 +265,26 @@ function TransactionsHistory() {
                                   <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                       <Image
-                                        src={exchange?.logo_url}
-                                        alt="Exchange Logo"
+                                        src={source?.logo_url}
+                                        alt="From Logo"
                                         height="60"
                                         width="60"
                                         layout="responsive"
                                         className="rounded-md object-contain"
                                       />
                                     </div>
-                                    <div className="mx-1">{exchange?.name}</div>
+                                    <div className="mx-1">{source?.name}</div>
                                     <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
                                       <Image
-                                        src={network?.logo_url}
-                                        alt="Exchange Logo"
+                                        src={destination?.logo_url}
+                                        alt="To Logo"
                                         height="60"
                                         width="60"
                                         layout="responsive"
                                         className="rounded-md object-contain"
                                       />
                                     </div>
-                                    <div className="mx-1 block lg:hidden">{network?.name}</div>
+                                    <div className="mx-1 block lg:hidden">{destination?.name}</div>
                                   </div>
                                 </div>
                                 <div className="flex items-center mt-1 text-white sm:block lg:hidden">
@@ -301,15 +305,15 @@ function TransactionsHistory() {
                                 <div className="flex items-center">
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     <Image
-                                      src={network?.logo_url}
-                                      alt="Exchange Logo"
+                                      src={destination?.logo_url}
+                                      alt="To Logo"
                                       height="60"
                                       width="60"
                                       layout="responsive"
                                       className="rounded-md object-contain"
                                     />
                                   </div>
-                                  <div className="ml-1">{network?.name}</div>
+                                  <div className="ml-1">{destination?.name}</div>
                                 </div>
 
                               </td>
@@ -430,7 +434,7 @@ function TransactionsHistory() {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                           >
-                            <Dialog.Panel className="w-full space-y-6 max-w-md p-7 transform overflow-hidden rounded-md bg-darkBlue shadow-card text-center align-middle shadow-xl transition-all">
+                            <Dialog.Panel className="w-full space-y-6 max-w-md p-7 transform overflow-hidden rounded-md bg-darkBlue shadow-card text-center align-middle transition-all">
                               <div className="flex justify-between">
                                 <div className='text-xl font-bold text-white'>Swap details</div>
                                 <div className='relative grid grid-cols-1 gap-4 place-content-end z-40'>

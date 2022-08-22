@@ -20,9 +20,17 @@ const SuccessfulStep: FC = () => {
                         <path d="M44.5781 57.245L53.7516 66.6843L70.6308 49.3159" stroke="white" strokeWidth="3.15789" strokeLinecap="round" />
                     </svg>
                 </div>
-                <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">
-                    <span className="block text-lg font-lighter leading-6 text-pink-primary-300">Your swap successfully completed. You can view it in the explorer, or go ahead swap more!</span>
-                </div>
+                {
+                    swap?.data?.type === "on_ramp" ?
+                        <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">
+                            <span className="block text-lg font-lighter leading-6 text-pink-primary-300">Your swap successfully completed. You can view it in the explorer, or go ahead swap more!</span>
+                        </div>
+                        :
+                        <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">
+                            <span className="block text-lg font-lighter leading-6 text-pink-primary-300">Your swap successfully completed. Your assets are on their way to your exchange account.</span>
+                        </div>
+                }
+
                 {
                     data.networks && swap?.data.transaction_id &&
                     <div className="text-white mb-2.5 md:mb-5 md:mt-3 mt-0">

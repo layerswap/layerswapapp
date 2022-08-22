@@ -8,6 +8,7 @@ export default class ExchangeSettings {
     RequireSelectInternal?: boolean = false;
     AuthorizationNote?: string;
     WithdrawalWarningMessage?: string;
+    KeyphraseDisplayName?: string;
 
     public static KnownSettings: { [key: string]: ExchangeSettings } = {};
 
@@ -60,11 +61,13 @@ export default class ExchangeSettings {
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.KucoinId] = {
             ExchangeWithdrawalPageUrl: "https://www.kucoin.com/assets/withdraw",
             RequireSelectInternal: true,
+            KeyphraseDisplayName: "Keyphrase"
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.OkexId] = {
             WithdrawalWarningMessage: "Please select the 'internal' withdrawal method.",
             RequireSelectInternal: true,
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/19ac54e0-ccc3-4a4b-b8a9-996a28fb3aa2?iframe",
+            KeyphraseDisplayName: "Passphrase"
         };
     }
 }
