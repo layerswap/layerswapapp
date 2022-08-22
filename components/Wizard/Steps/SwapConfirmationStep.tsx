@@ -1,11 +1,11 @@
 import { Transition } from '@headlessui/react';
-import { ArrowRightIcon, DuplicateIcon, ExternalLinkIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 import { FC, Fragment, useCallback, useEffect, useRef, useState } from 'react'
-import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
+import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { BaseStepProps, FormWizardSteps, SwapWizardSteps } from '../../../Models/Wizard';
+import { BaseStepProps, FormWizardSteps } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
@@ -13,6 +13,10 @@ import { CalculateReceiveAmount } from '../../../lib/fees';
 import ToggleButton from '../../buttons/toggleButton';
 import { isValidAddress } from '../../../lib/addressValidator';
 import AddressDetails from '../../Disclosure/AddressDetails';
+import { classNames } from '../../utils/classNames';
+import TokenService from '../../../lib/TokenService';
+import { BransferApiClient } from '../../../lib/bransferApiClients';
+import { CreateSwapParams } from '../../../lib/layerSwapApiClient';
 import NumericInput from '../../Input/NumericInput';
 import { Form, Formik } from 'formik';
 
@@ -21,14 +25,19 @@ interface TwoFACodeFormValues {
 }
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
+    const { swapFormData, swap } = useSwapDataState()
+    if (!swapFormData) {
+        return null;
+    }
+
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
     const [twoFactorCode, setTwoFactorCode] = useState("")
     const initialValues: TwoFACodeFormValues = { TwoFACode: '' }
     const [loading, setLoading] = useState(false)
     const [twoFARequired, setTwoFARequired] = useState(false)
+    const { currentStep } = useFormWizardState<FormWizardSteps>()
 
-    const { swapFormData, swap } = useSwapDataState()
-    const { createSwap, processPayment, updateSwapFormData,getSwap } = useSwapDataUpdate()
+    const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState("")
@@ -36,6 +45,21 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     const { destination_address, network } = swapFormData || {}
     const router = useRouter();
+
+    useEffect(() => {
+        (async () => {
+            if (currentStep === "SwapConfirmation" && swapFormData?.swapType === "offramp") {
+                const authData = TokenService.getAuthData();
+                if (!authData) {
+                    goToStep("Email")
+                    return;
+                }
+                const bransferApiClient = new BransferApiClient()
+                const response = await bransferApiClient.GetExchangeDepositAddress(swapFormData?.exchange?.baseObject?.internal_name, swapFormData.currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
+                updateSwapFormData((old) => ({ ...old, destination_address: response.data }))
+            }
+        })()
+    }, [currentStep])
 
     useEffect(() => {
         setAddressInputValue(destination_address)
@@ -63,14 +87,15 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setLoading(true)
         setTwoFARequired(false)
         try {
-            const data = {
+            const data: CreateSwapParams = {
                 Amount: Number(swapFormData.amount?.toString()?.replace(",", ".")),
                 Exchange: swapFormData.exchange?.id,
                 Network: swapFormData.network.id,
                 currency: swapFormData.currency.baseObject.asset,
-                destination_address: swapFormData.destination_address
+                destination_address: swapFormData.destination_address,
+                to_exchange: swapFormData.swapType === "offramp"
             }
-            const _swap = swap?.data?.id ? await  getSwap(swap.data.id) : await createSwap(data)
+            const _swap = swap?.data?.id ? await getSwap(swap.data.id) : await createSwap(data)
             const { payment } = _swap.data
             if (payment?.status === 'created')
                 await processPayment(_swap, twoFactorCode)
@@ -127,7 +152,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setEditingAddress(false)
     }, [addressInputValue, swapFormData])
 
-    const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount?.toString()?.replace(",", ".")), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject)
+    const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject, swapFormData?.swapType)
 
     const twoDigits = (num) => String(num).padStart(2, '0')
     const STATUS = {
@@ -184,7 +209,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             <Formik
                 initialValues={initialValues}
                 onSubmit={handleSubmit}
-                >
+            >
                 {({ handleChange, isSubmitting }) => (
                     <Form className='px-8 h-full flex flex-col justify-between'>
                         <div className=''>
@@ -194,11 +219,11 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             <div className="w-full">
                                 <div className="rounded-md w-full mb-3">
                                     <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-pink-primary-300">
-                                        {swapFormData?.exchange?.imgSrc &&
-                                            <div className="flex justify-between bg-darkblue-500 rounded-md items-center px-4 py-3">
-                                                <span className="text-left flex"><span className='hidden md:block'>From</span>
-                                                    <div className="flex items-center">
-                                                        <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
+                                        <div className={classNames(swapFormData?.swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex justify-between bg-darkblue-500 rounded-md items-center px-4 py-3')}>
+                                            <span className="text-left flex"><span className='hidden md:block'>{swapFormData?.swapType === "onramp" ? "From" : "To"}</span>
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
+                                                        {swapFormData?.exchange?.imgSrc &&
                                                             <Image
                                                                 src={swapFormData?.exchange?.imgSrc}
                                                                 alt="Exchange Logo"
@@ -207,28 +232,32 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                                                 layout="responsive"
                                                                 className="rounded-md object-contain"
                                                             />
-                                                        </div>
-                                                        <div className="mx-1 text-white">{swapFormData?.exchange?.name.toUpperCase()}</div>
+                                                        }
                                                     </div>
-                                                </span>
-                                                <ArrowRightIcon className='h-5 w-5 block md:hidden' />
-                                                <span className="flex"><span className='hidden md:block'>To</span>
-                                                    <div className="flex items-center">
-                                                        <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
+                                                    <div className="mx-1 text-white">{swapFormData?.exchange?.name.toUpperCase()}</div>
+                                                </div>
+                                            </span>
+                                            <ArrowRightIcon className='h-5 w-5 block md:hidden' />
+                                            <span className="flex"><span className='hidden md:block'>{swapFormData?.swapType === "onramp" ? "To" : "From"}</span>
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
+                                                        {
+                                                            swapFormData?.network?.imgSrc &&
                                                             <Image
                                                                 src={swapFormData?.network?.imgSrc}
-                                                                alt="Exchange Logo"
+                                                                alt="Network Logo"
                                                                 height="60"
                                                                 width="60"
                                                                 layout="responsive"
                                                                 className="rounded-md object-contain"
                                                             />
-                                                        </div>
-                                                        <div className="ml-1 text-white">{swapFormData?.network?.name.toUpperCase()}</div>
+                                                        }
                                                     </div>
-                                                </span>
-                                            </div>
-                                        }
+                                                    <div className="ml-1 text-white">{swapFormData?.network?.name.toUpperCase()}</div>
+                                                </div>
+                                            </span>
+                                        </div>
+
                                         <div className="flex justify-between px-4 py-3 items-baseline">
                                             <span className="text-left">Amount</span>
                                             <span className="text-white">{swapFormData?.amount} {swapFormData?.currency?.name}
@@ -236,10 +265,10 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                         </div>
                                         <div className="flex justify-between bg-darkblue-500 rounded-md px-4 py-3 items-baseline">
                                             <span className="text-left">Fee</span>
-                                            <span className="text-white">{(Number(swapFormData?.amount?.toString()?.replace(",", ".")) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
+                                            <span className="text-white">{(Number(swapFormData?.amount) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
                                         </div>
                                         <div className="flex justify-between px-4 py-3  items-baseline">
-                                            <span className="text-left">You will recieve</span>
+                                            <span className="text-left">You will receive</span>
                                             <span className="text-white">{receive_amount} {swapFormData?.currency?.name}</span>
                                         </div>
                                     </div>
@@ -282,21 +311,24 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             </div>
                         </div>
                         <div className="text-white text-sm mt-2">
-                            <div className="mx-auto w-full rounded-lg font-normal">
-                                <div className='flex justify-between mb-4 md:mb-8'>
-                                    <div className='flex items-center text-xs md:text-sm font-medium'>
-                                        <ExclamationIcon className='h-6 w-6 mr-2' />
-                                        I am the owner of this address
-                                    </div>
-                                    <div className='flex items-center space-x-4'>
-                                        <ToggleButton onChange={setConfirm_right_wallet} isChecked={confirm_right_wallet} />
+                            {
+                                swapFormData?.swapType === "onramp" &&
+                                <div className="mx-auto w-full rounded-lg font-normal">
+                                    <div className='flex justify-between mb-4 md:mb-8'>
+                                        <div className='flex items-center text-xs md:text-sm font-medium'>
+                                            <ExclamationIcon className='h-6 w-6 mr-2' />
+                                            I am the owner of this address
+                                        </div>
+                                        <div className='flex items-center space-x-4'>
+                                            <ToggleButton onChange={setConfirm_right_wallet} isChecked={confirm_right_wallet} />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            }
                             {/* <div className="flex items-center mb-2">
                                 <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
                                  </div> */}
-                            <SubmitButton type='submit' isDisabled={!confirm_right_wallet || isSubmitting || twoFARequired && twoFactorCode?.length !== 7} icon="" isSubmitting={isSubmitting}>
+                            <SubmitButton type='submit' isDisabled={(swapFormData?.swapType === "onramp" && !confirm_right_wallet) || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
                                 Confirm
                             </SubmitButton>
                         </div>
@@ -352,7 +384,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     leaveFrom="opacity-100 scale-100"
                                     leaveTo="opacity-0 scale-95"
                                 >
-
                                     <div className='pb-12 grid grid-flow-row min-h-[480px] text-pink-primary-300'>
                                         <h4 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
                                             <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mb-1' /> Editing your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address

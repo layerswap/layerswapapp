@@ -9,8 +9,9 @@ export class Exchange {
     fee_percentage: number;
     authorization_flow: "o_auth2" | "api_credentials" | "none" | null;
     oauth_authorization_redirect_url: string;
-    has_keyphrase:boolean;
-    keyphrase_display_name:string;
+    oauth_login_redirect_url:string
+    has_keyphrase: boolean;
+    keyphrase_display_name: string;
     transaction_explorer_template: string;
     account_explorer_template: string
 }

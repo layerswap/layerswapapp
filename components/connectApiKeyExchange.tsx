@@ -112,12 +112,12 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
                         exchange?.has_keyphrase &&
                         <>
                             <label htmlFor="apiKey" className="block font-normal text-sm">
-                                {exchange?.keyphrase_display_name}
+                                {ExchangeSettings.KnownSettings[exchange?.id]?.KeyphraseDisplayName}
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                                 <input
                                     autoComplete="off"
-                                    placeholder={`Your ${exchange?.keyphrase_display_name}`}
+                                    placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.id]?.KeyphraseDisplayName}`}
                                     autoCorrect="off"
                                     type="text"
                                     name="apiKey"

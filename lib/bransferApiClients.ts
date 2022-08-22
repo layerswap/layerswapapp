@@ -9,6 +9,11 @@ export class BransferApiClient {
         return await authInterceptor.get(BransferApiClient.apiBaseEndpoint + '/api/exchange_accounts')
             .then(res => res.data)
     }
+    async GetExchangeDepositAddress(exchange: string, currency: string, token: string): Promise<ExchangeDepositAddressReponse> {
+        return await authInterceptor.get(BransferApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}/deposit_address/${currency}`,
+            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            .then(res => res.data)
+    }
     async DeleteExchange(exchange: string, token: string): Promise<ConnectResponse> {
         return await authInterceptor.delete(BransferApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
@@ -20,12 +25,12 @@ export class BransferApiClient {
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data)
     }
-
     async ProcessPayment(id: string, token: string, twoFactorCode?: string): Promise<PaymentProcessreponse> {
         return await authInterceptor.post(BransferApiClient.apiBaseEndpoint + `/api/payments/${id}/process${twoFactorCode ? `?twoFactor=${twoFactorCode}` : ''}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data)
     }
+
 }
 
 export type PaymentProcessreponse = {
@@ -34,6 +39,16 @@ export type PaymentProcessreponse = {
     errors: string
 }
 
+export type ExchangeDepositAddressReponse = {
+    data: string,
+    is_success: boolean,
+    errors: [
+        {
+            code: string,
+            message: string
+        }
+    ]
+}
 
 
 export type ConnectParams = {

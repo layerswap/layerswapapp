@@ -9,7 +9,7 @@ const SwapDataStateContext = React.createContext<SwapData>(null);
 const SwapDataUpdateContext = React.createContext<UpdateInterface>(null);
 
 type UpdateInterface = {
-    updateSwapFormData: (data: SwapFormValues) => void,
+    updateSwapFormData: (value: React.SetStateAction<SwapFormValues>) => void,
     createSwap: (data: CreateSwapParams) => Promise<SwapItemResponse>,
     //TODO this is stupid need to clean data in confirm step or even do not store it
     clearSwap: () => void,
@@ -30,9 +30,7 @@ export function SwapDataProvider({ children }) {
 
     const updateFns: UpdateInterface = {
         clearSwap: () => setSwap(undefined),
-        updateSwapFormData: (data: SwapFormValues) => {
-            setSwapFormData(data)
-        },
+        updateSwapFormData: setSwapFormData,
         createSwap: useCallback(async (data: CreateSwapParams) => {
             try {
                 const layerswapApiClient = new LayerSwapApiClient()
@@ -42,7 +40,8 @@ export function SwapDataProvider({ children }) {
                     Exchange: swapFormData.exchange?.id,
                     Network: swapFormData.network.id,
                     currency: swapFormData.currency.baseObject.asset,
-                    destination_address: swapFormData.destination_address
+                    destination_address: swapFormData.destination_address,
+                    to_exchange: swapFormData.swapType === "offramp"
                 }, authData?.access_token)
 
                 if (swap?.is_success !== true)

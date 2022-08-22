@@ -14,7 +14,7 @@ import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 
 const AccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
-    const { oauth_authorization_redirect_url } = swapFormData?.exchange?.baseObject || {}
+    const { oauth_authorization_redirect_url: oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const { currentStep } = useFormWizardState<FormWizardSteps>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
@@ -61,12 +61,12 @@ const AccountConnectStep: FC = () => {
             if (!access_token)
                 goToStep("Email")
             const { sub } = parseJwt(access_token) || {}
-            authWindowRef.current = OpenLink({ link: oauth_authorization_redirect_url + sub, swap_data: swapFormData, query })
+            authWindowRef.current = OpenLink({ link: oauth_redirect_url + sub, swap_data: swapFormData, query })
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_authorization_redirect_url, carouselRef, carouselFinished, addressSource, query])
+    }, [oauth_redirect_url, carouselRef, carouselFinished, addressSource, query])
 
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount?.toString()?.replace(",", ".")) + 5)
 
