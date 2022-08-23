@@ -133,8 +133,8 @@ const WithdrawNetworkStep: FC = () => {
                         <p className="block font-normal text-sm">
                             Recipient
                         </p>
-                        <div className="relative break-all rounded-md items-center pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
-                            <p>
+                        <div className="relative rounded-md items-center pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                            <p className='break-all'>
                                 {swap?.data.offramp_info.deposit_address}
                             </p>
                             <div className='absolute inset-y-2 right-2.5 md:top-2 top-5'>
@@ -162,8 +162,8 @@ const WithdrawNetworkStep: FC = () => {
                             <p className="block font-normal text-sm">
                                 Memo
                             </p>
-                            <div className="relative rounded-md break-all pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
-                                <p>
+                            <div className="relative rounded-md pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                            <p className='break-all'>
                                     {swap?.data?.offramp_info?.memo}
                                 </p>
                                 <div className='absolute inset-y-2 right-2.5'>
