@@ -14,8 +14,12 @@ import LayerSwapLogo from "./icons/layerSwapLogo"
 import SubmitButton from "./buttons/submitButton";
 import { useAuthState } from "../context/authContext";
 import toast from "react-hot-toast";
+import shortenAddress, { shortenEmail } from "./utils/ShortenAddress";
+import HoverTooltip from "./Tooltips/HoverTooltip";
 
 interface UserExchange extends Exchange {
+
+    note?: string,
     is_connected: boolean
 }
 
@@ -65,17 +69,19 @@ function UserExchanges() {
     const getAndMapExchanges = useCallback(async (authData) => {
         const bransferApiClient = new BransferApiClient()
         const userExchanges = await bransferApiClient.GetExchangeAccounts(authData.access_token)
+
         const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none' && x.is_enabled).map(e => {
             return {
                 ...e,
-                is_connected: userExchanges.data?.some(ue => ue.exchange === e.internal_name && ue.is_enabled)
+                is_connected: userExchanges.data?.some(ue => ue.exchange === e.internal_name && ue.is_enabled),
+                note: userExchanges.data?.find(ue => ue.exchange === e.internal_name)?.note
             }
         })
         mappedExchanges.sort((a, b) => (+a.order) - (+b.order))
 
+
         setUserExchanges(mappedExchanges)
     }, [data.exchanges])
-
 
     const filteredItems =
         query === ''
@@ -140,6 +146,13 @@ function UserExchanges() {
         }
     }, [router.query])
 
+    function isEmail(data: string) {
+        if (/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(data)) {
+           return shortenEmail(data)
+        } else {
+            return shortenAddress(data);
+        }
+    }
 
     return (
         <div className='bg-darkBlue px-8 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative min-h'>
@@ -202,8 +215,18 @@ function UserExchanges() {
                                                                     layout="fixed"
                                                                     className="rounded-md h-8 w-8 object-contain"
                                                                 />
-
-                                                                <span className="text-base font-medium">{item.name}</span>
+                                                                <div className="text-base font-medium text-left">
+                                                                    <p>{item.name}</p>
+                                                                    {
+                                                                        item?.note &&
+                                                                        <div className="flex items-center">
+                                                                            <p className="text-xs font-normal">
+                                                                                {isEmail(item.note)}
+                                                                            </p>
+                                                                            <HoverTooltip moreClassNames="w-40 break-words -left-1.5" positionClassnames="left-4" text={item.note} />
+                                                                        </div>
+                                                                    }
+                                                                </div>
                                                             </div>
                                                             <div className="text-xs">
                                                                 {
@@ -315,7 +338,9 @@ const Sceleton = () => {
 
     return <>
         {[...Array(6)]?.map((item, index) =>
-            <div className="animate-pulse bg-darkblue-500 select-none rounded-lg p-3">
+            <div
+                key={index}
+                className="animate-pulse bg-darkblue-500 select-none rounded-lg p-3">
                 <div className="flex justify-between px-2">
                     <div className="flex space-x-2">
                         <div className="rounded-full bg-slate-700 h-8 w-8"></div>
