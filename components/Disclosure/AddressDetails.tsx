@@ -25,7 +25,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                 <div className="flex items-center min-w-0 flex-1">
                     {
                         swapFormData?.exchange?.imgSrc &&
-                        <div className="flex-shrink-0 h-5 w-5 mr-1 relative">
+                        <div className="flex-shrink-0 h-5 w-5 mr-2 relative">
                             <Image
                                 src={swapFormData?.exchange?.imgSrc}
                                 alt="Exchange Logo"
@@ -37,8 +37,8 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                         </div>
                     }
                     {
-                        <div className='flex min-w-0 flex-1 mr-1' id='containerOfTextContainer'>
-                            <span className='text-base font-medium' id='textContainer'>
+                        <div className='flex min-w-0 flex-1 mr-1'>
+                            <span className='text-base font-medium break-all'>
                                 {swapFormData?.destination_address}
                             </span>
                         </div>
