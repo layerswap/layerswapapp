@@ -15,8 +15,6 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
 const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
     ({ label, disabled, name, className, onChange }, ref) => {
 
-        const [field, meta, helpers] = useField(name)
-
         return (<>
             {label &&
                 <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">

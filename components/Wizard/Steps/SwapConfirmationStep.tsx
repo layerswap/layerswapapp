@@ -2,7 +2,7 @@ import { Transition } from '@headlessui/react';
 import { ArrowRightIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
-import { FC, Fragment, useCallback, useEffect, useState } from 'react'
+import { FC, Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { BaseStepProps, FormWizardSteps } from '../../../Models/Wizard';
@@ -17,6 +17,12 @@ import { classNames } from '../../utils/classNames';
 import TokenService from '../../../lib/TokenService';
 import { BransferApiClient } from '../../../lib/bransferApiClients';
 import { CreateSwapParams } from '../../../lib/layerSwapApiClient';
+import NumericInput from '../../Input/NumericInput';
+import { Form, Formik } from 'formik';
+
+interface TwoFACodeFormValues {
+    TwoFACode: string
+}
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const { swapFormData, swap } = useSwapDataState()
@@ -25,13 +31,13 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     }
 
     const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
-    const [towFactorCode, setTwoFactorCode] = useState("")
-
+    const [twoFactorCode, setTwoFactorCode] = useState("")
+    const initialValues: TwoFACodeFormValues = { TwoFACode: '' }
     const [loading, setLoading] = useState(false)
     const [twoFARequired, setTwoFARequired] = useState(false)
     const { currentStep } = useFormWizardState<FormWizardSteps>()
 
-    const { createSwap, processPayment, updateSwapFormData } = useSwapDataUpdate()
+    const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState("")
@@ -66,6 +72,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         if (!loading)
             setEditingAddress(true)
     }, [loading])
+
     const handleAddressInputChange = useCallback((e) => {
         setAddressInputError("")
         setAddressInputValue(e?.target?.value)
@@ -88,15 +95,15 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 destination_address: swapFormData.destination_address,
                 to_exchange: swapFormData.swapType === "offramp"
             }
-            const _swap = swap || await createSwap(data)
+            const _swap = swap?.data?.id ? await getSwap(swap.data.id) : await createSwap(data)
             const { payment } = _swap.data
             if (payment?.status === 'created')
-                await processPayment(_swap, towFactorCode)
+                await processPayment(_swap, twoFactorCode)
             ///TODO grdon code please refactor
             else if (payment?.status === 'closed') {
                 const newSwap = await createSwap(data)
                 const newPayment = newSwap
-                await processPayment(newSwap, towFactorCode)
+                await processPayment(newSwap, twoFactorCode)
                 router.push(`/${newSwap.data.id}`)
                 return
             }
@@ -123,7 +130,13 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             }
             setLoading(false)
         }
-    }, [swapFormData, swap, towFactorCode, minimalAuthorizeAmount, transferAmount])
+    }, [swapFormData, swap, twoFactorCode, minimalAuthorizeAmount, transferAmount])
+
+    const handleResendTwoFACode = (e) => {
+        handleReset()
+        handleStart()
+        setTwoFactorCode(e?.target?.value)
+    }
 
     const handleClose = () => {
         setEditingAddress(false)
@@ -140,124 +153,188 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     }, [addressInputValue, swapFormData])
 
     const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject, swapFormData?.swapType)
+
+    const twoDigits = (num) => String(num).padStart(2, '0')
+    const STATUS = {
+        STARTED: 'Started',
+        STOPPED: 'Stopped',
+    }
+    const INITIAL_COUNT = 60
+    const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
+    const [status, setStatus] = useState(STATUS.STOPPED)
+
+    const secondsToDisplay = secondsRemaining % 60
+    const minutesRemaining = (secondsRemaining - secondsToDisplay) / 60
+    const minutesToDisplay = minutesRemaining % 60
+
+
+    const handleStart = () => {
+        setStatus(STATUS.STARTED)
+    }
+    const handleReset = () => {
+        setStatus(STATUS.STOPPED)
+        setSecondsRemaining(INITIAL_COUNT)
+    }
+
+    function useInterval(callback, delay) {
+        const savedCallback = useRef(undefined)
+
+        useEffect(() => {
+            savedCallback.current = callback
+        }, [callback])
+
+        useEffect(() => {
+            function tick() {
+                savedCallback.current()
+            }
+            if (delay !== null) {
+                let id = setInterval(tick, delay)
+                return () => clearInterval(id)
+            }
+        }, [delay])
+    }
+
+    useInterval(
+        () => {
+            if (secondsRemaining > 0) {
+                setSecondsRemaining(secondsRemaining - 1)
+            } else {
+                setStatus(STATUS.STOPPED)
+            }
+        },
+        status === STATUS.STARTED ? 1000 : null)
+
     return (
         <>
-            <div className="px-8 h-full flex flex-col justify-between">
-                <div className=''>
-                    <h3 className='mb-7 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
-                        Please confirm your swap
-                    </h3>
-                    <div className="w-full">
-                        <div className="rounded-md w-full mb-3">
-                            <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-pink-primary-300">
-                                <div className={classNames(swapFormData?.swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex justify-between bg-darkblue-500 rounded-md items-center px-4 py-3')}>
-                                    <span className="text-left flex"><span className='hidden md:block'>{swapFormData?.swapType === "onramp" ? "From" : "To"}</span>
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
-                                                {swapFormData?.exchange?.imgSrc &&
-                                                    <Image
-                                                        src={swapFormData?.exchange?.imgSrc}
-                                                        alt="Exchange Logo"
-                                                        height="60"
-                                                        width="60"
-                                                        layout="responsive"
-                                                        className="rounded-md object-contain"
-                                                    />
-                                                }
-                                            </div>
-                                            <div className="mx-1 text-white">{swapFormData?.exchange?.name.toUpperCase()}</div>
+            <Formik
+                initialValues={initialValues}
+                onSubmit={handleSubmit}
+            >
+                {({ handleChange, isSubmitting }) => (
+                    <Form className='px-8 h-full flex flex-col justify-between'>
+                        <div className=''>
+                            <h3 className='mb-7 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
+                                Please confirm your swap
+                            </h3>
+                            <div className="w-full">
+                                <div className="rounded-md w-full mb-3">
+                                    <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-pink-primary-300">
+                                        <div className={classNames(swapFormData?.swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex justify-between bg-darkblue-500 rounded-md items-center px-4 py-3')}>
+                                            <span className="text-left flex"><span className='hidden md:block'>{swapFormData?.swapType === "onramp" ? "From" : "To"}</span>
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
+                                                        {swapFormData?.exchange?.imgSrc &&
+                                                            <Image
+                                                                src={swapFormData?.exchange?.imgSrc}
+                                                                alt="Exchange Logo"
+                                                                height="60"
+                                                                width="60"
+                                                                layout="responsive"
+                                                                className="rounded-md object-contain"
+                                                            />
+                                                        }
+                                                    </div>
+                                                    <div className="mx-1 text-white">{swapFormData?.exchange?.name.toUpperCase()}</div>
+                                                </div>
+                                            </span>
+                                            <ArrowRightIcon className='h-5 w-5 block md:hidden' />
+                                            <span className="flex"><span className='hidden md:block'>{swapFormData?.swapType === "onramp" ? "To" : "From"}</span>
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
+                                                        {
+                                                            swapFormData?.network?.imgSrc &&
+                                                            <Image
+                                                                src={swapFormData?.network?.imgSrc}
+                                                                alt="Network Logo"
+                                                                height="60"
+                                                                width="60"
+                                                                layout="responsive"
+                                                                className="rounded-md object-contain"
+                                                            />
+                                                        }
+                                                    </div>
+                                                    <div className="ml-1 text-white">{swapFormData?.network?.name.toUpperCase()}</div>
+                                                </div>
+                                            </span>
                                         </div>
-                                    </span>
-                                    <ArrowRightIcon className='h-5 w-5 block md:hidden' />
-                                    <span className="flex"><span className='hidden md:block'>{swapFormData?.swapType === "onramp" ? "To" : "From"}</span>
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
-                                                {
-                                                    swapFormData?.network?.imgSrc &&
-                                                    <Image
-                                                        src={swapFormData?.network?.imgSrc}
-                                                        alt="Network Logo"
-                                                        height="60"
-                                                        width="60"
-                                                        layout="responsive"
-                                                        className="rounded-md object-contain"
-                                                    />
-                                                }
-                                            </div>
-                                            <div className="ml-1 text-white">{swapFormData?.network?.name.toUpperCase()}</div>
-                                        </div>
-                                    </span>
-                                </div>
 
-                                <div className="flex justify-between px-4 py-3 items-baseline">
-                                    <span className="text-left">Amount</span>
-                                    <span className="text-white">{swapFormData?.amount} {swapFormData?.currency?.name}
-                                    </span>
+                                        <div className="flex justify-between px-4 py-3 items-baseline">
+                                            <span className="text-left">Amount</span>
+                                            <span className="text-white">{swapFormData?.amount} {swapFormData?.currency?.name}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between bg-darkblue-500 rounded-md px-4 py-3 items-baseline">
+                                            <span className="text-left">Fee</span>
+                                            <span className="text-white">{(Number(swapFormData?.amount) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
+                                        </div>
+                                        <div className="flex justify-between px-4 py-3  items-baseline">
+                                            <span className="text-left">You will receive</span>
+                                            <span className="text-white">{receive_amount} {swapFormData?.currency?.name}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between bg-darkblue-500 rounded-md px-4 py-3 items-baseline">
-                                    <span className="text-left">Fee</span>
-                                    <span className="text-white">{(Number(swapFormData?.amount) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
-                                </div>
-                                <div className="flex justify-between px-4 py-3  items-baseline">
-                                    <span className="text-left">You will receive</span>
-                                    <span className="text-white">{receive_amount} {swapFormData?.currency?.name}</span>
-                                </div>
+                                <AddressDetails onClick={handleStartEditingAddress} />
+                                {
+                                    twoFARequired &&
+                                    <div className='my-4'>
+                                        <label htmlFor="TwoFACode" className="block font-normal text-pink-primary-300 text-sm">
+                                            Your Coinbase 2FA code
+                                        </label>
+                                        <NumericInput
+                                            pattern='^[0-9]*$'
+                                            placeholder="XXXXXXX"
+                                            maxLength={7}
+                                            name='TwoFACode'
+                                            onChange={e => {
+                                                handleTwoFACodeChange(e); /^[0-9]*$/.test(e.target.value) && handleChange(e)
+                                            }}
+                                            className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
+                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
+                                        />
+
+                                        {
+                                            status == STATUS.STARTED ?
+                                                <span className="flex text-sm leading-6 items-center mt-1.5">
+                                                    Send again in
+                                                    <span className='ml-1'>
+                                                        {twoDigits(minutesToDisplay)}:
+                                                        {twoDigits(secondsToDisplay)}
+                                                    </span>
+                                                </span>
+                                                :
+                                                <span onClick={handleResendTwoFACode} className="text-sm leading-6 mt-1.5 decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
+                                                    Resend code
+                                                </span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </div>
-                        <AddressDetails onClick={handleStartEditingAddress} />
-                        {
-                            twoFARequired &&
-                            <div className='mt-4'>
-                                <label htmlFor="amount" className="block font-normal text-pink-primary-300 text-sm">
-                                    Your Coinbase 2FA code
-                                </label>
-                                <div className="relative rounded-md shadow-sm mt-2 mb-4">
-                                    <input
-                                        inputMode="decimal"
-                                        autoComplete="off"
-                                        placeholder="XXXXXXX"
-                                        autoCorrect="off"
-                                        type="text"
-                                        maxLength={7}
-                                        name="TwoFACode"
-                                        id="TwoFACode"
-                                        className="h-12 text-2xl pl-5 focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
-                            placeholder:text-pink-primary-300 placeholder:text-2xl placeholder:h-12 placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
-                                        onKeyPress={e => {
-                                            isNaN(Number(e.key)) && e.preventDefault()
-                                        }}
-                                        onChange={handleTwoFACodeChange}
-                                    />
+                        <div className="text-white text-sm mt-2">
+                            {
+                                swapFormData?.swapType === "onramp" &&
+                                <div className="mx-auto w-full rounded-lg font-normal">
+                                    <div className='flex justify-between mb-4 md:mb-8'>
+                                        <div className='flex items-center text-xs md:text-sm font-medium'>
+                                            <ExclamationIcon className='h-6 w-6 mr-2' />
+                                            I am the owner of this address
+                                        </div>
+                                        <div className='flex items-center space-x-4'>
+                                            <ToggleButton onChange={setConfirm_right_wallet} isChecked={confirm_right_wallet} />
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-
-                <div className="text-white text-sm mt-2">
-                    {
-                        swapFormData?.swapType === "onramp" &&
-                        <div className="mx-auto w-full rounded-lg font-normal">
-                            <div className='flex justify-between mb-4 md:mb-8'>
-                                <div className='flex items-center text-xs md:text-sm font-medium'>
-                                    <ExclamationIcon className='h-6 w-6 mr-2' />
-                                    I am the owner of this address
-                                </div>
-                                <div className='flex items-center space-x-4'>
-                                    <ToggleButton onChange={setConfirm_right_wallet} isChecked={confirm_right_wallet} />
-                                </div>
-                            </div>
+                            }
+                            {/* <div className="flex items-center mb-2">
+                                <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
+                                 </div> */}
+                            <SubmitButton type='submit' isDisabled={(swapFormData?.swapType === "onramp" && !confirm_right_wallet) || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
+                                Confirm
+                            </SubmitButton>
                         </div>
-                    }
-                    {/* <div className="flex items-center mb-2">
-                        <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
-                    </div> */}
-                    <SubmitButton isDisabled={(swapFormData?.swapType === "onramp" && !confirm_right_wallet) || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
-                        Confirm
-                    </SubmitButton>
-                </div>
-
-            </div>
+                    </Form>
+                )}
+            </Formik>
             <Transition
                 appear
                 show={editingAddress}

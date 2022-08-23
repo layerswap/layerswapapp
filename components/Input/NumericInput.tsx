@@ -20,7 +20,7 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     ref?: any;
     onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
-
+// Use with Formik
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
     ({ label, pattern, disabled, placeholder, min, max, minLength, maxLength, precision, step, name, className, children, onChange }, ref) => {
         const { handleChange } = useFormikContext<SwapFormValues>();
