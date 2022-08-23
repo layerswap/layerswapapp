@@ -126,7 +126,16 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Address </span>
-                            <span className='text-white font-normal'>{swap?.data?.destination_address.slice(0, 8) + "..." + swap?.data?.destination_address.slice(swap?.data?.destination_address.length - 5, swap?.data?.destination_address.length)}</span>
+                            <span className="text-white">
+                                <div className='inline-flex items-center'>
+                                    <span className='font-normal mr-2'>{swap?.data?.destination_address.slice(0, 8) + "..." + swap?.data?.destination_address.slice(swap?.data?.destination_address.length - 5, swap?.data?.destination_address.length)}</span>
+                                    <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
+                                        <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.data?.destination_address)}>
+                                            <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
+                                        </div>
+                                    </ClickTooltip>
+                                </div>
+                            </span>
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
