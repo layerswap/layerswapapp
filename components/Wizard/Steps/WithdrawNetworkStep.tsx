@@ -59,7 +59,7 @@ const WithdrawNetworkStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-8 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
+            <div className="w-full px-6 md:px-8 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium text-white leading-6 text-left">
                         Go to

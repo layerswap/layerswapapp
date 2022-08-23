@@ -379,7 +379,7 @@ export default function MainStep() {
             {({ values, errors, isValid }) => (
                 <Form className="h-full">
                     <ConnectedFocusError />
-                    <div className="px-8 h-full flex flex-col justify-between">
+                    <div className="px-6 md:px-8 h-full flex flex-col justify-between">
                         <div>
                             <div className='my-4'>
                                 <SwapOptionsToggle />

@@ -43,22 +43,22 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label }) =
                         <div>
                             {
                                 option.value === 'onramp' ?
-                                    <div className="flex items-center space-x-0.5 md:space-x-2 md:p-0 p-1.5 text-sm md:text-base">
+                                    <div className="flex items-center space-x-1 md:space-x-2 md:p-0 p-1.5 text-sm md:text-base">
                                         <span>
                                             Exchange
                                         </span>
-                                        <ArrowRightIcon className="h-2 w-2 md:h-3 md:w-3" />
+                                        <ArrowRightIcon className="h-3 w-3" />
                                         <span >
                                             Network
                                         </span>
                                     </div>
                                     :
-                                    <div className="flex items-center space-x-0.5 md:space-x-2 text-sm md:text-base ">
+                                    <div className="flex items-center space-x-1 md:space-x-2 text-sm md:text-base ">
                                         <span >
                                             Network
                                         </span>
-                                        <ArrowRightIcon className="h-2 w-2 md:h-3 md:w-3" />
-                                        <span className="">
+                                        <ArrowRightIcon className="h-3 w-3" />
+                                        <span>
                                             Exchange
                                         </span>
                                     </div>

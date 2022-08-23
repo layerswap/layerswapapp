@@ -67,7 +67,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                 {({ isValid, isSubmitting }) => (
 
                     <div className='flex flex-col items-stretch min-h-[500px] text-pink-primary-300'>
-                        <div className="w-full px-3 md:px-8 pt-4 flex-col flex-1 flex">
+                        <div className="w-full px-6 md:px-8 pt-4 flex-col flex-1 flex">
                             <UserIcon className='w-16 h-16 mt-auto text-pink-primary self-center' />
                             <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
                                 What's your email?
