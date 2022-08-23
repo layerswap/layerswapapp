@@ -211,7 +211,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 onSubmit={handleSubmit}
             >
                 {({ handleChange, isSubmitting }) => (
-                    <Form className='px-8 h-full flex flex-col justify-between'>
+                    <Form className='px-6 md:px-8 h-full flex flex-col justify-between'>
                         <div className=''>
                             <h3 className='mb-7 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                                 Please confirm your swap
