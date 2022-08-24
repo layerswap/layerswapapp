@@ -1,6 +1,6 @@
 import { CheckIcon, DocumentDuplicateIcon } from '@heroicons/react/outline'
-import { classNames } from './utils/classNames'
-import useCopyClipboard from './utils/useCopyClipboard'
+import { classNames } from '../utils/classNames'
+import useCopyClipboard from '../../hooks/useCopyClipboard'
 import React, { FC } from 'react'
 
 interface CopyButtonProps {

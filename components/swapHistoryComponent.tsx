@@ -11,12 +11,10 @@ import LayerswapMenu from "./LayerswapMenu"
 import LayerSwapLogo from "./icons/layerSwapLogo"
 import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
-import { copyTextToClipboard } from "./utils/copyToClipboard"
 import { useAuthState } from "../context/authContext"
-import ClickTooltip from "./Tooltips/ClickTooltip"
 import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
-import CopyButton from "./copyButton"
+import CopyButton from "./buttons/copyButton"
 
 
 export function StatusIcon({ swap }: { swap: SwapItem }) {

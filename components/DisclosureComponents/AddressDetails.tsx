@@ -5,7 +5,7 @@ import Image from 'next/dist/client/image';
 import { FC, MouseEventHandler, useEffect } from 'react';
 import shortenAddress from '../utils/ShortenAddress';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
-import CopyButton from '../copyButton';
+import CopyButton from '../buttons/copyButton';
 
 export class AddressDetailsProps {
     onClick?: MouseEventHandler<HTMLButtonElement> | undefined;

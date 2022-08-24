@@ -1,5 +1,5 @@
 import { FC } from "react";
-import CopyButton from "./copyButton";
+import CopyButton from "./buttons/copyButton";
 
 type Props = {
     isCopiable?: boolean;

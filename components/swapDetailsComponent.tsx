@@ -5,12 +5,9 @@ import LayerSwapApiClient, { SwapItemResponse } from '../lib/layerSwapApiClient'
 import TokenService from '../lib/TokenService';
 import { StatusIcon } from './swapHistoryComponent';
 import Image from 'next/image'
-import { DocumentDuplicateIcon } from '@heroicons/react/outline';
-import { copyTextToClipboard } from './utils/copyToClipboard';
 import toast from 'react-hot-toast';
-import ClickTooltip from './Tooltips/ClickTooltip';
 import shortenAddress from './utils/ShortenAddress';
-import CopyButton from './copyButton';
+import CopyButton from './buttons/copyButton';
 
 type Props = {
     id: string
