@@ -10,6 +10,7 @@ import { copyTextToClipboard } from './utils/copyToClipboard';
 import toast from 'react-hot-toast';
 import ClickTooltip from './Tooltips/ClickTooltip';
 import shortenAddress from './utils/ShortenAddress';
+import CopyButton from './copyButton';
 
 type Props = {
     id: string
@@ -64,12 +65,9 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Id </span>
                             <span className="text-white">
                                 <div className='inline-flex items-center'>
-                                    <span className="mr-2">{shortenAddress(swap?.data?.id)}</span>
-                                    <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
-                                        <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.data?.id)}>
-                                            <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
-                                        </div>
-                                    </ClickTooltip>
+                                    <CopyButton toCopy={swap?.data?.id} iconClassName="text-gray-500">
+                                        {shortenAddress(swap?.data?.id)}
+                                    </CopyButton>
                                 </div>
                             </span>
                         </div>
@@ -128,12 +126,9 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Address </span>
                             <span className="text-white">
                                 <div className='inline-flex items-center'>
-                                    <span className='font-normal mr-2'>{swap?.data?.destination_address.slice(0, 8) + "..." + swap?.data?.destination_address.slice(swap?.data?.destination_address.length - 5, swap?.data?.destination_address.length)}</span>
-                                    <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
-                                        <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.data?.destination_address)}>
-                                            <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
-                                        </div>
-                                    </ClickTooltip>
+                                    <CopyButton toCopy={swap?.data?.destination_address} iconClassName="text-gray-500">
+                                        {swap?.data?.destination_address.slice(0, 8) + "..." + swap?.data?.destination_address.slice(swap?.data?.destination_address.length - 5, swap?.data?.destination_address.length)}
+                                    </CopyButton>
                                 </div>
                             </span>
                         </div>

@@ -16,6 +16,7 @@ import { useAuthState } from "../context/authContext"
 import ClickTooltip from "./Tooltips/ClickTooltip"
 import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
+import CopyButton from "./copyButton"
 
 
 export function StatusIcon({ swap }: { swap: SwapItem }) {
@@ -247,12 +248,9 @@ function TransactionsHistory() {
                                 )}
                               >
                                 <div className='inline-flex items-center'>
-                                  <span className="mr-2">{shortenAddress(swap.id)}</span>
-                                  <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
-                                    <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap.id)}>
-                                      <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
-                                    </div>
-                                  </ClickTooltip>
+                                  <CopyButton iconClassName="text-gray-500" toCopy={swap.id}>
+                                    {shortenAddress(swap.id)}
+                                  </CopyButton>
                                 </div>
                               </td>
                               <td
