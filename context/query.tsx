@@ -1,7 +1,7 @@
 import React from 'react'
+import { QueryParams } from '../Models/QueryParams';
 
-const QueryStateContext = React.createContext<any>(null);
-
+const QueryStateContext = React.createContext<QueryParams>(null);
 
 export function QueryProvider({ children, query }) {
     const [missions, setMissions] = React.useState([]);
