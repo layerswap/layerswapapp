@@ -173,13 +173,13 @@ const Sceleton = () => {
                     <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
                 </div>
                 {[...Array(9)]?.map((item, index) => (
-                    <>
+                    <div key={index}>
                         <hr className='horizontal-gradient my-1' />
                         <div className="flex justify-between items-baseline">
                             <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
                             <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
                         </div>
-                    </>
+                    </div>
                 ))}
             </div>
         </div>
