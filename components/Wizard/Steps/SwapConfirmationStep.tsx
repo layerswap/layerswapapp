@@ -212,7 +212,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 initialValues={initialValues}
                 onSubmit={handleSubmit}
             >
-                {({ handleChange, isSubmitting }) => (
+                {({ handleChange }) => (
                     <Form className='px-6 md:px-8 h-full flex flex-col justify-between'>
                         <div className=''>
                             <h3 className='mb-7 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
@@ -330,7 +330,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             {/* <div className="flex items-center mb-2">
                                 <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
                                  </div> */}
-                            <SubmitButton type='submit' isDisabled={twoFARequired && twoFactorCode.length != 7 || isSubmitting || (swapFormData?.swapType === "onramp" && !confirm_right_wallet)} icon="" isSubmitting={isSubmitting} onClick={handleSubmit}>
+                            <SubmitButton type='submit' isDisabled={twoFARequired && twoFactorCode.length != 7 || loading || (swapFormData?.swapType === "onramp" && !confirm_right_wallet)} icon="" isSubmitting={loading} onClick={handleSubmit}>
                                 Confirm
                             </SubmitButton>
                         </div>
