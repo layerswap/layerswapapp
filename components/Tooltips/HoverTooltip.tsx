@@ -1,6 +1,5 @@
 import { InformationCircleIcon } from "@heroicons/react/outline";
 import { FC } from "react";
-import { text } from "stream/consumers";
 
 type Props = {
     text: string;

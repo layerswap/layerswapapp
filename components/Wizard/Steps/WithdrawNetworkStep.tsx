@@ -8,12 +8,11 @@ import { SwapWizardSteps } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
-import { copyTextToClipboard } from '../../utils/copyToClipboard';
 import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
-import ClickTooltip from '../../Tooltips/ClickTooltip';
+import BackgroundField from '../../backgroundField';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -89,93 +88,45 @@ const WithdrawNetworkStep: FC = () => {
                     <div className='mb-6 grid grid-cols-1 gap-4'>
                         {
                             network_name.toLowerCase() === 'loopring' &&
-                            <div>
-                                <p className="block font-normal text-sm">
-                                    Select as "Where would you like to send your crypto to"
-                                </p>
-                                <div className="flex rounded-md items-center px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+
+                            <BackgroundField header={'Select as "Where would you like to send your crypto to"'}>
+                                <div className='flex items-center space-x-2'>
                                     <SwitchHorizontalIcon className='h-4 w-4' />
-                                    <p className="ml-2">
+                                    <p>
                                         To Another Loopring L2 Account
                                     </p>
                                 </div>
-                            </div>
+                            </BackgroundField>
                         }
                         <div className='flex space-x-4'>
-                            <div className='w-full'>
-                                <p className="block font-normal text-sm">
-                                    Amount
-                                </p>
-                                <div className="relative rounded-md px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
-                                    <p>
-                                        {swap?.data?.amount}
-                                    </p>
-                                    <div className='absolute inset-y-2 right-2.5'>
-                                        <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                            <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.amount)}>
-                                                <DocumentDuplicateIcon className='h-6 w-5' />
-                                            </div>
-                                        </ClickTooltip>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className='w-full'>
-                                <p className="block font-normal text-sm">
-                                    Asset
-                                </p>
-                                <div className="relative rounded-md px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
-                                    <p>
-                                        {swap?.data?.currency}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <p className="block font-normal text-sm">
-                                Recipient
-                            </p>
-                            <div className="relative rounded-md items-center pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
-                                <p className='break-all'>
-                                    {swap?.data.offramp_info.deposit_address}
-                                </p>
-                                <div className='absolute inset-y-2 right-2.5 md:top-2 top-5'>
-                                    <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                        <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data.offramp_info.deposit_address)}>
-                                            <DocumentDuplicateIcon className='h-6 w-5' />
-                                        </div>
-                                    </ClickTooltip>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <p className="block font-normal text-sm">
-                                Address Type
-                            </p>
-                            <div className="rounded-md items-center px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                            <BackgroundField isCopiable={true} toCopy={swap?.data?.amount} header={'Amount'}>
                                 <p>
-                                    EOA Wallet
+                                    {swap?.data?.amount}
                                 </p>
-                            </div>
+                            </BackgroundField>
+                            <BackgroundField header={'Asset'}>
+                                <p>
+                                    {swap?.data?.currency}
+                                </p>
+                            </BackgroundField>
                         </div>
+                        <BackgroundField isCopiable={true} toCopy={swap?.data.offramp_info.deposit_address} header={'Recipient'}>
+                            <p className='break-all'>
+                                {swap?.data.offramp_info.deposit_address}
+                            </p>
+                        </BackgroundField>
+                        <BackgroundField header={'Address Type'}>
+                            <p>
+                                EOA Wallet
+                            </p>
+                        </BackgroundField>
                         {
                             swap?.data?.offramp_info?.memo &&
-                            <div>
-                                <p className="block font-normal text-sm">
-                                    Memo
+                            <BackgroundField isCopiable={true} toCopy={swap?.data?.offramp_info?.memo} header={'Memo'}>
+                                <p className='break-all'>
+                                    {swap?.data?.offramp_info?.memo}
                                 </p>
-                                <div className="relative rounded-md pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
-                                    <p className='break-all'>
-                                        {swap?.data?.offramp_info?.memo}
-                                    </p>
-                                    <div className='absolute inset-y-2 right-2.5 md:top-2 top-5'>
-                                        <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                            <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.offramp_info?.memo)}>
-                                                <DocumentDuplicateIcon className='h-6 w-5' />
-                                            </div>
-                                        </ClickTooltip>
-                                    </div>
-                                </div>
-                            </div>
+                            </BackgroundField>
                         }
                     </div>
                 </div>

@@ -20,7 +20,7 @@ import { ExchangeAuthorizationSteps, FormWizardSteps, OfframpExchangeAuthorizati
 import TokenService from "../../../lib/TokenService";
 import { useUserExchangeDataUpdate } from "../../../context/userExchange";
 import axios from "axios";
-import AmountAndFeeDetails from "../../Disclosure/amountAndFeeDetailsComponent";
+import AmountAndFeeDetails from "../../DisclosureComponents/amountAndFeeDetailsComponent";
 import ConnectImmutableX from "./ConnectImmutableX";
 import ConnectDeversifi from "../../ConnectDeversifi";
 import toast from "react-hot-toast";
