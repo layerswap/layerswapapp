@@ -13,6 +13,7 @@ import Image from 'next/image'
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
+import WarningMessage from '../../WarningMessage';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -122,11 +123,18 @@ const WithdrawNetworkStep: FC = () => {
                         </BackgroundField>
                         {
                             swap?.data?.offramp_info?.memo &&
-                            <BackgroundField isCopiable={true} toCopy={swap?.data?.offramp_info?.memo} header={'Memo'}>
-                                <p className='break-all'>
-                                    {swap?.data?.offramp_info?.memo}
-                                </p>
-                            </BackgroundField>
+                            <>
+                                <BackgroundField isCopiable={true} toCopy={swap?.data?.offramp_info?.memo} header={'Memo'}>
+                                    <p className='break-all'>
+                                        {swap?.data?.offramp_info?.memo}
+                                    </p>
+                                </BackgroundField>
+                                <WarningMessage>
+                                    <p className='font-normal text-sm text-darkblue-600'>
+                                        - Please include the "Memo" field - it is required for a successful deposit.
+                                    </p>
+                                </WarningMessage>
+                            </>
                         }
                     </div>
                 </div>
