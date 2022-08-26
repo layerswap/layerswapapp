@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import { CalculateReceiveAmount } from '../../../lib/fees';
 import ToggleButton from '../../buttons/toggleButton';
 import { isValidAddress } from '../../../lib/addressValidator';
-import AddressDetails from '../../Disclosure/AddressDetails';
+import AddressDetails from '../../DisclosureComponents/AddressDetails';
 import { classNames } from '../../utils/classNames';
 import TokenService from '../../../lib/TokenService';
 import { BransferApiClient } from '../../../lib/bransferApiClients';

@@ -79,7 +79,7 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
 
 
 const Sceleton = () => {
-  return <div className="animate-pulse opacity-60 w-full px-3 md:px-8 py-12 rounded-lg  bg-darkBlue max-w-2xl mx-auto shadow-card align-middle shadow-xl transition-all">
+  return <div className="animate-pulse opacity-60 w-full px-3 md:px-8 py-12 rounded-lg  bg-darkBlue max-w-2xl mx-auto shadow-card align-middle transition-all">
     <div className='flex place-content-center mt-20 mb-16 md:mb-8'>
       <div className='relative'>
         <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>

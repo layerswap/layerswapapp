@@ -1,6 +1,6 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
-import HoverTooltip from '.././Tooltips/HoverTooltip';
+import HoverTooltip from '../Tooltips/HoverTooltip';
 import { Currency } from '../../Models/Currency';
 import { Exchange } from '../../Models/Exchange';
 import { SwapType } from '../DTOs/SwapFormValues';

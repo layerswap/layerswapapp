@@ -2,11 +2,10 @@ import { ChevronDownIcon, DocumentDuplicateIcon, ExternalLinkIcon, PencilAltIcon
 import { Disclosure } from "@headlessui/react";
 import { useSwapDataState } from '../../context/swap';
 import Image from 'next/dist/client/image';
-import { copyTextToClipboard } from '../utils/copyToClipboard';
 import { FC, MouseEventHandler, useEffect } from 'react';
-import ClickTooltip from '../Tooltips/ClickTooltip';
 import shortenAddress from '../utils/ShortenAddress';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
+import CopyButton from '../buttons/copyButton';
 
 export class AddressDetailsProps {
     onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
@@ -121,12 +120,9 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                                 Edit Address
                                             </button>
                                             <div className='cursor-pointer text-pink-primary-300 hover:text-white flex items-center m-1.5'>
-                                                <ClickTooltip text='Copied!' moreClassNames='-right-1 bottom-3'>
-                                                    <div onClick={() => copyTextToClipboard(swapFormData?.destination_address)}>
-                                                        <DocumentDuplicateIcon className='inline-block h-4 w-4 mr-2' />
-                                                        <span className='text-sm font-normal'>Copy Full Address</span>
-                                                    </div>
-                                                </ClickTooltip>
+                                                <CopyButton toCopy={swapFormData?.destination_address}>
+                                                    <span className='text-sm font-normal'>Copy Full Address</span>
+                                                </CopyButton>
                                             </div>
                                         </div>
                                     </>
