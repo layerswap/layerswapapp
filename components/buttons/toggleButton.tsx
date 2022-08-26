@@ -1,11 +1,6 @@
-import { FC, MouseEventHandler, useState } from 'react'
+import { FC } from 'react'
 import { Switch } from '@headlessui/react'
-import SpinIcon from '../icons/spinIcon';
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
-
+import { classNames } from '../utils/classNames';
 export class ToggleButtonProps {
     isChecked: boolean;
     onChange: (isChecked: boolean) => void; 

@@ -3,7 +3,7 @@ import { Fragment, useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapListResponse, SwapItem } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { ChevronRightIcon, DocumentDuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
+import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 
 import { Dialog, Transition } from "@headlessui/react"
 import SwapDetails from "./swapDetailsComponent"
@@ -11,12 +11,11 @@ import LayerswapMenu from "./LayerswapMenu"
 import LayerSwapLogo from "./icons/layerSwapLogo"
 import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
-import { copyTextToClipboard } from "./utils/copyToClipboard"
 import { useAuthState } from "../context/authContext"
-import ClickTooltip from "./Tooltips/ClickTooltip"
 import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
 import SubmitButton from "./buttons/submitButton"
+import CopyButton from "./buttons/copyButton"
 
 
 export function StatusIcon({ swap }: { swap: SwapItem }) {
@@ -260,12 +259,9 @@ function TransactionsHistory() {
                                 )}
                               >
                                 <div className='inline-flex items-center'>
-                                  <span className="mr-2">{shortenAddress(swap.id)}</span>
-                                  <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
-                                    <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap.id)}>
-                                      <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
-                                    </div>
-                                  </ClickTooltip>
+                                  <CopyButton iconClassName="text-gray-500" toCopy={swap.id}>
+                                    {shortenAddress(swap.id)}
+                                  </CopyButton>
                                 </div>
                               </td>
                               <td
