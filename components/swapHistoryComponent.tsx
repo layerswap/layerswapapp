@@ -3,7 +3,7 @@ import { Fragment, useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapListResponse, SwapItem } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { ChevronRightIcon, DocumentDuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
+import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 
 import { Dialog, Transition } from "@headlessui/react"
 import SwapDetails from "./swapDetailsComponent"
@@ -14,6 +14,7 @@ import Image from 'next/image'
 import { useAuthState } from "../context/authContext"
 import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
+import SubmitButton from "./buttons/submitButton"
 import CopyButton from "./buttons/copyButton"
 
 
@@ -25,7 +26,7 @@ export function StatusIcon({ swap }: { swap: SwapItem }) {
           <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2" viewBox="0 0 60 60" fill="none">
             <circle cx="30" cy="30" r="30" fill="#E43636" />
           </svg>
-          <p className="">Failed</p>
+          <p>Failed</p>
         </div>
       </>)
   } else if (swap?.status === 'completed') {
@@ -35,28 +36,40 @@ export function StatusIcon({ swap }: { swap: SwapItem }) {
           <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2" viewBox="0 0 60 60" fill="none">
             <circle cx="30" cy="30" r="30" fill="#55B585" />
           </svg>
-          <p className="">Completed</p>
+          <p>Completed</p>
         </div>
       </>
     )
   }
-  else if (swap?.payment?.status == "closed")
+  else if (swap?.payment?.status == "closed") {
     return (
       <>
         <div className="inline-flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2" viewBox="0 0 60 60" fill="none">
             <circle cx="30" cy="30" r="30" fill="#E43636" />
           </svg>
-          <p className="">Closed</p>
+          <p>Closed</p>
         </div>
       </>)
+  }
+  else if (swap?.payment?.status == "expired") {
+    return (
+      <>
+        <div className="inline-flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2" viewBox="0 0 60 60" fill="none">
+            <circle cx="30" cy="30" r="30" fill="#E43636" />
+          </svg>
+          <p>Expired</p>
+        </div>
+      </>)
+  }
   else {
     return <>
       <div className="inline-flex items-center">
         <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2 lg:h-2 lg:w-2" viewBox="0 0 60 60" fill="none">
           <circle cx="30" cy="30" r="30" fill="#facc15" />
         </svg>
-        <p className="">Pending</p>
+        <p>Pending</p>
       </div>
     </>
   }
@@ -460,6 +473,15 @@ function TransactionsHistory() {
                                     View in Explorer
                                     <ExternalLinkIcon className='ml-2 h-5 w-5' />
                                   </a>
+                                </div>
+                              }
+                              {
+                                selectedSwap?.status == 'pending' || selectedSwap?.payment?.status == 'processing' &&
+                                <div className="text-white text-sm">
+                                  <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={""}>
+                                    Go to Withdrawal page
+                                    <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                                  </SubmitButton>
                                 </div>
                               }
                             </Dialog.Panel>

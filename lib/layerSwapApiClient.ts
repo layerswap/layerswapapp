@@ -77,7 +77,7 @@ export type SwapItem = {
 
 export type Payment = {
     id: string,
-    status: 'completed' | 'closed' | 'processing' | "created",
+    status: 'completed' | 'closed' | 'processing' | "created" | "expired",
     close_reason: string,
     flow: string,
     amount: number,

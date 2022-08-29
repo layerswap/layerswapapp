@@ -158,7 +158,7 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
     const { values: { currency, swapType, exchange } } = useFormikContext<SwapFormValues>();
     const name = "amount"
     let minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, swapType);
-    let maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, swapType);
+    let maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, exchange?.baseObject, swapType);
 
     const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)

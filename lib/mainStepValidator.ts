@@ -9,7 +9,7 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
         let minAllowedAmount = CalculateMinAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.swapType);
-        let maxAllowedAmount = CalculateMaxAllowedAmount(values?.currency?.baseObject, values?.swapType);
+        let maxAllowedAmount = CalculateMaxAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.swapType);
 
         if (!values.exchange) {
             (errors.exchange as any) = 'Select an exchange';

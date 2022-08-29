@@ -14,6 +14,7 @@ import ExchangeSettings from '../../../lib/ExchangeSettings';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
+import WarningMessage from '../../WarningMessage';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -136,7 +137,7 @@ const WithdrawExchangeStep: FC = () => {
                                         {payment?.manual_flow_context?.note}
                                     </p>
                                 </BackgroundField>
-                                <div className='flex-col w-full rounded-md bg-yellow-400 shadow-lg p-2'>
+                                {/* <div className='flex-col w-full rounded-md bg-yellow-400 shadow-lg p-2'>
                                     <div className='flex items-center'>
                                         <div className='mr-2 p-2 rounded-lg bg-yellow-500'>
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="black" strokeWidth={2}>
@@ -153,7 +154,15 @@ const WithdrawExchangeStep: FC = () => {
                                         </div>
 
                                     </div>
-                                </div>
+                                </div> */}
+                                <WarningMessage>
+                                    <p className='font-normal text-sm text-darkblue-600'>
+                                        - Please include the "Remarks" field - it is required for a successful deposit.
+                                    </p>
+                                    <p className='font-normal text-sm text-darkblue-600'>
+                                        - Please make sure the "Internal transfer" checkbox is checked.
+                                    </p>
+                                </WarningMessage>
                             </>
                         }
                     </div>
