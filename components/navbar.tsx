@@ -1,16 +1,8 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import LayerSwapLogo from './icons/layerSwapLogo'
-import { useRouter } from 'next/router';
+import handleGoHome from './utils/GoHome';
 
 export default function Navbar() {
-    const router = useRouter();
-
-    const handleGoHome = useCallback(() => {
-        router.push({
-            pathname: "/",
-            query: router.query
-        }, "/", { shallow: false })
-    }, [router.query])
 
     return (
         <div className='mt-12 mb-8 mx-auto px-4 overflow-hidden hidden md:block'>

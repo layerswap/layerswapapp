@@ -1,22 +1,14 @@
 import { ArrowRightIcon, ExternalLinkIcon } from '@heroicons/react/outline';
-import router, { useRouter } from 'next/router';
-import { FC, useCallback } from 'react'
+import { FC } from 'react'
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
+import handleGoHome from '../../utils/GoHome';
 
 const SuccessfulStep: FC = () => {
 
     const { data } = useSettingsState()
     const { swap } = useSwapDataState()
-    const router = useRouter()
-
-    const handleGoHome = useCallback(() => {
-        router.push({
-            pathname: "/",
-            query: router.query
-        })
-    }, [router.query])
 
     return (
         <>

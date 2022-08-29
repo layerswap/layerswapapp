@@ -5,7 +5,7 @@ import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWiza
 import { BaseWizard } from '../../Models/Wizard';
 import LayerswapMenu from '../LayerswapMenu';
 import LayerSwapLogo from '../icons/layerSwapLogo';
-import { useRouter } from 'next/router';
+import handleGoHome from '../utils/GoHome';
 
 const Wizard: FC = () => {
 
@@ -83,14 +83,6 @@ const Wizard: FC = () => {
 function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
    const { goBack } = useFormWizardaUpdate()
    const { wizard, currentStep } = useFormWizardState<BaseWizard>()
-   const router = useRouter();
-
-   const handleGoHome = useCallback(() => {
-      router.push({
-          pathname: "/",
-          query: router.query
-      })
-  }, [router.query])
 
    return <>
       <div className="w-full flex items-center justify-between px-6 md:px-8 mt-3 h-[44px]" >
