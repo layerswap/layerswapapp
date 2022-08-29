@@ -7,9 +7,6 @@ type Props = {
     URl: string;
     onConfirm?: () => void
 }
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
 export function DocIframe({ URl, onConfirm }: Props) {
     const [loading, setLoading] = useState(true)
     useEffect(() => {
@@ -53,32 +50,24 @@ export function DocIframe({ URl, onConfirm }: Props) {
 }
 
 const Sceleton = () => {
-    return <div className="shadow rounded-md w-full mx-auto px-8">
+    return <div className="shadow rounded-md w-full mx-auto px-2 md:px-4">
         <div className="animate-pulse flex space-x-4">
             <div className="flex-1 items-center space-y-6 py-1 content-start">
                 <div className="h-4 mx-auto w-1/2 place-self-center justify-self-center self-center bg-slate-700 rounded mb-4"></div>
                 <div className="space-y-6">
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="h-2 bg-slate-700 rounded col-span-2"></div>
-                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                    </div>
-                    <div className="h-2 bg-slate-700 rounded"></div>
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="h-2 bg-slate-700 rounded col-span-2"></div>
-                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                    </div>
-                    <div className="h-2 bg-slate-700 rounded"></div>
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="h-2 bg-slate-700 rounded col-span-2"></div>
-                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                    </div>
-                    <div className="h-2 bg-slate-700 rounded"></div>
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="h-2 bg-slate-700 rounded col-span-2"></div>
-                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                    </div>
-                    <div className="h-2 bg-slate-700 rounded"></div>
+                    {[...Array(6)]?.map((item, index) =>
+                        <div
+                            key={index}
+                        >
+                            <div className="h-2 bg-slate-700 rounded"></div>
 
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="h-2 bg-slate-700 rounded col-span-2"></div>
+                                <div className="h-2 bg-slate-700 rounded col-span-1"></div>
+                            </div>
+                        </div>
+                    )}
+                    <div className="h-2 bg-slate-700 rounded"></div>
                 </div>
             </div>
         </div>

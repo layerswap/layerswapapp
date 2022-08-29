@@ -314,7 +314,7 @@ function UserExchanges() {
                                         }
                                         {
                                             exchangeToConnect?.authorization_flow === "api_credentials" &&
-                                            <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} />
+                                            <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverClassNames='pt-7' />
                                         }
                                         {
                                             exchangeToDisconnect &&
