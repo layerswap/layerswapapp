@@ -13,7 +13,7 @@ Example: [Loopring & FTX.COM](https://www.layerswap.io/?destNetwork=LOOPRING_MAI
 
 - *lockNetwork = true* - To lock the provided network.
 
-- *asset* - To pre-select the asset. NOTE: aviable assets depend on the selected network, for example, the asset **LRC** is only aviable in **LOOPRING** network. Avilable values are: ***ETH***, ***USDC***, ***USDT*** and ***LRC***.
+- *asset* - To pre-select the asset. NOTE: available assets depend on the selected network, for example, the asset **LRC** is only available in **LOOPRING** network. Avilable values are: ***ETH***, ***USDC***, ***USDT*** and ***LRC***.
 
 - [Full template](https://www.layerswap.io/?destNetwork=zksync_mainnet&destAddress=zksync%3A0x4d70500858f9705ddbd56d007d13bbc92c9c67d1&lockNetwork=true&lockAddress=true&addressSource=argent&email=tantushyan2736%40gmail.com).
 
@@ -34,16 +34,5 @@ If you're integrating Layerswap to your wallet, and want your users to see where
 <img className='mx-auto' src="/images/tokenPocketIntegr.png" alt="TokenPocket" width="500"/>
 
 <h2 id='bottom'>Available values for the destNetwork parameter</h2>
-
-| **Network Name**  | **Query Type**     |
-| ----------------- | -----------------: |
-| Loopring          | LOOPRING_MAINNET   |
-| Zksync            | ZKSYNC_MAINNET     | 
-| Arbitrum          | ARBITRUM_MAINNET   |
-| Ronin             | RONIN_MAINNET      |
-| Boba              | BOBA_MAINNET       | 
-| Optimism          | OPTIMISM_MAINNET   |
-| Immutable X       | IMMUTABLEX_MAINNET |
-| StarkNet          | STARKNET_MAINNET   |
 
 

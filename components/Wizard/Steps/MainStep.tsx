@@ -34,7 +34,6 @@ import KnownIds from "../../../lib/knownIds";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
-import Banner from "../../banner";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
 import { ConnectedFocusError } from "../../../lib/external";
 
