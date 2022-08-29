@@ -18,6 +18,8 @@ import TokenService from '../../../lib/TokenService';
 import { BransferApiClient } from '../../../lib/bransferApiClients';
 import { CreateSwapParams } from '../../../lib/layerSwapApiClient';
 import NumericInput from '../../Input/NumericInput';
+import NetworkSettings from '../../../lib/NetworkSettings';
+import WarningMessage from '../../WarningMessage';
 import { Form, Formik, FormikErrors } from 'formik';
 
 interface TwoFACodeFormValues {
@@ -275,6 +277,14 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                         </div>
                                     </div>
                                 </div>
+                                {
+                                    swapFormData?.swapType === "offramp" && NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage &&
+                                    <WarningMessage className='mb-4'>
+                                        <p className='font-normal text-sm text-darkblue-600'>
+                                            {NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage}
+                                        </p>
+                                    </WarningMessage>
+                                }
                                 <AddressDetails onClick={handleStartEditingAddress} />
                                 {
                                     twoFARequired &&
