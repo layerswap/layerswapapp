@@ -18,7 +18,7 @@ import TokenService from '../../../lib/TokenService';
 import { BransferApiClient } from '../../../lib/bransferApiClients';
 import { CreateSwapParams } from '../../../lib/layerSwapApiClient';
 import NumericInput from '../../Input/NumericInput';
-import { Form, Formik } from 'formik';
+import { Form, Formik, FormikErrors } from 'formik';
 
 interface TwoFACodeFormValues {
     TwoFACode: string
@@ -84,6 +84,8 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount?.toString()?.replace(",", ".")) + 5)
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const handleSubmit = useCallback(async () => {
+        handleReset();
+        handleStart();
         setLoading(true)
         setTwoFARequired(false)
         try {
@@ -159,7 +161,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         STARTED: 'Started',
         STOPPED: 'Stopped',
     }
-    const INITIAL_COUNT = 60
+    const INITIAL_COUNT = 120
     const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
     const [status, setStatus] = useState(STATUS.STOPPED)
 
@@ -210,7 +212,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 initialValues={initialValues}
                 onSubmit={handleSubmit}
             >
-                {({ handleChange, isSubmitting }) => (
+                {({ handleChange }) => (
                     <Form className='px-6 md:px-8 h-full flex flex-col justify-between'>
                         <div className=''>
                             <h3 className='mb-7 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
@@ -328,7 +330,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             {/* <div className="flex items-center mb-2">
                                 <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
                                  </div> */}
-                            <SubmitButton type='submit' isDisabled={(swapFormData?.swapType === "onramp" && !confirm_right_wallet) || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
+                            <SubmitButton type='submit' isDisabled={twoFARequired && twoFactorCode.length != 7 || loading || (swapFormData?.swapType === "onramp" && !confirm_right_wallet)} icon="" isSubmitting={loading} onClick={handleSubmit}>
                                 Confirm
                             </SubmitButton>
                         </div>
