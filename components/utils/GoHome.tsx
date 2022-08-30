@@ -1,24 +1,28 @@
 import { useRouter } from "next/router";
-import { useCallback } from "react";
+import { FC, useCallback } from "react";
 import LayerSwapLogo from "../icons/layerSwapLogo";
 
 interface Props {
-    className?: string
+    className?: string;
+    children?: JSX.Element | JSX.Element[];
 }
 
-const GoHomeButton = (({ className }: Props) => {
+const GoHomeButton: FC<Props> = (({ className, children }) => {
     const router = useRouter()
     const handleGoHome = useCallback(() => {
-        typeof window !== 'undefined' && router.push({
+        router.push({
             pathname: "/",
             query: router.query
         })
     }, [router.query])
 
     return (
-        <a onClick={() => handleGoHome()}>
-            <LayerSwapLogo className={className ?? "h-8 w-auto text-white"} />
-        </a>
+        <div onClick={handleGoHome}>
+            {
+                children ??
+                <LayerSwapLogo className={className ?? "h-8 w-auto text-white"} />
+            }
+        </div>
     )
 })
 
