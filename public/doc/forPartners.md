@@ -21,7 +21,9 @@ Example: [Loopring & FTX.COM](https://www.layerswap.io/?destNetwork=LOOPRING_MAI
 
 ## Centralized exchange or L2/side-chain integration
 
-If you want Layerswap to integrate your exchange or L2 you can reach out to hi@layerswap.io. Prerequisites for exchange integration are the availability of (free and instant) internal transactions and APIs to fetch deposit/withdrawal history. For L2 integrations, only the ability to transfer between accounts.
+If you want Layerswap to integrate your exchange or L2 you can reach out to hi@layerswap.io. Prerequisites are:
+- exchange integration: availability of (free and instant) internal transactions and APIs to fetch deposit/withdrawal history
+- L2 integrations: ability to transfer between accounts.
 
 ---
 
