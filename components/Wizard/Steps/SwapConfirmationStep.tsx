@@ -340,7 +340,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             {/* <div className="flex items-center mb-2">
                                 <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
                                  </div> */}
-                            <SubmitButton type='submit' isDisabled={twoFARequired && twoFactorCode.length != 7 || loading || (swapFormData?.swapType === "onramp" && !confirm_right_wallet)} icon="" isSubmitting={loading} onClick={handleSubmit}>
+                            <SubmitButton type='submit' isDisabled={twoFARequired && twoFactorCode.length < 6 || loading || (swapFormData?.swapType === "onramp" && !confirm_right_wallet)} icon="" isSubmitting={loading} onClick={handleSubmit}>
                                 Confirm
                             </SubmitButton>
                         </div>
