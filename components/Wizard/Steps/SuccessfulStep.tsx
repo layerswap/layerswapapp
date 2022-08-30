@@ -1,22 +1,14 @@
 import { ArrowRightIcon, ExternalLinkIcon } from '@heroicons/react/outline';
-import router, { useRouter } from 'next/router';
-import { FC, useCallback } from 'react'
+import { FC } from 'react'
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
+import GoHomeButton from '../../utils/GoHome';
 
 const SuccessfulStep: FC = () => {
 
     const { data } = useSettingsState()
     const { swap } = useSwapDataState()
-    const router = useRouter()
-
-    const handleGoHome = useCallback(() => {
-        router.push({
-            pathname: "/",
-            query: router.query
-        })
-    }, [router.query])
 
     return (
         <>
@@ -47,7 +39,9 @@ const SuccessfulStep: FC = () => {
                     </div>
                 }
                 <div className="w-full justify-center">
-                    <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={''} onClick={handleGoHome}>Swap more <ArrowRightIcon className='ml-2 h-5 w-5' /></SubmitButton>
+                    <GoHomeButton>
+                        <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={''}>Swap more <ArrowRightIcon className='ml-2 h-5 w-5' /></SubmitButton>
+                    </GoHomeButton>
                 </div>
             </div>
         </>

@@ -8,6 +8,7 @@ import Image from 'next/image'
 import toast from 'react-hot-toast';
 import shortenAddress from './utils/ShortenAddress';
 import CopyButton from './buttons/copyButton';
+import { SwapDetailsComponentSceleton } from './Sceletons';
 
 type Props = {
     id: string
@@ -51,7 +52,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
     }, [id, router.query])
 
     if (loading)
-        return <Sceleton />
+        return <SwapDetailsComponentSceleton />
 
     return (
         <>
@@ -154,29 +155,6 @@ const SwapDetails: FC<Props> = ({ id }) => {
             </div>
         </>
     )
-}
-
-const Sceleton = () => {
-    return <div className="animate-pulse"><div className="w-full grid grid-flow-row">
-        <div className="rounded-md bg-darkBlue w-full grid grid-flow-row">
-            <div className="items-center block text-base font-lighter leading-6 text-pink-primary-300">
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-400 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                {[...Array(9)]?.map((item, index) => (
-                    <div key={index}>
-                        <hr className='horizontal-gradient my-1' />
-                        <div className="flex justify-between items-baseline">
-                            <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                            <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    </div>
-    </div>
 }
 
 export default SwapDetails;

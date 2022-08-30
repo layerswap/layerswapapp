@@ -1,11 +1,9 @@
 import Navbar from "./navbar"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import Head from "next/head"
 import FooterComponent from "./footerComponent"
 import { useRouter } from "next/router";
 import { Toaster } from 'react-hot-toast';
-import { SildeOverRef } from "./SlideOver";
-
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -75,17 +73,4 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       </main>
     </div>
   </>)
-}
-
-
-const Sceleton = () => {
-  return <div className="animate-pulse opacity-60 w-full px-3 md:px-8 py-12 rounded-lg  bg-darkBlue max-w-2xl mx-auto shadow-card align-middle transition-all">
-    <div className='flex place-content-center mt-20 mb-16 md:mb-8'>
-      <div className='relative'>
-        <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
-        <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
-        <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-pink-primary-800 rounded-full'></div>
-      </div>
-    </div>
-  </div>
 }
