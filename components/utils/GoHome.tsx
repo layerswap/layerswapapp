@@ -6,7 +6,7 @@ interface Props {
     className?: string
 }
 
-const GoHomeButton: FC<Props> = (({ className }) => {
+const GoHomeButton = (({ className }: Props) => {
 
     const handleGoHome = useCallback(() => {
         router.push({
