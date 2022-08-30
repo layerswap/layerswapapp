@@ -19,7 +19,7 @@ Example: [Loopring & FTX.COM](https://www.layerswap.io/?destNetwork=LOOPRING_MAI
 
 ---
 
-## Centralized exchange or L2/side-chain integration
+### Centralized exchange or L2/side-chain integration
 
 If you want Layerswap to integrate your exchange or L2 you can reach out to hi@layerswap.io. Prerequisites are:
 - exchange integration: availability of (free and instant) internal transactions and APIs to fetch deposit/withdrawal history
@@ -27,12 +27,10 @@ If you want Layerswap to integrate your exchange or L2 you can reach out to hi@l
 
 ---
 
-## Wallet Integration Source
+### Wallet Integration Source
 
 If you're integrating Layerswap to your wallet, and want your users to see where their address is coming from, you can reach out to hi@layerswap.io and provide the assets and information shown to the user.
 
 <img className='mx-auto' src="/images/argentIntegr.png" alt="Argent" width="500"/> 
 <img className='mx-auto' src="/images/imTokenIntegr.png" alt="imToken" width="500"/>
 <img className='mx-auto' src="/images/tokenPocketIntegr.png" alt="TokenPocket" width="500"/>
-
-<h2 id='bottom'>Available values for the destNetwork parameter</h2>

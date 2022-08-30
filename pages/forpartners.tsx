@@ -20,11 +20,12 @@ export default function About(props) {
                 </Head>
 
                 <main>
-                    <div className="flex-col justify-center">
-                        <div className="py-4 px-8 md:px-0 prose md:prose-xl text-blueGray-300">
+                    <div className="flex-col justify-center py-4 px-8 md:px-0 ">
+                        <div className="prose md:prose-xl text-blueGray-300">
                             <MDXRemote {...props.mdxSource} />
                         </div>
-                        <div className="px-4 sm:px-6 lg:px-8">
+                        <p id='bottom' className='text-white text-lg md:text-xl text-left font-bold my-10'>Available values for the destNetwork parameter</p>
+                        <div>
                             <div className="mt-8 flex flex-col">
                                 <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                                     <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
@@ -56,8 +57,8 @@ export default function About(props) {
                                 </div>
                             </div>
                         </div>
-                        <p id='bottom2' className='text-white text-2xl md:text-4xl text-center font-bold my-10'>Available values for the sourceExchangeName parameter</p>
-                        <div className="px-4 sm:px-6 lg:px-8">
+                        <p id='bottom2' className='text-white text-lg md:text-xl text-left font-bold my-10'>Available values for the sourceExchangeName parameter</p>
+                        <div>
                             <div className="mt-8 flex flex-col">
                                 <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                                     <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
