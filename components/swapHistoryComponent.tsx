@@ -7,7 +7,6 @@ import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroico
 import { Dialog, Transition } from "@headlessui/react"
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
-import LayerSwapLogo from "./icons/layerSwapLogo"
 import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
 import { useAuthState } from "../context/authContext"
@@ -15,8 +14,8 @@ import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
 import SubmitButton from "./buttons/submitButton"
 import CopyButton from "./buttons/copyButton"
-import handleGoHome from "./utils/GoHome"
 import { SwapHistoryComponentSceleton } from "./Sceletons"
+import GoHomeButton from "./utils/GoHome"
 
 export function StatusIcon({ swap }: { swap: SwapItem }) {
   if (swap?.status === 'failed') {
@@ -159,9 +158,7 @@ function TransactionsHistory() {
         </div>
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
           <div className="flex justify-center">
-            <a onClick={handleGoHome}>
-              <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
-            </a>
+            <GoHomeButton />
           </div>
         </div>
         <LayerswapMenu />

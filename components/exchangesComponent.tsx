@@ -10,14 +10,13 @@ import { Exchange } from "../Models/Exchange"
 import ConnectOauthExchange from "./connectOauthExchange"
 import ConnectApiKeyExchange from "./connectApiKeyExchange"
 import LayerswapMenu from "./LayerswapMenu"
-import LayerSwapLogo from "./icons/layerSwapLogo"
 import SubmitButton from "./buttons/submitButton";
 import { useAuthState } from "../context/authContext";
 import toast from "react-hot-toast";
 import shortenAddress, { shortenEmail } from "./utils/ShortenAddress";
 import HoverTooltip from "./Tooltips/HoverTooltip";
-import handleGoHome from "./utils/GoHome";
 import { ExchangesComponentSceleton } from "./Sceletons";
+import GoHomeButton from "./utils/GoHome";
 
 interface UserExchange extends Exchange {
     note?: string,
@@ -142,7 +141,7 @@ function UserExchanges() {
 
     function isEmail(data: string) {
         if (/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(data)) {
-           return shortenEmail(data)
+            return shortenEmail(data)
         } else {
             return shortenAddress(data);
         }
@@ -157,9 +156,7 @@ function UserExchanges() {
                 </div>
                 <div className='mx-auto px-4 overflow-hidden md:hidden'>
                     <div className="flex justify-center">
-                        <a onClick={handleGoHome}>
-                            <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
-                        </a>
+                        <GoHomeButton />
                     </div>
                 </div>
                 <LayerswapMenu />

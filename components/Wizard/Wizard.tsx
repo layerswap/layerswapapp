@@ -4,8 +4,7 @@ import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import { BaseWizard } from '../../Models/Wizard';
 import LayerswapMenu from '../LayerswapMenu';
-import LayerSwapLogo from '../icons/layerSwapLogo';
-import handleGoHome from '../utils/GoHome';
+import GoHomeButton from '../utils/GoHome';
 
 const Wizard: FC = () => {
 
@@ -92,9 +91,7 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
             </button>
             <div className='mx-auto px-4 overflow-hidden md:hidden'>
                <div className="flex justify-center">
-                  <a onClick={handleGoHome}>
-                     <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
-                  </a>
+                  <GoHomeButton />
                </div>
             </div>
             <LayerswapMenu />
