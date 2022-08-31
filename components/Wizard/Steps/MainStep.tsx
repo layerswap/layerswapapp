@@ -25,7 +25,6 @@ import ConnectImmutableX from "./ConnectImmutableX";
 import ConnectDeversifi from "../../ConnectDeversifi";
 import toast from "react-hot-toast";
 import { InjectedConnector } from "@web3-react/injected-connector";
-import { isValidAddress } from "../../../lib/addressValidator";
 import { clearTempData, getTempData } from "../../../lib/openLink";
 import NumericInput from "../../Input/NumericInput";
 import AddressInput from "../../Input/AddressInput";
@@ -34,10 +33,8 @@ import KnownIds from "../../../lib/knownIds";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
-import Banner from "../../banner";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
 import { ConnectedFocusError } from "../../../lib/external";
-import { useSwapInitialValues } from "../../../hooks/useSwapInitialValues";
 import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
 
 const CurrenciesField: FC = () => {

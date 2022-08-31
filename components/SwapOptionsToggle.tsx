@@ -2,7 +2,6 @@ import { Field, useFormikContext } from "formik";
 import { FC, forwardRef, useCallback, useState } from "react";
 import { useQueryState } from "../context/query";
 import { useSettingsState } from "../context/settings";
-import { useSwapInitialValues } from "../hooks/useSwapInitialValues";
 import { generateSwapInitialValues } from "../lib/generateSwapInitialValues";
 import { SwapFormValues, SwapType } from "./DTOs/SwapFormValues";
 import OptionToggle, { NavRadioOption } from "./OptionToggle"
