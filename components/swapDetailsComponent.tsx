@@ -3,12 +3,12 @@ import { FC, useEffect, useState } from 'react'
 import { useSettingsState } from '../context/settings';
 import LayerSwapApiClient, { SwapItemResponse } from '../lib/layerSwapApiClient';
 import TokenService from '../lib/TokenService';
-import { StatusIcon } from './swapHistoryComponent';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
 import shortenAddress from './utils/ShortenAddress';
 import CopyButton from './buttons/copyButton';
 import { SwapDetailsComponentSceleton } from './Sceletons';
+import StatusIcon from './StatusIcons';
 
 type Props = {
     id: string

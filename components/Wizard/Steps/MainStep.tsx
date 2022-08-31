@@ -36,7 +36,7 @@ import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
 import Banner from "../../banner";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
-import { ConnectedFocusError } from "../../../lib/external";
+import { ConnectedFocusError } from "../../../lib/external/ConnectedFocusError";
 
 const CurrenciesField: FC = () => {
     const {

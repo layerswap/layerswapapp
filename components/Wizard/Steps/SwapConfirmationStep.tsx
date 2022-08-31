@@ -20,10 +20,13 @@ import { CreateSwapParams } from '../../../lib/layerSwapApiClient';
 import NumericInput from '../../Input/NumericInput';
 import NetworkSettings from '../../../lib/NetworkSettings';
 import WarningMessage from '../../WarningMessage';
-import { Form, Formik, FormikErrors } from 'formik';
+import { Form, Formik, FormikErrors, FormikProps } from 'formik';
+import { nameOf } from '../../../lib/external/nameof';
 
-interface TwoFACodeFormValues {
-    TwoFACode: string
+interface SwapConfirmationFormValues {
+    TwoFACode: string;
+    RightWallet: boolean;
+    TwoFARequired: boolean;
 }
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
@@ -31,12 +34,12 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     if (!swapFormData) {
         return null;
     }
-
-    const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
-    const [twoFactorCode, setTwoFactorCode] = useState("")
-    const initialValues: TwoFACodeFormValues = { TwoFACode: '' }
+    const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
+    const initialValues: SwapConfirmationFormValues = { TwoFACode: '', RightWallet: false, TwoFARequired: false }
+    const nameOfTwoFACode = nameOf(formikRef?.current?.values, (t) => t.TwoFACode);
+    const nameOfTwoFARequired = nameOf(formikRef?.current?.values, (r) => r.TwoFARequired);
+    const nameOfRightWallet = nameOf(formikRef?.current?.values, (r) => r.RightWallet)
     const [loading, setLoading] = useState(false)
-    const [twoFARequired, setTwoFARequired] = useState(false)
     const { currentStep } = useFormWizardState<FormWizardSteps>()
 
     const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
@@ -67,9 +70,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setAddressInputValue(destination_address)
     }, [destination_address])
 
-    const handleTwoFACodeChange = (e) => {
-        setTwoFactorCode(e?.target?.value)
-    }
     const handleStartEditingAddress = useCallback(() => {
         if (!loading)
             setEditingAddress(true)
@@ -83,16 +83,15 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     }, [network])
 
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount?.toString()?.replace(",", ".")) + 5)
+    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
-    const handleSubmit = useCallback(async () => {
+    const handleSubmit = useCallback(async (values: SwapConfirmationFormValues) => {
         handleReset();
         handleStart();
         setLoading(true)
-        setTwoFARequired(false)
         try {
             const data: CreateSwapParams = {
-                Amount: Number(swapFormData.amount?.toString()?.replace(",", ".")),
+                Amount: Number(swapFormData.amount),
                 Exchange: swapFormData.exchange?.id,
                 Network: swapFormData.network.id,
                 currency: swapFormData.currency.baseObject.asset,
@@ -102,12 +101,12 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             const _swap = swap?.data?.id ? await getSwap(swap.data.id) : await createSwap(data)
             const { payment } = _swap.data
             if (payment?.status === 'created')
-                await processPayment(_swap, twoFactorCode)
+                await processPayment(_swap, values.TwoFACode)
             ///TODO grdon code please refactor
             else if (payment?.status === 'closed') {
                 const newSwap = await createSwap(data)
                 const newPayment = newSwap
-                await processPayment(newSwap, twoFactorCode)
+                await processPayment(newSwap, values.TwoFACode)
                 router.push(`/${newSwap.data.id}`)
                 return
             }
@@ -123,8 +122,9 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {
-                toast("Coinbase 2FA code required")
-                setTwoFARequired(true)
+                toast("Coinbase 2FA code required");
+                formikRef.current.setFieldValue(nameOfTwoFARequired, true);
+
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {
                 toast.error(`${swapFormData.exchange.name} error: You don't have that much.`)
@@ -134,12 +134,12 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             }
             setLoading(false)
         }
-    }, [swapFormData, swap, twoFactorCode, minimalAuthorizeAmount, transferAmount])
+    }, [swapFormData, swap, initialValues.TwoFACode, minimalAuthorizeAmount, transferAmount])
 
     const handleResendTwoFACode = (e) => {
         handleReset()
         handleStart()
-        setTwoFactorCode(e?.target?.value)
+        formikRef.current.setFieldValue(nameOfTwoFACode, e?.target?.value);
     }
 
     const handleClose = () => {
@@ -213,10 +213,21 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             <Formik
                 initialValues={initialValues}
                 onSubmit={handleSubmit}
+                innerRef={formikRef}
+                validateOnMount={true}
+                validate={(values: SwapConfirmationFormValues) => {
+                    const errors: FormikErrors<SwapConfirmationFormValues> = {};
+                    if (swapFormData?.swapType === "onramp" && !values.RightWallet) {
+                        errors.RightWallet = 'Confirm your wallet';
+                    } else if (values.TwoFARequired && values.TwoFACode.length < 6) {
+                        errors.TwoFACode = 'TwoFA Required';
+                    }
+                    return errors;
+                }}
             >
-                {({ handleChange }) => (
-                    <Form className='px-6 md:px-8 h-full flex flex-col justify-between'>
-                        <div className=''>
+                {({ handleChange, isValid, isSubmitting, values, setFieldValue }) => (
+                    <div className='px-6 md:px-8 h-full flex flex-col justify-between'>
+                        <div>
                             <h3 className='mb-7 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                                 Please confirm your swap
                             </h3>
@@ -227,7 +238,8 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                             <span className="text-left flex"><span className='hidden md:block'>{swapFormData?.swapType === "onramp" ? "From" : "To"}</span>
                                                 <div className="flex items-center">
                                                     <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
-                                                        {swapFormData?.exchange?.imgSrc &&
+                                                        {
+                                                            swapFormData?.exchange?.imgSrc &&
                                                             <Image
                                                                 src={swapFormData?.exchange?.imgSrc}
                                                                 alt="Exchange Logo"
@@ -286,43 +298,43 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     </WarningMessage>
                                 }
                                 <AddressDetails onClick={handleStartEditingAddress} />
-                                {
-                                    twoFARequired &&
-                                    <div className='my-4'>
-                                        <label htmlFor="TwoFACode" className="block font-normal text-pink-primary-300 text-sm">
-                                            Your Coinbase 2FA code
-                                        </label>
-                                        <NumericInput
-                                            pattern='^[0-9]*$'
-                                            placeholder="XXXXXXX"
-                                            maxLength={7}
-                                            name='TwoFACode'
-                                            onChange={e => {
-                                                handleTwoFACodeChange(e); /^[0-9]*$/.test(e.target.value) && handleChange(e)
-                                            }}
-                                            className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
-                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
-                                        />
-
-                                        {
-                                            status == STATUS.STARTED ?
-                                                <span className="flex text-sm leading-6 items-center mt-1.5">
-                                                    Send again in
-                                                    <span className='ml-1'>
-                                                        {twoDigits(minutesToDisplay)}:
-                                                        {twoDigits(secondsToDisplay)}
-                                                    </span>
-                                                </span>
-                                                :
-                                                <span onClick={handleResendTwoFACode} className="text-sm leading-6 mt-1.5 decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
-                                                    Resend code
-                                                </span>
-                                        }
-                                    </div>
-                                }
                             </div>
                         </div>
-                        <div className="text-white text-sm mt-2">
+                        <Form className="text-white text-sm">
+                            {
+                                values.TwoFARequired &&
+                                <div className='my-4'>
+                                    <label htmlFor={nameOfTwoFACode} className="block font-normal text-pink-primary-300 text-sm">
+                                        Your Coinbase 2FA code
+                                    </label>
+                                    <NumericInput
+                                        pattern='^[0-9]*$'
+                                        placeholder="XXXXXXX"
+                                        maxLength={7}
+                                        name={nameOfTwoFACode}
+                                        onChange={e => {
+                                            /^[0-9]*$/.test(e.target.value) && handleChange(e)
+                                        }}
+                                        className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
+                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
+                                    />
+
+                                    {
+                                        status == STATUS.STARTED ?
+                                            <span className="flex text-sm leading-6 items-center mt-1.5">
+                                                Send again in
+                                                <span className='ml-1'>
+                                                    {twoDigits(minutesToDisplay)}:
+                                                    {twoDigits(secondsToDisplay)}
+                                                </span>
+                                            </span>
+                                            :
+                                            <span onClick={handleResendTwoFACode} className="text-sm leading-6 mt-1.5 decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
+                                                Resend code
+                                            </span>
+                                    }
+                                </div>
+                            }
                             {
                                 swapFormData?.swapType === "onramp" &&
                                 <div className="mx-auto w-full rounded-lg font-normal">
@@ -332,19 +344,16 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                             I am the owner of this address
                                         </div>
                                         <div className='flex items-center space-x-4'>
-                                            <ToggleButton onChange={setConfirm_right_wallet} isChecked={confirm_right_wallet} />
+                                            <ToggleButton onChange={() => setFieldValue(nameOfRightWallet, !values.RightWallet)} isChecked={values.RightWallet} />
                                         </div>
                                     </div>
                                 </div>
                             }
-                            {/* <div className="flex items-center mb-2">
-                                <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
-                                 </div> */}
-                            <SubmitButton type='submit' isDisabled={twoFARequired && twoFactorCode.length < 6 || loading || (swapFormData?.swapType === "onramp" && !confirm_right_wallet)} icon="" isSubmitting={loading} onClick={handleSubmit}>
+                            <SubmitButton type='submit' isDisabled={!isValid} icon="" isSubmitting={isSubmitting} >
                                 Confirm
                             </SubmitButton>
-                        </div>
-                    </Form>
+                        </Form>
+                    </div>
                 )}
             </Formik>
             <Transition
