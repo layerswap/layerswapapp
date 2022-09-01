@@ -34,8 +34,10 @@ import KnownIds from "../../../lib/knownIds";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
+import Banner from "../../banner";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
 import { ConnectedFocusError } from "../../../lib/external";
+import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
 
 const CurrenciesField: FC = () => {
     const {
@@ -126,18 +128,20 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = "network"
-    const { lockNetwork } = useQueryState()
+    const { lockNetwork, destNetwork } = useQueryState()
     const { data } = useSettingsState();
 
+    const destNetworkIsAvailable = data.networks.some(n => n.code === destNetwork && n.is_enabled && (swapType === "onramp" || data?.currencies?.some(c => c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled))))
+    
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
-        .filter(n => swapType === "onramp" || data?.currencies?.some(c => c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled)))
+        .filter(n => swapType === "onramp" || data?.currencies?.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled)))
         .map(n => ({
             baseObject: n,
             id: n.code,
             name: n.name,
             order: n.order,
             imgSrc: n.logo_url,
-            isAvailable: !lockNetwork,
+            isAvailable: swapType === "offramp" ? !destNetworkIsAvailable : !lockNetwork,
             isEnabled: n.is_enabled && data.currencies.some(c => c.is_enabled && c.network_id === n.id && (swapType === "offramp" || c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))),
             isDefault: n.is_default
         })).sort(sortingByOrder);
@@ -213,7 +217,6 @@ export default function MainStep() {
             setLoadingWizard(false)
         }, 500);
     }, [query])
-
 
     useEffect(() => {
         let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
@@ -339,17 +342,15 @@ export default function MainStep() {
     const sourceExchangeName = query.sourceExchangeName
     const lockAddress = !!account || query.lockAddress
 
-    if (lockNetwork) {
+    if (lockNetwork && formValues.swapType === "onramp") {
         availableNetworks.forEach(x => {
             if (x != initialNetwork)
                 x.isEnabled = false;
         })
     }
 
-    let initialAddress = destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
+    const initialValues: SwapFormValues = generateSwapInitialValues("onramp", settings, query)
 
-    let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
-    const initialValues: SwapFormValues = { swapType: "onramp", amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
     const addressRef: any = useRef();
@@ -406,7 +407,7 @@ export default function MainStep() {
                                         }
                                         <div>
                                             <AddressInput
-                                                disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
+                                                disabled={initialValues.destination_address != '' && lockAddress || (!values.network || !values.exchange)}
                                                 name={"destination_address"}
                                                 className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
                                                 ref={addressRef}
