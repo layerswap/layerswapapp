@@ -139,7 +139,7 @@ function UserExchanges() {
         }
     }, [router.query])
 
-    function isEmail(data: string) {
+    function shortenUniversalAddress(data: string) {
         if (/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(data)) {
             return shortenEmail(data)
         } else {
@@ -212,7 +212,7 @@ function UserExchanges() {
                                                                         item?.note &&
                                                                         <div className="flex items-center">
                                                                             <p className="text-xs font-normal">
-                                                                                {isEmail(item.note)}
+                                                                                {shortenUniversalAddress(item.note)}
                                                                             </p>
                                                                             <HoverTooltip moreClassNames="w-40 break-words -left-1.5" positionClassnames="left-4" text={item.note} />
                                                                         </div>

@@ -34,7 +34,7 @@ import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
-import { ConnectedFocusError } from "../../../lib/external";
+import { ConnectedFocusError } from "../../../lib/external/ConnectedFocusError";
 import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
 
 const CurrenciesField: FC = () => {
