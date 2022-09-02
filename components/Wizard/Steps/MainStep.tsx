@@ -347,7 +347,7 @@ export default function MainStep() {
         })
     }
 
-    const initialValues: SwapFormValues = generateSwapInitialValues("onramp", settings, query)
+    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? "onramp", settings, query)
 
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();

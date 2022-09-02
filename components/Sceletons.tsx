@@ -204,19 +204,17 @@ export const DocInFrameSceleton = () => {
           <div className="flex-1 items-center space-y-6 py-1 content-start">
               <div className="h-4 mx-auto w-1/2 place-self-center justify-self-center self-center bg-slate-700 rounded mb-4"></div>
               <div className="space-y-6">
-                  {[...Array(6)]?.map((item, index) =>
-                      <div
+                  {[...Array(7)]?.map((index) =>
+                      <div className="space-y-4"
                           key={index}
                       >
-                          <div className="h-2 bg-slate-700 rounded"></div>
-
                           <div className="grid grid-cols-3 gap-4">
                               <div className="h-2 bg-slate-700 rounded col-span-2"></div>
                               <div className="h-2 bg-slate-700 rounded col-span-1"></div>
                           </div>
+                          <div className="h-2 bg-slate-700 rounded"></div>
                       </div>
                   )}
-                  <div className="h-2 bg-slate-700 rounded"></div>
               </div>
           </div>
       </div>
