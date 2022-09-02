@@ -22,6 +22,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
 
     let initialAddress =
         destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
+
     let initialExchange =
         availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase() && (swapType === "onramp" || settings.data.currencies.some(c => c.exchanges?.some(ce => ce.exchange_id === x.baseObject.id && ce.is_off_ramp_enabled))));
 

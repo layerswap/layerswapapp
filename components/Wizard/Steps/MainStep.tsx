@@ -395,7 +395,7 @@ export default function MainStep() {
                                 <div className="w-full mb-3.5 leading-4">
                                     <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
                                         {`To ${values?.network?.name || ''} address`}
-                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
+                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].display_name})</span>}
                                     </label>
                                     <div className="relative rounded-md shadow-sm mt-1.5">
                                         {isPartnerWallet &&
