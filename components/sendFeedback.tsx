@@ -1,5 +1,5 @@
 import { Form, Formik, FormikErrors } from 'formik';
-import { useCallback } from 'react'
+import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthState } from '../context/authContext';
 import SubmitButton from './buttons/submitButton';
@@ -8,7 +8,11 @@ interface SendFeedbackFormValues {
     Feedback: string;
 }
 
-const SendFeedback = () => {
+type Props = {
+    onSend: () => void
+}
+
+const SendFeedback: FC<Props> = ({ onSend }) => {
     const token = "5366632516:AAHRlo58yEgoAj2-qe2poJOR19ybOuGMBpQ"
     const chat_id = "-1001625192521";
     const { email } = useAuthState()
