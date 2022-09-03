@@ -1,5 +1,5 @@
-import { DocumentDuplicateIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
-import { FC, useCallback, useState } from 'react'
+import { SwitchHorizontalIcon } from '@heroicons/react/outline';
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInterval';
@@ -14,11 +14,13 @@ import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
+import NetworkSettings from '../../../lib/NetworkSettings';
+import SlideOver, { SildeOverRef } from '../../SlideOver';
+import { DocIframe } from '../../docInIframe';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
-    const { payment } = swap?.data || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
     const { data } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
@@ -28,6 +30,11 @@ const WithdrawNetworkStep: FC = () => {
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.data?.payment?.id } })
+    const slideoverRef = useRef<SildeOverRef>()
+
+    const handleCloseSlideover = useCallback(() => {
+        slideoverRef.current.close()
+    }, [slideoverRef])
 
     useInterval(async () => {
         if (currentStep === "OffRampWithdrawal") {
@@ -57,6 +64,9 @@ const WithdrawNetworkStep: FC = () => {
         return null;
     }
 
+    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[network?.id]?.UserGuideUrlForDesktop
+    const userGuideUrlForMobile = NetworkSettings.KnownSettings[network?.id]?.UserGuideUrlForMobile
+
     return (
         <>
             <div className="w-full px-6 md:px-8 space-y-5 flex flex-col justify-between h-full text-pink-primary-300">
@@ -85,6 +95,28 @@ const WithdrawNetworkStep: FC = () => {
                                 {network_name}
                             </span> and send {swap?.data.currency} to the provided L2 address
                         </h3>
+                    </div>
+                    <div>
+                        {
+                            userGuideUrlForDesktop &&
+                            <div className="sm:flex items-center hidden">
+                                <span className="block text-base text-white font-normal leading-6"> Read about
+                                    <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to do transfer</span>&nbsp;</>} moreClassNames="-mt-11 md:-mt-8">
+                                        <DocIframe onConfirm={handleCloseSlideover} URl={userGuideUrlForDesktop} />
+                                    </SlideOver>
+                                </span>
+                            </div>
+                        }
+                        {
+                            userGuideUrlForMobile &&
+                            <div className="flex items-center sm:hidden">
+                                <span className="block text-base text-white font-normal leading-6"> Read about
+                                    <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to do transfer</span>&nbsp;</>} moreClassNames="-mt-11 md:-mt-8">
+                                        <DocIframe onConfirm={handleCloseSlideover} URl={userGuideUrlForMobile} />
+                                    </SlideOver>
+                                </span>
+                            </div>
+                        }
                     </div>
                     <div className='mb-6 grid grid-cols-1 gap-4'>
                         {
@@ -131,7 +163,7 @@ const WithdrawNetworkStep: FC = () => {
                                 </BackgroundField>
                                 <WarningMessage>
                                     <p className='font-normal text-sm text-darkblue-600'>
-                                        - Please include the "Memo" field - it is required for a successful deposit.
+                                        - Please include the "Memo" field - it is required for a successful transfer.
                                     </p>
                                 </WarningMessage>
                             </>
