@@ -24,17 +24,17 @@ import { SettingsProvider } from '../context/settings';
 import SwapCodeStep from '../components/Wizard/Steps/SwapCodeStep';
 import WithdrawNetworkStep from '../components/Wizard/Steps/WithdrawNetworkStep';
 
-const SwapWizard: SwapWizardSteps = {
-  "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 70 },
-  "Code": { title: "Code", content: SwapCodeStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 75 },
-  "Overview": { title: "Payment overview", content: OverviewStep, navigationDisabled: true, positionPercent: 80 },
-  "ExternalPayment": { title: "Withdrawal", content: ExternalPaumentStep, navigationDisabled: true, positionPercent: 90 },
-  "Withdrawal": { title: "Withdrawal", content: WithdrawExchangeStep, positionPercent: 90, navigationDisabled: true },
-  "OffRampWithdrawal": { title: "OffRampWithdrawal", content: WithdrawNetworkStep, positionPercent: 90, navigationDisabled: true },
-  "Processing": { title: "", content: ProccessingStep, positionPercent: 95 },
-  "Success": { title: "", content: SuccessfulStep, navigationDisabled: true, positionPercent: 100 },
-  "Failed": { title: "", content: FailedStep, navigationDisabled: true, positionPercent: 100 },
-}
+// const SwapWizard: SwapWizardSteps = {
+//   "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 70 },
+//   "Code": { title: "Code", content: SwapCodeStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 75 },
+//   "Overview": { title: "Payment overview", content: OverviewStep, navigationDisabled: true, positionPercent: 80 },
+//   "ExternalPayment": { title: "Withdrawal", content: ExternalPaumentStep, navigationDisabled: true, positionPercent: 90 },
+//   "Withdrawal": { title: "Withdrawal", content: WithdrawExchangeStep, positionPercent: 90, navigationDisabled: true },
+//   "OffRampWithdrawal": { title: "OffRampWithdrawal", content: WithdrawNetworkStep, positionPercent: 90, navigationDisabled: true },
+//   "Processing": { title: "", content: ProccessingStep, positionPercent: 95 },
+//   "Success": { title: "", content: SuccessfulStep, navigationDisabled: true, positionPercent: 100 },
+//   "Failed": { title: "", content: FailedStep, navigationDisabled: true, positionPercent: 100 },
+// }
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
@@ -48,9 +48,9 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
                 <MenuProvider>
                   <SwapDataProvider >
                     <UserExchangeProvider>
-                      <FormWizardProvider wizard={SwapWizard} initialStep={"Overview"} initialLoading={true}>
+                      {/* <FormWizardProvider wizard={SwapWizard} initialStep={"Overview"} initialLoading={true}>
                         <Wizard />
-                      </FormWizardProvider >
+                      </FormWizardProvider > */}
                     </UserExchangeProvider>
                   </SwapDataProvider >
                 </MenuProvider>

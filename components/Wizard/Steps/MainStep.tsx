@@ -185,7 +185,6 @@ export default function MainStep() {
     const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
 
     // const { nextStep } = useWizardState();
-    const { goToStep, setLoading: setLoadingWizard } = useFormWizardaUpdate<FormWizardSteps>()
 
     const [loading, setLoading] = useState(false)
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
@@ -199,21 +198,21 @@ export default function MainStep() {
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
     const { getUserExchanges } = useUserExchangeDataUpdate()
 
-    useEffect(() => {
-        if (query.coinbase_redirect) {
-            const temp_data = getTempData()
-            const five_minutes_before = new Date(new Date().setMinutes(-5))
-            if (new Date(temp_data?.date) >= five_minutes_before) {
-                clearTempData()
-                formikRef.current.setValues(temp_data.swap_data)
-                updateSwapFormData(temp_data.swap_data)
-                goToStep("SwapConfirmation")
-            }
-        }
-        setTimeout(() => {
-            setLoadingWizard(false)
-        }, 500);
-    }, [query])
+    // useEffect(() => {
+    //     if (query.coinbase_redirect) {
+    //         const temp_data = getTempData()
+    //         const five_minutes_before = new Date(new Date().setMinutes(-5))
+    //         if (new Date(temp_data?.date) >= five_minutes_before) {
+    //             clearTempData()
+    //             formikRef.current.setValues(temp_data.swap_data)
+    //             updateSwapFormData(temp_data.swap_data)
+    //             goToStep("SwapConfirmation")
+    //         }
+    //     }
+    //     setTimeout(() => {
+    //         setLoadingWizard(false)
+    //     }, 500);
+    // }, [query])
 
 
     useEffect(() => {
@@ -271,51 +270,23 @@ export default function MainStep() {
             clearSwap()
             updateSwapFormData(values)
             const accessToken = TokenService.getAuthData()?.access_token
-            if (!accessToken)
-                goToStep("Email")
-            else if (values.swapType === "offramp" && values.exchange.baseObject.id === KnownIds.Exchanges.CoinbaseId) {
-                const bransferApiClient = new BransferApiClient()
-                try {
-                    const response = await bransferApiClient.GetExchangeDepositAddress(values.exchange?.baseObject?.internal_name, values.currency?.baseObject?.asset?.toUpperCase(), accessToken)
-                    if (response.is_success) {
-                        updateSwapFormData({ ...values, destination_address: response.data })
-                        goToStep("SwapConfirmation")
-                    }
-                    else {
-                        throw Error("Could not get exchange deposit address")
-                    }
+
+            if (values.network.baseObject.id == KnownIds.Networks.ImmutableXId) {
+                const client = await ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
+                const isRegistered = await client.isRegistered({ user: values.destination_address })
+                if (!isRegistered) {
+                    setConnectImmutableIsOpen(true)
+                    setLoading(false)
+                    return
                 }
-                catch (e) {
-                    const exchanges = (await getUserExchanges(accessToken))?.data
-                    if (exchanges.some(e => e.exchange === values.exchange.baseObject.internal_name))
-                        await bransferApiClient.DeleteExchange(values.exchange.baseObject.internal_name, accessToken)
-                    goToStep(OfframpExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
+            } else if (values.network.baseObject.id == KnownIds.Networks.RhinoFiMainnetId) {
+                const client = await axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
+                const isRegistered = await client.data?.isRegisteredOnDeversifi
+                if (!isRegistered) {
+                    setConnectDeversifiIsOpen(true);
+                    setLoading(false)
+                    return
                 }
-            }
-            else {
-                if (values.network.baseObject.id == KnownIds.Networks.ImmutableXId) {
-                    const client = await ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
-                    const isRegistered = await client.isRegistered({ user: values.destination_address })
-                    if (!isRegistered) {
-                        setConnectImmutableIsOpen(true)
-                        setLoading(false)
-                        return
-                    }
-                } else if (values.network.baseObject.id == KnownIds.Networks.RhinoFiMainnetId) {
-                    const client = await axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
-                    const isRegistered = await client.data?.isRegisteredOnDeversifi
-                    if (!isRegistered) {
-                        setConnectDeversifiIsOpen(true);
-                        setLoading(false)
-                        return
-                    }
-                }
-                const exchanges = (await getUserExchanges(accessToken))?.data
-                const exchangeIsEnabled = exchanges?.some(e => e.exchange === values?.exchange?.id && e.is_enabled)
-                if (values?.exchange?.baseObject?.authorization_flow === "none" || !values?.exchange?.baseObject?.authorization_flow || exchangeIsEnabled)
-                    goToStep("SwapConfirmation")
-                else
-                    goToStep(ExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
             }
         }
         catch (e) {

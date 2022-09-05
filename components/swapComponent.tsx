@@ -27,6 +27,7 @@ const FormWizard: FormWizardSteps = {
   "SwapConfirmation": { title: "Swap confirmation", content: SwapConfirmationStep, positionPercent: 60 },
 }
 
+
 const Swap: FC = () => {
 
   return (
@@ -36,9 +37,7 @@ const Swap: FC = () => {
           <MenuProvider>
             <SwapDataProvider >
               <UserExchangeProvider>
-                <FormWizardProvider wizard={FormWizard} initialStep={"SwapForm"} initialLoading={true}>
                   <Wizard />
-                </FormWizardProvider >
               </UserExchangeProvider>
             </SwapDataProvider >
           </MenuProvider>

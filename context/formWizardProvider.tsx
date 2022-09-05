@@ -1,52 +1,55 @@
-import React, { useCallback, useState } from 'react'
-import { BaseWizard } from '../Models/Wizard';
+import React, { FC, useCallback, useState } from 'react'
+import { BaseWizard, Step, _WizardStep } from '../Models/Wizard';
 
 const FormWizardStateContext = React.createContext(null);
 const FormWizardStateUpdateContext = React.createContext(null);
 
-export type WizardProvider<Type> = {
-    currentStep: keyof Type,
+export type WizardProvider = {
+    currentStep: Step,
     moving: string,
     loading: boolean,
     error: string,
-    wizard: Type,
+    wizard: _WizardStep<any>[],
 }
 
-type UpdateInterface<Type> = {
-    goToStep: (step: keyof Type) => void,
+type UpdateInterface = {
+    goToStep: (step: Step) => void,
     goBack: () => void,
     setLoading: (value: boolean) => void,
 }
 
-export function FormWizardProvider<Type extends BaseWizard>({ children, wizard, initialStep, initialLoading }: { children, wizard: Type, initialStep: keyof Type, initialLoading?: boolean }) {
+type Props = {
+    wizard: _WizardStep<any>[],
+    initialStep: Step,
+    initialLoading?: boolean
+}
 
-    const [currentStep, setCurrentStep] = useState<keyof Type>(initialStep)
+export const FormWizardProvider: FC<Props> = ({ wizard, initialStep, initialLoading }, children) => {
+
+    const [currentStep, setCurrentStep] = useState<Step>(initialStep)
     const [moving, setmoving] = useState("right")
     const [loading, setLoading] = useState(initialLoading)
 
-    const goToStep = useCallback((step: keyof Type) => {
-        const currentPosition = Object.keys(wizard).findIndex(k => k === currentStep)
-        const nextPosition = Object.keys(wizard).findIndex(k => k === step)
-        setmoving(currentPosition < nextPosition ? "right" : "left")
-        setCurrentStep(step)
-    }, [currentStep])
 
-    const getPreviousStep = (step) => {
-        const wizardSteps = Object.keys(wizard) as (keyof Type)[]
-        const position = wizardSteps.findIndex(k => k === step)
-        const previousStep = wizardSteps[position - 1]
-        if (wizard[previousStep]?.dismissOnBack)
-            return getPreviousStep(previousStep)
-        return previousStep
-    }
+    const goToNextStep = useCallback(async (data) => {
+        setmoving("right")
+        setCurrentStep(await wizard.find(s => s.Step === currentStep).onNext(data))
+    }, [currentStep, wizard])
+
+    const goToStep = useCallback((step: Step) => {
+        setmoving("right")
+        setCurrentStep(step)
+    }, [wizard])
 
     const goBack = useCallback(() => {
-        const previousStep = getPreviousStep(currentStep)
+        const wizardStep = wizard.find(s => s.Step === currentStep)
+        const previousStep = wizardStep.onBack ? wizardStep.onBack() : wizard[wizard.findIndex(s => s.Step === currentStep) - 1].Step
+
         if (previousStep) {
             setmoving("left")
             setCurrentStep(previousStep)
         }
-    }, [currentStep])
+    }, [wizard, currentStep])
 
     return (
         <FormWizardStateContext.Provider value={{ currentStep, moving, loading, wizard }}>
@@ -58,8 +61,8 @@ export function FormWizardProvider<Type extends BaseWizard>({ children, wizard, 
 }
 
 
-export function useFormWizardState<Type>() {
-    const data = React.useContext<WizardProvider<Type>>((FormWizardStateContext as unknown) as React.Context<WizardProvider<Type>>);
+export function useFormWizardState() {
+    const data = React.useContext<WizardProvider>((FormWizardStateContext as unknown) as React.Context<WizardProvider>);
     if (data === undefined) {
         throw new Error('useWizardState must be used within a FormWizardStateContext');
     }
@@ -67,8 +70,8 @@ export function useFormWizardState<Type>() {
     return data;
 }
 
-export function useFormWizardaUpdate<Type>() {
-    const updateFns = React.useContext<UpdateInterface<Type>>(FormWizardStateUpdateContext);
+export function useFormWizardaUpdate() {
+    const updateFns = React.useContext<UpdateInterface>(FormWizardStateUpdateContext);
 
     if (updateFns === undefined) {
         throw new Error('useSwapDataUpdate must be used within a SwapDataProvider');

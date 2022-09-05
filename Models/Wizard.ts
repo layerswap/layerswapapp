@@ -13,14 +13,14 @@ export type BaseStepProps = {
     current: boolean
 }
 
-export type Step = {
-    title: string,
-    content: FC<BaseStepProps>,
-    navigationDisabled?: boolean,
-    positionPercent: number,
-    dismissOnBack?: boolean,
-    onNext?: () => void
-}
+// export type Step = {
+//     title: string,
+//     content: FC<BaseStepProps>,
+//     navigationDisabled?: boolean,
+//     positionPercent: number,
+//     dismissOnBack?: boolean,
+//     onNext?: () => void
+// }
 
 export type FormSteps = "SwapForm" | "Email" | "Code" | "OffRampExchangeOAuth" | "ExchangeOAuth" | "ExchangeApiCredentials" | "SwapConfirmation"
 
@@ -41,3 +41,18 @@ export type LoginWizardSteps = {
     [Property in LoginSteps]: Step
 }
 
+export enum Step {
+    MainForm,
+    Email,
+    OAuth,
+    OffRampOAuth,
+    ApiKey,
+    Confirm
+}
+
+export class _WizardStep<T> {
+    Step: Step;
+    Content: FC;
+    onBack?: () => Step;
+    onNext: (data: T) => Promise<Step>;
+}
