@@ -11,9 +11,7 @@ export class ToggleButtonProps {
     onChange: (isChecked: boolean) => void; 
 }
 
-const ToggleButton: FC<ToggleButtonProps> = props => {
-    const [enabled, setEnabled] = useState(false)
-   
+const ToggleButton: FC<ToggleButtonProps> = props => {   
 
     return (
         <Switch

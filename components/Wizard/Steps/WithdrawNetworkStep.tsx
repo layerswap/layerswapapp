@@ -1,4 +1,4 @@
-import { DocumentDuplicateIcon } from '@heroicons/react/outline';
+import { DocumentDuplicateIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
 import { FC, useCallback, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
@@ -53,15 +53,19 @@ const WithdrawNetworkStep: FC = () => {
     const network_name = network?.name || ' '
     const network_logo_url = network?.logo_url
 
+    if (!swap?.data?.offramp_info) {
+        return null;
+    }
+
     return (
         <>
-            <div className="w-full px-6 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
+            <div className="w-full px-8 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium text-white leading-6 text-left">
                         Go to
                         {
                             network_logo_url &&
-                            <div className="inline-block mx-1" style={{ position: "relative", top: '6px' }}>
+                            <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                     <Image
                                         src={network_logo_url}
@@ -76,57 +80,92 @@ const WithdrawNetworkStep: FC = () => {
                                 </div>
                             </div>
                         }
-                        <span className='strong-highlight mr-1'>
+                        <span className='strong-highlight'>
                             {network_name}
-                        </span> and do a withdrawal to the provided address.
+                        </span> and send {swap?.data.currency} to the provided L2 address
                     </h3>
                 </div>
-                <div className='mb-12'>
-                    <label htmlFor="address" className="block font-normal text-sm">
-                        Address
-                    </label>
-                    <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
-                        <input
-                            inputMode="decimal"
-                            autoComplete="off"
-                            placeholder=""
-                            autoCorrect="off"
-                            type="text"
-                            name="address"
-                            id="address"
-                            value={swap?.data.offramp_info.deposit_address}
-                            disabled={true}
-                            className="h-12 pb-1 pt-0 text-xs md:text-sm focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
-                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
-                        />
-                        <div className='absolute inset-y-2 right-2.5'>
-                            <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data.offramp_info.deposit_address)}>
-                                    <DocumentDuplicateIcon className='h-6 w-5' />
+                <div className='mb-12 grid grid-cols-1 gap-5'>
+                    {
+                        network_name.toLowerCase() === 'loopring' &&
+                        <div>
+                            <p className="block font-normal text-sm">
+                                Select as "Where would you like to send your crypto to"
+                            </p>
+                            <div className="flex rounded-md items-center px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                                <SwitchHorizontalIcon className='h-4 w-4' />
+                                <p className="ml-2">
+                                    To Another Loopring L2 Account
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    <div className='flex space-x-5'>
+                        <div className='w-full'>
+                            <p className="block font-normal text-sm">
+                                Amount
+                            </p>
+                            <div className="relative rounded-md px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                                <p>
+                                    {swap?.data?.amount}
+                                </p>
+                                <div className='absolute inset-y-2 right-2.5'>
+                                    <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
+                                        <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.amount)}>
+                                            <DocumentDuplicateIcon className='h-6 w-5' />
+                                        </div>
+                                    </ClickTooltip>
                                 </div>
-                            </ClickTooltip>
+                            </div>
+                        </div>
+                        <div className='w-full'>
+                            <p className="block font-normal text-sm">
+                                Asset
+                            </p>
+                            <div className="relative rounded-md px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                                <p>
+                                    {swap?.data?.currency}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <p className="block font-normal text-sm">
+                            Recipient
+                        </p>
+                        <div className="relative break-all rounded-md items-center pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                            <p>
+                                {swap?.data.offramp_info.deposit_address}
+                            </p>
+                            <div className='absolute inset-y-2 right-2.5 md:top-2 top-5'>
+                                <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
+                                    <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data.offramp_info.deposit_address)}>
+                                        <DocumentDuplicateIcon className='h-6 w-5' />
+                                    </div>
+                                </ClickTooltip>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <p className="block font-normal text-sm">
+                            Address Type
+                        </p>
+                        <div className="rounded-md items-center px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                            <p>
+                                EOA Wallet
+                            </p>
                         </div>
                     </div>
                     {
                         swap?.data?.offramp_info?.memo &&
-                        <>
-                            <label htmlFor="memo" className="block font-normal text-sm">
+                        <div>
+                            <p className="block font-normal text-sm">
                                 Memo
-                            </label>
-                            <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
-                                <input
-                                    inputMode="decimal"
-                                    autoComplete="off"
-                                    placeholder=""
-                                    autoCorrect="off"
-                                    type="text"
-                                    name="memo"
-                                    id="memo"
-                                    disabled={true}
-                                    value={swap?.data?.offramp_info?.memo}
-                                    className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
-                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
-                                />
+                            </p>
+                            <div className="relative rounded-md break-all pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                                <p>
+                                    {swap?.data?.offramp_info?.memo}
+                                </p>
                                 <div className='absolute inset-y-2 right-2.5'>
                                     <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
                                         <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.offramp_info?.memo)}>
@@ -135,82 +174,7 @@ const WithdrawNetworkStep: FC = () => {
                                     </ClickTooltip>
                                 </div>
                             </div>
-                        </>
-                    }
-
-                    <label htmlFor="withdrawalAmount" className="block font-normal text-sm">
-                        Withdrawal amount in {swap?.data?.currency}
-                    </label>
-                    <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
-                        <input
-                            inputMode="decimal"
-                            autoComplete="off"
-                            placeholder=""
-                            autoCorrect="off"
-                            type="text"
-                            name="withdrawalAmount"
-                            id="withdrawalAmount"
-                            disabled={true}
-                            value={swap?.data?.amount}
-                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
-                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
-                        />
-                        <div className='absolute inset-y-2 right-2.5'>
-                            <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.amount)}>
-                                    <DocumentDuplicateIcon className='h-6 w-5' />
-                                </div>
-                            </ClickTooltip>
                         </div>
-                    </div>
-
-                    {
-                        payment?.manual_flow_context?.require_note &&
-                        <>
-                            <label htmlFor="payment_note" className="block font-normal text-sm">
-                                Remarks
-                            </label>
-                            <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
-                                <input
-                                    inputMode="decimal"
-                                    autoComplete="off"
-                                    placeholder=""
-                                    autoCorrect="off"
-                                    type="text"
-                                    name="payment_note"
-                                    id="payment_note"
-                                    disabled={true}
-                                    value={payment?.manual_flow_context?.note}
-                                    className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-2 block
-                            placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
-                                />
-                                <div className='absolute inset-y-2 right-2.5'>
-                                    <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                        <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(payment?.manual_flow_context?.note)}>
-                                            <DocumentDuplicateIcon className='h-6 w-5' />
-                                        </div>
-                                    </ClickTooltip>
-                                </div>
-                            </div>
-                            <div className='flex-col w-full rounded-md bg-yellow-400 shadow-lg p-2'>
-                                <div className='flex items-center'>
-                                    <div className='mr-2 p-2 rounded-lg bg-yellow-500'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="black" strokeWidth={2}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p className='font-normal text-sm text-darkblue-600'>
-                                            - Please include the "Remarks" field - it is required for a successful deposit.
-                                        </p>
-                                        <p className='font-normal text-sm text-darkblue-600'>
-                                            - Please make sure the "Internal transfer" checkbox is checked.
-                                        </p>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </>
                     }
                 </div>
                 {

@@ -1,4 +1,4 @@
-import { FC, useState, useCallback } from 'react'
+import { FC, useState, useCallback, useEffect } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthState } from '../context/authContext';
 import SubmitButton from './buttons/submitButton';
@@ -14,13 +14,18 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
 
     const handleSendFeedback = useCallback(async () => {
         try {
+            const feedback = (document.getElementById("feedback") as HTMLInputElement).value
             setLoading(true)
-            const res = await (await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${email} %0A ${(document.getElementById("feedback") as HTMLInputElement).value}`)).json()
-            if (!res.ok) {
-                throw new Error(res.description || "Could nont send feedback, something went wrong")
+            if (feedback.length !== 0) {
+                const res = await (await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${email} %0A ${feedback}`)).json()
+                if (!res.ok) {
+                    throw new Error(res.description || "Could not send feedback, something went wrong")
 
-            } else {
-                toast.success("Thank you for reaching out and providing us with valuable feedback.")
+                } else {
+                    toast.success("Thank you for reaching out and providing us with valuable feedback.")
+                }
+            } else if (feedback.length == 0) {
+                toast.error("This field is required and cannot be empty")
             }
         }
         catch (e) {
