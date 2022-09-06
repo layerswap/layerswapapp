@@ -159,7 +159,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         STARTED: 'Started',
         STOPPED: 'Stopped',
     }
-    const INITIAL_COUNT = 10
+    const INITIAL_COUNT = 120
     const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
     const [status, setStatus] = useState(STATUS.STOPPED)
 
