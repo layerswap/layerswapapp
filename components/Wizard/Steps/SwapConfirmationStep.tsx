@@ -31,9 +31,6 @@ interface SwapConfirmationFormValues {
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const { swapFormData, swap } = useSwapDataState()
-    if (!swapFormData) {
-        return null;
-    }
     const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
     const currentValues = formikRef?.current?.values;
     const initialValues: SwapConfirmationFormValues = { TwoFACode: '', RightWallet: false, TwoFARequired: false }
@@ -67,9 +64,8 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     }, [currentStep])
 
     useEffect(() => {
-        formikRef?.current?.resetForm()
-        formikRef?.current?.validateForm()
-    },[destination_address, swapFormData.exchange])
+        formikRef?.current?.setValues(initialValues)
+    }, [destination_address, swapFormData?.exchange])
 
     useEffect(() => {
         setAddressInputValue(destination_address)
