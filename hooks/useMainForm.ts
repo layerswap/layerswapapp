@@ -1,25 +1,24 @@
 import { FC } from "react";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
-import EmailStep from "../components/SendEmail";
+import AccountConnectStep from "../components/Wizard/Steps/AccountConnectStep";
+import APIKeyStep from "../components/Wizard/Steps/APIKeyStep";
+import CodeStep from "../components/Wizard/Steps/CodeStep";
+import EmailStep from "../components/Wizard/Steps/EmailStep";
 import MainStep from "../components/Wizard/Steps/MainStep";
+import SwapConfirmationStep from "../components/Wizard/Steps/SwapConfirmationStep";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { useUserExchangeDataUpdate } from "../context/userExchange";
 import { BransferApiClient } from "../lib/bransferApiClients";
 import KnownIds from "../lib/knownIds";
 import TokenService from "../lib/TokenService";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
-import { Step, _WizardStep } from "../Models/Wizard";
+import { ExchangeAuthorizationSteps, Step, WizardStep } from "../Models/Wizard";
 
 
-
-export const ExchangeAuthorizationSteps: { [key: string]: Step } = {
-    "api_credentials": Step.ApiKey,
-    "o_auth2": Step.OAuth
-}
 const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
 type WizardData = {
-    steps: _WizardStep<any>[],
+    steps: WizardStep<any>[],
     initialStep: Step
 }
 
@@ -28,7 +27,7 @@ const useMainForm = (): WizardData => {
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const { swapFormData } = useSwapDataState()
 
-    const MainForm: _WizardStep<SwapFormValues> = {
+    const MainForm: WizardStep<SwapFormValues> = {
         Content: MainStep,
         onNext: async (values) => {
             const accessToken = TokenService.getAuthData()?.access_token
@@ -76,8 +75,9 @@ const useMainForm = (): WizardData => {
     //   "SwapConfirmation": { title: "Swap confirmation", content: SwapConfirmationStep, positionPercent: 60 },
     // }
 
-    const Email: _WizardStep<any> = {
+    const Email: WizardStep<any> = {
         Content: EmailStep,
+        onBack: () => Step.MainForm,
         onNext: async (res: AuthConnectResponse) => {
             const exchanges = (await getUserExchanges(res.access_token))?.data
             const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
@@ -108,7 +108,28 @@ const useMainForm = (): WizardData => {
         Step: Step.Email
     }
 
-    return { steps: [MainForm, Email], initialStep: Step.MainForm }
-};
+    const Code: WizardStep<any> = {
+        Content: CodeStep,
+        onBack: () => Step.Email,
+        Step: Step.Code
+    }
+    const OAuth: WizardStep<any> = {
+        Content: AccountConnectStep,
+        onBack: () => Step.MainForm,
+        Step: Step.OAuth
+    }
+    const ApiKey: WizardStep<any> = {
+        Content: APIKeyStep,
+        onBack: () => Step.MainForm,
+        Step: Step.ApiKey
+    }
+    const Confirm: WizardStep<any> = {
+        Content: SwapConfirmationStep,
+        onBack: () => Step.MainForm,
+        Step: Step.Confirm
+    }
+
+    return { steps: [MainForm, Email, OAuth, ApiKey, Confirm], initialStep: Step.MainForm }
+}       
 
 export default useMainForm;

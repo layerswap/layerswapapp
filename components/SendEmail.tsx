@@ -16,7 +16,7 @@ type Props = {
     onSend: (email: string) => void
 }
 
-const EmailStep: FC<Props> = ({ onSend }) => {
+const SendEmail: FC<Props> = ({ onSend }) => {
     const initialValues: EmailFormValues = { email: '' };
     const [storedEmail, setStoredEmail] = useState<string>(undefined);
     const { setCodeRequested } = useAuthDataUpdate();
@@ -105,4 +105,4 @@ const EmailStep: FC<Props> = ({ onSend }) => {
     )
 }
 
-export default EmailStep;
+export default SendEmail;

@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useState } from 'react'
-import { BaseWizard, Step, _WizardStep } from '../Models/Wizard';
+import { BaseWizard, Step, WizardStep } from '../Models/Wizard';
 
 const FormWizardStateContext = React.createContext(null);
 const FormWizardStateUpdateContext = React.createContext(null);
@@ -9,10 +9,11 @@ export type WizardProvider = {
     moving: string,
     loading: boolean,
     error: string,
-    wizard: _WizardStep<any>[],
+    wizard: WizardStep<any>[],
 }
 
 type UpdateInterface = {
+    goToNextStep: (data?: any) => void,
     goToStep: (step: Step) => void,
     goBack: () => void,
     setLoading: (value: boolean) => void,
@@ -20,7 +21,7 @@ type UpdateInterface = {
 
 type Props = {
     children?: JSX.Element | JSX.Element[];
-    wizard: _WizardStep<any>[],
+    wizard: WizardStep<any>[],
     initialStep: Step,
     initialLoading?: boolean
 }
@@ -44,17 +45,19 @@ export const FormWizardProvider: FC<Props> = ({ wizard, initialStep, initialLoad
 
     const goBack = useCallback(() => {
         const wizardStep = wizard.find(s => s.Step === currentStep)
-        const previousStep = wizardStep.onBack ? wizardStep.onBack() : wizard[wizard.findIndex(s => s.Step === currentStep) - 1].Step
+        const previousStepIndex = wizardStep.onBack ? wizard.findIndex(s => s.Step === wizardStep.onBack()) : wizard.findIndex(s => s.Step === currentStep) - 1
+        const previousStep = wizard[previousStepIndex]
 
         if (previousStep) {
             setmoving("left")
-            setCurrentStep(previousStep)
+            setCurrentStep(previousStep.Step)
         }
+        
     }, [wizard, currentStep])
 
     return (
         <FormWizardStateContext.Provider value={{ currentStep, moving, loading, wizard }}>
-            <FormWizardStateUpdateContext.Provider value={{ goToStep, goBack, setLoading }}>
+            <FormWizardStateUpdateContext.Provider value={{ goToStep, goBack, setLoading, goToNextStep }}>
                 {children}
             </FormWizardStateUpdateContext.Provider>
         </FormWizardStateContext.Provider >

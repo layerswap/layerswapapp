@@ -20,7 +20,7 @@ const Swap: FC = () => {
           <MenuProvider>
             <SwapDataProvider >
               <UserExchangeProvider>
-                  <div></div>
+                  <CreateSwap/>
               </UserExchangeProvider>
             </SwapDataProvider >
           </MenuProvider>

@@ -184,7 +184,7 @@ export default function MainStep() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
 
-    // const { nextStep } = useWizardState();
+    const { goToNextStep } = useFormWizardaUpdate()
 
     const [loading, setLoading] = useState(false)
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
@@ -247,6 +247,7 @@ export default function MainStep() {
                 });
             }
         }
+
     }, [settings])
 
     useEffect(() => {
@@ -269,7 +270,6 @@ export default function MainStep() {
             setLoading(true)
             clearSwap()
             updateSwapFormData(values)
-            const accessToken = TokenService.getAuthData()?.access_token
 
             if (values.network.baseObject.id == KnownIds.Networks.ImmutableXId) {
                 const client = await ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
@@ -288,6 +288,7 @@ export default function MainStep() {
                     return
                 }
             }
+            goToNextStep(values)
         }
         catch (e) {
             toast.error(e.message)

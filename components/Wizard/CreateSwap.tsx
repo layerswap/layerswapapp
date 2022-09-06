@@ -7,8 +7,6 @@ import Wizard from "./Wizard";
 const Swap: FC = () => {
     const { steps, initialStep } = useMainForm()
 
-    console.log("steps",steps)
-
     return (
         <FormWizardProvider wizard={steps} initialStep={initialStep} initialLoading={false}>
             <Wizard />

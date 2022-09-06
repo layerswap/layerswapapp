@@ -1,13 +1,6 @@
 import { FC } from "react"
 
-export const ExchangeAuthorizationSteps: { [key: string]: FormSteps } = {
-    "api_credentials": "ExchangeApiCredentials",
-    "o_auth2": "ExchangeOAuth"
-}
-export const OfframpExchangeAuthorizationSteps: { [key: string]: FormSteps } = {
-    "api_credentials": "ExchangeApiCredentials",
-    "o_auth2": "OffRampExchangeOAuth"
-}
+
 
 export type BaseStepProps = {
     current: boolean
@@ -44,15 +37,26 @@ export type LoginWizardSteps = {
 export enum Step {
     MainForm,
     Email,
+    Code,
     OAuth,
     OffRampOAuth,
     ApiKey,
     Confirm
 }
 
-export class _WizardStep<T> {
+export const ExchangeAuthorizationSteps: { [key: string]: Step } = {
+    "api_credentials": Step.ApiKey,
+    "o_auth2": Step.OAuth
+}
+
+export const OfframpExchangeAuthorizationSteps: { [key: string]: Step } = {
+    "api_credentials": Step.ApiKey,
+    "o_auth2": Step.OffRampOAuth
+}
+
+export class WizardStep<T> {
     Step: Step;
     Content: FC;
     onBack?: () => Step;
-    onNext: (data: T) => Promise<Step>;
+    onNext?: (data: T) => Promise<Step>;
 }
