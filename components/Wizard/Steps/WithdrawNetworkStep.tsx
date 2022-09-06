@@ -17,6 +17,7 @@ import WarningMessage from '../../WarningMessage';
 import NetworkSettings from '../../../lib/NetworkSettings';
 import SlideOver, { SildeOverRef } from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
+import KnownIds from '../../../lib/knownIds';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -59,6 +60,7 @@ const WithdrawNetworkStep: FC = () => {
     const network = data.networks?.find(n => n.code === swap?.data?.network)
     const network_name = network?.name || ' '
     const network_logo_url = network?.logo_url
+    const network_id = network?.id
 
     if (!swap?.data?.offramp_info) {
         return null;
@@ -96,32 +98,32 @@ const WithdrawNetworkStep: FC = () => {
                             </span> and send {swap?.data.currency} to the provided L2 address
                         </h3>
                     </div>
-                    <div>
-                        {
-                            userGuideUrlForDesktop &&
-                            <div className="sm:flex items-center hidden">
-                                <span className="block text-base text-white font-normal leading-6"> Read about
-                                    <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to do transfer</span>&nbsp;</>} moreClassNames="-mt-11 md:-mt-8">
+                    <div className='md:flex items-center md:space-x-2 space-y-1 md:space-y-0'>
+                        <div className='flex-none'>
+                            How to do transfer in
+                        </div>
+                        <div className='flex w-full text-white space-x-2'>
+                            {
+                                userGuideUrlForDesktop &&
+                                <div className="w-full items-center">
+                                    <SlideOver ref={slideoverRef} opener={<SubmitButton isDisabled={false} size='small' isSubmitting={false} icon={''}>Loopring Web</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
                                         <DocIframe onConfirm={handleCloseSlideover} URl={userGuideUrlForDesktop} />
                                     </SlideOver>
-                                </span>
-                            </div>
-                        }
-                        {
-                            userGuideUrlForMobile &&
-                            <div className="flex items-center sm:hidden">
-                                <span className="block text-base text-white font-normal leading-6"> Read about
-                                    <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to do transfer</span>&nbsp;</>} moreClassNames="-mt-11 md:-mt-8">
+                                </div>
+                            }
+                            {
+                                userGuideUrlForMobile &&
+                                <div className="w-full items-center">
+                                    <SlideOver ref={slideoverRef} opener={<SubmitButton isDisabled={false} size='small' isSubmitting={false} icon={''}>Loopring Mobile</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
                                         <DocIframe onConfirm={handleCloseSlideover} URl={userGuideUrlForMobile} />
                                     </SlideOver>
-                                </span>
-                            </div>
-                        }
+                                </div>
+                            }
+                        </div>
                     </div>
                     <div className='mb-6 grid grid-cols-1 gap-4'>
                         {
-                            network_name.toLowerCase() === 'loopring' &&
-
+                            network_id === KnownIds.Networks.LoopringMainnetId &&
                             <BackgroundField header={'Select as "Where would you like to send your crypto to"'}>
                                 <div className='flex items-center space-x-2'>
                                     <SwitchHorizontalIcon className='h-4 w-4' />

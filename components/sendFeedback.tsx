@@ -26,6 +26,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                     throw new Error(res.description || "Could not send feedback, something went wrong")
                 } else {
                     toast.success("Thank you for reaching out and providing us with valuable feedback.")
+                    onSend()
                 }
             } else if (values.Feedback.length == 0) {
                 toast.error("This field is required and cannot be empty")
