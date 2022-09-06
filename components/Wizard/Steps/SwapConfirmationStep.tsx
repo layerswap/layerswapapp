@@ -64,7 +64,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     }, [currentStep])
 
     useEffect(() => {
-        formikRef?.current?.setValues(initialValues)
+        formikRef?.current?.resetForm()
     }, [destination_address, swapFormData?.exchange])
 
     useEffect(() => {
@@ -221,7 +221,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     return errors;
                 }}
             >
-                {({ handleChange, isValid, isSubmitting, values, setFieldValue }) => (
+                {({ handleChange, isValid, dirty, isSubmitting, values }) => (
                     <div className='px-6 md:px-8 h-full flex flex-col justify-between'>
                         <div>
                             <h3 className='mb-7 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
@@ -347,7 +347,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     </div>
                                 </div>
                             }
-                            <SubmitButton type='submit' isDisabled={!isValid} icon="" isSubmitting={isSubmitting} >
+                            <SubmitButton type='submit' isDisabled={!isValid || !dirty} icon="" isSubmitting={isSubmitting} >
                                 Confirm
                             </SubmitButton>
                         </Form>
