@@ -67,6 +67,11 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     }, [currentStep])
 
     useEffect(() => {
+        formikRef?.current?.resetForm()
+        formikRef?.current?.validateForm()
+    },[destination_address, swapFormData.exchange])
+
+    useEffect(() => {
         setAddressInputValue(destination_address)
     }, [destination_address])
 
