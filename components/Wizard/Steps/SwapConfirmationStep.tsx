@@ -35,10 +35,11 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         return null;
     }
     const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
+    const currentValues = formikRef?.current?.values;
     const initialValues: SwapConfirmationFormValues = { TwoFACode: '', RightWallet: false, TwoFARequired: false }
-    const nameOfTwoFACode = nameOf(formikRef?.current?.values, (t) => t.TwoFACode);
-    const nameOfTwoFARequired = nameOf(formikRef?.current?.values, (r) => r.TwoFARequired);
-    const nameOfRightWallet = nameOf(formikRef?.current?.values, (r) => r.RightWallet)
+    const nameOfTwoFACode = nameOf(currentValues, (t) => t.TwoFACode);
+    const nameOfTwoFARequired = nameOf(currentValues, (r) => r.TwoFARequired);
+    const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
     const { currentStep } = useFormWizardState<FormWizardSteps>()
 
     const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
@@ -131,7 +132,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 toast.error(errorMessage)
             }
         }
-    }, [swapFormData, swap, initialValues.TwoFACode, minimalAuthorizeAmount, transferAmount])
+    }, [swapFormData, swap, currentValues.TwoFACode, transferAmount])
 
     const handleResendTwoFACode = (e) => {
         handleReset()
