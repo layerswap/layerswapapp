@@ -1,4 +1,4 @@
-import { ChevronDownIcon, DocumentDuplicateIcon, ExternalLinkIcon, PencilAltIcon } from '@heroicons/react/outline'
+import { ChevronDownIcon, ExternalLinkIcon, PencilAltIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
 import { useSwapDataState } from '../../context/swap';
 import Image from 'next/dist/client/image';
@@ -8,14 +8,15 @@ import { SwapFormValues } from '../DTOs/SwapFormValues';
 import CopyButton from '../buttons/copyButton';
 
 export class AddressDetailsProps {
-    onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
+    onClickEditAddress?: MouseEventHandler<HTMLButtonElement> | undefined;
+    canEditAddress: boolean;
 }
 
 function constructExplorerUrl(swapFormData: SwapFormValues): string {
     return swapFormData?.network?.baseObject.account_explorer_template.replace("{0}", swapFormData?.destination_address.startsWith('zksync:') ? swapFormData?.destination_address.replace('zksync:', '') : swapFormData?.destination_address);
 }
 
-const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
+const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, canEditAddress }) => {
     const { swapFormData } = useSwapDataState()
 
     if (swapFormData?.swapType === "offramp")
@@ -115,7 +116,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                                 <ExternalLinkIcon className='h-4 w-4 mr-2' />
                                                 <p className=''>View In Explorer</p>
                                             </a>
-                                            <button onClick={onClick} className="text-sm font-normal m-1.5 flex text-pink-primary-300 cursor-pointer items-center hover:text-white">
+                                            <button disabled={!canEditAddress} onClick={onClick} className="text-sm font-normal m-1.5 flex text-pink-primary-300 cursor-pointer items-center hover:text-white">
                                                 <PencilAltIcon className='inline-block h-4 w-4 mr-2' />
                                                 Edit Address
                                             </button>

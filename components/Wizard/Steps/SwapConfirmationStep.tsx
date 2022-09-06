@@ -70,10 +70,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         setAddressInputValue(destination_address)
     }, [destination_address])
 
-    const handleStartEditingAddress = useCallback(() => {
-        if (!formikRef.current.isSubmitting || !formikRef.current.isValidating)
-            setEditingAddress(true)
-    }, [formikRef.current.isSubmitting, formikRef.current.isValidating])
+    const handleStartEditingAddress = () => setEditingAddress(true);
 
     const handleAddressInputChange = useCallback((e) => {
         setAddressInputError("")
@@ -113,7 +110,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         }
         catch (error) {
             ///TODO newline may not work, will not defenitaly fix this
-            console.log("error in confirmation", error?.response?.data)
             const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error?.message || error?.response?.data?.message || error.message)
 
             if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
@@ -132,12 +128,13 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 toast.error(errorMessage)
             }
         }
-    }, [swapFormData, swap, currentValues.TwoFACode, transferAmount])
+    }, [swapFormData, swap, currentValues?.TwoFACode, transferAmount])
 
-    const handleResendTwoFACode = (e) => {
+    const handleResendTwoFACode = () => {
         handleReset()
         handleStart()
-        formikRef.current.setFieldValue(nameOfTwoFACode, e?.target?.value);
+        formikRef.current.setFieldValue(nameOfTwoFACode, "");
+        handleSubmit(currentValues);
     }
 
     const handleClose = () => {
@@ -161,7 +158,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         STARTED: 'Started',
         STOPPED: 'Stopped',
     }
-    const INITIAL_COUNT = 120
+    const INITIAL_COUNT = 10
     const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
     const [status, setStatus] = useState(STATUS.STOPPED)
 
@@ -217,7 +214,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     const errors: FormikErrors<SwapConfirmationFormValues> = {};
                     if (swapFormData?.swapType === "onramp" && !values.RightWallet) {
                         errors.RightWallet = 'Confirm your wallet';
-                    } else if (values.TwoFARequired && values.TwoFACode.length < 6) {
+                    } else if (values.TwoFARequired && (!values.TwoFACode || values.TwoFACode.length < 6)) {
                         errors.TwoFACode = 'TwoFA Required';
                     }
                     return errors;
@@ -295,7 +292,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                         </p>
                                     </WarningMessage>
                                 }
-                                <AddressDetails onClick={handleStartEditingAddress} />
+                                <AddressDetails canEditAddress={!isSubmitting} onClickEditAddress={handleStartEditingAddress} />
                             </div>
                         </div>
                         <Form className="text-white text-sm">
@@ -317,20 +314,22 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                                     />
 
-                                    {
-                                        status == STATUS.STARTED ?
-                                            <span className="flex text-sm leading-6 items-center mt-1.5">
-                                                Send again in
-                                                <span className='ml-1'>
-                                                    {twoDigits(minutesToDisplay)}:
-                                                    {twoDigits(secondsToDisplay)}
+                                    <span className="flex text-sm leading-6 items-center mt-1.5">
+                                        {
+                                            status == STATUS.STARTED ?
+                                                <span>
+                                                    Send again in
+                                                    <span className='ml-1'>
+                                                        {twoDigits(minutesToDisplay)}:
+                                                        {twoDigits(secondsToDisplay)}
+                                                    </span>
                                                 </span>
-                                            </span>
-                                            :
-                                            <span onClick={handleResendTwoFACode} className="text-sm leading-6 mt-1.5 decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
-                                                Resend code
-                                            </span>
-                                    }
+                                                :
+                                                <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
+                                                    Resend code
+                                                </span>
+                                        }
+                                    </span>
                                 </div>
                             }
                             {
