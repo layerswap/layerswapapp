@@ -39,7 +39,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const nameOfTwoFACode = nameOf(formikRef?.current?.values, (t) => t.TwoFACode);
     const nameOfTwoFARequired = nameOf(formikRef?.current?.values, (r) => r.TwoFARequired);
     const nameOfRightWallet = nameOf(formikRef?.current?.values, (r) => r.RightWallet)
-    const [loading, setLoading] = useState(false)
     const { currentStep } = useFormWizardState<FormWizardSteps>()
 
     const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
@@ -71,9 +70,9 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     }, [destination_address])
 
     const handleStartEditingAddress = useCallback(() => {
-        if (!loading)
+        if (!formikRef.current.isSubmitting || !formikRef.current.isValidating)
             setEditingAddress(true)
-    }, [loading])
+    }, [formikRef.current.isSubmitting, formikRef.current.isValidating])
 
     const handleAddressInputChange = useCallback((e) => {
         setAddressInputError("")
@@ -88,7 +87,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const handleSubmit = useCallback(async (values: SwapConfirmationFormValues) => {
         handleReset();
         handleStart();
-        setLoading(true)
         try {
             const data: CreateSwapParams = {
                 Amount: Number(swapFormData.amount),
@@ -132,7 +130,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             else {
                 toast.error(errorMessage)
             }
-            setLoading(false)
         }
     }, [swapFormData, swap, initialValues.TwoFACode, minimalAuthorizeAmount, transferAmount])
 
@@ -433,7 +430,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                             </div>
                                         </div>
                                         <div className="text-white text-sm mt-auto">
-                                            <SubmitButton type='button' isDisabled={!!addressInputError} icon="" isSubmitting={loading} onClick={handleSaveAddress}>
+                                            <SubmitButton type='button' isDisabled={!!addressInputError} icon="" isSubmitting={false} onClick={handleSaveAddress}>
                                                 Save
                                             </SubmitButton>
                                         </div>
