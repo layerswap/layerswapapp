@@ -16,7 +16,6 @@ import OverviewStep from '../components/Wizard/Steps/OverviewStep';
 import WithdrawExchangeStep from '../components/Wizard/Steps/WithdrawExhangeStep';
 import ProccessingStep from '../components/Wizard/Steps/ProccessingStep';
 import SuccessfulStep from '../components/Wizard/Steps/SuccessfulStep';
-import FailedStep from '../components/Wizard/Steps/FailedStep';
 import EmailStep from '../components/Wizard/Steps/EmailStep';
 import ExternalPaumentStep from '../components/Wizard/Steps/ExternalPaymentStep';
 import { MenuProvider } from '../context/menu';
@@ -51,6 +50,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
                       {/* <FormWizardProvider wizard={SwapWizard} initialStep={"Overview"} initialLoading={true}>
                         <Wizard />
                       </FormWizardProvider > */}
+                      <div>asd</div>
                     </UserExchangeProvider>
                   </SwapDataProvider >
                 </MenuProvider>

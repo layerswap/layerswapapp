@@ -24,6 +24,7 @@ export default function AuthPage() {
               {/* <FormWizardProvider wizard={loginWizard} initialStep={"Email"} initialLoading={true}>
                 <Wizard />
               </FormWizardProvider > */}
+              <div>asd</div>
             </MenuProvider>
           </AuthProvider>
           <IntroCard/>

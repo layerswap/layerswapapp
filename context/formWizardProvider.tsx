@@ -19,12 +19,13 @@ type UpdateInterface = {
 }
 
 type Props = {
+    children?: JSX.Element | JSX.Element[];
     wizard: _WizardStep<any>[],
     initialStep: Step,
     initialLoading?: boolean
 }
 
-export const FormWizardProvider: FC<Props> = ({ wizard, initialStep, initialLoading }, children) => {
+export const FormWizardProvider: FC<Props> = ({ wizard, initialStep, initialLoading, children }) => {
 
     const [currentStep, setCurrentStep] = useState<Step>(initialStep)
     const [moving, setmoving] = useState("right")
