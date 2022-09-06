@@ -44,8 +44,9 @@ export function CalculateReceiveAmount(amount: number, currency: Currency, excha
     return 0;
 }
 
-export function CalculateMaxAllowedAmount(currency: Currency, swapType: string) {
-    return (swapType == "onramp" ? currency?.max_amount : currency?.off_ramp_max_amount) || 0;
+export function CalculateMaxAllowedAmount(currency: Currency, exchange: Exchange, swapType: string) {
+    let OffRampMaxAmount = currency?.exchanges.find(ce => ce.exchange_id === exchange.id)?.off_ramp_max_amount;
+    return (swapType == "onramp" ? currency?.max_amount : OffRampMaxAmount ?? currency?.off_ramp_max_amount) || 0;
 }
 
 export function CalculateMinAllowedAmount(currency: Currency, exchange: Exchange, swapType: string) {

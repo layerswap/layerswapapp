@@ -20,12 +20,11 @@ import { ExchangeAuthorizationSteps, FormWizardSteps, OfframpExchangeAuthorizati
 import TokenService from "../../../lib/TokenService";
 import { useUserExchangeDataUpdate } from "../../../context/userExchange";
 import axios from "axios";
-import AmountAndFeeDetails from "../../Disclosure/amountAndFeeDetailsComponent";
+import AmountAndFeeDetails from "../../DisclosureComponents/amountAndFeeDetailsComponent";
 import ConnectImmutableX from "./ConnectImmutableX";
 import ConnectDeversifi from "../../ConnectDeversifi";
 import toast from "react-hot-toast";
 import { InjectedConnector } from "@web3-react/injected-connector";
-import { isValidAddress } from "../../../lib/addressValidator";
 import { clearTempData, getTempData } from "../../../lib/openLink";
 import NumericInput from "../../Input/NumericInput";
 import AddressInput from "../../Input/AddressInput";
@@ -34,9 +33,8 @@ import KnownIds from "../../../lib/knownIds";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
-import Banner from "../../banner";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
-import { ConnectedFocusError } from "../../../lib/external";
+import { ConnectedFocusError } from "../../../lib/external/ConnectedFocusError";
 import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
 
 const CurrenciesField: FC = () => {
@@ -161,7 +159,7 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
     const { values: { currency, swapType, exchange } } = useFormikContext<SwapFormValues>();
     const name = "amount"
     let minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, swapType);
-    let maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, swapType);
+    let maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, exchange?.baseObject, swapType);
 
     const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
@@ -350,7 +348,7 @@ export default function MainStep() {
     }
 
     const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? "onramp", settings, query)
-        
+
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
     const addressRef: any = useRef();
@@ -376,10 +374,10 @@ export default function MainStep() {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            {({ values, errors, isValid }) => (
+            {({ values, errors, isValid, dirty }) => (
                 <Form className="h-full">
                     <ConnectedFocusError />
-                    <div className="px-8 h-full flex flex-col justify-between">
+                    <div className="px-6 md:px-8 h-full flex flex-col justify-between">
                         <div>
                             <div className='my-4'>
                                 <SwapOptionsToggle />
@@ -426,7 +424,7 @@ export default function MainStep() {
                             </div>
                         </div>
                         <div className="mt-6">
-                            <SwapButton type='submit' isDisabled={!isValid} isSubmitting={loading}>
+                            <SwapButton type='submit' isDisabled={!isValid || !dirty} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors, values.swapType)}
                             </SwapButton>
                         </div>

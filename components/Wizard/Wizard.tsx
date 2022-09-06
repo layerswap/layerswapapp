@@ -4,8 +4,7 @@ import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import { BaseWizard } from '../../Models/Wizard';
 import LayerswapMenu from '../LayerswapMenu';
-import LayerSwapLogo from '../icons/layerSwapLogo';
-import { useRouter } from 'next/router';
+import GoHomeButton from '../utils/GoHome';
 
 const Wizard: FC = () => {
 
@@ -27,7 +26,7 @@ const Wizard: FC = () => {
    }, []);
 
    return <>
-      <div className={`mb-10 pb-6 bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
+      <div className={`pb-6 bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-ouline-blue">
                <div style={{ width: `${wizard[currentStep].positionPercent}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-pink-primary"></div>
@@ -83,26 +82,16 @@ const Wizard: FC = () => {
 function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
    const { goBack } = useFormWizardaUpdate()
    const { wizard, currentStep } = useFormWizardState<BaseWizard>()
-   const router = useRouter();
-
-   const handleGoHome = useCallback(() => {
-      router.push({
-          pathname: "/",
-          query: router.query
-      })
-  }, [router.query])
 
    return <>
-      <div className="w-full flex items-center justify-between px-8 mt-3 h-[44px]" >
+      <div className="w-full flex items-center justify-between px-6 md:px-8 mt-3 h-[44px]" >
          <>
             <button onClick={goBack} className="justify-self-start" style={{ visibility: wizard[currentStep].navigationDisabled ? 'hidden' : 'visible' }}>
                <ArrowLeftIcon className='h-5 w-5 text-pink-primary-300 hover:text-ouline-blue cursor-pointer' />
             </button>
             <div className='mx-auto px-4 overflow-hidden md:hidden'>
                <div className="flex justify-center">
-                  <a onClick={handleGoHome}>
-                     <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
-                  </a>
+                  <GoHomeButton />
                </div>
             </div>
             <LayerswapMenu />

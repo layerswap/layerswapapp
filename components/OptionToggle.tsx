@@ -13,17 +13,18 @@ export interface NavRadioProps {
     label: string,
     value: string,
     items: NavRadioOption[],
-    setSelected: (value: string) => void
+    setSelected: (value: string) => void,
+    disabled?: boolean
 }
 
-const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label }) => {
+const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, disabled }) => {
 
     const onchange = (item: NavRadioOption) => {
         setSelected(item.value)
     }
 
     return (
-        <RadioGroup value={items.find(i => i.value === value)} onChange={onchange} className="mt-2 w-full">
+        <RadioGroup value={items.find(i => i.value === value)} disabled={disabled} onChange={onchange} className="mt-2 w-full">
             <RadioGroup.Label className="font-normal text-pink-primary-300 text-sm">{label}</RadioGroup.Label>
             <div className="grid grid-cols-2 gap-1 md:gap-2 p-0.5 md:p-2 rounded-md bg-darkblue-600 border-ouline-blue border">
                 {items.map((option) => (
@@ -43,22 +44,22 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label }) =
                         <div>
                             {
                                 option.value === 'onramp' ?
-                                    <div className="flex items-center space-x-0.5 md:space-x-2 md:p-0 p-1.5 text-sm md:text-base">
+                                    <div className="flex items-center space-x-1 md:space-x-2 md:p-0 p-1.5 text-sm md:text-base">
                                         <span>
                                             Exchange
                                         </span>
-                                        <ArrowRightIcon className="h-2 w-2 md:h-3 md:w-3" />
+                                        <ArrowRightIcon className="h-3 w-3" />
                                         <span >
                                             Network
                                         </span>
                                     </div>
                                     :
-                                    <div className="flex items-center space-x-0.5 md:space-x-2 text-sm md:text-base ">
+                                    <div className="flex items-center space-x-1 md:space-x-2 text-sm md:text-base ">
                                         <span >
                                             Network
                                         </span>
-                                        <ArrowRightIcon className="h-2 w-2 md:h-3 md:w-3" />
-                                        <span className="">
+                                        <ArrowRightIcon className="h-3 w-3" />
+                                        <span>
                                             Exchange
                                         </span>
                                     </div>

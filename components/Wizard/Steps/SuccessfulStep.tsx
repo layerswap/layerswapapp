@@ -3,6 +3,7 @@ import { FC } from 'react'
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
+import GoHomeButton from '../../utils/GoHome';
 
 const SuccessfulStep: FC = () => {
 
@@ -11,7 +12,7 @@ const SuccessfulStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
+            <div className="w-full px-6 md:px-8 py-12 grid grid-flow-row">
                 <div className='flex place-content-center mb-12 md:mb-4'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="116" height="116" viewBox="0 0 116 116" fill="none">
                         <circle cx="58" cy="58" r="58" fill="#55B585" fillOpacity="0.1" />
@@ -38,7 +39,9 @@ const SuccessfulStep: FC = () => {
                     </div>
                 }
                 <div className="w-full justify-center">
-                    <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={''} onClick={() => window.open('/')}>Swap more <ArrowRightIcon className='ml-2 h-5 w-5' /></SubmitButton>
+                    <GoHomeButton>
+                        <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={''}>Swap more <ArrowRightIcon className='ml-2 h-5 w-5' /></SubmitButton>
+                    </GoHomeButton>
                 </div>
             </div>
         </>
