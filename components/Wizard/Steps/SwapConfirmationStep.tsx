@@ -344,7 +344,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                             I am the owner of this address
                                         </div>
                                         <div className='flex items-center space-x-4'>
-                                            <ToggleButton onChange={() => setFieldValue(nameOfRightWallet, !values.RightWallet)} isChecked={values.RightWallet} />
+                                            <ToggleButton name={nameOfRightWallet} />
                                         </div>
                                     </div>
                                 </div>
