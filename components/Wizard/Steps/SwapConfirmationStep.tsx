@@ -334,22 +334,29 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                 </div>
                             }
                             {
-                                swapFormData?.swapType === "onramp" &&
-                                <div className="mx-auto w-full rounded-lg font-normal">
-                                    <div className='flex justify-between mb-4 md:mb-8'>
-                                        <div className='flex items-center text-xs md:text-sm font-medium'>
-                                            <ExclamationIcon className='h-6 w-6 mr-2' />
-                                            I am the owner of this address
+                                swapFormData?.swapType === "onramp" ?
+                                    <>
+                                        <div className="mx-auto w-full rounded-lg font-normal">
+                                            <div className='flex justify-between mb-4 md:mb-8'>
+                                                <div className='flex items-center text-xs md:text-sm font-medium'>
+                                                    <ExclamationIcon className='h-6 w-6 mr-2' />
+                                                    I am the owner of this address
+                                                </div>
+                                                <div className='flex items-center space-x-4'>
+                                                    <ToggleButton name={nameOfRightWallet} />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className='flex items-center space-x-4'>
-                                            <ToggleButton name={nameOfRightWallet} />
-                                        </div>
-                                    </div>
-                                </div>
+                                        <SubmitButton type='submit' isDisabled={!isValid || !dirty} icon="" isSubmitting={isSubmitting} >
+                                            Confirm
+                                        </SubmitButton>
+                                    </>
+                                    :
+                                    <SubmitButton type='submit' isDisabled={false} icon="" isSubmitting={isSubmitting} >
+                                        Confirm
+                                    </SubmitButton>
                             }
-                            <SubmitButton type='submit' isDisabled={!isValid || !dirty} icon="" isSubmitting={isSubmitting} >
-                                Confirm
-                            </SubmitButton>
+
                         </Form>
                     </div>
                 )}

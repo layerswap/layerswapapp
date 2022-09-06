@@ -15,7 +15,7 @@ export default class NetworkSettings {
         NetworkSettings._isInitialized = true;
 
         NetworkSettings.KnownSettings[KnownIds.Networks.LoopringMainnetId] = {
-            ConfirmationWarningMessage: "If you're using GameStop, please navigate to Loopring.io and use it to transfer funds instead of GS wallet itself",
+            ConfirmationWarningMessage: "If you're using the GameStop wallet, please navigate to Loopring.io and use it to transfer funds instead of the GameStop wallet itself",
         };
 
     }
