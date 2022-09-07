@@ -1,4 +1,3 @@
-import { DocumentDuplicateIcon } from '@heroicons/react/outline';
 import { FC, useCallback, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
@@ -139,10 +138,7 @@ const WithdrawExchangeStep: FC = () => {
                                 </BackgroundField>
                                 <WarningMessage>
                                     <p className='font-normal text-sm text-darkblue-600'>
-                                        - Please include the "Remarks" field - it is required for a successful deposit.
-                                    </p>
-                                    <p className='font-normal text-sm text-darkblue-600'>
-                                        - Please make sure the "Internal transfer" checkbox is checked.
+                                         Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
                                     </p>
                                 </WarningMessage>
                             </>

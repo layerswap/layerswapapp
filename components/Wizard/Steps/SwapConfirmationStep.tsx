@@ -31,15 +31,12 @@ interface SwapConfirmationFormValues {
 
 const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const { swapFormData, swap } = useSwapDataState()
-    if (!swapFormData) {
-        return null;
-    }
     const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
+    const currentValues = formikRef?.current?.values;
     const initialValues: SwapConfirmationFormValues = { TwoFACode: '', RightWallet: false, TwoFARequired: false }
-    const nameOfTwoFACode = nameOf(formikRef?.current?.values, (t) => t.TwoFACode);
-    const nameOfTwoFARequired = nameOf(formikRef?.current?.values, (r) => r.TwoFARequired);
-    const nameOfRightWallet = nameOf(formikRef?.current?.values, (r) => r.RightWallet)
-    const [loading, setLoading] = useState(false)
+    const nameOfTwoFACode = nameOf(currentValues, (t) => t.TwoFACode);
+    const nameOfTwoFARequired = nameOf(currentValues, (r) => r.TwoFARequired);
+    const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
     const { currentStep } = useFormWizardState<FormWizardSteps>()
 
     const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
@@ -67,13 +64,14 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     }, [currentStep])
 
     useEffect(() => {
+        formikRef?.current?.resetForm()
+    }, [destination_address, swapFormData?.exchange])
+
+    useEffect(() => {
         setAddressInputValue(destination_address)
     }, [destination_address])
 
-    const handleStartEditingAddress = useCallback(() => {
-        if (!loading)
-            setEditingAddress(true)
-    }, [loading])
+    const handleStartEditingAddress = () => setEditingAddress(true);
 
     const handleAddressInputChange = useCallback((e) => {
         setAddressInputError("")
@@ -88,7 +86,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const handleSubmit = useCallback(async (values: SwapConfirmationFormValues) => {
         handleReset();
         handleStart();
-        setLoading(true)
         try {
             const data: CreateSwapParams = {
                 Amount: Number(swapFormData.amount),
@@ -114,7 +111,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
         }
         catch (error) {
             ///TODO newline may not work, will not defenitaly fix this
-            console.log("error in confirmation", error?.response?.data)
             const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error?.message || error?.response?.data?.message || error.message)
 
             if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
@@ -132,14 +128,14 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             else {
                 toast.error(errorMessage)
             }
-            setLoading(false)
         }
-    }, [swapFormData, swap, initialValues.TwoFACode, minimalAuthorizeAmount, transferAmount])
+    }, [swapFormData, swap, currentValues?.TwoFACode, transferAmount])
 
-    const handleResendTwoFACode = (e) => {
+    const handleResendTwoFACode = () => {
         handleReset()
         handleStart()
-        formikRef.current.setFieldValue(nameOfTwoFACode, e?.target?.value);
+        formikRef.current.setFieldValue(nameOfTwoFACode, "");
+        handleSubmit(currentValues);
     }
 
     const handleClose = () => {
@@ -219,13 +215,13 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     const errors: FormikErrors<SwapConfirmationFormValues> = {};
                     if (swapFormData?.swapType === "onramp" && !values.RightWallet) {
                         errors.RightWallet = 'Confirm your wallet';
-                    } else if (values.TwoFARequired && values.TwoFACode.length < 6) {
+                    } else if (values.TwoFARequired && (!values.TwoFACode || values.TwoFACode.length < 6)) {
                         errors.TwoFACode = 'TwoFA Required';
                     }
                     return errors;
                 }}
             >
-                {({ handleChange, isValid, isSubmitting, values, setFieldValue }) => (
+                {({ handleChange, isValid, dirty, isSubmitting, values }) => (
                     <div className='px-6 md:px-8 h-full flex flex-col justify-between'>
                         <div>
                             <h3 className='mb-7 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
@@ -297,7 +293,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                         </p>
                                     </WarningMessage>
                                 }
-                                <AddressDetails onClick={handleStartEditingAddress} />
+                                <AddressDetails canEditAddress={!isSubmitting} onClickEditAddress={handleStartEditingAddress} />
                             </div>
                         </div>
                         <Form className="text-white text-sm">
@@ -319,39 +315,47 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                                     />
 
-                                    {
-                                        status == STATUS.STARTED ?
-                                            <span className="flex text-sm leading-6 items-center mt-1.5">
-                                                Send again in
-                                                <span className='ml-1'>
-                                                    {twoDigits(minutesToDisplay)}:
-                                                    {twoDigits(secondsToDisplay)}
+                                    <span className="flex text-sm leading-6 items-center mt-1.5">
+                                        {
+                                            status == STATUS.STARTED ?
+                                                <span>
+                                                    Send again in
+                                                    <span className='ml-1'>
+                                                        {twoDigits(minutesToDisplay)}:
+                                                        {twoDigits(secondsToDisplay)}
+                                                    </span>
                                                 </span>
-                                            </span>
-                                            :
-                                            <span onClick={handleResendTwoFACode} className="text-sm leading-6 mt-1.5 decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
-                                                Resend code
-                                            </span>
-                                    }
+                                                :
+                                                <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
+                                                    Resend code
+                                                </span>
+                                        }
+                                    </span>
                                 </div>
                             }
                             {
-                                swapFormData?.swapType === "onramp" &&
-                                <div className="mx-auto w-full rounded-lg font-normal">
-                                    <div className='flex justify-between mb-4 md:mb-8'>
-                                        <div className='flex items-center text-xs md:text-sm font-medium'>
-                                            <ExclamationIcon className='h-6 w-6 mr-2' />
-                                            I am the owner of this address
+                                swapFormData?.swapType === "onramp" ?
+                                    <>
+                                        <div className="mx-auto w-full rounded-lg font-normal">
+                                            <div className='flex justify-between mb-4 md:mb-8'>
+                                                <div className='flex items-center text-xs md:text-sm font-medium'>
+                                                    <ExclamationIcon className='h-6 w-6 mr-2' />
+                                                    I am the owner of this address
+                                                </div>
+                                                <div className='flex items-center space-x-4'>
+                                                    <ToggleButton name={nameOfRightWallet} />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className='flex items-center space-x-4'>
-                                            <ToggleButton onChange={() => setFieldValue(nameOfRightWallet, !values.RightWallet)} isChecked={values.RightWallet} />
-                                        </div>
-                                    </div>
-                                </div>
+                                        <SubmitButton type='submit' isDisabled={!isValid || !dirty} icon="" isSubmitting={isSubmitting} >
+                                            Confirm
+                                        </SubmitButton>
+                                    </>
+                                    :
+                                    <SubmitButton type='submit' isDisabled={false} icon="" isSubmitting={isSubmitting} >
+                                        Confirm
+                                    </SubmitButton>
                             }
-                            <SubmitButton type='submit' isDisabled={!isValid} isSubmitting={isSubmitting} >
-                                Confirm
-                            </SubmitButton>
                         </Form>
                     </div>
                 )}
