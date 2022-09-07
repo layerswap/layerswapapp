@@ -374,7 +374,7 @@ export default function MainStep() {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            {({ values, errors, isValid }) => (
+            {({ values, errors, isValid, dirty }) => (
                 <Form className="h-full">
                     <ConnectedFocusError />
                     <div className="px-6 md:px-8 h-full flex flex-col justify-between">
@@ -424,7 +424,7 @@ export default function MainStep() {
                             </div>
                         </div>
                         <div className="mt-6">
-                            <SwapButton type='submit' isDisabled={!isValid} isSubmitting={loading}>
+                            <SwapButton type='submit' isDisabled={!isValid || !dirty} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors, values.swapType)}
                             </SwapButton>
                         </div>
