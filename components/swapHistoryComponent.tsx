@@ -94,7 +94,7 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className={`bg-darkBlue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
+    <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="hidden md:block">
           <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
@@ -333,7 +333,7 @@ function TransactionsHistory() {
                         disabled={isLastPage || loading}
                         type="button"
                         onClick={handleLoadMore}
-                        className="group disabled:text-pink-primary-600 text-pink-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                        className="group disabled:text-primary-600 text-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
                       >
                         <span className="flex items-center mr-2">
                           {(!isLastPage && !loading) &&
@@ -374,15 +374,15 @@ function TransactionsHistory() {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                           >
-                            <Dialog.Panel className="w-full space-y-6 max-w-md p-7 transform overflow-hidden rounded-md bg-darkBlue shadow-card text-center align-middle transition-all">
+                            <Dialog.Panel className="w-full space-y-6 max-w-md p-7 transform overflow-hidden rounded-md bg-darkblue shadow-card text-center align-middle transition-all">
                               <div className="flex justify-between">
                                 <div className='text-xl font-bold text-white'>Swap details</div>
                                 <div className='relative grid grid-cols-1 gap-4 place-content-end z-40'>
-                                  <span className="justify-self-end text-pink-primary-300 cursor-pointer">
+                                  <span className="justify-self-end text-primary-text cursor-pointer">
                                     <div className="">
                                       <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200  hover:text-pink-primary-300"
+                                        className="rounded-md text-darkblue-200  hover:text-primary-text"
                                         onClick={handleClose}
                                       >
                                         <span className="sr-only">Close</span>
@@ -400,7 +400,7 @@ function TransactionsHistory() {
                                 <div className="text-white text-sm">
                                   <a href={data.networks.filter(x => x.code === selectedSwap?.network)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
                                     target="_blank"
-                                    className="shadowed-button group text-white disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                                    className="shadowed-button group text-primary-buttonTextColor disabled:text-opacity-40 disabled:bg-primary-600 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                                     View in Explorer
                                     <ExternalLinkIcon className='ml-2 h-5 w-5' />
                                   </a>

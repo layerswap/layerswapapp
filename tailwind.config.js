@@ -14,6 +14,21 @@ module.exports = {
   darkMode: 'media',
   theme: {
     extend: {
+      colors: {
+        cyan: colors.cyan,
+        pink: colors.pink,
+        blueGray: colors.slate,
+        coolGray: colors.gray,
+        darkblue: {
+          DEFAULT: '#111827',
+          '50': '#203259',
+          '100': '#1A2949',
+          '200': '#2C3C60',
+          '300': '#192846',
+          '500': '#121D33',
+          '600': '#131E36',
+        },
+      },
       transitionDuration: {
         '0': '0ms',
         '2000': '2000ms',
@@ -23,29 +38,6 @@ module.exports = {
       },
       animation: {
         fadein: 'fadein 4s',
-      },
-      colors: {
-        cyan: colors.cyan,
-        pink: colors.pink,
-        blueGray: colors.slate,
-        coolGray: colors.gray,
-        darkBlue: '#111827',
-        'ouline-blue': '#1A2949',
-        'darkblue': '#4771FF',
-        'darkblue-600': '#131E36',
-        'darkblue-500': '#121D33',
-        'darkblue-300': '#192846',
-        'darkblue-200': '#2C3C60',
-        'darkblue-100': '#1A2949',
-        'darkblue-50': '#203259',
-        'darkblue-disabled':'#2b344d',
-        'pink-primary': '#E42575',
-        'pink-primary-600': '#760045',
-        'pink-primary-800': '#930863',
-        'pink-primary-300': '#a4afc8', //'#A197AA',
-        'green-success': '#55B585',
-        'red-failed': '#E43636',
-        'white-alpha-100': '#ffffff66'
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
@@ -131,10 +123,60 @@ module.exports = {
       display: ["group-hover"],
     },
   },
-  plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography"),
-  plugin(function ({ addVariant }) {
-    // Add a `third` variant, ie. `third:pb-0`
-    addVariant('scrollbar', '&::-webkit-scrollbar');
-    addVariant('scrollbar-thumb', '&::-webkit-scrollbar-thumb')
-  })],
+  plugins: [
+    require("@tailwindcss/forms"),
+    require("@tailwindcss/typography"),
+    plugin(function ({ addVariant }) {
+      // Add a `third` variant, ie. `third:pb-0`
+      addVariant('scrollbar', '&::-webkit-scrollbar');
+      addVariant('scrollbar-thumb', '&::-webkit-scrollbar-thumb')
+    }),
+    require('tailwindcss-themer')({
+      defaultTheme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#E42575',
+              '50': '#F8C8DC',
+              '100': '#F6B6D1',
+              '200': '#F192BA',
+              '300': '#ED6EA3',
+              '400': '#E8498C',
+              '500': '#E42575',
+              '600': '#760045',
+              '700': '#881143',
+              '800': '#930863',
+              '900': '#240412',
+              'text': '#a4afc8',
+              'buttonTextColor': '#ffffff'
+            },
+          },
+        },
+      },
+      themes: [
+        {
+          name: 'immutablex',
+          extend: {
+            colors: {
+              primary: {
+                DEFAULT: '#2EECFF',
+                '50': '#E6FDFF',
+                '100': '#D1FBFF',
+                '200': '#A8F7FF',
+                '300': '#80F3FF',
+                '400': '#57F0FF',
+                '500': '#2EECFF',
+                '600': '#00E8FF',
+                '700': '#00ACBD',
+                '800': '#007985',
+                '900': '#00464D',
+                'text': '#80F3FF',
+                'buttonTextColor': '#000000'
+              },
+            },
+          },
+        }
+      ]
+    })
+  ],
 };

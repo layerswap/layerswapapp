@@ -111,10 +111,10 @@ const ExchangesField = React.forwardRef((props: any, ref: any) => {
 
 
     return (<>
-        <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
+        <label htmlFor={name} className="block font-normal text-primary-text text-sm">
             {swapType === "onramp" ? "From" : "To"}
         </label>
-        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange && (swapType === "onramp" || network) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
+        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange && (swapType === "onramp" || network) ? 'ring-primary border-primary' : ''} focus:ring-primary focus:border-primary border-darkblue-100 border focus:ring-1 overflow-hidden rounded-lg`}>
             <Field name={name} placeholder="Exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
@@ -145,10 +145,10 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
         })).sort(sortingByOrder);
 
     return (<>
-        <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
+        <label htmlFor={name} className="block font-normal text-primary-text text-sm">
             {swapType === "onramp" ? "To" : "From"}
         </label>
-        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!network && (swapType === "offramp" || exchange) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
+        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!network && (swapType === "offramp" || exchange) ? 'ring-primary border-primary' : ''} focus:ring-primary focus:border-primary border-darkblue-100 border focus:ring-1 overflow-hidden rounded-lg`}>
             <Field name={name} placeholder="Network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
@@ -393,7 +393,7 @@ export default function MainStep() {
                             {
                                 values.swapType === "onramp" &&
                                 <div className="w-full mb-3.5 leading-4">
-                                    <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
+                                    <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
                                         {`To ${values?.network?.name || ''} address`}
                                         {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].display_name})</span>}
                                     </label>
@@ -407,7 +407,7 @@ export default function MainStep() {
                                             <AddressInput
                                                 disabled={initialValues.destination_address != '' && lockAddress || (!values.network || !values.exchange)}
                                                 name={"destination_address"}
-                                                className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
+                                                className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-600 border-darkblue-100 border rounded-md placeholder-gray-400 truncate')}
                                                 ref={addressRef}
                                             />
                                         </div>

@@ -33,10 +33,10 @@ export default function About(props) {
                                             <table className="min-w-full divide-y divide-darkblue-500">
                                                 <thead className="bg-darkblue-50">
                                                     <tr>
-                                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-pink-primary-300 sm:pl-6">
+                                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-primary-text sm:pl-6">
                                                             Network Name
                                                         </th>
-                                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-pink-primary-300">
+                                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-primary-text">
                                                             Query parameter value
                                                         </th>
                                                     </tr>
@@ -66,10 +66,10 @@ export default function About(props) {
                                             <table className="min-w-full divide-y divide-darkblue-500">
                                                 <thead className="bg-darkblue-50">
                                                     <tr>
-                                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-pink-primary-300 sm:pl-6">
+                                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-primary-text sm:pl-6">
                                                             Exchange Name
                                                         </th>
-                                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-pink-primary-300">
+                                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-primary-text">
                                                             Query parameter value
                                                         </th>
                                                     </tr>

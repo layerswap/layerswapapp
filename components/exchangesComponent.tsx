@@ -148,7 +148,7 @@ function UserExchanges() {
     }
 
     return (
-        <div className='bg-darkBlue px-8 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative min-h'>
+        <div className='bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative min-h'>
             <div className="mt-3 flex items-center justify-between z-20" >
                 <div className="hidden md:block">
                     <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
@@ -171,11 +171,11 @@ function UserExchanges() {
                     >
                         <div className="relative mb-5">
                             <SearchIcon
-                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-pink-primary-300"
+                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-primary-text"
                                 aria-hidden="true"
                             />
                             <Combobox.Input
-                                className="h-12 w-full bg-darkblue-500 rounded-lg border-ouline-blue pl-11 pr-4 text-pink-primary-300 placeholder-pink-primary-300 focus:ring-0 sm:text-sm"
+                                className="h-12 w-full bg-darkblue-500 rounded-lg border-darkblue-100 pl-11 pr-4 text-primary-text placeholder-primary-text focus:ring-0 sm:text-sm"
                                 placeholder="Search..."
                                 onChange={handleQueryInputChange}
                                 value={query}
@@ -245,7 +245,7 @@ function UserExchanges() {
                                 <ExclamationCircleIcon
                                     type="outline"
                                     name="exclamation-circle"
-                                    className="mx-auto h-6 w-6 text-pink-primary-300"
+                                    className="mx-auto h-6 w-6 text-primary-text"
                                 />
                                 <p className="mt-4 font-semibold text-gray-900">No results found</p>
                                 <p className="mt-2 text-gray-500">No components found for this search term. Please try again.</p>
@@ -280,7 +280,7 @@ function UserExchanges() {
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-fit max-w-xl transform overflow-hidden rounded-md bg-darkBlue align-middle shadow-xl transition-all">
+                                <Dialog.Panel className="w-fit max-w-xl transform overflow-hidden rounded-md bg-darkblue align-middle shadow-xl transition-all">
                                     <div className="py-6 md:py-8">
                                         <div className="flex mb-6 items-center justify-between px-6 md:px-8">
                                             <div className='text-lg font-semibold mr-10 text-white'>
@@ -288,10 +288,10 @@ function UserExchanges() {
                                                     exchangeToDisconnect ? <>Are you sure?</> : <>Connect {exchangeToConnect?.name}</>
                                                 }
                                             </div>
-                                            <span className="relative grid grid-cols-1 gap-4 place-content-end z-40 justify-self-end text-pink-primary-300 cursor-pointer">
+                                            <span className="relative grid grid-cols-1 gap-4 place-content-end z-40 justify-self-end text-primary-text cursor-pointer">
                                                 <button
                                                     type="button"
-                                                    className="rounded-md text-darkblue-200  hover:text-pink-primary-300"
+                                                    className="rounded-md text-darkblue-200  hover:text-primary-text"
                                                     onClick={handleClose}
                                                 >
                                                     <span className="sr-only">Close</span>

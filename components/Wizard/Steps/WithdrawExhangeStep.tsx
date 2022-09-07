@@ -63,7 +63,7 @@ const WithdrawExchangeStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-6 md:px-8 flex space-y-5 flex-col justify-between h-full text-pink-primary-300">
+            <div className="w-full px-6 md:px-8 flex space-y-5 flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">
@@ -150,13 +150,13 @@ const WithdrawExchangeStep: FC = () => {
                         <div>
                             <div className='flex place-content-center mb-16 mt-3 md:mb-8'>
                                 <div className='relative'>
-                                    <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
-                                    <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
-                                    <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-pink-primary-800 rounded-full'></div>
+                                    <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-primary-800 rounded-full'></div>
                                 </div>
                             </div>
                             <div className="flex text-center place-content-center mt-1 md:mt-1">
-                                <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Waiting for a transaction from the exchange</label>
+                                <label className="block text-lg font-lighter leading-6 text-primary-text">Waiting for a transaction from the exchange</label>
                             </div>
                             <button
                                 type="button"
@@ -165,7 +165,7 @@ const WithdrawExchangeStep: FC = () => {
                                     show();
                                     updateWithProps()
                                 }}
-                                className="mt-3 text-center w-full disabled:text-pink-primary-600 text-pink-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                                className="mt-3 text-center w-full disabled:text-primary-600 text-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
                             >
                                 Need help?
                             </button>

@@ -74,7 +74,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
 
     return (
         <>
-            <div className="px-6 md:px-8 w-full grid grid-flow-row text-pink-primary-300">
+            <div className="px-6 md:px-8 w-full grid grid-flow-row text-primary-text">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 mb-12">
                         You will leave Layerswap and be securely redirected to Coinbase authorization page.
@@ -82,7 +82,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                 </div>
 
                 <div className="flex mt-12 md:mt-5 font-normal text-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-pink-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>

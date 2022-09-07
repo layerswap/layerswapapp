@@ -24,11 +24,11 @@ const SuccessfulStep: FC = () => {
                 {
                     swap?.data?.type === "on_ramp" ?
                         <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">
-                            <span className="block text-lg font-lighter leading-6 text-pink-primary-300">Your swap successfully completed. You can view it in the explorer, or go ahead swap more!</span>
+                            <span className="block text-lg font-lighter leading-6 text-primary-text">Your swap successfully completed. You can view it in the explorer, or go ahead swap more!</span>
                         </div>
                         :
                         <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">
-                            <span className="block text-lg font-lighter leading-6 text-pink-primary-300">Your swap successfully completed. Your assets are on their way to your exchange account.</span>
+                            <span className="block text-lg font-lighter leading-6 text-primary-text">Your swap successfully completed. Your assets are on their way to your exchange account.</span>
                         </div>
                 }
 

@@ -29,10 +29,10 @@ export default function Salon() {
                     </svg>
                 </div>
                 <div className="flex text-center place-content-center mt-1 md:mt-1">
-                    <p className="block text-md font-lighter leading-6 text-pink-primary-300"> Exchange account successfully connected </p>
+                    <p className="block text-md font-lighter leading-6 text-primary-text"> Exchange account successfully connected </p>
                 </div>
                 <div className="flex text-center place-content-center mt-1 md:mt-1">
-                    <p className="block text-md font-lighter leading-6 text-pink-primary-300"> You can close this window now</p>
+                    <p className="block text-md font-lighter leading-6 text-primary-text"> You can close this window now</p>
                 </div>
             </div>
         </Layout>

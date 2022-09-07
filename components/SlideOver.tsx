@@ -40,14 +40,14 @@ const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, chi
                 leave="ease-in duration-200"
                 leaveFrom={slide ? "translate-y-0" : "opacity-100"}
                 leaveTo={slide ? "translate-y-full" : "opacity-0"}>
-                <div className={`absolute inset-0 z-40 flex flex-col w-full bg-darkBlue ${moreClassNames}`}>
-                    <span className='relative z-40 overflow-hidden bg-darkBlue px-6 pb-6 sm:px-8 sm:pb-8 pt-0'>
+                <div className={`absolute inset-0 z-40 flex flex-col w-full bg-darkblue ${moreClassNames}`}>
+                    <span className='relative z-40 overflow-hidden bg-darkblue px-6 pb-6 sm:px-8 sm:pb-8 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                            <span className="justify-self-end text-pink-primary-300 cursor-pointer">
+                            <span className="justify-self-end text-primary-text cursor-pointer">
                                 <div className="">
                                     <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
+                                        className="rounded-md text-darkblue-200 hover:text-primary-text"
                                         onClick={handleClose}
                                     >
                                         <span className="sr-only">Close</span>
@@ -68,7 +68,7 @@ const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, chi
                             <div className="relative inset-0" ></div>
                         </Transition.Child>
 
-                        <div className="relative inset-0 text-pink-primary-300 flex flex-col scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                        <div className="relative inset-0 text-primary-text flex flex-col scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
                             <div className="relative min-h-full items-center justify-center pt-0 text-center">
                                 <Transition.Child
                                     as={Fragment}
@@ -80,7 +80,7 @@ const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, chi
                                     leaveTo="opacity-0 scale-95"
                                 >
 
-                                    <div className='grid grid-flow-row min-h-[480px] text-pink-primary-300'>
+                                    <div className='grid grid-flow-row min-h-[480px] text-primary-text'>
                                         {children}
                                     </div>
                                 </Transition.Child>

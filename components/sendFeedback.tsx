@@ -53,7 +53,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                 <Form>
                     <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                         Send Feedback
-                        <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-pink-primary-300 font-light'>
+                        <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-primary-text font-light'>
                             Please help us shape the product, catch bugs, and prioritize features. Your feedback will go directly into our Telegram channel.
                         </p>
                     </h3>

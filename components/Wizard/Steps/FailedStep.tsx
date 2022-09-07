@@ -22,7 +22,7 @@ const FailedStep: FC = () => {
                     </svg>
                 </div>
                 <div className="flex items-center mb-14 md:mb-6 mx-5 md:mx-24 text-center grow">
-                    <label className="block text-lg font-lighter leading-6 text-pink-primary-300 text-center grow">{swap ? "Swap failed" : "Swap not found"}</label>
+                    <label className="block text-lg font-lighter leading-6 text-primary-text text-center grow">{swap ? "Swap failed" : "Swap not found"}</label>
                 </div>
                 <SubmitButton icon={''} isDisabled={false} isSubmitting={false} onClick={() => {
                     boot();

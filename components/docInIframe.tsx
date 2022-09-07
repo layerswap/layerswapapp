@@ -30,7 +30,7 @@ export function DocIframe({ URl, onConfirm }: Props) {
                 <button
                     type="button"
                     onClick={onConfirm}
-                    className="shadowed-button text-white mt-3 group disabled:white disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none shadow-md"
+                    className="shadowed-button text-white mt-3 group disabled:white disabled:bg-primary-600 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none shadow-md"
                 >
                     Got it
                 </button>
@@ -38,7 +38,7 @@ export function DocIframe({ URl, onConfirm }: Props) {
                     target="_blank"
                     href={URl}
                     onClick={onConfirm}
-                    className="shadowed-button flex justify-center items-center mt-3 group disabled:white disabled:bg-pink-primary-600 disabled:cursor-not-allowed text-pink-primary relative w-full font-semibold focus:outline-none"
+                    className="shadowed-button flex justify-center items-center mt-3 group disabled:white disabled:bg-primary-600 disabled:cursor-not-allowed text-primary relative w-full font-semibold focus:outline-none"
                 >
                     View in new tab
                     <ExternalLinkIcon className='ml-2 h-5 w-5' />
