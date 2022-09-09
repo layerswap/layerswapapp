@@ -16,7 +16,7 @@ import SubmitButton from "./buttons/submitButton"
 import CopyButton from "./buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "./Sceletons"
 import GoHomeButton from "./utils/GoHome"
-import StatusIcon, { GreenIcon, RedIcon, YellowIcon } from "./StatusIcons"
+import StatusIcon from "./StatusIcons"
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)

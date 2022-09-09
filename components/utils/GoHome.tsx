@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { FC, useCallback } from "react";
 import { useQueryState } from "../../context/query";
-import LayerswapLogo from "../icons/layerSwapLogo";
+import LayerswapLogo from "../icons/layerswapLogo";
 
 interface Props {
     className?: string;
@@ -10,13 +10,14 @@ interface Props {
 
 const GoHomeButton: FC<Props> = (({ className, children }) => {
     const router = useRouter()
+    const query = useQueryState()
+    
     const handleGoHome = useCallback(() => {
         router.push({
             pathname: "/",
             query: router.query
         })
     }, [router.query])
-    const query = useQueryState()
 
     return (
         <div onClick={handleGoHome}>
