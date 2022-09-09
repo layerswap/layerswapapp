@@ -7,7 +7,7 @@ import SendEmail from '../../SendEmail';
 const EmailStep: FC = () => {
     const { goToNextStep } = useFormWizardaUpdate()
     const { updateEmail } = useAuthDataUpdate()
-
+    
     const onSend = (email: string)=> {
         updateEmail(email)
         goToNextStep();

@@ -19,7 +19,7 @@ const OfframpAccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
     const { oauth_login_redirect_url } = swapFormData?.exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
-    const { currentStep } = useFormWizardState<FormWizardSteps>()
+    const { currentStepName: currentStep } = useFormWizardState<FormWizardSteps>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const [poll, setPoll] = useState(false)
     const [addressSource, setAddressSource] = useState("")

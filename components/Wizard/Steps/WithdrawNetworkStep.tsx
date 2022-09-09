@@ -4,7 +4,7 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { SwapWizardSteps } from '../../../Models/Wizard';
+import { ProcessSwapStep, SwapWizardSteps } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
@@ -19,9 +19,9 @@ const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
     const { payment } = swap?.data || {}
-    const { currentStep } = useFormWizardState<SwapWizardSteps>()
+    const { currentStepName: currentStep } = useFormWizardState<ProcessSwapStep>()
     const { data } = useSettingsState()
-    const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
+    const { goToStep } = useFormWizardaUpdate<ProcessSwapStep>()
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
@@ -30,19 +30,19 @@ const WithdrawNetworkStep: FC = () => {
     const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.data?.payment?.id } })
 
     useInterval(async () => {
-        if (currentStep === "OffRampWithdrawal") {
-            const authData = TokenService.getAuthData();
-            if (!authData) {
-                goToStep("Email")
-                return;
-            }
-            const swap = await getSwap(swapId.toString())
-            const swapStatus = swap?.data.status;
-            if (swapStatus == SwapStatus.Completed)
-                goToStep("Success")
-            else if (swapStatus == SwapStatus.Failed)
-                goToStep("Failed")
+        if (currentStep !== ProcessSwapStep.OffRampWithdrawal)
+            return true
+        const authData = TokenService.getAuthData();
+        if (!authData) {
+            goToStep(ProcessSwapStep.Email)
+            return;
         }
+        const swap = await getSwap(swapId.toString())
+        const swapStatus = swap?.data.status;
+        if (swapStatus == SwapStatus.Completed)
+            goToStep(ProcessSwapStep.Success)
+        else if (swapStatus == SwapStatus.Failed)
+            goToStep(ProcessSwapStep.Failed)
     }, [currentStep], 10000)
 
     const handleConfirm = useCallback(async () => {

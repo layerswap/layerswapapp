@@ -15,12 +15,12 @@
 <use xlink:href="#image0_10_13" transform="scale(0.005)"/>
 </pattern>
 <linearGradient id="paint0_linear_10_13" x1="54" y1="4" x2="54" y2="104" gradientUnits="userSpaceOnUse">
-<stop stop-color="#111725"/>
-<stop offset="1" stop-color="#1A243B"/>
+<stop stopColor="#111725"/>
+<stop offset="1" stopColor="#1A243B"/>
 </linearGradient>
 <linearGradient id="paint1_linear_10_13" x1="214" y1="4" x2="214" y2="104" gradientUnits="userSpaceOnUse">
-<stop stop-color="#111725"/>
-<stop offset="1" stop-color="#1A243B"/>
+<stop stopColor="#111725"/>
+<stop offset="1" stopColor="#1A243B"/>
 </linearGradient>
 <clipPath id="clip0_10_13">
 <rect x="4" y="4" width="100" height="100" rx="7" fill="white"/>

@@ -1,62 +1,61 @@
 import React, { FC, useCallback, useState } from 'react'
-import { BaseWizard, Step, WizardStep } from '../Models/Wizard';
+import { BaseWizard, ProcessSwapStep, SwapCreateStep, WizardStep } from '../Models/Wizard';
 
 const FormWizardStateContext = React.createContext(null);
 const FormWizardStateUpdateContext = React.createContext(null);
 
-export type WizardProvider = {
-    currentStep: Step,
+export type WizardProvider<T> = {
+    currentStepName: T,
     moving: string,
     loading: boolean,
     error: string,
     wizard: WizardStep<any>[],
 }
 
-type UpdateInterface = {
+type UpdateInterface<T> = {
     goToNextStep: (data?: any) => void,
-    goToStep: (step: Step) => void,
+    goToStep: (step: T) => void,
     goBack: () => void,
     setLoading: (value: boolean) => void,
 }
 
-type Props = {
+type Props<T> = {
     children?: JSX.Element | JSX.Element[];
-    wizard: WizardStep<any>[],
-    initialStep: Step,
+    wizard: WizardStep<T>[],
+    initialStep: T,
     initialLoading?: boolean
 }
 
-export const FormWizardProvider: FC<Props> = ({ wizard, initialStep, initialLoading, children }) => {
-
-    const [currentStep, setCurrentStep] = useState<Step>(initialStep)
+export const FormWizardProvider = <T extends SwapCreateStep | ProcessSwapStep>(props: Props<T>) => {
+    const { wizard, initialStep, initialLoading, children } = props
+    const [currentStepName, setCurrentStepName] = useState<T>(initialStep)
     const [moving, setmoving] = useState("right")
     const [loading, setLoading] = useState(initialLoading)
 
-
     const goToNextStep = useCallback(async (data) => {
         setmoving("right")
-        setCurrentStep(await wizard.find(s => s.Step === currentStep).onNext(data))
-    }, [currentStep, wizard])
+        setCurrentStepName(await wizard.find(s => s.Name === currentStepName).onNext(data))
+    }, [currentStepName, wizard])
 
-    const goToStep = useCallback((step: Step) => {
+    const goToStep = useCallback((step: T) => {
         setmoving("right")
-        setCurrentStep(step)
+        setCurrentStepName(step)
     }, [wizard])
 
     const goBack = useCallback(() => {
-        const wizardStep = wizard.find(s => s.Step === currentStep)
-        const previousStepIndex = wizardStep.onBack ? wizard.findIndex(s => s.Step === wizardStep.onBack()) : wizard.findIndex(s => s.Step === currentStep) - 1
+        const wizardStep = wizard.find(s => s.Name === currentStepName)
+        const previousStepIndex = wizardStep.onBack ? wizard.findIndex(s => s.Name === wizardStep.onBack()) : wizard.findIndex(s => s.Name === currentStepName) - 1
         const previousStep = wizard[previousStepIndex]
 
         if (previousStep) {
             setmoving("left")
-            setCurrentStep(previousStep.Step)
+            setCurrentStepName(previousStep.Name)
         }
-        
-    }, [wizard, currentStep])
+
+    }, [wizard, currentStepName])
 
     return (
-        <FormWizardStateContext.Provider value={{ currentStep, moving, loading, wizard }}>
+        <FormWizardStateContext.Provider value={{ currentStepName, moving, loading, wizard }}>
             <FormWizardStateUpdateContext.Provider value={{ goToStep, goBack, setLoading, goToNextStep }}>
                 {children}
             </FormWizardStateUpdateContext.Provider>
@@ -65,8 +64,8 @@ export const FormWizardProvider: FC<Props> = ({ wizard, initialStep, initialLoad
 }
 
 
-export function useFormWizardState() {
-    const data = React.useContext<WizardProvider>((FormWizardStateContext as unknown) as React.Context<WizardProvider>);
+export function useFormWizardState<T>() {
+    const data = React.useContext<WizardProvider<T>>((FormWizardStateContext as unknown) as React.Context<WizardProvider<T>>);
     if (data === undefined) {
         throw new Error('useWizardState must be used within a FormWizardStateContext');
     }
@@ -74,8 +73,8 @@ export function useFormWizardState() {
     return data;
 }
 
-export function useFormWizardaUpdate() {
-    const updateFns = React.useContext<UpdateInterface>(FormWizardStateUpdateContext);
+export function useFormWizardaUpdate<T>() {
+    const updateFns = React.useContext<UpdateInterface<T>>(FormWizardStateUpdateContext);
 
     if (updateFns === undefined) {
         throw new Error('useSwapDataUpdate must be used within a SwapDataProvider');

@@ -15,8 +15,8 @@ import SwapButton from "../../buttons/swapButton";
 import { useSwapDataUpdate } from "../../../context/swap";
 import Select from "../../Select/Select";
 import React from "react";
-import { useFormWizardaUpdate } from "../../../context/formWizardProvider";
-import { ExchangeAuthorizationSteps, FormWizardSteps, OfframpExchangeAuthorizationSteps } from "../../../Models/Wizard";
+import { useFormWizardaUpdate, useFormWizardState } from "../../../context/formWizardProvider";
+import { ExchangeAuthorizationSteps, FormWizardSteps, OfframpExchangeAuthorizationSteps, SwapCreateStep } from "../../../Models/Wizard";
 import TokenService from "../../../lib/TokenService";
 import { useUserExchangeDataUpdate } from "../../../context/userExchange";
 import axios from "axios";
@@ -197,6 +197,8 @@ export default function MainStep() {
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
     const { getUserExchanges } = useUserExchangeDataUpdate()
+    const { currentStepName } = useFormWizardState()
+
 
     // useEffect(() => {
     //     if (query.coinbase_redirect) {

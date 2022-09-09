@@ -4,44 +4,45 @@ import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formW
 import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useInterval } from '../../../hooks/useInterval';
+import { useDelayedInterval, useInterval } from '../../../hooks/useInterval';
 import { parseJwt } from '../../../lib/jwtParser';
 import { OpenLink } from '../../../lib/openLink';
 import TokenService from '../../../lib/TokenService';
-import { FormWizardSteps, Step } from '../../../Models/Wizard';
+import { FormWizardSteps, SwapCreateStep } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 
 const AccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
     const { oauth_authorization_redirect_url: oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
-    const { goToStep } = useFormWizardaUpdate()
-    const { currentStep } = useFormWizardState()
+    const { goToStep, goToNextStep } = useFormWizardaUpdate()
+    const { currentStepName } = useFormWizardState()
     const { getUserExchanges } = useUserExchangeDataUpdate()
-    const [poll, setPoll] = useState(false)
     const [addressSource, setAddressSource] = useState("")
     const [carouselFinished, setCarouselFinished] = useState(false)
-    const authWindowRef = useRef(null);
+    const authWindowRef = useRef(null)
     const carouselRef = useRef<CarouselRef>()
     const query = useQueryState()
 
-    // useInterval(async () => {
-    //     if (currentStep === "ExchangeOAuth" && poll) {
-    //         const { access_token } = TokenService.getAuthData() || {};
-    //         if (!access_token) {
-    //             await goToStep("Email")
-    //             setPoll(false)
-    //             return;
-    //         }
-    //         const exchanges = await (await getUserExchanges(access_token))?.data
-    //         const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
-    //         if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
-    //             goToStep("SwapConfirmation")
-    //             setPoll(false)
-    //             authWindowRef.current?.close()
-    //         }
-    //     }
-    // }, [currentStep, authWindowRef, poll], 7000)
+    const { startInterval } = useDelayedInterval(async () => {
+        if (currentStepName !== SwapCreateStep.OAuth)
+            return true
+
+        const { access_token } = TokenService.getAuthData() || {};
+        if (!access_token) {
+            await goToStep(SwapCreateStep.Email)
+            return true;
+        }
+        const exchanges = await (await getUserExchanges(access_token))?.data
+        const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
+        if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
+            goToNextStep()
+            authWindowRef.current?.close()
+            return true;
+        }
+        return false
+    }, [currentStepName, authWindowRef], 7000)
+
 
     const handleConnect = useCallback(() => {
         try {
@@ -49,10 +50,10 @@ const AccountConnectStep: FC = () => {
                 carouselRef?.current?.next()
                 return;
             }
-            setPoll(true)
+            startInterval()
             const access_token = TokenService.getAuthData()?.access_token
             if (!access_token)
-                goToStep(Step.Email)
+                goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
             authWindowRef.current = OpenLink({ link: oauth_redirect_url + sub, swap_data: swapFormData, query })
         }

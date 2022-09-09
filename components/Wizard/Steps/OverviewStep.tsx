@@ -4,12 +4,12 @@ import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formW
 import { useSwapDataUpdate } from '../../../context/swap';
 import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
-import { SwapWizardSteps } from '../../../Models/Wizard';
+import { ProcessSwapStep, SwapWizardSteps } from '../../../Models/Wizard';
 import toast from "react-hot-toast";
 
 const OverviewStep: FC = () => {
-    const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
-    const { currentStep } = useFormWizardState<SwapWizardSteps>()
+    const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<ProcessSwapStep>()
+    const { currentStepName: currentStep } = useFormWizardState<ProcessSwapStep>()
 
     const router = useRouter();
     const { swapId } = router.query;
@@ -19,40 +19,40 @@ const OverviewStep: FC = () => {
     useEffect(() => {
         (async () => {
             try {
-                if (currentStep == "Overview") {
-                    const authData = TokenService.getAuthData();
-                    if (!authData) {
-                        goToStep("Email")
-                        setLoadingWizard(false)
-                        return;
-                    }
-                    const swap = await getSwap(swapId.toString())
-                    const { payment } = swap?.data || {};
-                    const swapStatus = swap?.data?.status;
-                    const paymentStatus = payment?.status
-                    if (swapStatus == SwapStatus.Completed)
-                        goToStep("Success")
-                    else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
-                        goToStep("Failed")
-                    else if (swapStatus == SwapStatus.Pending)
-                        goToStep("Processing")
-                    else {
-                        if (swap?.data?.type === "off_ramp")
-                            goToStep("OffRampWithdrawal")
-                        else if (payment?.manual_flow_context)
-                            goToStep("Withdrawal")
-                        else if (payment?.external_flow_context)
-                            goToStep("ExternalPayment")
-                        else
-                            goToStep("Processing")
-                    }
-                    setTimeout(() => {
-                        setLoadingWizard(false)
-                    }, 500);
+                if (currentStep !== ProcessSwapStep.Overview)
+                    return true
+                const authData = TokenService.getAuthData();
+                if (!authData) {
+                    goToStep(ProcessSwapStep.Email)
+                    setLoadingWizard(false)
+                    return;
                 }
+                const swap = await getSwap(swapId.toString())
+                const { payment } = swap?.data || {};
+                const swapStatus = swap?.data?.status;
+                const paymentStatus = payment?.status
+                if (swapStatus == SwapStatus.Completed)
+                    goToStep(ProcessSwapStep.Success)
+                else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
+                    goToStep(ProcessSwapStep.Failed)
+                else if (swapStatus == SwapStatus.Pending)
+                    goToStep(ProcessSwapStep.Processing)
+                else {
+                    if (swap?.data?.type === "off_ramp")
+                        goToStep(ProcessSwapStep.OffRampWithdrawal)
+                    else if (payment?.manual_flow_context)
+                        goToStep(ProcessSwapStep.Withdrawal)
+                    else if (payment?.external_flow_context)
+                        goToStep(ProcessSwapStep.ExternalPayment)
+                    else
+                        goToStep(ProcessSwapStep.Processing)
+                }
+                setTimeout(() => {
+                    setLoadingWizard(false)
+                }, 500);
             }
             catch (e) {
-                goToStep("Failed")
+                goToStep(ProcessSwapStep.Failed)
                 toast.error(e.message)
                 setTimeout(() => {
                     setLoadingWizard(false)

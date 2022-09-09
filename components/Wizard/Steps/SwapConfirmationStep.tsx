@@ -35,7 +35,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const initialValues: TwoFACodeFormValues = { TwoFACode: '' }
     const [loading, setLoading] = useState(false)
     const [twoFARequired, setTwoFARequired] = useState(false)
-    const { currentStep } = useFormWizardState<FormWizardSteps>()
+    const { currentStepName: currentStep } = useFormWizardState<FormWizardSteps>()
 
     const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()

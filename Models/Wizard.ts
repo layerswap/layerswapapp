@@ -21,20 +21,20 @@ export type SwapSteps = "Email" | "Code" | "Overview" | "Withdrawal" | "OffRampW
 export type LoginSteps = "Email" | "Code"
 
 export type BaseWizard = {
-    [key: string]: Step
+    [key: string]: SwapCreateStep
 }
 
 export type FormWizardSteps = {
-    [Property in FormSteps]: Step
+    [Property in FormSteps]: SwapCreateStep
 }
 export type SwapWizardSteps = {
-    [Property in SwapSteps]: Step
+    [Property in SwapSteps]: SwapCreateStep
 }
 export type LoginWizardSteps = {
-    [Property in LoginSteps]: Step
+    [Property in LoginSteps]: SwapCreateStep
 }
 
-export enum Step {
+export enum SwapCreateStep {
     MainForm,
     Email,
     Code,
@@ -44,19 +44,32 @@ export enum Step {
     Confirm
 }
 
-export const ExchangeAuthorizationSteps: { [key: string]: Step } = {
-    "api_credentials": Step.ApiKey,
-    "o_auth2": Step.OAuth
+export enum ProcessSwapStep {
+    Email,
+    Code,
+    Overview,
+    ExternalPayment,
+    Withdrawal,
+    OffRampWithdrawal,
+    Processing,
+    Success,
+    Failed
 }
 
-export const OfframpExchangeAuthorizationSteps: { [key: string]: Step } = {
-    "api_credentials": Step.ApiKey,
-    "o_auth2": Step.OffRampOAuth
+export const ExchangeAuthorizationSteps: { [key: string]: SwapCreateStep } = {
+    "api_credentials": SwapCreateStep.ApiKey,
+    "o_auth2": SwapCreateStep.OAuth
+}
+
+export const OfframpExchangeAuthorizationSteps: { [key: string]: SwapCreateStep } = {
+    "api_credentials": SwapCreateStep.ApiKey,
+    "o_auth2": SwapCreateStep.OffRampOAuth
 }
 
 export class WizardStep<T> {
-    Step: Step;
+    Name: T;
     Content: FC;
-    onBack?: () => Step;
-    onNext?: (data: T) => Promise<Step>;
+    onBack?: () => T;
+    onNext?: (data: any) => Promise<T>;
+    positionPercent: number;
 }
