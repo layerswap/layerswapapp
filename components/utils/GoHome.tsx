@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { FC, useCallback } from "react";
 import { useQueryState } from "../../context/query";
-import LayerswapLogo from "../icons/layerswapLogo";
+import LayerswapLogo from "../icons/layerSwapLogo";
 
 interface Props {
     className?: string;
@@ -23,7 +23,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
         <div onClick={handleGoHome}>
             {
                 children ??
-                <LayerswapLogo partnerName={query?.partnerName} className={className ?? "h-8 w-auto text-white"} />
+                <LayerswapLogo className={className ?? "h-8 w-auto text-white"} />
             }
         </div>
     )

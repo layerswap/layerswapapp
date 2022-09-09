@@ -2,7 +2,7 @@ import { FC } from "react";
 
 interface Props {
     className: string
-    partnerName: string
+    partnerName?: string
 }
 
 const LayerswapLogo: FC<Props> = (({ className, partnerName }) => {
