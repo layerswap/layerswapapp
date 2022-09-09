@@ -288,7 +288,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                 {
                                     swapFormData?.swapType === "offramp" && NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage &&
                                     <WarningMessage className='mb-4'>
-                                        <p className='font-normal text-sm text-darkblue-600'>
+                                        <p className='font-normal text-darkblue-600'>
                                             {NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage}
                                         </p>
                                     </WarningMessage>
