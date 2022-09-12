@@ -1,14 +1,10 @@
-import { FC, forwardRef, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useEffect } from 'react'
 import { Transition } from "@headlessui/react";
-import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
-import { BaseWizard, ProcessSwapStep, SwapCreateStep } from '../../Models/Wizard';
-import LayerswapMenu from '../LayerswapMenu';
-import LayerSwapLogo from '../icons/layerSwapLogo';
-import { useRouter } from 'next/router';
+import { Steps } from '../../Models/Wizard';
 
 type Props = {
-    StepName: SwapCreateStep | ProcessSwapStep,
+    StepName: Steps,
     PositionPercent?: number,
     GoBack?: () => void,
     children: JSX.Element | JSX.Element[];

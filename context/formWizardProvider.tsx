@@ -1,5 +1,5 @@
-import React, { FC, useCallback, useEffect, useState } from 'react'
-import { BaseWizard, ProcessSwapStep, SwapCreateStep, WizardStep } from '../Models/Wizard';
+import React, { useCallback, useState } from 'react'
+import { Steps } from '../Models/Wizard';
 
 const FormWizardStateContext = React.createContext(null);
 const FormWizardStateUpdateContext = React.createContext(null);
@@ -28,7 +28,7 @@ type Props<T> = {
     initialLoading?: boolean
 }
 
-export const FormWizardProvider = <T extends SwapCreateStep | ProcessSwapStep>(props: Props<T>) => {
+export const FormWizardProvider = <T extends Steps>(props: Props<T>) => {
     const { initialStep, initialLoading, children } = props
     const [currentStepName, setCurrentStepName] = useState<T>(initialStep)
     const [moving, setmoving] = useState("right")

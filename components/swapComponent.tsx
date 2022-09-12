@@ -6,7 +6,7 @@ import { UserExchangeProvider } from '../context/userExchange';
 import Wizard from './Wizard/Wizard';
 import { MenuProvider } from '../context/menu';
 import IntroCard from './introCard';
-import CreateSwap from './Wizard/CreateSwap';
+import CreateSwap from './Wizard/CreateSwapWizard';
 import { SwapCreateStep } from '../Models/Wizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
 

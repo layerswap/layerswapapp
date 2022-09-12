@@ -8,20 +8,19 @@ import { useInterval } from '../../../hooks/useInterval';
 import { parseJwt } from '../../../lib/jwtParser';
 import { OpenLink } from '../../../lib/openLink';
 import TokenService from '../../../lib/TokenService';
-import { FormWizardSteps } from '../../../Models/Wizard';
+import { FormWizardSteps, ProcessSwapStep, SwapCreateStep } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
-import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 import Image from 'next/image'
-import { ExternalLinkIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
+import { ExternalLinkIcon } from '@heroicons/react/outline';
 import SwitchIcon from '../../icons/switchIcon';
+import { useDelayedInterval } from '../../../hooks/useInterval';
 
 const OfframpAccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
     const { oauth_login_redirect_url } = swapFormData?.exchange?.baseObject || {}
-    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
-    const { currentStepName: currentStep } = useFormWizardState<FormWizardSteps>()
+    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
+    const { currentStepName } = useFormWizardState<SwapCreateStep>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
-    const [poll, setPoll] = useState(false)
     const [addressSource, setAddressSource] = useState("")
     const authWindowRef = useRef(null);
     const query = useQueryState()
@@ -32,32 +31,31 @@ const OfframpAccountConnectStep: FC = () => {
         setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
     }, [query])
 
-    useInterval(async () => {
-        if (currentStep === "OffRampExchangeOAuth" && poll) {
-            const { access_token } = TokenService.getAuthData() || {};
-            if (!access_token) {
-                await goToStep("Email")
-                setPoll(false)
-                return;
-            }
-            const exchanges = await (await getUserExchanges(access_token))?.data
-            const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
-            if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
-                goToStep("SwapConfirmation")
-                setPoll(false)
-                authWindowRef.current?.close()
-            }
+    const { startInterval } = useDelayedInterval(async () => {
+        if (currentStepName !== SwapCreateStep.OAuth)
+            return true
 
+        const { access_token } = TokenService.getAuthData() || {};
+        if (!access_token) {
+            await goToStep(SwapCreateStep.Email)
+            return true;
         }
-    }, [currentStep, authWindowRef, poll], 7000)
+        const exchanges = await (await getUserExchanges(access_token))?.data
+        const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
+        if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
+            await goToStep(SwapCreateStep.Confirm)
+            authWindowRef.current?.close()
+            return true;
+        }
+        return false
+    }, [currentStepName, authWindowRef], 2000)
 
     const handleConnect = useCallback(() => {
         try {
-
-            setPoll(true)
+            startInterval()
             const access_token = TokenService.getAuthData()?.access_token
             if (!access_token)
-                goToStep("Email")
+                goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
             authWindowRef.current = OpenLink({ link: oauth_login_redirect_url + sub, swap_data: swapFormData, query })
         }

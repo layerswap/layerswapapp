@@ -11,7 +11,7 @@ import { SwapDataProvider } from '../context/swap';
 import { UserExchangeProvider } from '../context/userExchange';
 import { MenuProvider } from '../context/menu';
 import { SettingsProvider } from '../context/settings';
-import ProcessSwap from '../components/Wizard/ProcessSwap';
+import ProcessSwap from '../components/Wizard/ProcessSwapWizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
 import { ProcessSwapStep } from '../Models/Wizard';
 

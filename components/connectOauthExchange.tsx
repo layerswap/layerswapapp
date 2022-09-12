@@ -23,29 +23,32 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
     }, [exchange])
 
     useInterval(async () => {
-        if (loading && exchange) {
-            try {
-                const { access_token } = TokenService.getAuthData() || {};
-                if (!access_token) {
-                    router.push({
-                        pathname: '/auth',
-                        query: { ...(router.query), redirect: '/exchanges' }
-                    })
-                    return;
-                }
-                const bransferApiClient = new BransferApiClient()
-                const userExchanges = await bransferApiClient.GetExchangeAccounts(access_token)
+        if (!exchange)
+            return true
 
-                if (userExchanges.data.some(e => e.exchange === exchange?.internal_name && e.is_enabled)) {
-                    authWindowRef.current?.close()
-                    onClose()
-                    setLoading(false)
-                }
+        try {
+            const { access_token } = TokenService.getAuthData() || {};
+            if (!access_token) {
+                router.push({
+                    pathname: '/auth',
+                    query: { ...(router.query), redirect: '/exchanges' }
+                })
+                return true;
             }
-            catch (e) {
-                toast.error(e.message)
+            const bransferApiClient = new BransferApiClient()
+            const userExchanges = await bransferApiClient.GetExchangeAccounts(access_token)
+
+            if (userExchanges.data.some(e => e.exchange === exchange?.internal_name && e.is_enabled)) {
+                authWindowRef.current?.close()
+                onClose()
                 setLoading(false)
+                return true
             }
+        }
+        catch (e) {
+            toast.error(e.message)
+            setLoading(false)
+            return true
         }
     }, [exchange, loading, authWindowRef, router.query], 2000)
 

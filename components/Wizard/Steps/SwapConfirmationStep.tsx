@@ -62,7 +62,7 @@ const SwapConfirmationStep: FC = () => {
             const response = await bransferApiClient.GetExchangeDepositAddress(swapFormData?.exchange?.baseObject?.internal_name, swapFormData.currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
             updateSwapFormData((old) => ({ ...old, destination_address: response.data }))
         })()
-    }, [currentStep])
+    }, [currentStepName])
 
     useEffect(() => {
         formikRef?.current?.resetForm()

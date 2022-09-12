@@ -1,14 +1,14 @@
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useDelayedInterval, useInterval } from '../../../hooks/useInterval';
+import { useDelayedInterval } from '../../../hooks/useInterval';
 import { parseJwt } from '../../../lib/jwtParser';
 import { OpenLink } from '../../../lib/openLink';
 import TokenService from '../../../lib/TokenService';
-import { FormWizardSteps, SwapCreateStep } from '../../../Models/Wizard';
+import { SwapCreateStep } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 
