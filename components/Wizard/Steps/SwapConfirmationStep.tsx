@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { FC, Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { BaseStepProps, FormWizardSteps } from '../../../Models/Wizard';
+import { SwapCreateStep } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
@@ -24,7 +24,7 @@ interface TwoFACodeFormValues {
     TwoFACode: string
 }
 
-const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
+const SwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
     if (!swapFormData) {
         return null;
@@ -35,10 +35,10 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const initialValues: TwoFACodeFormValues = { TwoFACode: '' }
     const [loading, setLoading] = useState(false)
     const [twoFARequired, setTwoFARequired] = useState(false)
-    const { currentStepName: currentStep } = useFormWizardState<FormWizardSteps>()
+    const { currentStepName } = useFormWizardState<SwapCreateStep>()
 
     const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
-    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
+    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState("")
     const [addressInputError, setAddressInputError] = useState("")
@@ -48,18 +48,19 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     useEffect(() => {
         (async () => {
-            if (currentStep === "SwapConfirmation" && swapFormData?.swapType === "offramp") {
-                const authData = TokenService.getAuthData();
-                if (!authData) {
-                    goToStep("Email")
-                    return;
-                }
-                const bransferApiClient = new BransferApiClient()
-                const response = await bransferApiClient.GetExchangeDepositAddress(swapFormData?.exchange?.baseObject?.internal_name, swapFormData.currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
-                updateSwapFormData((old) => ({ ...old, destination_address: response.data }))
+            if (currentStepName !== SwapCreateStep.Confirm || swapFormData?.swapType !== "offramp")
+                return true
+
+            const authData = TokenService.getAuthData();
+            if (!authData) {
+                goToStep(SwapCreateStep.Email)
+                return;
             }
+            const bransferApiClient = new BransferApiClient()
+            const response = await bransferApiClient.GetExchangeDepositAddress(swapFormData?.exchange?.baseObject?.internal_name, swapFormData.currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
+            updateSwapFormData((old) => ({ ...old, destination_address: response.data }))
         })()
-    }, [currentStep])
+    }, [currentStepName])
 
     useEffect(() => {
         setAddressInputValue(destination_address)
@@ -115,7 +116,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
             const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error?.message || error?.response?.data?.message || error.message)
 
             if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
-                goToStep("ExchangeOAuth")
+                goToStep(SwapCreateStep.OAuth)
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {

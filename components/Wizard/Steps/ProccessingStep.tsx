@@ -7,7 +7,7 @@ import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { ProcessSwapStep, SwapWizardSteps } from '../../../Models/Wizard';
 
-const ProccessingStep: FC<{ current: boolean }> = ({ current }) => {
+const ProccessingStep: FC= () => {
 
     // const { prevStep, nextStep, goToStep } = useWizardState();
     const { swap } = useSwapDataState()

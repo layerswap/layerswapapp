@@ -7,16 +7,11 @@ import ProccessingStep from "../components/Wizard/Steps/ProccessingStep";
 import SuccessfulStep from "../components/Wizard/Steps/SuccessfulStep";
 import WithdrawExchangeStep from "../components/Wizard/Steps/WithdrawExhangeStep";
 import WithdrawNetworkStep from "../components/Wizard/Steps/WithdrawNetworkStep";
-import {  ProcessSwapStep, WizardStep } from "../Models/Wizard";
+import { ProcessSwapStep, WizardStep } from "../Models/Wizard";
 
 
 
-type WizardData = {
-    steps: WizardStep<ProcessSwapStep>[],
-    initialStep: ProcessSwapStep
-}
-
-const useCreateSwap = (): WizardData => {
+const useCreateSwap = () => {
 
     const Email: WizardStep<ProcessSwapStep> = {
         Content: EmailStep,
@@ -68,7 +63,7 @@ const useCreateSwap = (): WizardData => {
         positionPercent: 100
     }
 
-    return { steps: [Email, Code, Overview, ExternalPayment, Withdrawal, OffRampWithdrawal, Processing, Success, Failed], initialStep: ProcessSwapStep.Overview }
+    return { Email, Code, Overview, ExternalPayment, Withdrawal, OffRampWithdrawal, Processing, Success, Failed }
 }
 
 export default useCreateSwap;

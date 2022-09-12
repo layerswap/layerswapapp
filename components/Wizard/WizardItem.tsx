@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 import { Transition } from "@headlessui/react";
 import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
@@ -9,13 +9,21 @@ import { useRouter } from 'next/router';
 
 type Props = {
     StepName: SwapCreateStep | ProcessSwapStep,
+    PositionPercent?: number,
+    GoBack?: () => void,
     children: JSX.Element | JSX.Element[];
 }
 
-const WizardItem: FC<Props> = ({ StepName, children }) => {
+const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent }) => {
+    const { currentStepName, moving, wrapperWidth } = useFormWizardState()
+    const { setGoBack, setPositionPercent } = useFormWizardaUpdate()
 
-    const [wrapperWidth, setWrapperWidth] = useState(1);
-    const { currentStepName, moving, loading: loadingWizard } = useFormWizardState()
+    useEffect(() => {
+        if (currentStepName === StepName) {
+            setGoBack(GoBack)
+            setPositionPercent(PositionPercent)
+        }
+    }, [currentStepName, GoBack, PositionPercent, StepName])
 
     return <Transition
         appear={false}
@@ -43,6 +51,6 @@ const WizardItem: FC<Props> = ({ StepName, children }) => {
             {children}
         </div>
     </Transition>
-}
+})
 
 export default WizardItem;

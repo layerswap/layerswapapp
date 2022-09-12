@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useState } from 'react'
+import React, { FC, useCallback, useEffect, useState } from 'react'
 import { BaseWizard, ProcessSwapStep, SwapCreateStep, WizardStep } from '../Models/Wizard';
 
 const FormWizardStateContext = React.createContext(null);
@@ -9,54 +9,47 @@ export type WizardProvider<T> = {
     moving: string,
     loading: boolean,
     error: string,
-    wizard: WizardStep<any>[],
+    wrapperWidth: number,
+    goBack: () => void,
+    positionPercent: number
 }
 
 type UpdateInterface<T> = {
-    goToNextStep: (data?: any) => void,
     goToStep: (step: T) => void,
-    goBack: () => void,
     setLoading: (value: boolean) => void,
+    setWrapperWidth: (value: number) => void,
+    setGoBack: (callback) => void,
+    setPositionPercent: (positionPercent: number) => void,
 }
 
 type Props<T> = {
     children?: JSX.Element | JSX.Element[];
-    wizard: WizardStep<T>[],
     initialStep: T,
     initialLoading?: boolean
 }
 
 export const FormWizardProvider = <T extends SwapCreateStep | ProcessSwapStep>(props: Props<T>) => {
-    const { wizard, initialStep, initialLoading, children } = props
+    const { initialStep, initialLoading, children } = props
     const [currentStepName, setCurrentStepName] = useState<T>(initialStep)
     const [moving, setmoving] = useState("right")
     const [loading, setLoading] = useState(initialLoading)
+    const [wrapperWidth, setWrapperWidth] = useState(1);
+    const [goBack, setGoBack] = useState<{ callback: () => void }>();
+    const [positionPercent, setPositionPercent] = useState<() => void>();
 
-    const goToNextStep = useCallback(async (data) => {
-        setmoving("right")
-        setCurrentStepName(await wizard.find(s => s.Name === currentStepName).onNext(data))
-    }, [currentStepName, wizard])
+    const handleSetCallback = useCallback((callback) => setGoBack({ callback }), [])
 
     const goToStep = useCallback((step: T) => {
         setmoving("right")
         setCurrentStepName(step)
-    }, [wizard])
+    }, [])
 
-    const goBack = useCallback(() => {
-        const wizardStep = wizard.find(s => s.Name === currentStepName)
-        const previousStepIndex = wizardStep.onBack ? wizard.findIndex(s => s.Name === wizardStep.onBack()) : wizard.findIndex(s => s.Name === currentStepName) - 1
-        const previousStep = wizard[previousStepIndex]
-
-        if (previousStep) {
-            setmoving("left")
-            setCurrentStepName(previousStep.Name)
-        }
-
-    }, [wizard, currentStepName])
+    if (goBack?.callback)
+        console.log("has gpback")
 
     return (
-        <FormWizardStateContext.Provider value={{ currentStepName, moving, loading, wizard }}>
-            <FormWizardStateUpdateContext.Provider value={{ goToStep, goBack, setLoading, goToNextStep }}>
+        <FormWizardStateContext.Provider value={{ currentStepName, moving, loading, wrapperWidth, goBack: goBack?.callback, positionPercent }}>
+            <FormWizardStateUpdateContext.Provider value={{ goToStep, setLoading, setWrapperWidth, setGoBack: handleSetCallback, setPositionPercent }}>
                 {children}
             </FormWizardStateUpdateContext.Provider>
         </FormWizardStateContext.Provider >

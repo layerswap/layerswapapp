@@ -3,14 +3,16 @@ import { useAuthDataUpdate } from '../../../context/authContext';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import SendEmail from '../../SendEmail';
 
+type Props = {
+    OnNext: () => void
+}
 
-const EmailStep: FC = () => {
-    const { goToNextStep } = useFormWizardaUpdate()
+const EmailStep: FC<Props> = ({ OnNext }) => {
     const { updateEmail } = useAuthDataUpdate()
-    
-    const onSend = (email: string)=> {
+
+    const onSend = (email: string) => {
         updateEmail(email)
-        goToNextStep();
+        OnNext();
     }
 
     return (

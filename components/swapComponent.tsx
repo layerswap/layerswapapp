@@ -7,6 +7,8 @@ import Wizard from './Wizard/Wizard';
 import { MenuProvider } from '../context/menu';
 import IntroCard from './introCard';
 import CreateSwap from './Wizard/CreateSwap';
+import { SwapCreateStep } from '../Models/Wizard';
+import { FormWizardProvider } from '../context/formWizardProvider';
 
 
 
@@ -20,7 +22,9 @@ const Swap: FC = () => {
           <MenuProvider>
             <SwapDataProvider >
               <UserExchangeProvider>
-                  <CreateSwap/>
+                <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={true}>
+                  <CreateSwap />
+                </FormWizardProvider>
               </UserExchangeProvider>
             </SwapDataProvider >
           </MenuProvider>

@@ -11,6 +11,9 @@ import { SwapDataProvider } from '../context/swap';
 import { UserExchangeProvider } from '../context/userExchange';
 import { MenuProvider } from '../context/menu';
 import { SettingsProvider } from '../context/settings';
+import ProcessSwap from '../components/Wizard/ProcessSwap';
+import { FormWizardProvider } from '../context/formWizardProvider';
+import { ProcessSwapStep } from '../Models/Wizard';
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
@@ -24,15 +27,15 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
                 <MenuProvider>
                   <SwapDataProvider >
                     <UserExchangeProvider>
-                      {/* <FormWizardProvider wizard={SwapWizard} initialStep={"Overview"} initialLoading={true}>
-                        <Wizard />
-                      </FormWizardProvider > */}
+                      <FormWizardProvider initialStep={ProcessSwapStep.Overview} initialLoading={true}>
+                        <ProcessSwap />
+                      </FormWizardProvider>
                     </UserExchangeProvider>
                   </SwapDataProvider >
                 </MenuProvider>
               </SettingsProvider>
             </AuthProvider>
-            <IntroCard/>
+            <IntroCard />
           </div >
         </div >
       </div >

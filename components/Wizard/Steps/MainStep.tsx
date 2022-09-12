@@ -180,11 +180,14 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
     </>)
 });
 
-export default function MainStep() {
+type Props = {
+    OnSumbit: (values: SwapFormValues) => void
+}
+
+const MainStep: FC<Props> = ({ OnSumbit }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
-
-    const { goToNextStep } = useFormWizardaUpdate()
+    const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapCreateStep>()
 
     const [loading, setLoading] = useState(false)
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
@@ -196,25 +199,22 @@ export default function MainStep() {
     const query = useQueryState();
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
-    const { getUserExchanges } = useUserExchangeDataUpdate()
-    const { currentStepName } = useFormWizardState()
 
-
-    // useEffect(() => {
-    //     if (query.coinbase_redirect) {
-    //         const temp_data = getTempData()
-    //         const five_minutes_before = new Date(new Date().setMinutes(-5))
-    //         if (new Date(temp_data?.date) >= five_minutes_before) {
-    //             clearTempData()
-    //             formikRef.current.setValues(temp_data.swap_data)
-    //             updateSwapFormData(temp_data.swap_data)
-    //             goToStep("SwapConfirmation")
-    //         }
-    //     }
-    //     setTimeout(() => {
-    //         setLoadingWizard(false)
-    //     }, 500);
-    // }, [query])
+    useEffect(() => {
+        if (query.coinbase_redirect) {
+            const temp_data = getTempData()
+            const five_minutes_before = new Date(new Date().setMinutes(-5))
+            if (new Date(temp_data?.date) >= five_minutes_before) {
+                clearTempData()
+                formikRef.current.setValues(temp_data.swap_data)
+                updateSwapFormData(temp_data.swap_data)
+                goToStep(SwapCreateStep.Confirm)
+            }
+        }
+        setTimeout(() => {
+            setLoadingWizard(false)
+        }, 500);
+    }, [query])
 
 
     useEffect(() => {
@@ -290,7 +290,7 @@ export default function MainStep() {
                     return
                 }
             }
-            goToNextStep(values)
+            OnSumbit(values)
         }
         catch (e) {
             toast.error(e.message)
@@ -428,3 +428,6 @@ function sortingByOrder(x: any, y: any) {
     };
     return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
 }
+
+
+export default MainStep

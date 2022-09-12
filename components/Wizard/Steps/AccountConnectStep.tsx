@@ -15,7 +15,7 @@ import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 const AccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
     const { oauth_authorization_redirect_url: oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
-    const { goToStep, goToNextStep } = useFormWizardaUpdate()
+    const { goToStep } = useFormWizardaUpdate()
     const { currentStepName } = useFormWizardState()
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const [addressSource, setAddressSource] = useState("")
@@ -36,12 +36,12 @@ const AccountConnectStep: FC = () => {
         const exchanges = await (await getUserExchanges(access_token))?.data
         const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
         if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
-            goToNextStep()
+            await goToStep(SwapCreateStep.Confirm)
             authWindowRef.current?.close()
             return true;
         }
         return false
-    }, [currentStepName, authWindowRef], 7000)
+    }, [currentStepName, authWindowRef], 2000)
 
 
     const handleConnect = useCallback(() => {

@@ -1,11 +1,6 @@
 import { FC } from "react"
 
 
-
-export type BaseStepProps = {
-    current: boolean
-}
-
 // export type Step = {
 //     title: string,
 //     content: FC<BaseStepProps>,
@@ -35,13 +30,13 @@ export type LoginWizardSteps = {
 }
 
 export enum SwapCreateStep {
-    MainForm,
-    Email,
-    Code,
-    OAuth,
-    OffRampOAuth,
-    ApiKey,
-    Confirm
+    MainForm = "MainForm",
+    Email = "Email",
+    Code = "Code",
+    OAuth = "OAuth",
+    OffRampOAuth = "OffRampOAuth",
+    ApiKey = "ApiKey",
+    Confirm = "Confirm"
 }
 
 export enum ProcessSwapStep {
@@ -69,7 +64,7 @@ export const OfframpExchangeAuthorizationSteps: { [key: string]: SwapCreateStep 
 export class WizardStep<T> {
     Name: T;
     Content: FC;
-    onBack?: () => T;
-    onNext?: (data: any) => Promise<T>;
+    onBack?: () => void;
+    onNext?: (data?: any) => void;
     positionPercent: number;
 }

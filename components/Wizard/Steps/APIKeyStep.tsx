@@ -9,6 +9,7 @@ const APIKeyStep: FC = () => {
     const { swapFormData } = useSwapDataState()
     const { goToStep } = useFormWizardaUpdate()
     const onConnect = () => goToStep(SwapCreateStep.Confirm)
+    
     return (
         <>
             <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} />

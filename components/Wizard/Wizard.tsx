@@ -1,19 +1,22 @@
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
-import { Transition } from "@headlessui/react";
+import { FC, useCallback, useEffect, useRef } from 'react'
 import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
-import { BaseWizard } from '../../Models/Wizard';
 import LayerswapMenu from '../LayerswapMenu';
 import LayerSwapLogo from '../icons/layerSwapLogo';
 import { useRouter } from 'next/router';
 
-const Wizard: FC = ({ children }) => {
+type Props = {
+   children: JSX.Element[];
+}
 
-   const [wrapperWidth, setWrapperWidth] = useState(1);
+const Wizard: FC<Props> = ({ children }) => {
+
    const wrapper = useRef(null);
-   const { wizard, currentStepName, moving, loading: loadingWizard } = useFormWizardState()
 
-   const loading = !wizard || loadingWizard
+   const { wrapperWidth, loading: loadingWizard, positionPercent } = useFormWizardState()
+   const { setWrapperWidth } = useFormWizardaUpdate()
+   const loading = loadingWizard
+
    useEffect(() => {
       function handleResize() {
          if (wrapper.current !== null) {
@@ -26,13 +29,12 @@ const Wizard: FC = ({ children }) => {
       return () => window.removeEventListener("resize", handleResize);
    }, []);
 
-   const currentWizardStep = wizard.find(s => s.Name === currentStepName)
 
    return <>
       <div className={`mb-10 pb-6 bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-ouline-blue">
-               <div style={{ width: `${currentWizardStep.positionPercent}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-pink-primary"></div>
+               <div style={{ width: `${positionPercent || 0}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-pink-primary"></div>
             </div>
          </div>
          <WizardHeader wrapperWidth={wrapperWidth} />
@@ -52,10 +54,11 @@ const Wizard: FC = ({ children }) => {
 }
 
 function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
-   const { goBack } = useFormWizardaUpdate()
-   const { wizard, currentStepName } = useFormWizardState()
+   const { goBack } = useFormWizardState()
    const router = useRouter();
 
+   if (goBack)
+      console.log("yap")
    const handleGoHome = useCallback(() => {
       router.push({
          pathname: "/",
@@ -63,16 +66,17 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
       })
    }, [router.query])
 
-   const currentStep = wizard.find(s => s.Name === currentStepName)
-   const canGoBack = typeof currentStep.onBack === 'function'
+
    return <>
       <div className="w-full flex items-center justify-between px-8 mt-3 h-[44px]" >
          <>
             {
-               canGoBack &&
-               <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
-                  <ArrowLeftIcon className='h-5 w-5 text-pink-primary-300 hover:text-ouline-blue cursor-pointer' />
-               </button>
+               goBack ?
+                  <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
+                     <ArrowLeftIcon className='h-5 w-5 text-pink-primary-300 hover:text-ouline-blue cursor-pointer' />
+                  </button>
+                  :
+                  <div></div>
             }
             <div className='mx-auto px-4 overflow-hidden md:hidden'>
                <div className="flex justify-center">
