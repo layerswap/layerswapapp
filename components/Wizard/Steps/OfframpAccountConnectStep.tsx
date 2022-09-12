@@ -4,11 +4,10 @@ import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formW
 import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useInterval } from '../../../hooks/useInterval';
 import { parseJwt } from '../../../lib/jwtParser';
 import { OpenLink } from '../../../lib/openLink';
 import TokenService from '../../../lib/TokenService';
-import { FormWizardSteps, ProcessSwapStep, SwapCreateStep } from '../../../Models/Wizard';
+import { SwapCreateStep } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
 import { ExternalLinkIcon } from '@heroicons/react/outline';

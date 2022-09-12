@@ -44,9 +44,6 @@ export const FormWizardProvider = <T extends Steps>(props: Props<T>) => {
         setCurrentStepName(step)
     }, [])
 
-    if (goBack?.callback)
-        console.log("has gpback")
-
     return (
         <FormWizardStateContext.Provider value={{ currentStepName, moving, loading, wrapperWidth, goBack: goBack?.callback, positionPercent }}>
             <FormWizardStateUpdateContext.Provider value={{ goToStep, setLoading, setWrapperWidth, setGoBack: handleSetCallback, setPositionPercent }}>

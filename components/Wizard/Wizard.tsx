@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useRef } from 'react'
+import { FC, useEffect, useRef } from 'react'
 import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import LayerswapMenu from '../LayerswapMenu';

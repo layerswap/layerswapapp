@@ -1,4 +1,4 @@
-import { DocumentDuplicateIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
+import { SwitchHorizontalIcon } from '@heroicons/react/outline';
 import { FC, useCallback, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';

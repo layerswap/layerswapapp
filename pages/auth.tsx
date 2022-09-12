@@ -6,11 +6,6 @@ import { FormWizardProvider } from '../context/formWizardProvider'
 import { AuthStep } from '../Models/Wizard'
 import AuthWizard from '../components/Wizard/AuthWizard'
 
-// const loginWizard: LoginWizardSteps = {
-//   "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, positionPercent: 50 },
-//   "Code": { title: "Code", content: LoginCodeStep, positionPercent: 75 },
-// }
-
 export default function AuthPage() {
 
   return (
