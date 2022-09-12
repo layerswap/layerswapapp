@@ -1,6 +1,5 @@
 import { FC } from 'react'
 import { useAuthDataUpdate } from '../../../context/authContext';
-import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import SendEmail from '../../SendEmail';
 
 type Props = {
