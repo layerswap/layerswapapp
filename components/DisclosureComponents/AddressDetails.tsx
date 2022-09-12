@@ -1,22 +1,22 @@
-import { ChevronDownIcon, DocumentDuplicateIcon, ExternalLinkIcon, PencilAltIcon } from '@heroicons/react/outline'
+import { ChevronDownIcon, ExternalLinkIcon, PencilAltIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
 import { useSwapDataState } from '../../context/swap';
 import Image from 'next/dist/client/image';
-import { copyTextToClipboard } from '../utils/copyToClipboard';
 import { FC, MouseEventHandler, useEffect } from 'react';
-import ClickTooltip from '../Tooltips/ClickTooltip';
 import shortenAddress from '../utils/ShortenAddress';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
+import CopyButton from '../buttons/copyButton';
 
 export class AddressDetailsProps {
-    onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
+    onClickEditAddress?: MouseEventHandler<HTMLButtonElement> | undefined;
+    canEditAddress: boolean;
 }
 
 function constructExplorerUrl(swapFormData: SwapFormValues): string {
     return swapFormData?.network?.baseObject.account_explorer_template.replace("{0}", swapFormData?.destination_address.startsWith('zksync:') ? swapFormData?.destination_address.replace('zksync:', '') : swapFormData?.destination_address);
 }
 
-const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
+const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, canEditAddress }) => {
     const { swapFormData } = useSwapDataState()
 
     if (swapFormData?.swapType === "offramp")
@@ -25,7 +25,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                 <div className="flex items-center min-w-0 flex-1">
                     {
                         swapFormData?.exchange?.imgSrc &&
-                        <div className="flex-shrink-0 h-5 w-5 mr-1 relative">
+                        <div className="flex-shrink-0 h-5 w-5 mr-2 relative">
                             <Image
                                 src={swapFormData?.exchange?.imgSrc}
                                 alt="Exchange Logo"
@@ -37,8 +37,8 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                         </div>
                     }
                     {
-                        <div className='flex min-w-0 flex-1 mr-1' id='containerOfTextContainer'>
-                            <span className='text-base font-medium' id='textContainer'>
+                        <div className='flex min-w-0 flex-1 mr-1'>
+                            <span className='text-base font-medium break-all'>
                                 {swapFormData?.destination_address}
                             </span>
                         </div>
@@ -116,17 +116,14 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClick }) => {
                                                 <ExternalLinkIcon className='h-4 w-4 mr-2' />
                                                 <p className=''>View In Explorer</p>
                                             </a>
-                                            <button onClick={onClick} className="text-sm font-normal m-1.5 flex text-pink-primary-300 cursor-pointer items-center hover:text-white">
+                                            <button disabled={!canEditAddress} onClick={onClick} className="text-sm font-normal m-1.5 flex text-pink-primary-300 cursor-pointer items-center hover:text-white">
                                                 <PencilAltIcon className='inline-block h-4 w-4 mr-2' />
                                                 Edit Address
                                             </button>
                                             <div className='cursor-pointer text-pink-primary-300 hover:text-white flex items-center m-1.5'>
-                                                <ClickTooltip text='Copied!' moreClassNames='-right-1 bottom-3'>
-                                                    <div onClick={() => copyTextToClipboard(swapFormData?.destination_address)}>
-                                                        <DocumentDuplicateIcon className='inline-block h-4 w-4 mr-2' />
-                                                        <span className='text-sm font-normal'>Copy Full Address</span>
-                                                    </div>
-                                                </ClickTooltip>
+                                                <CopyButton toCopy={swapFormData?.destination_address}>
+                                                    <span className='text-sm font-normal'>Copy Full Address</span>
+                                                </CopyButton>
                                             </div>
                                         </div>
                                     </>

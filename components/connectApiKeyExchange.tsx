@@ -13,10 +13,11 @@ import SlideOver, { SildeOverRef } from './SlideOver';
 
 type Props = {
     exchange: Exchange,
-    onSuccess: () => void
+    onSuccess: () => void,
+    slideOverClassNames?: string
 }
 
-const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
+const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassNames }) => {
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
@@ -147,7 +148,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
                     {
                         userGuideURL && <div className="flex items-center">
                             <span className="block text-base text-white font-normal leading-6"> Read about
-                                <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to get API Keys</span>&nbsp;</>} moreClassNames="-mt-11 md:-mt-8">
+                                <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to get API Keys</span>&nbsp;</>}  moreClassNames={slideOverClassNames}>
                                     <DocIframe onConfirm={handleCloseSlideover} URl={userGuideURL} />
                                 </SlideOver>
                             </span>

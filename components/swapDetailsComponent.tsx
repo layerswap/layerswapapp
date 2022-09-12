@@ -3,13 +3,12 @@ import { FC, useEffect, useState } from 'react'
 import { useSettingsState } from '../context/settings';
 import LayerSwapApiClient, { SwapItemResponse } from '../lib/layerSwapApiClient';
 import TokenService from '../lib/TokenService';
-import { StatusIcon } from './swapHistoryComponent';
 import Image from 'next/image'
-import { DocumentDuplicateIcon } from '@heroicons/react/outline';
-import { copyTextToClipboard } from './utils/copyToClipboard';
 import toast from 'react-hot-toast';
-import ClickTooltip from './Tooltips/ClickTooltip';
 import shortenAddress from './utils/ShortenAddress';
+import CopyButton from './buttons/copyButton';
+import { SwapDetailsComponentSceleton } from './Sceletons';
+import StatusIcon from './StatusIcons';
 
 type Props = {
     id: string
@@ -53,7 +52,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
     }, [id, router.query])
 
     if (loading)
-        return <Sceleton />
+        return <SwapDetailsComponentSceleton />
 
     return (
         <>
@@ -64,12 +63,9 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Id </span>
                             <span className="text-white">
                                 <div className='inline-flex items-center'>
-                                    <span className="mr-2">{shortenAddress(swap?.data?.id)}</span>
-                                    <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
-                                        <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap?.data?.id)}>
-                                            <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
-                                        </div>
-                                    </ClickTooltip>
+                                    <CopyButton toCopy={swap?.data?.id} iconClassName="text-gray-500">
+                                        {shortenAddress(swap?.data?.id)}
+                                    </CopyButton>
                                 </div>
                             </span>
                         </div>
@@ -126,7 +122,13 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Address </span>
-                            <span className='text-white font-normal'>{swap?.data?.destination_address.slice(0, 8) + "..." + swap?.data?.destination_address.slice(swap?.data?.destination_address.length - 5, swap?.data?.destination_address.length)}</span>
+                            <span className="text-white">
+                                <div className='inline-flex items-center'>
+                                    <CopyButton toCopy={swap?.data?.destination_address} iconClassName="text-gray-500">
+                                        {swap?.data?.destination_address.slice(0, 8) + "..." + swap?.data?.destination_address.slice(swap?.data?.destination_address.length - 5, swap?.data?.destination_address.length)}
+                                    </CopyButton>
+                                </div>
+                            </span>
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
@@ -153,29 +155,6 @@ const SwapDetails: FC<Props> = ({ id }) => {
             </div>
         </>
     )
-}
-
-const Sceleton = () => {
-    return <div className="animate-pulse"><div className="w-full grid grid-flow-row">
-        <div className="rounded-md bg-darkBlue w-full grid grid-flow-row">
-            <div className="items-center block text-base font-lighter leading-6 text-pink-primary-300">
-                <div className="flex justify-between items-baseline">
-                    <div className="h-2 m-2 w-1/4 bg-slate-400 rounded col-span-1"></div>
-                    <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                </div>
-                {[...Array(9)]?.map((item, index) => (
-                    <>
-                        <hr className='horizontal-gradient my-1' />
-                        <div className="flex justify-between items-baseline">
-                            <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                            <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
-                        </div>
-                    </>
-                ))}
-            </div>
-        </div>
-    </div>
-    </div>
 }
 
 export default SwapDetails;

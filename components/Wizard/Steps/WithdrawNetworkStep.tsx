@@ -8,12 +8,12 @@ import { ProcessSwapStep, SwapWizardSteps } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
-import { copyTextToClipboard } from '../../utils/copyToClipboard';
 import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
-import ClickTooltip from '../../Tooltips/ClickTooltip';
+import BackgroundField from '../../backgroundField';
+import WarningMessage from '../../WarningMessage';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -59,123 +59,84 @@ const WithdrawNetworkStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-8 space-y-5 md:grid md:grid-flow-row text-pink-primary-300">
-                <div className="flex items-center">
-                    <h3 className="block text-lg font-medium text-white leading-6 text-left">
-                        Go to
-                        {
-                            network_logo_url &&
-                            <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
-                                <div className="flex-shrink-0 h-6 w-6 relative">
-                                    <Image
-                                        src={network_logo_url}
-                                        alt="Network Logo"
-                                        height="40"
-                                        width="40"
-                                        loading="eager"
-                                        priority
-                                        layout="responsive"
-                                        className="rounded-md object-contain"
-                                    />
+            <div className="w-full px-6 md:px-8 space-y-5 flex flex-col justify-between h-full text-pink-primary-300">
+                <div className='space-y-4'>
+                    <div className="flex items-center">
+                        <h3 className="block text-lg font-medium text-white leading-6 text-left">
+                            Go to
+                            {
+                                network_logo_url &&
+                                <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
+                                    <div className="flex-shrink-0 h-6 w-6 relative">
+                                        <Image
+                                            src={network_logo_url}
+                                            alt="Network Logo"
+                                            height="40"
+                                            width="40"
+                                            loading="eager"
+                                            priority
+                                            layout="responsive"
+                                            className="rounded-md object-contain"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
+                            }
+                            <span className='strong-highlight'>
+                                {network_name}
+                            </span> and send {swap?.data.currency} to the provided L2 address
+                        </h3>
+                    </div>
+                    <div className='mb-6 grid grid-cols-1 gap-4'>
+                        {
+                            network_name.toLowerCase() === 'loopring' &&
+
+                            <BackgroundField header={'Select as "Where would you like to send your crypto to"'}>
+                                <div className='flex items-center space-x-2'>
+                                    <SwitchHorizontalIcon className='h-4 w-4' />
+                                    <p>
+                                        To Another Loopring L2 Account
+                                    </p>
+                                </div>
+                            </BackgroundField>
                         }
-                        <span className='strong-highlight'>
-                            {network_name}
-                        </span> and send {swap?.data.currency} to the provided L2 address
-                    </h3>
-                </div>
-                <div className='mb-12 grid grid-cols-1 gap-5'>
-                    {
-                        network_name.toLowerCase() === 'loopring' &&
-                        <div>
-                            <p className="block font-normal text-sm">
-                                Select as "Where would you like to send your crypto to"
-                            </p>
-                            <div className="flex rounded-md items-center px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
-                                <SwitchHorizontalIcon className='h-4 w-4' />
-                                <p className="ml-2">
-                                    To Another Loopring L2 Account
-                                </p>
-                            </div>
-                        </div>
-                    }
-                    <div className='flex space-x-5'>
-                        <div className='w-full'>
-                            <p className="block font-normal text-sm">
-                                Amount
-                            </p>
-                            <div className="relative rounded-md px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                        <div className='flex space-x-4'>
+                            <BackgroundField isCopiable={true} toCopy={swap?.data?.amount} header={'Amount'}>
                                 <p>
                                     {swap?.data?.amount}
                                 </p>
-                                <div className='absolute inset-y-2 right-2.5'>
-                                    <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                        <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.amount)}>
-                                            <DocumentDuplicateIcon className='h-6 w-5' />
-                                        </div>
-                                    </ClickTooltip>
-                                </div>
-                            </div>
-                        </div>
-                        <div className='w-full'>
-                            <p className="block font-normal text-sm">
-                                Asset
-                            </p>
-                            <div className="relative rounded-md px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                            </BackgroundField>
+                            <BackgroundField header={'Asset'}>
                                 <p>
                                     {swap?.data?.currency}
                                 </p>
-                            </div>
+                            </BackgroundField>
                         </div>
-                    </div>
-                    <div>
-                        <p className="block font-normal text-sm">
-                            Recipient
-                        </p>
-                        <div className="relative break-all rounded-md items-center pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
-                            <p>
+                        <BackgroundField isCopiable={true} toCopy={swap?.data.offramp_info.deposit_address} header={'Recipient'}>
+                            <p className='break-all'>
                                 {swap?.data.offramp_info.deposit_address}
                             </p>
-                            <div className='absolute inset-y-2 right-2.5 md:top-2 top-5'>
-                                <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                    <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data.offramp_info.deposit_address)}>
-                                        <DocumentDuplicateIcon className='h-6 w-5' />
-                                    </div>
-                                </ClickTooltip>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <p className="block font-normal text-sm">
-                            Address Type
-                        </p>
-                        <div className="rounded-md items-center px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+                        </BackgroundField>
+                        <BackgroundField header={'Address Type'}>
                             <p>
                                 EOA Wallet
                             </p>
-                        </div>
+                        </BackgroundField>
+                        {
+                            swap?.data?.offramp_info?.memo &&
+                            <>
+                                <BackgroundField isCopiable={true} toCopy={swap?.data?.offramp_info?.memo} header={'Memo'}>
+                                    <p className='break-all'>
+                                        {swap?.data?.offramp_info?.memo}
+                                    </p>
+                                </BackgroundField>
+                                <WarningMessage>
+                                    <p className='font-normal text-sm text-darkblue-600'>
+                                        - Please include the "Memo" field - it is required for a successful deposit.
+                                    </p>
+                                </WarningMessage>
+                            </>
+                        }
                     </div>
-                    {
-                        swap?.data?.offramp_info?.memo &&
-                        <div>
-                            <p className="block font-normal text-sm">
-                                Memo
-                            </p>
-                            <div className="relative rounded-md break-all pl-3 pr-11 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
-                                <p>
-                                    {swap?.data?.offramp_info?.memo}
-                                </p>
-                                <div className='absolute inset-y-2 right-2.5'>
-                                    <ClickTooltip text='Copied!' moreClassNames='right-0 bottom-7'>
-                                        <div className='rounded bg bg-darkblue-50 p-1' onClick={() => copyTextToClipboard(swap?.data?.offramp_info?.memo)}>
-                                            <DocumentDuplicateIcon className='h-6 w-5' />
-                                        </div>
-                                    </ClickTooltip>
-                                </div>
-                            </div>
-                        </div>
-                    }
                 </div>
                 {
                     transferDone ?

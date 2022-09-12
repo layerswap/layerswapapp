@@ -20,12 +20,11 @@ import { ExchangeAuthorizationSteps, FormWizardSteps, OfframpExchangeAuthorizati
 import TokenService from "../../../lib/TokenService";
 import { useUserExchangeDataUpdate } from "../../../context/userExchange";
 import axios from "axios";
-import AmountAndFeeDetails from "../../Disclosure/amountAndFeeDetailsComponent";
+import AmountAndFeeDetails from "../../DisclosureComponents/amountAndFeeDetailsComponent";
 import ConnectImmutableX from "./ConnectImmutableX";
 import ConnectDeversifi from "../../ConnectDeversifi";
 import toast from "react-hot-toast";
 import { InjectedConnector } from "@web3-react/injected-connector";
-import { isValidAddress } from "../../../lib/addressValidator";
 import { clearTempData, getTempData } from "../../../lib/openLink";
 import NumericInput from "../../Input/NumericInput";
 import AddressInput from "../../Input/AddressInput";
@@ -34,9 +33,9 @@ import KnownIds from "../../../lib/knownIds";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { BransferApiClient } from "../../../lib/bransferApiClients";
-import Banner from "../../banner";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
-import { ConnectedFocusError } from "../../../lib/external";
+import { ConnectedFocusError } from "../../../lib/external/ConnectedFocusError";
+import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
 
 const CurrenciesField: FC = () => {
     const {
@@ -127,18 +126,20 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = "network"
-    const { lockNetwork } = useQueryState()
+    const { lockNetwork, destNetwork } = useQueryState()
     const { data } = useSettingsState();
 
+    const destNetworkIsAvailable = data.networks.some(n => n.code === destNetwork && n.is_enabled && (swapType === "onramp" || data?.currencies?.some(c => c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled))))
+    
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
-        .filter(n => swapType === "onramp" || data?.currencies?.some(c => c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled)))
+        .filter(n => swapType === "onramp" || data?.currencies?.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled)))
         .map(n => ({
             baseObject: n,
             id: n.code,
             name: n.name,
             order: n.order,
             imgSrc: n.logo_url,
-            isAvailable: !lockNetwork,
+            isAvailable: swapType === "offramp" ? !destNetworkIsAvailable : !lockNetwork,
             isEnabled: n.is_enabled && data.currencies.some(c => c.is_enabled && c.network_id === n.id && (swapType === "offramp" || c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))),
             isDefault: n.is_default
         })).sort(sortingByOrder);
@@ -158,7 +159,7 @@ const AmountField = React.forwardRef((props: any, ref: any) => {
     const { values: { currency, swapType, exchange } } = useFormikContext<SwapFormValues>();
     const name = "amount"
     let minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, swapType);
-    let maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, swapType);
+    let maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, exchange?.baseObject, swapType);
 
     const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.baseObject?.decimals)
@@ -215,7 +216,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             setLoadingWizard(false)
         }, 500);
     }, [query])
-
 
     useEffect(() => {
         let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
@@ -314,17 +314,15 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const sourceExchangeName = query.sourceExchangeName
     const lockAddress = !!account || query.lockAddress
 
-    if (lockNetwork) {
+    if (lockNetwork && formValues.swapType === "onramp") {
         availableNetworks.forEach(x => {
             if (x != initialNetwork)
                 x.isEnabled = false;
         })
     }
 
-    let initialAddress = destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
+    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? "onramp", settings, query)
 
-    let initialExchange = availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase());
-    const initialValues: SwapFormValues = { swapType: "onramp", amount: '', network: initialNetwork, destination_address: initialAddress, exchange: initialExchange };
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
     const addressRef: any = useRef();
@@ -350,10 +348,10 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            {({ values, errors, isValid }) => (
+            {({ values, errors, isValid, dirty }) => (
                 <Form className="h-full">
                     <ConnectedFocusError />
-                    <div className="px-8 h-full flex flex-col justify-between">
+                    <div className="px-6 md:px-8 h-full flex flex-col justify-between">
                         <div>
                             <div className='my-4'>
                                 <SwapOptionsToggle />
@@ -371,7 +369,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                                 <div className="w-full mb-3.5 leading-4">
                                     <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
                                         {`To ${values?.network?.name || ''} address`}
-                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].name})</span>}
+                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].display_name})</span>}
                                     </label>
                                     <div className="relative rounded-md shadow-sm mt-1.5">
                                         {isPartnerWallet &&
@@ -381,7 +379,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                                         }
                                         <div>
                                             <AddressInput
-                                                disabled={initialAddress != '' && lockAddress || (!values.network || !values.exchange)}
+                                                disabled={initialValues.destination_address != '' && lockAddress || (!values.network || !values.exchange)}
                                                 name={"destination_address"}
                                                 className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
                                                 ref={addressRef}
@@ -400,7 +398,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                             </div>
                         </div>
                         <div className="mt-6">
-                            <SwapButton type='submit' isDisabled={!isValid} isSubmitting={loading}>
+                            <SwapButton type='submit' isDisabled={!isValid || !dirty} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors, values.swapType)}
                             </SwapButton>
                         </div>

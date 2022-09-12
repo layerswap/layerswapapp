@@ -2,8 +2,7 @@ import { FC, useCallback, useEffect, useRef } from 'react'
 import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import LayerswapMenu from '../LayerswapMenu';
-import LayerSwapLogo from '../icons/layerSwapLogo';
-import { useRouter } from 'next/router';
+import GoHomeButton from '../utils/GoHome';
 
 type Props = {
    children: JSX.Element[];
@@ -31,7 +30,7 @@ const Wizard: FC<Props> = ({ children }) => {
 
 
    return <>
-      <div className={`mb-10 pb-6 bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
+      <div className={`pb-6 bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-ouline-blue">
                <div style={{ width: `${positionPercent || 0}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-pink-primary"></div>
@@ -55,20 +54,9 @@ const Wizard: FC<Props> = ({ children }) => {
 
 function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
    const { goBack } = useFormWizardState()
-   const router = useRouter();
-
-   if (goBack)
-      console.log("yap")
-   const handleGoHome = useCallback(() => {
-      router.push({
-         pathname: "/",
-         query: router.query
-      })
-   }, [router.query])
-
 
    return <>
-      <div className="w-full flex items-center justify-between px-8 mt-3 h-[44px]" >
+      <div className="w-full flex items-center justify-between px-6 md:px-8 mt-3 h-[44px]" >
          <>
             {
                goBack ?
@@ -80,9 +68,7 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
             }
             <div className='mx-auto px-4 overflow-hidden md:hidden'>
                <div className="flex justify-center">
-                  <a onClick={handleGoHome}>
-                     <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
-                  </a>
+                  <GoHomeButton />
                </div>
             </div>
             <LayerswapMenu />

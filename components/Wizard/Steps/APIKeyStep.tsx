@@ -12,7 +12,7 @@ const APIKeyStep: FC = () => {
     
     return (
         <>
-            <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} />
+            <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} slideOverClassNames="-mt-11 md:-mt-8" />
         </>
     )
 }

@@ -1,7 +1,5 @@
 import { Popover } from "@headlessui/react";
-import { InformationCircleIcon } from "@heroicons/react/outline";
 import { FC } from "react";
-import { text } from "stream/consumers";
 
 type Props = {
     children: JSX.Element | JSX.Element[],

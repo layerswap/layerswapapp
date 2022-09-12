@@ -3,65 +3,20 @@ import { Fragment, useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapListResponse, SwapItem } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { ChevronRightIcon, DocumentDuplicateIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
-
+import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 import { Dialog, Transition } from "@headlessui/react"
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
-import LayerSwapLogo from "./icons/layerSwapLogo"
 import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
-import { copyTextToClipboard } from "./utils/copyToClipboard"
 import { useAuthState } from "../context/authContext"
-import ClickTooltip from "./Tooltips/ClickTooltip"
 import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
-
-
-export function StatusIcon({ swap }: { swap: SwapItem }) {
-  if (swap?.status === 'failed') {
-    return (
-      <>
-        <div className="inline-flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2" viewBox="0 0 60 60" fill="none">
-            <circle cx="30" cy="30" r="30" fill="#E43636" />
-          </svg>
-          <p className="">Failed</p>
-        </div>
-      </>)
-  } else if (swap?.status === 'completed') {
-    return (
-      <>
-        <div className="inline-flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2" viewBox="0 0 60 60" fill="none">
-            <circle cx="30" cy="30" r="30" fill="#55B585" />
-          </svg>
-          <p className="">Completed</p>
-        </div>
-      </>
-    )
-  }
-  else if (swap?.payment?.status == "closed")
-    return (
-      <>
-        <div className="inline-flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2" viewBox="0 0 60 60" fill="none">
-            <circle cx="30" cy="30" r="30" fill="#E43636" />
-          </svg>
-          <p className="">Closed</p>
-        </div>
-      </>)
-  else {
-    return <>
-      <div className="inline-flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2 lg:h-2 lg:w-2" viewBox="0 0 60 60" fill="none">
-          <circle cx="30" cy="30" r="30" fill="#facc15" />
-        </svg>
-        <p className="">Pending</p>
-      </div>
-    </>
-  }
-}
+import SubmitButton from "./buttons/submitButton"
+import CopyButton from "./buttons/copyButton"
+import { SwapHistoryComponentSceleton } from "./Sceletons"
+import GoHomeButton from "./utils/GoHome"
+import StatusIcon, { GreenIcon, RedIcon, YellowIcon } from "./StatusIcons"
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -138,15 +93,6 @@ function TransactionsHistory() {
     setSelectedSwap(swap)
   }
 
-
-  const handleGoHome = useCallback(() => {
-    router.push({
-      pathname: "/",
-      query: router.query
-    })
-  }, [router.query])
-
-
   return (
     <div className={`bg-darkBlue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
       <div className="mt-3 flex items-center justify-between z-20" >
@@ -156,22 +102,19 @@ function TransactionsHistory() {
         </div>
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
           <div className="flex justify-center">
-            <a onClick={handleGoHome}>
-              <LayerSwapLogo className="h-8 w-auto text-white opacity-50" />
-            </a>
+            <GoHomeButton />
           </div>
         </div>
         <LayerswapMenu />
       </div>
       {
         page == 0 && loading ?
-          <Sceleton />
+          <SwapHistoryComponentSceleton />
           : <>
             {
               swaps?.data.length > 0 ?
                 <>
-                  <div className=" mb-2 ">
-
+                  <div className="mb-2">
                     <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
                       <table className="min-w-full divide-y divide-darkblue-100">
                         <thead>
@@ -247,12 +190,9 @@ function TransactionsHistory() {
                                 )}
                               >
                                 <div className='inline-flex items-center'>
-                                  <span className="mr-2">{shortenAddress(swap.id)}</span>
-                                  <ClickTooltip text='Copied!' moreClassNames="bottom-3 right-0">
-                                    <div className='border-0 ring-transparent' onClick={() => copyTextToClipboard(swap.id)}>
-                                      <DocumentDuplicateIcon className="h-4 w-4 text-gray-600" />
-                                    </div>
-                                  </ClickTooltip>
+                                  <CopyButton iconClassName="text-gray-500" toCopy={swap.id}>
+                                    {shortenAddress(swap.id)}
+                                  </CopyButton>
                                 </div>
                               </td>
                               <td
@@ -466,6 +406,15 @@ function TransactionsHistory() {
                                   </a>
                                 </div>
                               }
+                              {
+                                selectedSwap?.status == 'pending' || selectedSwap?.payment?.status == 'processing' &&
+                                <div className="text-white text-sm">
+                                  <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={""}>
+                                    Complete Swap
+                                    <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                                  </SubmitButton>
+                                </div>
+                              }
                             </Dialog.Panel>
                           </Transition.Child>
                         </div>
@@ -473,7 +422,7 @@ function TransactionsHistory() {
                     </Dialog>
                   </Transition>
                 </>
-                : <div className="m-16 text-center mb-20 pb-10">
+                : <div className="sm:my-24 sm:mx-60 m-16 pb-20 text-center sm:pb-10">
                   There are no transactions for this account
                 </div>
             }
@@ -481,180 +430,6 @@ function TransactionsHistory() {
       }
     </div>
   )
-}
-
-const Sceleton = () => {
-
-  return <div className="animate-pulse">
-    <div className=" mb-10 ">
-      <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg ">
-        <table className="min-w-full divide-y divide-darkblue-100">
-          <thead>
-            <tr>
-              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-500 sm:pl-6">
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="hidden lg:block">
-                    <div className="h-2 w-8 bg-slate-700 rounded col-span-1"></div>
-                  </div>
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-              >
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="h-2 w-8 bg-slate-700 rounded col-span-1"></div>
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-500 "
-              >
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="h-2 w-8 bg-slate-700 rounded col-span-1"></div>
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-              >
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="h-2 w-16 bg-slate-700 rounded col-span-1"></div>
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-              >
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="h-2 w-16 bg-slate-700 rounded col-span-1"></div>
-                </div>
-              </th>
-
-              <th
-                scope="col"
-                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-              >
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="h-2 w-8 bg-slate-700 rounded col-span-1"></div>
-                </div>
-              </th>
-              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="h-2 w-8 bg-slate-700 rounded col-span-1"></div>
-                </div>
-              </th>
-              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...Array(5)]?.map((item, index) => (
-              <tr key={index}>
-                <td
-                  className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
-                    'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
-                  )}
-                >
-                  <div className="text-white hidden lg:block">
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="h-2 w-16 bg-slate-700 rounded col-span-1"></div>
-                    </div>
-                  </div>
-                  {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-100" /> : null}
-                </td>
-                <td
-                  className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
-                    'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
-                  )}
-                >
-                  <div className="flex space-x-2">
-                    <div className="rounded-full bg-slate-700 h-4 w-4"></div>
-                    <div className="grid grid-cols-4 items-center">
-                      <div className="h-2 w-16 bg-slate-700 rounded col-span-3"></div>
-                    </div>
-                  </div>
-
-                </td>
-                <td
-                  className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
-                    'px-3 py-3.5 text-sm text-white table-cell'
-                  )}
-                >
-                  <div className="flex space-x-2">
-                    <div className="rounded-full bg-slate-700 h-4 w-4"></div>
-                    <div className="grid grid-cols-4 items-center">
-                      <div className="h-2 w-16 bg-slate-700 rounded col-span-3"></div>
-                    </div>
-                  </div>
-                </td>
-                <td
-                  className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
-                    'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
-                  )}
-                >
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="h-2 w-16 bg-slate-700 rounded col-span-1"></div>
-                  </div>
-                </td>
-                <td
-                  className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
-                    'relative px-3 py-3.5 text-sm text-white'
-                  )}
-                >
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="h-2 w-16 bg-slate-700 rounded col-span-1"></div>
-                  </div>
-                </td>
-                <td
-                  className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
-                    'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
-                  )}
-                >
-                  <div className="flex space-x-2">
-                    <div className="rounded bg-slate-700 h-2 w-2"></div>
-                    <div className="grid grid-cols-1 items-center">
-                      <div className="h-2 w-16 bg-slate-700 rounded col-span-1"></div>
-                    </div>
-                  </div>
-                </td>
-                <td
-                  className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
-                    'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
-                  )}
-                >
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="h-2 w-12 bg-slate-700 rounded col-span-1"></div>
-                    <div className="h-2 w-8 bg-slate-700 rounded col-span-1"></div>
-                  </div>
-                </td>
-                <td
-                  className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
-                    'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
-                  )}
-                >
-                  <div className="grid grid-cols-1 gap-4">
-                    <ChevronRightIcon className="h-5 w-5 text-slate-700" />
-                  </div>
-                </td>
-
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
 }
 
 export default TransactionsHistory;

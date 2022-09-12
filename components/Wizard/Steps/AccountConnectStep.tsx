@@ -62,7 +62,7 @@ const AccountConnectStep: FC = () => {
         }
     }, [oauth_redirect_url, carouselRef, carouselFinished, addressSource, query])
 
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount?.toString()?.replace(",", ".")) + 5)
+    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
 
     const exchange_name = swapFormData?.exchange?.name
     const onCarouselLast = (value) => {

@@ -12,29 +12,31 @@ import toast from 'react-hot-toast';
 import { CalculateReceiveAmount } from '../../../lib/fees';
 import ToggleButton from '../../buttons/toggleButton';
 import { isValidAddress } from '../../../lib/addressValidator';
-import AddressDetails from '../../Disclosure/AddressDetails';
+import AddressDetails from '../../DisclosureComponents/AddressDetails';
 import { classNames } from '../../utils/classNames';
 import TokenService from '../../../lib/TokenService';
 import { BransferApiClient } from '../../../lib/bransferApiClients';
 import { CreateSwapParams } from '../../../lib/layerSwapApiClient';
 import NumericInput from '../../Input/NumericInput';
-import { Form, Formik } from 'formik';
+import NetworkSettings from '../../../lib/NetworkSettings';
+import WarningMessage from '../../WarningMessage';
+import { Form, Formik, FormikErrors, FormikProps } from 'formik';
+import { nameOf } from '../../../lib/external/nameof';
 
-interface TwoFACodeFormValues {
-    TwoFACode: string
+interface SwapConfirmationFormValues {
+    TwoFACode: string;
+    RightWallet: boolean;
+    TwoFARequired: boolean;
 }
 
 const SwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
-    if (!swapFormData) {
-        return null;
-    }
-
-    const [confirm_right_wallet, setConfirm_right_wallet] = useState(false)
-    const [twoFactorCode, setTwoFactorCode] = useState("")
-    const initialValues: TwoFACodeFormValues = { TwoFACode: '' }
-    const [loading, setLoading] = useState(false)
-    const [twoFARequired, setTwoFARequired] = useState(false)
+    const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
+    const currentValues = formikRef?.current?.values;
+    const initialValues: SwapConfirmationFormValues = { TwoFACode: '', RightWallet: false, TwoFARequired: false }
+    const nameOfTwoFACode = nameOf(currentValues, (t) => t.TwoFACode);
+    const nameOfTwoFARequired = nameOf(currentValues, (r) => r.TwoFARequired);
+    const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
     const { currentStepName } = useFormWizardState<SwapCreateStep>()
 
     const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
@@ -60,19 +62,17 @@ const SwapConfirmationStep: FC = () => {
             const response = await bransferApiClient.GetExchangeDepositAddress(swapFormData?.exchange?.baseObject?.internal_name, swapFormData.currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
             updateSwapFormData((old) => ({ ...old, destination_address: response.data }))
         })()
-    }, [currentStepName])
+    }, [currentStep])
+
+    useEffect(() => {
+        formikRef?.current?.resetForm()
+    }, [destination_address, swapFormData?.exchange])
 
     useEffect(() => {
         setAddressInputValue(destination_address)
     }, [destination_address])
 
-    const handleTwoFACodeChange = (e) => {
-        setTwoFactorCode(e?.target?.value)
-    }
-    const handleStartEditingAddress = useCallback(() => {
-        if (!loading)
-            setEditingAddress(true)
-    }, [loading])
+    const handleStartEditingAddress = () => setEditingAddress(true);
 
     const handleAddressInputChange = useCallback((e) => {
         setAddressInputError("")
@@ -82,14 +82,14 @@ const SwapConfirmationStep: FC = () => {
 
     }, [network])
 
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount?.toString()?.replace(",", ".")) + 5)
+    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
-    const handleSubmit = useCallback(async () => {
-        setLoading(true)
-        setTwoFARequired(false)
+    const handleSubmit = useCallback(async (values: SwapConfirmationFormValues) => {
+        handleReset();
+        handleStart();
         try {
             const data: CreateSwapParams = {
-                Amount: Number(swapFormData.amount?.toString()?.replace(",", ".")),
+                Amount: Number(swapFormData.amount),
                 Exchange: swapFormData.exchange?.id,
                 Network: swapFormData.network.id,
                 currency: swapFormData.currency.baseObject.asset,
@@ -99,12 +99,12 @@ const SwapConfirmationStep: FC = () => {
             const _swap = swap?.data?.id ? await getSwap(swap.data.id) : await createSwap(data)
             const { payment } = _swap.data
             if (payment?.status === 'created')
-                await processPayment(_swap, twoFactorCode)
+                await processPayment(_swap, values.TwoFACode)
             ///TODO grdon code please refactor
             else if (payment?.status === 'closed') {
                 const newSwap = await createSwap(data)
                 const newPayment = newSwap
-                await processPayment(newSwap, twoFactorCode)
+                await processPayment(newSwap, values.TwoFACode)
                 router.push(`/${newSwap.data.id}`)
                 return
             }
@@ -112,7 +112,6 @@ const SwapConfirmationStep: FC = () => {
         }
         catch (error) {
             ///TODO newline may not work, will not defenitaly fix this
-            console.log("error in confirmation", error?.response?.data)
             const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error?.message || error?.response?.data?.message || error.message)
 
             if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
@@ -120,8 +119,9 @@ const SwapConfirmationStep: FC = () => {
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {
-                toast("Coinbase 2FA code required")
-                setTwoFARequired(true)
+                toast("Coinbase 2FA code required");
+                formikRef.current.setFieldValue(nameOfTwoFARequired, true);
+
             }
             else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {
                 toast.error(`${swapFormData.exchange.name} error: You don't have that much.`)
@@ -129,14 +129,14 @@ const SwapConfirmationStep: FC = () => {
             else {
                 toast.error(errorMessage)
             }
-            setLoading(false)
         }
-    }, [swapFormData, swap, twoFactorCode, minimalAuthorizeAmount, transferAmount])
+    }, [swapFormData, swap, currentValues?.TwoFACode, transferAmount])
 
-    const handleResendTwoFACode = (e) => {
+    const handleResendTwoFACode = () => {
         handleReset()
         handleStart()
-        setTwoFactorCode(e?.target?.value)
+        formikRef.current.setFieldValue(nameOfTwoFACode, "");
+        handleSubmit(currentValues);
     }
 
     const handleClose = () => {
@@ -160,7 +160,7 @@ const SwapConfirmationStep: FC = () => {
         STARTED: 'Started',
         STOPPED: 'Stopped',
     }
-    const INITIAL_COUNT = 60
+    const INITIAL_COUNT = 120
     const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
     const [status, setStatus] = useState(STATUS.STOPPED)
 
@@ -210,10 +210,21 @@ const SwapConfirmationStep: FC = () => {
             <Formik
                 initialValues={initialValues}
                 onSubmit={handleSubmit}
+                innerRef={formikRef}
+                validateOnMount={true}
+                validate={(values: SwapConfirmationFormValues) => {
+                    const errors: FormikErrors<SwapConfirmationFormValues> = {};
+                    if (swapFormData?.swapType === "onramp" && !values.RightWallet) {
+                        errors.RightWallet = 'Confirm your wallet';
+                    } else if (values.TwoFARequired && (!values.TwoFACode || values.TwoFACode.length < 6)) {
+                        errors.TwoFACode = 'TwoFA Required';
+                    }
+                    return errors;
+                }}
             >
-                {({ handleChange, isSubmitting }) => (
-                    <Form className='px-8 h-full flex flex-col justify-between'>
-                        <div className=''>
+                {({ handleChange, isValid, dirty, isSubmitting, values }) => (
+                    <div className='px-6 md:px-8 h-full flex flex-col justify-between'>
+                        <div>
                             <h3 className='mb-7 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                                 Please confirm your swap
                             </h3>
@@ -224,7 +235,8 @@ const SwapConfirmationStep: FC = () => {
                                             <span className="text-left flex"><span className='hidden md:block'>{swapFormData?.swapType === "onramp" ? "From" : "To"}</span>
                                                 <div className="flex items-center">
                                                     <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
-                                                        {swapFormData?.exchange?.imgSrc &&
+                                                        {
+                                                            swapFormData?.exchange?.imgSrc &&
                                                             <Image
                                                                 src={swapFormData?.exchange?.imgSrc}
                                                                 alt="Exchange Logo"
@@ -274,28 +286,40 @@ const SwapConfirmationStep: FC = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <AddressDetails onClick={handleStartEditingAddress} />
                                 {
-                                    twoFARequired &&
-                                    <div className='my-4'>
-                                        <label htmlFor="TwoFACode" className="block font-normal text-pink-primary-300 text-sm">
-                                            Your Coinbase 2FA code
-                                        </label>
-                                        <NumericInput
-                                            pattern='^[0-9]*$'
-                                            placeholder="XXXXXXX"
-                                            maxLength={7}
-                                            name='TwoFACode'
-                                            onChange={e => {
-                                                handleTwoFACodeChange(e); /^[0-9]*$/.test(e.target.value) && handleChange(e)
-                                            }}
-                                            className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
+                                    swapFormData?.swapType === "offramp" && NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage &&
+                                    <WarningMessage className='mb-4'>
+                                        <p className='font-normal text-sm text-darkblue-600'>
+                                            {NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage}
+                                        </p>
+                                    </WarningMessage>
+                                }
+                                <AddressDetails canEditAddress={!isSubmitting} onClickEditAddress={handleStartEditingAddress} />
+                            </div>
+                        </div>
+                        <Form className="text-white text-sm">
+                            {
+                                values.TwoFARequired &&
+                                <div className='my-4'>
+                                    <label htmlFor={nameOfTwoFACode} className="block font-normal text-pink-primary-300 text-sm">
+                                        Your Coinbase 2FA code
+                                    </label>
+                                    <NumericInput
+                                        pattern='^[0-9]*$'
+                                        placeholder="XXXXXXX"
+                                        maxLength={7}
+                                        name={nameOfTwoFACode}
+                                        onChange={e => {
+                                            /^[0-9]*$/.test(e.target.value) && handleChange(e)
+                                        }}
+                                        className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
-                                        />
+                                    />
 
+                                    <span className="flex text-sm leading-6 items-center mt-1.5">
                                         {
                                             status == STATUS.STARTED ?
-                                                <span className="flex text-sm leading-6 items-center mt-1.5">
+                                                <span>
                                                     Send again in
                                                     <span className='ml-1'>
                                                         {twoDigits(minutesToDisplay)}:
@@ -303,37 +327,39 @@ const SwapConfirmationStep: FC = () => {
                                                     </span>
                                                 </span>
                                                 :
-                                                <span onClick={handleResendTwoFACode} className="text-sm leading-6 mt-1.5 decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
+                                                <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
                                                     Resend code
                                                 </span>
                                         }
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                        <div className="text-white text-sm mt-2">
-                            {
-                                swapFormData?.swapType === "onramp" &&
-                                <div className="mx-auto w-full rounded-lg font-normal">
-                                    <div className='flex justify-between mb-4 md:mb-8'>
-                                        <div className='flex items-center text-xs md:text-sm font-medium'>
-                                            <ExclamationIcon className='h-6 w-6 mr-2' />
-                                            I am the owner of this address
-                                        </div>
-                                        <div className='flex items-center space-x-4'>
-                                            <ToggleButton onChange={setConfirm_right_wallet} isChecked={confirm_right_wallet} />
-                                        </div>
-                                    </div>
+                                    </span>
                                 </div>
                             }
-                            {/* <div className="flex items-center mb-2">
-                                <span className="block text-sm leading-6 text-pink-primary-300"> First time here? Please read the User Guide </span>
-                                 </div> */}
-                            <SubmitButton type='submit' isDisabled={(swapFormData?.swapType === "onramp" && !confirm_right_wallet) || loading} icon="" isSubmitting={loading} onClick={handleSubmit}>
-                                Confirm
-                            </SubmitButton>
-                        </div>
-                    </Form>
+                            {
+                                swapFormData?.swapType === "onramp" ?
+                                    <>
+                                        <div className="mx-auto w-full rounded-lg font-normal">
+                                            <div className='flex justify-between mb-4 md:mb-8'>
+                                                <div className='flex items-center text-xs md:text-sm font-medium'>
+                                                    <ExclamationIcon className='h-6 w-6 mr-2' />
+                                                    I am the owner of this address
+                                                </div>
+                                                <div className='flex items-center space-x-4'>
+                                                    <ToggleButton name={nameOfRightWallet} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <SubmitButton type='submit' isDisabled={!isValid || !dirty} icon="" isSubmitting={isSubmitting} >
+                                            Confirm
+                                        </SubmitButton>
+                                    </>
+                                    :
+                                    <SubmitButton type='submit' isDisabled={false} icon="" isSubmitting={isSubmitting} >
+                                        Confirm
+                                    </SubmitButton>
+                            }
+
+                        </Form>
+                    </div>
                 )}
             </Formik>
             <Transition
@@ -375,7 +401,7 @@ const SwapConfirmationStep: FC = () => {
                         </Transition.Child>
 
                         <div className="relative inset-0 text-pink-primary-300 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
-                            <div className="relative min-h-full items-center justify-center p-4 pt-0 text-center">
+                            <div className="relative min-h-full items-center justify-center p-2 pt-0 text-center">
                                 <Transition.Child
                                     as={Fragment}
                                     enter="ease-out duration-300"
@@ -413,7 +439,7 @@ const SwapConfirmationStep: FC = () => {
                                             </div>
                                         </div>
                                         <div className="text-white text-sm mt-auto">
-                                            <SubmitButton type='button' isDisabled={!!addressInputError} icon="" isSubmitting={loading} onClick={handleSaveAddress}>
+                                            <SubmitButton type='button' isDisabled={!!addressInputError} icon="" isSubmitting={false} onClick={handleSaveAddress}>
                                                 Save
                                             </SubmitButton>
                                         </div>
