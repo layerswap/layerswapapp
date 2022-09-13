@@ -101,7 +101,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 });
             }
         }
-
     }, [settings])
 
     useEffect(() => {

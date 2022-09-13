@@ -31,7 +31,7 @@ export function SwapDataProvider({ children }) {
     const updateFns: UpdateInterface = {
         clearSwap: () => setSwap(undefined),
         updateSwapFormData: setSwapFormData,
-        createSwap: useCallback(async (data: CreateSwapParams) => {
+        createSwap: useCallback(async () => {
             try {
                 const layerswapApiClient = new LayerSwapApiClient()
                 const authData = getAuthData()

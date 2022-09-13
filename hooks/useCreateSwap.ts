@@ -5,7 +5,7 @@ import CodeStep from "../components/Wizard/Steps/CodeStep";
 import EmailStep from "../components/Wizard/Steps/EmailStep";
 import MainStep from "../components/Wizard/Steps/MainStep";
 import OfframpAccountConnectStep from "../components/Wizard/Steps/OfframpAccountConnectStep";
-import SwapConfirmationStep from "../components/Wizard/Steps/SwapConfirmationStep";
+import SwapConfirmationStep from "../components/Wizard/Steps/ConfirmStep/OnRampSwapConfirmationStep";
 import { useFormWizardaUpdate } from "../context/formWizardProvider";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { useUserExchangeDataUpdate } from "../context/userExchange";
@@ -15,8 +15,6 @@ import TokenService from "../lib/TokenService";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { ExchangeAuthorizationSteps, OfframpExchangeAuthorizationSteps, SwapCreateStep, WizardStep } from "../Models/Wizard";
 
-
-const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
 const useCreateSwap = () => {
     const { goToStep } = useFormWizardaUpdate()

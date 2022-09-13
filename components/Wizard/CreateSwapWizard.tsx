@@ -5,10 +5,10 @@ import { SwapCreateStep } from "../../Models/Wizard";
 import AccountConnectStep from "./Steps/AccountConnectStep";
 import APIKeyStep from "./Steps/APIKeyStep";
 import CodeStep from "./Steps/CodeStep";
+import SwapConfirmationStep from "./Steps/ConfirmStep";
 import EmailStep from "./Steps/EmailStep";
 import MainStep from "./Steps/MainStep";
 import OfframpAccountConnectStep from "./Steps/OfframpAccountConnectStep";
-import SwapConfirmationStep from "./Steps/SwapConfirmationStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 
