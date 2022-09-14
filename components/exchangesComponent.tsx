@@ -35,6 +35,8 @@ function UserExchanges() {
     const [exchangeLoading, setExchangeLoading] = useState<Exchange>()
     const { email } = useAuthState()
     const [exchangeToDisconnect, setExchangeToDisconnect] = useState<Exchange>()
+    const [openExchangeToConnectModal, setOpenExchangeToConnectModal] = useState(false)
+    const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
     useEffect(() => {
 
@@ -89,7 +91,9 @@ function UserExchanges() {
 
     const handleConnectExchange = (exchange: Exchange) => {
         setExchangeToConnect(exchange)
+        setOpenExchangeToConnectModal(true)
     }
+
     const handleDisconnectExchange = useCallback(async (exchange: Exchange) => {
         setExchangeLoading(exchange)
         try {
@@ -114,8 +118,8 @@ function UserExchanges() {
     }, [router.query])
 
     const handleClose = () => {
-        setExchangeToConnect(undefined);
-        setExchangeToDisconnect(undefined)
+        setOpenExchangeToConnectModal(false)
+        setOpenExchangeToDisconnectModal(false)
     }
 
     const handleExchangeConnected = useCallback(async () => {
@@ -226,7 +230,7 @@ function UserExchanges() {
                                                                     <>
                                                                         {
                                                                             item.is_connected ?
-                                                                                <SubmitButton onClick={() => setExchangeToDisconnect(item)} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Disconnect</SubmitButton>
+                                                                                <SubmitButton onClick={() => {setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true)}} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Disconnect</SubmitButton>
                                                                                 : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Connect</SubmitButton>
                                                                         }
                                                                     </>
@@ -255,13 +259,13 @@ function UserExchanges() {
                     </Combobox>
                 </div>
             </div>
-            <Modal isOpen={!!exchangeToConnect && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.name}`} description={""}>
+            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.name}`} description={""}>
                 <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
             </Modal>
-            <Modal isOpen={!!exchangeToConnect && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.name}`} description={""}>
+            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.name}`} description={""}>
                 <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverClassNames='pt-7' />
             </Modal>
-            <Modal isOpen={!!exchangeToDisconnect} onDismiss={handleClose} title={'Are you sure?'} description={""}>
+            <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} description={""}>
                 <div className="flex justify-items-center space-x-3 max-w-xs px-6 md:px-8">
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" icon={""} >Yes</SubmitButton>
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small' icon={""}>No</SubmitButton>
