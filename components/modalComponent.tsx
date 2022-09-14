@@ -3,7 +3,7 @@ import { Dialog, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline';
 
 interface ModalParams {
-    onDismiss?: (isIntentional: boolean) => void;
+    onDismiss: (isIntentional: boolean) => void;
     isOpen: boolean;
     title: string;
     description: React.ReactNode;
