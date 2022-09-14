@@ -1,7 +1,7 @@
 import { Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
 import React from "react";
-import { FC, forwardRef, Fragment, ReactNode, useImperativeHandle, useState } from "react"
+import { forwardRef, Fragment, ReactNode, useImperativeHandle, useState } from "react"
 
 type Props = {
     opener?: ReactNode,
