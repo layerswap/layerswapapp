@@ -75,7 +75,7 @@ const WithdrawNetworkStep: FC = () => {
                 <div className='space-y-4'>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">
-                            Go to
+                            Send {swap?.data.currency} to the provided address in
                             {
                                 network_logo_url &&
                                 <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
@@ -95,18 +95,18 @@ const WithdrawNetworkStep: FC = () => {
                             }
                             <span className='strong-highlight'>
                                 {network_name}
-                            </span> and send {swap?.data.currency} to the provided L2 address
+                            </span>
                         </h3>
                     </div>
                     <div className='md:flex items-center md:space-x-2 space-y-1 md:space-y-0'>
                         <div className='flex-none'>
-                            How to do transfer in
+                            Guide for:
                         </div>
                         <div className='flex w-full text-white space-x-2'>
                             {
                                 userGuideUrlForDesktop &&
                                 <div className="w-full items-center">
-                                    <SlideOver ref={slideoverRef} opener={<SubmitButton isDisabled={false} size='small' isSubmitting={false} icon={''}>Loopring Web</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
+                                    <SlideOver ref={slideoverRef} opener={<SubmitButton buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} icon={''}>Loopring Web</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
                                         <DocIframe onConfirm={handleCloseSlideover} URl={userGuideUrlForDesktop} />
                                     </SlideOver>
                                 </div>
@@ -114,13 +114,14 @@ const WithdrawNetworkStep: FC = () => {
                             {
                                 userGuideUrlForMobile &&
                                 <div className="w-full items-center">
-                                    <SlideOver ref={slideoverRef} opener={<SubmitButton isDisabled={false} size='small' isSubmitting={false} icon={''}>Loopring Mobile</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
+                                    <SlideOver ref={slideoverRef} opener={<SubmitButton buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} icon={''}>Loopring Mobile</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
                                         <DocIframe onConfirm={handleCloseSlideover} URl={userGuideUrlForMobile} />
                                     </SlideOver>
                                 </div>
                             }
                         </div>
                     </div>
+
                     <div className='mb-6 grid grid-cols-1 gap-4'>
                         {
                             network_id === KnownIds.Networks.LoopringMainnetId &&
