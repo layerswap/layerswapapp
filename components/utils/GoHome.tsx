@@ -1,9 +1,8 @@
 import { useRouter } from "next/router";
-import { FC, Fragment, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import CopyButton from "../buttons/copyButton";
 import LayerSwapLogo from "../icons/layerSwapLogo";
 import { PaperClipIcon } from '@heroicons/react/outline'
-import { Transition } from "@headlessui/react";
 import { renderToString } from 'react-dom/server'
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
