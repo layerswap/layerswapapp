@@ -16,7 +16,6 @@ interface Props {
 
 const GoHomeButton: FC<Props> = (({ className, children }) => {
     const router = useRouter()
-    const [show, setShow] = useState(false)
     const handleGoHome = useCallback(() => {
         router.push({
             pathname: "/",
