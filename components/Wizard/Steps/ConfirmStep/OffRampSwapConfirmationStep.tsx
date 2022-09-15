@@ -1,27 +1,16 @@
-import { Transition } from '@headlessui/react';
-import { ArrowRightIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
-import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 import { FC, Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
-import Image from 'next/image'
 import toast from 'react-hot-toast';
-import { CalculateReceiveAmount } from '../../../../lib/fees';
-import ToggleButton from '../../../buttons/toggleButton';
-import { isValidAddress } from '../../../../lib/addressValidator';
 import AddressDetails from '../../../DisclosureComponents/AddressDetails';
-import { classNames } from '../../../utils/classNames';
 import TokenService from '../../../../lib/TokenService';
 import { BransferApiClient } from '../../../../lib/bransferApiClients';
 import { CreateSwapParams } from '../../../../lib/layerSwapApiClient';
-import NumericInput from '../../../Input/NumericInput';
 import NetworkSettings from '../../../../lib/NetworkSettings';
 import WarningMessage from '../../../WarningMessage';
-import { Form, Formik, FormikErrors, FormikProps } from 'formik';
-import { nameOf } from '../../../../lib/external/nameof';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 
 const OffRampSwapConfirmationStep: FC = () => {

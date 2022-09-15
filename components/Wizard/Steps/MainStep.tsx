@@ -11,7 +11,7 @@ import { SwapFormValues, SwapType } from "../../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../../Select/selectMenuItem";
 import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
-import { useSwapDataUpdate } from "../../../context/swap";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import React from "react";
 import { useFormWizardaUpdate } from "../../../context/formWizardProvider";
 import { SwapCreateStep } from "../../../Models/Wizard";
@@ -41,6 +41,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapCreateStep>()
+    const { swapFormData } = useSwapDataState()
 
     const [loading, setLoading] = useState(false)
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);

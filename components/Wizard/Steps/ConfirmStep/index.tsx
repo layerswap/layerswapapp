@@ -4,7 +4,8 @@ import OffRampSwapConfirmationStep from "./OffRampSwapConfirmationStep";
 import OnRampSwapConfirmationStep from "./OnRampSwapConfirmationStep";
 
 const SwapConfirmationStep: FC = () => {
-    const { swapFormData, swap } = useSwapDataState()
+    
+    const { swapFormData } = useSwapDataState()
 
     if (!swapFormData)
         return <></>

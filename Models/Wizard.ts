@@ -36,7 +36,9 @@ export enum SwapCreateStep {
     OAuth = "OAuth",
     OffRampOAuth = "OffRampOAuth",
     ApiKey = "ApiKey",
-    Confirm = "Confirm"
+    Confirm = "Confirm",
+    TwoFactor = "TwoFactor"
+
 }
 
 export enum ProcessSwapStep {

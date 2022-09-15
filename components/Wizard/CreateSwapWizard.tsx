@@ -9,15 +9,16 @@ import SwapConfirmationStep from "./Steps/ConfirmStep";
 import EmailStep from "./Steps/EmailStep";
 import MainStep from "./Steps/MainStep";
 import OfframpAccountConnectStep from "./Steps/OfframpAccountConnectStep";
+import TwoFactorStep from "./Steps/TwoFactorStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
-
 
 const CreateSwap: FC = () => {
     const { MainForm, Email, Code } = useCreateSwap()
     const { goToStep } = useFormWizardaUpdate()
 
     const GoToMainStep = useCallback(() => goToStep(SwapCreateStep.MainForm), [])
+    const GoToConfirmStep = useCallback(() => goToStep(SwapCreateStep.Confirm), [])
     const GoToEmailStep = useCallback(() => goToStep(SwapCreateStep.Email), [])
 
     return (
@@ -42,6 +43,9 @@ const CreateSwap: FC = () => {
             </WizardItem>
             <WizardItem StepName={SwapCreateStep.Confirm} GoBack={GoToMainStep}>
                 <SwapConfirmationStep />
+            </WizardItem>
+            <WizardItem StepName={SwapCreateStep.TwoFactor} GoBack={GoToConfirmStep}>
+                <TwoFactorStep />
             </WizardItem>
         </Wizard>
     )
