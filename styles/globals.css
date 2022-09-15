@@ -279,6 +279,9 @@ input::-webkit-input-placeholder {
   line-height:normal!important;
 }
 
+body {
+  overflow: overlay;
+}
 body::-webkit-scrollbar {
   --tw-bg-opacity: 1;
   background-color: rgb(18 29 51 / var(--tw-bg-opacity));
@@ -304,3 +307,32 @@ input:disabled, textarea:disabled, input:disabled::placeholder, textarea:disable
 }
 .space-x-reverse { --space-x-reverse: 1 }
 .space-y-reverse { --space-y-reverse: 1 }
+
+/*Transition*/
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.dialog-overlay[data-state='open'],
+.dialog-content[data-state='open'] {
+  animation: fadeIn 100ms ease-out;
+}
+
+.dialog-overlay[data-state='closed'],
+.dialog-content[data-state='closed'] {
+  animation: fadeOut 100ms ease-in;
+}

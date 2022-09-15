@@ -6,6 +6,7 @@ import { PaperClipIcon } from '@heroicons/react/outline'
 import { Transition } from "@headlessui/react";
 import { renderToString } from 'react-dom/server'
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
+import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
 
 
 interface Props {
@@ -26,6 +27,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
     useEffect(() => {
         const handleClick = () => setShow(false);
         window.addEventListener('click', handleClick)
+        console.log('plor')
     }, [])
 
     return (
@@ -33,37 +35,26 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
             {
                 children ??
                 <>
-                    <LayerSwapLogo onContextMenu={(e) => {
-                        e.preventDefault()
-                        setShow(true)
-                    }} className={className ?? "h-8 w-auto text-white"} />
-                    {
-                        <Transition
-                            as={Fragment}
-                            show={show}
-                            enter="transition ease-out duration-100"
-                            enterFrom="transform opacity-0 scale-95"
-                            enterTo="transform opacity-100 scale-100"
-                            leave="transition ease-in duration-75"
-                            leaveFrom="transform opacity-100 scale-100"
-                            leaveTo="transform opacity-0 scale-95"
-                        >
-                            <div className='absolute z-40 border h-fit text-pink-primary-300 border-darkblue-200 mt-2 w-fit rounded-md shadow-lg bg-darkBlue ring-1 ring-black ring-opacity-5 focus:outline-none'>
-                                <button
-                                    className='block px-4 py-2 text-sm text-left w-full hover:bg-darkblue-300 whitespace-nowrap'>
-                                    <CopyButton toCopy={renderToString(<LayerSwapLogo />)}>Copy logo as SVG</CopyButton>
-                                </button>
-                                <button className='block px-4 py-2 text-sm text-left w-full hover:bg-darkblue-300 whitespace-nowrap'>
-                                    <CopyButton toCopy={renderToString(<LayerSwapLogoSmall />)}>Copy symbol as SVG</CopyButton>
-                                </button>
-                                <hr className="horizontal-gradient" />
-                                <a href="https://layerswap.notion.site/layerswap/Layerswap-brand-guide-4b579a04a4c3477cad1c28f466749cf1" target='_blank' className='flex space-x-1 items-center px-4 py-2 text-sm text-left w-full hover:bg-darkblue-300 whitespace-nowrap'>
-                                    <PaperClipIcon width={16} />
-                                    <p>Brand Guidelines </p>
-                                </a>
-                            </div>
-                        </Transition>
-                    }
+                    <ContextMenuPrimitive.Root>
+                        <ContextMenuPrimitive.Trigger>
+                            <LayerSwapLogo className={className ?? "h-8 w-auto text-white"} />
+                        </ContextMenuPrimitive.Trigger>
+                            <ContextMenuPrimitive.Content className="dialog-overlay absolute z-40 border h-fit text-pink-primary-300 border-darkblue-200 mt-2 w-fit rounded-md shadow-lg bg-darkBlue ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                    <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full rounded-t hover:bg-darkblue-300 whitespace-nowrap">
+                                        <CopyButton toCopy={renderToString(<LayerSwapLogo />)}>Copy logo as SVG</CopyButton>
+                                    </ContextMenuPrimitive.ContextMenuItem >
+                                    <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full hover:bg-darkblue-300 whitespace-nowrap">
+                                        <CopyButton toCopy={renderToString(<LayerSwapLogoSmall />)}>Copy symbol as SVG</CopyButton>
+                                    </ContextMenuPrimitive.ContextMenuItem >
+                                    <hr className="horizontal-gradient" />
+                                    <ContextMenuPrimitive.ContextMenuItem className="dialog-content">
+                                        <a href="https://layerswap.notion.site/layerswap/Layerswap-brand-guide-4b579a04a4c3477cad1c28f466749cf1" target='_blank' className='flex space-x-1 items-center px-4 py-2 rounded-b text-sm text-left w-full hover:bg-darkblue-300 whitespace-nowrap'>
+                                            <PaperClipIcon width={16} />
+                                            <p>Brand Guidelines</p>
+                                        </a>
+                                    </ContextMenuPrimitive.ContextMenuItem >
+                            </ContextMenuPrimitive.Content>
+                    </ContextMenuPrimitive.Root>
                 </>
             }
         </div>
