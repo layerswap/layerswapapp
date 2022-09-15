@@ -1,5 +1,3 @@
-import * as React from 'react'
-
 const SwitchIcon = (props) => (
     <>
         <svg {...props} xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="url(#paint0_linear_10_10)">

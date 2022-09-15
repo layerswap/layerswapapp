@@ -5,18 +5,33 @@ import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { SettingsProvider } from '../context/settings'
 import { QueryProvider } from '../context/query'
+import { LayerSwapSettings } from '../Models/LayerSwapSettings'
+import { QueryParams } from '../Models/QueryParams'
+import MaintananceContent from '../components/maintanance/maintanance'
 
-export default function Home({ response, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+type IndexProps = {
+  settings?: LayerSwapSettings,
+  query?: QueryParams,
+  inMaintanance: boolean,
+}
+
+export default function Home({ settings, query, inMaintanance }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
   return (
     <Layout>
       <div className="content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
         <div className='flex flex-col space-y-5 animate-fade-in'>
-          <SettingsProvider data={response}>
-            <QueryProvider query={query}>
-              <Swap />
-            </QueryProvider>
-          </SettingsProvider>
+          {
+            inMaintanance
+              ?
+              <MaintananceContent/>
+              :
+              <SettingsProvider data={settings}>
+                <QueryProvider query={query}>
+                  <Swap />
+                </QueryProvider>
+              </SettingsProvider>
+          }
         </div>
       </div>
     </Layout>
@@ -24,13 +39,17 @@ export default function Home({ response, query }: InferGetServerSidePropsType<ty
 }
 
 export async function getServerSideProps(context) {
+  let result: IndexProps = {
+    inMaintanance: false,
+  };
+
   context.res.setHeader(
     'Cache-Control',
     's-maxage=60, stale-while-revalidate'
   );
 
-  var query = context.query;
-  query.addressSource && (query.addressSource = query.addressSource?.toLowerCase());
+  result.query = context.query;
+  result.query.addressSource && (result.query.addressSource = result.query.addressSource?.toLowerCase());
   var apiClient = new LayerSwapApiClient();
   const response = await apiClient.fetchSettingsAsync()
   var networks: CryptoNetwork[] = [];
@@ -43,7 +62,14 @@ export async function getServerSideProps(context) {
     networks = response.data.networks;
   }
   response.data.networks = networks;
+
+  result.settings = response;
+  if (!result.settings.data.networks.find(x=> x.is_enabled == true))
+  {
+    result.inMaintanance = true;
+  }
+
   return {
-    props: { response, query },
+    props: result,
   }
 }
