@@ -24,12 +24,6 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
         })
     }, [router.query])
 
-    useEffect(() => {
-        const handleClick = () => setShow(false);
-        window.addEventListener('click', handleClick)
-        console.log('plor')
-    }, [])
-
     return (
         <div onClick={handleGoHome}>
             {
