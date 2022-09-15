@@ -94,7 +94,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                     </label>
                 </div> */}
                 <div className="text-white text-sm mt-3">
-                    <SubmitButton isDisabled={loading} icon="" isSubmitting={loading} onClick={handleConnect}>
+                    <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect}>
                         Connect
                     </SubmitButton>
                 </div>
