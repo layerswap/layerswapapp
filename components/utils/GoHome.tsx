@@ -15,19 +15,12 @@ interface Props {
 
 const GoHomeButton: FC<Props> = (({ className, children }) => {
     const router = useRouter()
-    const [show, setShow] = useState(false)
     const handleGoHome = useCallback(() => {
         router.push({
             pathname: "/",
             query: router.query
         })
     }, [router.query])
-
-    useEffect(() => {
-        const handleClick = () => setShow(false);
-        window.addEventListener('click', handleClick)
-        console.log('plor')
-    }, [])
 
     return (
         <div onClick={handleGoHome}>
