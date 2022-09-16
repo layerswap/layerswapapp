@@ -7,7 +7,7 @@ import { useAuthState } from "../context/authContext";
 import { useMenuState } from "../context/menu";
 import TokenService from "../lib/TokenService";
 import SendFeedback from './sendFeedback'
-import SlideOver, { SildeOverRef } from "./SlideOver";
+import SlideOver from "./SlideOver";
 
 
 function classNames(...classes) {
@@ -22,23 +22,13 @@ export default function () {
 
     const updateWithProps = () => update({ email: email })
 
-    const slideoverRef = useRef<SildeOverRef>()
-
-    const handleOpenSendFeedback = useCallback(() => {
-        slideoverRef.current.open()
-    }, [slideoverRef])
-
-    const handleFeedbackSent = useCallback(() => {
-        slideoverRef.current.close()
-    }, [slideoverRef])
-
+    const [feedbackDrawerIsOpen, setFeedbackDrawerIsOpen] = useState(false);
     const goToLink = (path: string, query: any) => {
         router.push({
             pathname: path,
             query: query
         })
     }
-
 
     const goToLogin = useCallback(() => goToLink("/auth", router.query), [router.query])
     const goToTransactions = useCallback(() => goToLink("/transactions", router.query), [router.query])
@@ -55,8 +45,8 @@ export default function () {
     return <>
         {
             authData?.access_token &&
-            <SlideOver ref={slideoverRef} moreClassNames="pt-5">
-                <SendFeedback onSend={handleFeedbackSent} />
+            <SlideOver imperativeOpener={[feedbackDrawerIsOpen, setFeedbackDrawerIsOpen]} moreClassNames="pt-5">
+                {(close)=> <SendFeedback onSend={()=> close()} />}
             </SlideOver>
         }
         <span className=" text-pink-primary-300 cursor-pointer relative ">
@@ -129,7 +119,7 @@ export default function () {
                                             <Menu.Item>
                                                 {({ active }) => (
                                                     <button
-                                                        onClick={handleOpenSendFeedback}
+                                                        onClick={() => setFeedbackDrawerIsOpen(true)}
                                                         type="button"
                                                         className={classNames(
                                                             active ? 'bg-darkblue-300' : '',
