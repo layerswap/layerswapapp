@@ -721,7 +721,7 @@ const AccountConnectStep: FC = () => {
                         <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
                     </div>
 
-                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConnect}>
+                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
                         {
                             carouselFinished ? "Connect" : "Next"
                         }

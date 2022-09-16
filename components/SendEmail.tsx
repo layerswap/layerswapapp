@@ -92,7 +92,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                                     </Field>
                                 </div>
                                 <div className="text-white text-sm mt-24 sm:mt-28">
-                                    <SubmitButton isDisabled={!isValid} icon="" isSubmitting={isSubmitting} >
+                                    <SubmitButton isDisabled={!isValid} isSubmitting={isSubmitting} >
                                         Continue
                                     </SubmitButton>
                                 </div>

@@ -115,7 +115,7 @@ const OfframpAccountConnectStep: FC = () => {
                         <label className="block font-medium text-left leading-5 hover:underline"><a className='flex items-center' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">Read more about Coinbase's OAuth API here <ExternalLinkIcon className='ml-1 h-4 w-4'></ExternalLinkIcon></a> </label>
                     </div>
 
-                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConnect}>
+                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
                         Connect
                     </SubmitButton>
                 </div>

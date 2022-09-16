@@ -1,35 +1,34 @@
 import { Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
-import React from "react";
-import { FC, forwardRef, Fragment, ReactNode, useImperativeHandle, useState } from "react"
+import React, { Dispatch, SetStateAction, useEffect } from "react";
+import { FC, Fragment, ReactNode, useState } from "react"
 
 type Props = {
-    opener?: ReactNode,
-    children?: ReactNode;
+    opener?: (open: () => void) => JSX.Element | JSX.Element[],
+    children?: (close: () => void) => JSX.Element | JSX.Element[];
     moreClassNames?: string;
     slide?: boolean;
+    imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
-export type SildeOverRef = {
-    close: () => void;
-    open: () => void;
-};
 
-const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, children, slide = true }, ref) => {
+const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, children, slide = true }) => {
     const [open, setOpen] = useState(false)
     const handleClose = () => {
         setOpen(false)
+        imperativeOpener?.[1](false);
     }
     const handleOpen = () => {
         setOpen(true)
+        imperativeOpener?.[1](true);
     }
-    useImperativeHandle(ref, () => ({
-        close: handleClose,
-        open: handleOpen
-    }), []);
+
+    useEffect(()=>{
+        imperativeOpener && setOpen(imperativeOpener[0])
+    }, [imperativeOpener?.[0]])
 
     return (
         <>
-            <span onClick={handleOpen}>{opener}</span>
+            <span>{opener && opener(handleOpen)}</span>
             <Transition
                 appear
                 show={open}
@@ -81,7 +80,7 @@ const SlideOver = forwardRef<SildeOverRef, Props>(({ opener, moreClassNames, chi
                                 >
 
                                     <div className='grid grid-flow-row min-h-[480px] text-pink-primary-300'>
-                                        {children}
+                                        {children && children(handleClose)}
                                     </div>
                                 </Transition.Child>
                             </div>

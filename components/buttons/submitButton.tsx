@@ -9,7 +9,7 @@ export class SubmitButtonProps {
     isSubmitting: boolean;
     type?: 'submit' | 'reset' | 'button' | undefined;
     onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
-    icon: React.ReactNode;
+    icon?: React.ReactNode;
     buttonStyle?: buttonStyle = 'filled';
     size?: buttonSize = 'medium'
 }
