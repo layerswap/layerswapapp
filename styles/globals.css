@@ -279,6 +279,9 @@ input::-webkit-input-placeholder {
   line-height:normal!important;
 }
 
+body {
+  overflow: overlay;
+}
 body::-webkit-scrollbar {
   --tw-bg-opacity: 1;
   background-color: rgb(18 29 51 / var(--tw-bg-opacity));

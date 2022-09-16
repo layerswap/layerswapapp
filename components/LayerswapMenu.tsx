@@ -7,12 +7,8 @@ import { useAuthState } from "../context/authContext";
 import { useMenuState } from "../context/menu";
 import TokenService from "../lib/TokenService";
 import SendFeedback from './sendFeedback'
-import SlideOver, { SildeOverRef } from "./SlideOver";
-
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
+import { classNames } from "./utils/classNames";
+import SlideOver from "./SlideOver";
 
 export default function () {
     const { email, authData } = useAuthState()
@@ -22,23 +18,13 @@ export default function () {
 
     const updateWithProps = () => update({ email: email })
 
-    const slideoverRef = useRef<SildeOverRef>()
-
-    const handleOpenSendFeedback = useCallback(() => {
-        slideoverRef.current.open()
-    }, [slideoverRef])
-
-    const handleFeedbackSent = useCallback(() => {
-        slideoverRef.current.close()
-    }, [slideoverRef])
-
+    const [feedbackDrawerIsOpen, setFeedbackDrawerIsOpen] = useState(false);
     const goToLink = (path: string, query: any) => {
         router.push({
             pathname: path,
             query: query
         })
     }
-
 
     const goToLogin = useCallback(() => goToLink("/auth", router.query), [router.query])
     const goToTransactions = useCallback(() => goToLink("/transactions", router.query), [router.query])
@@ -55,8 +41,8 @@ export default function () {
     return <>
         {
             authData?.access_token &&
-            <SlideOver ref={slideoverRef} moreClassNames="pt-5">
-                <SendFeedback onSend={handleFeedbackSent} />
+            <SlideOver imperativeOpener={[feedbackDrawerIsOpen, setFeedbackDrawerIsOpen]} moreClassNames="pt-5">
+                {(close)=> <SendFeedback onSend={()=> close()} />}
             </SlideOver>
         }
         <span className=" text-pink-primary-300 cursor-pointer relative ">
@@ -77,7 +63,7 @@ export default function () {
                             leaveFrom="transform opacity-100 scale-100"
                             leaveTo="transform opacity-0 scale-95"
                         >
-                            <Menu.Items className=" font-bold border border-darkblue-200 origin-top-right absolute right-0 mt-2 min-w-56 rounded-md shadow-lg bg-darkBlue ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <Menu.Items className="font-bold border border-darkblue-200 origin-top-right absolute right-0 mt-2 min-w-56 rounded-md shadow-lg bg-darkBlue ring-1 ring-black ring-opacity-5 focus:outline-none">
                                 <div className="relative z-30 py-1">
                                     {
                                         authData?.access_token ? <div className='font-light block w-full text-left px-4 py-2 text-sm text-pink-primary-300'>
@@ -129,7 +115,7 @@ export default function () {
                                             <Menu.Item>
                                                 {({ active }) => (
                                                     <button
-                                                        onClick={handleOpenSendFeedback}
+                                                        onClick={() => setFeedbackDrawerIsOpen(true)}
                                                         type="button"
                                                         className={classNames(
                                                             active ? 'bg-darkblue-300' : '',
