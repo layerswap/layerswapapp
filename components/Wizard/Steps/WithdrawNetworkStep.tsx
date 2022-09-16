@@ -185,7 +185,7 @@ const WithdrawNetworkStep: FC = () => {
                         </div>
                         :
                         <div className="text-white text-base">
-                            <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConfirm} >
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConfirm} >
                                 I Did The Transfer
                             </SubmitButton>
                         </div>

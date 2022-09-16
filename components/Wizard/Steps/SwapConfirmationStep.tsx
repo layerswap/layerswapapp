@@ -356,7 +356,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                         Confirm
                                     </SubmitButton>
                             }
-
                         </Form>
                     </div>
                 )}
@@ -438,7 +437,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                             </div>
                                         </div>
                                         <div className="text-white text-sm mt-auto">
-                                            <SubmitButton type='button' isDisabled={!!addressInputError} icon="" isSubmitting={false} onClick={handleSaveAddress}>
+                                            <SubmitButton type='button' isDisabled={!!addressInputError} isSubmitting={false} onClick={handleSaveAddress}>
                                                 Save
                                             </SubmitButton>
                                         </div>

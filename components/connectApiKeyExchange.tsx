@@ -163,7 +163,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                     </ul>
                 </div>
                 <div className="text-white text-base mt-3">
-                    <SubmitButton isDisabled={!dataIsValid || loading} icon="" isSubmitting={loading} onClick={connect}>
+                    <SubmitButton isDisabled={!dataIsValid || loading} isSubmitting={loading} onClick={connect}>
                         Connect
                     </SubmitButton>
                 </div>

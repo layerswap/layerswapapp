@@ -151,7 +151,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                 <p className='mb-5 text-pink-primary-300'>
                                     By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'> Terms of Service</a></Link> and <Link href="/blog/guide/Privacy_Policy"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
                                 </p>
-                                <SubmitButton type="submit" isDisabled={!isValid} icon="" isSubmitting={isSubmitting}>
+                                <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
                                     Confirm
                                 </SubmitButton>
                             </div>

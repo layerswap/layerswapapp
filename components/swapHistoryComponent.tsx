@@ -409,7 +409,7 @@ function TransactionsHistory() {
                               {
                                 selectedSwap?.status == 'pending' || selectedSwap?.payment?.status == 'processing' &&
                                 <div className="text-white text-sm">
-                                  <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={""}>
+                                  <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false}>
                                     Complete Swap
                                     <ExternalLinkIcon className='ml-2 h-5 w-5' />
                                   </SubmitButton>
