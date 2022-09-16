@@ -22,7 +22,7 @@ import NetworkSettings from '../../../lib/NetworkSettings';
 import WarningMessage from '../../WarningMessage';
 import { Form, Formik, FormikErrors, FormikProps } from 'formik';
 import { nameOf } from '../../../lib/external/nameof';
-import Timer, { TimerRef } from '../../TimerComponent';
+import Timer from '../../TimerComponent';
 
 interface SwapConfirmationFormValues {
     TwoFACode: string;
@@ -39,7 +39,6 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const nameOfTwoFARequired = nameOf(currentValues, (r) => r.TwoFARequired);
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
     const { currentStep } = useFormWizardState<FormWizardSteps>()
-    const timerRef = useRef<TimerRef>()
 
     const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
@@ -86,8 +85,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const handleSubmit = useCallback(async (values: SwapConfirmationFormValues) => {
-        handleReset()
-        handleStart()
+        setResendTimerIsStarted(true)
         try {
             const data: CreateSwapParams = {
                 Amount: Number(swapFormData.amount),
@@ -134,8 +132,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     }, [swapFormData, swap, currentValues?.TwoFACode, transferAmount])
 
     const handleResendTwoFACode = () => {
-        handleReset()
-        handleStart()
+        setResendTimerIsStarted(true)
         formikRef.current.setFieldValue(nameOfTwoFACode, "");
         handleSubmit(currentValues);
     }
@@ -156,20 +153,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject, swapFormData?.swapType)
 
-    const status = timerRef?.current?.status
-    const STATUS = {
-        STARTED: 'Started',
-        STOPPED: 'Stopped',
-    }
-
-    const handleStart = useCallback(() => {
-        timerRef.current.start()
-    }, [timerRef])
-    const handleReset = useCallback(() => {
-        timerRef.current.reset()
-    }, [timerRef])
-
-    console.log(status)
+    const [resendTimerIsStarted, setResendTimerIsStarted] = useState(false)
 
     return (
         <>
@@ -283,19 +267,19 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     />
 
                                     <span className="flex text-sm leading-6 items-center mt-1.5">
-                                        {
-                                            status == STATUS.STARTED ?
+                                        <Timer setIsStarted={setResendTimerIsStarted} isStarted={resendTimerIsStarted} seconds={120}
+                                            waitingComponent={(remainingTime) => (
                                                 <span>
                                                     Send again in
                                                     <span className='ml-1'>
-                                                        <Timer seconds={120} />
+                                                        {remainingTime}
                                                     </span>
                                                 </span>
-                                                :
-                                                <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
-                                                    Resend code
-                                                </span>
-                                        }
+                                            )}>
+                                            <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
+                                                Resend code
+                                            </span>
+                                        </Timer>
                                     </span>
                                 </div>
                             }

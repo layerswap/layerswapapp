@@ -1,62 +1,47 @@
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle, FC, SetStateAction, Dispatch } from 'react'
 
-export type TimerRef = {
-    start: () => void;
-    stop: () => void;
-    reset: () => void;
-    status: string
-}
 type TimerProps = {
     seconds: number
+    isStarted: boolean;
+    setIsStarted: Dispatch<SetStateAction<boolean>>,
+    waitingComponent: (remainigTime: string) => JSX.Element | JSX.Element[]
+    children: JSX.Element | JSX.Element[]
 }
 
-const Timer = forwardRef<TimerRef, TimerProps>(({ seconds }, ref) => {
-    const STATUS = {
-        STARTED: 'Started',
-        STOPPED: 'Stopped',
-    }
+const Timer: FC<TimerProps> = (({ seconds, isStarted, setIsStarted, waitingComponent, children }, ref) => {
     const [secondsRemaining, setSecondsRemaining] = useState(seconds)
-    const [status, setStatus] = useState(STATUS.STOPPED)
     const twoDigits = (num) => String(num).padStart(2, '0')
 
     const secondsToDisplay = secondsRemaining % 60
     const minutesRemaining = (secondsRemaining - secondsToDisplay) / 60
     const minutesToDisplay = minutesRemaining % 60
 
-    const handleStart = () => {
-        setStatus(STATUS.STARTED)
-    }
-    const handleStop = () => {
-        setStatus(STATUS.STOPPED)
-    }
-    const handleReset = () => {
-        setStatus(STATUS.STOPPED)
-        setSecondsRemaining(seconds)
-    }
-    useImperativeHandle(ref, () => ({
-        start: handleStart,
-        stop: handleStop,
-        reset: handleReset,
-        status: status
-    }), []);
-
     useInterval(
         () => {
+            if (secondsRemaining == 0 && isStarted) {
+                setSecondsRemaining(seconds);
+            }
             if (secondsRemaining > 0) {
+                if (secondsRemaining == 1) {
+                    setIsStarted(false)
+                }
                 setSecondsRemaining(secondsRemaining - 1)
-            } else {
-                setStatus(STATUS.STOPPED)
+               
             }
         },
-        status === STATUS.STARTED ? 1000 : null,
+        isStarted ? 1000 : null,
         // passing null stops the interval
     )
 
     return (
-        <div className="">
-            {twoDigits(minutesToDisplay)}:
-            {twoDigits(secondsToDisplay)}
-        </div>
+        <>
+            {
+                isStarted ?
+                    waitingComponent(`${twoDigits(minutesToDisplay)}:${twoDigits(secondsToDisplay)}`)
+                    :
+                    children
+            }
+        </>
     )
 })
 
