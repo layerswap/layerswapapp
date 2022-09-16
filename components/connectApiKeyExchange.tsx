@@ -1,7 +1,5 @@
-import { ExclamationIcon, InformationCircleIcon } from '@heroicons/react/outline';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { InformationCircleIcon } from '@heroicons/react/outline';
+import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { BransferApiClient } from '../lib/bransferApiClients';
 import ExchangeSettings from '../lib/ExchangeSettings';
@@ -9,7 +7,7 @@ import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
 import { DocIframe } from './docInIframe';
-import SlideOver, { SildeOverRef } from './SlideOver';
+import SlideOver from './SlideOver';
 
 type Props = {
     exchange: Exchange,
@@ -21,13 +19,9 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
-    const router = useRouter();
     const [keyphrase, setKeyphrase] = useState("")
-    const slideoverRef = useRef<SildeOverRef>()
+    const [docIframeIsOpen, setDocIframeIsOpen] = useState(false)
 
-    const handleCloseSlideover = useCallback(() => {
-        slideoverRef.current.close()
-    }, [slideoverRef])
     useEffect(() => {
         setLoading(false)
     }, [exchange])
@@ -148,8 +142,10 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                     {
                         userGuideURL && <div className="flex items-center">
                             <span className="block text-base text-white font-normal leading-6"> Read about
-                                <SlideOver ref={slideoverRef} opener={<>&nbsp;<span className="text-base text-pink-primary cursor-pointer underline decoration-pink-primary">How to get API Keys</span>&nbsp;</>}  moreClassNames={slideOverClassNames}>
-                                    <DocIframe onConfirm={handleCloseSlideover} URl={userGuideURL} />
+                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-pink-primary cursor-pointer underline decoration-pink-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} moreClassNames={slideOverClassNames}>
+                                    {(close) => (
+                                        <DocIframe onConfirm={() => close()} URl={userGuideURL} />
+                                    )}
                                 </SlideOver>
                             </span>
                         </div>

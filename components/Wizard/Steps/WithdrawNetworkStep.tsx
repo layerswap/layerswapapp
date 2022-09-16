@@ -15,7 +15,7 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import NetworkSettings from '../../../lib/NetworkSettings';
-import SlideOver, { SildeOverRef } from '../../SlideOver';
+import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import KnownIds from '../../../lib/knownIds';
 
@@ -31,11 +31,6 @@ const WithdrawNetworkStep: FC = () => {
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.data?.payment?.id } })
-    const slideoverRef = useRef<SildeOverRef>()
-
-    const handleCloseSlideover = useCallback(() => {
-        slideoverRef.current.close()
-    }, [slideoverRef])
 
     useInterval(async () => {
         if (currentStep === "OffRampWithdrawal") {
@@ -104,20 +99,10 @@ const WithdrawNetworkStep: FC = () => {
                         </div>
                         <div className='flex w-full text-white space-x-2'>
                             {
-                                userGuideUrlForDesktop &&
-                                <div className="w-full items-center">
-                                    <SlideOver ref={slideoverRef} opener={<SubmitButton buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} icon={''}>Loopring Web</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
-                                        <DocIframe onConfirm={handleCloseSlideover} URl={userGuideUrlForDesktop} />
-                                    </SlideOver>
-                                </div>
+                                userGuideUrlForDesktop && renderGuideButton(userGuideUrlForDesktop, 'Loopring Web')
                             }
                             {
-                                userGuideUrlForMobile &&
-                                <div className="w-full items-center">
-                                    <SlideOver ref={slideoverRef} opener={<SubmitButton buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} icon={''}>Loopring Mobile</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
-                                        <DocIframe onConfirm={handleCloseSlideover} URl={userGuideUrlForMobile} />
-                                    </SlideOver>
-                                </div>
+                                userGuideUrlForMobile && renderGuideButton(userGuideUrlForMobile, 'Loopring Mobile')
                             }
                         </div>
                     </div>
@@ -211,3 +196,13 @@ const WithdrawNetworkStep: FC = () => {
 }
 
 export default WithdrawNetworkStep;
+
+function renderGuideButton(userGuideUrlForDesktop: string, buttonText: string) {
+    return <div className="w-full items-center">
+        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} icon={''}>{buttonText}</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
+            {(close) => (
+                <DocIframe onConfirm={() => close()} URl={userGuideUrlForDesktop} />
+            )}
+        </SlideOver>
+    </div>;
+}
