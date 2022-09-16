@@ -1,4 +1,5 @@
 import '../styles/globals.css'
+import '../styles/dialog-transition.css'
 import { Web3ReactProvider } from '@web3-react/core'
 import { Web3Provider } from '@ethersproject/providers'
 import { useRouter } from "next/router";

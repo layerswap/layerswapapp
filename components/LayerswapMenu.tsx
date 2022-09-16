@@ -7,12 +7,8 @@ import { useAuthState } from "../context/authContext";
 import { useMenuState } from "../context/menu";
 import TokenService from "../lib/TokenService";
 import SendFeedback from './sendFeedback'
+import { classNames } from "./utils/classNames";
 import SlideOver from "./SlideOver";
-
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
 
 export default function () {
     const { email, authData } = useAuthState()
@@ -67,7 +63,7 @@ export default function () {
                             leaveFrom="transform opacity-100 scale-100"
                             leaveTo="transform opacity-0 scale-95"
                         >
-                            <Menu.Items className=" font-bold border border-darkblue-200 origin-top-right absolute right-0 mt-2 min-w-56 rounded-md shadow-lg bg-darkBlue ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <Menu.Items className="font-bold border border-darkblue-200 origin-top-right absolute right-0 mt-2 min-w-56 rounded-md shadow-lg bg-darkBlue ring-1 ring-black ring-opacity-5 focus:outline-none">
                                 <div className="relative z-30 py-1">
                                     {
                                         authData?.access_token ? <div className='font-light block w-full text-left px-4 py-2 text-sm text-pink-primary-300'>
