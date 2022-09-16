@@ -22,6 +22,7 @@ import NetworkSettings from '../../../lib/NetworkSettings';
 import WarningMessage from '../../WarningMessage';
 import { Form, Formik, FormikErrors, FormikProps } from 'formik';
 import { nameOf } from '../../../lib/external/nameof';
+import Timer, { TimerRef } from '../../TimerComponent';
 
 interface SwapConfirmationFormValues {
     TwoFACode: string;
@@ -38,6 +39,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const nameOfTwoFARequired = nameOf(currentValues, (r) => r.TwoFARequired);
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
     const { currentStep } = useFormWizardState<FormWizardSteps>()
+    const timerRef = useRef<TimerRef>()
 
     const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
@@ -84,8 +86,8 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const handleSubmit = useCallback(async (values: SwapConfirmationFormValues) => {
-        handleReset();
-        handleStart();
+        handleReset()
+        handleStart()
         try {
             const data: CreateSwapParams = {
                 Amount: Number(swapFormData.amount),
@@ -154,55 +156,20 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
 
     const receive_amount = CalculateReceiveAmount(Number(swapFormData?.amount), swapFormData?.currency?.baseObject, swapFormData?.exchange?.baseObject, swapFormData?.swapType)
 
-    const twoDigits = (num) => String(num).padStart(2, '0')
+    const status = timerRef?.current?.status
     const STATUS = {
         STARTED: 'Started',
         STOPPED: 'Stopped',
     }
-    const INITIAL_COUNT = 120
-    const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
-    const [status, setStatus] = useState(STATUS.STOPPED)
 
-    const secondsToDisplay = secondsRemaining % 60
-    const minutesRemaining = (secondsRemaining - secondsToDisplay) / 60
-    const minutesToDisplay = minutesRemaining % 60
+    const handleStart = useCallback(() => {
+        timerRef.current.start()
+    }, [timerRef])
+    const handleReset = useCallback(() => {
+        timerRef.current.reset()
+    }, [timerRef])
 
-
-    const handleStart = () => {
-        setStatus(STATUS.STARTED)
-    }
-    const handleReset = () => {
-        setStatus(STATUS.STOPPED)
-        setSecondsRemaining(INITIAL_COUNT)
-    }
-
-    function useInterval(callback, delay) {
-        const savedCallback = useRef(undefined)
-
-        useEffect(() => {
-            savedCallback.current = callback
-        }, [callback])
-
-        useEffect(() => {
-            function tick() {
-                savedCallback.current()
-            }
-            if (delay !== null) {
-                let id = setInterval(tick, delay)
-                return () => clearInterval(id)
-            }
-        }, [delay])
-    }
-
-    useInterval(
-        () => {
-            if (secondsRemaining > 0) {
-                setSecondsRemaining(secondsRemaining - 1)
-            } else {
-                setStatus(STATUS.STOPPED)
-            }
-        },
-        status === STATUS.STARTED ? 1000 : null)
+    console.log(status)
 
     return (
         <>
@@ -321,8 +288,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                                 <span>
                                                     Send again in
                                                     <span className='ml-1'>
-                                                        {twoDigits(minutesToDisplay)}:
-                                                        {twoDigits(secondsToDisplay)}
+                                                        <Timer seconds={120} />
                                                     </span>
                                                 </span>
                                                 :
