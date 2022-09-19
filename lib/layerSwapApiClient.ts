@@ -9,7 +9,7 @@ export default class LayerSwapApiClient {
     apiFetcher = (url: string) => authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + url).then(res => res.data);
 
     async fetchSettingsAsync(): Promise<LayerSwapSettings> {
-        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + '/settings').then(res => res.data);
+        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + '/api/settings').then(res => res.data);
     }
 
     async createSwap(params: CreateSwapParams, token: string): Promise<CreateSwapResponse> {

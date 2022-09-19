@@ -72,7 +72,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                 </div>
                 <div className=''>
                     <label htmlFor="apiKey" className="block font-normal text-sm">
-                        API Key
+                        API Keydisplay_namedisplay_name
                     </label>
                     <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
                         <input

@@ -5,8 +5,8 @@ import LayerSwapApiClient, { CreateSwapParams, SwapItemResponse } from '../lib/l
 import { useAuthDataUpdate } from './authContext';
 import TokenService from '../lib/TokenService';
 
-const SwapDataStateContext = React.createContext<SwapData>(null);
-const SwapDataUpdateContext = React.createContext<UpdateInterface>(null);
+const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined });
+const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
     updateSwapFormData: (value: React.SetStateAction<SwapFormValues>) => void,
@@ -22,8 +22,8 @@ type UpdateInterface = {
 
 type SwapData = {
     codeRequested: boolean,
-    swapFormData: SwapFormValues,
-    swap: SwapItemResponse
+    swapFormData?: SwapFormValues,
+    swap?: SwapItemResponse
 }
 
 export function SwapDataProvider({ children }) {
@@ -35,14 +35,27 @@ export function SwapDataProvider({ children }) {
 
 
     const createSwap = useCallback(async () => {
+        if (!swapFormData)
+            throw new Error("No swap data")
+
+        const { network, currency, exchange } = swapFormData
+
+        if (!network || !currency || !exchange)
+            throw new Error("Form data is missing")
+
+
         try {
             const layerswapApiClient = new LayerSwapApiClient()
             const authData = getAuthData()
+
+            if (!authData?.access_token)
+                throw new Error("Not authenticated")
+
             const swap = await layerswapApiClient.createSwap({
                 Amount: Number(swapFormData.amount),
-                Exchange: swapFormData.exchange?.id,
-                Network: swapFormData.network.id,
-                currency: swapFormData.currency.baseObject.asset,
+                Exchange: exchange?.id,
+                Network: network.id,
+                currency: currency.baseObject.asset,
                 destination_address: swapFormData.destination_address,
                 to_exchange: swapFormData.swapType === "offramp"
             }, authData?.access_token)
@@ -62,17 +75,23 @@ export function SwapDataProvider({ children }) {
 
     const processPayment = useCallback(async (swap: SwapItemResponse, twoFactorCode?: string) => {
         const authData = getAuthData()
+        if (!authData?.access_token)
+            throw new Error("Not authenticated")
         const bransferApiClient = new BransferApiClient()
         const layerswapApiClient = new LayerSwapApiClient()
-        const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(swap.data.payment.id, authData?.access_token, twoFactorCode)
+        if (!swap.data.payment)
+            throw new Error("No payment for the swap")
+        const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(swap.data.payment.id, authData.access_token, twoFactorCode)
         if (!prcoessPaymentReponse.is_success)
             throw new Error(prcoessPaymentReponse.errors)
-        const swapDetails = await layerswapApiClient.getSwapDetails(swap.data.id, authData?.access_token)
+        const swapDetails = await layerswapApiClient.getSwapDetails(swap.data.id, authData.access_token)
         setSwap(swapDetails)
     }, [getAuthData])
 
     const getSwap = useCallback(async (id) => {
         const authData = TokenService.getAuthData();
+        if (!authData?.access_token)
+            throw new Error("Not authenticated")
         const layerswapApiClient = new LayerSwapApiClient()
         const swapDetails = await layerswapApiClient.getSwapDetails(id, authData?.access_token)
         setSwap(swapDetails)

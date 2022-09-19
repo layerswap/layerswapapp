@@ -17,18 +17,22 @@ const NetworkField = forwardRef((props: any, ref: any) => {
     const { lockNetwork, destNetwork } = useQueryState()
     const { data } = useSettingsState();
 
-    const destNetworkIsAvailable = data.networks.some(n => n.code === destNetwork && n.is_enabled && (swapType === "onramp" || data?.currencies?.some(c => c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled))))
-    
+
+    const currencyIsAvailable = (n: CryptoNetwork) => swapType === "offramp" ? 
+    n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec=>ec.asset===nc.asset && ec.status==="active" && ec.is_withdrawal_enabled))) 
+    : n.currencies.some(nc => nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec=>ec.asset===nc.asset && ec.status==="active" && ec.is_deposit_enabled)))
+    const destNetworkIsAvailable = data.networks.some(n => n.internal_name === destNetwork && n.status === "active" && currencyIsAvailable(n))
+
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
-        .filter(n => swapType === "onramp" || data?.currencies?.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled)))
+        .filter(currencyIsAvailable)
         .map(n => ({
             baseObject: n,
-            id: n.code,
-            name: n.name,
+            id: n.internal_name,
+            name: n.display_name,
             order: n.order,
             imgSrc: n.logo_url,
             isAvailable: swapType === "offramp" ? !destNetworkIsAvailable : !lockNetwork,
-            isEnabled: n.is_enabled && data.currencies.some(c => c.is_enabled && c.network_id === n.id && (swapType === "offramp" || c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))),
+            isEnabled: true,
             isDefault: n.is_default
         })).sort(SortingByOrder);
 

@@ -11,6 +11,6 @@ export class LayerSwapSettings {
         networks: CryptoNetwork[];
         currencies: Currency[];
         partners: Partner[];
-        blacklistedAddresses: BlacklistedAddress[]
+        blacklisted_addresses: BlacklistedAddress[]
     }
 }

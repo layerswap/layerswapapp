@@ -16,16 +16,16 @@ const ExchangesField = forwardRef((props: any, ref: any) => {
     const settings = useSettingsState();
 
     const exchangeMenuItems: SelectMenuItem<Exchange>[] = settings.data.exchanges
-        .filter(e => swapType === "onramp" || settings?.data?.currencies?.some(c => c.exchanges?.some(ce => ce.exchange_id === e.id && ce.is_off_ramp_enabled)))
+        .filter(e => swapType === "offramp" ? e.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : e.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled))
         .map(e => ({
             baseObject: e,
             id: e.internal_name,
-            name: e.name,
+            name: e.display_name,
             order: e.order,
             imgSrc: e.logo_url,
-            isAvailable: settings.data.currencies.some(c => c.exchanges?.some(ce => ce.exchange_id === e.id && (swapType === "onramp" || ce.is_off_ramp_enabled))),
-            isEnabled: e.is_enabled,
-            isDefault: e.is_default
+            isAvailable: true,
+            isEnabled: true,
+            isDefault: false
         })).sort(SortingByOrder);
 
 

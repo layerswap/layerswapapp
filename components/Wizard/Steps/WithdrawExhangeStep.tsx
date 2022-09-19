@@ -56,7 +56,7 @@ const WithdrawExchangeStep: FC = () => {
     }, [])
 
     const exchange = data.exchanges?.find(n => n.internal_name === payment?.exchange)
-    const exchange_name = exchange?.name || ' '
+    const exchange_name = exchange?.display_name || ' '
     const exchange_id = exchange?.id
     const exchange_logo_url = exchange?.logo_url
 

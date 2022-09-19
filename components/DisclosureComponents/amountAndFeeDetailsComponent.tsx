@@ -5,18 +5,23 @@ import { Currency } from '../../Models/Currency';
 import { Exchange } from '../../Models/Exchange';
 import { SwapType } from '../DTOs/SwapFormValues';
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
+import { CryptoNetwork } from '../../Models/CryptoNetwork';
+import { getCurrencyDetails } from '../../helpers/currencyHelper';
 
 type Props = {
     amount: number,
     currency: Currency,
     exchange: Exchange,
     swapType: SwapType,
+    network: CryptoNetwork,
 }
 
-export default function AmountAndFeeDetails({ amount, currency, exchange, swapType }: Props) {
+export default function AmountAndFeeDetails({ amount, currency, exchange, network, swapType }: Props) {
     let exchangeFee = GetExchangeFee(currency, exchange);
-    let fee = CalculateFee(amount, currency, exchange, swapType);
-    let receive_amount = CalculateReceiveAmount(amount, currency, exchange, swapType);
+    let fee = CalculateFee(amount, currency, exchange, network, swapType);
+    let receive_amount = CalculateReceiveAmount(amount, currency, exchange, network, swapType);
+    console.log("receive_amount", receive_amount)
+    const currencyDetails = getCurrencyDetails(currency, exchange, network, swapType)
 
     return (
         <>
@@ -30,7 +35,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
                                     {
                                         receive_amount ?
                                             <span className="font-medium text-center strong-highlight">
-                                                {receive_amount.toFixed(currency?.precision)}
+                                                {receive_amount.toFixed(currencyDetails?.precision)}
                                                 <span>
                                                     {
                                                         ` ${currency?.asset || ""}`
@@ -53,7 +58,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
                                             Layerswap Fee
                                         </label>
                                         <span className="font-normal text-center text-white">
-                                            {fee.toFixed(currency?.precision)}
+                                            {fee.toFixed(currencyDetails?.precision)}
                                             <span>  {currency?.asset} </span>
                                         </span>
                                     </div>
@@ -65,7 +70,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
                                                 <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36' />
                                             </label>
                                             <span className="font-normal text-center text-white">
-                                                {exchangeFee.toFixed(currency?.precision)}
+                                                {exchangeFee.toFixed(currencyDetails?.precision)}
                                                 <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex text-pink-primary-300'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' /></span>}</span>
                                             </span>
                                         </div>

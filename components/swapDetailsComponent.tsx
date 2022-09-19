@@ -20,7 +20,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const [loading, setLoading] = useState(false)
     const router = useRouter();
     const exchange = data.exchanges?.find(e => e.internal_name === swap?.data?.exchange)
-    const network = data.networks?.find(n => n.code === swap?.data?.network)
+    const network = data.networks?.find(n => n.internal_name === swap?.data?.network)
     const source = swap?.data?.type == "on_ramp" ? exchange : network;
     const destination = swap?.data?.type == "on_ramp" ? network : exchange;
     const currency = data.currencies.find(x => x.id == swap?.data?.currency_id)
@@ -96,7 +96,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                             className="rounded-md object-contain"
                                         />
                                     </div>
-                                    <div className="mx-1 text-white">{source?.name}</div>
+                                    <div className="mx-1 text-white">{source?.display_name}</div>
                                 </div>
                             }
                         </div>
@@ -115,7 +115,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                             className="rounded-md object-contain"
                                         />
                                     </div>
-                                    <div className="mx-1 text-white">{destination?.name}</div>
+                                    <div className="mx-1 text-white">{destination?.display_name}</div>
                                 </div>
                             }
                         </div>

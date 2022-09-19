@@ -24,7 +24,7 @@ export default function Home({ settings, query, inMaintanance }: InferGetServerS
           {
             inMaintanance
               ?
-              <MaintananceContent/>
+              <MaintananceContent />
               :
               <SettingsProvider data={settings}>
                 <QueryProvider query={query}>
@@ -64,11 +64,9 @@ export async function getServerSideProps(context) {
   response.data.networks = networks;
 
   result.settings = response;
-  if (!result.settings.data.networks.find(x=> x.is_enabled == true))
-  {
+  if (!result.settings.data.networks.some(x => x.status === "active")) {
     result.inMaintanance = true;
   }
-
   return {
     props: result,
   }

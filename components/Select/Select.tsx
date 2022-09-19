@@ -18,9 +18,8 @@ export interface SelectProps<T> {
 export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
     const [query, setQuery] = useState('')
-
     const [selectedItem, setSelectedItem] = useState<SelectMenuItem<T> | undefined>(value || undefined)
-
+    console.log(values)
     function onChangeHandler(newValue: string) {
         setFieldValue(name, values.find(x => x.id === newValue));
     }
@@ -66,15 +65,18 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                             <>
                                 <span className="flex items-center">
                                     <div className="flex-shrink-0 h-6 w-6 relative">
-                                        <Image
-                                            src={value.imgSrc}
-                                            alt="Project Logo"
-                                            priority
-                                            height="40"
-                                            width="40"
-                                            layout="responsive"
-                                            className="rounded-md object-contain"
-                                        />
+                                        {
+                                            value.imgSrc && <Image
+                                                src={value.imgSrc}
+                                                alt="Project Logo"
+                                                priority
+                                                height="40"
+                                                width="40"
+                                                layout="responsive"
+                                                className="rounded-md object-contain"
+                                            />
+                                        }
+
                                     </div>
                                     <span className="ml-3 block truncate">{value.name}</span>
                                 </span>
@@ -100,14 +102,17 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                         <>
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-6 w-6 relative">
-                                                    <Image
-                                                        src={item.imgSrc}
-                                                        alt="Project Logo"
-                                                        height="40"
-                                                        width="40"
-                                                        layout="responsive"
-                                                        className="rounded-md object-contain "
-                                                    />
+                                                    {
+                                                        item.imgSrc && <Image
+                                                            src={item.imgSrc}
+                                                            alt="Project Logo"
+                                                            height="40"
+                                                            width="40"
+                                                            layout="responsive"
+                                                            className="rounded-md object-contain "
+                                                        />
+                                                    }
+
                                                 </div>
                                                 <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
                                                     <div className={disabled ? 'inline group-hover:hidden' : null}>{item.name}</div>
@@ -133,7 +138,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
             <div className="flex items-center relative">
                 <button
                     type="button"
-                    name={name} 
+                    name={name}
                     onClick={openModal}
                     disabled={disabled}
                     className="disabled:cursor-not-allowed disabled:hidden relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold rounded-none"
@@ -142,16 +147,19 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                         {
                             selectedItem && <div className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
-                                    <Image
-                                        src={selectedItem.imgSrc}
-                                        alt="Project Logo"
-                                        height="40"
-                                        width="40"
-                                        loading="eager"
-                                        priority
-                                        layout="responsive"
-                                        className="rounded-md object-contain"
-                                    />
+                                    {
+                                        selectedItem.imgSrc && <Image
+                                            src={selectedItem.imgSrc}
+                                            alt="Project Logo"
+                                            height="40"
+                                            width="40"
+                                            loading="eager"
+                                            priority
+                                            layout="responsive"
+                                            className="rounded-md object-contain"
+                                        />
+                                    }
+
                                 </div>
                             </div>
                         }
@@ -252,15 +260,18 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                             <>
                                                                 <div className="flex items-center">
                                                                     <div className="flex-shrink-0 h-6 w-6 relative">
-                                                                        <Image
-                                                                            src={item.imgSrc}
-                                                                            alt="Project Logo"
-                                                                            height="40"
-                                                                            width="40"
-                                                                            loading="eager"
-                                                                            layout="responsive"
-                                                                            className="rounded-md object-contain"
-                                                                        />
+                                                                        {
+                                                                            item.imgSrc && <Image
+                                                                                src={item.imgSrc}
+                                                                                alt="Project Logo"
+                                                                                height="40"
+                                                                                width="40"
+                                                                                loading="eager"
+                                                                                layout="responsive"
+                                                                                className="rounded-md object-contain"
+                                                                            />
+                                                                        }
+
                                                                     </div>
                                                                 </div>
 

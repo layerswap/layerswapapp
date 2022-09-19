@@ -178,7 +178,7 @@ function TransactionsHistory() {
                         <tbody>
                           {swaps?.data.map((swap, index) => {
                             const swapExchange = data.exchanges?.find(e => e.internal_name === swap?.exchange)
-                            const swapNetwork = data.networks?.find(n => n.code === swap.network)
+                            const swapNetwork = data.networks?.find(n => n.internal_name === swap.network)
                             const source = swap.type == "on_ramp" ? swapExchange : swapNetwork;
                             const destination = swap.type == "on_ramp" ? swapNetwork : swapExchange;
 
@@ -213,7 +213,7 @@ function TransactionsHistory() {
                                         className="rounded-md object-contain"
                                       />
                                     </div>
-                                    <div className="mx-1">{source?.name}</div>
+                                    <div className="mx-1">{source?.display_name}</div>
                                     <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
                                       <Image
                                         src={destination?.logo_url}
@@ -224,7 +224,7 @@ function TransactionsHistory() {
                                         className="rounded-md object-contain"
                                       />
                                     </div>
-                                    <div className="mx-1 block lg:hidden">{destination?.name}</div>
+                                    <div className="mx-1 block lg:hidden">{destination?.display_name}</div>
                                   </div>
                                 </div>
                                 <div className="flex items-center mt-1 text-white sm:block lg:hidden">
@@ -253,7 +253,7 @@ function TransactionsHistory() {
                                       className="rounded-md object-contain"
                                     />
                                   </div>
-                                  <div className="ml-1">{destination?.name}</div>
+                                  <div className="ml-1">{destination?.display_name}</div>
                                 </div>
 
                               </td>
@@ -282,7 +282,7 @@ function TransactionsHistory() {
                                 {swap.transaction_id ?
                                   <>
                                     <div className="underline hover:no-underline">
-                                      <a target={"_blank"} href={data.networks.filter(x => x.code === swap.network)[0]?.transaction_explorer_template.replace("{0}", swap.transaction_id)}>{shortenAddress(swap.transaction_id)}</a>
+                                      <a target={"_blank"} href={data.networks.filter(x => x.internal_name === swap.network)[0]?.transaction_explorer_template.replace("{0}", swap.transaction_id)}>{shortenAddress(swap.transaction_id)}</a>
                                     </div>
                                   </>
                                   : <div>-</div>
@@ -398,7 +398,7 @@ function TransactionsHistory() {
                               {
                                 data.networks && selectedSwap?.transaction_id &&
                                 <div className="text-white text-sm">
-                                  <a href={data.networks.filter(x => x.code === selectedSwap?.network)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
+                                  <a href={data.networks.filter(x => x.internal_name === selectedSwap?.network)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
                                     target="_blank"
                                     className="shadowed-button group text-white disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                                     View in Explorer

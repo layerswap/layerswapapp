@@ -6,7 +6,6 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
 import { CryptoNetwork } from "../../../Models/CryptoNetwork";
-import { Exchange } from "../../../Models/Exchange";
 import { SwapFormValues, SwapType } from "../../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../../Select/selectMenuItem";
 import Image from 'next/image';
@@ -110,11 +109,11 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
     }, [query])
 
-    
-    let availableNetworks = settings.data.networks
-        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
 
-    const availablePartners = Object.fromEntries(settings.data.partners.map(c => [c.name.toLowerCase(), c]));
+    let availableNetworks = settings.data.networks
+        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.internal_name, c.display_name, c.order, c.logo_url, c.status === "active", c.is_default))
+
+    const availablePartners = Object.fromEntries(settings.data.partners.map(c => [c.internal_name.toLowerCase(), c]));
 
     const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
@@ -232,7 +231,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                             </div>
 
                             <div className="w-full">
-                                <AmountAndFeeDetails amount={Number(values?.amount)} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} />
+                                <AmountAndFeeDetails amount={Number(values?.amount)} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} network={values.network?.baseObject} />
                             </div>
                         </div>
                         <div className="mt-6">

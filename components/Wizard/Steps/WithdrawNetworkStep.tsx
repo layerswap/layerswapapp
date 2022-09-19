@@ -53,8 +53,8 @@ const WithdrawNetworkStep: FC = () => {
         setTransferDone(true)
     }, [])
 
-    const network = data.networks?.find(n => n.code === swap?.data?.network)
-    const network_name = network?.name || ' '
+    const network = data.networks?.find(n => n.internal_name === swap?.data?.network)
+    const network_name = network?.display_name || ' '
     const network_logo_url = network?.logo_url
     const network_id = network?.id
 

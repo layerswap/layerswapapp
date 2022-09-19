@@ -4,6 +4,7 @@ import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formW
 import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
+import { getCurrencyDetails } from '../../../helpers/currencyHelper';
 import { useDelayedInterval } from '../../../hooks/useInterval';
 import { parseJwt } from '../../../lib/jwtParser';
 import { OpenLink } from '../../../lib/openLink';
@@ -14,14 +15,15 @@ import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 
 const AccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
-    const { oauth_authorization_redirect_url: oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
+    const { exchange, amount, currency } = swapFormData || {}
+    const { oauth_authorization_redirect_url: oauth_redirect_url } = exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate()
     const { currentStepName } = useFormWizardState()
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const [addressSource, setAddressSource] = useState("")
     const [carouselFinished, setCarouselFinished] = useState(false)
-    const authWindowRef = useRef(null)
-    const carouselRef = useRef<CarouselRef>()
+    const authWindowRef = useRef<Window | null>(null)
+    const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
 
     const { startInterval } = useDelayedInterval(async () => {
@@ -34,8 +36,8 @@ const AccountConnectStep: FC = () => {
             return true;
         }
         const exchanges = await (await getUserExchanges(access_token))?.data
-        const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
-        if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
+        const exchangeIsEnabled = exchanges?.some(e => e.exchange === exchange?.id && e.is_enabled)
+        if (!exchange?.baseObject?.authorization_flow || exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
             await goToStep(SwapCreateStep.Confirm)
             authWindowRef.current?.close()
             return true;
@@ -62,15 +64,15 @@ const AccountConnectStep: FC = () => {
         }
     }, [oauth_redirect_url, carouselRef, carouselFinished, addressSource, query])
 
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
 
-    const exchange_name = swapFormData?.exchange?.name
+    if (!currency)
+        return <></>
+
+    const minimalAuthorizeAmount = Math.round(currency.baseObject?.usd_price * Number(amount) + 5)
+
+    const exchange_name = exchange?.name
     const onCarouselLast = (value) => {
         setCarouselFinished(value)
-    }
-
-    if (!(minimalAuthorizeAmount > 0)) {
-        return null;
     }
 
     return (

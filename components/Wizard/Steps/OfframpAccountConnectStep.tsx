@@ -21,13 +21,14 @@ const OfframpAccountConnectStep: FC = () => {
     const { currentStepName } = useFormWizardState<SwapCreateStep>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const [addressSource, setAddressSource] = useState("")
-    const authWindowRef = useRef(null);
+    const authWindowRef = useRef<Window | null>(null);
     const query = useQueryState()
 
     useEffect(() => {
         let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
         let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
-        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
+        const addressSource = query.addressSource || ""
+        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || addressSource)
     }, [query])
 
     const { startInterval } = useDelayedInterval(async () => {

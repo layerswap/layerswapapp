@@ -12,13 +12,13 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     const { destNetwork, destAddress, sourceExchangeName } = queryParams
 
     const availableNetworks = networks
-        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
+        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.internal_name, c.display_name, c.order, c.logo_url, c.status === "active", c.is_default))
 
     let availableExchanges = settings.data.exchanges
-        .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
+        .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, c.order, c.logo_url, c.is_enabled, c.is_default))
 
     const initialNetwork =
-        availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable
+        availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable
             && (swapType === "onramp" || settings?.data?.currencies?.some(c => c.network_id === x.id && c.exchanges.some(ce => ce.is_off_ramp_enabled))))
 
     let initialAddress =

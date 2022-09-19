@@ -111,10 +111,10 @@ const TwoFactorStep: FC = () => {
                             <LockClosedIcon className='w-16 h-16 mt-auto text-pink-primary self-center' />
                             <div className='text-center mt-5'>
                                 <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
-                                    {swapFormData?.exchange?.baseObject?.name} 2FA
+                                    {swapFormData?.exchange?.baseObject?.display_name} 2FA
                                 </p>
                                 <p className='text-center text-base px-2'>
-                                    Please enter the 2 step verification code of your {swapFormData?.exchange?.baseObject?.name} account.
+                                    Please enter the 2 step verification code of your {swapFormData?.exchange?.baseObject?.display_name} account.
                                 </p>
                             </div>
                             <div className="relative rounded-md shadow-sm mt-5">

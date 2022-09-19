@@ -1,5 +1,5 @@
 import { Field, useFormikContext } from "formik";
-import { FC, useEffect } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SortingByOrder } from "../../lib/sorting";
 import { Currency } from "../../Models/Currency";
@@ -16,34 +16,38 @@ const CurrenciesField: FC = () => {
     const name = "currency"
     const { data } = useSettingsState();
 
+    const currencyIsAvilable = useCallback((c: Currency) => exchange && network && (() => { console.log("swapType", swapType); return true })() && exchange.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType === "offramp" ?
+        ec.is_withdrawal_enabled : ec.is_deposit_enabled)) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === "offramp" ?
+            nc.is_deposit_enabled : nc.is_withdrawal_enabled)), [exchange, network, swapType])
+
     const currencyMenuItems: SelectMenuItem<Currency>[] = network ? data.currencies
-        .filter(x => x.network_id === network?.baseObject?.id && x?.exchanges?.some(ce => ce.exchange_id === exchange?.baseObject?.id && (swapType === "onramp" || ce.is_off_ramp_enabled)))
+        .filter(currencyIsAvilable)
         .map(c => ({
             baseObject: c,
             id: c.id,
             name: c.asset,
-            order: c.order,
+            order: exchange?.baseObject?.currencies?.find(ec => ec.asset === c.asset)?.order || 0, //TODO offramp
             imgSrc: c.logo_url,
-            isAvailable: c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
-            isEnabled: c.is_enabled,
-            isDefault: c.is_default,
+            isAvailable: true,
+            isEnabled: true,
+            isDefault: false,
         })).sort(SortingByOrder)
         : []
 
     useEffect(() => {
         if (!network) return;
-        const default_currency = data.currencies.sort((x, y) => Number(y.is_default) - Number(x.is_default)).find(c => c.is_enabled && c.network_id === network.baseObject.id && c.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id))
+        const default_currency = data.currencies.find(currencyIsAvilable)
 
         if (default_currency) {
             const defaultValue: SelectMenuItem<Currency> = {
                 baseObject: default_currency,
                 id: default_currency.id,
                 name: default_currency.asset,
-                order: default_currency.order,
+                order: exchange.baseObject.currencies.find(ec => ec.asset === default_currency.asset)?.order || 0,
                 imgSrc: default_currency.logo_url,
-                isAvailable: default_currency.exchanges.some(ce => ce.exchange_id === exchange?.baseObject?.id),
-                isEnabled: default_currency.is_enabled,
-                isDefault: default_currency.is_default,
+                isAvailable: true,
+                isEnabled: true,
+                isDefault: false,
             }
             setFieldValue(name, defaultValue)
         }

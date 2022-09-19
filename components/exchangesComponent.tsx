@@ -80,7 +80,7 @@ function UserExchanges() {
     }, [data.exchanges])
 
     const filteredItems =
-        query === ''
+        query === ''display_name
             ? userExchanges
             : userExchanges.filter((item) => {
                 return item.name.toLowerCase().includes(query.toLowerCase())
@@ -207,7 +207,7 @@ function UserExchanges() {
                                                                     src={item.logo_url}
                                                                     alt="Exchange Logo"
                                                                     height="30"
-                                                                    width="30"
+                                                                    width="30display_name
                                                                     layout="fixed"
                                                                     className="rounded-md h-8 w-8 object-contain"
                                                                 />
@@ -275,4 +275,4 @@ function UserExchanges() {
     )
 }
 
-export default UserExchanges;
+export default UserExchanges;display_name

@@ -7,7 +7,7 @@ module.exports = {
     domains: ["bransferstorage.blob.core.windows.net"],
   },
   compiler: {
-    removeConsole: true,
+    removeConsole: false,
   },
   reactStrictMode: false
 };

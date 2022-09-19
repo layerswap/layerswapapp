@@ -8,8 +8,8 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
     return (values: SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
-        let minAllowedAmount = CalculateMinAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.swapType);
-        let maxAllowedAmount = CalculateMaxAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.swapType);
+        let minAllowedAmount = CalculateMinAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.network?.baseObject, values?.swapType);
+        let maxAllowedAmount = CalculateMaxAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.network?.baseObject, values?.swapType);
 
         if (!values.exchange) {
             (errors.exchange as any) = 'Select an exchange';
@@ -23,7 +23,7 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         else if (values.swapType === "onramp" && !isValidAddress(values.destination_address, values.network?.baseObject)) {
             errors.destination_address = `Enter a valid ${values?.network?.name} address`;
         }
-        else if (values.swapType === "onramp" && settings.data.blacklistedAddresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
+        else if (values.swapType === "onramp" && settings.data.blacklisted_addresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
             errors.destination_address = `You can not transfer to this address`;
         }
         else if (!amount) {
