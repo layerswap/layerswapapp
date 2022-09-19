@@ -1,0 +1,28 @@
+/*Transition*/
+@keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  
+  .dialog-overlay[data-state='open'],
+  .dialog-content[data-state='open'] {
+    animation: fadeIn 100ms ease-out;
+  }
+  
+  .dialog-overlay[data-state='closed'],
+  .dialog-content[data-state='closed'] {
+    animation: fadeOut 100ms ease-in;
+  }
