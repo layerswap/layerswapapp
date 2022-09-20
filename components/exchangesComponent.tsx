@@ -83,7 +83,6 @@ function UserExchanges() {
                 return item.display_name.toLowerCase().includes(query.toLowerCase())
             })
 
-    console.log("userExchanges", userExchanges)
 
     const handleComboboxChange = useCallback(() => { }, [])
     const handleQueryInputChange = useCallback((event) => setQuery(event.target.value), [])
