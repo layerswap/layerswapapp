@@ -53,7 +53,7 @@ const AccountConnectStep: FC = () => {
             const authWindowURL = new URL(authWindowHref)
             const authorizedAmount = authWindowURL.searchParams.get("send_limit_amount")
             if (Number(authorizedAmount) < minimalAuthorizeAmount)
-                toast.error("You did not authorize enough fck ya")
+                toast.error("You did not authorize enough")
             else
                 await goToStep(SwapCreateStep.Confirm)
             authWindowRef.current?.close()
