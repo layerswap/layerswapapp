@@ -20,7 +20,6 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
     let exchangeFee = GetExchangeFee(currency, exchange);
     let fee = CalculateFee(amount, currency, exchange, network, swapType);
     let receive_amount = CalculateReceiveAmount(amount, currency, exchange, network, swapType);
-    console.log("receive_amount", receive_amount)
     const currencyDetails = getCurrencyDetails(currency, exchange, network, swapType)
 
     return (

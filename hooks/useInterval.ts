@@ -43,6 +43,7 @@ export function useDelayedInterval(callback: () => Promise<boolean>, dependencie
                 try {
                     if (await callback()) {
                         _stopped = true;
+                        setStarted(false)
                     }
                 } finally {
                     // Initiate timeout only after a response/error is received
@@ -55,6 +56,7 @@ export function useDelayedInterval(callback: () => Promise<boolean>, dependencie
         return () => {
             _stopped = true // prevent racing conditions
             clearTimeout(timeoutIdRef.current)
+            setStarted(false)
         }
     }, [...dependencies, delay, started])
 

@@ -13,18 +13,18 @@ export default class LayerSwapApiClient {
     }
 
     async createSwap(params: CreateSwapParams, token: string): Promise<CreateSwapResponse> {
-        return await authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/swaps',
+        return await authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/api/swaps',
             params,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
     async getSwaps(page: number, token: string): Promise<SwapListResponse> {
-        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/swaps?page=${page}`,
+        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps?page=${page}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
     async getSwapDetails(id: string, token: string): Promise<SwapItemResponse> {
-        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/swaps/${id}`,
+        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${id}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }

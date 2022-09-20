@@ -81,7 +81,6 @@ export const getServerSideProps = async (ctx) => {
       console.log('ERROR WRITING SETTINGS CACHE TO FILE')
       console.log(error)
     }
-
     settings = data
   }
 

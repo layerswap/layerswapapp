@@ -39,7 +39,6 @@ function UserExchanges() {
     const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
     useEffect(() => {
-
         (async () => {
             setLoading(true)
             try {
@@ -66,25 +65,25 @@ function UserExchanges() {
         const bransferApiClient = new BransferApiClient()
         const userExchanges = await bransferApiClient.GetExchangeAccounts(authData.access_token)
 
-        const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none' && x.is_enabled).map(e => {
+        const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none').map(e => {
             return {
                 ...e,
-                is_connected: userExchanges.data?.some(ue => ue.exchange === e.internal_name && ue.is_enabled),
-                note: userExchanges.data?.find(ue => ue.exchange === e.internal_name)?.note
+                is_connected: userExchanges.data?.some(ue => ue.exchange_id === e.id),
+                note: userExchanges.data?.find(ue => ue.exchange_id === e.id)?.note
             }
         })
         mappedExchanges.sort((a, b) => (+a.order) - (+b.order))
-
-
         setUserExchanges(mappedExchanges)
     }, [data.exchanges])
 
     const filteredItems =
-        query === ''display_name
+        query === ''
             ? userExchanges
             : userExchanges.filter((item) => {
-                return item.name.toLowerCase().includes(query.toLowerCase())
+                return item.display_name.toLowerCase().includes(query.toLowerCase())
             })
+
+    console.log("userExchanges", userExchanges)
 
     const handleComboboxChange = useCallback(() => { }, [])
     const handleQueryInputChange = useCallback((event) => setQuery(event.target.value), [])
@@ -196,23 +195,26 @@ function UserExchanges() {
                                                 <Combobox.Option
                                                     key={item.id}
                                                     value={item}
-                                                    disabled={!item.is_enabled || !item.is_enabled}
-                                                    className={`bg-darkblue-500 ${!item.is_enabled ? 'opacity-35 cursor-not-allowed' : ''}  select-none rounded-lg p-3`}
+                                                    disabled={false}
+                                                    className={`bg-darkblue-500  select-none rounded-lg p-3`}
                                                     onClick={() => { }}
                                                 >
                                                     {({ active }) => (
                                                         <div className="py-1 px-2 grid grid-cols-3 grid-rows-1 gap-3">
                                                             <div className="flex items-center col-span-2 space-x-3">
-                                                                <Image
-                                                                    src={item.logo_url}
-                                                                    alt="Exchange Logo"
-                                                                    height="30"
-                                                                    width="30display_name
-                                                                    layout="fixed"
-                                                                    className="rounded-md h-8 w-8 object-contain"
-                                                                />
+                                                                {
+                                                                    item.logo_url && 
+                                                                    <Image
+                                                                        src={item.logo_url}
+                                                                        alt="Exchange Logo"
+                                                                        height="30"
+                                                                        width="30display_name"
+                                                                        layout="fixed"
+                                                                        className="rounded-md h-8 w-8 object-contain"
+                                                                    />
+                                                                }
                                                                 <div className="text-base font-medium text-left">
-                                                                    <p>{item.name}</p>
+                                                                    <p>{item.display_name}</p>
                                                                     {
                                                                         item?.note &&
                                                                         <div className="flex items-center">
@@ -226,11 +228,11 @@ function UserExchanges() {
                                                             </div>
                                                             <div className="text-xs">
                                                                 {
-                                                                    item.authorization_flow && item.authorization_flow !== "none" && item.is_enabled && exchangeLoading?.id !== item.id &&
+                                                                    item.authorization_flow && item.authorization_flow !== "none"  && exchangeLoading?.id !== item.id &&
                                                                     <>
                                                                         {
                                                                             item.is_connected ?
-                                                                                <SubmitButton onClick={() => {setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true)}} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id}>Disconnect</SubmitButton>
+                                                                                <SubmitButton onClick={() => { setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true) }} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id}>Disconnect</SubmitButton>
                                                                                 : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Connect</SubmitButton>
                                                                         }
                                                                     </>
@@ -259,10 +261,10 @@ function UserExchanges() {
                     </Combobox>
                 </div>
             </div>
-            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.name}`} description={""}>
+            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`} description={""}>
                 <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
             </Modal>
-            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.name}`} description={""}>
+            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`} description={""}>
                 <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverClassNames='pt-7' />
             </Modal>
             <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} description={""}>
@@ -275,4 +277,4 @@ function UserExchanges() {
     )
 }
 
-export default UserExchanges;display_name
+export default UserExchanges;

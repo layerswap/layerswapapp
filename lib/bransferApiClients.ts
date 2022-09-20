@@ -3,7 +3,7 @@ import authInterceptor from "./axiosInterceptor"
 
 
 export class BransferApiClient {
-    static apiBaseEndpoint: string = AppSettings.BransferApiUri;
+    static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
 
     async GetExchangeAccounts(token: string): Promise<UserExchangesResponse> {
         return await authInterceptor.get(BransferApiClient.apiBaseEndpoint + '/api/exchange_accounts')
@@ -73,7 +73,7 @@ export type ConnectResponse = {
 export interface UserExchangesResponse {
     data: [
         {
-            exchange: string,
+            exchange_id: string,
             is_enabled: boolean,
             note: string
         }

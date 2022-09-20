@@ -19,7 +19,6 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
     const [isOpen, setIsOpen] = useState(false)
     const [query, setQuery] = useState('')
     const [selectedItem, setSelectedItem] = useState<SelectMenuItem<T> | undefined>(value || undefined)
-    console.log(values)
     function onChangeHandler(newValue: string) {
         setFieldValue(name, values.find(x => x.id === newValue));
     }

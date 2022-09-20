@@ -38,7 +38,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
             const bransferApiClient = new BransferApiClient()
             const userExchanges = await bransferApiClient.GetExchangeAccounts(access_token)
 
-            if (userExchanges.data.some(e => e.exchange === exchange?.internal_name && e.is_enabled)) {
+            if (userExchanges.data.some(e => e.exchange_id === exchange?.id)) {
                 authWindowRef.current?.close()
                 onClose()
                 setLoading(false)
@@ -64,9 +64,9 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                 })
                 return;
             }
-
             const { sub } = parseJwt(access_token) || {}
-            const authWindow = window.open(exchange.oauth_authorization_redirect_url + sub, '_blank', 'width=420,height=720')
+            const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
+            const authWindow = window.open(exchange.o_auth_authorization_url + encoded, '_blank', 'width=420,height=720')
             authWindowRef.current = authWindow
         }
         catch (e) {

@@ -27,8 +27,8 @@ const SendEmail: FC<Props> = ({ onSend }) => {
             if (inputEmail != storedEmail) {
                 const apiClient = new LayerSwapAuthApiClient();
                 const res = await apiClient.getCodeAsync(inputEmail)
-                if (!res.is_success)
-                    throw new Error(res.errors)
+                if (res.error)
+                    throw new Error(res.error)
                 TokenService.setCodeNextTime(res?.data?.next)
                 setCodeRequested(true);
             }

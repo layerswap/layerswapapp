@@ -46,14 +46,14 @@ const useCreateSwap = () => {
                 }
                 catch (e) {
                     const exchanges = (await getUserExchanges(accessToken))?.data
-                    if (exchanges.some(e => e.exchange === values.exchange.baseObject.internal_name))
-                        await bransferApiClient.DeleteExchange(values.exchange.baseObject.internal_name, accessToken)
+                    if (exchanges.some(e => e.exchange_id === values.exchange.baseObject.id))
+                        await bransferApiClient.DeleteExchange(values.exchange.baseObject.id, accessToken)
                     return goToStep(SwapCreateStep.OffRampOAuth)
                 }
             }
             else {
                 const exchanges = (await getUserExchanges(accessToken))?.data
-                const exchangeIsEnabled = exchanges?.some(e => e.exchange === values?.exchange?.id && e.is_enabled)
+                const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === values?.exchange?.baseObject.id && e.is_enabled)
                 if (values?.exchange?.baseObject?.authorization_flow === "none" || !values?.exchange?.baseObject?.authorization_flow || exchangeIsEnabled)
                     return goToStep(SwapCreateStep.Confirm)
                 else
@@ -75,7 +75,7 @@ const useCreateSwap = () => {
         Name: SwapCreateStep.Code,
         onNext: useCallback(async (res: AuthConnectResponse) => {
             const exchanges = (await getUserExchanges(res.access_token))?.data
-            const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
+            const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange?.baseObject.id && e.is_enabled)
 
             if (swapFormData.swapType === "offramp" && swapFormData.exchange.baseObject.id === KnownIds.Exchanges.CoinbaseId) {
                 const bransferApiClient = new BransferApiClient()
@@ -90,8 +90,8 @@ const useCreateSwap = () => {
                     }
                 }
                 catch (e) {
-                    if (exchanges.some(e => e.exchange === swapFormData.exchange.baseObject.internal_name))
-                        await bransferApiClient.DeleteExchange(swapFormData.exchange.baseObject.internal_name, res.access_token)
+                    if (exchanges.some(e => e.exchange_id === swapFormData.exchange.baseObject.id))
+                        await bransferApiClient.DeleteExchange(swapFormData.exchange.baseObject.id, res.access_token)
                     return goToStep(OfframpExchangeAuthorizationSteps[swapFormData?.exchange?.baseObject?.authorization_flow])
                 }
             }

@@ -8,10 +8,6 @@ type Props = {
 
 const EmailStep: FC<Props> = ({ OnNext }) => {
     const { updateEmail } = useAuthDataUpdate()
-
-    useEffect(()=>{
-        console.log("hi from email step")
-    })
     const onSend = (email: string) => {
         updateEmail(email)
         OnNext();

@@ -41,7 +41,7 @@ const OfframpAccountConnectStep: FC = () => {
             return true;
         }
         const exchanges = await (await getUserExchanges(access_token))?.data
-        const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
+        const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange.baseObject?.id && e.is_enabled)
         if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
             await goToStep(SwapCreateStep.Confirm)
             authWindowRef.current?.close()

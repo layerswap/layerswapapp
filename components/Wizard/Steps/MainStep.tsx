@@ -52,7 +52,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const query = useQueryState();
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
-
+    
     useEffect(() => {
         if (query.coinbase_redirect) {
             const temp_data = getTempData()

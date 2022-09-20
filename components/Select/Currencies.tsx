@@ -16,7 +16,7 @@ const CurrenciesField: FC = () => {
     const name = "currency"
     const { data } = useSettingsState();
 
-    const currencyIsAvilable = useCallback((c: Currency) => exchange && network && (() => { console.log("swapType", swapType); return true })() && exchange.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType === "offramp" ?
+    const currencyIsAvilable = useCallback((c: Currency) => exchange && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType === "offramp" ?
         ec.is_withdrawal_enabled : ec.is_deposit_enabled)) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === "offramp" ?
             nc.is_deposit_enabled : nc.is_withdrawal_enabled)), [exchange, network, swapType])
 
@@ -35,7 +35,7 @@ const CurrenciesField: FC = () => {
         : []
 
     useEffect(() => {
-        if (!network) return;
+        if (!network || !exchange) return;
         const default_currency = data.currencies.find(currencyIsAvilable)
 
         if (default_currency) {

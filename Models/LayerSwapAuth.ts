@@ -2,9 +2,7 @@ export class AuthGetCodeResponse {
     data: {
         next: Date
     };
-    is_success: boolean;
-    request_id: string;
-    errors: string;
+    error: string;
 }
 
 export class AuthConnectResponse {

@@ -1,10 +1,9 @@
-import { FC, useCallback, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { getCurrencyDetails } from '../../../helpers/currencyHelper';
 import { useDelayedInterval } from '../../../hooks/useInterval';
 import { parseJwt } from '../../../lib/jwtParser';
 import { OpenLink } from '../../../lib/openLink';
@@ -16,7 +15,7 @@ import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 const AccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
     const { exchange, amount, currency } = swapFormData || {}
-    const { oauth_authorization_redirect_url: oauth_redirect_url } = exchange?.baseObject || {}
+    const { o_auth_authorization_url } = exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate()
     const { currentStepName } = useFormWizardState()
     const { getUserExchanges } = useUserExchangeDataUpdate()
@@ -25,6 +24,8 @@ const AccountConnectStep: FC = () => {
     const authWindowRef = useRef<Window | null>(null)
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
+
+    const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
 
     const { startInterval } = useDelayedInterval(async () => {
         if (currentStepName !== SwapCreateStep.OAuth)
@@ -35,15 +36,31 @@ const AccountConnectStep: FC = () => {
             await goToStep(SwapCreateStep.Email)
             return true;
         }
+
+        let authWindowHref = ""
+        try {
+            authWindowHref = authWindowRef.current?.location?.href
+        }
+        catch (e) {
+
+        }
+        if (!authWindowHref || authWindowHref?.indexOf(window.location.origin) === -1)
+            return false
+
         const exchanges = await (await getUserExchanges(access_token))?.data
-        const exchangeIsEnabled = exchanges?.some(e => e.exchange === exchange?.id && e.is_enabled)
+        const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === exchange?.baseObject.id)
         if (!exchange?.baseObject?.authorization_flow || exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
-            await goToStep(SwapCreateStep.Confirm)
+            const authWindowURL = new URL(authWindowHref)
+            const authorizedAmount = authWindowURL.searchParams.get("send_limit_amount")
+            if (Number(authorizedAmount) < minimalAuthorizeAmount)
+                toast.error("You did not authorize enough fck ya")
+            else
+                await goToStep(SwapCreateStep.Confirm)
             authWindowRef.current?.close()
             return true;
         }
         return false
-    }, [currentStepName, authWindowRef], 2000)
+    }, [currentStepName, authWindowRef, minimalAuthorizeAmount], 2000)
 
 
     const handleConnect = useCallback(() => {
@@ -57,18 +74,13 @@ const AccountConnectStep: FC = () => {
             if (!access_token)
                 goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
-            authWindowRef.current = OpenLink({ link: oauth_redirect_url + sub, swap_data: swapFormData, query })
+            const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
+            authWindowRef.current = OpenLink({ link: o_auth_authorization_url + encoded, swap_data: swapFormData, query })
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_redirect_url, carouselRef, carouselFinished, addressSource, query])
-
-
-    if (!currency)
-        return <></>
-
-    const minimalAuthorizeAmount = Math.round(currency.baseObject?.usd_price * Number(amount) + 5)
+    }, [o_auth_authorization_url, carouselRef, carouselFinished, addressSource, query])
 
     const exchange_name = exchange?.name
     const onCarouselLast = (value) => {
@@ -78,7 +90,6 @@ const AccountConnectStep: FC = () => {
     return (
         <>
             <div className="w-full px-8 md:grid md:grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
-
                 <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please connect your {exchange_name} account
                 </h3>

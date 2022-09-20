@@ -35,7 +35,7 @@ instance.interceptors.response.use(
                 try {
                     const config = { ...originalConfig }
                     const params = new URLSearchParams();
-                    params.append('client_id', 'layerswap_ui');
+                    params.append('client_id', 'layerswap_bridge_ui');
                     params.append('grant_type', 'refresh_token');
                     params.append('refresh_token', TokenService.getAuthData()?.refresh_token);
                     //application/x-www-form-urlencoded
