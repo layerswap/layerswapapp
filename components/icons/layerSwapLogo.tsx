@@ -1,7 +1,7 @@
 import { FC } from "react";
 
 interface Props {
-    className: string
+    className?: string
     partnerName?: string
 }
 
