@@ -109,18 +109,18 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, 
                                             } h-4 w-4 text-primary-text`}
                                     />
                                 </Disclosure.Button>
-                                <Disclosure.Panel className="text-sm">
+                                <Disclosure.Panel className="text-sm text-primary-text">
                                     <>
                                         <div className="flex items-center flex-wrap">
-                                            <a className='m-1.5 flex text-primary-text cursor-pointer items-center hover:text-white' href={constructExplorerUrl(swapFormData)} target='_blank'  >
+                                            <a className='m-1.5 flex cursor-pointer items-center hover:text-white' href={constructExplorerUrl(swapFormData)} target='_blank'  >
                                                 <ExternalLinkIcon className='h-4 w-4 mr-2' />
                                                 <p className=''>View In Explorer</p>
                                             </a>
-                                            <button disabled={!canEditAddress} onClick={onClick} className="text-sm font-normal m-1.5 flex text-primary-text cursor-pointer items-center hover:text-white">
+                                            <button disabled={!canEditAddress} onClick={onClick} className="text-sm font-normal m-1.5 flex cursor-pointer items-center hover:text-white">
                                                 <PencilAltIcon className='inline-block h-4 w-4 mr-2' />
                                                 Edit Address
                                             </button>
-                                            <div className='cursor-pointer text-primary-text hover:text-white flex items-center m-1.5'>
+                                            <div className='cursor-pointer hover:text-white flex items-center m-1.5'>
                                                 <CopyButton toCopy={swapFormData?.destination_address}>
                                                     <span className='text-sm font-normal'>Copy Full Address</span>
                                                 </CopyButton>

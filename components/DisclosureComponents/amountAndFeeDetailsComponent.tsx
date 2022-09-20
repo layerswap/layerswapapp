@@ -46,13 +46,13 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
                                         } h-4 w-4 text-primary-text`}
                                 />
                             </Disclosure.Button>
-                            <Disclosure.Panel className="p-2 text-sm">
+                            <Disclosure.Panel className="p-2 text-sm text-primary-text font-normal">
                                 <>
                                     <div className="mt-2 flex flex-row items-baseline justify-between">
-                                        <label className="inline-flex font-normal items-center text-primary-text text-left">
+                                        <label className="inline-flex items-center text-left">
                                             Layerswap Fee
                                         </label>
-                                        <span className="font-normal text-center text-white">
+                                        <span className="text-center text-white">
                                             {fee.toFixed(currency?.precision)}
                                             <span>  {currency?.asset} </span>
                                         </span>
@@ -60,22 +60,22 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
                                     {
                                         swapType === "onramp" &&
                                         <div className="mt-2 flex flex-row items-baseline justify-between">
-                                            <label className="inline-flex font-normal text-primary-text text-left">
+                                            <label className="inline-flex text-left">
                                                 Exchange Fee
                                                 <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36' />
                                             </label>
-                                            <span className="font-normal text-center text-white">
+                                            <span className="text-center text-white">
                                                 {exchangeFee.toFixed(currency?.precision)}
-                                                <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex text-primary-text'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' /></span>}</span>
+                                                <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' /></span>}</span>
                                             </span>
                                         </div>
                                     }
 
                                     <div className="mt-2 flex flex-row items-baseline justify-between">
-                                        <label className="block font-normal text-primary-text text-center">
+                                        <label className="block text-center">
                                             Time Of Arrival
                                         </label>
-                                        <span className="font-normal text-center text-white">
+                                        <span className="text-center text-white">
                                             ~1-2 minutes
                                         </span>
                                     </div>

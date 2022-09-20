@@ -58,7 +58,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                     <div>
                         <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                             Send Feedback
-                            <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-primary font-light'>
+                            <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-primary-text font-light'>
                                 Please help us shape the product, catch bugs, and prioritize features. Your feedback will go directly into our Telegram channel.
                             </p>
                         </h3>
@@ -83,7 +83,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                                 show();
                                 updateWithProps()
                             }}
-                            className="text-center disabled:text-primary text-primary relative justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                            className="text-center disabled:text-primary-800 text-primary relative justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
                         >
                             Need help?
                         </button>

@@ -22,7 +22,7 @@ const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, child
         imperativeOpener?.[1](true);
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         imperativeOpener && setOpen(imperativeOpener[0])
     }, [imperativeOpener?.[0]])
 
@@ -43,16 +43,14 @@ const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, child
                     <span className='relative z-40 overflow-hidden bg-darkblue px-6 pb-6 sm:px-8 sm:pb-8 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
                             <span className="justify-self-end text-primary-text cursor-pointer">
-                                <div className="">
-                                    <button
-                                        type="button"
-                                        className="rounded-md text-darkblue-200 hover:text-primary-text"
-                                        onClick={handleClose}
-                                    >
-                                        <span className="sr-only">Close</span>
-                                        <XIcon className="h-6 w-6" aria-hidden="true" />
-                                    </button>
-                                </div>
+                                <button
+                                    type="button"
+                                    className="rounded-md text-darkblue-200 hover:text-primary-text"
+                                    onClick={handleClose}
+                                >
+                                    <span className="sr-only">Close</span>
+                                    <XIcon className="h-6 w-6" aria-hidden="true" />
+                                </button>
                             </span>
                         </div>
                         <Transition.Child
@@ -67,7 +65,7 @@ const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, child
                             <div className="relative inset-0" ></div>
                         </Transition.Child>
 
-                        <div className="relative inset-0 text-primary-text flex flex-col scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                        <div className="relative inset-0 flex flex-col scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
                             <div className="relative min-h-full items-center justify-center pt-0 text-center">
                                 <Transition.Child
                                     as={Fragment}

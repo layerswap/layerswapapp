@@ -15,7 +15,6 @@ interface Props {
 
 const GoHomeButton: FC<Props> = (({ className, children }) => {
     const router = useRouter()
-    const query = useQueryState()
     
     const handleGoHome = useCallback(() => {
         router.push({

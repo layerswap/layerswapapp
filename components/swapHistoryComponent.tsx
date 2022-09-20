@@ -379,10 +379,10 @@ function TransactionsHistory() {
                                 <div className='text-xl font-bold text-white'>Swap details</div>
                                 <div className='relative grid grid-cols-1 gap-4 place-content-end z-40'>
                                   <span className="justify-self-end text-primary-text cursor-pointer">
-                                    <div className="">
+                                    <div>
                                       <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200  hover:text-primary-text"
+                                        className="rounded-md text-darkblue-200 hover:text-primary-text"
                                         onClick={handleClose}
                                       >
                                         <span className="sr-only">Close</span>

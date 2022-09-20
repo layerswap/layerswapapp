@@ -409,7 +409,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                     leaveFrom="opacity-100 scale-100"
                                     leaveTo="opacity-0 scale-95"
                                 >
-                                    <div className='pb-12 grid grid-flow-row min-h-[480px] text-primary-text'>
+                                    <div className='pb-12 grid grid-flow-row'>
                                         <h4 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
                                             <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mb-1' /> Editing your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address
                                         </h4>
