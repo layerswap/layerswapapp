@@ -1,8 +1,8 @@
 import { useRouter } from "next/router"
-import { Fragment, useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import TokenService from "../lib/TokenService"
-import { ExclamationCircleIcon, SearchIcon, XIcon } from '@heroicons/react/outline';
-import { Combobox, Dialog, Transition } from "@headlessui/react"
+import { ExclamationCircleIcon, SearchIcon } from '@heroicons/react/outline';
+import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
 import { BransferApiClient } from "../lib/bransferApiClients"
 import Image from 'next/image'
@@ -17,6 +17,7 @@ import shortenAddress, { shortenEmail } from "./utils/ShortenAddress";
 import HoverTooltip from "./Tooltips/HoverTooltip";
 import { ExchangesComponentSceleton } from "./Sceletons";
 import GoHomeButton from "./utils/GoHome";
+import Modal from "./modalComponent";
 
 interface UserExchange extends Exchange {
     note?: string,
@@ -34,6 +35,8 @@ function UserExchanges() {
     const [exchangeLoading, setExchangeLoading] = useState<Exchange>()
     const { email } = useAuthState()
     const [exchangeToDisconnect, setExchangeToDisconnect] = useState<Exchange>()
+    const [openExchangeToConnectModal, setOpenExchangeToConnectModal] = useState(false)
+    const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
     useEffect(() => {
 
@@ -88,7 +91,9 @@ function UserExchanges() {
 
     const handleConnectExchange = (exchange: Exchange) => {
         setExchangeToConnect(exchange)
+        setOpenExchangeToConnectModal(true)
     }
+
     const handleDisconnectExchange = useCallback(async (exchange: Exchange) => {
         setExchangeLoading(exchange)
         try {
@@ -113,8 +118,8 @@ function UserExchanges() {
     }, [router.query])
 
     const handleClose = () => {
-        setExchangeToConnect(undefined);
-        setExchangeToDisconnect(undefined)
+        setOpenExchangeToConnectModal(false)
+        setOpenExchangeToDisconnectModal(false)
     }
 
     const handleExchangeConnected = useCallback(async () => {
@@ -225,7 +230,7 @@ function UserExchanges() {
                                                                     <>
                                                                         {
                                                                             item.is_connected ?
-                                                                                <SubmitButton onClick={() => setExchangeToDisconnect(item)} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Disconnect</SubmitButton>
+                                                                                <SubmitButton onClick={() => {setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true)}} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id}>Disconnect</SubmitButton>
                                                                                 : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Connect</SubmitButton>
                                                                         }
                                                                     </>
@@ -254,73 +259,18 @@ function UserExchanges() {
                     </Combobox>
                 </div>
             </div>
-            <Transition appear show={!!exchangeToConnect || !!exchangeToDisconnect} as={Fragment}>
-                <Dialog as="div" className="relative z-40" onClose={handleClose}>
-                    <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-                    <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <div className="fixed inset-0 bg-black bg-opacity-25" />
-                    </Transition.Child>
-
-                    <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 scale-95"
-                                enterTo="opacity-100 scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 scale-100"
-                                leaveTo="opacity-0 scale-95"
-                            >
-                                <Dialog.Panel className="w-fit max-w-xl transform overflow-hidden rounded-md bg-darkblue align-middle shadow-xl transition-all">
-                                    <div className="py-6 md:py-8">
-                                        <div className="flex mb-6 items-center justify-between px-6 md:px-8">
-                                            <div className='text-lg font-semibold mr-10 text-white'>
-                                                {
-                                                    exchangeToDisconnect ? <>Are you sure?</> : <>Connect {exchangeToConnect?.name}</>
-                                                }
-                                            </div>
-                                            <span className="relative grid grid-cols-1 gap-4 place-content-end z-40 justify-self-end text-primary-text cursor-pointer">
-                                                <button
-                                                    type="button"
-                                                    className="rounded-md text-darkblue-200  hover:text-primary-text"
-                                                    onClick={handleClose}
-                                                >
-                                                    <span className="sr-only">Close</span>
-                                                    <XIcon className="h-6 w-6" aria-hidden="true" />
-                                                </button>
-                                            </span>
-                                        </div>
-                                        {
-                                            exchangeToConnect?.authorization_flow === "o_auth2" &&
-                                            <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
-                                        }
-                                        {
-                                            exchangeToConnect?.authorization_flow === "api_credentials" &&
-                                            <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverClassNames='pt-7' />
-                                        }
-                                        {
-                                            exchangeToDisconnect &&
-                                            <div className="flex justify-items-center space-x-3 max-w-xs px-6 md:px-8">
-                                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" icon={""} >Yes</SubmitButton>
-                                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small' icon={""}>No</SubmitButton>
-                                            </div>
-                                        }
-                                    </div>
-                                </Dialog.Panel>
-                            </Transition.Child>
-                        </div>
-                    </div>
-                </Dialog>
-            </Transition>
+            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.name}`} description={""}>
+                <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
+            </Modal>
+            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.name}`} description={""}>
+                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverClassNames='pt-7' />
+            </Modal>
+            <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} description={""}>
+                <div className="flex justify-items-center space-x-3 max-w-xs px-6 md:px-8">
+                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" >Yes</SubmitButton>
+                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small'>No</SubmitButton>
+                </div>
+            </Modal>
         </div>
     )
 }

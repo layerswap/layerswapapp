@@ -1,5 +1,5 @@
-import { DocumentDuplicateIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
-import { FC, useCallback, useState } from 'react'
+import { SwitchHorizontalIcon } from '@heroicons/react/outline';
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInterval';
@@ -14,11 +14,14 @@ import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
+import NetworkSettings from '../../../lib/NetworkSettings';
+import SlideOver from '../../SlideOver';
+import { DocIframe } from '../../docInIframe';
+import KnownIds from '../../../lib/knownIds';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
-    const { payment } = swap?.data || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
     const { data } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
@@ -52,10 +55,14 @@ const WithdrawNetworkStep: FC = () => {
     const network = data.networks?.find(n => n.code === swap?.data?.network)
     const network_name = network?.name || ' '
     const network_logo_url = network?.logo_url
+    const network_id = network?.id
 
     if (!swap?.data?.offramp_info) {
         return null;
     }
+
+    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[network?.id]?.UserGuideUrlForDesktop
+    const userGuideUrlForMobile = NetworkSettings.KnownSettings[network?.id]?.UserGuideUrlForMobile
 
     return (
         <>
@@ -63,7 +70,7 @@ const WithdrawNetworkStep: FC = () => {
                 <div className='space-y-4'>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">
-                            Go to
+                            Send {swap?.data.currency} to the provided address in
                             {
                                 network_logo_url &&
                                 <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
@@ -83,13 +90,26 @@ const WithdrawNetworkStep: FC = () => {
                             }
                             <span className='strong-highlight'>
                                 {network_name}
-                            </span> and send {swap?.data.currency} to the provided L2 address
+                            </span>
                         </h3>
                     </div>
+                    <div className='md:flex items-center md:space-x-2 space-y-1 md:space-y-0'>
+                        <div className='flex-none'>
+                            Guide for:
+                        </div>
+                        <div className='flex w-full text-white space-x-2'>
+                            {
+                                userGuideUrlForDesktop && renderGuideButton(userGuideUrlForDesktop, 'Loopring Web')
+                            }
+                            {
+                                userGuideUrlForMobile && renderGuideButton(userGuideUrlForMobile, 'Loopring Mobile')
+                            }
+                        </div>
+                    </div>
+
                     <div className='mb-6 grid grid-cols-1 gap-4'>
                         {
-                            network_name.toLowerCase() === 'loopring' &&
-
+                            network_id === KnownIds.Networks.LoopringMainnetId &&
                             <BackgroundField header={'Select as "Where would you like to send your crypto to"'}>
                                 <div className='flex items-center space-x-2'>
                                     <SwitchHorizontalIcon className='h-4 w-4' />
@@ -165,7 +185,7 @@ const WithdrawNetworkStep: FC = () => {
                         </div>
                         :
                         <div className="text-white text-base">
-                            <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleConfirm} >
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConfirm} >
                                 I Did The Transfer
                             </SubmitButton>
                         </div>
@@ -176,3 +196,13 @@ const WithdrawNetworkStep: FC = () => {
 }
 
 export default WithdrawNetworkStep;
+
+function renderGuideButton(userGuideUrlForDesktop: string, buttonText: string) {
+    return <div className="w-full items-center">
+        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} icon={''}>{buttonText}</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
+            {(close) => (
+                <DocIframe onConfirm={() => close()} URl={userGuideUrlForDesktop} />
+            )}
+        </SlideOver>
+    </div>;
+}

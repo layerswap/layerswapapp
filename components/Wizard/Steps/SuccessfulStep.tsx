@@ -40,7 +40,7 @@ const SuccessfulStep: FC = () => {
                 }
                 <div className="w-full justify-center">
                     <GoHomeButton>
-                        <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={''}>Swap more <ArrowRightIcon className='ml-2 h-5 w-5' /></SubmitButton>
+                        <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false}>Swap more <ArrowRightIcon className='ml-2 h-5 w-5' /></SubmitButton>
                     </GoHomeButton>
                 </div>
             </div>

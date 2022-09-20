@@ -19,15 +19,15 @@ const CopyButton: FC<CopyButtonProps> = ({ className, toCopy, children, iconHeig
     <div className={classNames(className)} onClick={() => setCopied(toCopy)}>
       {isCopied && (
         <div className="flex items-center gap-1 cursor-pointer">
+          <CheckIcon className={iconClassName} width={iconWidth ? iconWidth : 16} height={iconHeight ? iconHeight : 16} />
           {children}
-          <CheckIcon className={iconClassName} width={iconWidth ? iconWidth: 16} height={iconHeight ? iconHeight: 16} />
         </div>
       )}
 
       {!isCopied && (
         <div className="flex items-center gap-1 cursor-pointer">
+          <DocumentDuplicateIcon className={iconClassName} width={iconWidth ? iconWidth : 16} height={iconHeight ? iconHeight : 16} />
           {children}
-          <DocumentDuplicateIcon className={iconClassName} width={iconWidth ? iconWidth: 16} height={iconHeight ? iconHeight: 16} />
         </div>
       )}
     </div>

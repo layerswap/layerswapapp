@@ -68,7 +68,7 @@ const ExternalPaumentStep: FC = () => {
                     </ul>
                 </div>
                 <div className="text-white text-lg ">
-                    <SubmitButton isDisabled={false} icon="" isSubmitting={false} onClick={handleContinue}>
+                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleContinue}>
                         Continue to {payment?.exchange}
                     </SubmitButton>
                     {/* <div className='flex place-content-center items-center mt-8'>
