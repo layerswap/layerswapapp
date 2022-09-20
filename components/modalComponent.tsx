@@ -5,7 +5,7 @@ import { XIcon } from '@heroicons/react/outline';
 interface ModalParams {
     onDismiss: (isIntentional: boolean) => void;
     isOpen: boolean;
-    title: string;
+    title: React.ReactNode;
     description: React.ReactNode;
 }
 
