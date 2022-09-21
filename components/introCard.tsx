@@ -13,7 +13,7 @@ function IntroCard(props) {
                         <span className="text-sm font-semibold mr-2 rounded-md py-1 px-2 text-pink-primary border border-pink-primary uppercase">New</span>
 
                         <span className="inline">
-                            Transfer from Loopring to Coinbase and Binance (  🥳  off-ramp)
+                            SNX (Synthetix) in Optimism L2 
                         </span>
                     </p>
                 </div>
