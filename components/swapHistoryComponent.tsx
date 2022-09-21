@@ -333,7 +333,7 @@ function TransactionsHistory() {
                         disabled={isLastPage || loading}
                         type="button"
                         onClick={handleLoadMore}
-                        className="group disabled:text-primary-600 text-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                        className="group disabled:text-primary-800 text-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
                       >
                         <span className="flex items-center mr-2">
                           {(!isLastPage && !loading) &&

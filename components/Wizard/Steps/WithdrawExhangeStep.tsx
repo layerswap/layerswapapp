@@ -85,7 +85,7 @@ const WithdrawExchangeStep: FC = () => {
                                     </div>
                                 </div>
                             }
-                            <span className='strong-highlight mr-1'>
+                            <span className='mr-1'>
                                 {exchange_name}
                             </span> and do a withdrawal to the provided address
                         </h3>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { ExternalLinkIcon } from "@heroicons/react/outline";
 import { DocInFrameSceleton } from "./Sceletons";
+import SubmitButton from "./buttons/submitButton";
 
 type Props = {
     URl: string;
@@ -15,7 +16,7 @@ export function DocIframe({ URl, onConfirm }: Props) {
     }, [])
 
     return <>
-        <div className="text-white text-base scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+        <div className="text-white text-base scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50 mb-4">
             <div className={`relative ${loading ? '' : 'pb-96'} scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50`}>
                 {
                     loading && <DocInFrameSceleton />
@@ -27,13 +28,15 @@ export function DocIframe({ URl, onConfirm }: Props) {
         {
             !loading &&
             <>
-                <button
+                <SubmitButton
                     type="button"
                     onClick={onConfirm}
-                    className="shadowed-button text-white mt-3 group disabled:white disabled:bg-primary-600 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none shadow-md"
+                    size={'medium'}
+                    isDisabled={false}
+                    isSubmitting={false}
                 >
                     Got it
-                </button>
+                </SubmitButton>
                 <a
                     target="_blank"
                     href={URl}

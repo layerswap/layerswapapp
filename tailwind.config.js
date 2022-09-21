@@ -170,7 +170,7 @@ module.exports = {
                 '700': '#00ACBD',
                 '800': '#007985',
                 '900': '#00464D',
-                'text': '#80F3FF',
+                'text': '#E6FDFF',
                 'buttonTextColor': '#000000'
               },
             },
