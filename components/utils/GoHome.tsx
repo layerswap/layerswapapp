@@ -15,7 +15,7 @@ interface Props {
 
 const GoHomeButton: FC<Props> = (({ className, children }) => {
     const router = useRouter()
-    
+
     const handleGoHome = useCallback(() => {
         router.push({
             pathname: "/",
@@ -32,21 +32,21 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
                         <ContextMenuPrimitive.Trigger>
                             <LayerSwapLogo className={className ?? "h-8 w-auto text-white"} />
                         </ContextMenuPrimitive.Trigger>
-                            <ContextMenuPrimitive.Content className="dialog-overlay absolute z-40 border h-fit text-primary-text border-darkblue-200 mt-2 w-fit rounded-md shadow-lg bg-darkblue ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                    <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full rounded-t hover:bg-darkblue-300 whitespace-nowrap">
-                                        <CopyButton toCopy={renderToString(<LayerSwapLogo />)}>Copy logo as SVG</CopyButton>
-                                    </ContextMenuPrimitive.ContextMenuItem >
-                                    <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full hover:bg-darkblue-300 whitespace-nowrap">
-                                        <CopyButton toCopy={renderToString(<LayerSwapLogoSmall />)}>Copy symbol as SVG</CopyButton>
-                                    </ContextMenuPrimitive.ContextMenuItem >
-                                    <hr className="horizontal-gradient" />
-                                    <ContextMenuPrimitive.ContextMenuItem className="dialog-content">
-                                        <a href="https://layerswap.notion.site/layerswap/Layerswap-brand-guide-4b579a04a4c3477cad1c28f466749cf1" target='_blank' className='flex space-x-1 items-center px-4 py-2 rounded-b text-sm text-left w-full hover:bg-darkblue-300 whitespace-nowrap'>
-                                            <PaperClipIcon width={16} />
-                                            <p>Brand Guidelines</p>
-                                        </a>
-                                    </ContextMenuPrimitive.ContextMenuItem >
-                            </ContextMenuPrimitive.Content>
+                        <ContextMenuPrimitive.Content className="dialog-overlay absolute z-40 border h-fit text-primary-text border-darkblue-200 mt-2 w-fit rounded-md shadow-lg bg-darkblue ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full rounded-t hover:bg-darkblue-300 whitespace-nowrap">
+                                <CopyButton toCopy={renderToString(<LayerSwapLogo />)}>Copy logo as SVG</CopyButton>
+                            </ContextMenuPrimitive.ContextMenuItem >
+                            <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full hover:bg-darkblue-300 whitespace-nowrap">
+                                <CopyButton toCopy={renderToString(<LayerSwapLogoSmall />)}>Copy symbol as SVG</CopyButton>
+                            </ContextMenuPrimitive.ContextMenuItem >
+                            <hr className="horizontal-gradient" />
+                            <ContextMenuPrimitive.ContextMenuItem className="dialog-content">
+                                <a href="https://layerswap.notion.site/layerswap/Layerswap-brand-guide-4b579a04a4c3477cad1c28f466749cf1" target='_blank' className='flex space-x-1 items-center px-4 py-2 rounded-b text-sm text-left w-full hover:bg-darkblue-300 whitespace-nowrap'>
+                                    <PaperClipIcon width={16} />
+                                    <p>Brand Guidelines</p>
+                                </a>
+                            </ContextMenuPrimitive.ContextMenuItem >
+                        </ContextMenuPrimitive.Content>
                     </ContextMenuPrimitive.Root>
                 </>
             }

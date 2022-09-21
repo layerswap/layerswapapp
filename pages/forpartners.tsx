@@ -21,7 +21,7 @@ export default function About(props) {
 
                 <main>
                     <div className="flex-col justify-center py-4 px-8 md:px-0 ">
-                        <div className="prose md:prose-xl text-blueGray-300">
+                        <div className="prose md:prose-xl text-primary-text">
                             <MDXRemote {...props.mdxSource} />
                         </div>
                         <p id='bottom' className='text-white text-lg md:text-xl text-left font-bold my-10'>Available values for the destNetwork parameter</p>

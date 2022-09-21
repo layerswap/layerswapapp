@@ -15,10 +15,6 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        cyan: colors.cyan,
-        pink: colors.pink,
-        blueGray: colors.slate,
-        coolGray: colors.gray,
         darkblue: {
           DEFAULT: '#111827',
           '50': '#203259',
@@ -101,7 +97,7 @@ module.exports = {
               color: '#FFF',
             },
             a: {
-              color: theme('colors.pink.400'),
+              color: theme('colors.primary.400'),
             },
             strong: {
               color: '#FFF'
@@ -147,10 +143,12 @@ module.exports = {
               '700': '#881143',
               '800': '#930863',
               '900': '#6e0040',
+              'background': '#3e1240',
               'text': '#a4afc8',
               'buttonTextColor': '#ffffff'
             },
           },
+
         },
       },
       themes: [
@@ -170,6 +168,7 @@ module.exports = {
                 '700': '#00ACBD',
                 '800': '#007985',
                 '900': '#00464D',
+                'background': '#007985',
                 'text': '#E6FDFF',
                 'buttonTextColor': '#000000'
               },
