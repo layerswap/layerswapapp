@@ -263,7 +263,7 @@ function UserExchanges() {
                 <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
             </Modal>
             <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.name}`} description={""}>
-                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverClassNames='pt-7' />
+                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' />
             </Modal>
             <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} description={""}>
                 <div className="flex justify-items-center space-x-3 max-w-xs px-6 md:px-8">

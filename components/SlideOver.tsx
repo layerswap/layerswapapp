@@ -3,15 +3,18 @@ import { XIcon } from "@heroicons/react/outline";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { FC, Fragment, ReactNode, useState } from "react"
 
+export type slideOverPlace = 'inStep' | 'inModal' | 'inMenu'
+
 type Props = {
     opener?: (open: () => void) => JSX.Element | JSX.Element[],
     children?: (close: () => void) => JSX.Element | JSX.Element[];
     moreClassNames?: string;
     slide?: boolean;
+    place: slideOverPlace | string
     imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
 
-const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, children, slide = true }) => {
+const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, place, children, slide = true }) => {
     const [open, setOpen] = useState(false)
     const handleClose = () => {
         setOpen(false)
@@ -20,6 +23,18 @@ const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, child
     const handleOpen = () => {
         setOpen(true)
         imperativeOpener?.[1](true);
+    }
+    
+    switch (place) {
+        case 'inStep':
+            moreClassNames += " -mt-10";
+            break;
+        case 'inModal':
+            moreClassNames += " pt-7";
+            break;
+        case 'inMenu':
+            moreClassNames += " pt-5";
+            break;
     }
 
     useEffect(()=>{

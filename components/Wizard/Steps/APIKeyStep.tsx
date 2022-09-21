@@ -11,7 +11,7 @@ const APIKeyStep: FC = () => {
     const onConnect = () => goToStep("SwapConfirmation")
     return (
         <>
-            <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} slideOverClassNames="-mt-11 md:-mt-8" />
+            <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} slideOverPlace='inStep'/>
         </>
     )
 }

@@ -41,7 +41,7 @@ export default function () {
     return <>
         {
             authData?.access_token &&
-            <SlideOver imperativeOpener={[feedbackDrawerIsOpen, setFeedbackDrawerIsOpen]} moreClassNames="pt-5">
+            <SlideOver imperativeOpener={[feedbackDrawerIsOpen, setFeedbackDrawerIsOpen]} place='inMenu'>
                 {(close)=> <SendFeedback onSend={()=> close()} />}
             </SlideOver>
         }

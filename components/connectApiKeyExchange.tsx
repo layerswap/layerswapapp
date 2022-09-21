@@ -12,15 +12,14 @@ import SlideOver from './SlideOver';
 type Props = {
     exchange: Exchange,
     onSuccess: () => void,
-    slideOverClassNames?: string
+    slideOverPlace?: string
 }
 
-const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassNames }) => {
+const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace }) => {
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
     const [keyphrase, setKeyphrase] = useState("")
-    const [docIframeIsOpen, setDocIframeIsOpen] = useState(false)
 
     useEffect(() => {
         setLoading(false)
@@ -142,7 +141,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                     {
                         userGuideURL && <div className="flex items-center">
                             <span className="block text-base text-white font-normal leading-6"> Read about
-                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-pink-primary cursor-pointer underline decoration-pink-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} moreClassNames={slideOverClassNames}>
+                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-pink-primary cursor-pointer underline decoration-pink-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} place={slideOverPlace}>
                                     {(close) => (
                                         <DocIframe onConfirm={() => close()} URl={userGuideURL} />
                                     )}

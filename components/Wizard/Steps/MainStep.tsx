@@ -22,7 +22,7 @@ import { useUserExchangeDataUpdate } from "../../../context/userExchange";
 import axios from "axios";
 import AmountAndFeeDetails from "../../DisclosureComponents/amountAndFeeDetailsComponent";
 import ConnectImmutableX from "./ConnectImmutableX";
-import ConnectDeversifi from "../../ConnectDeversifi";
+import ConnectRhinofi from "../../ConnectRhinofi";
 import toast from "react-hot-toast";
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { clearTempData, getTempData } from "../../../lib/openLink";
@@ -36,6 +36,7 @@ import { BransferApiClient } from "../../../lib/bransferApiClients";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../../lib/fees";
 import { ConnectedFocusError } from "../../../lib/external/ConnectedFocusError";
 import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
+import SlideOver from "../../SlideOver";
 
 const CurrenciesField: FC = () => {
     const {
@@ -130,7 +131,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
     const { data } = useSettingsState();
 
     const destNetworkIsAvailable = data.networks.some(n => n.code === destNetwork && n.is_enabled && (swapType === "onramp" || data?.currencies?.some(c => c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled))))
-    
+
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
         .filter(n => swapType === "onramp" || data?.currencies?.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled)))
         .map(n => ({
@@ -190,7 +191,7 @@ export default function MainStep() {
 
     const [loading, setLoading] = useState(false)
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
-    const [connectDeversifiIsOpen, setConnectDeversifiIsOpen] = useState(false);
+    const [connectRhinoifiIsOpen, setConnectRhinofiIsOpen] = useState(false);
 
     let formValues = formikRef.current?.values;
 
@@ -305,7 +306,7 @@ export default function MainStep() {
                     const client = await axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
                     const isRegistered = await client.data?.isRegisteredOnDeversifi
                     if (!isRegistered) {
-                        setConnectDeversifiIsOpen(true);
+                        setConnectRhinofiIsOpen(true);
                         setLoading(false)
                         return
                     }
@@ -354,18 +355,13 @@ export default function MainStep() {
     const addressRef: any = useRef();
     const amountRef: any = useRef();
 
-    const closeConnectImmutableX = (address: string) => {
-        setConnectImmutableIsOpen(false)
-        if (address) {
-            formValues.destination_address = address;
-        }
-    }
-    const closeConnectDeversifi = () => {
-        setConnectDeversifiIsOpen(false)
-    }
     return <>
-        <ConnectImmutableX isOpen={connectImmutableIsOpen} swapFormData={formValues} onClose={closeConnectImmutableX} />
-        <ConnectDeversifi isOpen={connectDeversifiIsOpen} swapFormData={formValues} onClose={closeConnectDeversifi} />
+        <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
+            {(close) => <ConnectImmutableX swapFormData={formValues} onClose={close} />}
+        </SlideOver>
+        <SlideOver imperativeOpener={[connectRhinoifiIsOpen, setConnectRhinofiIsOpen]} place='inStep'>
+            {() => <ConnectRhinofi />}
+        </SlideOver>
         <Formik
             enableReinitialize={true}
             innerRef={formikRef}
