@@ -4,7 +4,7 @@ export default function Document() {
     return (
         <Html>
             <Head />
-            <body className='immutablex'>
+            <body>
                 <Main />
                 <NextScript />
             </body>
