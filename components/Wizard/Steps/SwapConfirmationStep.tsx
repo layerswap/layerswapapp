@@ -1,8 +1,7 @@
-import { Transition } from '@headlessui/react';
-import { ArrowRightIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, PencilAltIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
-import { FC, Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { BaseStepProps, FormWizardSteps } from '../../../Models/Wizard';
@@ -22,6 +21,7 @@ import NetworkSettings from '../../../lib/NetworkSettings';
 import WarningMessage from '../../WarningMessage';
 import { Form, Formik, FormikErrors, FormikProps } from 'formik';
 import { nameOf } from '../../../lib/external/nameof';
+import Modal from '../../modalComponent';
 
 interface SwapConfirmationFormValues {
     TwoFACode: string;
@@ -229,7 +229,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             </h3>
                             <div className="w-full">
                                 <div className="rounded-md w-full mb-3">
-                                    <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-pink-primary-300">
+                                    <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-primary-text">
                                         <div className={classNames(swapFormData?.swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex justify-between bg-darkblue-500 rounded-md items-center px-4 py-3')}>
                                             <span className="text-left flex"><span className='hidden md:block'>{swapFormData?.swapType === "onramp" ? "From" : "To"}</span>
                                                 <div className="flex items-center">
@@ -288,7 +288,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                 {
                                     swapFormData?.swapType === "offramp" && NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage &&
                                     <WarningMessage className='mb-4'>
-                                        <p className='font-normal text-sm text-darkblue-600'>
+                                        <p className='font-normal text-darkblue-600'>
                                             {NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage}
                                         </p>
                                     </WarningMessage>
@@ -300,7 +300,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             {
                                 values.TwoFARequired &&
                                 <div className='my-4'>
-                                    <label htmlFor={nameOfTwoFACode} className="block font-normal text-pink-primary-300 text-sm">
+                                    <label htmlFor={nameOfTwoFACode} className="block font-normal text-primary-text text-sm">
                                         Your Coinbase 2FA code
                                     </label>
                                     <NumericInput
@@ -311,7 +311,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                         onChange={e => {
                                             /^[0-9]*$/.test(e.target.value) && handleChange(e)
                                         }}
-                                        className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
+                                        className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-darkblue-100 block
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                                     />
 
@@ -326,7 +326,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                                     </span>
                                                 </span>
                                                 :
-                                                <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
+                                                <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
                                                     Resend code
                                                 </span>
                                         }
@@ -360,94 +360,50 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                     </div>
                 )}
             </Formik>
-            <Transition
-                appear
-                show={editingAddress}
-                as={Fragment}
-                enter="ease-in-out duration-300"
-                enterFrom="translate-y-full"
-                enterTo="translate-y-0"
-                leave="ease-in duration-200"
-                leaveFrom="translate-y-0"
-                leaveTo="translate-y-full">
-                <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkBlue'>
-                    <span className='relative z-40 overflow-hidden bg-darkBlue p-4 pt-0'>
-                        <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                            <span className="justify-self-end text-pink-primary-300 cursor-pointer">
-                                <div className="">
-                                    <button
-                                        type="button"
-                                        className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
-                                        onClick={handleClose}
-                                    >
-                                        <span className="sr-only">Close</span>
-                                        <XIcon className="h-6 w-6" aria-hidden="true" />
-                                    </button>
+            <Modal
+                isOpen={editingAddress}
+                onDismiss={handleClose}
+                title={
+                    <h4 className='text-lg text-white'>
+                        <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
+                        Editing your {swapFormData?.network?.name} wallet address</h4>
+                }
+                description={""}
+            >
+                <div className='grid grid-flow-row px-6 md:px-8 text-primary-text'>
+                    <div>
+                        <label htmlFor="address" className="block font-normal text-sm text-left">
+                            Address
+                        </label>
+                        <div className="relative rounded-md shadow-sm mt-2 mb-4">
+                            <input
+                                placeholder={"0x123...ab56c"}
+                                autoCorrect="off"
+                                onChange={handleAddressInputChange}
+                                value={addressInputValue}
+                                type={"text"}
+                                name="destination_address"
+                                id="destination_address"
+                                className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-600 border-darkblue-100 border rounded-md truncate'}
+                            />
+                            {
+                                addressInputError &&
+                                <div className="flex items-center mb-2">
+                                    <span className="block text-base leading-6 text-primary"> {addressInputError} </span>
                                 </div>
-                            </span>
+                            }
                         </div>
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <div className="relative inset-0" ></div>
-                        </Transition.Child>
-
-                        <div className="relative inset-0 text-pink-primary-300 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
-                            <div className="relative min-h-full items-center justify-center p-2 pt-0 text-center">
-                                <Transition.Child
-                                    as={Fragment}
-                                    enter="ease-out duration-300"
-                                    enterFrom="opacity-0 scale-95"
-                                    enterTo="opacity-100 scale-100"
-                                    leave="ease-in duration-200"
-                                    leaveFrom="opacity-100 scale-100"
-                                    leaveTo="opacity-0 scale-95"
-                                >
-                                    <div className='pb-12 grid grid-flow-row min-h-[480px] text-pink-primary-300'>
-                                        <h4 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
-                                            <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mb-1' /> Editing your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address
-                                        </h4>
-                                        <div>
-                                            <label htmlFor="address" className="block font-normal text-sm text-left">
-                                                Address
-                                            </label>
-                                            <div className="relative rounded-md shadow-sm mt-2 mb-4">
-                                                <input
-                                                    placeholder={"0x123...ab56c"}
-                                                    autoCorrect="off"
-                                                    onChange={handleAddressInputChange}
-                                                    value={addressInputValue}
-                                                    type={"text"}
-                                                    name="destination_address"
-                                                    id="destination_address"
-                                                    className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate'}
-                                                />
-                                                {
-                                                    addressInputError &&
-                                                    <div className="flex items-center mb-2">
-                                                        <span className="block text-base leading-6 text-pink-primary-800"> {addressInputError} </span>
-                                                    </div>
-                                                }
-                                            </div>
-                                        </div>
-                                        <div className="text-white text-sm mt-auto">
-                                            <SubmitButton type='button' isDisabled={!!addressInputError} isSubmitting={false} onClick={handleSaveAddress}>
-                                                Save
-                                            </SubmitButton>
-                                        </div>
-                                    </div>
-                                </Transition.Child>
-                            </div>
-                        </div>
-                    </span>
+                    </div>
+                    <div className="mt-auto flex space-x-4">
+                        <SubmitButton type='button' size='small' isDisabled={!!addressInputError} isSubmitting={false} onClick={handleSaveAddress}>
+                            Save
+                        </SubmitButton>
+                        <SubmitButton type='button' size='small' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleClose}>
+                            Cancel
+                        </SubmitButton>
+                    </div>
                 </div>
-            </Transition>
+            </Modal>
         </>
     )
 }

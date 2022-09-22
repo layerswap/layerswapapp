@@ -45,14 +45,14 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, onClose }) => {
             leave="ease-in duration-200"
             leaveFrom="translate-y-0"
             leaveTo="translate-y-full">
-            <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkBlue'>
-                <div className='relative z-40 overflow-hidden bg-darkBlue p-4 pt-0'>
+            <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkblue'>
+                <div className='relative z-40 overflow-hidden bg-darkblue p-4 pt-0'>
                     <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                        <span className="justify-self-end text-pink-primary-300 cursor-pointer">
+                        <span className="justify-self-end text-primary-text cursor-pointer">
                             <div className="hidden sm:block ">
                                 <button
                                     type="button"
-                                    className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
+                                    className="rounded-md text-darkblue-200 hover:text-primary-text"
                                     onClick={() => onClose(null)}
                                 >
                                     <span className="sr-only">Close</span>
@@ -91,7 +91,7 @@ const ConnectImmutableX: FC<Props> = ({ isOpen, onClose }) => {
                                 >
                                     <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                                         Please connect your ImmutableX wallet
-                                        <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-pink-primary-300 font-light'>
+                                        <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-primary-text font-light'>
                                             Immutable X account for the provided address does not exist. To create one, you need to connect your wallet to Immutable X.
                                         </p>
                                     </h3>

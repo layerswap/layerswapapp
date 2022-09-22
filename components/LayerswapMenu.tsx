@@ -45,12 +45,12 @@ export default function () {
                 {(close)=> <SendFeedback onSend={()=> close()} />}
             </SlideOver>
         }
-        <span className=" text-pink-primary-300 cursor-pointer relative ">
+        <span className="text-primary-text cursor-pointer relative">
             {
                 <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
                     <div>
                         <Menu.Button className="inline-flex justify-center w-full rounded-md shadow-sm mt-2  text-sm font-medium">
-                            <MenuIcon className='h-7 w-7 text-pink-primary-300 cursor-pointer' />
+                            <MenuIcon className='h-7 w-7 cursor-pointer' />
                         </Menu.Button>
                     </div>
                     <span className="relative z-30 py-1">
@@ -63,10 +63,10 @@ export default function () {
                             leaveFrom="transform opacity-100 scale-100"
                             leaveTo="transform opacity-0 scale-95"
                         >
-                            <Menu.Items className="font-bold border border-darkblue-200 origin-top-right absolute right-0 mt-2 min-w-56 rounded-md shadow-lg bg-darkBlue ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <Menu.Items className="font-bold text-sm text-left border border-darkblue-200 origin-top-right absolute -right-7 mt-2 min-w-56 rounded-md shadow-lg bg-darkblue ring-1 ring-black ring-opacity-5 focus:outline-none">
                                 <div className="relative z-30 py-1">
                                     {
-                                        authData?.access_token ? <div className='font-light block w-full text-left px-4 py-2 text-sm text-pink-primary-300'>
+                                        authData?.access_token ? <div className='font-light block w-full text-left px-4 py-2 text-sm'>
                                             {email}
                                         </div>
                                             :
@@ -75,7 +75,7 @@ export default function () {
                                                     <a onClick={goToLogin}
                                                         className={classNames(
                                                             active ? 'bg-darkblue-300' : '',
-                                                            'block px-4 py-2 text-sm text-pink-primary-300 whitespace-nowrap'
+                                                            'block px-4 text-left py-2 whitespace-nowrap'
                                                         )}
                                                     >
                                                         Login
@@ -92,7 +92,7 @@ export default function () {
                                                         onClick={goToTransactions}
                                                         className={classNames(
                                                             active ? 'bg-darkblue-300' : '',
-                                                            'block px-4 py-2 text-sm text-pink-primary-300 hover:bg-darkblue-300 whitespace-nowrap'
+                                                            'block px-4 py-2 text-left hover:bg-darkblue-300 whitespace-nowrap'
                                                         )}
                                                     >
                                                         Swap history
@@ -105,7 +105,7 @@ export default function () {
                                                         onClick={goToExchanges}
                                                         className={classNames(
                                                             active ? 'bg-darkblue-300' : '',
-                                                            'block px-4 py-2 text-sm text-pink-primary-300 hover:bg-darkblue-300 whitespace-nowrap'
+                                                            'block px-4 py-2 text-left hover:bg-darkblue-300 whitespace-nowrap'
                                                         )}
                                                     >
                                                         Exchange Accounts
@@ -119,7 +119,7 @@ export default function () {
                                                         type="button"
                                                         className={classNames(
                                                             active ? 'bg-darkblue-300' : '',
-                                                            'font-bold block w-full text-left px-4 py-2 text-sm text-pink-primary-300 whitespace-nowrap'
+                                                            'block w-full text-left px-4 py-2 whitespace-nowrap'
                                                         )}
                                                     >
                                                         Send Feedback
@@ -137,7 +137,7 @@ export default function () {
                                                         type="button"
                                                         className={classNames(
                                                             active ? 'bg-darkblue-300' : '',
-                                                            'font-bold block w-full text-left px-4 py-2 text-sm text-pink-primary-300 whitespace-nowrap'
+                                                            'block w-full text-left px-4 py-2  whitespace-nowrap'
                                                         )}
                                                     >
                                                         Get Help
@@ -153,7 +153,7 @@ export default function () {
                                                             onClick={handleLogout}
                                                             className={classNames(
                                                                 active ? 'bg-darkblue-300' : '',
-                                                                'font-bold block w-full text-left px-4 py-2 text-sm text-pink-primary-300 whitespace-nowrap'
+                                                                'block w-full text-left px-4 py-2 whitespace-nowrap'
                                                             )}
                                                         >
                                                             Sign out
