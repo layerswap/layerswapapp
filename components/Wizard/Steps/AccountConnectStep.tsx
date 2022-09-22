@@ -580,7 +580,7 @@ const AccountConnectStep: FC = () => {
                         <CarouselItem width={100}>
                             <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.05</span>
-                                <div className='whitespace-normal font-medium text-white'>Please make sure to change the allowed amount to {minimalAuthorizeAmount}</div>
+                                <div className='whitespace-normal font-medium text-white'>Please make sure to change the allowed amount to <span className='strong-highlight'>{minimalAuthorizeAmount}</span></div>
                             </div>
                             <div className='w-full md:w-1/2'>
                                 <svg viewBox="0 0 447 484" fill="none" xmlns="http://www.w3.org/2000/svg">

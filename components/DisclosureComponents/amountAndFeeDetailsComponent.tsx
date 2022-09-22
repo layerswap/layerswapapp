@@ -25,11 +25,11 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
                     {({ open }) => (
                         <>
                             <Disclosure.Button className="items-center flex w-full relative justify-between rounded-lg p-1.5 text-left text-base font-medium">
-                                <span className="font-medium text-primary-text">You will receive</span>
+                                <span className="md:font-semibold text-sm md:text-base text-primary-text">You will receive</span>
                                 <span className="absolute right-9">
                                     {
                                         receive_amount ?
-                                            <span className="font-medium text-center strong-highlight">
+                                            <span className="font-semibold md:font-bold text-center">
                                                 {receive_amount.toFixed(currency?.precision)}
                                                 <span>
                                                     {

@@ -88,9 +88,7 @@ const WithdrawNetworkStep: FC = () => {
                                     </div>
                                 </div>
                             }
-                            <span className='strong-highlight'>
-                                {network_name}
-                            </span>
+                            {network_name}
                         </h3>
                     </div>
                     <div className='md:flex items-center md:space-x-2 space-y-1 md:space-y-0'>
