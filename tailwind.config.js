@@ -145,7 +145,8 @@ module.exports = {
               '900': '#6e0040',
               'background': '#3e1240',
               'text': '#a4afc8',
-              'buttonTextColor': '#ffffff'
+              'buttonTextColor': '#ffffff',
+              'logoColor': '#FF0093'
             },
           },
 
@@ -169,8 +170,9 @@ module.exports = {
                 '800': '#007985',
                 '900': '#00464D',
                 'background': '#007985',
-                'text': '#E6FDFF',
-                'buttonTextColor': '#000000'
+                'text': '#D1FBFF',
+                'buttonTextColor': '#000000',
+                'logoColor': '#ffffffff'
               },
             },
           },
