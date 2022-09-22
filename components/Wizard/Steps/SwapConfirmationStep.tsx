@@ -1,8 +1,7 @@
-import { Transition } from '@headlessui/react';
-import { ArrowRightIcon, PencilAltIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, PencilAltIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
-import { FC, Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { BaseStepProps, FormWizardSteps } from '../../../Models/Wizard';
@@ -365,10 +364,9 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                 isOpen={editingAddress}
                 onDismiss={handleClose}
                 title={
-                    <h4 className='text-lg leading-6 text-priamry-text'>
+                    <h4 className='text-lg text-white'>
                         <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
-                        Editing your <span className='mr-1'>{swapFormData?.network?.name}</span>
-                         wallet address</h4>
+                        Editing your {swapFormData?.network?.name} wallet address</h4>
                 }
                 description={""}
             >
