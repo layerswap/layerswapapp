@@ -180,7 +180,7 @@ function UserExchanges() {
                                 aria-hidden="true"
                             />
                             <Combobox.Input
-                                className="h-12 w-full bg-darkblue-500 rounded-lg border-darkblue-100 pl-11 pr-4 text-primary-text placeholder-primary-text focus:ring-0 sm:text-sm"
+                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-primary focus:border-primary block font-semibold bg-darkblue-600 border-darkblue-100 border truncate "
                                 placeholder="Search..."
                                 onChange={handleQueryInputChange}
                                 value={query}

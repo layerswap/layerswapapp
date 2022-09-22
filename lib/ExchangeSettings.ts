@@ -27,6 +27,7 @@ export default class ExchangeSettings {
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.BitfinexId] = {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/c8cf508a2c5a4780a9225ac87668d349?iframe",
+            ExchangeApiKeyPageUrl: "https://www.bitfinex.com/"
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.BittrexId] = {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/5564cb40d40446aba1702c3f7b2f5424?iframe",
@@ -44,9 +45,11 @@ export default class ExchangeSettings {
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.FtxComId] = {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/7221bd286bf5445fa124994ec02f4d85?iframe",
+            ExchangeApiKeyPageUrl: "https://ftx.com/"
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.FtxUsId] = {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/7221bd286bf5445fa124994ec02f4d85?iframe",
+            ExchangeApiKeyPageUrl: "https://ftx.us/"
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.HuobiId] = {
             ExchangeApiKeyPageUrl: "https://www.huobi.com/en-us/apikey/",
@@ -57,17 +60,19 @@ export default class ExchangeSettings {
             AuthorizationNote: "When generating the API keys, make sure that the 'Query Ledger Entries' key permission is checked.",
             ExchangeWithdrawalPageUrl: "https://www.kraken.com/u/funding/withdraw",
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/6e1326b93076475ebe183d9f615a44c0?iframe",
+            ExchangeApiKeyPageUrl: "https://www.kraken.com/"
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.KucoinId] = {
             ExchangeWithdrawalPageUrl: "https://www.kucoin.com/assets/withdraw",
             RequireSelectInternal: true,
-            KeyphraseDisplayName: "Keyphrase"
+            KeyphraseDisplayName: "Keyphrase",
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.OkexId] = {
             WithdrawalWarningMessage: "Please select the 'internal' withdrawal method.",
             RequireSelectInternal: true,
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/19ac54e0-ccc3-4a4b-b8a9-996a28fb3aa2?iframe",
-            KeyphraseDisplayName: "Passphrase"
+            KeyphraseDisplayName: "Passphrase",
+            ExchangeApiKeyPageUrl: "https://www.okx.com/"
         };
     }
 }
