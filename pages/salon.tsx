@@ -28,10 +28,8 @@ export default function Salon() {
                         <path d="M44.5781 57.245L53.7516 66.6843L70.6308 49.3159" stroke="white" strokeWidth="3.15789" strokeLinecap="round" />
                     </svg>
                 </div>
-                <div className="flex text-center place-content-center mt-1 md:mt-1">
-                    <p className="block"> Exchange account successfully connected </p>
-                </div>
-                <div className="flex text-center place-content-center mt-1 md:mt-1">
+                <div className="flex flex-col text-center place-content-center space-y-2">
+                    <p className="block text-white font-bold text-lg"> Exchange account successfully connected </p>
                     <p className="block"> You can close this window now</p>
                 </div>
             </div>
