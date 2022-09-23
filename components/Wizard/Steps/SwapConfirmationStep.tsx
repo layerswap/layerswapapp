@@ -275,11 +275,11 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                                         {remainingTime}
                                                     </span>
                                                 </span>
-                                                :
-                                                <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
-                                                    Resend code
-                                                </span>
-                                        }
+                                            )}>
+                                            <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer">
+                                                Resend code
+                                            </span>
+                                        </Timer>
                                     </span>
                                 </div>
                             }
