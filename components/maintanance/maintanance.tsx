@@ -12,7 +12,7 @@ function MaintananceContent(props) {
                 <div className="flex flex-col justify-center space-y-12 p-8 md:p-20 text-white md:min-h-fit min-h-[400px]">
                     <h1 className="text-4xl font-bold tracking-tight text-gray-200 md:text-5xl">
                         <span className="block xl:inline">We'll be back</span>{' '}
-                        <span className="block text-pink-primary xl:inline">after the Merge</span>
+                        <span className="block text-primary xl:inline">after the Merge</span>
                     </h1>
                     <SubmitButton onClick={() => window.open('https://twitter.com/layerswap', '_blank')} icon={twitterLogo} isDisabled={false} isSubmitting={false}>Follow for updates</SubmitButton>
                 </div>

@@ -5,7 +5,7 @@ import { XIcon } from '@heroicons/react/outline';
 interface ModalParams {
     onDismiss: (isIntentional: boolean) => void;
     isOpen: boolean;
-    title: string;
+    title: React.ReactNode;
     description: React.ReactNode;
 }
 
@@ -38,7 +38,7 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, descriptio
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="py-6 md:py-8 w-fit max-w-xl transform overflow-hidden rounded-md bg-darkBlue align-middle shadow-xl transition-all">
+                            <Dialog.Panel className="py-6 md:py-8 w-fit max-w-xl transform overflow-hidden rounded-md bg-darkblue align-middle shadow-xl transition-all">
                                 <div>
                                     <Dialog.Title as="div" >
                                         <div className='flex justify-between space-x-8 px-6 md:px-8'>
@@ -47,7 +47,7 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, descriptio
                                             </div>
                                             <button
                                                 type="button"
-                                                className="rounded-md text-darkblue-200  hover:text-pink-primary-300"
+                                                className="rounded-md text-darkblue-200  hover:text-primary-text"
                                                 onClick={() => {
                                                     onDismiss(true);
                                                 }}                                                >

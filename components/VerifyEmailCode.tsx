@@ -110,9 +110,9 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                 }}
             >
                 {({ isValid, isSubmitting, errors, handleChange }) => (
-                    <Form className='flex flex-col items-stretch min-h-[500px] text-pink-primary-300'>
+                    <Form className='flex flex-col items-stretch min-h-[500px] text-primary-text'>
                         <div className="w-full px-6 md:px-8 pt-4 flex-col flex-1 flex">
-                            <MailOpenIcon className='w-16 h-16 mt-auto text-pink-primary self-center' />
+                            <MailOpenIcon className='w-16 h-16 mt-auto text-primary self-center' />
                             <div className='text-center mt-5'>
                                 <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{email}</span></p>
                             </div>
@@ -125,7 +125,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     onChange={e => {
                                         /^[0-9]*$/.test(e.target.value) && handleChange(e)
                                     }}
-                                    className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-pink-primary text-center focus:border-pink-primary border-darkblue-100 block
+                                    className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-darkblue-100 block
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                             </div>
@@ -141,15 +141,15 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                         </span>
                                         :
                                         <p className=" flex font-lighter leading-6 text-center">
-                                            <span className="ml-1 font-lighter decoration underline-offset-1 underline hover:no-underline decoration-pink-primary hover:cursor-pointer" onClick={handleResendCode}>
+                                            <span className="ml-1 font-lighter decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer" onClick={handleResendCode}>
                                                 Resend code
                                             </span>
                                         </p>
                                 }
                             </div>
-                            <div className="text-white text-sm mt-auto">
-                                <p className='mb-5 text-pink-primary-300'>
-                                    By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'> Terms of Service</a></Link> and <Link href="/blog/guide/Privacy_Policy"><a className='decoration decoration-pink-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
+                            <div className="text-primary-text text-sm mt-auto">
+                                <p className='mb-5'>
+                                    By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'> Terms of Service</a></Link> and <Link href="/blog/guide/Privacy_Policy"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
                                 </p>
                                 <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
                                     Confirm

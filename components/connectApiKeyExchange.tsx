@@ -8,6 +8,7 @@ import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
 import { DocIframe } from './docInIframe';
 import SlideOver from './SlideOver';
+import WarningMessage from './WarningMessage';
 
 type Props = {
     exchange: Exchange,
@@ -61,7 +62,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
 
     return (
         <>
-            <div className="w-full flex flex-col justify-between h-full px-6 md:px-8 pt-4 space-y-5  text-pink-primary-300">
+            <div className="w-full flex flex-col justify-between h-full px-6 md:px-8 pt-4 space-y-5  text-primary-text">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 text-white">
                         Please enter
@@ -69,38 +70,42 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                         API keys
                     </h3>
                 </div>
-                <div className=''>
-                    <label htmlFor="apiKey" className="block font-normal text-sm">
-                        API Key
-                    </label>
-                    <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
-                        <input
-                            autoComplete="off"
-                            placeholder="Your API Key"
-                            autoCorrect="off"
-                            type="text"
-                            name="apiKey"
-                            id="apiKey"
-                            onChange={handleKeyChange}
-                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 block
+                <div className='space-y-4'>
+                    <div>
+                        <label htmlFor="apiKey" className="block font-normal text-sm">
+                            API Key
+                        </label>
+                        <div className="relative rounded-md shadow-sm mt-1">
+                            <input
+                                autoComplete="off"
+                                placeholder="Your API Key"
+                                autoCorrect="off"
+                                type="text"
+                                name="apiKey"
+                                id="apiKey"
+                                onChange={handleKeyChange}
+                                className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-100 block
                          placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
-                        />
+                            />
+                        </div>
                     </div>
-                    <label htmlFor="apiSecret" className="block font-normal text-sm">
-                        API Secret
-                    </label>
-                    <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
-                        <input
-                            autoComplete="off"
-                            placeholder="Your API Secret"
-                            autoCorrect="off"
-                            type="text"
-                            name="apiSecret"
-                            id="apiSecret"
-                            onChange={handleSecretChange}
-                            className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 block
+                    <div>
+                        <label htmlFor="apiSecret" className="block font-normal text-sm">
+                            API Secret
+                        </label>
+                        <div className="relative rounded-md shadow-sm mt-1">
+                            <input
+                                autoComplete="off"
+                                placeholder="Your API Secret"
+                                autoCorrect="off"
+                                type="text"
+                                name="apiSecret"
+                                id="apiSecret"
+                                onChange={handleSecretChange}
+                                className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-100 block
                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
-                        />
+                            />
+                        </div>
                     </div>
                     {
                         exchange?.has_keyphrase &&
@@ -108,7 +113,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                             <label htmlFor="apiKey" className="block font-normal text-sm">
                                 {ExchangeSettings.KnownSettings[exchange?.id]?.KeyphraseDisplayName}
                             </label>
-                            <div className="relative rounded-md shadow-sm mt-1 mb-5 md:mb-4">
+                            <div className="relative rounded-md shadow-sm mt-1">
                                 <input
                                     autoComplete="off"
                                     placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.id]?.KeyphraseDisplayName}`}
@@ -117,7 +122,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                                     name="apiKey"
                                     onChange={handleKeyphraseChange}
                                     id="apiKey"
-                                    className="h-12 pb-1 pt-0 focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 block
+                                    className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-100 block
                          placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                             </div>
@@ -125,23 +130,16 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                     }
                     {
                         ExchangeSettings.KnownSettings[exchange?.id]?.AuthorizationNote &&
-                        <div className='flex-col w-full rounded-md bg-pink-700 shadow-lg p-2 mb-5'>
-                            <div className='flex items-center'>
-                                <div className='mr-2 p-2 rounded-lg bg-pink-600'>
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                    </svg>
-                                </div>
-                                <p className='font-normal text-sm text-white'>
-                                    {ExchangeSettings.KnownSettings[exchange?.id]?.AuthorizationNote}
-                                </p>
+                        <WarningMessage className=''>
+                            <div className='text-black'>
+                                {ExchangeSettings.KnownSettings[exchange?.id]?.AuthorizationNote}
                             </div>
-                        </div>
+                        </WarningMessage>
                     }
                     {
                         userGuideURL && <div className="flex items-center">
                             <span className="block text-base text-white font-normal leading-6"> Read about
-                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-pink-primary cursor-pointer underline decoration-pink-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} place={slideOverPlace}>
+                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} place={slideOverPlace}>
                                     {(close) => (
                                         <DocIframe onConfirm={() => close()} URl={userGuideURL} />
                                     )}
@@ -153,7 +151,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                 </div>
                 <div className='p-4 bg-darkblue-500 text-white rounded-lg border border-darkblue-100'>
                     <div className="flex items-center">
-                        <InformationCircleIcon className='h-5 w-5 text-pink-primary-600 mr-3' />
+                        <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
                         <label className="block text-sm md:text-base font-medium leading-6">We're requesting <span className='font-bold'>Read-Only</span> API Keys</label>
                     </div>
                     <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8">

@@ -27,23 +27,30 @@ export default class ExchangeSettings {
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.BitfinexId] = {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/c8cf508a2c5a4780a9225ac87668d349?iframe",
+            ExchangeApiKeyPageUrl: "https://setting.bitfinex.com/api",
+            ExchangeWithdrawalPageUrl: "https://movement.bitfinex.com/withdraw",
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.BittrexId] = {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/5564cb40d40446aba1702c3f7b2f5424?iframe",
             ExchangeApiKeyPageUrl: "https://global.bittrex.com/Manage?view=api",
+            ExchangeWithdrawalPageUrl: "https://global.bittrex.com/balance",
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.BlocktaneId] = {
             ExchangeApiKeyPageUrl: "https://trade.blocktane.io/account/security/api-keys",
+            ExchangeWithdrawalPageUrl: "https://trade.blocktane.io/account/wallets",
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.CoinbaseId] = {
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.CryptoComId] = {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/d791596ecafb41ed8c0bf98dcaa44f7b?iframe",
             ExchangeApiKeyPageUrl: "https://crypto.com/exchange/user/settings/api-management",
+            ExchangeWithdrawalPageUrl: "https://crypto.com/exchange/",
             WithdrawalWarningMessage: "Only use Crypto.com 'Exchange' to do the transfer. Transfers done from the Crypto.com *App* will not be credited."
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.FtxComId] = {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/7221bd286bf5445fa124994ec02f4d85?iframe",
+            ExchangeApiKeyPageUrl: "https://ftx.com/settings/api",
+            ExchangeWithdrawalPageUrl: "https://ftx.com/wallet",
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.FtxUsId] = {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/7221bd286bf5445fa124994ec02f4d85?iframe",
@@ -57,17 +64,21 @@ export default class ExchangeSettings {
             AuthorizationNote: "When generating the API keys, make sure that the 'Query Ledger Entries' key permission is checked.",
             ExchangeWithdrawalPageUrl: "https://www.kraken.com/u/funding/withdraw",
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/6e1326b93076475ebe183d9f615a44c0?iframe",
+            ExchangeApiKeyPageUrl: "https://www.kraken.com/u/security/api"
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.KucoinId] = {
             ExchangeWithdrawalPageUrl: "https://www.kucoin.com/assets/withdraw",
+            ExchangeApiKeyPageUrl: "https://www.kucoin.com/account/api",
             RequireSelectInternal: true,
-            KeyphraseDisplayName: "Keyphrase"
+            KeyphraseDisplayName: "Keyphrase",
         };
         ExchangeSettings.KnownSettings[KnownIds.Exchanges.OkexId] = {
             WithdrawalWarningMessage: "Please select the 'internal' withdrawal method.",
             RequireSelectInternal: true,
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/19ac54e0-ccc3-4a4b-b8a9-996a28fb3aa2?iframe",
-            KeyphraseDisplayName: "Passphrase"
+            KeyphraseDisplayName: "Passphrase",
+            ExchangeApiKeyPageUrl: "https://www.okx.com/account/my-api",
+            ExchangeWithdrawalPageUrl: "https://www.okx.com/balance/withdrawal",
         };
     }
 }
