@@ -110,9 +110,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     }, [query])
 
 
-    let availableNetworks = settings.data.networks
-        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.internal_name, c.display_name, c.order, c.logo_url, c.status === "active", c.is_default))
-
     const availablePartners = Object.fromEntries(settings.data.partners.map(c => [c.internal_name.toLowerCase(), c]));
 
     const immutableXApiAddress = 'https://api.x.immutable.com/v1';

@@ -1,7 +1,7 @@
 export class Currency {
     id: string;
     asset: string;
-    logo_url: string;
+    logo: string;
     usd_price:number;
 }
 

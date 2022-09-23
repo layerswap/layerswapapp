@@ -1,3 +1,4 @@
+import { ApiError } from "../Models/ApiError";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { SwapStatus } from "../Models/SwapStatus";
 import AppSettings from "./AppSettings";
@@ -31,48 +32,52 @@ export default class LayerSwapApiClient {
 }
 
 export type CreateSwapParams = {
-    Amount: number,
-    Network: string,
-    Exchange: string,
-    currency: string,
+    amount: number,
+    network: string,
+    exchange: string,
+    asset: string,
     destination_address: string,
-    to_exchange: boolean,
+    partner?: string,
+    type: SwapType,
 }
-
 
 export type SwapItemResponse = {
     data: SwapItem,
-    error: string,
-    is_success: boolean
+    error: ApiError,
 }
 
 export type SwapListResponse = {
     data: SwapItem[],
-    error: string,
-    is_success: boolean
+    error: ApiError,
 }
+
 export type SwapItem = {
     id: string,
-    amount: number,
+    requested_amount: number,
+    received_amount: number,
+    created_date: string,
     fee: number,
     status: SwapStatus,
-    exchange: string,
-    type: "off_ramp" | "on_ramp",
+    type: SwapType,
     destination_address: string,
-    external_payment_id: string,
-    payment?: Payment,
-    external_payout_id: string,
     message: string,
     transaction_id: string,
-    created_date: Date,
-    currency: string,
-    currency_id: string,
-    network: string,
-    network_id: string,
-    offramp_info: {
+    partner_id: string,
+    network_currency_id: string,
+    exchange_currency_id: string,
+
+    additonal_data: {
         deposit_address: string,
-        memo: string,
+        chain_display_name: string,
+        current_withdrawal_fee: number,
+        withdrawal_amount: number,
+        memo:string,
     }
+}
+
+export enum SwapType {
+    OnRamp = 0,
+    OffRamp = 1,
 }
 
 export type Payment = {

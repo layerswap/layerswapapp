@@ -38,6 +38,8 @@ function UserExchanges() {
     const [openExchangeToConnectModal, setOpenExchangeToConnectModal] = useState(false)
     const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
+    const { discovery: { resource_storage_url } } = data
+    
     useEffect(() => {
         (async () => {
             setLoading(true)
@@ -202,9 +204,9 @@ function UserExchanges() {
                                                         <div className="py-1 px-2 grid grid-cols-3 grid-rows-1 gap-3">
                                                             <div className="flex items-center col-span-2 space-x-3">
                                                                 {
-                                                                    item.logo_url && 
+                                                                    item.logo &&
                                                                     <Image
-                                                                        src={item.logo_url}
+                                                                        src={`${resource_storage_url}${item.logo}`}
                                                                         alt="Exchange Logo"
                                                                         height="30"
                                                                         width="30display_name"
@@ -227,7 +229,7 @@ function UserExchanges() {
                                                             </div>
                                                             <div className="text-xs">
                                                                 {
-                                                                    item.authorization_flow && item.authorization_flow !== "none"  && exchangeLoading?.id !== item.id &&
+                                                                    item.authorization_flow && item.authorization_flow !== "none" && exchangeLoading?.id !== item.id &&
                                                                     <>
                                                                         {
                                                                             item.is_connected ?

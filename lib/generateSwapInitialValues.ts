@@ -8,24 +8,32 @@ import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
 
 export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams): SwapFormValues {
-    const { data: { networks } } = settings
     const { destNetwork, destAddress, sourceExchangeName } = queryParams
 
-    const availableNetworks = networks
-        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.internal_name, c.display_name, c.order, c.logo_url, c.status === "active", c.is_default))
+    const { data: { exchanges, networks, discovery: { resource_storage_url } } } = settings || {}
+
+    const networkIsAvailable = (n: CryptoNetwork) => {
+        return swapType === "offramp" ?
+            n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (exchanges.some(e => {
+                return e.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled)
+            })))
+            : n.currencies.some(nc => nc.status === "active" && nc.is_withdrawal_enabled && (exchanges.some(e => e.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled))))
+    }
+
+    const availableNetworks = networks.filter(networkIsAvailable)
+        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
 
     let availableExchanges = settings.data.exchanges
-        .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, c.order, c.logo_url, c.is_enabled, c.is_default))
+        .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
 
     const initialNetwork =
-        availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable
-            && (swapType === "onramp" || settings?.data?.currencies?.some(c => c.network_id === x.id && c.exchanges.some(ce => ce.is_off_ramp_enabled))))
+        availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable)
 
     let initialAddress =
         destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
 
     let initialExchange =
-        availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase() && (swapType === "onramp" || settings.data.currencies.some(c => c.exchanges?.some(ce => ce.exchange_id === x.baseObject.id && ce.is_off_ramp_enabled))));
+        availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase() && (swapType === "offramp" ? x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)));
 
     return { amount: "", destination_address: swapType === "onramp" && initialAddress, swapType: swapType || "onramp", network: swapType === "onramp" ? initialNetwork : null, exchange: initialExchange }
 }

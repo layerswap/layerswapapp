@@ -6,11 +6,15 @@ import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { ProcessSwapStep, SwapWizardSteps } from '../../../Models/Wizard';
 import toast from "react-hot-toast";
+import { SwapType } from '../../../lib/layerSwapApiClient';
+import { useSettingsState } from '../../../context/settings';
+import { DepositFlow } from '../../../Models/Exchange';
 
 const OverviewStep: FC = () => {
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<ProcessSwapStep>()
     const { currentStepName: currentStep } = useFormWizardState<ProcessSwapStep>()
-
+    const { data } = useSettingsState()
+    const { exchanges } = data
     const router = useRouter();
     const { swapId } = router.query;
 
@@ -28,21 +32,20 @@ const OverviewStep: FC = () => {
                     return;
                 }
                 const swap = await getSwap(swapId.toString())
-                const { payment } = swap?.data || {};
                 const swapStatus = swap?.data?.status;
-                const paymentStatus = payment?.status
+
+                const exchange = exchanges.find(e => e.currencies.some(ec => ec.id === swap.data.exchange_currency_id))
+
                 if (swapStatus == SwapStatus.Completed)
                     goToStep(ProcessSwapStep.Success)
-                else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
+                else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
                     goToStep(ProcessSwapStep.Failed)
-                else if (swapStatus == SwapStatus.Pending)
-                    goToStep(ProcessSwapStep.Processing)
                 else {
-                    if (swap?.data?.type === "off_ramp")
-                        goToStep(ProcessSwapStep.OffRampWithdrawal)
-                    else if (payment?.manual_flow_context)
+                    if (swap?.data?.type === SwapType.OffRamp)
+                        goToStep(ProcessSwapStep.OffRampWithdrawal) ///TODO only for coinbase, implement other flows
+                    else if (exchange?.deposit_flow === DepositFlow.Manual)
                         goToStep(ProcessSwapStep.Withdrawal)
-                    else if (payment?.external_flow_context)
+                    else if (exchange?.deposit_flow === DepositFlow.External)
                         goToStep(ProcessSwapStep.ExternalPayment)
                     else
                         goToStep(ProcessSwapStep.Processing)

@@ -1,16 +1,18 @@
 import React, { useCallback, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { BransferApiClient } from '../lib/bransferApiClients';
-import LayerSwapApiClient, { CreateSwapParams, SwapItemResponse } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItemResponse } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate } from './authContext';
 import TokenService from '../lib/TokenService';
+import { KnownwErrorCode } from '../Models/ApiError';
+import { SwapStatus } from '../Models/SwapStatus';
 
 const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
     updateSwapFormData: (value: React.SetStateAction<SwapFormValues>) => void,
-    createSwap: (data: CreateSwapParams) => Promise<SwapItemResponse>,
+    createSwap: () => Promise<SwapItemResponse>,
     createAndProcessSwap: (TwoFACode?: string) => Promise<string>,
     //TODO this is stupid need to clean data in confirm step or even do not store it
     clearSwap: () => void,
@@ -52,15 +54,15 @@ export function SwapDataProvider({ children }) {
                 throw new Error("Not authenticated")
 
             const swap = await layerswapApiClient.createSwap({
-                Amount: Number(swapFormData.amount),
-                Exchange: exchange?.id,
-                Network: network.id,
-                currency: currency.baseObject.asset,
+                amount: Number(swapFormData.amount),
+                exchange: exchange?.id,
+                network: network.id,
+                asset: currency.baseObject.asset,
                 destination_address: swapFormData.destination_address,
-                to_exchange: swapFormData.swapType === "offramp"
+                type: swapFormData.swapType === "onramp" ? 0 : 1 // TODO change form swaptype to use the same enum
             }, authData?.access_token)
 
-            if (swap?.is_success !== true)
+            if (swap?.error)
                 throw new Error(swap.error)
 
             const swapId = swap.data.swap_id;
@@ -79,9 +81,7 @@ export function SwapDataProvider({ children }) {
             throw new Error("Not authenticated")
         const bransferApiClient = new BransferApiClient()
         const layerswapApiClient = new LayerSwapApiClient()
-        if (!swap.data.payment)
-            throw new Error("No payment for the swap")
-        const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(swap.data.payment.id, authData.access_token, twoFactorCode)
+        const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(swap.data.id, authData.access_token, twoFactorCode)
         if (!prcoessPaymentReponse.is_success)
             throw new Error(prcoessPaymentReponse.errors)
         const swapDetails = await layerswapApiClient.getSwapDetails(swap.data.id, authData.access_token)
@@ -100,11 +100,10 @@ export function SwapDataProvider({ children }) {
 
     const createAndProcessSwap = useCallback(async (TwoFACode?: string) => {
         const _swap = swap?.data?.id ? await getSwap(swap.data.id) : await createSwap()
-        const { payment } = _swap.data
-        if (payment?.status === 'created')
+        if (_swap?.data?.status === SwapStatus.Created)
             await processPayment(_swap, TwoFACode)
         ///TODO grdon code please refactor
-        else if (payment?.status === 'closed') {
+        else if (_swap?.data?.status === SwapStatus.Cancelled) {
             const newSwap = await createSwap()
             await processPayment(newSwap, TwoFACode)
             return newSwap.data.id

@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { FC, Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
@@ -8,16 +8,17 @@ import toast from 'react-hot-toast';
 import AddressDetails from '../../../DisclosureComponents/AddressDetails';
 import TokenService from '../../../../lib/TokenService';
 import { BransferApiClient } from '../../../../lib/bransferApiClients';
-import { CreateSwapParams } from '../../../../lib/layerSwapApiClient';
 import NetworkSettings from '../../../../lib/NetworkSettings';
 import WarningMessage from '../../../WarningMessage';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
+import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 
 const OffRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
+    const { exchange, amount, currency } = swapFormData || {}
     const { currentStepName } = useFormWizardState<SwapCreateStep>()
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const { createSwap, processPayment, updateSwapFormData, getSwap } = useSwapDataUpdate()
+    const { createAndProcessSwap, updateSwapFormData } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const { network } = swapFormData || {}
     const router = useRouter();
@@ -33,58 +34,28 @@ const OffRampSwapConfirmationStep: FC = () => {
                 return;
             }
             const bransferApiClient = new BransferApiClient()
-            const response = await bransferApiClient.GetExchangeDepositAddress(swapFormData?.exchange?.baseObject?.internal_name, swapFormData.currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
+            const response = await bransferApiClient.GetExchangeDepositAddress(exchange?.baseObject?.internal_name, currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
             updateSwapFormData((old) => ({ ...old, destination_address: response.data }))
         })()
     }, [currentStepName])
 
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
-    const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
+    const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
+    const transferAmount = `${amount} ${currency?.name}`
 
     const handleSubmit = useCallback(async () => {
         setIsSubmitting(true)
         try {
-            const data: CreateSwapParams = {
-                Amount: Number(swapFormData.amount),
-                Exchange: swapFormData.exchange?.id,
-                Network: swapFormData.network.id,
-                currency: swapFormData.currency.baseObject.asset,
-                destination_address: swapFormData.destination_address,
-                to_exchange: true
-            }
-            const _swap = swap?.data?.id ? await getSwap(swap.data.id) : await createSwap(data)
-            const { payment } = _swap.data
-            if (payment?.status === 'created')
-                await processPayment(_swap)
-            ///TODO grdon code please refactor
-            else if (payment?.status === 'closed') {
-                const newSwap = await createSwap(data)
-                await processPayment(newSwap)
-                router.push(`/${newSwap.data.id}`)
-                return
-            }
-            router.push(`/${_swap.data.id}`)
+            const swapId = await createAndProcessSwap();
+            router.push(`/${swapId}`)
         }
         catch (error) {
-            ///TODO newline may not work, will not defenitaly fix this
-            const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error?.message || error?.response?.data?.message || error.message)
-
-            if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
-                goToStep(SwapCreateStep.OAuth)
-                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
-            }
-            else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {
-                toast.error(`${swapFormData.network.name} error: You don't have that much.`)
-            }
-            else {
-                toast.error(errorMessage)
-            }
+            const data: ApiError = error.response
+            toast.error(data?.message)
         }
         finally {
             setIsSubmitting(false)
         }
-    }, [swapFormData, swap, transferAmount])
-
+    }, [network, swap, transferAmount])
 
     return (
         <>

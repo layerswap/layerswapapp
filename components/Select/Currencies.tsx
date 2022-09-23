@@ -15,6 +15,7 @@ const CurrenciesField: FC = () => {
 
     const name = "currency"
     const { data } = useSettingsState();
+    const { discovery: { resource_storage_url } } = data || {}
 
     const currencyIsAvilable = useCallback((c: Currency) => exchange && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType === "offramp" ?
         ec.is_withdrawal_enabled : ec.is_deposit_enabled)) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === "offramp" ?
@@ -27,7 +28,7 @@ const CurrenciesField: FC = () => {
             id: c.id,
             name: c.asset,
             order: exchange?.baseObject?.currencies?.find(ec => ec.asset === c.asset)?.order || 0, //TODO offramp
-            imgSrc: c.logo_url,
+            imgSrc: `${resource_storage_url}${c.logo}`,
             isAvailable: true,
             isEnabled: true,
             isDefault: false,
@@ -44,7 +45,7 @@ const CurrenciesField: FC = () => {
                 id: default_currency.id,
                 name: default_currency.asset,
                 order: exchange.baseObject.currencies.find(ec => ec.asset === default_currency.asset)?.order || 0,
-                imgSrc: default_currency.logo_url,
+                imgSrc: `${resource_storage_url}${default_currency.logo}`,
                 isAvailable: true,
                 isEnabled: true,
                 isDefault: false,

@@ -53,7 +53,7 @@ const useCreateSwap = () => {
             }
             else {
                 const exchanges = (await getUserExchanges(accessToken))?.data
-                const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === values?.exchange?.baseObject.id && e.is_enabled)
+                const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === values?.exchange?.baseObject.id)
                 if (values?.exchange?.baseObject?.authorization_flow === "none" || !values?.exchange?.baseObject?.authorization_flow || exchangeIsEnabled)
                     return goToStep(SwapCreateStep.Confirm)
                 else
@@ -75,7 +75,7 @@ const useCreateSwap = () => {
         Name: SwapCreateStep.Code,
         onNext: useCallback(async (res: AuthConnectResponse) => {
             const exchanges = (await getUserExchanges(res.access_token))?.data
-            const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange?.baseObject.id && e.is_enabled)
+            const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange?.baseObject.id)
 
             if (swapFormData.swapType === "offramp" && swapFormData.exchange.baseObject.id === KnownIds.Exchanges.CoinbaseId) {
                 const bransferApiClient = new BransferApiClient()

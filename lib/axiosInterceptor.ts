@@ -5,7 +5,7 @@ import LayerSwapAuthApiClient from "./userAuthApiClient";
 const instance = axios.create({
     baseURL: LayerSwapAuthApiClient.identityBaseEndpoint,
     headers: {
-        "Content-Type": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
     },
 });
 

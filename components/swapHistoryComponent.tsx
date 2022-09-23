@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { Fragment, useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { SwapListResponse, SwapItem } from "../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapListResponse, SwapItem, SwapType } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
 import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
@@ -21,6 +21,7 @@ import StatusIcon, { GreenIcon, RedIcon, YellowIcon } from "./StatusIcons"
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const { data } = useSettingsState()
+  const { exchanges, networks, discovery: { resource_storage_url } } = data
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapListResponse>()
   const [loading, setLoading] = useState(false)
@@ -177,10 +178,14 @@ function TransactionsHistory() {
                         </thead>
                         <tbody>
                           {swaps?.data.map((swap, index) => {
-                            const swapExchange = data.exchanges?.find(e => e.internal_name === swap?.exchange)
-                            const swapNetwork = data.networks?.find(n => n.internal_name === swap.network)
-                            const source = swap.type == "on_ramp" ? swapExchange : swapNetwork;
-                            const destination = swap.type == "on_ramp" ? swapNetwork : swapExchange;
+                            const swapExchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
+                            const swapNetwork = networks?.find(n => n.currencies.some(nc => nc.id === swap?.network_currency_id))
+                            const currency = swapExchange.currencies.find(x => x.id == swap?.exchange_currency_id)
+
+                            const { transaction_explorer_template } = swapNetwork
+
+                            const source = swap.type == SwapType.OnRamp ? swapExchange : swapNetwork;
+                            const destination = swap.type == SwapType.OnRamp ? swapNetwork : swapExchange;
 
                             return <tr key={swap.id}>
                               <td
@@ -204,25 +209,31 @@ function TransactionsHistory() {
                                 <div className="text-white ">
                                   <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
-                                      <Image
-                                        src={source?.logo_url}
-                                        alt="From Logo"
-                                        height="60"
-                                        width="60"
-                                        layout="responsive"
-                                        className="rounded-md object-contain"
-                                      />
+                                      {
+                                        source?.logo &&
+                                        <Image
+                                          src={`${resource_storage_url}${source?.logo}`}
+                                          alt="From Logo"
+                                          height="60"
+                                          width="60"
+                                          layout="responsive"
+                                          className="rounded-md object-contain"
+                                        />
+                                      }
                                     </div>
                                     <div className="mx-1">{source?.display_name}</div>
                                     <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
-                                      <Image
-                                        src={destination?.logo_url}
-                                        alt="To Logo"
-                                        height="60"
-                                        width="60"
-                                        layout="responsive"
-                                        className="rounded-md object-contain"
-                                      />
+                                      {
+                                        destination?.logo &&
+                                        <Image
+                                          src={`${resource_storage_url}${destination?.logo}`}
+                                          alt="To Logo"
+                                          height="60"
+                                          width="60"
+                                          layout="responsive"
+                                          className="rounded-md object-contain"
+                                        />
+                                      }
                                     </div>
                                     <div className="mx-1 block lg:hidden">{destination?.display_name}</div>
                                   </div>
@@ -244,14 +255,17 @@ function TransactionsHistory() {
                               >
                                 <div className="flex items-center">
                                   <div className="flex-shrink-0 h-5 w-5 relative">
-                                    <Image
-                                      src={destination?.logo_url}
-                                      alt="To Logo"
-                                      height="60"
-                                      width="60"
-                                      layout="responsive"
-                                      className="rounded-md object-contain"
-                                    />
+                                    {
+                                      destination?.logo &&
+                                      <Image
+                                        src={`${resource_storage_url}${destination?.logo}`}
+                                        alt="To Logo"
+                                        height="60"
+                                        width="60"
+                                        layout="responsive"
+                                        className="rounded-md object-contain"
+                                      />
+                                    }
                                   </div>
                                   <div className="ml-1">{destination?.display_name}</div>
                                 </div>
@@ -263,7 +277,7 @@ function TransactionsHistory() {
                                   'px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
-                                {swap.amount} {swap.currency}
+                                {swap.received_amount} {currency.asset}
                               </td>
                               {/* <td
                 className={classNames(
@@ -282,7 +296,7 @@ function TransactionsHistory() {
                                 {swap.transaction_id ?
                                   <>
                                     <div className="underline hover:no-underline">
-                                      <a target={"_blank"} href={data.networks.filter(x => x.internal_name === swap.network)[0]?.transaction_explorer_template.replace("{0}", swap.transaction_id)}>{shortenAddress(swap.transaction_id)}</a>
+                                      <a target={"_blank"} href={transaction_explorer_template.replace("{0}", swap.transaction_id)}>{shortenAddress(swap.transaction_id)}</a>
                                     </div>
                                   </>
                                   : <div>-</div>
@@ -345,82 +359,7 @@ function TransactionsHistory() {
                         Load more
                       </button>
                     }
-
-                  </div>
-
-                  <Transition appear show={!!selectedSwap} as={Fragment}>
-                    <Dialog as="div" className="relative z-50" onClose={handleClose}>
-                      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-                      <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                      >
-                        <div className="fixed inset-0 bg-black bg-opacity-25" />
-                      </Transition.Child>
-
-                      <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center">
-                          <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0 scale-95"
-                            enterTo="opacity-100 scale-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100 scale-100"
-                            leaveTo="opacity-0 scale-95"
-                          >
-                            <Dialog.Panel className="w-full space-y-6 max-w-md p-7 transform overflow-hidden rounded-md bg-darkBlue shadow-card text-center align-middle transition-all">
-                              <div className="flex justify-between">
-                                <div className='text-xl font-bold text-white'>Swap details</div>
-                                <div className='relative grid grid-cols-1 gap-4 place-content-end z-40'>
-                                  <span className="justify-self-end text-pink-primary-300 cursor-pointer">
-                                    <div className="">
-                                      <button
-                                        type="button"
-                                        className="rounded-md text-darkblue-200  hover:text-pink-primary-300"
-                                        onClick={handleClose}
-                                      >
-                                        <span className="sr-only">Close</span>
-                                        <XIcon className="h-6 w-6" aria-hidden="true" />
-                                      </button>
-                                    </div>
-                                  </span>
-                                </div>
-                              </div>
-
-
-                              <SwapDetails id={selectedSwap?.id} />
-                              {
-                                data.networks && selectedSwap?.transaction_id &&
-                                <div className="text-white text-sm">
-                                  <a href={data.networks.filter(x => x.internal_name === selectedSwap?.network)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
-                                    target="_blank"
-                                    className="shadowed-button group text-white disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed bg-pink-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                                    View in Explorer
-                                    <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                                  </a>
-                                </div>
-                              }
-                              {
-                                selectedSwap?.status == 'pending' || selectedSwap?.payment?.status == 'processing' &&
-                                <div className="text-white text-sm">
-                                  <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false}>
-                                    Complete Swap
-                                    <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                                  </SubmitButton>
-                                </div>
-                              }
-                            </Dialog.Panel>
-                          </Transition.Child>
-                        </div>
-                      </div>
-                    </Dialog>
-                  </Transition>
+                  </div>               
                 </>
                 : <div className="sm:my-24 sm:mx-60 m-16 pb-20 text-center sm:pb-10">
                   There are no transactions for this account

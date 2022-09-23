@@ -7,17 +7,19 @@ import { ProcessSwapStep } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
+import { useSettingsState } from '../../../context/settings';
 
 const ExternalPaymentStep: FC = () => {
 
     const { swap } = useSwapDataState()
-    const { payment } = swap?.data || {}
     const { currentStepName: currentStep } = useFormWizardState()
 
     const { goToStep } = useFormWizardaUpdate<ProcessSwapStep>()
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
+    const { data } = useSettingsState()
+    const { exchanges, networks } = data
 
     useInterval(async () => {
         if (currentStep !== ProcessSwapStep.ExternalPayment)
@@ -28,14 +30,17 @@ const ExternalPaymentStep: FC = () => {
             goToStep(ProcessSwapStep.Email)
 
         const swap = await getSwap(swapId.toString())
-        const { payment } = swap?.data || {}
         const swapStatus = swap?.data?.status;
-        const paymentStatus = payment?.status
         if (swapStatus == SwapStatus.Completed)
             goToStep(ProcessSwapStep.Success)
-        else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
+        else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
             goToStep(ProcessSwapStep.Failed)
     }, [currentStep, swapId], 10000)
+
+    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
+    const exchange_name = exchange?.display_name || ' '
+
+    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.data?.network_currency_id))
 
 
     const handleContinue = useCallback(async () => {
@@ -43,31 +48,29 @@ const ExternalPaymentStep: FC = () => {
         if (!access_token)
             goToStep(ProcessSwapStep.Email)
         const swap = await getSwap(swapId.toString())
-        const { payment } = swap?.data || {}
-        //TODO handle no payment url
-        const { payment_url } = payment.external_flow_context || {}
-        window.open(payment_url, '_blank', 'width=420,height=720')
-    }, [])
+        const { account_explorer_template } = network
+        window.open(account_explorer_template.replace("{0}", swap?.data.destination_address), '_blank', 'width=420,height=720')
+    }, [network])
 
     return (
         <>
             <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
                 <div className="rounded-md border bg-darkblue-600 w-full grid grid-flow-row p-5 border-darkblue-100 mb-11">
                     <div className="flex items-center">
-                        <label className="block text-lg font-medium leading-6 text-white"> Go to {payment?.exchange} to complete the payment </label>
+                        <label className="block text-lg font-medium leading-6 text-white"> Go to {exchange_name} to complete the payment </label>
                     </div>
                     <ul className='list-disc mt-10 pl-5'>
                         <li>
-                            By clicking Continue you will be directed to {payment?.exchange} to authorize and pay.
+                            By clicking Continue you will be directed to {exchange_name} to authorize and pay.
                         </li>
                         <li>
-                            This page will automatically update after you complete the payment in {payment?.exchange}.
+                            This page will automatically update after you complete the payment in {exchange_name}.
                         </li>
                     </ul>
                 </div>
                 <div className="text-white text-lg ">
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleContinue}>
-                        Continue to {payment?.exchange}
+                        Continue to {exchange_name}
                     </SubmitButton>
                     {/* <div className='flex place-content-center items-center mt-8'>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 fill-pink-primary" width="20" height="20" viewBox="0 0 20 20" fill="none">

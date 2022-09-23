@@ -14,6 +14,7 @@ const ExchangesField = forwardRef((props: any, ref: any) => {
     } = useFormikContext<SwapFormValues>();
     const name = 'exchange'
     const settings = useSettingsState();
+    const { discovery: { resource_storage_url } } = settings.data || {}
 
     const exchangeMenuItems: SelectMenuItem<Exchange>[] = settings.data.exchanges
         .filter(e => swapType === "offramp" ? e.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : e.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled))
@@ -22,7 +23,7 @@ const ExchangesField = forwardRef((props: any, ref: any) => {
             id: e.internal_name,
             name: e.display_name,
             order: e.order,
-            imgSrc: e.logo_url,
+            imgSrc: `${resource_storage_url}${e.logo}`,
             isAvailable: true,
             isEnabled: true,
             isDefault: false

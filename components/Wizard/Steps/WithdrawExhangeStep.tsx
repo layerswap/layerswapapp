@@ -18,34 +18,32 @@ import WarningMessage from '../../WarningMessage';
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
-    const { payment } = swap?.data || {}
     const { currentStepName: currentStep } = useFormWizardState<ProcessSwapStep>()
     const { data } = useSettingsState()
+    const { exchanges, currencies, discovery: { resource_storage_url } } = data
     const { goToStep } = useFormWizardaUpdate<ProcessSwapStep>()
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.data?.payment?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
 
     useInterval(async () => {
         if (currentStep !== ProcessSwapStep.Withdrawal)
             return true;
-            
+
         const authData = TokenService.getAuthData();
         if (!authData)
             goToStep(ProcessSwapStep.Email)
 
         const swap = await getSwap(swapId.toString())
-        const { payment } = swap?.data || {}
         const swapStatus = swap?.data.status;
-        const paymentStatus = payment?.status
         if (swapStatus == SwapStatus.Completed)
             goToStep(ProcessSwapStep.Success)
-        else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
+        else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
             goToStep(ProcessSwapStep.Failed)
-        else if (payment?.status == "completed")
+        else if (swapStatus == SwapStatus.PendingWithdrawal)
             goToStep(ProcessSwapStep.Processing)
 
     }, [currentStep], 10000)
@@ -55,10 +53,11 @@ const WithdrawExchangeStep: FC = () => {
         setTransferDone(true)
     }, [])
 
-    const exchange = data.exchanges?.find(n => n.internal_name === payment?.exchange)
+    const exchange = exchanges?.find(e => e.currencies.some(ec=>ec.id === swap?.data?.exchange_currency_id))
+    const currency = exchange?.currencies?.find(c=>c.id === swap?.data?.exchange_currency_id)
     const exchange_name = exchange?.display_name || ' '
     const exchange_id = exchange?.id
-    const exchange_logo_url = exchange?.logo_url
+    const exchange_logo_url = exchange?.logo
 
     return (
         <>
@@ -72,7 +71,7 @@ const WithdrawExchangeStep: FC = () => {
                                 <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
                                     <div className="flex-shrink-0 h-6 w-6 relative">
                                         <Image
-                                            src={exchange_logo_url}
+                                            src={`${resource_storage_url}${exchange_logo_url}`}
                                             alt="Exchange Logo"
                                             height="40"
                                             width="40"
@@ -105,42 +104,43 @@ const WithdrawExchangeStep: FC = () => {
                         </div>
                     }
                     <div className='mb-6 grid grid-cols-1 gap-5'>
-                        <BackgroundField isCopiable={true} toCopy={swap?.data?.payment?.manual_flow_context?.address} header={'Address'}>
+                        <BackgroundField isCopiable={true} toCopy={swap?.data?.destination_address} header={'Address'}>
                             <p className='break-all'>
-                                {swap?.data?.payment?.manual_flow_context?.address}
+                                {swap?.data?.destination_address}
                             </p>
                         </BackgroundField>
                         <BackgroundField header={'Network'}>
                             <p>
-                                {payment?.manual_flow_context?.network_display_name}
+                                {swap?.data?.additonal_data?.chain_display_name}
                             </p>
                         </BackgroundField>
                         <div className='flex space-x-4'>
-                            <BackgroundField isCopiable={true} toCopy={swap?.data?.amount} header={'Amount'}>
+                            <BackgroundField isCopiable={true} toCopy={swap?.data?.received_amount} header={'Amount'}>
                                 <p>
-                                    {swap?.data?.amount}
+                                    {swap?.data?.received_amount}
                                 </p>
                             </BackgroundField>
                             <BackgroundField header={'Asset'}>
                                 <p>
-                                    {swap?.data?.currency}
+                                    {currency?.asset}
                                 </p>
                             </BackgroundField>
                         </div>
                         {
-                            payment?.manual_flow_context?.require_note &&
-                            <>
-                                <BackgroundField isCopiable={true} toCopy={payment?.manual_flow_context?.note} header={'Remarks'}>
-                                    <p className='break-all'>
-                                        {payment?.manual_flow_context?.note}
-                                    </p>
-                                </BackgroundField>
-                                <WarningMessage>
-                                    <p className='font-normal text-sm text-darkblue-600'>
-                                         Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
-                                    </p>
-                                </WarningMessage>
-                            </>
+                            //TODO get note 
+                            // payment?.manual_flow_context?.require_note &&
+                            // <>
+                            //     <BackgroundField isCopiable={true} toCopy={payment?.manual_flow_context?.note} header={'Remarks'}>
+                            //         <p className='break-all'>
+                            //             {payment?.manual_flow_context?.note}
+                            //         </p>
+                            //     </BackgroundField>
+                            //     <WarningMessage>
+                            //         <p className='font-normal text-sm text-darkblue-600'>
+                            //             Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
+                            //         </p>
+                            //     </WarningMessage>
+                            // </>
                         }
                     </div>
                 </div>

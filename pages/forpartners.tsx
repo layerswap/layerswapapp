@@ -108,8 +108,8 @@ export async function getStaticProps() {
     const response = await apiClient.fetchSettingsAsync()
     var networks: CryptoNetwork[] = [];
     var exchanges: Exchange[] = [];
-    networks = response.data.networks.filter(n => n.is_enabled && !n.is_test_net);
-    exchanges = response.data.exchanges.filter(e => e.is_enabled)
+    networks = response.data.networks.filter(n => n.status === "active" && !n.is_test_net);
+    exchanges = response.data.exchanges.filter(e => e.status === "active")
 
     return {
         props: {

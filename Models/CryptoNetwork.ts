@@ -4,7 +4,7 @@ export class CryptoNetwork {
     id: string;
     display_name: string;
     order: number;
-    logo_url: string;
+    logo: string;
     internal_name: string;
     is_test_net: boolean;
     is_default: boolean;

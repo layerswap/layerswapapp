@@ -1,3 +1,4 @@
+import { ApiError } from "../Models/ApiError";
 import AppSettings from "./AppSettings"
 import authInterceptor from "./axiosInterceptor"
 
@@ -26,7 +27,7 @@ export class BransferApiClient {
             .then(res => res.data)
     }
     async ProcessPayment(id: string, token: string, twoFactorCode?: string): Promise<PaymentProcessreponse> {
-        return await authInterceptor.post(BransferApiClient.apiBaseEndpoint + `/api/payments/${id}/process${twoFactorCode ? `?twoFactor=${twoFactorCode}` : ''}`,
+        return await authInterceptor.post(BransferApiClient.apiBaseEndpoint + `/api/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data)
     }
@@ -59,14 +60,8 @@ export type ConnectParams = {
 }
 
 export type ConnectResponse = {
-    is_success: boolean,
     request_id: string,
-    errors: [
-        {
-            code: string,
-            message: string
-        }
-    ]
+    errors: ApiError
 }
 
 
@@ -74,7 +69,6 @@ export interface UserExchangesResponse {
     data: [
         {
             exchange_id: string,
-            is_enabled: boolean,
             note: string
         }
     ],

@@ -17,20 +17,21 @@ const NetworkField = forwardRef((props: any, ref: any) => {
     const { lockNetwork, destNetwork } = useQueryState()
     const { data } = useSettingsState();
 
+    const { discovery: { resource_storage_url } } = data
 
-    const currencyIsAvailable = (n: CryptoNetwork) => swapType === "offramp" ? 
+    const networkIsAvailable = (n: CryptoNetwork) => swapType === "offramp" ? 
     n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec=>ec.asset===nc.asset && ec.status==="active" && ec.is_withdrawal_enabled))) 
     : n.currencies.some(nc => nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec=>ec.asset===nc.asset && ec.status==="active" && ec.is_deposit_enabled)))
-    const destNetworkIsAvailable = data.networks.some(n => n.internal_name === destNetwork && n.status === "active" && currencyIsAvailable(n))
+    const destNetworkIsAvailable = data.networks.some(n => n.internal_name === destNetwork && n.status === "active" && networkIsAvailable(n))
 
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
-        .filter(currencyIsAvailable)
+        .filter(networkIsAvailable)
         .map(n => ({
             baseObject: n,
             id: n.internal_name,
             name: n.display_name,
             order: n.order,
-            imgSrc: n.logo_url,
+            imgSrc: `${resource_storage_url}${n.logo}`,
             isAvailable: swapType === "offramp" ? !destNetworkIsAvailable : !lockNetwork,
             isEnabled: true,
             isDefault: n.is_default

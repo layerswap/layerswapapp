@@ -22,16 +22,16 @@ import KnownIds from '../../../lib/knownIds';
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
-    const { payment } = swap?.data || {}
     const { currentStepName: currentStep } = useFormWizardState<ProcessSwapStep>()
     const { data } = useSettingsState()
+    const { exchanges, networks, currencies, discovery: { resource_storage_url } } = data
     const { goToStep } = useFormWizardaUpdate<ProcessSwapStep>()
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.data?.payment?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
 
     useInterval(async () => {
         if (currentStep !== ProcessSwapStep.OffRampWithdrawal)
@@ -53,12 +53,14 @@ const WithdrawNetworkStep: FC = () => {
         setTransferDone(true)
     }, [])
 
-    const network = data.networks?.find(n => n.internal_name === swap?.data?.network)
+    const network = networks?.find(n => n.currencies.some(nc=>nc.id === swap?.data?.network_currency_id))
+    const currency = network?.currencies.find(n=>n.id === swap?.data?.network_currency_id)
+
     const network_name = network?.display_name || ' '
-    const network_logo_url = network?.logo_url
+    const network_logo_url = network?.logo
     const network_id = network?.id
 
-    if (!swap?.data?.offramp_info) {
+    if (!swap?.data?.additonal_data) {
         return null;
     }
 
@@ -71,13 +73,13 @@ const WithdrawNetworkStep: FC = () => {
                 <div className='space-y-4'>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">
-                            Send {swap?.data.currency} to the provided address in
+                            Send {currency?.asset} to the provided address in
                             {
-                                network_logo_url &&
+                                network_logo_url && resource_storage_url &&
                                 <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
                                     <div className="flex-shrink-0 h-6 w-6 relative">
                                         <Image
-                                            src={network_logo_url}
+                                            src={`${resource_storage_url}${network_logo_url}`}
                                             alt="Network Logo"
                                             height="40"
                                             width="40"
@@ -121,20 +123,20 @@ const WithdrawNetworkStep: FC = () => {
                             </BackgroundField>
                         }
                         <div className='flex space-x-4'>
-                            <BackgroundField isCopiable={true} toCopy={swap?.data?.amount} header={'Amount'}>
+                            <BackgroundField isCopiable={true} toCopy={swap?.data?.received_amount} header={'Amount'}>
                                 <p>
-                                    {swap?.data?.amount}
+                                    {swap?.data?.received_amount}
                                 </p>
                             </BackgroundField>
                             <BackgroundField header={'Asset'}>
                                 <p>
-                                    {swap?.data?.currency}
+                                    {currency?.asset}
                                 </p>
                             </BackgroundField>
                         </div>
-                        <BackgroundField isCopiable={true} toCopy={swap?.data.offramp_info.deposit_address} header={'Recipient'}>
+                        <BackgroundField isCopiable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Recipient'}>
                             <p className='break-all'>
-                                {swap?.data.offramp_info.deposit_address}
+                                {swap?.data?.additonal_data?.deposit_address}
                             </p>
                         </BackgroundField>
                         <BackgroundField header={'Address Type'}>
@@ -143,11 +145,11 @@ const WithdrawNetworkStep: FC = () => {
                             </p>
                         </BackgroundField>
                         {
-                            swap?.data?.offramp_info?.memo &&
+                            swap?.data?.additonal_data?.memo &&
                             <>
-                                <BackgroundField isCopiable={true} toCopy={swap?.data?.offramp_info?.memo} header={'Memo'}>
+                                <BackgroundField isCopiable={true} toCopy={swap?.data?.additonal_data?.memo} header={'Memo'}>
                                     <p className='break-all'>
-                                        {swap?.data?.offramp_info?.memo}
+                                        {swap?.data?.additonal_data?.memo}
                                     </p>
                                 </BackgroundField>
                                 <WarningMessage>

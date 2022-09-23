@@ -1,15 +1,5 @@
 import { FC } from "react"
 
-
-// export type Step = {
-//     title: string,
-//     content: FC<BaseStepProps>,
-//     navigationDisabled?: boolean,
-//     positionPercent: number,
-//     dismissOnBack?: boolean,
-//     onNext?: () => void
-// }
-
 export type FormSteps = "SwapForm" | "Email" | "Code" | "OffRampExchangeOAuth" | "ExchangeOAuth" | "ExchangeApiCredentials" | "SwapConfirmation"
 
 export type SwapSteps = "Email" | "Code" | "Overview" | "Withdrawal" | "OffRampWithdrawal" | "Processing" | "Success" | "Failed" | "ExternalPayment"

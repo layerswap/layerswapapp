@@ -11,17 +11,17 @@ import toast from 'react-hot-toast';
 import ToggleButton from '../../../buttons/toggleButton';
 import { isValidAddress } from '../../../../lib/addressValidator';
 import AddressDetails from '../../../DisclosureComponents/AddressDetails';
-import { CreateSwapParams } from '../../../../lib/layerSwapApiClient';
-import NumericInput from '../../../Input/NumericInput';
 import { Form, Formik, FormikErrors, FormikProps } from 'formik';
 import { nameOf } from '../../../../lib/external/nameof';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormValues';
+import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 
 
 
 const OnRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap, codeRequested } = useSwapDataState()
+    const { exchange, amount, currency, destination_address, network } = swapFormData || {}
     const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
     const currentValues = formikRef?.current?.values;
     const initialValues: SwapConfirmationFormValues = { TwoFACode: '', RightWallet: false, TwoFARequired: false }
@@ -35,12 +35,11 @@ const OnRampSwapConfirmationStep: FC = () => {
     const [addressInputValue, setAddressInputValue] = useState("")
     const [addressInputError, setAddressInputError] = useState("")
 
-    const { destination_address, network } = swapFormData || {}
     const router = useRouter();
 
     useEffect(() => {
         formikRef?.current?.resetForm()
-    }, [destination_address, swapFormData?.exchange])
+    }, [destination_address, exchange])
 
     useEffect(() => {
         setAddressInputValue(destination_address)
@@ -51,13 +50,13 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleAddressInputChange = useCallback((e) => {
         setAddressInputError("")
         setAddressInputValue(e?.target?.value)
-        if (!isValidAddress(e?.target?.value, swapFormData.network.baseObject))
-            setAddressInputError(`Enter a valid ${swapFormData.network.name} address`)
+        if (!isValidAddress(e?.target?.value, network.baseObject))
+            setAddressInputError(`Enter a valid ${network.name} address`)
 
     }, [network])
 
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
-    const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
+    const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
+    const transferAmount = `${amount} ${currency?.name}`
     const handleSubmit = useCallback(async (values: SwapConfirmationFormValues) => {
 
         if (codeRequested)
@@ -68,27 +67,30 @@ const OnRampSwapConfirmationStep: FC = () => {
             router.push(`/${swapId}`)
         }
         catch (error) {
-            ///TODO newline may not work, will not defenitaly fix this
-            const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error?.message || error?.response?.data?.message || error.message)
+            const data: ApiError = error?.response?.data?.error
 
-            if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
-                setCodeRequested(true)
-                goToStep(SwapCreateStep.TwoFactor)
+            if (!data) {
+                toast.error(error.message)
+                return
+            }
+
+            if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
+                goToStep(SwapCreateStep.OAuth)
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
-            else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require 2FA")) {
+            else if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
                 setCodeRequested(true)
                 goToStep(SwapCreateStep.TwoFactor)
                 formikRef.current.setFieldValue(nameOfTwoFARequired, true)
             }
-            else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {
-                toast.error(`${swapFormData.exchange.name} error: You don't have that much.`)
+            else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
+                toast.error(`${exchange.name} error: You don't have that much.`)
             }
             else {
-                toast.error(errorMessage)
+                toast.error(data.message)
             }
         }
-    }, [swapFormData, swap, currentValues?.TwoFACode, transferAmount])
+    }, [exchange, swap, currentValues?.TwoFACode, transferAmount])
 
     const handleClose = () => {
         setEditingAddress(false)
@@ -96,13 +98,13 @@ const OnRampSwapConfirmationStep: FC = () => {
 
     const handleSaveAddress = useCallback(() => {
         setAddressInputError("")
-        if (!isValidAddress(addressInputValue, swapFormData.network.baseObject)) {
-            setAddressInputError(`Enter a valid ${swapFormData.network.name} address`)
+        if (!isValidAddress(addressInputValue, network.baseObject)) {
+            setAddressInputError(`Enter a valid ${network.name} address`)
             return;
         }
         updateSwapFormData({ ...swapFormData, destination_address: addressInputValue })
         setEditingAddress(false)
-    }, [addressInputValue, swapFormData])
+    }, [addressInputValue, network, swapFormData])
 
     return (
         <>
@@ -196,7 +198,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                                 >
                                     <div className='pb-12 grid grid-flow-row min-h-[480px] text-pink-primary-300'>
                                         <h4 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
-                                            <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mb-1' /> Editing your <span className='strong-highlight text-lg'>{swapFormData?.network?.name}</span> wallet address
+                                            <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mb-1' /> Editing your <span className='strong-highlight text-lg'>{network?.name}</span> wallet address
                                         </h4>
                                         <div>
                                             <label htmlFor="address" className="block font-normal text-sm text-left">

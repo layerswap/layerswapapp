@@ -9,6 +9,7 @@ import { SwapCreateStep } from '../../../Models/Wizard';
 import NumericInput from '../../Input/NumericInput';
 import SubmitButton from '../../buttons/submitButton';
 import Link from 'next/link';
+import { ApiError, KnownwErrorCode } from '../../../Models/ApiError';
 
 interface CodeFormValues {
     Code: string
@@ -29,7 +30,7 @@ const TwoFactorStep: FC = () => {
     const minutesRemaining = (secondsRemaining - secondsToDisplay) / 60
     const minutesToDisplay = minutesRemaining % 60
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
+    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.usd_price * Number(swapFormData?.amount) + 5)
 
     const formikRef = useRef<FormikProps<CodeFormValues>>(null);
 
@@ -59,18 +60,26 @@ const TwoFactorStep: FC = () => {
             router.push(`/${swapId}`)
         }
         catch (error) {
-            ///TODO newline may not work, will not defenitaly fix this
-            const errorMessage = error.response?.data?.errors?.length > 0 ? error.response.data.errors.map(e => e.message).join(', ') : (error?.response?.data?.error?.message || error?.response?.data?.message || error.message)
+            const data: ApiError = error?.response?.data?.error
 
-            if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "Require Reauthorization")) {
+            if (!data) {
+                toast.error(error.message)
+                return
+            }
+
+            if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
                 goToStep(SwapCreateStep.OAuth)
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
-            else if (error.response?.data?.errors && error.response?.data?.errors?.length > 0 && error.response?.data?.errors?.some(e => e.message === "You don't have that much.")) {
-                toast.error(`${swapFormData.exchange.name} error: You don't have that much.`)
+            else if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
+                goToStep(SwapCreateStep.TwoFactor)
+                toast.error(`Invalid 2FA code`)
+            }
+            else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
+                toast.error(`${swapFormData?.exchange?.name} error: You don't have that much.`)
             }
             else {
-                toast.error(errorMessage)
+                toast.error(data.message)
             }
         }
     }, [swapFormData, swap, transferAmount])
@@ -98,7 +107,7 @@ const TwoFactorStep: FC = () => {
                     if (!/^[0-9]*$/.test(values.Code)) {
                         errors.Code = "Value should be numeric";
                     }
-                    else if (values.Code.length != 6) {
+                    else if (values.Code.length != 7) {
                         errors.Code = `The length should be 6 instead of ${values.Code.length}`;
                     }
                     return errors;
@@ -120,8 +129,8 @@ const TwoFactorStep: FC = () => {
                             <div className="relative rounded-md shadow-sm mt-5">
                                 <NumericInput
                                     pattern='^[0-9]*$'
-                                    placeholder="XXXXXX"
-                                    maxLength={6}
+                                    placeholder="XXXXXXX"
+                                    maxLength={7}
                                     name='Code'
                                     onChange={e => {
                                         /^[0-9]*$/.test(e.target.value) && handleChange(e)
