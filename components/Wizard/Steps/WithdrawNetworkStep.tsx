@@ -1,5 +1,5 @@
-import { DocumentDuplicateIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
-import { FC, useCallback, useState } from 'react'
+import { SwitchHorizontalIcon } from '@heroicons/react/outline';
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInterval';
@@ -14,11 +14,14 @@ import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
+import NetworkSettings from '../../../lib/NetworkSettings';
+import SlideOver from '../../SlideOver';
+import { DocIframe } from '../../docInIframe';
+import KnownIds from '../../../lib/knownIds';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
-    const { payment } = swap?.data || {}
     const { currentStep } = useFormWizardState<SwapWizardSteps>()
     const { data } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
@@ -52,18 +55,22 @@ const WithdrawNetworkStep: FC = () => {
     const network = data.networks?.find(n => n.code === swap?.data?.network)
     const network_name = network?.name || ' '
     const network_logo_url = network?.logo_url
+    const network_id = network?.id
 
     if (!swap?.data?.offramp_info) {
         return null;
     }
 
+    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[network?.id]?.UserGuideUrlForDesktop
+    const userGuideUrlForMobile = NetworkSettings.KnownSettings[network?.id]?.UserGuideUrlForMobile
+
     return (
         <>
-            <div className="w-full px-6 md:px-8 space-y-5 flex flex-col justify-between h-full text-pink-primary-300">
+            <div className="w-full px-6 md:px-8 space-y-5 flex flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">
-                            Go to
+                            Send {swap?.data.currency} to the provided address in
                             {
                                 network_logo_url &&
                                 <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
@@ -81,15 +88,26 @@ const WithdrawNetworkStep: FC = () => {
                                     </div>
                                 </div>
                             }
-                            <span className='strong-highlight'>
-                                {network_name}
-                            </span> and send {swap?.data.currency} to the provided L2 address
+                            {network_name}
                         </h3>
                     </div>
+                    <div className='md:flex items-center md:space-x-2 space-y-1 md:space-y-0'>
+                        <div className='flex-none'>
+                            Guide for:
+                        </div>
+                        <div className='flex w-full text-white space-x-2'>
+                            {
+                                userGuideUrlForDesktop && renderGuideButton(userGuideUrlForDesktop, 'Loopring Web')
+                            }
+                            {
+                                userGuideUrlForMobile && renderGuideButton(userGuideUrlForMobile, 'Loopring Mobile')
+                            }
+                        </div>
+                    </div>
+
                     <div className='mb-6 grid grid-cols-1 gap-4'>
                         {
-                            network_name.toLowerCase() === 'loopring' &&
-
+                            network_id === KnownIds.Networks.LoopringMainnetId &&
                             <BackgroundField header={'Select as "Where would you like to send your crypto to"'}>
                                 <div className='flex items-center space-x-2'>
                                     <SwitchHorizontalIcon className='h-4 w-4' />
@@ -143,13 +161,13 @@ const WithdrawNetworkStep: FC = () => {
                         <div>
                             <div className='flex place-content-center mb-16 mt-3 md:mb-8'>
                                 <div className='relative'>
-                                    <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
-                                    <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-pink-primary rounded-full animate-ping'></div>
-                                    <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-pink-primary-800 rounded-full'></div>
+                                    <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-primary-800 rounded-full'></div>
                                 </div>
                             </div>
                             <div className="flex text-center place-content-center mt-1 md:mt-1">
-                                <label className="block text-lg font-lighter leading-6 text-pink-primary-300">Waiting for a transaction from the network</label>
+                                <label className="block text-lg font-lighter leading-6 text-primary-text">Waiting for a transaction from the network</label>
                             </div>
                             <button
                                 type="button"
@@ -158,7 +176,7 @@ const WithdrawNetworkStep: FC = () => {
                                     show();
                                     updateWithProps()
                                 }}
-                                className="mt-3 text-center w-full disabled:text-pink-primary-600 text-pink-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                                className="mt-3 text-center w-full disabled:text-primary-600 text-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
                             >
                                 Need help?
                             </button>
@@ -176,3 +194,13 @@ const WithdrawNetworkStep: FC = () => {
 }
 
 export default WithdrawNetworkStep;
+
+function renderGuideButton(userGuideUrlForDesktop: string, buttonText: string) {
+    return <div className="w-full items-center">
+        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} icon={''}>{buttonText}</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
+            {(close) => (
+                <DocIframe onConfirm={() => close()} URl={userGuideUrlForDesktop} />
+            )}
+        </SlideOver>
+    </div>;
+}

@@ -177,8 +177,8 @@ export const SwapHistoryComponentSceleton = () => {
 
 export const SwapDetailsComponentSceleton = () => {
   return <div className="animate-pulse"><div className="w-full grid grid-flow-row">
-      <div className="rounded-md bg-darkBlue w-full grid grid-flow-row">
-          <div className="items-center block text-base font-lighter leading-6 text-pink-primary-300">
+      <div className="rounded-md bg-darkblue w-full grid grid-flow-row">
+          <div className="items-center block text-base font-lighter leading-6 text-primary-text">
               <div className="flex justify-between items-baseline">
                   <div className="h-2 m-2 w-1/4 bg-slate-400 rounded col-span-1"></div>
                   <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
@@ -204,7 +204,7 @@ export const DocInFrameSceleton = () => {
           <div className="flex-1 items-center space-y-6 py-1 content-start">
               <div className="h-4 mx-auto w-1/2 place-self-center justify-self-center self-center bg-slate-700 rounded mb-4"></div>
               <div className="space-y-6">
-                  {[...Array(7)]?.map((index) =>
+                  {[...Array(7)]?.map((item,index) =>
                       <div className="space-y-4"
                           key={index}
                       >

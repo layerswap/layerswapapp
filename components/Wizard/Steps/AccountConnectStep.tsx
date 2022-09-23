@@ -81,7 +81,7 @@ const AccountConnectStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-8 md:grid md:grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
+            <div className="w-full px-8 md:grid md:grid-flow-row min-h-[480px] text-primary-text font-light">
 
                 <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please connect your {exchange_name} account
@@ -89,7 +89,7 @@ const AccountConnectStep: FC = () => {
                 <div className="w-full">
                     <Carousel onLast={onCarouselLast} ref={carouselRef}>
                         <CarouselItem width={100} >
-                            <div className='w-full whitespace-normal mb-6 text-pink-primary'>
+                            <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.01</span>
                                 <div className='whitespace-normal text-white font-normal'>After this guide, you'll be taken to {exchange_name} to connect your account. You'll be prompted to log in to your {exchange_name} account if you are not logged in yet</div>
                             </div>
@@ -184,7 +184,7 @@ const AccountConnectStep: FC = () => {
                             </div>
                         </CarouselItem>
                         <CarouselItem width={100}>
-                            <div className='w-full whitespace-normal mb-6 text-pink-primary'>
+                            <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.02</span>
                                 <div className='whitespace-normal font-normal text-white'>When prompted to authorize Layerswap, click <span className='strong-highlight font-medium'>Change this amount</span></div>
                             </div>
@@ -269,7 +269,7 @@ const AccountConnectStep: FC = () => {
                             </div>
                         </CarouselItem>
                         <CarouselItem width={100}>
-                            <div className='w-full whitespace-normal mb-6 text-pink-primary'>
+                            <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.03</span>
                                 <div className='whitespace-normal font-normal text-white'>Change the existing 1.0 value to <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click Save</div>
                             </div>
@@ -462,7 +462,7 @@ const AccountConnectStep: FC = () => {
                             </div>
                         </CarouselItem>
                         <CarouselItem width={100}>
-                            <div className='w-full whitespace-normal mb-6 text-pink-primary'>
+                            <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.04</span>
                                 <div className='whitespace-normal font-normal text-white'>Make sure that the allowed amount is <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click <span className='strong-highlight font-medium'>Authorize</span></div>
                             </div>
@@ -578,9 +578,9 @@ const AccountConnectStep: FC = () => {
                             </div>
                         </CarouselItem>
                         <CarouselItem width={100}>
-                            <div className='w-full whitespace-normal mb-6 text-pink-primary'>
+                            <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.05</span>
-                                <div className='whitespace-normal font-medium text-white'>Please make sure to change the allowed amount to {minimalAuthorizeAmount}</div>
+                                <div className='whitespace-normal font-medium text-white'>Please make sure to change the allowed amount to <span className='strong-highlight'>{minimalAuthorizeAmount}</span></div>
                             </div>
                             <div className='w-full md:w-1/2'>
                                 <svg viewBox="0 0 447 484" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -717,7 +717,7 @@ const AccountConnectStep: FC = () => {
                 </div>
 
                 <div className="text-white text-sm  mt-auto">
-                    <div className="flex md:mt-5 font-normal text-sm text-pink-primary-300 mb-3">
+                    <div className="flex md:mt-5 font-normal text-sm text-primary-text mb-3">
                         <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
                     </div>
 

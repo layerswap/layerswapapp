@@ -27,10 +27,10 @@ const Banner: FC<BannerProps> = ({localStorageId, desktopMessage, mobileMessage,
 
     return (
         <div className={className + ' ' + "w-full mx-auto"}>
-            <div className="p-2 rounded-lg bg-pink-600 shadow-lg">
+            <div className="p-2 rounded-lg bg-primary-600 shadow-lg">
                 <div className="flex items-center justify-between flex-wrap">
                     <div className="w-0 flex-1 flex items-center">
-                        <span className="flex p-1 text-lg rounded-lg bg-pink-800">
+                        <span className="flex p-1 text-lg rounded-lg bg-primary-900">
                         🥳
                         </span>
                         <p className="ml-3 font-medium text-white truncate">
@@ -42,7 +42,7 @@ const Banner: FC<BannerProps> = ({localStorageId, desktopMessage, mobileMessage,
                         <button
                             type="button"
                             onClick={()=> onClickClose()}
-                            className="-mr-1 flex p-2 rounded-md hover:bg-pink-500 focus:outline-none focus:ring-2 focus:ring-white"
+                            className="-mr-1 flex p-2 rounded-md hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-white"
                         >
                             <span className="sr-only">Dismiss</span>
                             <XIcon className="h-4 w-5 text-white" aria-hidden="true" />
