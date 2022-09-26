@@ -6,10 +6,12 @@ import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
 
-export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams): SwapFormValues {
+export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams, account?: string, chainId?: number): SwapFormValues {
     const { data: { networks } } = settings
-    const { destNetwork, destAddress, sourceExchangeName } = queryParams
+    const { destNetwork, destAddress: queryParamAddress, sourceExchangeName } = queryParams
 
+    const destAddress = queryParamAddress || account
+    
     const availableNetworks = networks
         .map(c => new SelectMenuItem<CryptoNetwork>(c, c.code, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
 
@@ -17,7 +19,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.name, c.order, c.logo_url, c.is_enabled, c.is_default))
 
     const initialNetwork =
-        availableNetworks.find(x => x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable
+        availableNetworks.find(x => (x.baseObject.code.toUpperCase() === destNetwork?.toUpperCase() || (chainId && x.baseObject.chain_id === chainId)) && x.isAvailable
             && (swapType === "onramp" || settings?.data?.currencies?.some(c => c.network_id === x.id && c.exchanges.some(ce => ce.is_off_ramp_enabled))))
 
     let initialAddress =
