@@ -130,7 +130,7 @@ const NetworkField = React.forwardRef((props: any, ref: any) => {
     const { data } = useSettingsState();
 
     const destNetworkIsAvailable = data.networks.some(n => n.code === destNetwork && n.is_enabled && (swapType === "onramp" || data?.currencies?.some(c => c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled))))
-    
+
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
         .filter(n => swapType === "onramp" || data?.currencies?.some(c => c.is_enabled && c.network_id === n.id && c.exchanges.some(ce => ce.is_off_ramp_enabled)))
         .map(n => ({
@@ -347,7 +347,7 @@ export default function MainStep() {
         })
     }
 
-    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? "onramp", settings, query)
+    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? "onramp", settings, query, account, chainId)
 
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
