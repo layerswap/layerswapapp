@@ -52,7 +52,7 @@ const ProccessingStep: FC = () => {
                 </div>
                 {
                     swap?.data?.status == SwapStatus.PendingWithdrawal && <div className="flex text-center place-content-center mt-1 md:mt-1">
-                        <label className="block text-lg font-lighter leading-6 text-pink-primary-text"> Awaiting for blockchain transaction. </label>
+                        <label className="block text-lg font-lighter leading-6 text-primary-text"> Awaiting for blockchain transaction. </label>
                     </div>
                 }
             </div>
