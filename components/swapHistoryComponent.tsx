@@ -11,7 +11,6 @@ import Image from 'next/image'
 import { useAuthState } from "../context/authContext"
 import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
-import SubmitButton from "./buttons/submitButton"
 import CopyButton from "./buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "./Sceletons"
 import GoHomeButton from "./utils/GoHome"

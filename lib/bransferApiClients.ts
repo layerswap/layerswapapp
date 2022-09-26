@@ -35,9 +35,7 @@ export class BransferApiClient {
 }
 
 export type PaymentProcessreponse = {
-    is_success: boolean,
-    request_id: string,
-    errors: string
+    error: string
 }
 
 export type ExchangeDepositAddressReponse = {

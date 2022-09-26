@@ -6,6 +6,7 @@ import { FC, MouseEventHandler, useEffect } from 'react';
 import shortenAddress from '../utils/ShortenAddress';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import CopyButton from '../buttons/copyButton';
+import { SwapType } from '../../lib/layerSwapApiClient';
 
 export class AddressDetailsProps {
     onClickEditAddress?: MouseEventHandler<HTMLButtonElement> | undefined;
@@ -19,7 +20,7 @@ function constructExplorerUrl(swapFormData: SwapFormValues): string {
 const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, canEditAddress }) => {
     const { swapFormData } = useSwapDataState()
 
-    if (swapFormData?.swapType === "offramp")
+    if (swapFormData?.swapType === SwapType.OffRamp)
         return <>
             <div className="mx-auto w-full rounded-lg border border-darkblue-100 hover:border-darkblue-200 bg-darkblue-500 p-2">
                 <div className="flex items-center min-w-0 flex-1">

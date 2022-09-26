@@ -38,7 +38,7 @@ export type CreateSwapParams = {
     asset: string,
     destination_address: string,
     partner?: string,
-    type: SwapType,
+    type: number,
 }
 
 export type SwapItemResponse = {
@@ -65,19 +65,20 @@ export type SwapItem = {
     partner_id: string,
     network_currency_id: string,
     exchange_currency_id: string,
-
     additonal_data: {
         deposit_address: string,
         chain_display_name: string,
         current_withdrawal_fee: number,
         withdrawal_amount: number,
-        memo:string,
+        note: string,
+        memo?: string,
+        payment_url: string,
     }
 }
 
 export enum SwapType {
-    OnRamp = 0,
-    OffRamp = 1,
+    OnRamp = "cex_to_network",
+    OffRamp = "network_to_cex",
 }
 
 export type Payment = {
@@ -104,9 +105,6 @@ export type Payment = {
         total_withdrawal_amount: number,
         note: string,
         require_note: boolean
-    },
-    external_flow_context: {
-        payment_url: string;
     },
     sequence_number: string,
 }

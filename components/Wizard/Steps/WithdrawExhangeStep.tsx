@@ -127,20 +127,19 @@ const WithdrawExchangeStep: FC = () => {
                             </BackgroundField>
                         </div>
                         {
-                            //TODO get note 
-                            // payment?.manual_flow_context?.require_note &&
-                            // <>
-                            //     <BackgroundField isCopiable={true} toCopy={payment?.manual_flow_context?.note} header={'Remarks'}>
-                            //         <p className='break-all'>
-                            //             {payment?.manual_flow_context?.note}
-                            //         </p>
-                            //     </BackgroundField>
-                            //     <WarningMessage>
-                            //         <p className='font-normal text-sm text-darkblue-600'>
-                            //             Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
-                            //         </p>
-                            //     </WarningMessage>
-                            // </>
+                            swap?.data?.additonal_data?.note &&
+                            <>
+                                <BackgroundField isCopiable={true} toCopy={swap?.data?.additonal_data?.note} header={'Remarks'}>
+                                    <p className='break-all'>
+                                        {swap?.data?.additonal_data?.note}
+                                    </p>
+                                </BackgroundField>
+                                <WarningMessage>
+                                    <p className='font-normal text-sm text-darkblue-600'>
+                                        Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
+                                    </p>
+                                </WarningMessage>
+                            </>
                         }
                     </div>
                 </div>

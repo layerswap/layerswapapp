@@ -58,7 +58,6 @@ const OnRampSwapConfirmationStep: FC = () => {
     const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
     const transferAmount = `${amount} ${currency?.name}`
     const handleSubmit = useCallback(async (values: SwapConfirmationFormValues) => {
-
         if (codeRequested)
             return goToStep(SwapCreateStep.TwoFactor)
 

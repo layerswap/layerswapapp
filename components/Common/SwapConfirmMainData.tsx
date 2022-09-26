@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { ArrowRightIcon } from "@heroicons/react/outline"
 import { CalculateReceiveAmount } from "../../lib/fees"
 import { getCurrencyDetails } from "../../helpers/currencyHelper"
+import { SwapType } from "../../lib/layerSwapApiClient"
 
 type Props = {
     children?: JSX.Element | JSX.Element[];
@@ -23,8 +24,8 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
         <div className="w-full">
             <div className="rounded-md w-full mb-3">
                 <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-primary-text">
-                    <div className={classNames(swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex justify-between bg-darkblue-500 rounded-md items-center px-4 py-3')}>
-                        <span className="text-left flex"><span className='hidden md:block'>{swapType === "onramp" ? "From" : "To"}</span>
+                    <div className={classNames(swapType === SwapType.OffRamp ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex justify-between bg-darkblue-500 rounded-md items-center px-4 py-3')}>
+                        <span className="text-left flex"><span className='hidden md:block'>{swapType === SwapType.OffRamp ? "From" : "To"}</span>
                             <div className="flex items-center">
                                 <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
                                     {
@@ -43,7 +44,7 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
                             </div>
                         </span>
                         <ArrowRightIcon className='h-5 w-5 block md:hidden' />
-                        <span className="flex"><span className='hidden md:block'>{swapType === "onramp" ? "To" : "From"}</span>
+                        <span className="flex"><span className='hidden md:block'>{swapType ===  SwapType.OnRamp ? "To" : "From"}</span>
                             <div className="flex items-center">
                                 <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
                                     {

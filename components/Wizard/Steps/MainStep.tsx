@@ -6,7 +6,7 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
 import { CryptoNetwork } from "../../../Models/CryptoNetwork";
-import { SwapFormValues, SwapType } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../../Select/selectMenuItem";
 import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
@@ -31,6 +31,7 @@ import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValue
 import ExchangesField from "../../Select/Exchange";
 import NetworkField from "../../Select/Network";
 import AmountField from "../../Input/Amount";
+import { SwapType } from "../../../lib/layerSwapApiClient";
 
 type Props = {
     OnSumbit: (values: SwapFormValues) => void
@@ -40,7 +41,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapCreateStep>()
-    const { swapFormData } = useSwapDataState()
 
     const [loading, setLoading] = useState(false)
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
@@ -154,8 +154,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const lockAddress = !!account || query.lockAddress
 
-
-    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? "onramp", settings, query)
+    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? SwapType.OffRamp, settings, query, account)
 
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
@@ -190,7 +189,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                             <div className='my-4'>
                                 <SwapOptionsToggle />
                             </div>
-                            <div className={classNames(values.swapType === "offramp" ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
+                            <div className={classNames(values.swapType === SwapType.OffRamp ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
                                 <div className="flex flex-col md:w-80 w-full">
                                     <ExchangesField ref={exchangeRef} />
                                 </div>
@@ -199,7 +198,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                                 </div>
                             </div>
                             {
-                                values.swapType === "onramp" &&
+                                values.swapType === SwapType.OnRamp &&
                                 <div className="w-full mb-3.5 leading-4">
                                     <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
                                         {`To ${values?.network?.name || ''} address`}
@@ -244,7 +243,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 }
 
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
-    if (swapType == "onramp") {
+    if (swapType == SwapType.OnRamp) {
         return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
     }
     else {

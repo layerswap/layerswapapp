@@ -48,8 +48,8 @@ const ExternalPaymentStep: FC = () => {
         if (!access_token)
             goToStep(ProcessSwapStep.Email)
         const swap = await getSwap(swapId.toString())
-        const { account_explorer_template } = network
-        window.open(account_explorer_template.replace("{0}", swap?.data.destination_address), '_blank', 'width=420,height=720')
+        const payment_url = swap?.data?.additonal_data?.payment_url
+        window.open(payment_url, '_blank', 'width=420,height=720')
     }, [network])
 
     return (

@@ -1,9 +1,9 @@
-import { SwapType } from "../components/DTOs/SwapFormValues";
 import roundDecimals from "../components/utils/RoundDecimals";
 import { getCurrencyDetails } from "../helpers/currencyHelper";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
 import { Exchange } from "../Models/Exchange";
+import { SwapType } from "./layerSwapApiClient";
 
 export function GetExchangeFee(currency?: Currency, exchange?: Exchange): number {
     return exchange?.currencies.find(ec => ec.asset === currency?.asset)?.current_withdrawal_fee || 0;
@@ -30,7 +30,7 @@ export function CalculateReceiveAmount(amount?: number, currency?: Currency, exc
     if (amount >= minAllowedAmount) {
         let fee = CalculateFee(amount, currency, exchange, network, swapType);
         var result = amount - fee;
-        if (swapType == 'onramp') {
+        if (swapType == SwapType.OnRamp) {
             let exchangeFee = GetExchangeFee(currency, exchange);
             result -= exchangeFee;
         }

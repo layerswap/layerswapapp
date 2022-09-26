@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { BransferApiClient } from '../lib/bransferApiClients';
-import LayerSwapApiClient, { SwapItemResponse } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItemResponse, SwapType } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate } from './authContext';
 import TokenService from '../lib/TokenService';
 import { KnownwErrorCode } from '../Models/ApiError';
@@ -45,7 +45,6 @@ export function SwapDataProvider({ children }) {
         if (!network || !currency || !exchange)
             throw new Error("Form data is missing")
 
-
         try {
             const layerswapApiClient = new LayerSwapApiClient()
             const authData = getAuthData()
@@ -59,7 +58,7 @@ export function SwapDataProvider({ children }) {
                 network: network.id,
                 asset: currency.baseObject.asset,
                 destination_address: swapFormData.destination_address,
-                type: swapFormData.swapType === "onramp" ? 0 : 1 // TODO change form swaptype to use the same enum
+                type: swapFormData.swapType === SwapType.OnRamp ? 0 : 1 /// TODO create map for sap types
             }, authData?.access_token)
 
             if (swap?.error)
@@ -82,8 +81,8 @@ export function SwapDataProvider({ children }) {
         const bransferApiClient = new BransferApiClient()
         const layerswapApiClient = new LayerSwapApiClient()
         const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(swap.data.id, authData.access_token, twoFactorCode)
-        if (!prcoessPaymentReponse.is_success)
-            throw new Error(prcoessPaymentReponse.errors)
+        if (prcoessPaymentReponse.error)
+            throw new Error(prcoessPaymentReponse.error)
         const swapDetails = await layerswapApiClient.getSwapDetails(swap.data.id, authData.access_token)
         setSwap(swapDetails)
     }, [getAuthData])
