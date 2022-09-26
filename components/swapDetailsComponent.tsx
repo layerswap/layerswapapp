@@ -65,7 +65,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
         <>
             <div className="w-full grid grid-flow-row animate-fade-in">
                 <div className="rounded-md w-full grid grid-flow-row">
-                    <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-pink-primary-300">
+                    <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-primary-text">
                         <div className="flex justify-between p items-baseline">
                             <span className="text-left">Id </span>
                             <span className="text-white">

@@ -168,7 +168,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 {selectedItem?.name}
                             </span>
                             :
-                            <span className="ml-3 block font-medium text-pink-primary-300 flex-auto items-center">
+                            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
                                 {placeholder}
                             </span>}
                     </span>
@@ -188,14 +188,14 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                 leave="ease-in duration-200"
                 leaveFrom="translate-y-0"
                 leaveTo="translate-y-full">
-                <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkBlue'>
-                    <div className='relative z-40 overflow-hidden bg-darkBlue p-6 pt-0'>
+                <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkblue'>
+                    <div className='relative z-40 overflow-hidden bg-darkblue p-6 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                            <span className="justify-self-end text-pink-primary-300 cursor-pointer">
+                            <span className="justify-self-end text-primary-text cursor-pointer">
                                 <div className="block ">
                                     <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
+                                        className="rounded-md text-darkblue-200 hover:text-primary-text"
                                         onClick={closeModal}
                                     >
                                         <span className="sr-only">Close</span>
@@ -235,11 +235,11 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                     >
                                         <div className="relative mb-5">
                                             <SearchIcon
-                                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-pink-primary-300"
+                                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-primary-text"
                                                 aria-hidden="true"
                                             />
                                             <Combobox.Input
-                                                className="h-12 w-full bg-darkblue-500 rounded-lg border-ouline-blue pl-11 pr-4 text-pink-primary-300 placeholder-pink-primary-300 focus:ring-0 sm:text-sm"
+                                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-primary focus:border-primary block font-semibold bg-darkblue-600 border-darkblue-100 border truncate"
                                                 placeholder="Search..."
                                                 onChange={handleQueryInputChange}
                                                 value={query}
@@ -296,7 +296,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 <ExclamationCircleIcon
                                                     type="outline"
                                                     name="exclamation-circle"
-                                                    className="mx-auto h-6 w-6 text-pink-primary-300"
+                                                    className="mx-auto h-6 w-6 text-primary-text"
                                                 />
                                                 <p className="mt-4 font-semibold text-gray-900">No results found</p>
                                                 <p className="mt-2 text-gray-500">No components found for this search term. Please try again.</p>

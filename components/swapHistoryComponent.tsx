@@ -16,7 +16,7 @@ import SubmitButton from "./buttons/submitButton"
 import CopyButton from "./buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "./Sceletons"
 import GoHomeButton from "./utils/GoHome"
-import StatusIcon, { GreenIcon, RedIcon, YellowIcon } from "./StatusIcons"
+import StatusIcon from "./StatusIcons"
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -95,7 +95,7 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className={`bg-darkBlue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
+    <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="hidden md:block">
           <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
@@ -347,7 +347,7 @@ function TransactionsHistory() {
                         disabled={isLastPage || loading}
                         type="button"
                         onClick={handleLoadMore}
-                        className="group disabled:text-pink-primary-600 text-pink-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                        className="group disabled:text-primary-800 text-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
                       >
                         <span className="flex items-center mr-2">
                           {(!isLastPage && !loading) &&

@@ -201,7 +201,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                             {
                                 values.swapType === "onramp" &&
                                 <div className="w-full mb-3.5 leading-4">
-                                    <label htmlFor="destination_address" className="block font-normal text-pink-primary-300 text-sm">
+                                    <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
                                         {`To ${values?.network?.name || ''} address`}
                                         {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].display_name})</span>}
                                     </label>
@@ -215,7 +215,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                                             <AddressInput
                                                 disabled={initialValues.destination_address != '' && lockAddress || (!values.network || !values.exchange)}
                                                 name={"destination_address"}
-                                                className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate')}
+                                                className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-600 border-darkblue-100 border rounded-md placeholder-gray-400 truncate')}
                                                 ref={addressRef}
                                             />
                                         </div>
