@@ -157,14 +157,14 @@ const OnRampSwapConfirmationStep: FC = () => {
                 leave="ease-in duration-200"
                 leaveFrom="translate-y-0"
                 leaveTo="translate-y-full">
-                <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkBlue'>
-                    <span className='relative z-40 overflow-hidden bg-darkBlue p-4 pt-0'>
+                <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkblue'>
+                    <span className='relative z-40 overflow-hidden bg-darkblue p-4 pt-0'>
                         <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                            <span className="justify-self-end text-pink-primary-300 cursor-pointer">
+                            <span className="justify-self-end text-primary-text cursor-pointer">
                                 <div className="">
                                     <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
+                                        className="rounded-md text-darkblue-200 hover:text-primary-text"
                                         onClick={handleClose}
                                     >
                                         <span className="sr-only">Close</span>
@@ -185,7 +185,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                             <div className="relative inset-0" ></div>
                         </Transition.Child>
 
-                        <div className="relative inset-0 text-pink-primary-300 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                        <div className="relative inset-0 text-primary-text flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
                             <div className="relative min-h-full items-center justify-center p-2 pt-0 text-center">
                                 <Transition.Child
                                     as={Fragment}
@@ -196,7 +196,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                                     leaveFrom="opacity-100 scale-100"
                                     leaveTo="opacity-0 scale-95"
                                 >
-                                    <div className='pb-12 grid grid-flow-row min-h-[480px] text-pink-primary-300'>
+                                    <div className='pb-12 grid grid-flow-row min-h-[480px] text-primary-text'>
                                         <h4 className='mb-12 md:mb-3.5 mt-4 pt-2 text-xl leading-6 text-center md:text-left font-roboto'>
                                             <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mb-1' /> Editing your <span className='strong-highlight text-lg'>{network?.name}</span> wallet address
                                         </h4>
@@ -213,12 +213,12 @@ const OnRampSwapConfirmationStep: FC = () => {
                                                     type={"text"}
                                                     name="destination_address"
                                                     id="destination_address"
-                                                    className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-pink-primary focus:border-pink-primary block font-semibold w-full bg-darkblue-600 border-ouline-blue border rounded-md placeholder-gray-400 truncate'}
+                                                    className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-600 border-darkblue-100 border rounded-md placeholder-gray-400 truncate'}
                                                 />
                                                 {
                                                     addressInputError &&
                                                     <div className="flex items-center mb-2">
-                                                        <span className="block text-base leading-6 text-pink-primary-800"> {addressInputError} </span>
+                                                        <span className="block text-base leading-6 text-primary-800"> {addressInputError} </span>
                                                     </div>
                                                 }
                                             </div>

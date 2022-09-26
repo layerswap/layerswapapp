@@ -38,10 +38,10 @@ const NetworkField = forwardRef((props: any, ref: any) => {
         })).sort(SortingByOrder);
 
     return (<>
-        <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
+        <label htmlFor={name} className="block font-normal text-primary-text text-sm">
             {swapType === "onramp" ? "To" : "From"}
         </label>
-        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!network && (swapType === "offramp" || exchange) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
+        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!network && (swapType === "offramp" || exchange) ? 'ring-primary border-primary' : ''} focus:ring-primary focus:border-primary border-darkblue-100 border focus:ring-1 overflow-hidden rounded-lg`}>
             <Field name={name} placeholder="Network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
