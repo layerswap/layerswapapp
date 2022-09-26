@@ -295,7 +295,7 @@ textarea:disabled,
 input:disabled::placeholder,
 textarea:disabled::placeholder {
   -webkit-text-fill-color: theme('colors.primary.text');
-  /* 1. sets text fill to 'pink-primary-300': '#a4afc8' */
+  /* 1. sets text fill to 'primary-text': '#a4afc8' */
   opacity: 1;
   /* 2. correct opacity on iOS */
 }

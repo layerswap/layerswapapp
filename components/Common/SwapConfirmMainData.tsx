@@ -22,7 +22,7 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
         </h3>
         <div className="w-full">
             <div className="rounded-md w-full mb-3">
-                <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-pink-primary-300">
+                <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-primary-text">
                     <div className={classNames(swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex justify-between bg-darkblue-500 rounded-md items-center px-4 py-3')}>
                         <span className="text-left flex"><span className='hidden md:block'>{swapType === "onramp" ? "From" : "To"}</span>
                             <div className="flex items-center">

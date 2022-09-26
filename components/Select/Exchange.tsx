@@ -31,10 +31,10 @@ const ExchangesField = forwardRef((props: any, ref: any) => {
 
 
     return (<>
-        <label htmlFor={name} className="block font-normal text-pink-primary-300 text-sm">
+        <label htmlFor={name} className="block font-normal text-primary-text text-sm">
             {swapType === "onramp" ? "From" : "To"}
         </label>
-        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange && (swapType === "onramp" || network) ? 'ring-pink-primary border-pink-primary' : ''} focus:ring-pink-primary focus:border-pink-primary border-ouline-blue border focus:ring-1 overflow-hidden rounded-lg`}>
+        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange && (swapType === "onramp" || network) ? 'ring-primary border-primary' : ''} focus:ring-primary focus:border-primary border-darkblue-100 border focus:ring-1 overflow-hidden rounded-lg`}>
             <Field name={name} placeholder="Exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
