@@ -14,6 +14,7 @@ import KnownIds from "../lib/knownIds";
 import TokenService from "../lib/TokenService";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { ExchangeAuthorizationSteps, OfframpExchangeAuthorizationSteps, SwapCreateStep, WizardStep } from "../Models/Wizard";
+import { SwapType } from "../lib/layerSwapApiClient";
 
 
 const useCreateSwap = () => {
@@ -77,7 +78,7 @@ const useCreateSwap = () => {
             const exchanges = (await getUserExchanges(res.access_token))?.data
             const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange?.baseObject.id)
 
-            if (swapFormData.swapType === "offramp" && swapFormData.exchange.baseObject.id === KnownIds.Exchanges.CoinbaseId) {
+            if (swapFormData.swapType === SwapType.OffRamp && swapFormData.exchange.baseObject.id === KnownIds.Exchanges.CoinbaseId) {
                 const bransferApiClient = new BransferApiClient()
                 try {
                     const response = await bransferApiClient.GetExchangeDepositAddress(swapFormData.exchange?.baseObject?.internal_name, swapFormData.currency?.baseObject?.asset?.toUpperCase(), res.access_token)

@@ -3,7 +3,8 @@ import { FC, forwardRef, useCallback, useState } from "react";
 import { useQueryState } from "../context/query";
 import { useSettingsState } from "../context/settings";
 import { generateSwapInitialValues } from "../lib/generateSwapInitialValues";
-import { SwapFormValues, SwapType } from "./DTOs/SwapFormValues";
+import { SwapType } from "../lib/layerSwapApiClient";
+import { SwapFormValues } from "./DTOs/SwapFormValues";
 import OptionToggle, { NavRadioOption } from "./OptionToggle"
 
 const swapOptions: NavRadioOption[] = [

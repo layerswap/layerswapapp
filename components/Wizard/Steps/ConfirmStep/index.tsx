@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { useSwapDataState } from "../../../../context/swap";
+import { SwapType } from "../../../../lib/layerSwapApiClient";
 import OffRampSwapConfirmationStep from "./OffRampSwapConfirmationStep";
 import OnRampSwapConfirmationStep from "./OnRampSwapConfirmationStep";
 
@@ -10,7 +11,7 @@ const SwapConfirmationStep: FC = () => {
     if (!swapFormData)
         return <></>
 
-    return swapFormData.swapType === "offramp" ? <OffRampSwapConfirmationStep /> : <OnRampSwapConfirmationStep />
+    return swapFormData.swapType === SwapType.OffRamp ? <OffRampSwapConfirmationStep /> : <OnRampSwapConfirmationStep />
 }
 
 export default SwapConfirmationStep;

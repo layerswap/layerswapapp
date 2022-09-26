@@ -3,10 +3,10 @@ import { Disclosure } from "@headlessui/react";
 import HoverTooltip from '../Tooltips/HoverTooltip';
 import { Currency } from '../../Models/Currency';
 import { Exchange } from '../../Models/Exchange';
-import { SwapType } from '../DTOs/SwapFormValues';
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
 import { CryptoNetwork } from '../../Models/CryptoNetwork';
 import { getCurrencyDetails } from '../../helpers/currencyHelper';
+import { SwapType } from '../../lib/layerSwapApiClient';
 
 type Props = {
     amount: number,
@@ -62,7 +62,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                         </span>
                                     </div>
                                     {
-                                        swapType === "onramp" &&
+                                        swapType === SwapType.OnRamp &&
                                         <div className="mt-2 flex flex-row items-baseline justify-between">
                                             <label className="inline-flex text-left">
                                                 Exchange Fee

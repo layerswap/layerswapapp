@@ -1,6 +1,7 @@
 import { Field, useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
 import { useSettingsState } from "../../context/settings";
+import { SwapType } from "../../lib/layerSwapApiClient";
 import { SortingByOrder } from "../../lib/sorting";
 import { Currency } from "../../Models/Currency";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -17,8 +18,8 @@ const CurrenciesField: FC = () => {
     const { data } = useSettingsState();
     const { discovery: { resource_storage_url } } = data || {}
 
-    const currencyIsAvilable = useCallback((c: Currency) => exchange && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType === "offramp" ?
-        ec.is_withdrawal_enabled : ec.is_deposit_enabled)) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === "offramp" ?
+    const currencyIsAvilable = useCallback((c: Currency) => exchange && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType ===  SwapType.OffRamp ?
+        ec.is_withdrawal_enabled : ec.is_deposit_enabled)) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === SwapType.OffRamp ?
             nc.is_deposit_enabled : nc.is_withdrawal_enabled)), [exchange, network, swapType])
 
     const currencyMenuItems: SelectMenuItem<Currency>[] = network ? data.currencies

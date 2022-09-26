@@ -38,7 +38,7 @@ export type CreateSwapParams = {
     asset: string,
     destination_address: string,
     partner?: string,
-    type: SwapType,
+    type: number,
 }
 
 export type SwapItemResponse = {

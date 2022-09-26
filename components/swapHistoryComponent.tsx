@@ -1,18 +1,15 @@
 import { useRouter } from "next/router"
-import { Fragment, useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapListResponse, SwapItem, SwapType } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
-import { Dialog, Transition } from "@headlessui/react"
-import SwapDetails from "./swapDetailsComponent"
+import { ChevronRightIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 import LayerswapMenu from "./LayerswapMenu"
 import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
 import { useAuthState } from "../context/authContext"
 import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
-import SubmitButton from "./buttons/submitButton"
 import CopyButton from "./buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "./Sceletons"
 import GoHomeButton from "./utils/GoHome"
