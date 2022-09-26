@@ -5,7 +5,7 @@ type Props = {
     text: string;
     moreClassNames?: string;
     positionClassnames?: string;
-    children: JSX.Element | JSX.Element[] | string
+    children?: JSX.Element | JSX.Element[] | string
 }
 
 const HoverTooltip: FC<Props> = (({ text, moreClassNames, positionClassnames, children }) => {
