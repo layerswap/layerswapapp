@@ -28,12 +28,13 @@ const Wizard: FC<Props> = ({ children }) => {
       return () => window.removeEventListener("resize", handleResize);
    }, []);
 
+   const width = positionPercent || 0
 
    return <>
       <div className={`pb-6 bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-darkblue-100">
-            <div style={{ width: `${wizard[currentStep].positionPercent}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
+               <div style={{ width: `${width}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-pink-primary"></div>
             </div>
          </div>
          <WizardHeader wrapperWidth={wrapperWidth} />
