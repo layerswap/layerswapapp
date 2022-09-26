@@ -1,14 +1,13 @@
-export enum SwapStatus
-{
+export enum SwapStatus {
     Created = 'created',
 
-    Initiated="initiated",
+    Initiated = "initiated",
     Pending = 'pending',
-    
+
     Completed = 'completed',
     Failed = 'failed',
 
-    Expired="expired",
-    PendingWithdrawal="pendingWithdrawal",
-    Cancelled="cancelled",
+    Expired = "expired",
+    PendingWithdrawal = "pendingWithdrawal",
+    Cancelled = "cancelled",
 }

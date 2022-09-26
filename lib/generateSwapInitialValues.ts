@@ -7,7 +7,7 @@ import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
 
-export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams): SwapFormValues {
+export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams, account?: string): SwapFormValues {
     const { destNetwork, destAddress, sourceExchangeName } = queryParams
 
     const { data: { exchanges, networks, discovery: { resource_storage_url } } } = settings || {}
@@ -35,5 +35,5 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     let initialExchange =
         availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase() && (swapType === "offramp" ? x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)));
 
-    return { amount: "", destination_address: swapType === "onramp" && initialAddress, swapType: swapType || "onramp", network: swapType === "onramp" ? initialNetwork : null, exchange: initialExchange }
+    return { amount: "", destination_address: swapType === "onramp" && (initialAddress || account), swapType: swapType || "onramp", network: swapType === "onramp" ? initialNetwork : null, exchange: initialExchange }
 }
