@@ -7,13 +7,14 @@ interface ModalParams {
     isOpen: boolean;
     title: React.ReactNode;
     description: React.ReactNode;
+    className?: string
 }
 
-const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, description }) => {
+const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, description, className }) => {
 
     return (
         <Transition.Root show={isOpen} as={Fragment}>
-            <Dialog as="div" className="relative z-40" onClose={() => onDismiss(false)}>
+            <Dialog as="div" className='relative z-40' onClose={() => onDismiss(false)}>
                 <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
                 <Transition.Child
                     as={Fragment}
@@ -38,8 +39,8 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, descriptio
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="py-6 md:py-8 w-fit max-w-xl transform overflow-hidden rounded-md bg-darkblue align-middle shadow-xl transition-all">
-                                <div>
+                            <Dialog.Panel className={`${className} py-6 md:py-8 w-full max-w-xl transform overflow-hidden rounded-md bg-darkblue align-middle shadow-xl transition-all`}>
+                                <div className='space-y-5'>
                                     <Dialog.Title as="div" >
                                         <div className='flex justify-between space-x-8 px-6 md:px-8'>
                                             <div className="text-lg text-left leading-6 font-medium text-gray-300" >
@@ -56,13 +57,10 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, descriptio
                                             </button>
                                         </div>
                                     </Dialog.Title>
-                                    <div className="mt-8">
-                                        <div className="text-sm text-gray-100 text-left">
-                                            {description}
-                                        </div>
+                                    <div>
+                                        {children}
                                     </div>
                                 </div>
-                                {children}
                             </Dialog.Panel>
                         </Transition.Child>
                     </div>

@@ -1,10 +1,9 @@
 import { useRouter } from "next/router"
-import { Fragment, useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapListResponse, SwapItem, SwapType } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
-import { Dialog, Transition } from "@headlessui/react"
+import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon } from '@heroicons/react/outline';
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
 import { useSettingsState } from "../context/settings"
@@ -17,6 +16,8 @@ import CopyButton from "./buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "./Sceletons"
 import GoHomeButton from "./utils/GoHome"
 import StatusIcon from "./StatusIcons"
+import Modal from "./modalComponent"
+import HoverTooltip from "./Tooltips/HoverTooltip"
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -28,6 +29,7 @@ function TransactionsHistory() {
   const [error, setError] = useState(false)
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
+  const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const { email } = useAuthState()
 
   useEffect(() => {
@@ -87,11 +89,12 @@ function TransactionsHistory() {
   }, [page, setSwaps])
 
   const handleClose = () => {
-    setSelectedSwap(undefined)
+    setOpenSwapDetailsModal(false)
   }
 
   const handleopenSwapDetails = (swap: SwapItem) => {
     setSelectedSwap(swap)
+    setOpenSwapDetailsModal(true)
   }
 
   return (
@@ -146,12 +149,6 @@ function TransactionsHistory() {
                             >
                               Amount
                             </th>
-                            {/* <th
-                scope="col"
-                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
-              >
-                Fee
-              </th> */}
                             <th
                               scope="col"
                               className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
@@ -243,7 +240,7 @@ function TransactionsHistory() {
                                 </div>
                                 {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-100" /> : null}
                                 <span className="flex items-center sm:block lg:hidden">
-                                  {<StatusIcon swap={swap} />}
+                                  {<StatusIcon status={swap.status} />}
                                   {/* {plan.from} - {plan.to} */}
                                 </span>
                               </td>
@@ -277,16 +274,25 @@ function TransactionsHistory() {
                                   'px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
-                                {swap.received_amount} {currency.asset}
+                                <div className="flex space-x-1">
+                                  {
+                                    swap?.status == 'completed' && swap.received_amount != swap.requested_amount ?
+                                      <div className="flex">
+                                        {swap.received_amount} /
+                                        <HoverTooltip text='Requested Amount' moreClassNames="w-32 text-center">
+                                          <span className="underline decoration-dotted hover:no-underline">
+                                            {swap.requested_amount}
+                                          </span>
+                                        </HoverTooltip>
+                                      </div>
+                                      :
+                                      <span>
+                                        {swap.requested_amount}
+                                      </span>
+                                  }
+                                  <span>{currency.asset}</span>
+                                </div>
                               </td>
-                              {/* <td
-                className={classNames(
-                  index === 0 ? '' : 'border-t border-darkblue-100',
-                  'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
-                )}
-              >
-                {swap.fee} {swap.currency} 
-              </td> */}
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-100',
@@ -308,7 +314,7 @@ function TransactionsHistory() {
                                   'relative px-3 py-3.5 text-sm text-white hidden lg:table-cell group'
                                 )}
                               >
-                                {<StatusIcon swap={swap} />}
+                                {<StatusIcon status={swap.status} />}
 
                               </td>
                               <td
@@ -359,7 +365,32 @@ function TransactionsHistory() {
                         Load more
                       </button>
                     }
-                  </div>               
+                  </div>
+                  <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={'Swap details'} description={""} className='max-w-md'>
+                    <div className="px-6 md:px-8">
+                      <SwapDetails id={selectedSwap?.id} />
+                      {
+                        data.networks && selectedSwap?.transaction_id &&
+                        <div className="text-white text-sm mt-6">
+                          <a href={data.networks.filter(x => x.id === selectedSwap?.id)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
+                            target="_blank"
+                            className="shadowed-button group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                            View in Explorer
+                            <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                          </a>
+                        </div>
+                      }
+                      {
+                        selectedSwap?.status == 'initiated' &&
+                        <div className="text-white text-sm mt-6">
+                          <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false}>
+                            Complete Swap
+                            <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                          </SubmitButton>
+                        </div>
+                      }
+                    </div>
+                  </Modal>
                 </>
                 : <div className="sm:my-24 sm:mx-60 m-16 pb-20 text-center sm:pb-10">
                   There are no transactions for this account
