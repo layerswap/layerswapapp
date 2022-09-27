@@ -154,7 +154,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const lockAddress = !!account || query.lockAddress
 
-    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? "onramp", settings, query, account, chainId)
+    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
 
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
@@ -198,7 +198,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                                 </div>
                             </div>
                             {
-                                values.swapType === SwapType.OnRamp &&
+                                values.swapType === SwapType.OnRamp && (()=>{console.log(values.swapType);return true})() &&
                                 <div className="w-full mb-3.5 leading-4">
                                     <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
                                         {`To ${values?.network?.name || ''} address`}

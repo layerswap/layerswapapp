@@ -8,8 +8,8 @@ import { SwapFormValues } from "./DTOs/SwapFormValues";
 import OptionToggle, { NavRadioOption } from "./OptionToggle"
 
 const swapOptions: NavRadioOption[] = [
-    { value: "onramp", isEnabled: true, isHighlighted: false },
-    { value: "offramp", isEnabled: true, isHighlighted: true }
+    { value: SwapType.OnRamp, isEnabled: true, isHighlighted: false },
+    { value: SwapType.OffRamp, isEnabled: true, isHighlighted: true }
 ];
 
 const SwapOptionsToggle = forwardRef((props, ref: any) => {

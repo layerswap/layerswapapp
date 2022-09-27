@@ -8,7 +8,7 @@ import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
 import { SwapType } from "./layerSwapApiClient";
 
-export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams, account?: string): SwapFormValues {
+export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams, account?: string, chainId?: number): SwapFormValues {
     const { destNetwork, destAddress: queryParamAddress, sourceExchangeName } = queryParams
 
     const { data: { exchanges, networks, discovery: { resource_storage_url } } } = settings || {}
