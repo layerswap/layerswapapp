@@ -1,3 +1,5 @@
+import { Web3Provider } from "@ethersproject/providers";
+import { useWeb3React } from "@web3-react/core";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { SelectMenuItem } from "../components/Select/selectMenuItem";
 import { useSwapDataState } from "../context/swap";
@@ -8,8 +10,9 @@ import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
 import { SwapType } from "./layerSwapApiClient";
 
-export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams, account?: string, chainId?: number): SwapFormValues {
+export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams): SwapFormValues {
     const { destNetwork, destAddress: queryParamAddress, sourceExchangeName } = queryParams
+    const { account, chainId } = useWeb3React<Web3Provider>();
 
     const { data: { exchanges, networks, discovery: { resource_storage_url } } } = settings || {}
     const destAddress = queryParamAddress || account

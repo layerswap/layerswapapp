@@ -15,7 +15,6 @@ const swapOptions: NavRadioOption[] = [
 const SwapOptionsToggle = forwardRef((props, ref: any) => {
     const {
         values: { swapType },
-        setFieldValue,
         resetForm,
     } = useFormikContext<SwapFormValues>();
 
