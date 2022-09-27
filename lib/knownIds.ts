@@ -30,6 +30,8 @@ export default class KnownIds {
     static Networks = class {
         public static readonly ArbitrumMainnetId: string = "7C616CA2-9726-40D9-A077-3A415C1D5634".toLowerCase();
 
+        public static readonly ArbitrumNovaId: string = "7f009a82-8fbc-4926-b223-9e0b8e0e8f1b".toLowerCase();
+
         public static readonly ArbitrumRinkebyId: string = "02B8EF6D-92BA-4140-B518-58A7FDC1E5C7".toLowerCase();
 
         public static readonly OptimismMainnetId: string = "CB509041-CC31-4308-B837-068A354F2560".toLowerCase();
@@ -71,6 +73,7 @@ export default class KnownIds {
         public static readonly NahmiiMainnetId: string = "B2ADD231-902B-4467-9220-5C7EAE5B78F6".toLowerCase();
 
         public static readonly RhinoFiMainnetId: string = "82024449-400c-40cf-a466-57b24ea611e2".toLowerCase();
+        
     }
 
     static LiquidityProviders = class {
