@@ -115,9 +115,9 @@ const WithdrawExchangeStep: FC = () => {
                             </p>
                         </BackgroundField>
                         <div className='flex space-x-4'>
-                            <BackgroundField isCopiable={true} toCopy={swap?.data?.received_amount} header={'Amount'}>
+                            <BackgroundField isCopiable={true} toCopy={swap?.data?.requested_amount} header={'Amount'}>
                                 <p>
-                                    {swap?.data?.received_amount}
+                                    {swap?.data?.requested_amount}
                                 </p>
                             </BackgroundField>
                             <BackgroundField header={'Asset'}>

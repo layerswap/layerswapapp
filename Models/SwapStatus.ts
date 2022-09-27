@@ -1,9 +1,8 @@
 export enum SwapStatus {
     Created = 'created',
 
-    Initiated = "initiated",
-    Pending = 'pending',
-
+    Initiated="initiated",
+    
     Completed = 'completed',
     Failed = 'failed',
 
