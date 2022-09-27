@@ -9,9 +9,10 @@ import { isValidAddress } from "./addressValidator";
 import { SwapType } from "./layerSwapApiClient";
 
 export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams, account?: string): SwapFormValues {
-    const { destNetwork, destAddress, sourceExchangeName } = queryParams
+    const { destNetwork, destAddress: queryParamAddress, sourceExchangeName } = queryParams
 
     const { data: { exchanges, networks, discovery: { resource_storage_url } } } = settings || {}
+    const destAddress = queryParamAddress || account
 
     const networkIsAvailable = (n: CryptoNetwork) => {
         return swapType === SwapType.OffRamp ?
@@ -28,7 +29,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
 
     const initialNetwork =
-        availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable)
+        availableNetworks.find(x => (x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() || (chainId && x.baseObject.chain_id === chainId)) && x.isAvailable)
 
     let initialAddress =
         destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
