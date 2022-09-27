@@ -1,10 +1,11 @@
-export interface QueryParams {
-    sourceExchangeName?: string,
-    destNetwork?: string,
-    lockAddress?: boolean,
-    lockNetwork?: boolean,
-    destAddress?: string,
-    addressSource?: string,
-    coinbase_redirect?: string,
-    asset?: string,
+///Doe to typechecking please always set default values in this class
+export class QueryParams {
+    sourceExchangeName?: string = "";
+    destNetwork?: string = "";
+    lockAddress?: boolean = false;
+    lockNetwork?: boolean = false;
+    destAddress?: string = "";
+    addressSource?: string = "";
+    coinbase_redirect?: string = "";
+    asset?: string = "";
 }

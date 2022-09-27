@@ -21,8 +21,7 @@ export default function () {
     const [feedbackDrawerIsOpen, setFeedbackDrawerIsOpen] = useState(false);
     const goToLink = (path: string, query: any) => {
         router.push({
-            pathname: path,
-            query: query
+            pathname: path
         })
     }
 
@@ -33,8 +32,7 @@ export default function () {
     const handleLogout = useCallback(() => {
         TokenService.removeAuthData()
         router.push({
-            pathname: "/",
-            query: router.query
+            pathname: "/"
         }, '/signedout', { shallow: true })
     }, [router.query])
 

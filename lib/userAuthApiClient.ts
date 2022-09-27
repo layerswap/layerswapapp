@@ -17,7 +17,6 @@ export default class LayerSwapAuthApiClient {
         const params = new URLSearchParams();
         params.append('client_id', 'layerswap_bridge_ui');
         params.append('grant_type', 'passwordless');
-        params.append('scopes', 'user_data');
         params.append('email', email);
         params.append('code', code);
 
