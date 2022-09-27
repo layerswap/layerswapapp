@@ -10,13 +10,17 @@ export function GetExchangeFee(currency?: Currency, exchange?: Exchange): number
 }
 
 export function CalculateFee(amount?: number, currency?: Currency, exchange?: Exchange, network?: CryptoNetwork, swapType?: SwapType): number {
-    if (!currency || !exchange) {
+    if (!currency || !exchange || !network) 
         return 0;
-    }
 
-    const currencyDetails = getCurrencyDetails(currency, exchange, network, swapType)
-    var fee = (currencyDetails?.fee || 0) + currencyDetails?.fee_percentage * amount;
-    return Number(fee.toFixed(currencyDetails?.precision));
+    const exchangeCurrency = exchange.currencies.find(c => c.asset === currency.asset)
+    const networkCurrency = network.currencies.find(c => c.asset === currency.asset)
+
+    const fee = swapType === SwapType.OnRamp ?
+        Number((amount * exchangeCurrency.fee_percentage + (exchangeCurrency.fee || 0)).toFixed(exchangeCurrency?.precision))
+        : Number((amount * networkCurrency.fee_percentage + (networkCurrency.fee || 0)).toFixed(networkCurrency?.precision))
+
+    return fee;
 }
 
 export function CalculateReceiveAmount(amount?: number, currency?: Currency, exchange?: Exchange, network?: CryptoNetwork, swapType?: SwapType) {
@@ -42,24 +46,21 @@ export function CalculateReceiveAmount(amount?: number, currency?: Currency, exc
 
 export function CalculateMaxAllowedAmount(currency?: Currency, exchange?: Exchange, network?: CryptoNetwork, swapType?: SwapType) {
 
-    if (!currency) return 0
+    if (!currency || !exchange || !network) return 0
+    const exchangeCurrency = exchange.currencies.find(c => c.asset === currency.asset)
+    const networkCurrency = network.currencies.find(c => c.asset === currency.asset)
 
-    const currencyDetails = getCurrencyDetails(currency, exchange, network, swapType)
+    const maxAmount = Math.min(exchangeCurrency?.max_withdrawal_amount, networkCurrency?.max_withdrawal_amount) || 0
 
-    if (!currencyDetails) return 0
-
-    return roundDecimals(currencyDetails.max_withdrawal_amount, currency?.usd_price?.toFixed()?.length) || 0
+    return roundDecimals(maxAmount, currency?.usd_price?.toFixed()?.length) || 0
 }
 
 export function CalculateMinAllowedAmount(currency?: Currency, exchange?: Exchange, network?: CryptoNetwork, swapType?: SwapType) {
 
-    if (!currency) return 0
+    if (!currency || !exchange || !network) return 0
+    const exchangeCurrency = exchange.currencies.find(c => c.asset === currency.asset)
+    const networkCurrency = network.currencies.find(c => c.asset === currency.asset)
 
-    const currencyDetails = getCurrencyDetails(currency, exchange, network, swapType)
-
-    if (!currencyDetails)
-        return 0
-
-    return roundDecimals(currencyDetails.min_withdrawal_amount, currency.usd_price?.toFixed()?.length) || 0
+    const maxAmount = Math.max(exchangeCurrency?.min_withdrawal_amount, networkCurrency?.min_withdrawal_amount) || 0
+    return roundDecimals(maxAmount, currency.usd_price?.toFixed()?.length) || 0
 }
-
