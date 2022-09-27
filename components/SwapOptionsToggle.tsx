@@ -1,3 +1,5 @@
+import { Web3Provider } from "@ethersproject/providers";
+import { useWeb3React } from "@web3-react/core";
 import { Field, useFormikContext } from "formik";
 import { FC, forwardRef, useCallback, useState } from "react";
 import { useQueryState } from "../context/query";
@@ -17,13 +19,14 @@ const SwapOptionsToggle = forwardRef((props, ref: any) => {
         values: { swapType },
         resetForm,
     } = useFormikContext<SwapFormValues>();
+    const { account, chainId } = useWeb3React<Web3Provider>();
 
     const settings = useSettingsState()
     const query = useQueryState()
     const name = 'swapType'
 
     const handleFieldChange = (value: SwapType) => {
-        const initialValues = generateSwapInitialValues(value, settings, query)
+        const initialValues = generateSwapInitialValues(value, settings, query, account, chainId)
 
         resetForm({ values: initialValues })
     }

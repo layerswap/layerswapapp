@@ -154,7 +154,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const lockAddress = !!account || query.lockAddress
 
-    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query)
+    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
 
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
