@@ -3,6 +3,7 @@ import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { SwapStatus } from "../Models/SwapStatus";
 import AppSettings from "./AppSettings";
 import authInterceptor from "./axiosInterceptor"
+import { v4 as uuidv4 } from 'uuid';
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
@@ -14,9 +15,10 @@ export default class LayerSwapApiClient {
     }
 
     async createSwap(params: CreateSwapParams, token: string): Promise<CreateSwapResponse> {
+        const correlationId = uuidv4()
         return await authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/api/swaps',
             params,
-            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            { headers: { 'Access-Control-Allow-Origin': '*', 'X-LS-CORRELATION-ID': correlationId, Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
     async getSwaps(page: number, token: string): Promise<SwapListResponse> {
