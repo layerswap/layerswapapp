@@ -4,15 +4,15 @@ import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formW
 import { useSwapDataUpdate } from '../../../context/swap';
 import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
-import { ProcessSwapStep, SwapWizardSteps } from '../../../Models/Wizard';
+import { SwapWithdrawalStep, SwapWizardSteps } from '../../../Models/Wizard';
 import toast from "react-hot-toast";
 import { SwapType } from '../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../context/settings';
 import { DepositFlow } from '../../../Models/Exchange';
 
 const OverviewStep: FC = () => {
-    const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<ProcessSwapStep>()
-    const { currentStepName: currentStep } = useFormWizardState<ProcessSwapStep>()
+    const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
+    const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
     const { data } = useSettingsState()
     const { exchanges } = data
     const router = useRouter();
@@ -23,11 +23,11 @@ const OverviewStep: FC = () => {
     useEffect(() => {
         (async () => {
             try {
-                if (currentStep !== ProcessSwapStep.Overview)
+                if (currentStep !== SwapWithdrawalStep.Overview)
                     return true
                 const authData = TokenService.getAuthData();
                 if (!authData) {
-                    goToStep(ProcessSwapStep.Email)
+                    goToStep(SwapWithdrawalStep.Email)
                     setLoadingWizard(false)
                     return;
                 }
@@ -37,25 +37,25 @@ const OverviewStep: FC = () => {
                 const exchange = exchanges.find(e => e.currencies.some(ec => ec.id === swap.data.exchange_currency_id))
 
                 if (swapStatus == SwapStatus.Completed)
-                    goToStep(ProcessSwapStep.Success)
+                    goToStep(SwapWithdrawalStep.Success)
                 else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
-                    goToStep(ProcessSwapStep.Failed)
+                    goToStep(SwapWithdrawalStep.Failed)
                 else {
                     if (swap?.data?.type === SwapType.OffRamp)
-                        goToStep(ProcessSwapStep.OffRampWithdrawal) ///TODO only for coinbase, implement other flows
+                        goToStep(SwapWithdrawalStep.OffRampWithdrawal) ///TODO only for coinbase, implement other flows
                     else if (exchange?.deposit_flow === DepositFlow.Manual)
-                        goToStep(ProcessSwapStep.Withdrawal)
+                        goToStep(SwapWithdrawalStep.Withdrawal)
                     else if (exchange?.deposit_flow === DepositFlow.External)
-                        goToStep(ProcessSwapStep.ExternalPayment)
+                        goToStep(SwapWithdrawalStep.ExternalPayment)
                     else
-                        goToStep(ProcessSwapStep.Processing)
+                        goToStep(SwapWithdrawalStep.Processing)
                 }
                 setTimeout(() => {
                     setLoadingWizard(false)
                 }, 500);
             }
             catch (e) {
-                goToStep(ProcessSwapStep.Failed)
+                goToStep(SwapWithdrawalStep.Failed)
                 toast.error(e.message)
                 setTimeout(() => {
                     setLoadingWizard(false)

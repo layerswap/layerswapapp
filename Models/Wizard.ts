@@ -31,7 +31,7 @@ export enum SwapCreateStep {
 
 }
 
-export enum ProcessSwapStep {
+export enum SwapWithdrawalStep {
     Email = "Email",
     Code = "Code",
     Overview = "Overview",
@@ -48,7 +48,7 @@ export enum AuthStep {
     Code = "Code"
 }
 
-export type Steps = AuthStep | ProcessSwapStep | SwapCreateStep
+export type Steps = AuthStep | SwapWithdrawalStep | SwapCreateStep
 
 export const ExchangeAuthorizationSteps: { [key: string]: SwapCreateStep } = {
     "api_credentials": SwapCreateStep.ApiKey,

@@ -11,7 +11,7 @@ export class SubmitButtonProps {
     onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
     icon?: React.ReactNode;
     buttonStyle?: buttonStyle = 'filled';
-    size?: buttonSize = 'medium'
+    size?: buttonSize = 'medium';
 }
 
 function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {
@@ -42,8 +42,7 @@ const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, c
             className={constructClassNames(size, buttonStyle)}
         >
             <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                {(!isDisabled && !isSubmitting) &&
-                    icon}
+                {(!isDisabled && !isSubmitting) && icon}
                 {isSubmitting ?
                     <SpinIcon className="animate-spin h-5 w-5" />
                     : null}

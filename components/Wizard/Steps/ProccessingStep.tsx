@@ -5,35 +5,35 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { useInterval } from '../../../hooks/useInterval';
 import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
-import { ProcessSwapStep } from '../../../Models/Wizard';
+import { SwapWithdrawalStep } from '../../../Models/Wizard';
 
 const ProccessingStep: FC = () => {
 
     // const { prevStep, nextStep, goToStep } = useWizardState();
     const { swap } = useSwapDataState()
-    const { currentStepName: currentStep } = useFormWizardState<ProcessSwapStep>()
+    const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
 
-    const { goToStep } = useFormWizardaUpdate<ProcessSwapStep>()
+    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
 
     useInterval(async () => {
-        if (currentStep !== ProcessSwapStep.Processing)
+        if (currentStep !== SwapWithdrawalStep.Processing)
             return true;
 
 
         const authData = TokenService.getAuthData();
         if (!authData) {
-            await goToStep(ProcessSwapStep.Email)
+            await goToStep(SwapWithdrawalStep.Email)
             return;
         }
         const swap = await getSwap(swapId.toString())
         const swapStatus = swap?.data?.status;
         if (swapStatus == SwapStatus.Completed)
-            await goToStep(ProcessSwapStep.Success)
+            await goToStep(SwapWithdrawalStep.Success)
         else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
-            await goToStep(ProcessSwapStep.Failed)
+            await goToStep(SwapWithdrawalStep.Failed)
 
     }, [currentStep, swapId], 2000)
 

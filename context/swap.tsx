@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import { BransferApiClient } from '../lib/bransferApiClients';
 import LayerSwapApiClient, { SwapItemResponse, SwapType } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate } from './authContext';
 import TokenService from '../lib/TokenService';
@@ -52,6 +51,7 @@ export function SwapDataProvider({ children }) {
             if (!authData?.access_token)
                 throw new Error("Not authenticated")
 
+            console.log("swapFormData.destination_address", swapFormData.destination_address)
             const swap = await layerswapApiClient.createSwap({
                 amount: Number(swapFormData.amount),
                 exchange: exchange?.id,
@@ -62,7 +62,7 @@ export function SwapDataProvider({ children }) {
             }, authData?.access_token)
 
             if (swap?.error)
-                throw new Error(swap.error)
+                throw new Error(swap?.error?.message)
 
             const swapId = swap.data.swap_id;
             const swapDetails = await layerswapApiClient.getSwapDetails(swapId, authData?.access_token)
@@ -78,9 +78,8 @@ export function SwapDataProvider({ children }) {
         const authData = getAuthData()
         if (!authData?.access_token)
             throw new Error("Not authenticated")
-        const bransferApiClient = new BransferApiClient()
         const layerswapApiClient = new LayerSwapApiClient()
-        const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(swap.data.id, authData.access_token, twoFactorCode)
+        const prcoessPaymentReponse = await layerswapApiClient.ProcessPayment(swap.data.id, authData.access_token, twoFactorCode)
         if (prcoessPaymentReponse.error)
             throw new Error(prcoessPaymentReponse.error)
         const swapDetails = await layerswapApiClient.getSwapDetails(swap.data.id, authData.access_token)
@@ -108,7 +107,7 @@ export function SwapDataProvider({ children }) {
             return newSwap.data.id
         }
         return _swap.data.id
-    }, [swapFormData, swap])
+    }, [swap])
 
     const updateFns: UpdateInterface = {
         clearSwap: () => { setSwap(undefined), setCodeRequested(false) },

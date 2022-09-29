@@ -4,7 +4,7 @@ import TokenService from "../lib/TokenService"
 import { ExclamationCircleIcon, SearchIcon } from '@heroicons/react/outline';
 import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
-import { BransferApiClient } from "../lib/bransferApiClients"
+import LayerswapApiClient from "../lib/layerSwapApiClient"
 import Image from 'next/image'
 import { Exchange } from "../Models/Exchange"
 import ConnectOauthExchange from "./connectOauthExchange"
@@ -64,8 +64,8 @@ function UserExchanges() {
     }, [router.query])
 
     const getAndMapExchanges = useCallback(async (authData) => {
-        const bransferApiClient = new BransferApiClient()
-        const userExchanges = await bransferApiClient.GetExchangeAccounts(authData.access_token)
+        const layerswapApiClient = new LayerswapApiClient()
+        const userExchanges = await layerswapApiClient.GetExchangeAccounts(authData.access_token)
 
         const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none').map(e => {
             return {
@@ -105,8 +105,8 @@ function UserExchanges() {
                 })
                 return;
             }
-            const bransferApiClient = new BransferApiClient()
-            await bransferApiClient.DeleteExchange(exchange.internal_name, authData.access_token)
+            const layerswapApiClient = new LayerswapApiClient()
+            await layerswapApiClient.DeleteExchange(exchange.internal_name, authData.access_token)
             await getAndMapExchanges(authData)
         }
         catch (e) {

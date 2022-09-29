@@ -11,9 +11,9 @@ import { SwapDataProvider } from '../context/swap';
 import { UserExchangeProvider } from '../context/userExchange';
 import { MenuProvider } from '../context/menu';
 import { SettingsProvider } from '../context/settings';
-import ProcessSwap from '../components/Wizard/ProcessSwapWizard';
+import SwapWithdrawal from '../components/Wizard/SwapWithdrawalWizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
-import { ProcessSwapStep } from '../Models/Wizard';
+import { SwapWithdrawalStep } from '../Models/Wizard';
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
@@ -27,8 +27,8 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
                 <MenuProvider>
                   <SwapDataProvider >
                     <UserExchangeProvider>
-                      <FormWizardProvider initialStep={ProcessSwapStep.Overview} initialLoading={true}>
-                        <ProcessSwap />
+                      <FormWizardProvider initialStep={SwapWithdrawalStep.Overview} initialLoading={true}>
+                        <SwapWithdrawal />
                       </FormWizardProvider>
                     </UserExchangeProvider>
                   </SwapDataProvider >

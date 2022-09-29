@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useInterval } from '../hooks/useInterval';
-import { BransferApiClient } from '../lib/bransferApiClients';
+import LayerswapApiClient from '../lib/layerSwapApiClient';
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
@@ -35,8 +35,8 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                 })
                 return true;
             }
-            const bransferApiClient = new BransferApiClient()
-            const userExchanges = await bransferApiClient.GetExchangeAccounts(access_token)
+            const layerswapApiClient = new LayerswapApiClient()
+            const userExchanges = await layerswapApiClient.GetExchangeAccounts(access_token)
 
             if (userExchanges.data.some(e => e.exchange_id === exchange?.id)) {
                 authWindowRef.current?.close()

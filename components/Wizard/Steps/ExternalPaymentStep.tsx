@@ -3,7 +3,7 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { ProcessSwapStep } from '../../../Models/Wizard';
+import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
@@ -14,7 +14,7 @@ const ExternalPaymentStep: FC = () => {
     const { swap } = useSwapDataState()
     const { currentStepName: currentStep } = useFormWizardState()
 
-    const { goToStep } = useFormWizardaUpdate<ProcessSwapStep>()
+    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
@@ -22,19 +22,19 @@ const ExternalPaymentStep: FC = () => {
     const { exchanges, networks } = data
 
     useInterval(async () => {
-        if (currentStep !== ProcessSwapStep.ExternalPayment)
+        if (currentStep !== SwapWithdrawalStep.ExternalPayment)
             return true
 
         const authData = TokenService.getAuthData();
         if (!authData)
-            goToStep(ProcessSwapStep.Email)
+            goToStep(SwapWithdrawalStep.Email)
 
         const swap = await getSwap(swapId.toString())
         const swapStatus = swap?.data?.status;
         if (swapStatus == SwapStatus.Completed)
-            goToStep(ProcessSwapStep.Success)
+            goToStep(SwapWithdrawalStep.Success)
         else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
-            goToStep(ProcessSwapStep.Failed)
+            goToStep(SwapWithdrawalStep.Failed)
     }, [currentStep, swapId], 10000)
 
     const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
@@ -46,7 +46,7 @@ const ExternalPaymentStep: FC = () => {
     const handleContinue = useCallback(async () => {
         const access_token = TokenService.getAuthData()?.access_token
         if (!access_token)
-            goToStep(ProcessSwapStep.Email)
+            goToStep(SwapWithdrawalStep.Email)
         const swap = await getSwap(swapId.toString())
         const payment_url = swap?.data?.additonal_data?.payment_url
         window.open(payment_url, '_blank', 'width=420,height=720')

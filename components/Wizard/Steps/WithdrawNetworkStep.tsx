@@ -4,7 +4,7 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { ProcessSwapStep, SwapWizardSteps } from '../../../Models/Wizard';
+import { SwapWithdrawalStep, SwapWizardSteps } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
@@ -17,15 +17,15 @@ import WarningMessage from '../../WarningMessage';
 import NetworkSettings from '../../../lib/NetworkSettings';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
-import KnownIds from '../../../lib/knownIds';
+import KnownInternalNames from '../../../lib/knownIds';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
-    const { currentStepName: currentStep } = useFormWizardState<ProcessSwapStep>()
+    const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
     const { data } = useSettingsState()
     const { exchanges, networks, currencies, discovery: { resource_storage_url } } = data
-    const { goToStep } = useFormWizardaUpdate<ProcessSwapStep>()
+    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
@@ -34,38 +34,38 @@ const WithdrawNetworkStep: FC = () => {
     const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
 
     useInterval(async () => {
-        if (currentStep !== ProcessSwapStep.OffRampWithdrawal)
+        if (currentStep !== SwapWithdrawalStep.OffRampWithdrawal)
             return true
         const authData = TokenService.getAuthData();
         if (!authData) {
-            goToStep(ProcessSwapStep.Email)
+            goToStep(SwapWithdrawalStep.Email)
             return;
         }
         const swap = await getSwap(swapId.toString())
         const swapStatus = swap?.data.status;
         if (swapStatus == SwapStatus.Completed)
-            goToStep(ProcessSwapStep.Success)
+            goToStep(SwapWithdrawalStep.Success)
         else if (swapStatus == SwapStatus.Failed)
-            goToStep(ProcessSwapStep.Failed)
+            goToStep(SwapWithdrawalStep.Failed)
     }, [currentStep], 10000)
 
     const handleConfirm = useCallback(async () => {
         setTransferDone(true)
     }, [])
 
-    const network = networks?.find(n => n.currencies.some(nc=>nc.id === swap?.data?.network_currency_id))
-    const currency = network?.currencies.find(n=>n.id === swap?.data?.network_currency_id)
+    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.data?.network_currency_id))
+    const currency = network?.currencies.find(n => n.id === swap?.data?.network_currency_id)
 
     const network_name = network?.display_name || ' '
     const network_logo_url = network?.logo
-    const network_id = network?.id
+    const network_internal_name = network?.internal_name
 
     if (!swap?.data?.additonal_data) {
         return null;
     }
 
-    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[network?.id]?.UserGuideUrlForDesktop
-    const userGuideUrlForMobile = NetworkSettings.KnownSettings[network?.id]?.UserGuideUrlForMobile
+    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[network?.internal_name]?.UserGuideUrlForDesktop
+    const userGuideUrlForMobile = NetworkSettings.KnownSettings[network?.internal_name]?.UserGuideUrlForMobile
 
     return (
         <>
@@ -110,7 +110,7 @@ const WithdrawNetworkStep: FC = () => {
 
                     <div className='mb-6 grid grid-cols-1 gap-4'>
                         {
-                            network_id === KnownIds.Networks.LoopringMainnetId &&
+                            network_internal_name === KnownInternalNames.Networks.LoopringMainnet &&
                             <BackgroundField header={'Select as "Where would you like to send your crypto to"'}>
                                 <div className='flex items-center space-x-2'>
                                     <SwitchHorizontalIcon className='h-4 w-4' />
@@ -200,7 +200,7 @@ export default WithdrawNetworkStep;
 
 function renderGuideButton(userGuideUrlForDesktop: string, buttonText: string) {
     return <div className="w-full items-center">
-        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} icon={''}>{buttonText}</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
+        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} >{buttonText}</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
             {(close) => (
                 <DocIframe onConfirm={() => close()} URl={userGuideUrlForDesktop} />
             )}

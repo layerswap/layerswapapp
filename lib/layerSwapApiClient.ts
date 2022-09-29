@@ -31,6 +31,31 @@ export default class LayerSwapApiClient {
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
+    async GetExchangeAccounts(token: string): Promise<UserExchangesResponse> {
+        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + '/api/exchange_accounts')
+            .then(res => res.data)
+    }
+    async GetExchangeDepositAddress(exchange: string, currency: string, token: string): Promise<ExchangeDepositAddressReponse> {
+        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}/deposit_address/${currency}`,
+            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            .then(res => res.data)
+    }
+    async DeleteExchange(exchange: string, token: string): Promise<ConnectResponse> {
+        return await authInterceptor.delete(LayerSwapApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}`,
+            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            .then(res => res.data)
+    }
+    async ConnectExchangeApiKeys(params: ConnectParams, token: string): Promise<ConnectResponse> {
+        return await authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/api/exchange_accounts',
+            params,
+            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            .then(res => res.data)
+    }
+    async ProcessPayment(id: string, token: string, twoFactorCode?: string): Promise<PaymentProcessreponse> {
+        return await authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`,
+            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            .then(res => res.data)
+    }
 }
 
 export type CreateSwapParams = {
@@ -111,12 +136,46 @@ export type Payment = {
     sequence_number: string,
 }
 
+
+export type PaymentProcessreponse = {
+    error: string
+}
+
+export type ExchangeDepositAddressReponse = {
+    data: string,
+    error: ApiError
+}
+
+
+export type ConnectParams = {
+    api_key: string,
+    api_secret: string,
+    keyphrase?: string,
+    exchange: string
+}
+
+export type ConnectResponse = {
+    request_id: string,
+    error: ApiError
+}
+
+
+export interface UserExchangesResponse {
+    data: [
+        {
+            exchange_id: string,
+            note: string
+        }
+    ],
+    error: ApiError
+}
+
+
 type CreateSwapResponse = {
     data: {
         swap_id: string
     },
-    is_success: boolean,
-    error: string
+    error: ApiError
 }
 
 

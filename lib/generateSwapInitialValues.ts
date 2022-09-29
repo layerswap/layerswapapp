@@ -30,7 +30,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
 
     const initialNetwork =
-        availableNetworks.find(x => (x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() || (chainId && NetworkSettings.KnownSettings[x.baseObject.id]?.ChainId  === chainId)) && x.isAvailable)
+        availableNetworks.find(x => (x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() || (chainId && NetworkSettings.KnownSettings[x.baseObject.internal_name]?.ChainId  === chainId)) && x.isAvailable)
 
     let initialAddress =
         destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";

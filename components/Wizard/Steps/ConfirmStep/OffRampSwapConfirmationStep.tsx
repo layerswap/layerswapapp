@@ -7,7 +7,7 @@ import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import AddressDetails from '../../../DisclosureComponents/AddressDetails';
 import TokenService from '../../../../lib/TokenService';
-import { BransferApiClient } from '../../../../lib/bransferApiClients';
+import LayerswapApiClient from '../../../../lib/layerSwapApiClient';
 import NetworkSettings from '../../../../lib/NetworkSettings';
 import WarningMessage from '../../../WarningMessage';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
@@ -33,13 +33,14 @@ const OffRampSwapConfirmationStep: FC = () => {
                 goToStep(SwapCreateStep.Email)
                 return;
             }
-            const bransferApiClient = new BransferApiClient()
-            const response = await bransferApiClient.GetExchangeDepositAddress(exchange?.baseObject?.internal_name, currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
+            const layerswapApiClient = new LayerswapApiClient()
+            const response = await layerswapApiClient.GetExchangeDepositAddress(exchange?.baseObject?.internal_name, currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
             updateSwapFormData((old) => ({ ...old, destination_address: response.data }))
         })()
     }, [currentStepName])
 
-    const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
+    console.log("swapFormData?.destination_address", swapFormData?.destination_address)
+
     const transferAmount = `${amount} ${currency?.name}`
 
     const handleSubmit = useCallback(async () => {
@@ -62,10 +63,10 @@ const OffRampSwapConfirmationStep: FC = () => {
             <div className='px-6 md:px-8 h-full flex flex-col justify-between'>
                 <SwapConfirmMainData>
                     {
-                        NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage &&
+                        NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
                         <WarningMessage className='mb-4'>
                             <p className='font-normal text-sm text-darkblue-600'>
-                                {NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage}
+                                {NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}
                             </p>
                         </WarningMessage>
                     }

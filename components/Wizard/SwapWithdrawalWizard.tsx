@@ -1,7 +1,7 @@
 import { FC, useCallback } from "react";
 import { useFormWizardaUpdate } from "../../context/formWizardProvider";
-import useProcessSwap from "../../hooks/useProcessSwap";
-import { ProcessSwapStep } from "../../Models/Wizard";
+import useSwapWithdrawal from "../../hooks/useSwapWithdrawal";
+import { SwapWithdrawalStep } from "../../Models/Wizard";
 import CodeStep from "./Steps/CodeStep";
 import EmailStep from "./Steps/EmailStep";
 import ExternalPaymentStep from "./Steps/ExternalPaymentStep";
@@ -14,42 +14,42 @@ import WithdrawNetworkStep from "./Steps/WithdrawNetworkStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 
-const ProcessSwap: FC = () => {
-    const { Email, Code } = useProcessSwap()
+const SwapWithdrawal: FC = () => {
+    const { Email, Code } = useSwapWithdrawal()
     const { goToStep } = useFormWizardaUpdate()
-    const GoToEmailStep = useCallback(() => goToStep(ProcessSwapStep.Email), [])
+    const GoToEmailStep = useCallback(() => goToStep(SwapWithdrawalStep.Email), [])
 
     return (
         <Wizard>
-            <WizardItem StepName={ProcessSwapStep.Email}>
+            <WizardItem StepName={SwapWithdrawalStep.Email}>
                 <EmailStep OnNext={Email.onNext} />
             </WizardItem>
-            <WizardItem StepName={ProcessSwapStep.Email} GoBack={GoToEmailStep}>
+            <WizardItem StepName={SwapWithdrawalStep.Email} GoBack={GoToEmailStep}>
                 <CodeStep OnNext={Code.onNext} />
             </WizardItem>
-            <WizardItem StepName={ProcessSwapStep.Overview}>
+            <WizardItem StepName={SwapWithdrawalStep.Overview}>
                 <OverviewStep />
             </WizardItem>
-            <WizardItem StepName={ProcessSwapStep.ExternalPayment}>
+            <WizardItem StepName={SwapWithdrawalStep.ExternalPayment}>
                 <ExternalPaymentStep />
             </WizardItem>
-            <WizardItem StepName={ProcessSwapStep.Withdrawal}>
+            <WizardItem StepName={SwapWithdrawalStep.Withdrawal}>
                 <WithdrawExchangeStep />
             </WizardItem>
-            <WizardItem StepName={ProcessSwapStep.OffRampWithdrawal}>
+            <WizardItem StepName={SwapWithdrawalStep.OffRampWithdrawal}>
                 <WithdrawNetworkStep />
             </WizardItem>
-            <WizardItem StepName={ProcessSwapStep.Processing}>
+            <WizardItem StepName={SwapWithdrawalStep.Processing}>
                 <ProccessingStep />
             </WizardItem>
-            <WizardItem StepName={ProcessSwapStep.Success}>
+            <WizardItem StepName={SwapWithdrawalStep.Success}>
                 <SuccessfulStep />
             </WizardItem>
-            <WizardItem StepName={ProcessSwapStep.Failed}>
+            <WizardItem StepName={SwapWithdrawalStep.Failed}>
                 <FailedStep />
             </WizardItem>
         </Wizard>
     )
 };
 
-export default ProcessSwap;
+export default SwapWithdrawal;

@@ -9,12 +9,13 @@ import SwapConfirmationStep from "../components/Wizard/Steps/ConfirmStep/OnRampS
 import { useFormWizardaUpdate } from "../context/formWizardProvider";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { useUserExchangeDataUpdate } from "../context/userExchange";
-import { BransferApiClient } from "../lib/bransferApiClients";
-import KnownIds from "../lib/knownIds";
+import LayerSwapApiClient from "../lib/layerSwapApiClient";
+import KnownInternalNames from "../lib/knownIds";
 import TokenService from "../lib/TokenService";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { ExchangeAuthorizationSteps, OfframpExchangeAuthorizationSteps, SwapCreateStep, WizardStep } from "../Models/Wizard";
 import { SwapType } from "../lib/layerSwapApiClient";
+import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 
 
 const useCreateSwap = () => {
@@ -23,34 +24,45 @@ const useCreateSwap = () => {
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const { swapFormData } = useSwapDataState()
 
+    const handleCoinbaseOfframp = useCallback(async (formData: SwapFormValues, access_token: string) => {
+        const exchanges = (await getUserExchanges(access_token))?.data
+        const { exchange: selected_exchange, currency } = formData
+        const selected_exchange_internal_name = selected_exchange?.baseObject?.internal_name
+        const layerswapApiClient = new LayerSwapApiClient()
+        const asset = currency?.baseObject?.asset
+        try {
+            console.log("hey")
+            const response = await layerswapApiClient.GetExchangeDepositAddress(selected_exchange_internal_name, asset.toUpperCase(), access_token)
+            if (!response.error) {
+                const { data } = response
+                updateSwapFormData({ ...formData, destination_address: data })
+                return goToStep(SwapCreateStep.Confirm)
+            }
+            else {
+                throw Error("Could not get exchange deposit address")
+            }
+        }
+        catch (e) {
+            console.log("errr", e)
+            const selected_exchange_id = selected_exchange.baseObject.id
+            const selected_exchange_auth_flow = selected_exchange?.baseObject?.authorization_flow
+            if (exchanges.some(e => e.exchange_id === selected_exchange_id))
+                await layerswapApiClient.DeleteExchange(selected_exchange_internal_name, access_token)
+            return goToStep(OfframpExchangeAuthorizationSteps[selected_exchange_auth_flow])
+        }
+    }, [])
 
     const MainForm: WizardStep<SwapCreateStep> = {
         Content: MainStep,
         Name: SwapCreateStep.MainForm,
         positionPercent: 0,
-        onNext: async (values) => {
+        onNext: async (values: SwapFormValues) => {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken)
                 return goToStep(SwapCreateStep.Email);
 
-            if (values.swapType === "offramp" && values.exchange.baseObject.id === KnownIds.Exchanges.CoinbaseId) {
-                const bransferApiClient = new BransferApiClient()
-                try {
-                    const response = await bransferApiClient.GetExchangeDepositAddress(values.exchange?.baseObject?.internal_name, values.currency?.baseObject?.asset?.toUpperCase(), accessToken)
-                    if (response.is_success) {
-                        updateSwapFormData({ ...values, destination_address: response.data })
-                        return goToStep(SwapCreateStep.Confirm);
-                    }
-                    else {
-                        throw Error("Could not get exchange deposit address")
-                    }
-                }
-                catch (e) {
-                    const exchanges = (await getUserExchanges(accessToken))?.data
-                    if (exchanges.some(e => e.exchange_id === values.exchange.baseObject.id))
-                        await bransferApiClient.DeleteExchange(values.exchange.baseObject.id, accessToken)
-                    return goToStep(SwapCreateStep.OffRampOAuth)
-                }
+            if (values.swapType === SwapType.OffRamp && values.exchange.baseObject.internal_name === KnownInternalNames.Exchanges.Coinbase) {
+                handleCoinbaseOfframp(values, accessToken)
             }
             else {
                 const exchanges = (await getUserExchanges(accessToken))?.data
@@ -78,23 +90,8 @@ const useCreateSwap = () => {
             const exchanges = (await getUserExchanges(res.access_token))?.data
             const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange?.baseObject.id)
 
-            if (swapFormData.swapType === SwapType.OffRamp && swapFormData.exchange.baseObject.id === KnownIds.Exchanges.CoinbaseId) {
-                const bransferApiClient = new BransferApiClient()
-                try {
-                    const response = await bransferApiClient.GetExchangeDepositAddress(swapFormData.exchange?.baseObject?.internal_name, swapFormData.currency?.baseObject?.asset?.toUpperCase(), res.access_token)
-                    if (response.is_success) {
-                        updateSwapFormData({ ...swapFormData, destination_address: response.data })
-                        return goToStep(SwapCreateStep.Confirm)
-                    }
-                    else {
-                        throw Error("Could not get exchange deposit address")
-                    }
-                }
-                catch (e) {
-                    if (exchanges.some(e => e.exchange_id === swapFormData.exchange.baseObject.id))
-                        await bransferApiClient.DeleteExchange(swapFormData.exchange.baseObject.id, res.access_token)
-                    return goToStep(OfframpExchangeAuthorizationSteps[swapFormData?.exchange?.baseObject?.authorization_flow])
-                }
+            if (swapFormData.swapType === SwapType.OffRamp && swapFormData.exchange.baseObject.internal_name === KnownInternalNames.Exchanges.Coinbase) {
+                handleCoinbaseOfframp(swapFormData, res.access_token)
             }
             else if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow === "none" || exchangeIsEnabled)
                 return goToStep(SwapCreateStep.Confirm)
