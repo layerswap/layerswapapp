@@ -282,14 +282,14 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                         )}
 
                                         {query !== '' && filteredItems.length === 0 && (
-                                            <div className="py-14 px-6 text-center text-sm sm:px-14">
+                                            <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
                                                 <ExclamationCircleIcon
                                                     type="outline"
                                                     name="exclamation-circle"
-                                                    className="mx-auto h-6 w-6 text-primary-text"
+                                                    className="mx-auto h-16 w-16 text-primary"
                                                 />
-                                                <p className="mt-4 font-semibold text-gray-900">No results found</p>
-                                                <p className="mt-2 text-gray-500">No components found for this search term. Please try again.</p>
+                                                <p className="mt-4 font-semibold">No 'items' found.</p>
+                                                <p className="mt-2">Please try a different search term.</p>
                                             </div>
                                         )}
                                     </Combobox>

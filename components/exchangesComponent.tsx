@@ -153,11 +153,11 @@ function UserExchanges() {
     }
 
     return (
-        <div className='bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative min-h'>
+        <div className='bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative'>
             <div className="mt-3 flex items-center justify-between z-20" >
                 <div className="hidden md:block">
                     <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
-                    <span className="text-gray-500 font-medium">{email}</span>
+                    <span className="text-primary-text font-medium">{email}</span>
                 </div>
                 <div className='mx-auto px-4 overflow-hidden md:hidden'>
                     <div className="flex justify-center">
@@ -230,7 +230,7 @@ function UserExchanges() {
                                                                     <>
                                                                         {
                                                                             item.is_connected ?
-                                                                                <SubmitButton onClick={() => {setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true)}} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id}>Disconnect</SubmitButton>
+                                                                                <SubmitButton onClick={() => { setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true) }} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id}>Disconnect</SubmitButton>
                                                                                 : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Connect</SubmitButton>
                                                                         }
                                                                     </>
@@ -246,14 +246,14 @@ function UserExchanges() {
                         </Combobox.Options>
 
                         {query !== '' && filteredItems?.length === 0 && (
-                            <div className="py-14 px-6 text-center text-sm sm:px-14">
+                            <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
                                 <ExclamationCircleIcon
                                     type="outline"
                                     name="exclamation-circle"
-                                    className="mx-auto h-6 w-6 text-primary-text"
+                                    className="mx-auto h-16 w-16 text-primary"
                                 />
-                                <p className="mt-4 font-semibold text-gray-900">No results found</p>
-                                <p className="mt-2 text-gray-500">No components found for this search term. Please try again.</p>
+                                <p className="mt-4 font-semibold">No 'items' found.</p>
+                                <p className="mt-2">Please try a different search term.</p>
                             </div>
                         )}
                     </Combobox>

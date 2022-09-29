@@ -98,7 +98,7 @@ function TransactionsHistory() {
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="hidden md:block">
           <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
-          <span className="text-gray-500 font-medium">{email}</span>
+          <span className="text-primary-text font-medium">{email}</span>
         </div>
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
           <div className="flex justify-center">
@@ -117,15 +117,15 @@ function TransactionsHistory() {
                   <div className="mb-2">
                     <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
                       <table className="min-w-full divide-y divide-darkblue-500">
-                        <thead>
+                        <thead className="text-primary-text">
                           <tr>
                             <th
                               scope="col"
-                              className="hidden pr-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                              className="hidden pr-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
                               Id
                             </th>
-                            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-500 sm:pl-6">
+                            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold  sm:pl-6">
                               <div className="hidden lg:block">
                                 From
                               </div>
@@ -135,38 +135,38 @@ function TransactionsHistory() {
                             </th>
                             <th
                               scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
                               To
                             </th>
                             <th
                               scope="col"
-                              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-500 "
+                              className="px-3 py-3.5 text-left text-sm font-semibold  "
                             >
                               Amount
                             </th>
                             {/* <th
                 scope="col"
-                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
               >
                 Fee
               </th> */}
                             <th
                               scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
                               Transaction
                             </th>
                             <th
                               scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
                               Status
                             </th>
 
                             <th
                               scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
                               Date
                             </th>
@@ -190,7 +190,7 @@ function TransactionsHistory() {
                                 )}
                               >
                                 <div className='inline-flex items-center'>
-                                  <CopyButton iconClassName="text-gray-500" toCopy={swap.id}>
+                                  <CopyButton iconClassName="text-primary-text" toCopy={swap.id}>
                                     {shortenAddress(swap.id)}
                                   </CopyButton>
                                 </div>
