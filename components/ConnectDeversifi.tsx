@@ -15,17 +15,6 @@ const ConnectDeversifi: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
     const [loading, setLoading] = useState(false)
 
     const connectButtonIcon = <LinkIcon className='h-5 w-5'></LinkIcon>
-    
-    const modalDescription = () => {
-        return (
-            <div className='text-base'>
-                <span>
-                    DeversiFi account with the provided address does not exist. To create one, go to DeversiFi and connect your wallet.
-                </span>
-            </div>)
-    }
-
-    const exernalLinkIcon = <ExternalLinkIcon className='h-5 w-5'></ExternalLinkIcon>
 
     return (
         <Transition
@@ -85,12 +74,12 @@ const ConnectDeversifi: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                                     <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                                         DeversiFi connect
                                         <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-primary-text font-light'>
-                                            DeversiFi account with the provided address does not exist. To create one, go to DeversiFi and connect your wallet.                                            
+                                            DeversiFi account with the provided address does not exist. To create one, go to DeversiFi and connect your wallet.
                                         </p>
                                     </h3>
 
                                     <div className="mt-3 sm:mt-6 text-white text-sm">
-                                        <SubmitButton icon={connectButtonIcon} isDisabled={loading} isSubmitting={loading} onClick={() =>  window.open('https://app.deversifi.com/', '_blank')}>
+                                        <SubmitButton icon={connectButtonIcon} isDisabled={loading} isSubmitting={loading} onClick={() => window.open('https://app.deversifi.com/', '_blank')}>
                                             Connect
                                         </SubmitButton>
                                     </div>

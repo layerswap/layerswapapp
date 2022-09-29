@@ -17,6 +17,7 @@ export class Exchange {
     is_default: boolean;
     authorization_flow: "o_auth2" | "api_credentials" | "none" | null;
     oauth_login_redirect_url: string;
+    o_auth_login_url: string;
     has_keyphrase: boolean;
 }
 

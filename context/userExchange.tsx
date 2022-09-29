@@ -1,5 +1,5 @@
 import React from 'react'
-import { BransferApiClient, UserExchangesResponse } from '../lib/bransferApiClients';
+import LayerSwapApiClient, { UserExchangesResponse } from '../lib/layerSwapApiClient';
 
 const UserExchangeStateContext = React.createContext<any>(null);
 const UserExchangeDataUpdateContext = React.createContext<any>(null);
@@ -11,11 +11,11 @@ type UpdateFns = {
 export function UserExchangeProvider({ children }) {
     const [exchangeData, setUserExchangeData] = React.useState({});
 
-    const bransferApiClient = new BransferApiClient()
+    const layerswapApiClient = new LayerSwapApiClient()
 
     const updateFns: UpdateFns = {
         getUserExchanges: async (token: string): Promise<UserExchangesResponse> => {
-            const res = await bransferApiClient.GetExchangeAccounts(token)
+            const res = await layerswapApiClient.GetExchangeAccounts(token)
             setUserExchangeData(res)
             return res;
         }

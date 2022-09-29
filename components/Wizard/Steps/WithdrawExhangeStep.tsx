@@ -3,7 +3,7 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { ProcessSwapStep, SwapWizardSteps } from '../../../Models/Wizard';
+import { SwapWithdrawalStep, SwapWizardSteps } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
@@ -18,10 +18,10 @@ import WarningMessage from '../../WarningMessage';
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
-    const { currentStepName: currentStep } = useFormWizardState<ProcessSwapStep>()
+    const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
     const { data } = useSettingsState()
     const { exchanges, currencies, discovery: { resource_storage_url } } = data
-    const { goToStep } = useFormWizardaUpdate<ProcessSwapStep>()
+    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
@@ -30,21 +30,21 @@ const WithdrawExchangeStep: FC = () => {
     const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
 
     useInterval(async () => {
-        if (currentStep !== ProcessSwapStep.Withdrawal)
+        if (currentStep !== SwapWithdrawalStep.Withdrawal)
             return true;
 
         const authData = TokenService.getAuthData();
         if (!authData)
-            goToStep(ProcessSwapStep.Email)
+            goToStep(SwapWithdrawalStep.Email)
 
         const swap = await getSwap(swapId.toString())
         const swapStatus = swap?.data.status;
         if (swapStatus == SwapStatus.Completed)
-            goToStep(ProcessSwapStep.Success)
+            goToStep(SwapWithdrawalStep.Success)
         else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
-            goToStep(ProcessSwapStep.Failed)
+            goToStep(SwapWithdrawalStep.Failed)
         else if (swapStatus == SwapStatus.PendingWithdrawal)
-            goToStep(ProcessSwapStep.Processing)
+            goToStep(SwapWithdrawalStep.Processing)
 
     }, [currentStep], 10000)
 
@@ -56,7 +56,7 @@ const WithdrawExchangeStep: FC = () => {
     const exchange = exchanges?.find(e => e.currencies.some(ec=>ec.id === swap?.data?.exchange_currency_id))
     const currency = exchange?.currencies?.find(c=>c.id === swap?.data?.exchange_currency_id)
     const exchange_name = exchange?.display_name || ' '
-    const exchange_id = exchange?.id
+    const exchange_internal_name = exchange?.internal_name
     const exchange_logo_url = exchange?.logo
 
     return (
@@ -89,7 +89,7 @@ const WithdrawExchangeStep: FC = () => {
                         </h3>
                     </div>
                     {
-                        ExchangeSettings.KnownSettings[exchange_id]?.WithdrawalWarningMessage && 
+                        ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage && 
                         <div className='flex-col w-full rounded-md bg-primary-700 shadow-lg p-2'>
                             <div className='flex items-center'>
                                 <div className='mr-2 p-2 rounded-lg bg-primary-600'>
@@ -98,7 +98,7 @@ const WithdrawExchangeStep: FC = () => {
                                     </svg>
                                 </div>
                                 <p className='font-normal text-sm text-darkblue-600'>
-                                    {ExchangeSettings.KnownSettings[exchange_id]?.WithdrawalWarningMessage}
+                                    {ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage}
                                 </p>
                             </div>
                         </div>

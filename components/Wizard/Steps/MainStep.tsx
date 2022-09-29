@@ -23,7 +23,7 @@ import { InjectedConnector } from "@web3-react/injected-connector";
 import { clearTempData, getTempData } from "../../../lib/openLink";
 import AddressInput from "../../Input/AddressInput";
 import { classNames } from "../../utils/classNames";
-import KnownIds from "../../../lib/knownIds";
+import KnownInternalNames from "../../../lib/knownIds";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import SwapOptionsToggle from "../../SwapOptionsToggle";
 import { ConnectedFocusError } from "../../../lib/external/ConnectedFocusError";
@@ -120,7 +120,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             clearSwap()
             updateSwapFormData(values)
 
-            if (values.network.baseObject.id == KnownIds.Networks.ImmutableXId) {
+            if (values.network.baseObject.internal_name == KnownInternalNames.Networks.ImmutableX) {
                 const client = await ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
                 if (!isRegistered) {
@@ -128,7 +128,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                     setLoading(false)
                     return
                 }
-            } else if (values.network.baseObject.id == KnownIds.Networks.RhinoFiMainnetId) {
+            } else if (values.network.baseObject.internal_name == KnownInternalNames.Networks.RhinoFiMainnet) {
                 const client = await axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
                 const isRegistered = await client.data?.isRegisteredOnDeversifi
                 if (!isRegistered) {

@@ -16,7 +16,7 @@ import { useDelayedInterval } from '../../../hooks/useInterval';
 
 const OfframpAccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
-    const { oauth_login_redirect_url } = swapFormData?.exchange?.baseObject || {}
+    const { o_auth_login_url } = swapFormData?.exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const { currentStepName } = useFormWizardState<SwapCreateStep>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
@@ -24,15 +24,8 @@ const OfframpAccountConnectStep: FC = () => {
     const authWindowRef = useRef<Window | null>(null);
     const query = useQueryState()
 
-    useEffect(() => {
-        let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
-        let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
-        const addressSource = query.addressSource || ""
-        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || addressSource)
-    }, [query])
-
     const { startInterval } = useDelayedInterval(async () => {
-        if (currentStepName !== SwapCreateStep.OAuth)
+        if (currentStepName !== SwapCreateStep.OffRampOAuth)
             return true
 
         const { access_token } = TokenService.getAuthData() || {};
@@ -40,6 +33,16 @@ const OfframpAccountConnectStep: FC = () => {
             await goToStep(SwapCreateStep.Email)
             return true;
         }
+
+        let authWindowHref = ""
+        try {
+            authWindowHref = authWindowRef.current?.location?.href
+        }
+        catch (e) {
+
+        }
+        if (!authWindowHref || authWindowHref?.indexOf(window.location.origin) === -1)
+            return false
         const exchanges = await (await getUserExchanges(access_token))?.data
         const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange.baseObject?.id)
         if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
@@ -57,12 +60,13 @@ const OfframpAccountConnectStep: FC = () => {
             if (!access_token)
                 goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
-            authWindowRef.current = OpenLink({ link: oauth_login_redirect_url + sub, swap_data: swapFormData, query })
+            const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
+            authWindowRef.current = OpenLink({ link: o_auth_login_url + encoded, swap_data: swapFormData, query })
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_login_redirect_url, addressSource, query])
+    }, [o_auth_login_url, addressSource, query])
 
     const exchange_name = swapFormData?.exchange?.name
 

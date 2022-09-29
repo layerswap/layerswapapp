@@ -46,7 +46,7 @@ const SuccessfulStep: FC = () => {
                 {
                     data.networks && swap?.data.transaction_id &&
                     <div className="text-white mb-2.5 md:mb-5 md:mt-3 mt-0">
-                        <SubmitButton buttonStyle='filled' isDisabled={false} isSubmitting={false} icon={ExternalLinkIcon} onClick={handleViewInExplorer}>View in Explorer <ExternalLinkIcon className='ml-2 h-5 w-5' /></SubmitButton>
+                        <SubmitButton buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer}>View in Explorer <ExternalLinkIcon className='ml-2 h-5 w-5' /></SubmitButton>
                     </div>
                 }
                 <div className="w-full justify-center">
