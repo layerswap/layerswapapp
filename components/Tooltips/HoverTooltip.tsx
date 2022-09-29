@@ -16,7 +16,7 @@ const HoverTooltip: FC<Props> = (({text, moreClassNames, positionClassnames}) =>
                         <span className="leading-4 min z-50 p-2 text-xs text-left text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
                             {text}
                         </span>
-                        <div className={`absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-100 ${positionClassnames}`}></div>
+                        <div className={`absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-darkblue-500 ${positionClassnames}`}></div>
                     </div>
                 </div>
                 <div className="justify-self-end">

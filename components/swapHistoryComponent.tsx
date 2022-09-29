@@ -116,7 +116,7 @@ function TransactionsHistory() {
                 <>
                   <div className="mb-2">
                     <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
-                      <table className="min-w-full divide-y divide-darkblue-100">
+                      <table className="min-w-full divide-y divide-darkblue-500">
                         <thead>
                           <tr>
                             <th
@@ -185,7 +185,7 @@ function TransactionsHistory() {
                             return <tr key={swap.id}>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'hidden pr-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
@@ -197,7 +197,7 @@ function TransactionsHistory() {
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
                                 )}
                               >
@@ -230,7 +230,7 @@ function TransactionsHistory() {
                                 <div className="flex items-center mt-1 text-white sm:block lg:hidden">
                                   <span className="block lg:hidden">{(new Date(swap.created_date)).toLocaleString()}</span>
                                 </div>
-                                {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-100" /> : null}
+                                {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
                                 <span className="flex items-center sm:block lg:hidden">
                                   {<StatusIcon swap={swap} />}
                                   {/* {plan.from} - {plan.to} */}
@@ -238,7 +238,7 @@ function TransactionsHistory() {
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
@@ -259,7 +259,7 @@ function TransactionsHistory() {
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
@@ -267,7 +267,7 @@ function TransactionsHistory() {
                               </td>
                               {/* <td
                 className={classNames(
-                  index === 0 ? '' : 'border-t border-darkblue-100',
+                  index === 0 ? '' : 'border-t border-darkblue-500',
                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                 )}
               >
@@ -275,7 +275,7 @@ function TransactionsHistory() {
               </td> */}
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
@@ -290,7 +290,7 @@ function TransactionsHistory() {
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'relative px-3 py-3.5 text-sm text-white hidden lg:table-cell group'
                                 )}
                               >
@@ -299,7 +299,7 @@ function TransactionsHistory() {
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
                                 )}
                               >
@@ -318,7 +318,7 @@ function TransactionsHistory() {
                                 >
                                   <ChevronRightIcon className="h-5 w-5" />
                                 </button>
-                                {index !== 0 ? <div className="absolute right-6 left-0 -top-px h-px bg-darkblue-100" /> : null}
+                                {index !== 0 ? <div className="absolute right-6 left-0 -top-px h-px bg-darkblue-500" /> : null}
                               </td>
                             </tr>
                           })}
@@ -382,7 +382,7 @@ function TransactionsHistory() {
                                     <div>
                                       <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200 hover:text-primary-text"
+                                        className="rounded-md text-darkblue-50 hover:text-primary-text"
                                         onClick={handleClose}
                                       >
                                         <span className="sr-only">Close</span>

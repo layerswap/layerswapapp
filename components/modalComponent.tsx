@@ -47,7 +47,7 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, descriptio
                                             </div>
                                             <button
                                                 type="button"
-                                                className="rounded-md text-darkblue-200  hover:text-primary-text"
+                                                className="rounded-md text-darkblue-50  hover:text-primary-text"
                                                 onClick={() => {
                                                     onDismiss(true);
                                                 }}                                                >

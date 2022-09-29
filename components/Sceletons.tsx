@@ -6,7 +6,7 @@ export const SwapHistoryComponentSceleton = () => {
   return <div className="animate-pulse">
     <div className=" mb-10 ">
       <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg ">
-        <table className="min-w-full divide-y divide-darkblue-100">
+        <table className="min-w-full divide-y divide-darkblue-500">
           <thead>
             <tr>
               <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-500 sm:pl-6">
@@ -72,7 +72,7 @@ export const SwapHistoryComponentSceleton = () => {
               <tr key={index}>
                 <td
                   className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
+                    index === 0 ? '' : 'border-t border-darkblue-500',
                     'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
                   )}
                 >
@@ -81,11 +81,11 @@ export const SwapHistoryComponentSceleton = () => {
                       <div className="h-2 w-16 bg-slate-700 rounded col-span-1"></div>
                     </div>
                   </div>
-                  {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-100" /> : null}
+                  {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
                 </td>
                 <td
                   className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
+                    index === 0 ? '' : 'border-t border-darkblue-500',
                     'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                   )}
                 >
@@ -99,7 +99,7 @@ export const SwapHistoryComponentSceleton = () => {
                 </td>
                 <td
                   className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
+                    index === 0 ? '' : 'border-t border-darkblue-500',
                     'px-3 py-3.5 text-sm text-white table-cell'
                   )}
                 >
@@ -112,7 +112,7 @@ export const SwapHistoryComponentSceleton = () => {
                 </td>
                 <td
                   className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
+                    index === 0 ? '' : 'border-t border-darkblue-500',
                     'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                   )}
                 >
@@ -122,7 +122,7 @@ export const SwapHistoryComponentSceleton = () => {
                 </td>
                 <td
                   className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
+                    index === 0 ? '' : 'border-t border-darkblue-500',
                     'relative px-3 py-3.5 text-sm text-white'
                   )}
                 >
@@ -132,7 +132,7 @@ export const SwapHistoryComponentSceleton = () => {
                 </td>
                 <td
                   className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
+                    index === 0 ? '' : 'border-t border-darkblue-500',
                     'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
                   )}
                 >
@@ -145,7 +145,7 @@ export const SwapHistoryComponentSceleton = () => {
                 </td>
                 <td
                   className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
+                    index === 0 ? '' : 'border-t border-darkblue-500',
                     'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
                   )}
                 >
@@ -156,7 +156,7 @@ export const SwapHistoryComponentSceleton = () => {
                 </td>
                 <td
                   className={classNames(
-                    index === 0 ? '' : 'border-t border-darkblue-100',
+                    index === 0 ? '' : 'border-t border-darkblue-500',
                     'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
                   )}
                 >
@@ -227,7 +227,7 @@ export const ExchangesComponentSceleton = () => {
       {[...Array(8)]?.map((item, index) =>
           <div
               key={index}
-              className="animate-pulse bg-darkblue-500 select-none rounded-lg py-5 px-3">
+              className="animate-pulse bg-darkblue-700 select-none rounded-lg py-5 px-3">
               <div className="flex justify-between space-x-4 md:space-x-14 px-2">
                   <div className="flex space-x-2">
                       <div className="rounded-md bg-slate-700 h-8 w-8"></div>

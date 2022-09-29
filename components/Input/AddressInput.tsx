@@ -21,7 +21,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     {label}
                 </label>
             }
-            <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-600">
+            <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-700">
                 <Field name={name}>
                     {({ field }) => (
                         <input
@@ -33,7 +33,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             name={name}
                             id={name}
                             disabled={disabled}
-                            className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-600 border-darkblue-100 border rounded-md placeholder-gray-400 truncate',
+                            className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-md placeholder-gray-400 truncate',
                                 className
                             )}
                         />

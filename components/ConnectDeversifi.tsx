@@ -45,7 +45,7 @@ const ConnectDeversifi: FC<Props> = ({ isOpen, swapFormData, onClose }) => {
                             <div className="hidden sm:block ">
                                 <button
                                     type="button"
-                                    className="rounded-md text-darkblue-200 hover:text-primary-text"
+                                    className="rounded-md text-darkblue-50 hover:text-primary-text"
                                     onClick={onClose}
                                 >
                                     <span className="sr-only">Close</span>

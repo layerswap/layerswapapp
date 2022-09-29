@@ -230,7 +230,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                             <div className="w-full">
                                 <div className="rounded-md w-full mb-3">
                                     <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-primary-text">
-                                        <div className={classNames(swapFormData?.swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex justify-between bg-darkblue-500 rounded-md items-center px-4 py-3')}>
+                                        <div className={classNames(swapFormData?.swapType === "offramp" ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex justify-between bg-darkblue-700 rounded-md items-center px-4 py-3')}>
                                             <span className="text-left flex"><span className='hidden md:block'>{swapFormData?.swapType === "onramp" ? "From" : "To"}</span>
                                                 <div className="flex items-center">
                                                     <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
@@ -275,7 +275,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                             <span className="text-white">{swapFormData?.amount} {swapFormData?.currency?.name}
                                             </span>
                                         </div>
-                                        <div className="flex justify-between bg-darkblue-500 rounded-md px-4 py-3 items-baseline">
+                                        <div className="flex justify-between bg-darkblue-700 rounded-md px-4 py-3 items-baseline">
                                             <span className="text-left">Fee</span>
                                             <span className="text-white">{(Number(swapFormData?.amount) - receive_amount).toFixed(swapFormData?.currency?.baseObject.precision)} {swapFormData?.currency?.name}</span>
                                         </div>
@@ -288,7 +288,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                 {
                                     swapFormData?.swapType === "offramp" && NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage &&
                                     <WarningMessage className='mb-4'>
-                                        <p className='font-normal text-darkblue-600'>
+                                        <p className='font-normal text-darkblue-700'>
                                             {NetworkSettings.KnownSettings[network?.baseObject?.id]?.ConfirmationWarningMessage}
                                         </p>
                                     </WarningMessage>
@@ -311,8 +311,8 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                         onChange={e => {
                                             /^[0-9]*$/.test(e.target.value) && handleChange(e)
                                         }}
-                                        className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-darkblue-100 block
-                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
+                                        className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-darkblue-500 block
+                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-700  w-full font-semibold rounded-md placeholder-gray-400"
                                     />
 
                                     <span className="flex text-sm leading-6 items-center mt-1.5">
@@ -384,7 +384,7 @@ const SwapConfirmationStep: FC<BaseStepProps> = ({ current }) => {
                                 type={"text"}
                                 name="destination_address"
                                 id="destination_address"
-                                className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-600 border-darkblue-100 border rounded-md truncate'}
+                                className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-md truncate'}
                             />
                             {
                                 addressInputError &&

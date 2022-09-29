@@ -58,7 +58,7 @@ const ExternalPaumentStep: FC = () => {
                     <div className="flex items-center">
                         <label className="block text-lg font-medium text-white">Complete {exchange?.name} transfer</label>
                     </div>
-                    <div className="rounded-md border bg-darkblue-600 w-full grid grid-flow-row p-5 border-darkblue-100">
+                    <div className="rounded-md border bg-darkblue-700 w-full grid grid-flow-row p-5 border-darkblue-500">
                         <ul className='list-disc my-2 pl-5 text-primary-text'>
                             <li>
                                 By clicking Continue you will be redirected to {exchange?.name} to authorize and pay.

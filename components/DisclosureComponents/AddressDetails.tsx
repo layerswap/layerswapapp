@@ -21,7 +21,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, 
 
     if (swapFormData?.swapType === "offramp")
         return <>
-            <div className="mx-auto w-full rounded-lg border border-darkblue-100 hover:border-darkblue-200 bg-darkblue-500 p-2">
+            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
                 <div className="flex items-center min-w-0 flex-1">
                     {
                         swapFormData?.exchange?.imgSrc &&
@@ -49,7 +49,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, 
 
     return (
         <>
-            <div className="mx-auto w-full rounded-lg border border-darkblue-100 hover:border-darkblue-200 bg-darkblue-500 p-2">
+            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
                 <Disclosure>
                     {({ open }) => {
                         if (typeof window !== 'undefined') {

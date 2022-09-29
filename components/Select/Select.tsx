@@ -60,7 +60,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
         return (
             <Listbox disabled={disabled} value={value?.id} onChange={onChangeHandler}>
                 <div className="mt-1 relative">
-                    <Listbox.Button name={name} className="focus:ring-indigo-500 focus:border-indigo-500 w-full py-0 pl-8 pr-12 border-transparent bg-transparent font-semibold rounded-md">
+                    <Listbox.Button name={name} className=" w-full py-0 pl-8 pr-12 border-transparent bg-transparent font-semibold rounded-md">
                         {
                             value &&
                             <>
@@ -86,7 +86,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                         }
                     </Listbox.Button>
                     <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-                        <Listbox.Options className="ring-1 ring-darkblue-100 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-darkblue-600 rounded-md py-1 overflow-hidden focus:outline-none">
+                        <Listbox.Options className="ring-1 ring-darkblue-500 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-darkblue-700 rounded-md py-1 overflow-hidden focus:outline-none">
                             {values.map((item) => (
                                 <Listbox.Option
                                     key={item.id}
@@ -136,7 +136,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     name={name} 
                     onClick={openModal}
                     disabled={disabled}
-                    className="disabled:cursor-not-allowed disabled:hidden relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold rounded-none"
+                    className="disabled:cursor-not-allowed disabled:hidden relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-700 font-semibold rounded-none"
                 >
                     <span className='flex grow text-left items-center'>
                         {
@@ -188,7 +188,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 <div className="block ">
                                     <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200 hover:text-primary-text"
+                                        className="rounded-md text-darkblue-50 hover:text-primary-text"
                                         onClick={closeModal}
                                     >
                                         <span className="sr-only">Close</span>
@@ -232,7 +232,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 aria-hidden="true"
                                             />
                                             <Combobox.Input
-                                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-primary focus:border-primary block font-semibold bg-darkblue-600 border-darkblue-100 border truncate"
+                                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-primary focus:border-primary block font-semibold bg-darkblue-700 border-darkblue-500 border truncate"
                                                 placeholder="Search..."
                                                 onChange={handleQueryInputChange}
                                                 value={query}
@@ -245,7 +245,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                         key={item.id}
                                                         value={item}
                                                         disabled={!item.isEnabled || !item.isAvailable}
-                                                        className={`flex text-left ${item.id === selectedItem?.id ? 'bg-darkblue-300' : 'bg-darkblue-500'} ${!item.isEnabled || !item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-300 select-none rounded-lg p-3`}
+                                                        className={`flex text-left ${item.id === selectedItem?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isEnabled || !item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
                                                         onClick={() => handleSelect(item)}
                                                     >
                                                         {({ active, disabled }) => (

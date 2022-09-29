@@ -14,11 +14,11 @@ const BackgroundField: FC<Props> = (({ isCopiable, toCopy, header, children }) =
             <p className="block font-normal text-sm">
                 {header}
             </p>
-            <div className="flex items-center justify-between rounded-md px-3 py-3 shadow-sm border border-darkblue-100  bg-darkblue-600 w-full font-semibold mt-1">
+            <div className="flex items-center justify-between rounded-md px-3 py-3 shadow-sm border border-darkblue-500  bg-darkblue-700 w-full font-semibold mt-1">
                 {children}
                 {
                     isCopiable &&
-                    <CopyButton iconHeight={17} iconWidth={17} toCopy={toCopy} className='p-1 bg-darkblue-50 rounded'/>
+                    <CopyButton iconHeight={17} iconWidth={17} toCopy={toCopy} className='p-1 bg-darkblue-200 rounded'/>
                 }
             </div>
         </div>

@@ -99,7 +99,7 @@ const WithdrawExchangeStep: FC = () => {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
                                 </div>
-                                <p className='font-normal text-sm text-darkblue-600'>
+                                <p className='font-normal text-sm text-darkblue-700'>
                                     {ExchangeSettings.KnownSettings[exchange_id]?.WithdrawalWarningMessage}
                                 </p>
                             </div>
@@ -137,7 +137,7 @@ const WithdrawExchangeStep: FC = () => {
                                     </p>
                                 </BackgroundField>
                                 <WarningMessage>
-                                    <p className='font-normal text-sm text-darkblue-600'>
+                                    <p className='font-normal text-sm text-darkblue-700'>
                                          Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
                                     </p>
                                 </WarningMessage>

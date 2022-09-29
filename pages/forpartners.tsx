@@ -31,7 +31,7 @@ export default function About(props) {
                                     <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                                         <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                                             <table className="min-w-full divide-y divide-darkblue-500">
-                                                <thead className="bg-darkblue-50">
+                                                <thead className="bg-darkblue-200">
                                                     <tr>
                                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-primary-text sm:pl-6">
                                                             Network Name
@@ -41,7 +41,7 @@ export default function About(props) {
                                                         </th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-darkblue-600 bg-darkblue-300">
+                                                <tbody className="divide-y divide-darkblue-700 bg-darkblue-300">
                                                     {props?.networks?.map((n) => (
                                                         <tr key={n.name}>
                                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">
@@ -64,7 +64,7 @@ export default function About(props) {
                                     <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                                         <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                                             <table className="min-w-full divide-y divide-darkblue-500">
-                                                <thead className="bg-darkblue-50">
+                                                <thead className="bg-darkblue-200">
                                                     <tr>
                                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-primary-text sm:pl-6">
                                                             Exchange Name
@@ -74,7 +74,7 @@ export default function About(props) {
                                                         </th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-darkblue-600 bg-darkblue-300">
+                                                <tbody className="divide-y divide-darkblue-700 bg-darkblue-300">
                                                     {props?.exchanges?.map((e) => (
                                                         <tr key={e.name}>
                                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">

@@ -21,7 +21,7 @@ const ToggleButton: FC<ToggleButtonProps> = ({ name, onChange, validate }) => {
                         onChange && onChange(changedValue)
                     }}
                     className={classNames(
-                        value ? 'bg-primary' : 'bg-darkblue-200',
+                        value ? 'bg-primary' : 'bg-darkblue-50',
                         'relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none'
                     )}
                 >
@@ -29,7 +29,7 @@ const ToggleButton: FC<ToggleButtonProps> = ({ name, onChange, validate }) => {
                     <span
                         className={classNames(
                             value ? 'translate-x-5 bg-white' : 'translate-x-0',
-                            'pointer-events-none relative inline-block h-5 w-5 rounded-full bg-darkblue-100 shadow transform ring-0 transition ease-in-out duration-200'
+                            'pointer-events-none relative inline-block h-5 w-5 rounded-full bg-darkblue-500 shadow transform ring-0 transition ease-in-out duration-200'
                         )}
                     >
                         <span

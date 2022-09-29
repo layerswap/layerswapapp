@@ -79,7 +79,7 @@ const OfframpAccountConnectStep: FC = () => {
                 </p>
                 <div className="w-full color-white">
                     <div className="flex justify-center items-center m-7 space-x-3">
-                        <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-100 relative">
+                        <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
                             <Image
                                 src="/images/coinbaseWhite.png"
                                 alt="Exchange Logo"
@@ -90,7 +90,7 @@ const OfframpAccountConnectStep: FC = () => {
                             />
                         </div>
                         <SwitchIcon />
-                        <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-100 relative">
+                        <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
                             <Image
                                 src="/images/layerswapWhite.png"
                                 alt="Layerswap Logo"

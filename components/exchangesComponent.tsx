@@ -180,7 +180,7 @@ function UserExchanges() {
                                 aria-hidden="true"
                             />
                             <Combobox.Input
-                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-primary focus:border-primary block font-semibold bg-darkblue-600 border-darkblue-100 border truncate "
+                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-primary focus:border-primary block font-semibold bg-darkblue-700 border-darkblue-500 border truncate "
                                 placeholder="Search..."
                                 onChange={handleQueryInputChange}
                                 value={query}
@@ -197,7 +197,7 @@ function UserExchanges() {
                                                     key={item.id}
                                                     value={item}
                                                     disabled={!item.is_enabled || !item.is_enabled}
-                                                    className={`bg-darkblue-500 ${!item.is_enabled ? 'opacity-35 cursor-not-allowed' : ''}  select-none rounded-lg p-3`}
+                                                    className={`bg-darkblue-700 ${!item.is_enabled ? 'opacity-35 cursor-not-allowed' : ''}  select-none rounded-lg p-3`}
                                                     onClick={() => { }}
                                                 >
                                                     {({ active }) => (

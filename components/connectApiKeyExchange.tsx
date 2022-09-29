@@ -85,8 +85,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                                 name="apiKey"
                                 id="apiKey"
                                 onChange={handleKeyChange}
-                                className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-100 block
-                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
+                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
                             />
                         </div>
                     </div>
@@ -103,8 +103,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                                 name="apiSecret"
                                 id="apiSecret"
                                 onChange={handleSecretChange}
-                                className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-100 block
-                        placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
+                        placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
                             />
                         </div>
                     </div>
@@ -123,8 +123,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                                     name="apiKey"
                                     onChange={handleKeyphraseChange}
                                     id="apiKey"
-                                    className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-100 block
-                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                    className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
+                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                             </div>
                         </>
@@ -150,7 +150,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                     }
 
                 </div>
-                <div className='p-4 bg-darkblue-500 text-white rounded-lg border border-darkblue-100'>
+                <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500'>
                     <div className="flex items-center">
                         <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
                         <label className="block text-sm md:text-base font-medium leading-6">We're requesting <span className='font-bold'>Read-Only</span> API Keys</label>

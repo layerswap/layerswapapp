@@ -148,7 +148,7 @@ const WithdrawNetworkStep: FC = () => {
                                     </p>
                                 </BackgroundField>
                                 <WarningMessage>
-                                    <p className='font-normal text-sm text-darkblue-600'>
+                                    <p className='font-normal text-sm text-darkblue-700'>
                                         Please include the "Memo" field, it is required for a successful transfer.
                                     </p>
                                 </WarningMessage>
