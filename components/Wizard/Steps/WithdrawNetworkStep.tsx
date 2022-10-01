@@ -179,7 +179,7 @@ const WithdrawNetworkStep: FC = () => {
                                     show();
                                     updateWithProps()
                                 }}
-                                className="mt-3 text-center w-full disabled:text-primary-600 text-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                                className="mt-3 text-center w-full disabled:text-primary-600 text-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 duration-400 ease-in-out"
                             >
                                 Need help?
                             </button>
@@ -200,7 +200,7 @@ export default WithdrawNetworkStep;
 
 function renderGuideButton(userGuideUrlForDesktop: string, buttonText: string) {
     return <div className="w-full items-center">
-        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} >{buttonText}</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
+        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false}>{buttonText}</SubmitButton>} place='inStep'>
             {(close) => (
                 <DocIframe onConfirm={() => close()} URl={userGuideUrlForDesktop} />
             )}

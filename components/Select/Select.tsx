@@ -1,10 +1,12 @@
-import { Combobox, Listbox, Transition } from '@headlessui/react'
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { Combobox, Listbox } from '@headlessui/react'
+import { useCallback, useEffect, useState } from 'react'
 import { SearchIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
 import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon } from '@heroicons/react/outline'
 import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
+import { AnimatePresence, motion } from "framer-motion";
+
 export interface SelectProps<T> {
     name: string;
     value: SelectMenuItem<T>;
@@ -58,7 +60,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
         return (
             <Listbox disabled={disabled} value={value?.id} onChange={onChangeHandler}>
                 <div className="mt-1 relative">
-                    <Listbox.Button name={name} className="focus:ring-indigo-500 focus:border-indigo-500 w-full py-0 pl-8 pr-12 border-transparent bg-transparent font-semibold rounded-md">
+                    <Listbox.Button name={name} className="w-full py-0 pl-8 pr-12 border-transparent bg-transparent font-semibold rounded-md">
                         {
                             value &&
                             <>
@@ -86,7 +88,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                             </>
                         }
                     </Listbox.Button>
-                    <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+                    <AnimatePresence>
                         <Listbox.Options className="ring-1 ring-darkblue-100 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-darkblue-600 rounded-md py-1 overflow-hidden focus:outline-none">
                             {values.map((item) => (
                                 <Listbox.Option
@@ -98,7 +100,17 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                     value={item.id}
                                 >
                                     {({ selected, disabled }) => (
-                                        <>
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{
+                                                opacity: 1,
+                                                transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
+                                            }}
+                                            exit={{
+                                                opacity: 0,
+                                                transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
+                                            }}
+                                        >
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                                     {
@@ -124,12 +136,12 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                     <CheckIcon className="h-6 w-6" aria-hidden="true" />
                                                 </span>
                                             ) : null}
-                                        </>
+                                        </motion.div>
                                     )}
                                 </Listbox.Option>
                             ))}
                         </Listbox.Options>
-                    </Transition>
+                    </AnimatePresence>
                 </div>
             </Listbox>)
     return (
@@ -177,59 +189,39 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     </span>
                 </button>
             </div>
-
-            <Transition
-                appear
-                show={isOpen}
-                as={Fragment}
-                enter="ease-in-out duration-300"
-                enterFrom="translate-y-full"
-                enterTo="translate-y-0"
-                leave="ease-in duration-200"
-                leaveFrom="translate-y-0"
-                leaveTo="translate-y-full">
-                <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkblue'>
-                    <div className='relative z-40 overflow-hidden bg-darkblue p-6 pt-0'>
-                        <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                            <span className="justify-self-end text-primary-text cursor-pointer">
-                                <div className="block ">
-                                    <button
-                                        type="button"
-                                        className="rounded-md text-darkblue-200 hover:text-primary-text"
-                                        onClick={closeModal}
-                                    >
-                                        <span className="sr-only">Close</span>
-                                        <XIcon className="h-6 w-6" aria-hidden="true" />
-                                    </button>
-                                </div>
-                            </span>
-                        </div>
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <div className="relative inset-0" ></div>
-                        </Transition.Child>
-
-                        <div className="relative inset-0 flex flex-col">
-                            <div className="relative min-h-full items-center justify-center p-2 pt-0 text-center">
-                                <Transition.Child
-                                    as={Fragment}
-                                    enter="ease-out duration-300"
-                                    enterFrom="opacity-0 scale-95"
-                                    enterTo="opacity-100 scale-100"
-                                    leave="ease-in duration-200"
-                                    leaveFrom="opacity-100 scale-100"
-                                    leaveTo="opacity-0 scale-95"
-                                >
+            <AnimatePresence>
+                {isOpen &&
+                    <motion.div
+                        initial={{ y: "100%" }}
+                        animate={{
+                            y: 0,
+                            transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
+                        }}
+                        exit={{
+                            y: "100%",
+                            transition: { duration: 0.5, ease: [0.36, 0.66, 0.04, 1] },
+                        }}
+                        className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkblue'>
+                        <div className='relative z-40 overflow-hidden bg-darkblue p-6 pt-0'>
+                            <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
+                                <span className="justify-self-end text-primary-text cursor-pointer">
+                                    <div className="block ">
+                                        <button
+                                            type="button"
+                                            className="rounded-md text-darkblue-200 hover:text-primary-text"
+                                            onClick={closeModal}
+                                        >
+                                            <span className="sr-only">Close</span>
+                                            <XIcon className="h-6 w-6" aria-hidden="true" />
+                                        </button>
+                                    </div>
+                                </span>
+                            </div>
+                            <div className="relative inset-0 flex flex-col">
+                                <div className="relative min-h-full items-center justify-center p-2 pt-0 text-center">
                                     <Combobox
                                         as="div"
-                                        className="transform  transition-all "
+                                        className="transform"
                                         onChange={handleComboboxChange}
                                         value={query}
                                     >
@@ -303,13 +295,12 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                             </div>
                                         )}
                                     </Combobox>
-                                </Transition.Child>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-            </Transition>
+                    </motion.div>
+                }
+            </AnimatePresence>
         </>
     )
 }

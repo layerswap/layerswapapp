@@ -18,6 +18,7 @@ import GoHomeButton from "./utils/GoHome"
 import StatusIcon from "./StatusIcons"
 import Modal from "./modalComponent"
 import HoverTooltip from "./Tooltips/HoverTooltip"
+import { AnimatePresence } from "framer-motion";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -334,7 +335,7 @@ function TransactionsHistory() {
                                 <button
                                   type="button"
                                   onClick={() => handleopenSwapDetails(swap)}
-                                  className="group text-white  relative w-full flex justify-center py-2 px-2 border-0 font-semibold rounded-md transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                                  className="group text-white  relative w-full flex justify-center py-2 px-2 border-0 font-semibold rounded-md transform hover:-translate-y-0.5 duration-400 ease-in-out"
                                 >
                                   <ChevronRightIcon className="h-5 w-5" />
                                 </button>
@@ -353,7 +354,7 @@ function TransactionsHistory() {
                         disabled={isLastPage || loading}
                         type="button"
                         onClick={handleLoadMore}
-                        className="group disabled:text-primary-800 text-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                        className="group disabled:text-primary-800 text-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 duration-400 ease-in-out"
                       >
                         <span className="flex items-center mr-2">
                           {(!isLastPage && !loading) &&
@@ -366,31 +367,34 @@ function TransactionsHistory() {
                       </button>
                     }
                   </div>
-                  <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={'Swap details'} description={""} className='max-w-md'>
-                    <div className="px-6 md:px-8">
-                      <SwapDetails id={selectedSwap?.id} />
-                      {
-                        data.networks && selectedSwap?.transaction_id &&
-                        <div className="text-white text-sm mt-6">
-                          <a href={data.networks.filter(x => x.id === selectedSwap?.id)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
-                            target="_blank"
-                            className="shadowed-button group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                            View in Explorer
-                            <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                          </a>
-                        </div>
-                      }
-                      {
-                        selectedSwap?.status == 'initiated' &&
-                        <div className="text-white text-sm mt-6">
-                          <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false}>
-                            Complete Swap
-                            <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                          </SubmitButton>
-                        </div>
-                      }
-                    </div>
-                  </Modal>
+                  <AnimatePresence>
+                    {openSwapDetailsModal && <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={'Swap details'} className='max-w-md'>
+                      <div className="px-6 md:px-8">
+                        <SwapDetails id={selectedSwap?.id} />
+                        {
+                          data.networks && selectedSwap?.transaction_id &&
+                          <div className="text-white text-sm mt-6">
+                            <a href={data.networks.filter(x => x.id === selectedSwap?.id)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
+                              target="_blank"
+                              className="shadowed-button group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 duration-400 ease-in-out">
+                              View in Explorer
+                              <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                            </a>
+                          </div>
+                        }
+                        {
+                          selectedSwap?.status == 'initiated' &&
+                          <div className="text-white text-sm mt-6">
+                            <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false}>
+                              Complete Swap
+                              <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                            </SubmitButton>
+                          </div>
+                        }
+                      </div>
+                    </Modal>}
+                  </AnimatePresence>
+
                 </>
                 : <div className="sm:my-24 sm:mx-60 m-16 pb-20 text-center sm:pb-10">
                   There are no transactions for this account

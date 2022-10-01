@@ -18,6 +18,7 @@ import HoverTooltip from "./Tooltips/HoverTooltip";
 import { ExchangesComponentSceleton } from "./Sceletons";
 import GoHomeButton from "./utils/GoHome";
 import Modal from "./modalComponent";
+import { AnimatePresence } from "framer-motion";
 
 interface UserExchange extends Exchange {
     note?: string,
@@ -39,7 +40,7 @@ function UserExchanges() {
     const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
     const { discovery: { resource_storage_url } } = data
-    
+
     useEffect(() => {
         (async () => {
             setLoading(true)
@@ -170,22 +171,10 @@ function UserExchanges() {
                 <div className="relative min-h-full items-center justify-center text-center">
                     <Combobox
                         as="div"
-                        className="transform  transition-all "
+                        className="transform"
                         onChange={handleComboboxChange}
                         value={query}
                     >
-                        <div className="relative mb-5">
-                            <SearchIcon
-                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-primary-text"
-                                aria-hidden="true"
-                            />
-                            <Combobox.Input
-                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-primary focus:border-primary block font-semibold bg-darkblue-600 border-darkblue-100 border truncate "
-                                placeholder="Search..."
-                                onChange={handleQueryInputChange}
-                                value={query}
-                            />
-                        </div>
                         <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2">
                             {
                                 loading ? <ExchangesComponentSceleton />
@@ -234,7 +223,7 @@ function UserExchanges() {
                                                                         {
                                                                             item.is_connected ?
                                                                                 <SubmitButton onClick={() => { setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true) }} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id}>Disconnect</SubmitButton>
-                                                                                : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Connect</SubmitButton>
+                                                                                : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id}>Connect</SubmitButton>
                                                                         }
                                                                     </>
                                                                 }
@@ -262,18 +251,28 @@ function UserExchanges() {
                     </Combobox>
                 </div>
             </div>
-            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`} description={""}>
-                <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
-            </Modal>
-            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`} description={""}>
-                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverClassNames='pt-7' />
-            </Modal>
-            <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} description={""}>
-                <div className="flex justify-items-center space-x-3 max-w-xs px-6 md:px-8">
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" >Yes</SubmitButton>
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small'>No</SubmitButton>
-                </div>
-            </Modal>
+
+            <AnimatePresence>
+                {openExchangeToDisconnectModal &&
+                    <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} className='max-w-xs'>
+                        <div className="flex justify-items-center space-x-3 max-w-xs px-6 md:px-8">
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" >Yes</SubmitButton>
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small'>No</SubmitButton>
+                        </div>
+                    </Modal>}
+            </AnimatePresence>
+            <AnimatePresence>
+                {openExchangeToConnectModal &&
+                    <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`}>
+                        <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
+                    </Modal>}
+            </AnimatePresence>
+            <AnimatePresence>
+                {openExchangeToConnectModal &&
+                    <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`}>
+                        <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' />
+                    </Modal>}
+            </AnimatePresence>
         </div>
     )
 }

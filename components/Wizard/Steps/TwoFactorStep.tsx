@@ -169,7 +169,7 @@ const TwoFactorStep: FC = () => {
                                 <p className='mb-5 text-primary-text'>
 
                                 </p>
-                                <SubmitButton type="submit" isDisabled={!isValid} icon="" isSubmitting={isSubmitting}>
+                                <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
                                     Confirm
                                 </SubmitButton>
                             </div>

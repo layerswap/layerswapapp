@@ -72,7 +72,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                     }
                     <AddressDetails canEditAddress={false} />
                 </SwapConfirmMainData>
-                <SubmitButton type='submit' isDisabled={false} icon="" isSubmitting={isSubmitting} onClick={handleSubmit}>
+                <SubmitButton type='submit' isDisabled={false} isSubmitting={isSubmitting} onClick={handleSubmit}>
                     Confirm
                 </SubmitButton>
             </div>

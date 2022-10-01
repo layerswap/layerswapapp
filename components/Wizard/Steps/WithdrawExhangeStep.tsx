@@ -163,7 +163,7 @@ const WithdrawExchangeStep: FC = () => {
                                     show();
                                     updateWithProps()
                                 }}
-                                className="mt-3 text-center w-full disabled:text-primary-600 text-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                                className="mt-3 text-center w-full disabled:text-primary-600 text-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 duration-400 ease-in-out"
                             >
                                 Need help?
                             </button>
