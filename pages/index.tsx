@@ -8,6 +8,9 @@ import { QueryProvider } from '../context/query'
 import { LayerSwapSettings } from '../Models/LayerSwapSettings'
 import { QueryParams } from '../Models/QueryParams'
 import MaintananceContent from '../components/maintanance/maintanance'
+import { useCallback, useEffect } from 'react'
+import LayerswapApiClient from '../lib/layerSwapApiClient';
+import TokenService from '../lib/TokenService'
 
 type IndexProps = {
   settings?: LayerSwapSettings,
@@ -16,7 +19,6 @@ type IndexProps = {
 }
 
 export default function Home({ settings, query, inMaintanance }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-
   return (
     <Layout>
       <div className="content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">

@@ -10,8 +10,8 @@ class TokenService {
     setEmail(email) {
         localStorage.setItem("email", email);
     }
-    setAuthData(user) {
-        localStorage.setItem("authData", JSON.stringify(user));
+    setAuthData(data) {
+        localStorage.setItem("authData", JSON.stringify(data));
     }
     getCodeNextTime(): Date | undefined {
         return JSON.parse(typeof window !== 'undefined' && window?.localStorage?.getItem("codeNextTime")) || undefined;

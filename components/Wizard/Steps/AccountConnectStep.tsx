@@ -42,8 +42,9 @@ const AccountConnectStep: FC = () => {
             authWindowHref = authWindowRef.current?.location?.href
         }
         catch (e) {
-
+            
         }
+        
         if (!authWindowHref || authWindowHref?.indexOf(window.location.origin) === -1)
             return false
 

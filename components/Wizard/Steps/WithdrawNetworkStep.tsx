@@ -18,6 +18,7 @@ import NetworkSettings from '../../../lib/NetworkSettings';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
+import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -33,6 +34,11 @@ const WithdrawNetworkStep: FC = () => {
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
 
+    useEffect(()=>{
+        if(transferDone)
+        console.log(transferDone)
+    },[])
+
     useInterval(async () => {
         if (currentStep !== SwapWithdrawalStep.OffRampWithdrawal)
             return true
@@ -42,11 +48,8 @@ const WithdrawNetworkStep: FC = () => {
             return;
         }
         const swap = await getSwap(swapId.toString())
-        const swapStatus = swap?.data.status;
-        if (swapStatus == SwapStatus.Completed)
-            goToStep(SwapWithdrawalStep.Success)
-        else if (swapStatus == SwapStatus.Failed)
-            goToStep(SwapWithdrawalStep.Failed)
+        const swapStatusStep = GetSwapStatusStep(swap)
+        goToStep(swapStatusStep)
     }, [currentStep], 10000)
 
     const handleConfirm = useCallback(async () => {

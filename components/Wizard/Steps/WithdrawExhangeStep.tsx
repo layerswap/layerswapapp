@@ -3,7 +3,7 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { SwapWithdrawalStep, SwapWizardSteps } from '../../../Models/Wizard';
+import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
@@ -14,6 +14,7 @@ import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
+import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -38,23 +39,16 @@ const WithdrawExchangeStep: FC = () => {
             goToStep(SwapWithdrawalStep.Email)
 
         const swap = await getSwap(swapId.toString())
-        const swapStatus = swap?.data.status;
-        if (swapStatus == SwapStatus.Completed)
-            goToStep(SwapWithdrawalStep.Success)
-        else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
-            goToStep(SwapWithdrawalStep.Failed)
-        else if (swapStatus == SwapStatus.PendingWithdrawal)
-            goToStep(SwapWithdrawalStep.Processing)
-
+        const swapStatusStep = GetSwapStatusStep(swap)
+        goToStep(swapStatusStep)
     }, [currentStep], 10000)
-
 
     const handleConfirm = useCallback(async () => {
         setTransferDone(true)
     }, [])
 
-    const exchange = exchanges?.find(e => e.currencies.some(ec=>ec.id === swap?.data?.exchange_currency_id))
-    const currency = exchange?.currencies?.find(c=>c.id === swap?.data?.exchange_currency_id)
+    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
+    const currency = exchange?.currencies?.find(c => c.id === swap?.data?.exchange_currency_id)
     const exchange_name = exchange?.display_name || ' '
     const exchange_internal_name = exchange?.internal_name
     const exchange_logo_url = exchange?.logo
@@ -89,7 +83,7 @@ const WithdrawExchangeStep: FC = () => {
                         </h3>
                     </div>
                     {
-                        ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage && 
+                        ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
                         <div className='flex-col w-full rounded-md bg-primary-700 shadow-lg p-2'>
                             <div className='flex items-center'>
                                 <div className='mr-2 p-2 rounded-lg bg-primary-600'>
