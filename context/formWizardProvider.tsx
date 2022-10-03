@@ -37,10 +37,7 @@ export const FormWizardProvider = <T extends Steps>(props: Props<T>) => {
     const [goBack, setGoBack] = useState<{ callback: () => void }>();
     const [positionPercent, setPositionPercent] = useState<() => void>();
 
-    const handleSetCallback = useCallback((callback) => {
-        setmoving("left")
-        setGoBack({ callback })
-    }, [])
+    const handleSetCallback = useCallback((callback) => setGoBack({ callback }), [])
 
     const goToStep = useCallback((step: T) => {
         setmoving("right")

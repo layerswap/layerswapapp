@@ -7,6 +7,7 @@ const navigation = {
   main: [
     { name: 'Privacy Policy', href: '/blog/guide/Privacy_Policy', target: '_self' },
     { name: 'Terms of Service', href: '/blog/guide/Terms_of_Service', target: '_self' },
+    { name: 'For Partners', href: '/forpartners', target: '_self' },
     { name: 'Brand Guide', href: 'https://layerswap.notion.site/layerswap/Layerswap-brand-guide-4b579a04a4c3477cad1c28f466749cf1', target: '_blank' }
   ],
   social: [
