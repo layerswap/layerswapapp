@@ -1,8 +1,7 @@
-import { Transition } from '@headlessui/react';
-import { PencilAltIcon, XIcon } from '@heroicons/react/outline';
+import { PencilAltIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
-import { FC, Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
@@ -148,56 +147,49 @@ const OnRampSwapConfirmationStep: FC = () => {
                     </div>
                 )}
             </Formik>
-                    
-            <AnimatePresence>
-                {/* TODO: fix this shit */}
-                {editingAddress &&
-                    <Modal
-                        isOpen={editingAddress}
-                        onDismiss={handleClose}
-                        title={
-                            <h4 className='text-lg text-white'>
-                                <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
-                                Editing your {swapFormData?.network?.name} wallet address</h4>
-                        }
-                    >
-                        <div className='grid grid-flow-row px-6 md:px-8 text-primary-text'>
-                            <div>
-                                <label htmlFor="address" className="block font-normal text-sm text-left">
-                                    Address
-                                </label>
-                                <div className="relative rounded-md shadow-sm mt-2 mb-4">
-                                    <input
-                                        placeholder={"0x123...ab56c"}
-                                        autoCorrect="off"
-                                        onChange={handleAddressInputChange}
-                                        value={addressInputValue}
-                                        type={"text"}
-                                        name="destination_address"
-                                        id="destination_address"
-                                        className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-600 border-darkblue-100 border rounded-md truncate'}
-                                    />
-                                    {
-                                        addressInputError &&
-                                        <div className="flex items-center mb-2">
-                                            <span className="block text-base leading-6 text-primary"> {addressInputError} </span>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                            <div className="mt-auto flex space-x-4">
-                                <SubmitButton type='button' size='small' isDisabled={!!addressInputError} isSubmitting={false} onClick={handleSaveAddress}>
-                                    Save
-                                </SubmitButton>
-                                <SubmitButton type='button' size='small' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleClose}>
-                                    Cancel
-                                </SubmitButton>
-                            </div>
-                        </div>
-                    </Modal>
+            <Modal
+                isOpen={editingAddress}
+                onDismiss={handleClose}
+                title={
+                    <h4 className='text-lg text-white'>
+                        <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
+                        Editing your {swapFormData?.network?.name} wallet address</h4>
                 }
-
-            </AnimatePresence>
+            >
+                <div className='grid grid-flow-row px-6 md:px-8 text-primary-text'>
+                    <div>
+                        <label htmlFor="address" className="block font-normal text-sm text-left">
+                            Address
+                        </label>
+                        <div className="relative rounded-md shadow-sm mt-2 mb-4">
+                            <input
+                                placeholder={"0x123...ab56c"}
+                                autoCorrect="off"
+                                onChange={handleAddressInputChange}
+                                value={addressInputValue}
+                                type={"text"}
+                                name="destination_address"
+                                id="destination_address"
+                                className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-600 border-darkblue-100 border rounded-md truncate'}
+                            />
+                            {
+                                addressInputError &&
+                                <div className="flex items-center mb-2">
+                                    <span className="block text-base leading-6 text-primary"> {addressInputError} </span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div className="mt-auto flex space-x-4">
+                        <SubmitButton type='button' size='small' isDisabled={!!addressInputError} isSubmitting={false} onClick={handleSaveAddress}>
+                            Save
+                        </SubmitButton>
+                        <SubmitButton type='button' size='small' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleClose}>
+                            Cancel
+                        </SubmitButton>
+                    </div>
+                </div>
+            </Modal>
         </>
     )
 }

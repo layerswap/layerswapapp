@@ -15,7 +15,7 @@ export class SubmitButtonProps {
 }
 
 function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {
-    let defaultStyle = 'shadowed-button items-center disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 duration-400 ease-in-out'
+    let defaultStyle = 'shadowed-button items-center disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out'
     defaultStyle += buttonStyle == 'filled' ? " border-0 bg-primary text-primary-buttonTextColor" : " text-primary border border-primary";
 
     switch (size) {

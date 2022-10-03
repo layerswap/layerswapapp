@@ -46,7 +46,6 @@ export function SwapDataProvider({ children }) {
         try {
             const layerswapApiClient = new LayerSwapApiClient()
 
-            console.log("swapFormData.destination_address", swapFormData.destination_address)
             const swap = await layerswapApiClient.createSwap({
                 amount: Number(swapFormData.amount),
                 exchange: exchange?.id,

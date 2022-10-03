@@ -43,11 +43,11 @@ export default function About(props) {
                                                 </thead>
                                                 <tbody className="divide-y divide-darkblue-600 bg-darkblue-300">
                                                     {props?.networks?.map((n) => (
-                                                        <tr key={n.name}>
+                                                        <tr key={n.display_name}>
                                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">
-                                                                {n.name}
+                                                                {n.display_name}
                                                             </td>
-                                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-white italic">{n.code}</td>
+                                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-white italic">{n.internal_name}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -76,9 +76,9 @@ export default function About(props) {
                                                 </thead>
                                                 <tbody className="divide-y divide-darkblue-600 bg-darkblue-300">
                                                     {props?.exchanges?.map((e) => (
-                                                        <tr key={e.name}>
+                                                        <tr key={e.display_name}>
                                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">
-                                                                {e.name}
+                                                                {e.display_name}
                                                             </td>
                                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white italic">{e.internal_name}</td>
                                                         </tr>

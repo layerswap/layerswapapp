@@ -171,7 +171,7 @@ function UserExchanges() {
                 <div className="relative min-h-full items-center justify-center text-center">
                     <Combobox
                         as="div"
-                        className="transform"
+                        className="transform transition-all"
                         onChange={handleComboboxChange}
                         value={query}
                     >
@@ -252,27 +252,18 @@ function UserExchanges() {
                 </div>
             </div>
 
-            <AnimatePresence>
-                {openExchangeToDisconnectModal &&
-                    <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} className='max-w-xs'>
-                        <div className="flex justify-items-center space-x-3 max-w-xs px-6 md:px-8">
-                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" >Yes</SubmitButton>
-                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small'>No</SubmitButton>
-                        </div>
-                    </Modal>}
-            </AnimatePresence>
-            <AnimatePresence>
-                {openExchangeToConnectModal &&
-                    <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`}>
-                        <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
-                    </Modal>}
-            </AnimatePresence>
-            <AnimatePresence>
-                {openExchangeToConnectModal &&
-                    <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`}>
-                        <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' />
-                    </Modal>}
-            </AnimatePresence>
+            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`} >
+                <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
+            </Modal>
+            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`} >
+                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' />
+            </Modal>
+            <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} className='max-w-xs'>
+                <div className="flex justify-items-center space-x-3 max-w-xs px-6 md:px-8">
+                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" >Yes</SubmitButton>
+                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small'>No</SubmitButton>
+                </div>
+            </Modal>
         </div>
     )
 }

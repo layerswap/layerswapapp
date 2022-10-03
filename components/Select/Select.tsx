@@ -221,7 +221,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 <div className="relative min-h-full items-center justify-center p-2 pt-0 text-center">
                                     <Combobox
                                         as="div"
-                                        className="transform"
+                                        className="transform transition-all"
                                         onChange={handleComboboxChange}
                                         value={query}
                                     >

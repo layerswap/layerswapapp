@@ -39,7 +39,6 @@ const OffRampSwapConfirmationStep: FC = () => {
         })()
     }, [currentStepName])
 
-    console.log("swapFormData?.destination_address", swapFormData?.destination_address)
 
     const transferAmount = `${amount} ${currency?.name}`
 
