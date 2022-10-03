@@ -65,6 +65,10 @@ export async function getServerSideProps(context) {
   }
   response.data.networks = networks;
 
+  const resource_storage_url = response.data.discovery.resource_storage_url
+  if (resource_storage_url[resource_storage_url.length - 1] === "/")
+    response.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+
   result.settings = response;
   if (!result.settings.data.networks.some(x => x.status === "active")) {
     result.inMaintanance = true;

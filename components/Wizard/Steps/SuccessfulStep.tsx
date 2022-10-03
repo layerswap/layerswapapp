@@ -43,7 +43,7 @@ const SuccessfulStep: FC = () => {
                         </div>
                 }
                 {
-                    data.networks && swap.data.type === SwapType.OnRamp && swap?.data.transaction_id &&
+                    data.networks && swap?.data?.type === SwapType.OnRamp && swap?.data.transaction_id &&
                     <div className="text-white mb-2.5 md:mb-5 md:mt-3 mt-0">
                         <SubmitButton buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer}>View in Explorer <ExternalLinkIcon className='ml-2 h-5 w-5' /></SubmitButton>
                     </div>

@@ -34,11 +34,6 @@ const WithdrawNetworkStep: FC = () => {
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
 
-    useEffect(()=>{
-        if(transferDone)
-        console.log(transferDone)
-    },[])
-
     useInterval(async () => {
         if (currentStep !== SwapWithdrawalStep.OffRampWithdrawal)
             return true
@@ -48,6 +43,9 @@ const WithdrawNetworkStep: FC = () => {
             return;
         }
         const swap = await getSwap(swapId.toString())
+        //TODO implement better GetSwapStatusStep to not check swap status
+        if (swap.data.status === SwapStatus.Initiated)
+            return
         const swapStatusStep = GetSwapStatusStep(swap)
         goToStep(swapStatusStep)
     }, [currentStep], 10000)
@@ -124,9 +122,9 @@ const WithdrawNetworkStep: FC = () => {
                             </BackgroundField>
                         }
                         <div className='flex space-x-4'>
-                            <BackgroundField isCopiable={true} toCopy={swap?.data?.received_amount} header={'Amount'}>
+                            <BackgroundField isCopiable={true} toCopy={swap?.data?.requested_amount} header={'Amount'}>
                                 <p>
-                                    {swap?.data?.received_amount}
+                                    {swap?.data?.requested_amount}
                                 </p>
                             </BackgroundField>
                             <BackgroundField header={'Asset'}>

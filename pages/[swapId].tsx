@@ -70,6 +70,10 @@ export const getServerSideProps = async (ctx) => {
     var apiClient = new LayerSwapApiClient();
     const data = await apiClient.fetchSettingsAsync()
 
+    const resource_storage_url = data.data.discovery.resource_storage_url
+    if (resource_storage_url[resource_storage_url.length - 1] === "/")
+      data.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+
     try {
       fs.writeFileSync(
         path.join(__dirname, CACHE_PATH),

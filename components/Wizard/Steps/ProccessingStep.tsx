@@ -30,6 +30,9 @@ const ProccessingStep: FC = () => {
             return;
         }
         const swap = await getSwap(swapId.toString())
+        //TODO implement better GetSwapStatusStep to not check swap status
+        if (swap.data.status === SwapStatus.Initiated || swap.data.status === SwapStatus.PendingWithdrawal)
+            return
         const swapStatusStep = GetSwapStatusStep(swap)
         goToStep(swapStatusStep)
 

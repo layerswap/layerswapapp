@@ -42,7 +42,7 @@ const AccountConnectStep: FC = () => {
             authWindowHref = authWindowRef.current?.location?.href
         }
         catch (e) {
-            
+            //throws error when accessing href TODO research safe way
         }
         
         if (!authWindowHref || authWindowHref?.indexOf(window.location.origin) === -1)

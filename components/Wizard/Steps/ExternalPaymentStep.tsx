@@ -31,6 +31,8 @@ const ExternalPaymentStep: FC = () => {
             goToStep(SwapWithdrawalStep.Email)
 
         const swap = await getSwap(swapId.toString())
+        if (swap.data.status === SwapStatus.Initiated)
+            return
         const swapStatusStep = GetSwapStatusStep(swap)
         goToStep(swapStatusStep)
     }, [currentStep, swapId], 10000)
