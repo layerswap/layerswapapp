@@ -8,6 +8,7 @@ import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { useSettingsState } from '../../../context/settings';
+import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
 const ExternalPaymentStep: FC = () => {
 
@@ -19,7 +20,7 @@ const ExternalPaymentStep: FC = () => {
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
     const { data } = useSettingsState()
-    const { exchanges, networks } = data
+    const { exchanges } = data
 
     useInterval(async () => {
         if (currentStep !== SwapWithdrawalStep.ExternalPayment)
@@ -30,18 +31,14 @@ const ExternalPaymentStep: FC = () => {
             goToStep(SwapWithdrawalStep.Email)
 
         const swap = await getSwap(swapId.toString())
-        const swapStatus = swap?.data?.status;
-        if (swapStatus == SwapStatus.Completed)
-            goToStep(SwapWithdrawalStep.Success)
-        else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
-            goToStep(SwapWithdrawalStep.Failed)
+        if (swap.data.status === SwapStatus.Initiated)
+            return
+        const swapStatusStep = GetSwapStatusStep(swap)
+        goToStep(swapStatusStep)
     }, [currentStep, swapId], 10000)
 
     const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
     const exchange_name = exchange?.display_name || ' '
-
-    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.data?.network_currency_id))
-
 
     const handleContinue = useCallback(async () => {
         const access_token = TokenService.getAuthData()?.access_token
@@ -50,7 +47,7 @@ const ExternalPaymentStep: FC = () => {
         const swap = await getSwap(swapId.toString())
         const payment_url = swap?.data?.additonal_data?.payment_url
         window.open(payment_url, '_blank', 'width=420,height=720')
-    }, [network])
+    }, [])
 
     return (
         <>

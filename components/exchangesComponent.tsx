@@ -39,7 +39,7 @@ function UserExchanges() {
     const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
     const { discovery: { resource_storage_url } } = data
-    
+
     useEffect(() => {
         (async () => {
             setLoading(true)

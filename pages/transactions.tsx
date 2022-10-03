@@ -45,6 +45,10 @@ export async function getServerSideProps(context) {
     networks = response.data.networks;
   }
 
+  const resource_storage_url = response.data.discovery.resource_storage_url
+  if (resource_storage_url[resource_storage_url.length - 1] === "/")
+      response.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+
   response.data.networks = networks;
   let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 

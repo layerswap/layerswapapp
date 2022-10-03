@@ -31,7 +31,6 @@ const useCreateSwap = () => {
         const layerswapApiClient = new LayerSwapApiClient()
         const asset = currency?.baseObject?.asset
         try {
-            console.log("hey")
             const response = await layerswapApiClient.GetExchangeDepositAddress(selected_exchange_internal_name, asset.toUpperCase(), access_token)
             if (!response.error) {
                 const { data } = response
@@ -43,7 +42,6 @@ const useCreateSwap = () => {
             }
         }
         catch (e) {
-            console.log("errr", e)
             const selected_exchange_id = selected_exchange.baseObject.id
             const selected_exchange_auth_flow = selected_exchange?.baseObject?.authorization_flow
             if (exchanges.some(e => e.exchange_id === selected_exchange_id))
