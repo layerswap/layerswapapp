@@ -187,7 +187,7 @@ export const SwapDetailsComponentSceleton = () => {
                   <div key={index}>
                       <hr className='horizontal-gradient my-1' />
                       <div className="flex justify-between items-baseline">
-                          <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
+                          <div className="h-2.5 m-2 w-1/4 bg-slate-700 rounded-full col-span-1"></div>
                           <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
                       </div>
                   </div>
@@ -224,11 +224,11 @@ export const DocInFrameSceleton = () => {
 export const ExchangesComponentSceleton = () => {
 
   return <>
-      {[...Array(8)]?.map((item, index) =>
+      {[...Array(12)]?.map((item, index) =>
           <div
               key={index}
               className="animate-pulse bg-darkblue-500 select-none rounded-lg py-5 px-3">
-              <div className="flex justify-between space-x-4 md:space-x-14 px-2">
+              <div className="flex justify-between space-x-4 md:space-x-16 px-3">
                   <div className="flex space-x-2">
                       <div className="rounded-md bg-slate-700 h-8 w-8"></div>
                       <div className="grid grid-cols-5">

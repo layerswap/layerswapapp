@@ -18,6 +18,7 @@ import GoHomeButton from "./utils/GoHome"
 import StatusIcon from "./StatusIcons"
 import Modal from "./modalComponent"
 import HoverTooltip from "./Tooltips/HoverTooltip"
+import { AnimatePresence } from "framer-motion";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -366,7 +367,7 @@ function TransactionsHistory() {
                       </button>
                     }
                   </div>
-                  <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={'Swap details'} description={""} className='max-w-md'>
+                  <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} className='max-w-md'>
                     <div className="px-6 md:px-8">
                       <SwapDetails id={selectedSwap?.id} />
                       {

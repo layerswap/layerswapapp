@@ -201,7 +201,7 @@ export default WithdrawNetworkStep;
 
 function renderGuideButton(userGuideUrlForDesktop: string, buttonText: string) {
     return <div className="w-full items-center">
-        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} >{buttonText}</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
+        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false}>{buttonText}</SubmitButton>} place='inStep'>
             {(close) => (
                 <DocIframe onConfirm={() => close()} URl={userGuideUrlForDesktop} />
             )}

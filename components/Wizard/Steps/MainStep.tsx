@@ -17,7 +17,7 @@ import { SwapCreateStep } from "../../../Models/Wizard";
 import axios from "axios";
 import AmountAndFeeDetails from "../../DisclosureComponents/amountAndFeeDetailsComponent";
 import ConnectImmutableX from "./ConnectImmutableX";
-import ConnectDeversifi from "../../ConnectDeversifi";
+import ConnectRhinofi from "../../ConnectRhinofi";
 import toast from "react-hot-toast";
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { clearTempData, getTempData } from "../../../lib/openLink";
@@ -32,6 +32,8 @@ import ExchangesField from "../../Select/Exchange";
 import NetworkField from "../../Select/Network";
 import AmountField from "../../Input/Amount";
 import { SwapType } from "../../../lib/layerSwapApiClient";
+import { AnimatePresence } from "framer-motion";
+import SlideOver from "../../SlideOver";
 
 type Props = {
     OnSumbit: (values: SwapFormValues) => void
@@ -44,7 +46,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const [loading, setLoading] = useState(false)
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
-    const [connectDeversifiIsOpen, setConnectDeversifiIsOpen] = useState(false);
+    const [connectRhinoifiIsOpen, setConnectRhinofiIsOpen] = useState(false);
 
     let formValues = formikRef.current?.values;
 
@@ -52,7 +54,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const query = useQueryState();
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
-    
+
     useEffect(() => {
         if (query.coinbase_redirect) {
             const temp_data = getTempData()
@@ -132,7 +134,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 const client = await axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
                 const isRegistered = await client.data?.isRegisteredOnDeversifi
                 if (!isRegistered) {
-                    setConnectDeversifiIsOpen(true);
+                    setConnectRhinofiIsOpen(true);
                     setLoading(false)
                     return
                 }
@@ -161,19 +163,13 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const addressRef: any = useRef();
     const amountRef: any = useRef();
 
-    const closeConnectImmutableX = (address: string) => {
-        setConnectImmutableIsOpen(false)
-        if (address) {
-            formValues.destination_address = address;
-        }
-    }
-    const closeConnectDeversifi = () => {
-        setConnectDeversifiIsOpen(false)
-    }
-    
     return <>
-        <ConnectImmutableX isOpen={connectImmutableIsOpen} swapFormData={formValues} onClose={closeConnectImmutableX} />
-        <ConnectDeversifi isOpen={connectDeversifiIsOpen} swapFormData={formValues} onClose={closeConnectDeversifi} />
+        <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
+            {(close) => <ConnectImmutableX swapFormData={formValues} onClose={close} />}
+        </SlideOver>
+        <SlideOver imperativeOpener={[connectRhinoifiIsOpen, setConnectRhinofiIsOpen]} place='inStep'>
+            {() => <ConnectRhinofi />}
+        </SlideOver>
         <Formik
             enableReinitialize={true}
             innerRef={formikRef}

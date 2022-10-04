@@ -11,7 +11,7 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
 
-export default function About(props) {
+export default function ForPartners(props) {
     return (
         <Layout>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
@@ -43,11 +43,11 @@ export default function About(props) {
                                                 </thead>
                                                 <tbody className="divide-y divide-darkblue-600 bg-darkblue-300">
                                                     {props?.networks?.map((n) => (
-                                                        <tr key={n.name}>
+                                                        <tr key={n.display_name}>
                                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">
-                                                                {n.name}
+                                                                {n.display_name}
                                                             </td>
-                                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-white italic">{n.code}</td>
+                                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-white italic">{n.internal_name}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -76,9 +76,9 @@ export default function About(props) {
                                                 </thead>
                                                 <tbody className="divide-y divide-darkblue-600 bg-darkblue-300">
                                                     {props?.exchanges?.map((e) => (
-                                                        <tr key={e.name}>
+                                                        <tr key={e.display_name}>
                                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">
-                                                                {e.name}
+                                                                {e.display_name}
                                                             </td>
                                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white italic">{e.internal_name}</td>
                                                         </tr>
