@@ -163,16 +163,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const addressRef: any = useRef();
     const amountRef: any = useRef();
 
-    const closeConnectImmutableX = (address: string) => {
-        setConnectImmutableIsOpen(false)
-        if (address) {
-            formValues.destination_address = address;
-        }
-    }
-    const closeConnectDeversifi = () => {
-        setConnectDeversifiIsOpen(false)
-    }
-
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
             {(close) => <ConnectImmutableX swapFormData={formValues} onClose={close} />}
