@@ -124,7 +124,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 }}
             >
                 {({ handleChange, isValid, dirty, isSubmitting, values }) => (
-                    <div className='px-6 md:px-8 h-full flex flex-col justify-between'>
+                    <div className='h-full flex flex-col justify-between'>
                         <SwapConfirmMainData>
                             <AddressDetails canEditAddress={!isSubmitting} onClickEditAddress={handleStartEditingAddress} />
                         </SwapConfirmMainData>
@@ -156,7 +156,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                         Editing your {swapFormData?.network?.name} wallet address</h4>
                 }
             >
-                <div className='grid grid-flow-row px-6 md:px-8 text-primary-text'>
+                <div className='grid grid-flow-row text-primary-text'>
                     <div>
                         <label htmlFor="address" className="block font-normal text-sm text-left">
                             Address

@@ -41,7 +41,7 @@ const Wizard: FC<Props> = ({ children }) => {
          <div className='text-center text-xl text-darkblue-50'>
 
          </div>
-         <div className="relative">
+         <div className="relative px-6 md:px-8">
             <div className="flex items-start"
                ref={wrapper}>
                <div className={`flex flex-nowrap min-h-480  ${loading ? 'invisible' : 'visible animate-fade-in-down'}`}>

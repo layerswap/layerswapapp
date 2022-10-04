@@ -368,7 +368,7 @@ function TransactionsHistory() {
                     }
                   </div>
                   <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} className='max-w-md'>
-                    <div className="px-6 md:px-8">
+                    <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {
                         data.networks && selectedSwap?.transaction_id &&

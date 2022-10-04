@@ -63,7 +63,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
 
     return (
         <>
-            <div className="w-full flex flex-col justify-between h-full px-6 md:px-8 pt-4 space-y-5  text-primary-text">
+            <div className="w-full flex flex-col justify-between h-full pt-4 space-y-5  text-primary-text">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 text-white">
                         Please enter

@@ -51,7 +51,7 @@ const ExternalPaymentStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-6 md:px-8 flex justify-between h-full flex-col">
+            <div className="w-full flex justify-between h-full flex-col">
                 <div className=' space-y-10'>
                     <div className="flex items-center">
                         <label className="block text-lg font-medium text-white">Complete {exchange_name} transfer</label>

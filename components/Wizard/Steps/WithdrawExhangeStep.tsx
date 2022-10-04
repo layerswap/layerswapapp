@@ -58,7 +58,7 @@ const WithdrawExchangeStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-6 md:px-8 flex space-y-5 flex-col justify-between h-full text-primary-text">
+            <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">

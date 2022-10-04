@@ -30,9 +30,9 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, className 
                     }}
                     className="fixed inset-0 flex min-h-full items-center justify-center bg-black/40">
                     <Dialog.Panel className={`${className} w-full max-w-xl`}>
-                        <div className="space-y-4 bg-darkblue py-6 md:py-8 transform overflow-hidden rounded-md align-middle shadow-xl">
+                        <div className="space-y-4 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl">
                             <Dialog.Title as="div" >
-                                <div className='flex justify-between space-x-8 px-6 md:px-8'>
+                                <div className='flex justify-between space-x-8'>
                                     <div className="text-lg text-left leading-6 font-medium text-primary-text" >
                                         {title}
                                     </div>

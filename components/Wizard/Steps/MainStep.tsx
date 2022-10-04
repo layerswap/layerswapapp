@@ -181,7 +181,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             {({ values, errors, isValid, dirty }) => (
                 <Form className="h-full">
                     <ConnectedFocusError />
-                    <div className="px-6 md:px-8 h-full flex flex-col justify-between">
+                    <div className="h-full flex flex-col justify-between">
                         <div>
                             <div className='my-4'>
                                 <SwapOptionsToggle />

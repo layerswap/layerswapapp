@@ -259,7 +259,7 @@ function UserExchanges() {
                 <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' />
             </Modal>
             <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} className='max-w-xs'>
-                <div className="flex justify-items-center space-x-3 max-w-xs px-6 md:px-8">
+                <div className="flex justify-items-center space-x-3 max-w-xs">
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" >Yes</SubmitButton>
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small'>No</SubmitButton>
                 </div>
