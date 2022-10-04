@@ -4,7 +4,7 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { SwapWizardSteps } from '../../../Models/Wizard';
+import { SwapWithdrawalStep, SwapWizardSteps } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
@@ -17,52 +17,56 @@ import WarningMessage from '../../WarningMessage';
 import NetworkSettings from '../../../lib/NetworkSettings';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
-import KnownIds from '../../../lib/knownIds';
+import KnownInternalNames from '../../../lib/knownIds';
+import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
-    const { currentStep } = useFormWizardState<SwapWizardSteps>()
+    const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
     const { data } = useSettingsState()
-    const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
+    const { exchanges, networks, currencies, discovery: { resource_storage_url } } = data
+    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.data?.payment?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
 
     useInterval(async () => {
-        if (currentStep === "OffRampWithdrawal") {
-            const authData = TokenService.getAuthData();
-            if (!authData) {
-                goToStep("Email")
-                return;
-            }
-            const swap = await getSwap(swapId.toString())
-            const swapStatus = swap?.data.status;
-            if (swapStatus == SwapStatus.Completed)
-                goToStep("Success")
-            else if (swapStatus == SwapStatus.Failed)
-                goToStep("Failed")
+        if (currentStep !== SwapWithdrawalStep.OffRampWithdrawal)
+            return true
+        const authData = TokenService.getAuthData();
+        if (!authData) {
+            goToStep(SwapWithdrawalStep.Email)
+            return;
         }
+        const swap = await getSwap(swapId.toString())
+        //TODO implement better GetSwapStatusStep to not check swap status
+        if (swap.data.status === SwapStatus.Initiated)
+            return
+        const swapStatusStep = GetSwapStatusStep(swap)
+        goToStep(swapStatusStep)
     }, [currentStep], 10000)
 
     const handleConfirm = useCallback(async () => {
         setTransferDone(true)
     }, [])
 
-    const network = data.networks?.find(n => n.code === swap?.data?.network)
-    const network_name = network?.name || ' '
-    const network_logo_url = network?.logo_url
-    const network_id = network?.id
+    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.data?.network_currency_id))
+    const currency = network?.currencies.find(n => n.id === swap?.data?.network_currency_id)
 
-    if (!swap?.data?.offramp_info) {
+    const network_name = network?.display_name || ' '
+    const network_logo_url = network?.logo
+    const network_internal_name = network?.internal_name
+
+    if (!swap?.data?.additonal_data) {
         return null;
     }
 
-    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[network?.id]?.UserGuideUrlForDesktop
-    const userGuideUrlForMobile = NetworkSettings.KnownSettings[network?.id]?.UserGuideUrlForMobile
+    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[network?.internal_name]?.UserGuideUrlForDesktop
+    const userGuideUrlForMobile = NetworkSettings.KnownSettings[network?.internal_name]?.UserGuideUrlForMobile
 
     return (
         <>
@@ -70,13 +74,13 @@ const WithdrawNetworkStep: FC = () => {
                 <div className='space-y-4'>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">
-                            Send {swap?.data.currency} to the provided address in
+                            Send {currency?.asset} to the provided address in
                             {
-                                network_logo_url &&
+                                network_logo_url && resource_storage_url &&
                                 <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
                                     <div className="flex-shrink-0 h-6 w-6 relative">
                                         <Image
-                                            src={network_logo_url}
+                                            src={`${resource_storage_url}${network_logo_url}`}
                                             alt="Network Logo"
                                             height="40"
                                             width="40"
@@ -107,7 +111,7 @@ const WithdrawNetworkStep: FC = () => {
 
                     <div className='mb-6 grid grid-cols-1 gap-4'>
                         {
-                            network_id === KnownIds.Networks.LoopringMainnetId &&
+                            network_internal_name === KnownInternalNames.Networks.LoopringMainnet &&
                             <BackgroundField header={'Select as "Where would you like to send your crypto to"'}>
                                 <div className='flex items-center space-x-2'>
                                     <SwitchHorizontalIcon className='h-4 w-4' />
@@ -118,20 +122,20 @@ const WithdrawNetworkStep: FC = () => {
                             </BackgroundField>
                         }
                         <div className='flex space-x-4'>
-                            <BackgroundField isCopiable={true} toCopy={swap?.data?.amount} header={'Amount'}>
+                            <BackgroundField isCopiable={true} toCopy={swap?.data?.requested_amount} header={'Amount'}>
                                 <p>
-                                    {swap?.data?.amount}
+                                    {swap?.data?.requested_amount}
                                 </p>
                             </BackgroundField>
                             <BackgroundField header={'Asset'}>
                                 <p>
-                                    {swap?.data?.currency}
+                                    {currency?.asset}
                                 </p>
                             </BackgroundField>
                         </div>
-                        <BackgroundField isCopiable={true} toCopy={swap?.data.offramp_info.deposit_address} header={'Recipient'}>
+                        <BackgroundField isCopiable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Recipient'}>
                             <p className='break-all'>
-                                {swap?.data.offramp_info.deposit_address}
+                                {swap?.data?.additonal_data?.deposit_address}
                             </p>
                         </BackgroundField>
                         <BackgroundField header={'Address Type'}>
@@ -140,11 +144,11 @@ const WithdrawNetworkStep: FC = () => {
                             </p>
                         </BackgroundField>
                         {
-                            swap?.data?.offramp_info?.memo &&
+                            swap?.data?.additonal_data?.memo &&
                             <>
-                                <BackgroundField isCopiable={true} toCopy={swap?.data?.offramp_info?.memo} header={'Memo'}>
+                                <BackgroundField isCopiable={true} toCopy={swap?.data?.additonal_data?.memo} header={'Memo'}>
                                     <p className='break-all'>
-                                        {swap?.data?.offramp_info?.memo}
+                                        {swap?.data?.additonal_data?.memo}
                                     </p>
                                 </BackgroundField>
                                 <WarningMessage>
@@ -197,7 +201,7 @@ export default WithdrawNetworkStep;
 
 function renderGuideButton(userGuideUrlForDesktop: string, buttonText: string) {
     return <div className="w-full items-center">
-        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false} icon={''}>{buttonText}</SubmitButton>} moreClassNames="-mt-11 md:-mt-8">
+        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false}>{buttonText}</SubmitButton>} place='inStep'>
             {(close) => (
                 <DocIframe onConfirm={() => close()} URl={userGuideUrlForDesktop} />
             )}

@@ -1,57 +1,66 @@
-import { SwapType } from "../components/DTOs/SwapFormValues";
 import roundDecimals from "../components/utils/RoundDecimals";
+import { getCurrencyDetails } from "../helpers/currencyHelper";
+import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
 import { Exchange } from "../Models/Exchange";
+import { SwapType } from "./layerSwapApiClient";
 
-export function GetExchangeFee(currency: Currency, exchange: Exchange): number {
-    var currencyExchange = currency?.exchanges?.find(e => e.exchange_id == exchange.id);
-    if (!currencyExchange) {
+export function GetExchangeFee(currency?: Currency, exchange?: Exchange): number {
+    return exchange?.currencies.find(ec => ec.asset === currency?.asset)?.current_withdrawal_fee || 0;
+}
+
+export function CalculateFee(amount?: number, currency?: Currency, exchange?: Exchange, network?: CryptoNetwork, swapType?: SwapType): number {
+    if (!currency || !exchange || !network) 
         return 0;
-    }
 
-    return currencyExchange.fee;
+    const exchangeCurrency = exchange.currencies.find(c => c.asset === currency.asset)
+    const networkCurrency = network.currencies.find(c => c.asset === currency.asset)
+
+    const fee = swapType === SwapType.OnRamp ?
+        Number((amount * exchangeCurrency.fee_percentage + (exchangeCurrency.fee || 0)).toFixed(exchangeCurrency?.precision))
+        : Number((amount * networkCurrency.fee_percentage + (networkCurrency.fee || 0)).toFixed(networkCurrency?.precision))
+
+    return fee;
 }
 
-function CalcualteExchangePercentageFee(amount: number, exchange: Exchange) {
-    return amount * exchange?.fee_percentage;
-}
-
-export function CalculateFee(amount: number, currency: Currency, exchange: Exchange, swapType: SwapType): number {
-    if (!currency || !exchange) {
-        return 0;
-    }
-
-    var fee = currency.fee + CalcualteExchangePercentageFee(amount, exchange);
-    return Number(fee.toFixed(currency?.precision));
-}
-
-export function CalculateReceiveAmount(amount: number, currency: Currency, exchange: Exchange, swapType: SwapType) {
+export function CalculateReceiveAmount(amount?: number, currency?: Currency, exchange?: Exchange, network?: CryptoNetwork, swapType?: SwapType) {
 
     if (!amount) return 0;
 
-    let minAllowedAmount = CalculateMinAllowedAmount(currency, exchange, swapType);
+    let minAllowedAmount = CalculateMinAllowedAmount(currency, exchange, network, swapType);
+
+    const currencyDetails = getCurrencyDetails(currency, exchange, network, swapType)
 
     if (amount >= minAllowedAmount) {
-        let fee = CalculateFee(amount, currency, exchange, swapType);
+        let fee = CalculateFee(amount, currency, exchange, network, swapType);
         var result = amount - fee;
-        if (swapType == 'onramp') {
+        if (swapType == SwapType.OnRamp) {
             let exchangeFee = GetExchangeFee(currency, exchange);
             result -= exchangeFee;
         }
-        return Number(result.toFixed(currency?.precision));
+        return Number(result.toFixed(currencyDetails?.precision));
     }
 
     return 0;
 }
 
-export function CalculateMaxAllowedAmount(currency: Currency, exchange: Exchange, swapType: string) {
-    let OffRampMaxAmount = currency?.exchanges.find(ce => ce.exchange_id === exchange.id)?.off_ramp_max_amount;
-    return (swapType == "onramp" ? currency?.max_amount : OffRampMaxAmount ?? currency?.off_ramp_max_amount) || 0;
+export function CalculateMaxAllowedAmount(currency?: Currency, exchange?: Exchange, network?: CryptoNetwork, swapType?: SwapType) {
+
+    if (!currency || !exchange || !network) return 0
+    const exchangeCurrency = exchange.currencies.find(c => c.asset === currency.asset)
+    const networkCurrency = network.currencies.find(c => c.asset === currency.asset)
+
+    const maxAmount = Math.min(exchangeCurrency?.max_withdrawal_amount, networkCurrency?.max_withdrawal_amount) || 0
+
+    return roundDecimals(maxAmount, currency?.usd_price?.toFixed()?.length) || 0
 }
 
-export function CalculateMinAllowedAmount(currency: Currency, exchange: Exchange, swapType: string) {
-    let exchangeMinWithdrawalAmount = currency?.exchanges.find(ce => ce.exchange_id === exchange.id)?.min_withdrawal_amount;
-    exchangeMinWithdrawalAmount ??= swapType == "onramp" ? currency?.min_amount : currency?.off_ramp_min_amount;
-    return roundDecimals(exchangeMinWithdrawalAmount, currency?.price_in_usdt.toFixed().length) || 0;
-}
+export function CalculateMinAllowedAmount(currency?: Currency, exchange?: Exchange, network?: CryptoNetwork, swapType?: SwapType) {
 
+    if (!currency || !exchange || !network) return 0
+    const exchangeCurrency = exchange.currencies.find(c => c.asset === currency.asset)
+    const networkCurrency = network.currencies.find(c => c.asset === currency.asset)
+
+    const maxAmount = Math.max(exchangeCurrency?.min_withdrawal_amount, networkCurrency?.min_withdrawal_amount) || 0
+    return roundDecimals(maxAmount, currency.usd_price?.toFixed()?.length) || 0
+}

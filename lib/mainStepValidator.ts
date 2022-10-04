@@ -3,13 +3,14 @@ import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { isValidAddress } from "./addressValidator";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "./fees";
+import { SwapType } from "./layerSwapApiClient";
 
 export default function MainStepValidation(settings: LayerSwapSettings): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
     return (values: SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
-        let minAllowedAmount = CalculateMinAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.swapType);
-        let maxAllowedAmount = CalculateMaxAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.swapType);
+        let minAllowedAmount = CalculateMinAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.network?.baseObject, values?.swapType);
+        let maxAllowedAmount = CalculateMaxAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.network?.baseObject, values?.swapType);
 
         if (!values.exchange) {
             (errors.exchange as any) = 'Select an exchange';
@@ -17,13 +18,13 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         else if (!values.network) {
             (errors.network as any) = 'Select a network';
         }
-        else if (values.swapType === "onramp" && !values.destination_address) {
+        else if (values.swapType === SwapType.OnRamp && !values.destination_address) {
             errors.destination_address = `Enter ${values?.network?.name} address`;
         }
-        else if (values.swapType === "onramp" && !isValidAddress(values.destination_address, values.network?.baseObject)) {
+        else if (values.swapType === SwapType.OnRamp && !isValidAddress(values.destination_address, values.network?.baseObject)) {
             errors.destination_address = `Enter a valid ${values?.network?.name} address`;
         }
-        else if (values.swapType === "onramp" && settings.data.blacklistedAddresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
+        else if (values.swapType === SwapType.OnRamp && settings.data.blacklisted_addresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
             errors.destination_address = `You can not transfer to this address`;
         }
         else if (!amount) {

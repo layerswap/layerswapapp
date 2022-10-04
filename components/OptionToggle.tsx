@@ -1,6 +1,7 @@
 import { RadioGroup } from "@headlessui/react";
 import { ArrowRightIcon } from "@heroicons/react/solid";
 import { FC } from "react";
+import { SwapType } from "../lib/layerSwapApiClient";
 import { classNames } from "./utils/classNames";
 
 export interface NavRadioOption {
@@ -43,7 +44,7 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
                         disabled={!option.isEnabled}>
                         <div>
                             {
-                                option.value === 'onramp' ?
+                                option.value === SwapType.OnRamp ?
                                     <div className="flex items-center space-x-1 md:space-x-2 md:p-0 p-1.5 text-sm md:text-base">
                                         <span>
                                             Exchange

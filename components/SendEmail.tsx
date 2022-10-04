@@ -16,7 +16,7 @@ type Props = {
     onSend: (email: string) => void
 }
 
-const EmailStep: FC<Props> = ({ onSend }) => {
+const SendEmail: FC<Props> = ({ onSend }) => {
     const initialValues: EmailFormValues = { email: '' };
     const [storedEmail, setStoredEmail] = useState<string>(undefined);
     const { setCodeRequested } = useAuthDataUpdate();
@@ -27,8 +27,8 @@ const EmailStep: FC<Props> = ({ onSend }) => {
             if (inputEmail != storedEmail) {
                 const apiClient = new LayerSwapAuthApiClient();
                 const res = await apiClient.getCodeAsync(inputEmail)
-                if (!res.is_success)
-                    throw new Error(res.errors)
+                if (res.error)
+                    throw new Error(res.error)
                 TokenService.setCodeNextTime(res?.data?.next)
                 setCodeRequested(true);
             }
@@ -105,4 +105,4 @@ const EmailStep: FC<Props> = ({ onSend }) => {
     )
 }
 
-export default EmailStep;
+export default SendEmail;

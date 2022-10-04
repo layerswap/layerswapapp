@@ -4,10 +4,10 @@ module.exports = {
     defaultLocale: "en",
   },
   images: {
-    domains: ["bransferstorage.blob.core.windows.net"],
+    domains: ["bransferstorage.blob.core.windows.net","devlslayerswapbridgesa.blob.core.windows.net"],
   },
   compiler: {
-    removeConsole: true,
+    removeConsole: false,
   },
   reactStrictMode: false
 };

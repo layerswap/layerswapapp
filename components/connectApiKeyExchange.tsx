@@ -1,7 +1,7 @@
 import { InformationCircleIcon } from '@heroicons/react/outline';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
-import { BransferApiClient } from '../lib/bransferApiClients';
+import LayerswapApiClient from '../lib/layerSwapApiClient';
 import ExchangeSettings from '../lib/ExchangeSettings';
 import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
@@ -13,10 +13,10 @@ import WarningMessage from './WarningMessage';
 type Props = {
     exchange: Exchange,
     onSuccess: () => void,
-    slideOverClassNames?: string
+    slideOverPlace?: string
 }
 
-const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassNames }) => {
+const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace }) => {
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
@@ -39,9 +39,9 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
     const connect = useCallback(async () => {
         try {
             setLoading(true)
-            const bransferApiClient = new BransferApiClient();
+            const layerswapApiClient = new LayerswapApiClient();
             const { access_token } = TokenService.getAuthData() || {};
-            const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase }, access_token)
+            const res = await layerswapApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase }, access_token)
             onSuccess()
         }
         catch (error) {
@@ -59,7 +59,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
     }, [key, secret, keyphrase, exchange])
 
     const dataIsValid = secret && key && (exchange?.has_keyphrase ? keyphrase : true)
-    const userGuideURL = ExchangeSettings.KnownSettings[exchange?.id]?.UserApiKeyGuideUrl
+    const userGuideURL = ExchangeSettings.KnownSettings[exchange?.internal_name]?.UserApiKeyGuideUrl
 
     return (
         <>
@@ -67,7 +67,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 text-white">
                         Please enter
-                        {ExchangeSettings.KnownSettings[exchange?.id]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange.id]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.name}</a> : <span className='mx-1'>{exchange?.name}</span>}
+                        {ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange.id]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.display_name}</a> : <span className='mx-1'>{exchange?.display_name}</span>}
                         API keys
                     </h3>
                 </div>
@@ -112,12 +112,12 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                         exchange?.has_keyphrase &&
                         <>
                             <label htmlFor="apiKey" className="block font-normal text-sm">
-                                {ExchangeSettings.KnownSettings[exchange?.id]?.KeyphraseDisplayName}
+                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1">
                                 <input
                                     autoComplete="off"
-                                    placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.id]?.KeyphraseDisplayName}`}
+                                    placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}`}
                                     autoCorrect="off"
                                     type="text"
                                     name="apiKey"
@@ -130,17 +130,17 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                         </>
                     }
                     {
-                        ExchangeSettings.KnownSettings[exchange?.id]?.AuthorizationNote &&
+                        ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&
                         <WarningMessage className=''>
                             <div className='text-black'>
-                                {ExchangeSettings.KnownSettings[exchange?.id]?.AuthorizationNote}
+                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
                             </div>
                         </WarningMessage>
                     }
                     {
                         userGuideURL && <div className="flex items-center">
                             <span className="block text-base text-white font-normal leading-6"> Read about
-                                <SlideOver opener={(open) => <>&nbsp;<span className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>How to get API Keys</span>&nbsp;</>} moreClassNames={slideOverClassNames}>
+                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} place={slideOverPlace}>
                                     {(close) => (
                                         <DocIframe onConfirm={() => close()} URl={userGuideURL} />
                                     )}

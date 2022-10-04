@@ -1,82 +1,122 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import { BransferApiClient } from '../lib/bransferApiClients';
-import LayerSwapApiClient, { CreateSwapParams, SwapItemResponse } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItemResponse, SwapType } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate } from './authContext';
 import TokenService from '../lib/TokenService';
+import { KnownwErrorCode } from '../Models/ApiError';
+import { SwapStatus } from '../Models/SwapStatus';
 
-const SwapDataStateContext = React.createContext<SwapData>(null);
-const SwapDataUpdateContext = React.createContext<UpdateInterface>(null);
+const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined });
+const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
     updateSwapFormData: (value: React.SetStateAction<SwapFormValues>) => void,
-    createSwap: (data: CreateSwapParams) => Promise<SwapItemResponse>,
+    createAndProcessSwap: (TwoFACode?: string) => Promise<string>,
     //TODO this is stupid need to clean data in confirm step or even do not store it
     clearSwap: () => void,
     processPayment: (swap: SwapItemResponse, twoFactorCode?: string) => void,
-    getSwap: (id: string) => Promise<SwapItemResponse>
+    getSwap: (id: string) => Promise<SwapItemResponse>;
+    setCodeRequested(codeSubmitted: boolean): void;
+
 }
 
 type SwapData = {
-    swapFormData: SwapFormValues,
-    swap: SwapItemResponse
+    codeRequested: boolean,
+    swapFormData?: SwapFormValues,
+    swap?: SwapItemResponse
 }
 
 export function SwapDataProvider({ children }) {
     const [swapFormData, setSwapFormData] = React.useState<SwapFormValues>();
     const [swap, setSwap] = useState<SwapItemResponse>()
+    const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
 
     const { getAuthData } = useAuthDataUpdate();
 
+    const createSwap = useCallback(async (formData: SwapFormValues, access_token: string) => {
+        if (!formData)
+            throw new Error("No swap data")
+
+        const { network, currency, exchange } = formData
+
+        if (!network || !currency || !exchange)
+            throw new Error("Form data is missing")
+
+        try {
+            const layerswapApiClient = new LayerSwapApiClient()
+            const swap = await layerswapApiClient.createSwap({
+                amount: Number(formData.amount),
+                exchange: exchange?.id,
+                network: network.id,
+                asset: currency.baseObject.asset,
+                destination_address: formData.destination_address,
+                type: formData.swapType === SwapType.OnRamp ? 0 : 1 /// TODO create map for sap types
+            }, access_token)
+
+            if (swap?.error)
+                throw new Error(swap?.error?.message)
+
+            const swapId = swap.data.swap_id;
+            const swapDetails = await layerswapApiClient.getSwapDetails(swapId, access_token)
+            setSwap(swapDetails)
+            return swapDetails;
+        }
+        catch (e) {
+            throw e
+        }
+    }, [])
+
+    const processPayment = useCallback(async (swap: SwapItemResponse, twoFactorCode?: string) => {
+        const authData = getAuthData()
+        if (!authData?.access_token)
+            throw new Error("Not authenticated")
+        const layerswapApiClient = new LayerSwapApiClient()
+        const prcoessPaymentReponse = await layerswapApiClient.ProcessPayment(swap.data.id, authData.access_token, twoFactorCode)
+        if (prcoessPaymentReponse.error)
+            throw new Error(prcoessPaymentReponse.error)
+        const swapDetails = await layerswapApiClient.getSwapDetails(swap.data.id, authData.access_token)
+        setSwap(swapDetails)
+    }, [getAuthData])
+
+    const getSwap = useCallback(async (id) => {
+        const authData = TokenService.getAuthData();
+        if (!authData?.access_token)
+            throw new Error("Not authenticated")
+        const layerswapApiClient = new LayerSwapApiClient()
+        const swapDetails = await layerswapApiClient.getSwapDetails(id, authData?.access_token)
+        setSwap(swapDetails)
+        return swapDetails
+    }, [])
+
+    const createAndProcessSwap = useCallback(async (TwoFACode?: string) => {
+        const authData = TokenService.getAuthData();
+        if (!authData?.access_token)
+            throw new Error("Not authenticated")
+
+        const _swap = swap?.data?.id ? await getSwap(swap.data.id) : await createSwap(swapFormData, authData?.access_token)
+        if (_swap?.data?.status === SwapStatus.Created)
+            await processPayment(_swap, TwoFACode)
+        ///TODO grdon code please refactor
+        else if (_swap?.data?.status === SwapStatus.Cancelled) {
+            const newSwap = await createSwap(swapFormData, authData?.access_token)
+            await processPayment(newSwap, TwoFACode)
+            return newSwap.data.id
+        }
+
+        return _swap.data.id
+    }, [swap, swapFormData])
+
     const updateFns: UpdateInterface = {
-        clearSwap: () => setSwap(undefined),
+        clearSwap: () => { setSwap(undefined), setCodeRequested(false) },
         updateSwapFormData: setSwapFormData,
-        createSwap: useCallback(async (data: CreateSwapParams) => {
-            try {
-                const layerswapApiClient = new LayerSwapApiClient()
-                const authData = getAuthData()
-                const swap = await layerswapApiClient.createSwap({
-                    Amount: Number(swapFormData.amount),
-                    Exchange: swapFormData.exchange?.id,
-                    Network: swapFormData.network.id,
-                    currency: swapFormData.currency.baseObject.asset,
-                    destination_address: swapFormData.destination_address,
-                    to_exchange: swapFormData.swapType === "offramp"
-                }, authData?.access_token)
-
-                if (swap?.is_success !== true)
-                    throw new Error(swap.error)
-
-                const swapId = swap.data.swap_id;
-                const swapDetails = await layerswapApiClient.getSwapDetails(swapId, authData?.access_token)
-                setSwap(swapDetails)
-                return swapDetails;
-            }
-            catch (e) {
-                throw e
-            }
-        }, [swapFormData, getAuthData]),
-        getSwap: useCallback(async (id) => {
-            const authData = TokenService.getAuthData();
-            const layerswapApiClient = new LayerSwapApiClient()
-            const swapDetails = await layerswapApiClient.getSwapDetails(id, authData?.access_token)
-            setSwap(swapDetails)
-            return swapDetails
-        }, []),
-        processPayment: useCallback(async (swap: SwapItemResponse, twoFactorCode?: string) => {
-            const authData = getAuthData()
-            const bransferApiClient = new BransferApiClient()
-            const layerswapApiClient = new LayerSwapApiClient()
-            const prcoessPaymentReponse = await bransferApiClient.ProcessPayment(swap.data.payment.id, authData?.access_token, twoFactorCode)
-            if (!prcoessPaymentReponse.is_success)
-                throw new Error(prcoessPaymentReponse.errors)
-            const swapDetails = await layerswapApiClient.getSwapDetails(swap.data.id, authData?.access_token)
-            setSwap(swapDetails)
-        }, [getAuthData]),
+        createAndProcessSwap: createAndProcessSwap,
+        getSwap: getSwap,
+        processPayment: processPayment,
+        setCodeRequested: setCodeRequested,
     };
 
     return (
-        <SwapDataStateContext.Provider value={{ swapFormData, swap }}>
+        <SwapDataStateContext.Provider value={{ swapFormData, swap, codeRequested }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>

@@ -1,7 +1,8 @@
 import { ArrowRightIcon, ExternalLinkIcon } from '@heroicons/react/outline';
-import { FC } from 'react'
+import { FC, useCallback, useEffect } from 'react'
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
+import { SwapType } from '../../../lib/layerSwapApiClient';
 import SubmitButton from '../../buttons/submitButton';
 import GoHomeButton from '../../utils/GoHome';
 
@@ -9,6 +10,16 @@ const SuccessfulStep: FC = () => {
 
     const { data } = useSettingsState()
     const { swap } = useSwapDataState()
+    const { networks, currencies, discovery: { resource_storage_url } } = data
+
+    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.data?.network_currency_id))
+
+    const handleViewInExplorer = useCallback(() => {
+        if (!network)
+            return
+        const { transaction_explorer_template } = network
+        window.open(transaction_explorer_template.replace("{0}", swap?.data.transaction_id), '_blank')
+    }, [network])
 
     return (
         <>
@@ -22,7 +33,7 @@ const SuccessfulStep: FC = () => {
                     </svg>
                 </div>
                 {
-                    swap?.data?.type === "on_ramp" ?
+                    swap?.data?.type === SwapType.OnRamp ?
                         <div className="flex items-center text-center mb-14 md:mb-6 mx-5 md:mx-24">
                             <span className="block text-lg font-lighter leading-6 text-primary-text">Your swap successfully completed. You can view it in the explorer, or go ahead swap more!</span>
                         </div>
@@ -31,11 +42,10 @@ const SuccessfulStep: FC = () => {
                             <span className="block text-lg font-lighter leading-6 text-primary-text">Your swap successfully completed. Your assets are on their way to your exchange account.</span>
                         </div>
                 }
-
                 {
-                    data.networks && swap?.data.transaction_id &&
+                    data.networks && swap?.data?.type === SwapType.OnRamp && swap?.data.transaction_id &&
                     <div className="text-white mb-2.5 md:mb-5 md:mt-3 mt-0">
-                        <SubmitButton buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={() => window.open(data.networks.filter(x => x.code === swap?.data.network)[0]?.transaction_explorer_template.replace("{0}", swap?.data.transaction_id), '_blank')}>View in Explorer <ExternalLinkIcon className='ml-2 h-5 w-5' /></SubmitButton>
+                        <SubmitButton buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer}>View in Explorer <ExternalLinkIcon className='ml-2 h-5 w-5' /></SubmitButton>
                     </div>
                 }
                 <div className="w-full justify-center">

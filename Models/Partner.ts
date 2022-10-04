@@ -1,5 +1,5 @@
 export class Partner {
-    name: string;
+    internal_name: string;
     display_name: string;
     logo_url: string;
     is_enabled: boolean;

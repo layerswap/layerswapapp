@@ -4,67 +4,69 @@ import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formW
 import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useInterval } from '../../../hooks/useInterval';
 import { parseJwt } from '../../../lib/jwtParser';
 import { OpenLink } from '../../../lib/openLink';
 import TokenService from '../../../lib/TokenService';
-import { FormWizardSteps } from '../../../Models/Wizard';
+import { SwapCreateStep } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
-import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 import Image from 'next/image'
-import { ExternalLinkIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
+import { ExternalLinkIcon } from '@heroicons/react/outline';
 import SwitchIcon from '../../icons/switchIcon';
+import { useDelayedInterval } from '../../../hooks/useInterval';
 
 const OfframpAccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
-    const { oauth_login_redirect_url } = swapFormData?.exchange?.baseObject || {}
-    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
-    const { currentStep } = useFormWizardState<FormWizardSteps>()
+    const { o_auth_login_url } = swapFormData?.exchange?.baseObject || {}
+    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
+    const { currentStepName } = useFormWizardState<SwapCreateStep>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
-    const [poll, setPoll] = useState(false)
     const [addressSource, setAddressSource] = useState("")
-    const authWindowRef = useRef(null);
+    const authWindowRef = useRef<Window | null>(null);
     const query = useQueryState()
 
-    useEffect(() => {
-        let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
-        let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
-        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
-    }, [query])
+    const { startInterval } = useDelayedInterval(async () => {
+        if (currentStepName !== SwapCreateStep.OffRampOAuth)
+            return true
 
-    useInterval(async () => {
-        if (currentStep === "OffRampExchangeOAuth" && poll) {
-            const { access_token } = TokenService.getAuthData() || {};
-            if (!access_token) {
-                await goToStep("Email")
-                setPoll(false)
-                return;
-            }
-            const exchanges = await (await getUserExchanges(access_token))?.data
-            const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
-            if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
-                goToStep("SwapConfirmation")
-                setPoll(false)
-                authWindowRef.current?.close()
-            }
+        const { access_token } = TokenService.getAuthData() || {};
+        if (!access_token) {
+            await goToStep(SwapCreateStep.Email)
+            return true;
+        }
+
+        let authWindowHref = ""
+        try {
+            authWindowHref = authWindowRef.current?.location?.href
+        }
+        catch (e) {
 
         }
-    }, [currentStep, authWindowRef, poll], 7000)
+        if (!authWindowHref || authWindowHref?.indexOf(window.location.origin) === -1)
+            return false
+        const exchanges = await (await getUserExchanges(access_token))?.data
+        const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange.baseObject?.id)
+        if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
+            await goToStep(SwapCreateStep.Confirm)
+            authWindowRef.current?.close()
+            return true;
+        }
+        return false
+    }, [currentStepName, authWindowRef], 2000)
 
     const handleConnect = useCallback(() => {
         try {
-
-            setPoll(true)
+            startInterval()
             const access_token = TokenService.getAuthData()?.access_token
             if (!access_token)
-                goToStep("Email")
+                goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
-            authWindowRef.current = OpenLink({ link: oauth_login_redirect_url + sub, swap_data: swapFormData, query })
+            const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
+            authWindowRef.current = OpenLink({ link: o_auth_login_url + encoded, swap_data: swapFormData, query })
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_login_redirect_url, addressSource, query])
+    }, [o_auth_login_url, addressSource, query])
 
     const exchange_name = swapFormData?.exchange?.name
 

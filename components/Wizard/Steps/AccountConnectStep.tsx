@@ -4,51 +4,65 @@ import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formW
 import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useInterval } from '../../../hooks/useInterval';
+import { useDelayedInterval } from '../../../hooks/useInterval';
 import { parseJwt } from '../../../lib/jwtParser';
 import { OpenLink } from '../../../lib/openLink';
 import TokenService from '../../../lib/TokenService';
-import { FormWizardSteps } from '../../../Models/Wizard';
+import { SwapCreateStep } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 
 const AccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
-    const { oauth_authorization_redirect_url: oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
-    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
-    const { currentStep } = useFormWizardState<FormWizardSteps>()
+    const { exchange, amount, currency } = swapFormData || {}
+    const { o_auth_authorization_url } = exchange?.baseObject || {}
+    const { goToStep } = useFormWizardaUpdate()
+    const { currentStepName } = useFormWizardState()
     const { getUserExchanges } = useUserExchangeDataUpdate()
-    const [poll, setPoll] = useState(false)
     const [addressSource, setAddressSource] = useState("")
     const [carouselFinished, setCarouselFinished] = useState(false)
-    const authWindowRef = useRef(null);
-    const carouselRef = useRef<CarouselRef>()
+    const authWindowRef = useRef<Window | null>(null)
+    const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
 
-    useEffect(() => {
-        let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
-        let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
-        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
-    }, [query])
+    const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
 
-    useInterval(async () => {
-        if (currentStep === "ExchangeOAuth" && poll) {
-            const { access_token } = TokenService.getAuthData() || {};
-            if (!access_token) {
-                await goToStep("Email")
-                setPoll(false)
-                return;
-            }
-            const exchanges = await (await getUserExchanges(access_token))?.data
-            const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
-            if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
-                goToStep("SwapConfirmation")
-                setPoll(false)
-                authWindowRef.current?.close()
-            }
+    const { startInterval } = useDelayedInterval(async () => {
+        if (currentStepName !== SwapCreateStep.OAuth)
+            return true
 
+        const { access_token } = TokenService.getAuthData() || {};
+        if (!access_token) {
+            await goToStep(SwapCreateStep.Email)
+            return true;
         }
-    }, [currentStep, authWindowRef, poll], 7000)
+
+        let authWindowHref = ""
+        try {
+            authWindowHref = authWindowRef.current?.location?.href
+        }
+        catch (e) {
+            //throws error when accessing href TODO research safe way
+        }
+        
+        if (!authWindowHref || authWindowHref?.indexOf(window.location.origin) === -1)
+            return false
+
+        const exchanges = await (await getUserExchanges(access_token))?.data
+        const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === exchange?.baseObject.id)
+        if (!exchange?.baseObject?.authorization_flow || exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
+            const authWindowURL = new URL(authWindowHref)
+            const authorizedAmount = authWindowURL.searchParams.get("send_limit_amount")
+            if (Number(authorizedAmount) < minimalAuthorizeAmount)
+                toast.error("You did not authorize enough")
+            else
+                await goToStep(SwapCreateStep.Confirm)
+            authWindowRef.current?.close()
+            return true;
+        }
+        return false
+    }, [currentStepName, authWindowRef, minimalAuthorizeAmount], 2000)
+
 
     const handleConnect = useCallback(() => {
         try {
@@ -56,27 +70,22 @@ const AccountConnectStep: FC = () => {
                 carouselRef?.current?.next()
                 return;
             }
-            setPoll(true)
+            startInterval()
             const access_token = TokenService.getAuthData()?.access_token
             if (!access_token)
-                goToStep("Email")
+                goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
-            authWindowRef.current = OpenLink({ link: oauth_redirect_url + sub, swap_data: swapFormData, query })
+            const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
+            authWindowRef.current = OpenLink({ link: o_auth_authorization_url + encoded, swap_data: swapFormData, query })
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_redirect_url, carouselRef, carouselFinished, addressSource, query])
+    }, [o_auth_authorization_url, carouselRef, carouselFinished, addressSource, query])
 
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
-
-    const exchange_name = swapFormData?.exchange?.name
+    const exchange_name = exchange?.name
     const onCarouselLast = (value) => {
         setCarouselFinished(value)
-    }
-
-    if (!(minimalAuthorizeAmount > 0)) {
-        return null;
     }
 
     return (

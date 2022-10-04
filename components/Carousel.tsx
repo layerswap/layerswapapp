@@ -82,7 +82,6 @@ const Carousel = forwardRef<CarouselRef, CarouselProps>((props, ref) => {
                 })}
             </div>
             <div className="flex justify-center">
-
                 {children && React.Children.map(children, (child, index) => {
                     return (
                         <button

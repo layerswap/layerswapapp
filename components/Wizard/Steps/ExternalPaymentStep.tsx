@@ -3,51 +3,49 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { SwapWizardSteps } from '../../../Models/Wizard';
+import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { useSettingsState } from '../../../context/settings';
+import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
-const ExternalPaumentStep: FC = () => {
+const ExternalPaymentStep: FC = () => {
 
     const { swap } = useSwapDataState()
-    const { payment } = swap?.data || {}
-    const { currentStep } = useFormWizardState<SwapWizardSteps>()
-    const settings = useSettingsState();
-    const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
+    const { currentStepName: currentStep } = useFormWizardState()
+
+    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
-    const exchange = settings.data.exchanges.find(x => x.internal_name == payment?.exchange);
+    const { data } = useSettingsState()
+    const { exchanges } = data
 
     useInterval(async () => {
-        if (currentStep === "ExternalPayment") {
-            const authData = TokenService.getAuthData();
-            if (!authData) {
-                goToStep("Email")
-                return;
-            }
-            const swap = await getSwap(swapId.toString())
-            const { payment } = swap?.data || {}
-            const swapStatus = swap?.data?.status;
-            const paymentStatus = payment?.status
-            if (swapStatus == SwapStatus.Completed)
-                goToStep("Success")
-            else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
-                goToStep("Failed")
-        }
+        if (currentStep !== SwapWithdrawalStep.ExternalPayment)
+            return true
+
+        const authData = TokenService.getAuthData();
+        if (!authData)
+            goToStep(SwapWithdrawalStep.Email)
+
+        const swap = await getSwap(swapId.toString())
+        if (swap.data.status === SwapStatus.Initiated)
+            return
+        const swapStatusStep = GetSwapStatusStep(swap)
+        goToStep(swapStatusStep)
     }, [currentStep, swapId], 10000)
 
+    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
+    const exchange_name = exchange?.display_name || ' '
 
     const handleContinue = useCallback(async () => {
         const access_token = TokenService.getAuthData()?.access_token
         if (!access_token)
-            goToStep("Email")
+            goToStep(SwapWithdrawalStep.Email)
         const swap = await getSwap(swapId.toString())
-        const { payment } = swap?.data || {}
-        //TODO handle no payment url
-        const { payment_url } = payment.external_flow_context || {}
+        const payment_url = swap?.data?.additonal_data?.payment_url
         window.open(payment_url, '_blank', 'width=420,height=720')
     }, [])
 
@@ -56,22 +54,22 @@ const ExternalPaumentStep: FC = () => {
             <div className="w-full px-6 md:px-8 flex justify-between h-full flex-col">
                 <div className=' space-y-10'>
                     <div className="flex items-center">
-                        <label className="block text-lg font-medium text-white">Complete {exchange?.name} transfer</label>
+                        <label className="block text-lg font-medium text-white">Complete {exchange_name} transfer</label>
                     </div>
                     <div className="rounded-md border bg-darkblue-700 w-full grid grid-flow-row p-5 border-darkblue-500">
                         <ul className='list-disc my-2 pl-5 text-primary-text'>
                             <li>
-                                By clicking Continue you will be redirected to {exchange?.name} to authorize and pay.
+                                By clicking Continue you will be directed to {exchange_name} to authorize and pay.
                             </li>
                             <li>
-                                This page will automatically update after you complete the payment in {exchange?.name}.
+                                This page will automatically update after you complete the payment in {exchange_name}.
                             </li>
                         </ul>
                     </div>
                 </div>
-                <div className="text-white">
+                <div className="text-white text-lg ">
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleContinue}>
-                        Continue to {exchange?.name}
+                        Continue to {exchange_name}
                     </SubmitButton>
                 </div>
             </div>
@@ -79,4 +77,4 @@ const ExternalPaumentStep: FC = () => {
     )
 }
 
-export default ExternalPaumentStep;
+export default ExternalPaymentStep;

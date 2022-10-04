@@ -3,7 +3,7 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { SwapWizardSteps } from '../../../Models/Wizard';
+import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
@@ -14,52 +14,47 @@ import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
+import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { swap } = useSwapDataState()
-    const { payment } = swap?.data || {}
-    const { currentStep } = useFormWizardState<SwapWizardSteps>()
+    const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
     const { data } = useSettingsState()
-    const { goToStep } = useFormWizardaUpdate<SwapWizardSteps>()
+    const { exchanges, currencies, discovery: { resource_storage_url } } = data
+    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.data?.payment?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
 
     useInterval(async () => {
-        if (currentStep === "Withdrawal") {
-            const authData = TokenService.getAuthData();
-            if (!authData) {
-                goToStep("Email")
-                return;
-            }
-            const swap = await getSwap(swapId.toString())
-            const { payment } = swap?.data || {}
-            const swapStatus = swap?.data.status;
-            const paymentStatus = payment?.status
-            if (swapStatus == SwapStatus.Completed)
-                goToStep("Success")
-            else if (swapStatus == SwapStatus.Failed || paymentStatus == 'closed')
-                goToStep("Failed")
-            else if (payment?.status == "completed")
-                goToStep("Processing")
-            // else if (swapStatus == SwapStatus.Pending)
-            //     await goToStep("Processing")
-        }
-    }, [currentStep], 10000)
+        if (currentStep !== SwapWithdrawalStep.Withdrawal)
+            return true;
 
+        const authData = TokenService.getAuthData();
+        if (!authData)
+            goToStep(SwapWithdrawalStep.Email)
+
+        const swap = await getSwap(swapId.toString())
+        //TODO implement better GetSwapStatusStep to not check swap status
+        if (swap.data.status === SwapStatus.Initiated)
+            return
+        const swapStatusStep = GetSwapStatusStep(swap)
+        goToStep(swapStatusStep)
+    }, [currentStep], 10000)
 
     const handleConfirm = useCallback(async () => {
         setTransferDone(true)
     }, [])
 
-    const exchange = data.exchanges?.find(n => n.internal_name === payment?.exchange)
-    const exchange_name = exchange?.name || ' '
-    const exchange_id = exchange?.id
-    const exchange_logo_url = exchange?.logo_url
+    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
+    const currency = exchange?.currencies?.find(c => c.id === swap?.data?.exchange_currency_id)
+    const exchange_name = exchange?.display_name || ' '
+    const exchange_internal_name = exchange?.internal_name
+    const exchange_logo_url = exchange?.logo
 
     return (
         <>
@@ -73,7 +68,7 @@ const WithdrawExchangeStep: FC = () => {
                                 <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
                                     <div className="flex-shrink-0 h-6 w-6 relative">
                                         <Image
-                                            src={exchange_logo_url}
+                                            src={`${resource_storage_url}${exchange_logo_url}`}
                                             alt="Exchange Logo"
                                             height="40"
                                             width="40"
@@ -91,7 +86,7 @@ const WithdrawExchangeStep: FC = () => {
                         </h3>
                     </div>
                     {
-                        ExchangeSettings.KnownSettings[exchange_id]?.WithdrawalWarningMessage && 
+                        ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
                         <div className='flex-col w-full rounded-md bg-primary-700 shadow-lg p-2'>
                             <div className='flex items-center'>
                                 <div className='mr-2 p-2 rounded-lg bg-primary-600'>
@@ -100,45 +95,45 @@ const WithdrawExchangeStep: FC = () => {
                                     </svg>
                                 </div>
                                 <p className='font-normal text-sm text-darkblue-700'>
-                                    {ExchangeSettings.KnownSettings[exchange_id]?.WithdrawalWarningMessage}
+                                    {ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage}
                                 </p>
                             </div>
                         </div>
                     }
                     <div className='mb-6 grid grid-cols-1 gap-5'>
-                        <BackgroundField isCopiable={true} toCopy={swap?.data?.payment?.manual_flow_context?.address} header={'Address'}>
+                        <BackgroundField isCopiable={true} toCopy={swap?.data?.destination_address} header={'Address'}>
                             <p className='break-all'>
-                                {swap?.data?.payment?.manual_flow_context?.address}
+                                {swap?.data?.destination_address}
                             </p>
                         </BackgroundField>
                         <BackgroundField header={'Network'}>
                             <p>
-                                {payment?.manual_flow_context?.network_display_name}
+                                {swap?.data?.additonal_data?.chain_display_name}
                             </p>
                         </BackgroundField>
                         <div className='flex space-x-4'>
-                            <BackgroundField isCopiable={true} toCopy={swap?.data?.amount} header={'Amount'}>
+                            <BackgroundField isCopiable={true} toCopy={swap?.data?.requested_amount} header={'Amount'}>
                                 <p>
-                                    {swap?.data?.amount}
+                                    {swap?.data?.requested_amount}
                                 </p>
                             </BackgroundField>
                             <BackgroundField header={'Asset'}>
                                 <p>
-                                    {swap?.data?.currency}
+                                    {currency?.asset}
                                 </p>
                             </BackgroundField>
                         </div>
                         {
-                            payment?.manual_flow_context?.require_note &&
+                            swap?.data?.additonal_data?.note &&
                             <>
-                                <BackgroundField isCopiable={true} toCopy={payment?.manual_flow_context?.note} header={'Remarks'}>
+                                <BackgroundField isCopiable={true} toCopy={swap?.data?.additonal_data?.note} header={'Remarks'}>
                                     <p className='break-all'>
-                                        {payment?.manual_flow_context?.note}
+                                        {swap?.data?.additonal_data?.note}
                                     </p>
                                 </BackgroundField>
                                 <WarningMessage>
                                     <p className='font-normal text-sm text-darkblue-700'>
-                                         Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
+                                        Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
                                     </p>
                                 </WarningMessage>
                             </>

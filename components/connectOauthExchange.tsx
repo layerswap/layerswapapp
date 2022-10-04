@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useInterval } from '../hooks/useInterval';
-import { BransferApiClient } from '../lib/bransferApiClients';
+import LayerswapApiClient from '../lib/layerSwapApiClient';
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
@@ -23,29 +23,32 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
     }, [exchange])
 
     useInterval(async () => {
-        if (loading && exchange) {
-            try {
-                const { access_token } = TokenService.getAuthData() || {};
-                if (!access_token) {
-                    router.push({
-                        pathname: '/auth',
-                        query: { ...(router.query), redirect: '/exchanges' }
-                    })
-                    return;
-                }
-                const bransferApiClient = new BransferApiClient()
-                const userExchanges = await bransferApiClient.GetExchangeAccounts(access_token)
+        if (!exchange)
+            return true
 
-                if (userExchanges.data.some(e => e.exchange === exchange?.internal_name && e.is_enabled)) {
-                    authWindowRef.current?.close()
-                    onClose()
-                    setLoading(false)
-                }
+        try {
+            const { access_token } = TokenService.getAuthData() || {};
+            if (!access_token) {
+                router.push({
+                    pathname: '/auth',
+                    query: { ...(router.query), redirect: '/exchanges' }
+                })
+                return true;
             }
-            catch (e) {
-                toast.error(e.message)
+            const layerswapApiClient = new LayerswapApiClient()
+            const userExchanges = await layerswapApiClient.GetExchangeAccounts(access_token)
+
+            if (userExchanges.data.some(e => e.exchange_id === exchange?.id)) {
+                authWindowRef.current?.close()
+                onClose()
                 setLoading(false)
+                return true
             }
+        }
+        catch (e) {
+            toast.error(e.message)
+            setLoading(false)
+            return true
         }
     }, [exchange, loading, authWindowRef, router.query], 2000)
 
@@ -61,9 +64,9 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                 })
                 return;
             }
-
             const { sub } = parseJwt(access_token) || {}
-            const authWindow = window.open(exchange.oauth_authorization_redirect_url + sub, '_blank', 'width=420,height=720')
+            const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
+            const authWindow = window.open(exchange.o_auth_authorization_url + encoded, '_blank', 'width=420,height=720')
             authWindowRef.current = authWindow
         }
         catch (e) {
@@ -76,23 +79,16 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
         <>
             <div className="w-full grid grid-flow-row px-6 md:px-8 text-primary-text">
                 <div className="flex items-center">
-                    <h3 className="block text-lg font-medium leading-6 mb-12">
+                    <h3 className="block text-lg text-white font-medium leading-6 mb-12">
                         You will leave Layerswap and be securely redirected to Coinbase authorization page.
                     </h3>
                 </div>
-
                 <div className="flex mt-12 md:mt-5 font-normal text-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2.5 stroke-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
                 </div>
-
-                {/* <div>
-                    <label className="block font-normal text-sm mt-12">
-                        You will leave Layerswap and be securely redirected to Coinbase authorization page.
-                    </label>
-                </div> */}
                 <div className="text-white text-sm mt-3">
                     <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect}>
                         Connect

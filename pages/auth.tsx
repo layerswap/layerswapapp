@@ -1,17 +1,10 @@
 import Layout from '../components/layout'
 import { AuthProvider } from '../context/authContext'
 import IntroCard from '../components/introCard'
-import Wizard from '../components/Wizard/Wizard'
-import { FormWizardProvider } from '../context/formWizardProvider'
-import { LoginWizardSteps } from '../Models/Wizard'
-import EmailStep from '../components/Wizard/Steps/Login/EmailStep'
 import { MenuProvider } from '../context/menu'
-import LoginCodeStep from '../components/Wizard/Steps/Login/LoginCodeStep'
-
-const loginWizard: LoginWizardSteps = {
-  "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, positionPercent: 50 },
-  "Code": { title: "Code", content: LoginCodeStep, positionPercent: 75 },
-}
+import { FormWizardProvider } from '../context/formWizardProvider'
+import { AuthStep } from '../Models/Wizard'
+import AuthWizard from '../components/Wizard/AuthWizard'
 
 export default function AuthPage() {
 
@@ -21,8 +14,8 @@ export default function AuthPage() {
         <div className="flex flex-col w-full text-white animate-fade-in">
           <AuthProvider>
             <MenuProvider>
-              <FormWizardProvider wizard={loginWizard} initialStep={"Email"} initialLoading={true}>
-                <Wizard />
+               <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
+                <AuthWizard  />
               </FormWizardProvider >
             </MenuProvider>
           </AuthProvider>

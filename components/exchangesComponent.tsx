@@ -4,7 +4,7 @@ import TokenService from "../lib/TokenService"
 import { ExclamationCircleIcon, SearchIcon } from '@heroicons/react/outline';
 import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
-import { BransferApiClient } from "../lib/bransferApiClients"
+import LayerswapApiClient from "../lib/layerSwapApiClient"
 import Image from 'next/image'
 import { Exchange } from "../Models/Exchange"
 import ConnectOauthExchange from "./connectOauthExchange"
@@ -18,6 +18,7 @@ import HoverTooltip from "./Tooltips/HoverTooltip";
 import { ExchangesComponentSceleton } from "./Sceletons";
 import GoHomeButton from "./utils/GoHome";
 import Modal from "./modalComponent";
+import { AnimatePresence } from "framer-motion";
 
 interface UserExchange extends Exchange {
     note?: string,
@@ -38,8 +39,9 @@ function UserExchanges() {
     const [openExchangeToConnectModal, setOpenExchangeToConnectModal] = useState(false)
     const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
-    useEffect(() => {
+    const { discovery: { resource_storage_url } } = data
 
+    useEffect(() => {
         (async () => {
             setLoading(true)
             try {
@@ -63,19 +65,17 @@ function UserExchanges() {
     }, [router.query])
 
     const getAndMapExchanges = useCallback(async (authData) => {
-        const bransferApiClient = new BransferApiClient()
-        const userExchanges = await bransferApiClient.GetExchangeAccounts(authData.access_token)
+        const layerswapApiClient = new LayerswapApiClient()
+        const userExchanges = await layerswapApiClient.GetExchangeAccounts(authData.access_token)
 
-        const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none' && x.is_enabled).map(e => {
+        const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none').map(e => {
             return {
                 ...e,
-                is_connected: userExchanges.data?.some(ue => ue.exchange === e.internal_name && ue.is_enabled),
-                note: userExchanges.data?.find(ue => ue.exchange === e.internal_name)?.note
+                is_connected: userExchanges.data?.some(ue => ue.exchange_id === e.id),
+                note: userExchanges.data?.find(ue => ue.exchange_id === e.id)?.note
             }
         })
         mappedExchanges.sort((a, b) => (+a.order) - (+b.order))
-
-
         setUserExchanges(mappedExchanges)
     }, [data.exchanges])
 
@@ -83,8 +83,9 @@ function UserExchanges() {
         query === ''
             ? userExchanges
             : userExchanges.filter((item) => {
-                return item.name.toLowerCase().includes(query.toLowerCase())
+                return item.display_name.toLowerCase().includes(query.toLowerCase())
             })
+
 
     const handleComboboxChange = useCallback(() => { }, [])
     const handleQueryInputChange = useCallback((event) => setQuery(event.target.value), [])
@@ -105,8 +106,8 @@ function UserExchanges() {
                 })
                 return;
             }
-            const bransferApiClient = new BransferApiClient()
-            await bransferApiClient.DeleteExchange(exchange.internal_name, authData.access_token)
+            const layerswapApiClient = new LayerswapApiClient()
+            await layerswapApiClient.DeleteExchange(exchange.internal_name, authData.access_token)
             await getAndMapExchanges(authData)
         }
         catch (e) {
@@ -166,26 +167,14 @@ function UserExchanges() {
                 </div>
                 <LayerswapMenu />
             </div>
-            <div className="relative mb-6 mt-10 inset-0 flex flex-col overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+            <div className="relative mb-6 mt-10 inset-0 flex flex-col scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
                 <div className="relative min-h-full items-center justify-center text-center">
                     <Combobox
                         as="div"
-                        className="transform  transition-all "
+                        className="transform transition-all"
                         onChange={handleComboboxChange}
                         value={query}
                     >
-                        <div className="relative mb-5">
-                            <SearchIcon
-                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-primary-text"
-                                aria-hidden="true"
-                            />
-                            <Combobox.Input
-                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-primary focus:border-primary block font-semibold bg-darkblue-700 border-darkblue-500 border truncate "
-                                placeholder="Search..."
-                                onChange={handleQueryInputChange}
-                                value={query}
-                            />
-                        </div>
                         <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2">
                             {
                                 loading ? <ExchangesComponentSceleton />
@@ -196,23 +185,26 @@ function UserExchanges() {
                                                 <Combobox.Option
                                                     key={item.id}
                                                     value={item}
-                                                    disabled={!item.is_enabled || !item.is_enabled}
-                                                    className={`bg-darkblue-700 ${!item.is_enabled ? 'opacity-35 cursor-not-allowed' : ''}  select-none rounded-lg p-3`}
+                                                    disabled={false}
+                                                    className={`bg-darkblue-700  select-none rounded-lg p-3`}
                                                     onClick={() => { }}
                                                 >
                                                     {({ active }) => (
                                                         <div className="py-1 px-2 grid grid-cols-3 grid-rows-1 gap-3">
                                                             <div className="flex items-center col-span-2 space-x-3">
-                                                                <Image
-                                                                    src={item.logo_url}
-                                                                    alt="Exchange Logo"
-                                                                    height="30"
-                                                                    width="30"
-                                                                    layout="fixed"
-                                                                    className="rounded-md h-8 w-8 object-contain"
-                                                                />
+                                                                {
+                                                                    item.logo &&
+                                                                    <Image
+                                                                        src={`${resource_storage_url}${item.logo}`}
+                                                                        alt="Exchange Logo"
+                                                                        height="30"
+                                                                        width="30display_name"
+                                                                        layout="fixed"
+                                                                        className="rounded-md h-8 w-8 object-contain"
+                                                                    />
+                                                                }
                                                                 <div className="text-base font-medium text-left">
-                                                                    <p>{item.name}</p>
+                                                                    <p>{item.display_name}</p>
                                                                     {
                                                                         item?.note &&
                                                                         <div className="flex items-center">
@@ -226,12 +218,12 @@ function UserExchanges() {
                                                             </div>
                                                             <div className="text-xs">
                                                                 {
-                                                                    item.authorization_flow && item.authorization_flow !== "none" && item.is_enabled && exchangeLoading?.id !== item.id &&
+                                                                    item.authorization_flow && item.authorization_flow !== "none" && exchangeLoading?.id !== item.id &&
                                                                     <>
                                                                         {
                                                                             item.is_connected ?
                                                                                 <SubmitButton onClick={() => { setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true) }} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id}>Disconnect</SubmitButton>
-                                                                                : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id} icon={""}>Connect</SubmitButton>
+                                                                                : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.id === item.id}>Connect</SubmitButton>
                                                                         }
                                                                     </>
                                                                 }
@@ -259,13 +251,14 @@ function UserExchanges() {
                     </Combobox>
                 </div>
             </div>
-            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.name}`} description={""}>
+
+            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`} >
                 <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
             </Modal>
-            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.name}`} description={""}>
-                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverClassNames='pt-7' />
+            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`} >
+                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' />
             </Modal>
-            <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} description={""}>
+            <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} className='max-w-xs'>
                 <div className="flex justify-items-center space-x-3 max-w-xs px-6 md:px-8">
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" >Yes</SubmitButton>
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small'>No</SubmitButton>

@@ -22,8 +22,8 @@ export const YellowIcon = () => {
     )
 }
 
-export default function StatusIcon({ swap }) {
-    if (swap?.status === 'failed') {
+export default function StatusIcon({ status }) {
+    if (status === 'failed') {
       return (
         <>
           <div className="inline-flex items-center">
@@ -31,7 +31,7 @@ export default function StatusIcon({ swap }) {
             <p>Failed</p>
           </div>
         </>)
-    } else if (swap?.status === 'completed') {
+    } else if (status === 'completed') {
       return (
         <>
           <div className="inline-flex items-center">
@@ -41,16 +41,16 @@ export default function StatusIcon({ swap }) {
         </>
       )
     }
-    else if (swap?.payment?.status == "closed") {
+    else if (status == "cancelled") {
       return (
         <>
           <div className="inline-flex items-center">
             <RedIcon />
-            <p>Closed</p>
+            <p>Cancelled</p>
           </div>
         </>)
     }
-    else if (swap?.payment?.status == "expired") {
+    else if (status == "expired") {
       return (
         <>
           <div className="inline-flex items-center">
@@ -59,12 +59,30 @@ export default function StatusIcon({ swap }) {
           </div>
         </>)
     }
-    else {
+    else if(status == 'initiated') {
       return <>
         <div className="inline-flex items-center">
           <YellowIcon />
           <p>Pending</p>
         </div>
       </>
+    }
+    else if(status == 'pendingWithdrawal') {
+      return <>
+        <div className="inline-flex items-center">
+          <YellowIcon />
+          <p>Pending Withdrawal</p>
+        </div>
+      </>
+    } else if(status == 'created') {
+      return <>
+      <div className="inline-flex items-center">
+        <YellowIcon />
+        <p>Created</p>
+      </div>
+    </>
+    }
+    else {
+      return <>Null</>
     }
   }
