@@ -58,11 +58,19 @@ export function CalculateMaxAllowedAmount(currency?: Currency, exchange?: Exchan
 export function CalculateMinAllowedAmount(currency?: Currency, exchange?: Exchange, network?: CryptoNetwork, swapType?: SwapType) {
 
     if (!currency || !exchange || !network) return 0
+
     const exchangeCurrency = exchange.currencies.find(c => c.asset === currency.asset)
     const networkCurrency = network.currencies.find(c => c.asset === currency.asset)
 
-    const fee = swapType === SwapType.OnRamp ? exchangeCurrency.fee : networkCurrency.fee
+    if (!networkCurrency || !exchangeCurrency) return 0
 
-    const maxAmount = Math.max(exchangeCurrency?.min_withdrawal_amount + exchangeCurrency.fee, networkCurrency?.min_withdrawal_amount + networkCurrency.fee, 2 * fee) || 0
-    return roundDecimals(maxAmount, currency.usd_price?.toFixed()?.length) || 0
+    const minAmount = Math.max(exchangeCurrency?.min_withdrawal_amount, networkCurrency?.min_withdrawal_amount) || 0
+
+    const fee = CalculateFee(minAmount, currency, exchange, network)
+
+    const double_fee = fee * 2
+
+    const final_min_amount = swapType == SwapType.OnRamp ? Math.max(minAmount + fee, double_fee) : (minAmount + double_fee)
+
+    return roundDecimals(final_min_amount, currency.usd_price?.toFixed()?.length) || 0
 }
