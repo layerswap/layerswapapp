@@ -6,6 +6,7 @@ export default class NetworkSettings {
     UserGuideUrlForMobile?: string;
     WithdrawalWarningMessage?: string;
     ChainId?: number;
+    ForceDisable?: boolean;
 
     public static KnownSettings: { [key: string]: NetworkSettings } = {};
 
@@ -27,6 +28,9 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncMainnet] = {
             ChainId: 25,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
+            ForceDisable: true,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumGoerli] = {
             ChainId: 5,

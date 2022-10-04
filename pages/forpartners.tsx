@@ -10,6 +10,7 @@ import imageSize from "rehype-img-size";
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
+import NetworkSettings from '../lib/NetworkSettings'
 
 export default function ForPartners(props) {
     return (
@@ -108,8 +109,8 @@ export async function getStaticProps() {
     const response = await apiClient.fetchSettingsAsync()
     var networks: CryptoNetwork[] = [];
     var exchanges: Exchange[] = [];
-    networks = response.data.networks.filter(n => n.status === "active" && !n.is_test_net);
-    exchanges = response.data.exchanges.filter(e => e.status === "active")
+    networks = response.data.networks.filter(n => n.status !== "inactive");
+    exchanges = response.data.exchanges.filter(e => e.status !== "inactive" && !NetworkSettings.KnownSettings[e?.internal_name]?.ForceDisable)
 
     return {
         props: {

@@ -93,7 +93,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                             {values.map((item) => (
                                 <Listbox.Option
                                     key={item.id}
-                                    disabled={!item.isEnabled}
+                                    disabled={!item.isAvailable}
                                     className={({ active, disabled }) =>
                                         styleOption(active, disabled)
                                     }
@@ -243,8 +243,8 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                     <Combobox.Option
                                                         key={item.id}
                                                         value={item}
-                                                        disabled={!item.isEnabled || !item.isAvailable}
-                                                        className={`flex text-left ${item.id === selectedItem?.id ? 'bg-darkblue-300' : 'bg-darkblue-500'} ${!item.isEnabled || !item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-300 select-none rounded-lg p-3`}
+                                                        disabled={!item.isAvailable}
+                                                        className={`flex text-left ${item.id === selectedItem?.id ? 'bg-darkblue-300' : 'bg-darkblue-500'} ${!item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-300 select-none rounded-lg p-3`}
                                                         onClick={() => handleSelect(item)}
                                                     >
                                                         {({ active, disabled }) => (

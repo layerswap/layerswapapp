@@ -20,9 +20,9 @@ const NetworkField = forwardRef((props: any, ref: any) => {
 
     const { discovery: { resource_storage_url } } = data
 
-    const networkIsAvailable = (n: CryptoNetwork) => swapType === SwapType.OffRamp ?
-        n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled)))
-        : n.currencies.some(nc => nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled)))
+    const networkIsAvailable = (n: CryptoNetwork) => (swapType === SwapType.OffRamp ?
+        (n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled))))
+        : (n.currencies.some(nc => nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled)))))
     const destNetworkIsAvailable = data.networks.some(n => n.internal_name === destNetwork && n.status === "active" && networkIsAvailable(n))
 
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
@@ -33,8 +33,7 @@ const NetworkField = forwardRef((props: any, ref: any) => {
             name: n.display_name,
             order: n.order,
             imgSrc: n.logo ? `${resource_storage_url}${n.logo}` : null,
-            isAvailable: swapType === SwapType.OffRamp ? !destNetworkIsAvailable : !lockNetwork,
-            isEnabled: true,
+            isAvailable: n.status === "active" && (swapType === SwapType.OffRamp ? !destNetworkIsAvailable : !lockNetwork),
             isDefault: n.is_default
         })).sort(SortingByOrder);
 
