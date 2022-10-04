@@ -1,4 +1,4 @@
-import { LockClosedIcon } from '@heroicons/react/outline';
+import { InformationCircleIcon, LockClosedIcon } from '@heroicons/react/outline';
 import { Form, Formik, FormikErrors, FormikProps } from 'formik';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
@@ -128,8 +128,11 @@ const TwoFactorStep: FC = () => {
                                     </span>
                                 </Timer>
                             </span>
-                            <div className='text-left mt-5 text-primary-text'>
-                                <p className='text-sm'>To obtain the 2 step verification code, check:</p>
+                            <div className='p-4 bg-darkblue-700 mt-5 rounded-lg border border-darkblue-500'>
+                                <div className="flex items-center">
+                                    <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
+                                    <label className="block text-sm md:text-base font-medium leading-6">To obtain the 2 step verification code, check:</label>
+                                </div>
                                 <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8">
                                     <li>your authenticator app (Google, Microsoft, or other), or</li>
                                     <li>text messages of the phone number associated with your Coinbase account</li>
