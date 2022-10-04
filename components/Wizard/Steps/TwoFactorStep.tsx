@@ -1,4 +1,4 @@
-import { LockClosedIcon, MailOpenIcon } from '@heroicons/react/outline';
+import { LockClosedIcon } from '@heroicons/react/outline';
 import { Form, Formik, FormikErrors, FormikProps } from 'formik';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
@@ -8,8 +8,8 @@ import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapCreateStep } from '../../../Models/Wizard';
 import NumericInput from '../../Input/NumericInput';
 import SubmitButton from '../../buttons/submitButton';
-import Link from 'next/link';
 import { ApiError, KnownwErrorCode } from '../../../Models/ApiError';
+import Timer from '../../TimerComponent';
 
 interface CodeFormValues {
     Code: string
@@ -22,39 +22,15 @@ const TwoFactorStep: FC = () => {
     const { createAndProcessSwap } = useSwapDataUpdate()
     const router = useRouter();
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
+    const [resendTimerIsStarted, setResendTimerIsStarted] = useState(false)
 
-    const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
-    const [status, setStatus] = useState(STATUS.STOPPED)
-
-    const secondsToDisplay = secondsRemaining % 60
-    const minutesRemaining = (secondsRemaining - secondsToDisplay) / 60
-    const minutesToDisplay = minutesRemaining % 60
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.usd_price * Number(swapFormData?.amount) + 5)
 
     const formikRef = useRef<FormikProps<CodeFormValues>>(null);
 
-    const handleStart = () => {
-        setStatus(STATUS.STARTED)
-    }
-    const handleReset = () => {
-        setStatus(STATUS.STOPPED)
-        setSecondsRemaining(INITIAL_COUNT)
-    }
-
-    useInterval(
-        () => {
-            if (secondsRemaining > 0) {
-                setSecondsRemaining(secondsRemaining - 1)
-            } else {
-                setStatus(STATUS.STOPPED)
-            }
-        },
-        status === STATUS.STARTED ? 1000 : null)
-
     const handleSubmit = useCallback(async (values: CodeFormValues) => {
-        handleReset();
-        handleStart();
+        setResendTimerIsStarted(true)
         try {
             const swapId = await createAndProcessSwap(values.Code);
             router.push(`/${swapId}`)
@@ -85,15 +61,13 @@ const TwoFactorStep: FC = () => {
     }, [swapFormData, swap, transferAmount])
 
     const handleResendTwoFACode = () => {
-        handleReset()
-        handleStart()
+        setResendTimerIsStarted(true)
         formikRef.current.setFieldValue("Code", "");
     }
 
     useEffect(() => {
         if (codeRequested) {
-            handleReset();
-            handleStart();
+            setResendTimerIsStarted(true)
         }
     }, [codeRequested])
 
@@ -139,24 +113,21 @@ const TwoFactorStep: FC = () => {
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                             </div>
-                            <div className="mt-5">
-                                {
-                                    status == STATUS.STARTED ?
-                                        <span className="flex items-center">
+                            <span className="flex text-sm leading-6 items-center mt-1.5">
+                                <Timer setIsStarted={setResendTimerIsStarted} isStarted={resendTimerIsStarted} seconds={120}
+                                    waitingComponent={(remainingTime) => (
+                                        <span>
                                             Send again in
                                             <span className='ml-1'>
-                                                {twoDigits(minutesToDisplay)}:
-                                                {twoDigits(secondsToDisplay)}
+                                                {remainingTime}
                                             </span>
                                         </span>
-                                        :
-                                        <p className=" flex font-lighter leading-6 text-center">
-                                            <span className="ml-1 font-lighter decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer" onClick={handleResendTwoFACode}>
-                                                Resend code
-                                            </span>
-                                        </p>
-                                }
-                            </div>
+                                    )}>
+                                    <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
+                                        Resend code
+                                    </span>
+                                </Timer>
+                            </span>
                             <div className='text-left mt-5 text-primary-text'>
                                 <p className='text-sm'>To obtain the 2 step verification code, check:</p>
                                 <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8">
@@ -180,31 +151,5 @@ const TwoFactorStep: FC = () => {
         </>
     )
 }
-
-
-function useInterval(callback, delay) {
-    const savedCallback = useRef(undefined)
-
-    useEffect(() => {
-        savedCallback.current = callback
-    }, [callback])
-
-    useEffect(() => {
-        function tick() {
-            savedCallback.current()
-        }
-        if (delay !== null) {
-            let id = setInterval(tick, delay)
-            return () => clearInterval(id)
-        }
-    }, [delay])
-}
-
-const twoDigits = (num) => String(num).padStart(2, '0')
-const STATUS = {
-    STARTED: 'Started',
-    STOPPED: 'Stopped',
-}
-const INITIAL_COUNT = 60
 
 export default TwoFactorStep;

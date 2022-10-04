@@ -1,13 +1,14 @@
 import { MailOpenIcon } from '@heroicons/react/outline';
 import { Form, Formik, FormikErrors } from 'formik';
 import Link from 'next/link';
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
 import NumericInput from './Input/NumericInput';
+import Timer from './TimerComponent';
 
 interface VerifyEmailCodeProps {
     onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
@@ -22,35 +23,10 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
 
     const { email, codeRequested } = useAuthState();
     const { updateAuthData } = useAuthDataUpdate()
-
-    const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
-    const [status, setStatus] = useState(STATUS.STOPPED)
-
-    const secondsToDisplay = secondsRemaining % 60
-    const minutesRemaining = (secondsRemaining - secondsToDisplay) / 60
-    const minutesToDisplay = minutesRemaining % 60
-
-    const handleStart = () => {
-        setStatus(STATUS.STARTED)
-    }
-    const handleReset = () => {
-        setStatus(STATUS.STOPPED)
-        setSecondsRemaining(INITIAL_COUNT)
-    }
-
-    useInterval(
-        () => {
-            if (secondsRemaining > 0) {
-                setSecondsRemaining(secondsRemaining - 1)
-            } else {
-                setStatus(STATUS.STOPPED)
-            }
-        },
-        status === STATUS.STARTED ? 1000 : null)
+    const [resendTimerIsStarted, setResendTimerIsStarted] = useState(false)
 
     const handleResendCode = useCallback(async () => {
-        handleReset()
-        handleStart()
+        setResendTimerIsStarted(true)
         try {
             const apiClient = new LayerSwapAuthApiClient();
             const res = await apiClient.getCodeAsync(email)
@@ -68,8 +44,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
 
     useEffect(() => {
         if (codeRequested) {
-            handleReset();
-            handleStart();
+            setResendTimerIsStarted(true)
         }
 
     }, [codeRequested])
@@ -125,28 +100,25 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     onChange={e => {
                                         /^[0-9]*$/.test(e.target.value) && handleChange(e)
                                     }}
-                                    className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-darkblue-100 block
+                                    className="leading-none h-12 text-2xl pl-5 text-white focus:ring-primary text-center focus:border-primary border-darkblue-100 block
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                             </div>
-                            <div className="mt-5">
-                                {
-                                    status == STATUS.STARTED ?
-                                        <span className="flex items-center">
+                            <span className="flex text-sm leading-6 items-center mt-1.5">
+                                <Timer setIsStarted={setResendTimerIsStarted} isStarted={resendTimerIsStarted} seconds={60}
+                                    waitingComponent={(remainingTime) => (
+                                        <span>
                                             Send again in
                                             <span className='ml-1'>
-                                                {twoDigits(minutesToDisplay)}:
-                                                {twoDigits(secondsToDisplay)}
+                                                {remainingTime}
                                             </span>
                                         </span>
-                                        :
-                                        <p className=" flex font-lighter leading-6 text-center">
-                                            <span className="ml-1 font-lighter decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer" onClick={handleResendCode}>
-                                                Resend code
-                                            </span>
-                                        </p>
-                                }
-                            </div>
+                                    )}>
+                                    <span onClick={handleResendCode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
+                                        Resend code
+                                    </span>
+                                </Timer>
+                            </span>
                             <div className="text-primary-text text-sm mt-auto">
                                 <p className='mb-5'>
                                     By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'> Terms of Service</a></Link> and <Link href="/blog/guide/Privacy_Policy"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
@@ -162,30 +134,5 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         </>
     )
 }
-
-function useInterval(callback, delay) {
-    const savedCallback = useRef(undefined)
-
-    useEffect(() => {
-        savedCallback.current = callback
-    }, [callback])
-
-    useEffect(() => {
-        function tick() {
-            savedCallback.current()
-        }
-        if (delay !== null) {
-            let id = setInterval(tick, delay)
-            return () => clearInterval(id)
-        }
-    }, [delay])
-}
-
-const twoDigits = (num) => String(num).padStart(2, '0')
-const STATUS = {
-    STARTED: 'Started',
-    STOPPED: 'Stopped',
-}
-const INITIAL_COUNT = 60
 
 export default VerifyEmailCode;
