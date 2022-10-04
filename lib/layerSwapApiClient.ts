@@ -4,14 +4,14 @@ import { SwapStatus } from "../Models/SwapStatus";
 import AppSettings from "./AppSettings";
 import authInterceptor from "./axiosInterceptor"
 import { v4 as uuidv4 } from 'uuid';
-
+import axios from "axios";
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
 
     apiFetcher = (url: string) => authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + url).then(res => res.data);
 
     async fetchSettingsAsync(): Promise<LayerSwapSettings> {
-        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + '/api/settings').then(res => res.data);
+        return await axios.get(LayerSwapApiClient.apiBaseEndpoint + '/api/settings').then(res => res.data);
     }
 
     async createSwap(params: CreateSwapParams, token: string): Promise<CreateSwapResponse> {

@@ -18,6 +18,7 @@ import NetworkSettings from '../../../lib/NetworkSettings';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
+import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -42,11 +43,11 @@ const WithdrawNetworkStep: FC = () => {
             return;
         }
         const swap = await getSwap(swapId.toString())
-        const swapStatus = swap?.data.status;
-        if (swapStatus == SwapStatus.Completed)
-            goToStep(SwapWithdrawalStep.Success)
-        else if (swapStatus == SwapStatus.Failed)
-            goToStep(SwapWithdrawalStep.Failed)
+        //TODO implement better GetSwapStatusStep to not check swap status
+        if (swap.data.status === SwapStatus.Initiated)
+            return
+        const swapStatusStep = GetSwapStatusStep(swap)
+        goToStep(swapStatusStep)
     }, [currentStep], 10000)
 
     const handleConfirm = useCallback(async () => {
@@ -121,9 +122,9 @@ const WithdrawNetworkStep: FC = () => {
                             </BackgroundField>
                         }
                         <div className='flex space-x-4'>
-                            <BackgroundField isCopiable={true} toCopy={swap?.data?.received_amount} header={'Amount'}>
+                            <BackgroundField isCopiable={true} toCopy={swap?.data?.requested_amount} header={'Amount'}>
                                 <p>
-                                    {swap?.data?.received_amount}
+                                    {swap?.data?.requested_amount}
                                 </p>
                             </BackgroundField>
                             <BackgroundField header={'Asset'}>

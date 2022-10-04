@@ -6,6 +6,7 @@ import { useInterval } from '../../../hooks/useInterval';
 import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
+import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
 const ProccessingStep: FC = () => {
 
@@ -29,11 +30,11 @@ const ProccessingStep: FC = () => {
             return;
         }
         const swap = await getSwap(swapId.toString())
-        const swapStatus = swap?.data?.status;
-        if (swapStatus == SwapStatus.Completed)
-            await goToStep(SwapWithdrawalStep.Success)
-        else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
-            await goToStep(SwapWithdrawalStep.Failed)
+        //TODO implement better GetSwapStatusStep to not check swap status
+        if (swap.data.status === SwapStatus.Initiated || swap.data.status === SwapStatus.PendingWithdrawal)
+            return
+        const swapStatusStep = GetSwapStatusStep(swap)
+        goToStep(swapStatusStep)
 
     }, [currentStep, swapId], 2000)
 

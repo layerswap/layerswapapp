@@ -24,12 +24,11 @@ const ExchangesField = forwardRef((props: any, ref: any) => {
             id: e.internal_name,
             name: e.display_name,
             order: e.order,
-            imgSrc: `${resource_storage_url}${e.logo}`,
+            imgSrc: e.logo ? `${resource_storage_url}${e.logo}` : null,
             isAvailable: true,
             isEnabled: true,
             isDefault: false
         })).sort(SortingByOrder);
-
 
     return (<>
         <label htmlFor={name} className="block font-normal text-primary-text text-sm">

@@ -163,6 +163,16 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const addressRef: any = useRef();
     const amountRef: any = useRef();
 
+    const closeConnectImmutableX = (address: string) => {
+        setConnectImmutableIsOpen(false)
+        if (address) {
+            formValues.destination_address = address;
+        }
+    }
+    const closeConnectDeversifi = () => {
+        setConnectDeversifiIsOpen(false)
+    }
+
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
             {(close) => <ConnectImmutableX swapFormData={formValues} onClose={close} />}
@@ -197,7 +207,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                                 </div>
                             </div>
                             {
-                                values.swapType === SwapType.OnRamp && (() => { console.log(); return true })() &&
+                                values.swapType === SwapType.OnRamp &&
                                 <div className="w-full mb-3.5 leading-4">
                                     <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
                                         {`To ${values?.network?.name || ''} address`}

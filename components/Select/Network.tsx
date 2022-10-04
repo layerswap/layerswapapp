@@ -32,7 +32,7 @@ const NetworkField = forwardRef((props: any, ref: any) => {
             id: n.internal_name,
             name: n.display_name,
             order: n.order,
-            imgSrc: `${resource_storage_url}${n.logo}`,
+            imgSrc: n.logo ? `${resource_storage_url}${n.logo}` : null,
             isAvailable: swapType === SwapType.OffRamp ? !destNetworkIsAvailable : !lockNetwork,
             isEnabled: true,
             isDefault: n.is_default

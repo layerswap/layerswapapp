@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { SwapItemResponse, SwapType } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate } from './authContext';
@@ -33,26 +33,24 @@ export function SwapDataProvider({ children }) {
 
     const { getAuthData } = useAuthDataUpdate();
 
-
-    const createSwap = useCallback(async (swapFormData: SwapFormValues, access_token: string) => {
-        if (!swapFormData)
+    const createSwap = useCallback(async (formData: SwapFormValues, access_token: string) => {
+        if (!formData)
             throw new Error("No swap data")
 
-        const { network, currency, exchange } = swapFormData
+        const { network, currency, exchange } = formData
 
         if (!network || !currency || !exchange)
             throw new Error("Form data is missing")
 
         try {
             const layerswapApiClient = new LayerSwapApiClient()
-
             const swap = await layerswapApiClient.createSwap({
-                amount: Number(swapFormData.amount),
+                amount: Number(formData.amount),
                 exchange: exchange?.id,
                 network: network.id,
                 asset: currency.baseObject.asset,
-                destination_address: swapFormData.destination_address,
-                type: swapFormData.swapType === SwapType.OnRamp ? 0 : 1 /// TODO create map for sap types
+                destination_address: formData.destination_address,
+                type: formData.swapType === SwapType.OnRamp ? 0 : 1 /// TODO create map for sap types
             }, access_token)
 
             if (swap?.error)
@@ -104,7 +102,7 @@ export function SwapDataProvider({ children }) {
             await processPayment(newSwap, TwoFACode)
             return newSwap.data.id
         }
-        
+
         return _swap.data.id
     }, [swap, swapFormData])
 

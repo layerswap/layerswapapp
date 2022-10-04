@@ -18,7 +18,7 @@ const CurrenciesField: FC = () => {
     const { data } = useSettingsState();
     const { discovery: { resource_storage_url } } = data || {}
 
-    const currencyIsAvilable = useCallback((c: Currency) => exchange && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType ===  SwapType.OffRamp ?
+    const currencyIsAvilable = useCallback((c: Currency) => exchange && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType === SwapType.OffRamp ?
         ec.is_withdrawal_enabled : ec.is_deposit_enabled)) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === SwapType.OffRamp ?
             nc.is_deposit_enabled : nc.is_withdrawal_enabled)), [exchange, network, swapType])
 
@@ -29,7 +29,7 @@ const CurrenciesField: FC = () => {
             id: c.id,
             name: c.asset,
             order: exchange?.baseObject?.currencies?.find(ec => ec.asset === c.asset)?.order || 0, //TODO offramp
-            imgSrc: `${resource_storage_url}${c.logo}`,
+            imgSrc: c.logo ? `${resource_storage_url}${c.logo}` : null,
             isAvailable: true,
             isEnabled: true,
             isDefault: false,
@@ -46,7 +46,7 @@ const CurrenciesField: FC = () => {
                 id: default_currency.id,
                 name: default_currency.asset,
                 order: exchange.baseObject.currencies.find(ec => ec.asset === default_currency.asset)?.order || 0,
-                imgSrc: `${resource_storage_url}${default_currency.logo}`,
+                imgSrc: default_currency.logo ? `${resource_storage_url}${default_currency.logo}` : null,
                 isAvailable: true,
                 isEnabled: true,
                 isDefault: false,

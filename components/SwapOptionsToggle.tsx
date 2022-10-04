@@ -29,7 +29,7 @@ const SwapOptionsToggle = forwardRef((props, ref: any) => {
         const initialValues = generateSwapInitialValues(value, settings, query, account, chainId)
 
         resetForm({ values: initialValues })
-    }, [account, chainId, settings, query])
+    }, [account, chainId, settings, ])
 
     return <div ref={ref} tabIndex={0} >
         <Field name={name} value={swapType} items={swapOptions} as={OptionToggle} setSelected={handleFieldChange} />

@@ -15,7 +15,7 @@ import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 
 const OffRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
-    const { exchange, amount, currency } = swapFormData || {}
+    const { exchange, currency } = swapFormData || {}
     const { currentStepName } = useFormWizardState<SwapCreateStep>()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const { createAndProcessSwap, updateSwapFormData } = useSwapDataUpdate()
@@ -39,9 +39,6 @@ const OffRampSwapConfirmationStep: FC = () => {
         })()
     }, [currentStepName])
 
-
-    const transferAmount = `${amount} ${currency?.name}`
-
     const handleSubmit = useCallback(async () => {
         setIsSubmitting(true)
         try {
@@ -55,7 +52,7 @@ const OffRampSwapConfirmationStep: FC = () => {
         finally {
             setIsSubmitting(false)
         }
-    }, [network, swap, transferAmount])
+    }, [network, swap, createAndProcessSwap])
 
     return (
         <>
