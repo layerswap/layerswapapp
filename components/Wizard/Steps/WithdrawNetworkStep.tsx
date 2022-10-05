@@ -133,7 +133,7 @@ const WithdrawNetworkStep: FC = () => {
                                 </p>
                             </BackgroundField>
                         </div>
-                        <BackgroundField isCopiable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Recipient'}>
+                        <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Recipient'}>
                             <p className='break-all'>
                                 {swap?.data?.additonal_data?.deposit_address}
                             </p>
