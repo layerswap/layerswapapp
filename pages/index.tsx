@@ -11,6 +11,7 @@ import MaintananceContent from '../components/maintanance/maintanance'
 import { useCallback, useEffect } from 'react'
 import LayerswapApiClient from '../lib/layerSwapApiClient';
 import TokenService from '../lib/TokenService'
+import NetworkSettings from '../lib/NetworkSettings'
 
 type IndexProps = {
   settings?: LayerSwapSettings,
@@ -54,16 +55,12 @@ export async function getServerSideProps(context) {
   result.query.addressSource && (result.query.addressSource = result.query.addressSource?.toLowerCase());
   var apiClient = new LayerSwapApiClient();
   const response = await apiClient.fetchSettingsAsync()
-  var networks: CryptoNetwork[] = [];
+
   if (process.env.IS_TESTING == "false") {
-    response.data.networks.forEach((element) => {
-      if (!element.is_test_net) networks.push(element);
-    });
+    response.data.networks = response.data.networks.filter((element) =>
+      element.status !== "inactive" && !NetworkSettings.KnownSettings[element?.internal_name]?.ForceDisable)
+    response.data.exchanges = response.data.exchanges.filter((element) => element.status !== "inactive");
   }
-  else {
-    networks = response.data.networks;
-  }
-  response.data.networks = networks;
 
   const resource_storage_url = response.data.discovery.resource_storage_url
   if (resource_storage_url[resource_storage_url.length - 1] === "/")

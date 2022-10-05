@@ -26,6 +26,16 @@ export default class LayerSwapApiClient {
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
+    async getPendingSwaps(token: string): Promise<SwapListResponse> {
+        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps?status=1`,
+            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            .then(res => res.data);
+    }
+    async CancelSwap(swapid: string, token: string): Promise<ConnectResponse> {
+        return await authInterceptor.delete(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${swapid}`,
+            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            .then(res => res.data)
+    }
     async getSwapDetails(id: string, token: string): Promise<SwapItemResponse> {
         return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${id}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })

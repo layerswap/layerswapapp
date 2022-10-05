@@ -46,7 +46,7 @@ const OffRampSwapConfirmationStep: FC = () => {
             router.push(`/${swapId}`)
         }
         catch (error) {
-            const data: ApiError = error.response
+            const data: ApiError = error?.response?.data?.error
             toast.error(data?.message)
         }
         finally {

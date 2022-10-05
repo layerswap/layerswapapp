@@ -6,6 +6,7 @@ import { SettingsProvider } from '../context/settings'
 import { AuthProvider } from '../context/authContext'
 import UserExchanges from '../components/exchangesComponent'
 import { MenuProvider } from '../context/menu'
+import NetworkSettings from '../lib/NetworkSettings'
 
 export default function Home({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     return (
@@ -34,21 +35,18 @@ export async function getServerSideProps(context) {
     var query = context.query;
     var apiClient = new LayerSwapApiClient();
     const response = await apiClient.fetchSettingsAsync()
-    var networks: CryptoNetwork[] = [];
-    if (!process.env.IS_TESTING) {
-        response.data.networks.forEach((element) => {
-            if (!element.is_test_net) networks.push(element);
-        });
-    }
-    else {
-        networks = response.data.networks;
+
+    if (process.env.IS_TESTING == "false") {
+        response.data.networks = response.data.networks.filter((element) =>
+            element.status !== "inactive" && !NetworkSettings.KnownSettings[element?.internal_name]?.ForceDisable)
+
+        response.data.exchanges = response.data.exchanges.filter((element) => element.status !== "inactive");
     }
 
     const resource_storage_url = response.data.discovery.resource_storage_url
     if (resource_storage_url[resource_storage_url.length - 1] === "/")
         response.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
-    response.data.networks = networks;
     let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 
     return {

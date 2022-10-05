@@ -48,7 +48,6 @@ const CurrenciesField: FC = () => {
                 order: exchange.baseObject.currencies.find(ec => ec.asset === default_currency.asset)?.order || 0,
                 imgSrc: default_currency.logo ? `${resource_storage_url}${default_currency.logo}` : null,
                 isAvailable: true,
-                isEnabled: true,
                 isDefault: false,
             }
             setFieldValue(name, defaultValue)

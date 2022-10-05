@@ -3,7 +3,7 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { SwapItemResponse, SwapType } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate } from './authContext';
 import TokenService from '../lib/TokenService';
-import { KnownwErrorCode } from '../Models/ApiError';
+import { ApiError, KnownwErrorCode } from '../Models/ApiError';
 import { SwapStatus } from '../Models/SwapStatus';
 
 const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined });
@@ -41,9 +41,9 @@ export function SwapDataProvider({ children }) {
 
         if (!network || !currency || !exchange)
             throw new Error("Form data is missing")
+        const layerswapApiClient = new LayerSwapApiClient()
 
         try {
-            const layerswapApiClient = new LayerSwapApiClient()
             const swap = await layerswapApiClient.createSwap({
                 amount: Number(formData.amount),
                 exchange: exchange?.id,
@@ -53,8 +53,9 @@ export function SwapDataProvider({ children }) {
                 type: formData.swapType === SwapType.OnRamp ? 0 : 1 /// TODO create map for sap types
             }, access_token)
 
-            if (swap?.error)
+            if (swap?.error) {
                 throw new Error(swap?.error?.message)
+            }
 
             const swapId = swap.data.swap_id;
             const swapDetails = await layerswapApiClient.getSwapDetails(swapId, access_token)
@@ -62,7 +63,17 @@ export function SwapDataProvider({ children }) {
             return swapDetails;
         }
         catch (e) {
-            throw e
+            const errorData: ApiError = e?.response?.data?.error
+            console.log(errorData)
+            if (errorData?.code !== KnownwErrorCode.EXISTING_SWAP)
+                throw e
+
+            const pendingSwaps = await layerswapApiClient.getPendingSwaps(access_token)
+            const swapToCancel = pendingSwaps.data.find(s => exchange.baseObject.currencies.some(ec => ec.id === s.exchange_currency_id))
+            if (!swapToCancel)
+                throw new Error("Trying to cancel swap. Pending swap not found")
+            await layerswapApiClient.CancelSwap(swapToCancel.id, access_token)
+            return await createSwap(formData, access_token)
         }
     }, [])
 
