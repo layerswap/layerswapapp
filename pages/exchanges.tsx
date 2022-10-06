@@ -7,22 +7,26 @@ import { AuthProvider } from '../context/authContext'
 import UserExchanges from '../components/exchangesComponent'
 import { MenuProvider } from '../context/menu'
 import NetworkSettings from '../lib/NetworkSettings'
+import { QueryProvider } from '../context/query'
 
-export default function Home({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ response, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     return (
-        <Layout>
-            <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8">
-                <div className="flex flex-col text-white animate-fade-in">
-                    <SettingsProvider data={response}>
-                        <AuthProvider>
-                            <MenuProvider>
-                                <UserExchanges />
-                            </MenuProvider>
-                        </AuthProvider>
-                    </SettingsProvider>
+        <QueryProvider query={query}>
+            <Layout>
+                <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8">
+                    <div className="flex flex-col text-white animate-fade-in">
+                        <SettingsProvider data={response}>
+                            <AuthProvider>
+                                <MenuProvider>
+                                    <UserExchanges />
+                                </MenuProvider>
+                            </AuthProvider>
+                        </SettingsProvider>
+                    </div>
                 </div>
-            </div>
-        </Layout>
+            </Layout>
+        </QueryProvider>
+
     )
 }
 

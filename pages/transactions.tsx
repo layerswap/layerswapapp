@@ -6,23 +6,26 @@ import { SettingsProvider } from '../context/settings'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
+import { QueryProvider } from '../context/query'
 
-export default function Transactions({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Transactions({ response, query }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
   return (
-    <Layout>
-      <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8">
-        <div className="flex flex-col text-white animate-fade-in">
-          <SettingsProvider data={response}>
-            <AuthProvider>
-              <MenuProvider>
-                <TransactionsHistory />
-              </MenuProvider>
-            </AuthProvider>
-          </SettingsProvider>
+    <QueryProvider query={query}>
+      <Layout>
+        <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8">
+          <div className="flex flex-col text-white animate-fade-in">
+            <SettingsProvider data={response}>
+              <AuthProvider>
+                <MenuProvider>
+                  <TransactionsHistory />
+                </MenuProvider>
+              </AuthProvider>
+            </SettingsProvider>
+          </div>
         </div>
-      </div>
-    </Layout>
+      </Layout>
+    </QueryProvider >
   )
 }
 
@@ -38,7 +41,7 @@ export async function getServerSideProps(context) {
   var networks: CryptoNetwork[] = [];
   if (!process.env.IS_TESTING) {
     response.data.networks.forEach((element) => {
-       networks.push(element);
+      networks.push(element);
     });
   }
   else {
@@ -47,7 +50,7 @@ export async function getServerSideProps(context) {
 
   const resource_storage_url = response.data.discovery.resource_storage_url
   if (resource_storage_url[resource_storage_url.length - 1] === "/")
-      response.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+    response.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
   response.data.networks = networks;
   let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";

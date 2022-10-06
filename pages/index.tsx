@@ -21,23 +21,24 @@ type IndexProps = {
 
 export default function Home({ settings, query, inMaintanance }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
-    <Layout>
-      <div className="content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
-        <div className='flex flex-col space-y-5 animate-fade-in'>
-          {
-            inMaintanance
-              ?
-              <MaintananceContent />
-              :
-              <SettingsProvider data={settings}>
-                <QueryProvider query={query}>
+    <QueryProvider query={query}>
+      <Layout>
+        <div className="content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
+          <div className='flex flex-col space-y-5 animate-fade-in'>
+            {
+              inMaintanance
+                ?
+                <MaintananceContent />
+                :
+                <SettingsProvider data={settings}>
                   <Swap />
-                </QueryProvider>
-              </SettingsProvider>
-          }
+                </SettingsProvider>
+            }
+          </div>
         </div>
-      </div>
-    </Layout>
+      </Layout>
+    </QueryProvider>
+
   )
 }
 

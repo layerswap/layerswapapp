@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import TokenService from "../lib/TokenService"
-import { ExclamationCircleIcon, SearchIcon } from '@heroicons/react/outline';
+import { ExclamationCircleIcon } from '@heroicons/react/outline';
 import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
 import LayerswapApiClient from "../lib/layerSwapApiClient"
@@ -18,7 +18,6 @@ import HoverTooltip from "./Tooltips/HoverTooltip";
 import { ExchangesComponentSceleton } from "./Sceletons";
 import GoHomeButton from "./utils/GoHome";
 import Modal from "./modalComponent";
-import { AnimatePresence } from "framer-motion";
 
 interface UserExchange extends Exchange {
     note?: string,
