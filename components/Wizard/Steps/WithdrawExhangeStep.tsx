@@ -101,9 +101,9 @@ const WithdrawExchangeStep: FC = () => {
                         </div>
                     }
                     <div className='mb-6 grid grid-cols-1 gap-5'>
-                        <BackgroundField isCopiable={true} toCopy={swap?.data?.destination_address} header={'Address'}>
+                        <BackgroundField isCopiable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Address'}>
                             <p className='break-all'>
-                                {swap?.data?.destination_address}
+                                {swap?.data?.additonal_data?.deposit_address}
                             </p>
                         </BackgroundField>
                         <BackgroundField header={'Network'}>

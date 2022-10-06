@@ -19,6 +19,7 @@ import StatusIcon from "./StatusIcons"
 import Modal from "./modalComponent"
 import HoverTooltip from "./Tooltips/HoverTooltip"
 import { AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast"
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -33,6 +34,50 @@ function TransactionsHistory() {
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const { email } = useAuthState()
 
+  const checkAuth = () => {
+    try {
+      console.log("Storage change fired")
+      const authData = TokenService.getAuthData();
+      if (!authData) {
+        router.push({
+          pathname: '/auth',
+          query: { redirect: '/transactions' }
+        })
+        return;
+      }
+    }
+    catch (e) {
+      toast(e.message)
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener(
+      'storageChange',
+      checkAuth,
+      false
+    )
+    return () => document.removeEventListener('storageChange', () => { })
+  }, [])
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const authData = TokenService.getAuthData();
+        if (!authData) {
+          router.push({
+            pathname: '/auth',
+            query: { redirect: '/transactions' }
+          })
+          return;
+        }
+      }
+      catch (e) {
+        toast(e.message)
+      }
+    })()
+  }, [swaps])
+
   useEffect(() => {
     (async () => {
       setIsLastPage(false)
@@ -42,11 +87,11 @@ function TransactionsHistory() {
         if (!authData) {
           router.push({
             pathname: '/auth',
-            query: { ...(router.query), redirect: '/transactions' }
+            query: { redirect: '/transactions' }
           })
           return;
         }
-        const layerswapApiClient = new LayerSwapApiClient()
+        const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
         const swaps = await layerswapApiClient.getSwaps(1, authData.access_token)
         setSwaps(swaps)
         setPage(1)
@@ -54,7 +99,7 @@ function TransactionsHistory() {
           setIsLastPage(true)
       }
       catch (e) {
-        setError(e.message)
+        toast(e.message)
       }
       finally {
         setLoading(false)
@@ -73,7 +118,7 @@ function TransactionsHistory() {
         router.push('/auth')
         return;
       }
-      const layerswapApiClient = new LayerSwapApiClient()
+      const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
       const response = await layerswapApiClient.getSwaps(nextPage, authData.access_token)
 
       setSwaps(old => ({ ...response, data: [...(old?.data ? old?.data : []), ...(response.data ? response.data : [])] }))
@@ -82,7 +127,7 @@ function TransactionsHistory() {
         setIsLastPage(true)
     }
     catch (e) {
-      setError(e.message)
+      toast(e.message)
     }
     finally {
       setLoading(false)

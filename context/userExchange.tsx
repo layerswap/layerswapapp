@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React from 'react'
 import LayerSwapApiClient, { UserExchangesResponse } from '../lib/layerSwapApiClient';
 
@@ -10,8 +11,9 @@ type UpdateFns = {
 
 export function UserExchangeProvider({ children }) {
     const [exchangeData, setUserExchangeData] = React.useState({});
+    const router = useRouter();
 
-    const layerswapApiClient = new LayerSwapApiClient()
+    const layerswapApiClient = new LayerSwapApiClient(router)
 
     const updateFns: UpdateFns = {
         getUserExchanges: async (token: string): Promise<UserExchangesResponse> => {

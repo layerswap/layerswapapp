@@ -9,6 +9,7 @@ import SubmitButton from './buttons/submitButton';
 import { DocIframe } from './docInIframe';
 import SlideOver from './SlideOver';
 import WarningMessage from './WarningMessage';
+import { useRouter } from 'next/router';
 
 type Props = {
     exchange: Exchange,
@@ -22,6 +23,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
     const [loading, setLoading] = useState(false)
     const [keyphrase, setKeyphrase] = useState("")
     const [docIframeIsOpen, setDocIframeIsOpen] = useState(false)
+    const router = useRouter();
 
     useEffect(() => {
         setLoading(false)
@@ -39,7 +41,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
     const connect = useCallback(async () => {
         try {
             setLoading(true)
-            const layerswapApiClient = new LayerswapApiClient();
+            const layerswapApiClient = new LayerswapApiClient(router);
             const { access_token } = TokenService.getAuthData() || {};
             const res = await layerswapApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase }, access_token)
             onSuccess()
@@ -67,7 +69,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 text-white">
                         Please enter
-                        {ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange.id]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.display_name}</a> : <span className='mx-1'>{exchange?.display_name}</span>}
+                        {ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange.internal_name]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.display_name}</a> : <span className='mx-1'>{exchange?.display_name}</span>}
                         API keys
                     </h3>
                 </div>
