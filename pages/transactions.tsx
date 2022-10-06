@@ -38,21 +38,11 @@ export async function getServerSideProps(context) {
   var query = context.query;
   var apiClient = new LayerSwapApiClient();
   const response = await apiClient.fetchSettingsAsync()
-  var networks: CryptoNetwork[] = [];
-  if (!process.env.IS_TESTING) {
-    response.data.networks.forEach((element) => {
-      networks.push(element);
-    });
-  }
-  else {
-    networks = response.data.networks;
-  }
 
   const resource_storage_url = response.data.discovery.resource_storage_url
   if (resource_storage_url[resource_storage_url.length - 1] === "/")
     response.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
-  response.data.networks = networks;
   let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 
   return {
