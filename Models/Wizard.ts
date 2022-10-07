@@ -64,6 +64,6 @@ export class WizardStep<T> {
     Name: T;
     Content: FC;
     onBack?: () => void;
-    onNext?: (data?: any) => void;
+    onNext?: (data?: any) => Promise<void>;
     positionPercent: number;
 }

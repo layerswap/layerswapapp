@@ -39,11 +39,10 @@ const WithdrawExchangeStep: FC = () => {
             goToStep(SwapWithdrawalStep.Email)
 
         const swap = await getSwap(swapId.toString())
-        //TODO implement better GetSwapStatusStep to not check swap status
-        if (swap.data.status === SwapStatus.Initiated)
-            return
+
         const swapStatusStep = GetSwapStatusStep(swap)
-        goToStep(swapStatusStep)
+        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal)
+            goToStep(swapStatusStep)
     }, [currentStep], 10000)
 
     const handleConfirm = useCallback(async () => {

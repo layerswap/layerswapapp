@@ -80,7 +80,7 @@ const useCreateSwap = () => {
         Name: SwapCreateStep.Email,
         positionPercent: 30,
         onBack: useCallback(() => goToStep(SwapCreateStep.MainForm), []),
-        onNext: useCallback(() => goToStep(SwapCreateStep.Code), []),
+        onNext: useCallback(async () => goToStep(SwapCreateStep.Code), []),
     }
 
     const Code: WizardStep<SwapCreateStep> = {

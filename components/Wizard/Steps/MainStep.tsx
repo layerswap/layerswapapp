@@ -39,7 +39,7 @@ import LayerswapApiClient from '../../../lib/layerSwapApiClient';
 import { useRouter } from "next/router";
 
 type Props = {
-    OnSumbit: (values: SwapFormValues) => void
+    OnSumbit: (values: SwapFormValues) => Promise<void>
 }
 
 const MainStep: FC<Props> = ({ OnSumbit }) => {
@@ -141,7 +141,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                     return
                 }
             }
-            OnSumbit(values)
+            await OnSumbit(values)
         }
         catch (e) {
             toast.error(e.message)
@@ -170,36 +170,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const addressRef: any = useRef();
     const amountRef: any = useRef();
 
-    const callIt = async () => {
-        try {
-            const { access_token } = TokenService.getAuthData() || {};
-            const layerswapApiClient = new LayerswapApiClient(router)
-            const res = await layerswapApiClient.GetExchangeAccounts(access_token)
-            console.log("res", res)
-        }
-        catch (e) {
-            console.log("error accured", e.message)
-            toast(e.message)
-        }
-    }
-    const callIt2 = async () => {
-        try {
-            const { access_token } = TokenService.getAuthData() || {};
-            const layerswapApiClient = new LayerswapApiClient(router)
-            const res = await layerswapApiClient.getSwaps(1, access_token)
-            console.log("res", res)
-        }
-        catch (e) {
-            console.log("error accured", e.message)
-            toast(e.message)
-        }
-    }
-
-    const handleClick = async () => {
-        callIt()
-        callIt2()
-    }
-    
     const partnerImage = partner?.logo ? `${resource_storage_url}${partner?.logo}` : undefined
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>

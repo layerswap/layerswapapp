@@ -36,7 +36,6 @@ function TransactionsHistory() {
 
   const checkAuth = () => {
     try {
-      console.log("Storage change fired")
       const authData = TokenService.getAuthData();
       if (!authData) {
         router.push({

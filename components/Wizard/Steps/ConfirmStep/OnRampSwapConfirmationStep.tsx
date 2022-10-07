@@ -154,6 +154,7 @@ const OnRampSwapConfirmationStep: FC = () => {
             return;
         }
         updateSwapFormData({ ...swapFormData, destination_address: addressInputValue })
+        // formikRef.current.setFieldValue("destination_address", addressInputValue)
         setEditingAddress(false)
     }, [addressInputValue, network, swapFormData])
 
@@ -168,8 +169,6 @@ const OnRampSwapConfirmationStep: FC = () => {
                     const errors: FormikErrors<SwapConfirmationFormValues> = {};
                     if (!values.RightWallet) {
                         errors.RightWallet = 'Confirm your wallet';
-                    } else if (values.TwoFARequired && (!values.TwoFACode || values.TwoFACode.length < 6)) {
-                        errors.TwoFACode = 'TwoFA Required';
                     }
                     return errors;
                 }}
@@ -191,7 +190,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            <SubmitButton type='submit' isDisabled={!isValid || !dirty} isSubmitting={isSubmitting} >
+                            <SubmitButton type='submit' isDisabled={!isValid} isSubmitting={isSubmitting} >
                                 Confirm
                             </SubmitButton>
                         </Form>

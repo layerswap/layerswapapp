@@ -80,7 +80,6 @@ export function SwapDataProvider({ children }) {
     }, [])
 
     const cancelSwap = useCallback(async () => {
-        console.log("canceling")
         const authData = TokenService.getAuthData();
         if (!authData?.access_token)
             throw new Error("Not authenticated")
@@ -119,8 +118,6 @@ export function SwapDataProvider({ children }) {
     }, [])
 
     const createAndProcessSwap = useCallback(async (TwoFACode?: string) => {
-        console.log("settings", settings)
-        console.log("query", query)
         const authData = TokenService.getAuthData();
         if (!authData?.access_token)
             throw new Error("Not authenticated")
