@@ -32,7 +32,7 @@ const SwapOptionsToggle = forwardRef((props, ref: any) => {
     }, [account, chainId, settings,])
 
     return (
-        query?.product?.toLowerCase() != SwapType.OffRamp && query?.product?.toLowerCase() != SwapType.OnRamp &&
+        query?.products?.toLowerCase() != SwapType.OffRamp && query?.products?.toLowerCase() != SwapType.OnRamp &&
         <div ref={ref} tabIndex={0} >
             <Field name={name} value={swapType} items={swapOptions} as={OptionToggle} setSelected={handleFieldChange} />
         </div>
