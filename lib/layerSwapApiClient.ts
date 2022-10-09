@@ -2,13 +2,17 @@ import { ApiError } from "../Models/ApiError";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { SwapStatus } from "../Models/SwapStatus";
 import AppSettings from "./AppSettings";
-import authInterceptor from "./axiosInterceptor"
+import { InitializeInstance } from "./axiosInterceptor"
 import { v4 as uuidv4 } from 'uuid';
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
+import { NextRouter } from "next/router";
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
 
-    apiFetcher = (url: string) => authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + url).then(res => res.data);
+    authInterceptor: AxiosInstance;
+    constructor(router?: NextRouter, redirect?: string) {
+        this.authInterceptor = InitializeInstance(router, redirect);
+    }
 
     async fetchSettingsAsync(): Promise<LayerSwapSettings> {
         return await axios.get(LayerSwapApiClient.apiBaseEndpoint + '/api/settings').then(res => res.data);
@@ -16,53 +20,53 @@ export default class LayerSwapApiClient {
 
     async createSwap(params: CreateSwapParams, token: string): Promise<CreateSwapResponse> {
         const correlationId = uuidv4()
-        return await authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/api/swaps',
+        return await this.authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/api/swaps',
             params,
             { headers: { 'Access-Control-Allow-Origin': '*', 'X-LS-CORRELATION-ID': correlationId, Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
     async getSwaps(page: number, token: string): Promise<SwapListResponse> {
-        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps?page=${page}`,
+        return await this.authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps?page=${page}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
     async getPendingSwaps(token: string): Promise<SwapListResponse> {
-        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps?status=1`,
+        return await this.authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps?status=1`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
     async CancelSwap(swapid: string, token: string): Promise<ConnectResponse> {
-        return await authInterceptor.delete(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${swapid}`,
+        return await this.authInterceptor.delete(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${swapid}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data)
     }
     async getSwapDetails(id: string, token: string): Promise<SwapItemResponse> {
-        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${id}`,
+        return await this.authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${id}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data);
     }
     async GetExchangeAccounts(token: string): Promise<UserExchangesResponse> {
-        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + '/api/exchange_accounts')
+        return await this.authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + '/api/exchange_accounts')
             .then(res => res.data)
     }
     async GetExchangeDepositAddress(exchange: string, currency: string, token: string): Promise<ExchangeDepositAddressReponse> {
-        return await authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}/deposit_address/${currency}`,
+        return await this.authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}/deposit_address/${currency}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data)
     }
     async DeleteExchange(exchange: string, token: string): Promise<ConnectResponse> {
-        return await authInterceptor.delete(LayerSwapApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}`,
+        return await this.authInterceptor.delete(LayerSwapApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data)
     }
     async ConnectExchangeApiKeys(params: ConnectParams, token: string): Promise<ConnectResponse> {
-        return await authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/api/exchange_accounts',
+        return await this.authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/api/exchange_accounts',
             params,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data)
     }
     async ProcessPayment(id: string, token: string, twoFactorCode?: string): Promise<PaymentProcessreponse> {
-        return await authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`,
+        return await this.authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`,
             { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
             .then(res => res.data)
     }
@@ -76,6 +80,7 @@ export type CreateSwapParams = {
     destination_address: string,
     partner?: string,
     type: number,
+    external_transaction_id?: string,
 }
 
 export type SwapItemResponse = {

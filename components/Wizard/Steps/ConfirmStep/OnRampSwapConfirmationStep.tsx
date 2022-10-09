@@ -17,6 +17,10 @@ import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormVa
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import Modal from '../../../modalComponent';
 import { AnimatePresence } from 'framer-motion';
+import SwapDetails from '../../../swapDetailsComponent';
+import TokenService from '../../../../lib/TokenService';
+import LayerSwapApiClient, { SwapItem } from '../../../../lib/layerSwapApiClient';
+import { SwapFormValues } from '../../../DTOs/SwapFormValues';
 
 
 
@@ -30,9 +34,12 @@ const OnRampSwapConfirmationStep: FC = () => {
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
     const { currentStepName } = useFormWizardState<SwapCreateStep>()
 
-    const { updateSwapFormData, createAndProcessSwap, setCodeRequested } = useSwapDataUpdate()
+    const { updateSwapFormData, createAndProcessSwap, setCodeRequested, cancelSwap } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const [editingAddress, setEditingAddress] = useState(false)
+    const [cancelSwapModalOpen, setCancelSwapModalOpen] = useState(false)
+    const [exchangePendingSwap, setExchangePendingSwap] = useState<SwapItem>()
+
     const [addressInputValue, setAddressInputValue] = useState("")
     const [addressInputError, setAddressInputError] = useState("")
 
@@ -86,16 +93,60 @@ const OnRampSwapConfirmationStep: FC = () => {
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 toast.error(`${exchange.name} error: You don't have that much.`)
             }
+            else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
+                goToStep(SwapCreateStep.OAuth)
+            }
+            else if (data.code === KnownwErrorCode.EXISTING_SWAP) {
+                const exchangePendingSwap = await getExchangePendingSwap(swapFormData)
+                if (!exchangePendingSwap) {
+                    toast.error(`Want to cancel pending swap but could not find one.`)
+                    return
+                }
+                setExchangePendingSwap(exchangePendingSwap)
+                setCancelSwapModalOpen(true)
+            }
             else {
                 toast.error(data.message)
             }
         }
     }, [exchange, swap, currentValues?.TwoFACode, transferAmount])
 
+    const handleCancelSwap = useCallback(async () => {
+        try {
+            await cancelSwap()
+            setCancelSwapModalOpen(false)
+            setExchangePendingSwap(null)
+        }
+        catch (error) {
+            const data: ApiError = error?.response?.data?.error
+            if (!data) {
+                toast.error(error.message)
+            }
+            else {
+                toast.error(data.message)
+            }
+        }
+    }, [])
+
+    const getExchangePendingSwap = async (swapFormData: SwapFormValues) => {
+        const authData = TokenService.getAuthData();
+        if (!authData?.access_token)
+            throw new Error("Not authenticated")
+        const { access_token } = authData
+        const { exchange } = swapFormData
+
+        const layerswapApiClient = new LayerSwapApiClient(router)
+
+        const pendingSwaps = await layerswapApiClient.getPendingSwaps(access_token)
+        return pendingSwaps.data.find(s => exchange.baseObject.currencies.some(ec => ec.id === s.exchange_currency_id))
+    }
+
     const handleClose = () => {
         setEditingAddress(false)
     }
-
+    const handleCloseCancelSwapModal = () => {
+        setCancelSwapModalOpen(false)
+    }
     const handleSaveAddress = useCallback(() => {
         setAddressInputError("")
         if (!isValidAddress(addressInputValue, network.baseObject)) {
@@ -103,6 +154,7 @@ const OnRampSwapConfirmationStep: FC = () => {
             return;
         }
         updateSwapFormData({ ...swapFormData, destination_address: addressInputValue })
+        // formikRef.current.setFieldValue("destination_address", addressInputValue)
         setEditingAddress(false)
     }, [addressInputValue, network, swapFormData])
 
@@ -117,8 +169,6 @@ const OnRampSwapConfirmationStep: FC = () => {
                     const errors: FormikErrors<SwapConfirmationFormValues> = {};
                     if (!values.RightWallet) {
                         errors.RightWallet = 'Confirm your wallet';
-                    } else if (values.TwoFARequired && (!values.TwoFACode || values.TwoFACode.length < 6)) {
-                        errors.TwoFACode = 'TwoFA Required';
                     }
                     return errors;
                 }}
@@ -140,7 +190,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            <SubmitButton type='submit' isDisabled={!isValid || !dirty} isSubmitting={isSubmitting} >
+                            <SubmitButton type='submit' isDisabled={!isValid} isSubmitting={isSubmitting} >
                                 Confirm
                             </SubmitButton>
                         </Form>
@@ -186,6 +236,29 @@ const OnRampSwapConfirmationStep: FC = () => {
                         </SubmitButton>
                         <SubmitButton type='button' size='small' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleClose}>
                             Cancel
+                        </SubmitButton>
+                    </div>
+                </div>
+            </Modal>
+            <Modal
+                isOpen={cancelSwapModalOpen}
+                onDismiss={handleCloseCancelSwapModal}
+                title={
+                    <h4 className='text-lg text-white'>
+                        You already have pending swap for {exchange.name} </h4>
+                }
+            >
+                <div className='grid grid-flow-row px-6 md:px-8 text-primary-text'>
+                    <div className='mb-4'>
+                        <SwapDetails id={exchangePendingSwap?.id} />
+                    </div>
+
+                    <div className="mt-auto flex space-x-4">
+                        <SubmitButton type='button' size='small' isDisabled={!!addressInputError} isSubmitting={false} onClick={handleCancelSwap}>
+                            Terminate pending swap
+                        </SubmitButton>
+                        <SubmitButton type='button' size='small' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleCloseCancelSwapModal}>
+                            Do another swap
                         </SubmitButton>
                     </div>
                 </div>

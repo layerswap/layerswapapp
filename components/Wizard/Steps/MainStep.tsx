@@ -34,9 +34,12 @@ import AmountField from "../../Input/Amount";
 import { SwapType } from "../../../lib/layerSwapApiClient";
 import { AnimatePresence } from "framer-motion";
 import SlideOver from "../../SlideOver";
+import TokenService from "../../../lib/TokenService";
+import LayerswapApiClient from '../../../lib/layerSwapApiClient';
+import { useRouter } from "next/router";
 
 type Props = {
-    OnSumbit: (values: SwapFormValues) => void
+    OnSumbit: (values: SwapFormValues) => Promise<void>
 }
 
 const MainStep: FC<Props> = ({ OnSumbit }) => {
@@ -51,9 +54,11 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     let formValues = formikRef.current?.values;
 
     const settings = useSettingsState();
+    const { discovery: { resource_storage_url } } = settings.data || {}
     const query = useQueryState();
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
+    const router = useRouter();
 
     useEffect(() => {
         if (query.coinbase_redirect) {
@@ -111,9 +116,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
     }, [query])
 
-
-    const availablePartners = Object.fromEntries(settings.data.partners.map(c => [c.internal_name.toLowerCase(), c]));
-
     const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
@@ -139,7 +141,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                     return
                 }
             }
-            OnSumbit(values)
+            await OnSumbit(values)
         }
         catch (e) {
             toast.error(e.message)
@@ -149,10 +151,15 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         }
     }, [updateSwapFormData])
 
-    let destAddress: string = account || query.destAddress;
+    const destAddress: string = account || query.destAddress;
 
-    let isPartnerAddress = addressSource && availablePartners[addressSource] && destAddress;
-    let isPartnerWallet = isPartnerAddress && availablePartners[addressSource]?.is_wallet;
+    const partner = addressSource ?
+        settings.data.partners.find(p => p.internal_name?.toLocaleLowerCase() === addressSource?.toLocaleLowerCase())
+        : undefined
+
+    const isPartnerAddress = partner && destAddress
+
+    const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
     const lockAddress = !!account || query.lockAddress
 
@@ -163,6 +170,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const addressRef: any = useRef();
     const amountRef: any = useRef();
 
+    const partnerImage = partner?.logo ? `${resource_storage_url}${partner?.logo}` : undefined
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
             {(close) => <ConnectImmutableX swapFormData={formValues} onClose={close} />}
@@ -199,12 +207,12 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                                 <div className="w-full mb-3.5 leading-4">
                                     <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
                                         {`To ${values?.network?.name || ''} address`}
-                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({availablePartners[addressSource].display_name})</span>}
+                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({partner?.display_name})</span>}
                                     </label>
                                     <div className="relative rounded-md shadow-sm mt-1.5">
                                         {isPartnerWallet &&
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Image className='rounded-md object-contain' src={availablePartners[addressSource].logo_url} width="24" height="24"></Image>
+                                                <Image className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
                                             </div>
                                         }
                                         <div>

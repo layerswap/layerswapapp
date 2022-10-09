@@ -33,7 +33,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                 goToStep(SwapCreateStep.Email)
                 return;
             }
-            const layerswapApiClient = new LayerswapApiClient()
+            const layerswapApiClient = new LayerswapApiClient(router)
             const response = await layerswapApiClient.GetExchangeDepositAddress(exchange?.baseObject?.internal_name, currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
             updateSwapFormData((old) => ({ ...old, destination_address: response.data }))
         })()
@@ -47,7 +47,16 @@ const OffRampSwapConfirmationStep: FC = () => {
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
-            toast.error(data?.message)
+            if (!data) {
+                toast.error(error.message)
+                return
+            }
+            if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
+                goToStep(SwapCreateStep.OffRampOAuth)
+            }
+            else
+                toast.error(data?.message)
+
         }
         finally {
             setIsSubmitting(false)
