@@ -21,10 +21,6 @@ const OverviewStep: FC = () => {
     const { getSwap } = useSwapDataUpdate()
 
     useEffect(() => {
-        console.log("currentStep",currentStep)
-    },[currentStep])
-
-    useEffect(() => {
         (async () => {
             try {
                 if (currentStep !== SwapWithdrawalStep.Overview)
@@ -55,7 +51,6 @@ const OverviewStep: FC = () => {
                         goToStep(SwapWithdrawalStep.Processing)
                 }
 
-                
                 setTimeout(() => {
                     setLoadingWizard(false)
                 }, 500);

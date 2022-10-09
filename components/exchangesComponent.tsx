@@ -64,18 +64,24 @@ function UserExchanges() {
     }, [router.query])
 
     const getAndMapExchanges = useCallback(async (authData) => {
-        const layerswapApiClient = new LayerswapApiClient()
-        const userExchanges = await layerswapApiClient.GetExchangeAccounts(authData.access_token)
+        try {
+            const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
+            const userExchanges = await layerswapApiClient.GetExchangeAccounts(authData.access_token)
 
-        const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none').map(e => {
-            return {
-                ...e,
-                is_connected: userExchanges.data?.some(ue => ue.exchange_id === e.id),
-                note: userExchanges.data?.find(ue => ue.exchange_id === e.id)?.note
-            }
-        })
-        mappedExchanges.sort((a, b) => (+a.order) - (+b.order))
-        setUserExchanges(mappedExchanges)
+            const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none').map(e => {
+                return {
+                    ...e,
+                    is_connected: userExchanges.data?.some(ue => ue.exchange_id === e.id),
+                    note: userExchanges.data?.find(ue => ue.exchange_id === e.id)?.note
+                }
+            })
+            mappedExchanges.sort((a, b) => (+a.order) - (+b.order))
+            setUserExchanges(mappedExchanges)
+        }
+        catch (e) {
+            toast.error(e.message)
+        }
+
     }, [data.exchanges])
 
     const filteredItems =
@@ -105,7 +111,7 @@ function UserExchanges() {
                 })
                 return;
             }
-            const layerswapApiClient = new LayerswapApiClient()
+            const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
             await layerswapApiClient.DeleteExchange(exchange.internal_name, authData.access_token)
             await getAndMapExchanges(authData)
         }

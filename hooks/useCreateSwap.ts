@@ -16,6 +16,7 @@ import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { ExchangeAuthorizationSteps, OfframpExchangeAuthorizationSteps, SwapCreateStep, WizardStep } from "../Models/Wizard";
 import { SwapType } from "../lib/layerSwapApiClient";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
+import { useRouter } from "next/router";
 
 
 const useCreateSwap = () => {
@@ -23,12 +24,13 @@ const useCreateSwap = () => {
     const { updateSwapFormData } = useSwapDataUpdate()
     const { getUserExchanges } = useUserExchangeDataUpdate()
     const { swapFormData } = useSwapDataState()
+    const router = useRouter();
 
     const handleCoinbaseOfframp = useCallback(async (formData: SwapFormValues, access_token: string) => {
         const exchanges = (await getUserExchanges(access_token))?.data
         const { exchange: selected_exchange, currency } = formData
         const selected_exchange_internal_name = selected_exchange?.baseObject?.internal_name
-        const layerswapApiClient = new LayerSwapApiClient()
+        const layerswapApiClient = new LayerSwapApiClient(router)
         const asset = currency?.baseObject?.asset
         try {
             const response = await layerswapApiClient.GetExchangeDepositAddress(selected_exchange_internal_name, asset.toUpperCase(), access_token)
@@ -78,7 +80,7 @@ const useCreateSwap = () => {
         Name: SwapCreateStep.Email,
         positionPercent: 30,
         onBack: useCallback(() => goToStep(SwapCreateStep.MainForm), []),
-        onNext: useCallback(() => goToStep(SwapCreateStep.Code), []),
+        onNext: useCallback(async () => goToStep(SwapCreateStep.Code), []),
     }
 
     const Code: WizardStep<SwapCreateStep> = {

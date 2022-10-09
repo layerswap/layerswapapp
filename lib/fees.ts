@@ -16,6 +16,9 @@ export function CalculateFee(amount?: number, currency?: Currency, exchange?: Ex
     const exchangeCurrency = exchange.currencies.find(c => c.asset === currency.asset)
     const networkCurrency = network.currencies.find(c => c.asset === currency.asset)
 
+    if (!exchangeCurrency || !networkCurrency)
+        return 0
+
     const fee = swapType === SwapType.OnRamp ?
         Number((amount * exchangeCurrency.fee_percentage + (exchangeCurrency.fee || 0)).toFixed(exchangeCurrency?.precision))
         : Number((amount * networkCurrency.fee_percentage + (networkCurrency.fee || 0)).toFixed(networkCurrency?.precision))

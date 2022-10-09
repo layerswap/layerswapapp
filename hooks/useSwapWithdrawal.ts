@@ -7,22 +7,24 @@ import ProccessingStep from "../components/Wizard/Steps/ProccessingStep";
 import SuccessfulStep from "../components/Wizard/Steps/SuccessfulStep";
 import WithdrawExchangeStep from "../components/Wizard/Steps/WithdrawExhangeStep";
 import WithdrawNetworkStep from "../components/Wizard/Steps/WithdrawNetworkStep";
+import { useFormWizardaUpdate } from "../context/formWizardProvider";
 import { SwapWithdrawalStep, WizardStep } from "../Models/Wizard";
 
 
 
 const useSwapWithdrawal = () => {
+    const { goToStep } = useFormWizardaUpdate()
 
     const Email: WizardStep<SwapWithdrawalStep> = {
         Content: EmailStep,
         Name: SwapWithdrawalStep.Code,
-        onNext: async () => SwapWithdrawalStep.Code,
+        onNext: async () => goToStep(SwapWithdrawalStep.Code),
         positionPercent: 70
     }
     const Code: WizardStep<SwapWithdrawalStep> = {
         Content: CodeStep,
         Name: SwapWithdrawalStep.Code,
-        onNext: async () => SwapWithdrawalStep.Overview,
+        onNext: async () => goToStep(SwapWithdrawalStep.Overview),
         onBack: () => SwapWithdrawalStep.Email,
         positionPercent: 75
     }

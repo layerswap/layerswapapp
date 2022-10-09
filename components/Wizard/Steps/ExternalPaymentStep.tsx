@@ -33,8 +33,11 @@ const ExternalPaymentStep: FC = () => {
         const swap = await getSwap(swapId.toString())
         if (swap.data.status === SwapStatus.Initiated)
             return
+
         const swapStatusStep = GetSwapStatusStep(swap)
-        goToStep(swapStatusStep)
+        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.ExternalPayment)
+            goToStep(swapStatusStep)
+            
     }, [currentStep, swapId], 10000)
 
     const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
