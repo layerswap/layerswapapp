@@ -32,10 +32,7 @@ import ExchangesField from "../../Select/Exchange";
 import NetworkField from "../../Select/Network";
 import AmountField from "../../Input/Amount";
 import { SwapType } from "../../../lib/layerSwapApiClient";
-import { AnimatePresence } from "framer-motion";
 import SlideOver from "../../SlideOver";
-import TokenService from "../../../lib/TokenService";
-import LayerswapApiClient from '../../../lib/layerSwapApiClient';
 import { useRouter } from "next/router";
 
 type Props = {
@@ -191,9 +188,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                     <ConnectedFocusError />
                     <div className="px-6 md:px-8 h-full flex flex-col justify-between">
                         <div>
-                            <div className='my-4'>
-                                <SwapOptionsToggle />
-                            </div>
+                            <SwapOptionsToggle />
                             <div className={classNames(values.swapType === SwapType.OffRamp ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
                                 <div className="flex flex-col md:w-80 w-full">
                                     <ExchangesField ref={exchangeRef} />

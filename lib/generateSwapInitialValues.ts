@@ -10,7 +10,7 @@ import { SwapType } from "./layerSwapApiClient";
 import NetworkSettings from "./NetworkSettings";
 
 export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams, account: string, chainId: number): SwapFormValues {
-    const { destNetwork, destAddress: queryParamAddress, sourceExchangeName } = queryParams
+    const { destNetwork, destAddress: queryParamAddress, sourceExchangeName, product } = queryParams
 
     const { data: { exchanges, networks, discovery: { resource_storage_url } } } = settings || {}
     const destAddress = queryParamAddress || account
@@ -38,5 +38,5 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     let initialExchange =
         availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase() && (swapType === SwapType.OffRamp ? x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)));
 
-    return { amount: "", destination_address: swapType === SwapType.OnRamp && (initialAddress || account), swapType: swapType || SwapType.OnRamp, network: swapType === SwapType.OnRamp ? initialNetwork : null, exchange: initialExchange }
+    return { amount: "", destination_address: swapType === SwapType.OnRamp && (initialAddress || account), swapType: ((product?.toLowerCase() == SwapType.OffRamp || product?.toLowerCase() == SwapType.OnRamp) && product as SwapType) || swapType || SwapType.OnRamp, network: swapType === SwapType.OnRamp ? initialNetwork : null, exchange: initialExchange }
 }
