@@ -6,6 +6,8 @@ import { QrcodeIcon } from "@heroicons/react/outline";
 import SubmitButton from "./buttons/submitButton";
 import shortenAddress from "./utils/ShortenAddress";
 import CopyButton from "./buttons/copyButton";
+import colors from "tailwindcss/colors";
+import tailwindConfig from "./../tailwind.config";
 
 type QRCodeModalProps = {
     qrUrl: string;
@@ -18,10 +20,11 @@ type QRCodeModalProps = {
 const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconWidth, iconClassName }) => {
     const qrCode = (
         <QRCode
-            className="p-4 bg-white rounded-3xl"
+            className="p-4 bg-gray-400 rounded-lg"
             value={qrUrl}
             size={250}
-            fgColor={'#111827'}
+            bgColor={colors.gray[400]}
+            fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
             level={"H"}
         />
     );
@@ -37,7 +40,7 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconW
                     <QrcodeIcon className={iconClassName} width={iconWidth ? iconWidth : 16} height={iconHeight ? iconHeight : 16} />
                 </div>
             </div>
-            <Modal onDismiss={handleCloseModal} isOpen={isOpen}>
+            <Modal onDismiss={handleCloseModal} isOpen={isOpen} className='max-w-md'>
                 <div className="flex flex-col justify-between items-center space-y-6 md:space-y-8 mt-6 md:mt-8 px-6 md:px-8">
                     <div>
                         {qrCode}

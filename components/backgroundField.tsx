@@ -20,12 +20,12 @@ const BackgroundField: FC<Props> = (({ isCopiable, toCopy, header, children, isQ
                 {children}
                 <div className="space-x-2 flex">
                     {
-                        isCopiable &&
-                        <CopyButton iconHeight={17} iconWidth={17} toCopy={toCopy} className='p-1 bg-darkblue-50 rounded' />
+                        isQRable &&
+                        <QRCodeModal qrUrl={toCopy?.toLocaleString()} iconHeight={17} iconWidth={17} className='p-1 bg-darkblue-50 rounded' />
                     }
                     {
-                        isQRable && 
-                        <QRCodeModal qrUrl={toCopy?.toLocaleString()} iconHeight={17} iconWidth={17} className='p-1 bg-darkblue-50 rounded'/>
+                        isCopiable &&
+                        <CopyButton iconHeight={17} iconWidth={17} toCopy={toCopy} className='p-1 bg-darkblue-50 rounded' />
                     }
                 </div >
             </div>
