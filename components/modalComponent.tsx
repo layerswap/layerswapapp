@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 interface ModalParams {
     onDismiss: (isIntentional: boolean) => void;
     isOpen: boolean;
-    title: React.ReactNode;
+    title?: React.ReactNode;
     className?: string
 }
 
