@@ -157,6 +157,11 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const networkRef: any = useRef();
     const addressRef: any = useRef();
     const amountRef: any = useRef();
+    const { secondsRemaining, start } = useTimerState()
+
+    const handleStartTimer = useCallback(() => {
+        start(60)
+    }, [])
 
     const partnerImage = partner?.logo ? `${resource_storage_url}${partner?.logo}` : undefined
     return <>
