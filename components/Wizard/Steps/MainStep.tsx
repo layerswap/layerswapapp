@@ -5,12 +5,10 @@ import { Form, Formik, FormikErrors, FormikProps } from "formik";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
-import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { SelectMenuItem } from "../../Select/selectMenuItem";
 import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
-import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
+import { useSwapDataUpdate } from "../../../context/swap";
 import React from "react";
 import { useFormWizardaUpdate } from "../../../context/formWizardProvider";
 import { SwapCreateStep } from "../../../Models/Wizard";
@@ -32,10 +30,7 @@ import ExchangesField from "../../Select/Exchange";
 import NetworkField from "../../Select/Network";
 import AmountField from "../../Input/Amount";
 import { SwapType } from "../../../lib/layerSwapApiClient";
-import { AnimatePresence } from "framer-motion";
 import SlideOver from "../../SlideOver";
-import TokenService from "../../../lib/TokenService";
-import LayerswapApiClient from '../../../lib/layerSwapApiClient';
 import { useRouter } from "next/router";
 import { useTimerState } from "../../../context/timerContext";
 
@@ -48,12 +43,12 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapCreateStep>()
 
-    const [loading, setLoading] = useState(false)
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
     const [connectRhinoifiIsOpen, setConnectRhinofiIsOpen] = useState(false);
 
     let formValues = formikRef.current?.values;
 
+    const [loading, setLoading] = useState(false)
     const settings = useSettingsState();
     const { discovery: { resource_storage_url } } = settings.data || {}
     const query = useQueryState();
@@ -130,7 +125,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
                 if (!isRegistered) {
                     setConnectImmutableIsOpen(true)
-                    setLoading(false)
                     return
                 }
             } else if (values.network.baseObject.internal_name == KnownInternalNames.Networks.RhinoFiMainnet) {
@@ -138,7 +132,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 const isRegistered = await client.data?.isRegisteredOnDeversifi
                 if (!isRegistered) {
                     setConnectRhinofiIsOpen(true);
-                    setLoading(false)
                     return
                 }
             }
@@ -147,7 +140,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         catch (e) {
             toast.error(e.message)
         }
-        finally {
+        finally{
             setLoading(false)
         }
     }, [updateSwapFormData])
@@ -192,7 +185,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            {({ values, errors, isValid, dirty }) => (
+            {({ values, errors, isValid, dirty, isSubmitting }) => (
                 <Form className="h-full">
                     <ConnectedFocusError />
                     <div className="px-6 md:px-8 h-full flex flex-col justify-between">
