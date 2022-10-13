@@ -15,14 +15,14 @@ import NetworkSettings from '../lib/NetworkSettings'
 export default function GlobalTable(props) {
     return (
         <Layout>
-            <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+            <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col container mx-auto sm:px-6 lg:px-8 max-w-md md:max-w-3xl">
                 <Head>
                     <title>Global Table</title>
                 </Head>
                 <main>
                     <div className="flex-col justify-center py-4 ">
                         <div>
-                            <div className="flex flex-col max-w-6xl">
+                            <div className="flex flex-col max-w-sm md:max-w-6xl">
                                 <div className="overflow-x-auto ">
                                     <div className="inline-block min-w-full py-2 align-middle">
                                         <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
