@@ -47,7 +47,10 @@ export function SwapDataProvider({ children }) {
         setAddressConfirmed(false)
     }, [swapFormData?.destination_address, swapFormData?.exchange])
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 68a2d09 (Fixed by replacing setCodeRequested froim reset to effect)
     useEffect(() => {
         setCodeRequested(false)
     }, [swapFormData?.exchange])
