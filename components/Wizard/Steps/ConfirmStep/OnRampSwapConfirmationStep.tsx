@@ -21,37 +21,32 @@ import SwapDetails from '../../../swapDetailsComponent';
 import TokenService from '../../../../lib/TokenService';
 import LayerSwapApiClient, { SwapItem } from '../../../../lib/layerSwapApiClient';
 import { SwapFormValues } from '../../../DTOs/SwapFormValues';
+import { useTimerState } from '../../../../context/timerContext';
 
-
+const TIMER_SECONDS = 120
 
 const OnRampSwapConfirmationStep: FC = () => {
-    const { swapFormData, swap, codeRequested } = useSwapDataState()
+    const [loading, setLoading] = useState(false)
+    const { swapFormData, swap, codeRequested, addressConfirmed } = useSwapDataState()
     const { exchange, amount, currency, destination_address, network } = swapFormData || {}
     const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
     const currentValues = formikRef?.current?.values;
-    const initialValues: SwapConfirmationFormValues = { TwoFACode: '', RightWallet: false, TwoFARequired: false }
-    const nameOfTwoFARequired = nameOf(currentValues, (r) => r.TwoFARequired);
-    const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
-    const { currentStepName } = useFormWizardState<SwapCreateStep>()
 
-    const { updateSwapFormData, createAndProcessSwap, setCodeRequested, cancelSwap } = useSwapDataUpdate()
+    const initialValues: SwapConfirmationFormValues = { RightWallet: addressConfirmed }
+    const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
+
+    const { updateSwapFormData, createAndProcessSwap, setCodeRequested, cancelSwap, setAddressConfirmed } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [cancelSwapModalOpen, setCancelSwapModalOpen] = useState(false)
     const [exchangePendingSwap, setExchangePendingSwap] = useState<SwapItem>()
 
-    const [addressInputValue, setAddressInputValue] = useState("")
+    const [addressInputValue, setAddressInputValue] = useState(destination_address)
     const [addressInputError, setAddressInputError] = useState("")
 
+    const { start: startTimer } = useTimerState()
+
     const router = useRouter();
-
-    useEffect(() => {
-        formikRef?.current?.resetForm()
-    }, [destination_address, exchange])
-
-    useEffect(() => {
-        setAddressInputValue(destination_address)
-    }, [destination_address])
 
     const handleStartEditingAddress = () => setEditingAddress(true);
 
@@ -60,12 +55,12 @@ const OnRampSwapConfirmationStep: FC = () => {
         setAddressInputValue(e?.target?.value)
         if (!isValidAddress(e?.target?.value, network.baseObject))
             setAddressInputError(`Enter a valid ${network.name} address`)
-
     }, [network])
 
     const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
     const transferAmount = `${amount} ${currency?.name}`
-    const handleSubmit = useCallback(async (values: SwapConfirmationFormValues) => {
+    const handleSubmit = useCallback(async (e: any) => {
+        setLoading(true)
         if (codeRequested)
             return goToStep(SwapCreateStep.TwoFactor)
 
@@ -80,15 +75,15 @@ const OnRampSwapConfirmationStep: FC = () => {
                 toast.error(error.message)
                 return
             }
-
+            //TODO create reusable error handler
             if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
                 goToStep(SwapCreateStep.OAuth)
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
+                startTimer(TIMER_SECONDS)
                 setCodeRequested(true)
                 goToStep(SwapCreateStep.TwoFactor)
-                formikRef.current.setFieldValue(nameOfTwoFARequired, true)
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 toast.error(`${exchange.name} error: You don't have that much.`)
@@ -109,7 +104,10 @@ const OnRampSwapConfirmationStep: FC = () => {
                 toast.error(data.message)
             }
         }
-    }, [exchange, swap, currentValues?.TwoFACode, transferAmount])
+        finally {
+            setLoading(false)
+        }
+    }, [exchange, swap, transferAmount])
 
     const handleCancelSwap = useCallback(async () => {
         try {
@@ -154,49 +152,35 @@ const OnRampSwapConfirmationStep: FC = () => {
             return;
         }
         updateSwapFormData({ ...swapFormData, destination_address: addressInputValue })
-        // formikRef.current.setFieldValue("destination_address", addressInputValue)
         setEditingAddress(false)
     }, [addressInputValue, network, swapFormData])
-
+    const handleToggleChange = (value: boolean) => {
+        console.log("togglechanged")
+        setAddressConfirmed(value)
+    }
     return (
         <>
-            <Formik
-                initialValues={initialValues}
-                onSubmit={handleSubmit}
-                innerRef={formikRef}
-                validateOnMount={true}
-                validate={(values: SwapConfirmationFormValues) => {
-                    const errors: FormikErrors<SwapConfirmationFormValues> = {};
-                    if (!values.RightWallet) {
-                        errors.RightWallet = 'Confirm your wallet';
-                    }
-                    return errors;
-                }}
-            >
-                {({ handleChange, isValid, dirty, isSubmitting, values }) => (
-                    <div className='px-6 md:px-8 h-full flex flex-col justify-between'>
-                        <SwapConfirmMainData>
-                            <AddressDetails canEditAddress={!isSubmitting} onClickEditAddress={handleStartEditingAddress} />
-                        </SwapConfirmMainData>
-                        <Form className="text-white text-sm">
-                            <div className="mx-auto w-full rounded-lg font-normal">
-                                <div className='flex justify-between mb-4 md:mb-8'>
-                                    <div className='flex items-center text-xs md:text-sm font-medium'>
-                                        <ExclamationIcon className='h-6 w-6 mr-2' />
-                                        I am the owner of this address
-                                    </div>
-                                    <div className='flex items-center space-x-4'>
-                                        <ToggleButton name={nameOfRightWallet} />
-                                    </div>
-                                </div>
+            <div className='px-6 md:px-8 h-full flex flex-col justify-between'>
+                <SwapConfirmMainData>
+                    <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
+                </SwapConfirmMainData>
+                <div className="text-white text-sm">
+                    <div className="mx-auto w-full rounded-lg font-normal">
+                        <div className='flex justify-between mb-4 md:mb-8'>
+                            <div className='flex items-center text-xs md:text-sm font-medium'>
+                                <ExclamationIcon className='h-6 w-6 mr-2' />
+                                I am the owner of this address
                             </div>
-                            <SubmitButton type='submit' isDisabled={!isValid} isSubmitting={isSubmitting} >
-                                Confirm
-                            </SubmitButton>
-                        </Form>
+                            <div className='flex items-center space-x-4'>
+                                <ToggleButton name={nameOfRightWallet} onChange={handleToggleChange} value={addressConfirmed} />
+                            </div>
+                        </div>
                     </div>
-                )}
-            </Formik>
+                    <SubmitButton type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
+                        Confirm
+                    </SubmitButton>
+                </div>
+            </div>
             <Modal
                 isOpen={editingAddress}
                 onDismiss={handleClose}

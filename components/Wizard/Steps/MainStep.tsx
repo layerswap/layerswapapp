@@ -37,6 +37,7 @@ import SlideOver from "../../SlideOver";
 import TokenService from "../../../lib/TokenService";
 import LayerswapApiClient from '../../../lib/layerSwapApiClient';
 import { useRouter } from "next/router";
+import { useTimerState } from "../../../context/timerContext";
 
 type Props = {
     OnSumbit: (values: SwapFormValues) => Promise<void>
@@ -169,6 +170,11 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const networkRef: any = useRef();
     const addressRef: any = useRef();
     const amountRef: any = useRef();
+    const { secondsRemaining, start } = useTimerState()
+
+    const handleStartTimer = useCallback(() => {
+        start(60)
+    }, [])
 
     const partnerImage = partner?.logo ? `${resource_storage_url}${partner?.logo}` : undefined
     return <>
@@ -236,7 +242,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                             </div>
                         </div>
                         <div className="mt-6">
-                            <SwapButton type='submit' isDisabled={!isValid || !dirty} isSubmitting={loading}>
+                            <SwapButton type='submit' isDisabled={!isValid} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors, values.swapType)}
                             </SwapButton>
                         </div>

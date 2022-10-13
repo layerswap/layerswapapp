@@ -1,5 +1,6 @@
 import { FC, useCallback } from "react";
 import { useFormWizardaUpdate } from "../../context/formWizardProvider";
+import { TimerProvider } from "../../context/timerContext";
 import useCreateSwap from "../../hooks/useCreateSwap";
 import { SwapCreateStep } from "../../Models/Wizard";
 import AccountConnectStep from "./Steps/AccountConnectStep";
@@ -17,37 +18,41 @@ const CreateSwap: FC = () => {
     const { MainForm, Email, Code } = useCreateSwap()
     const { goToStep } = useFormWizardaUpdate()
 
-    const GoToMainStep = useCallback(() => goToStep(SwapCreateStep.MainForm), [])
-    const GoToConfirmStep = useCallback(() => goToStep(SwapCreateStep.Confirm), [])
-    const GoToEmailStep = useCallback(() => goToStep(SwapCreateStep.Email), [])
+    const GoBackToMainStep = useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), [])
+    const GoBackToConfirmStep = useCallback(() => goToStep(SwapCreateStep.Confirm, "back"), [])
+    const GoBackToEmailStep = useCallback(() => goToStep(SwapCreateStep.Email, "back"), [])
 
     return (
-        <Wizard>
-            <WizardItem StepName={SwapCreateStep.MainForm}>
-                <MainStep OnSumbit={MainForm.onNext} />
-            </WizardItem>
-            <WizardItem StepName={SwapCreateStep.Email} GoBack={GoToMainStep} PositionPercent={20}>
-                <EmailStep OnNext={Email.onNext} />
-            </WizardItem>
-            <WizardItem StepName={SwapCreateStep.Code} GoBack={GoToEmailStep} PositionPercent={20}>
-                <CodeStep OnNext={Code.onNext} />
-            </WizardItem>
-            <WizardItem StepName={SwapCreateStep.OAuth} GoBack={GoToMainStep}>
-                <AccountConnectStep />
-            </WizardItem>
-            <WizardItem StepName={SwapCreateStep.OffRampOAuth} GoBack={GoToMainStep}>
-                <OfframpAccountConnectStep />
-            </WizardItem>
-            <WizardItem StepName={SwapCreateStep.ApiKey} GoBack={GoToMainStep}>
-                <APIKeyStep />
-            </WizardItem>
-            <WizardItem StepName={SwapCreateStep.Confirm} GoBack={GoToMainStep}>
-                <SwapConfirmationStep />
-            </WizardItem>
-            <WizardItem StepName={SwapCreateStep.TwoFactor} GoBack={GoToConfirmStep}>
-                <TwoFactorStep />
-            </WizardItem>
-        </Wizard>
+        <TimerProvider>
+            <Wizard>
+                <WizardItem StepName={SwapCreateStep.MainForm} key={SwapCreateStep.MainForm}>
+                    <MainStep OnSumbit={MainForm.onNext} />
+                </WizardItem>
+                <WizardItem StepName={SwapCreateStep.Email} GoBack={GoBackToMainStep} PositionPercent={20} key={SwapCreateStep.Email}>
+                    <EmailStep OnNext={Email.onNext} />
+                </WizardItem>
+
+                <WizardItem StepName={SwapCreateStep.Code} GoBack={GoBackToEmailStep} PositionPercent={20} key={SwapCreateStep.Code}>
+                    <CodeStep OnNext={Code.onNext} />
+                </WizardItem>
+
+                <WizardItem StepName={SwapCreateStep.OAuth} GoBack={GoBackToMainStep} key={SwapCreateStep.OAuth}>
+                    <AccountConnectStep />
+                </WizardItem>
+                <WizardItem StepName={SwapCreateStep.OffRampOAuth} GoBack={GoBackToMainStep} key={SwapCreateStep.OffRampOAuth}>
+                    <OfframpAccountConnectStep />
+                </WizardItem>
+                <WizardItem StepName={SwapCreateStep.ApiKey} GoBack={GoBackToMainStep} key={SwapCreateStep.ApiKey}>
+                    <APIKeyStep />
+                </WizardItem>
+                <WizardItem StepName={SwapCreateStep.Confirm} GoBack={GoBackToMainStep} key={SwapCreateStep.Confirm}>
+                    <SwapConfirmationStep />
+                </WizardItem>
+                <WizardItem StepName={SwapCreateStep.TwoFactor} GoBack={GoBackToConfirmStep} key={SwapCreateStep.TwoFactor}>
+                    <TwoFactorStep />
+                </WizardItem>
+            </Wizard>
+        </TimerProvider>
     )
 }
 

@@ -3,6 +3,7 @@ import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import LayerswapMenu from '../LayerswapMenu';
 import GoHomeButton from '../utils/GoHome';
+import { AnimatePresence, motion } from 'framer-motion';
 
 type Props = {
    children: JSX.Element[];
@@ -12,7 +13,7 @@ const Wizard: FC<Props> = ({ children }) => {
 
    const wrapper = useRef(null);
 
-   const { wrapperWidth, loading: loadingWizard, positionPercent } = useFormWizardState()
+   const { wrapperWidth, loading: loadingWizard, positionPercent, moving } = useFormWizardState()
    const { setWrapperWidth } = useFormWizardaUpdate()
    const loading = loadingWizard
 
@@ -29,7 +30,6 @@ const Wizard: FC<Props> = ({ children }) => {
    }, []);
 
    const width = positionPercent || 0
-
    return <>
       <div className={`pb-6 bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative ${loading ? 'animate-pulse' : ''}`}>
          <div className="relative">
@@ -44,9 +44,11 @@ const Wizard: FC<Props> = ({ children }) => {
          <div className="relative">
             <div className="flex items-start"
                ref={wrapper}>
-               <div className={`flex flex-nowrap min-h-480  ${loading ? 'invisible' : 'visible animate-fade-in-down'}`}>
-                  {children}
-               </div>
+               <AnimatePresence initial={false} custom={{ direction: moving === "forward" ? 1 : -1, width: wrapperWidth }}>
+                  <div className={`flex flex-nowrap min-h-480 `}>
+                     {children}
+                  </div>
+               </AnimatePresence>
             </div>
          </div>
       </div>

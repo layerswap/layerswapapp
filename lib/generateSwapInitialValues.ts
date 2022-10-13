@@ -15,6 +15,11 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     const { data: { exchanges, networks, discovery: { resource_storage_url } } } = settings || {}
     const destAddress = queryParamAddress || account
 
+    const { swapFormData } = useSwapDataState()
+
+    if (swapFormData)
+        return swapFormData
+        
     const networkIsAvailable = (n: CryptoNetwork) => {
         return swapType === SwapType.OffRamp ?
             n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (exchanges.some(e => {
@@ -30,7 +35,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
 
     const initialNetwork =
-        availableNetworks.find(x => (x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() || (chainId && NetworkSettings.KnownSettings[x.baseObject.internal_name]?.ChainId  === chainId)) && x.isAvailable)
+        availableNetworks.find(x => (x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() || (chainId && NetworkSettings.KnownSettings[x.baseObject.internal_name]?.ChainId === chainId)) && x.isAvailable)
 
     let initialAddress =
         destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
@@ -38,5 +43,5 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     let initialExchange =
         availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase() && (swapType === SwapType.OffRamp ? x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)));
 
-    return { amount: "", destination_address: swapType === SwapType.OnRamp && (initialAddress || account), swapType: swapType || SwapType.OnRamp, network: swapType === SwapType.OnRamp ? initialNetwork : null, exchange: initialExchange }
+    return { amount: "", destination_address: swapType === SwapType.OnRamp ? (initialAddress || account || "") : "", swapType: swapType || SwapType.OnRamp, network: swapType === SwapType.OnRamp ? initialNetwork : null, exchange: initialExchange }
 }

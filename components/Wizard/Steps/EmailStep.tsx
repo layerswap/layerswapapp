@@ -7,15 +7,9 @@ type Props = {
 }
 
 const EmailStep: FC<Props> = ({ OnNext }) => {
-    const { updateEmail } = useAuthDataUpdate()
-    const onSend = (email: string) => {
-        updateEmail(email)
-        OnNext();
-    }
-
     return (
         <>
-            <SendEmail onSend={onSend} />
+            <SendEmail onSend={OnNext} />
         </>
     )
 }
