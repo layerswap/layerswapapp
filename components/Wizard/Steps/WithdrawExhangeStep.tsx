@@ -1,7 +1,7 @@
 import { FC, useCallback, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
-import { useInterval } from '../../../hooks/useInterval';
+import { useComplexInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
@@ -30,7 +30,7 @@ const WithdrawExchangeStep: FC = () => {
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
 
-    useInterval(async () => {
+    useComplexInterval(async () => {
         if (currentStep !== SwapWithdrawalStep.Withdrawal)
             return true;
 

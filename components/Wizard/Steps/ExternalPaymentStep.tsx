@@ -1,7 +1,7 @@
 import { FC, useCallback } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
-import { useInterval } from '../../../hooks/useInterval';
+import { useComplexInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
@@ -22,7 +22,7 @@ const ExternalPaymentStep: FC = () => {
     const { data } = useSettingsState()
     const { exchanges } = data
 
-    useInterval(async () => {
+    useComplexInterval(async () => {
         if (currentStep !== SwapWithdrawalStep.ExternalPayment)
             return true
 

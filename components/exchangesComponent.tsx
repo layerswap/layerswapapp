@@ -66,7 +66,7 @@ function UserExchanges() {
     const getAndMapExchanges = useCallback(async (authData) => {
         try {
             const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
-            const userExchanges = await layerswapApiClient.GetExchangeAccounts(authData.access_token)
+            const userExchanges = await layerswapApiClient.GetExchangeAccounts()
 
             const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none').map(e => {
                 return {
@@ -112,7 +112,7 @@ function UserExchanges() {
                 return;
             }
             const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
-            await layerswapApiClient.DeleteExchange(exchange.internal_name, authData.access_token)
+            await layerswapApiClient.DeleteExchange(exchange.internal_name)
             await getAndMapExchanges(authData)
         }
         catch (e) {

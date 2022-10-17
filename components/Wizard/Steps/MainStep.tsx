@@ -54,6 +54,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
 
+    
     useEffect(() => {
         if (query.coinbase_redirect) {
             const temp_data = getTempData()
@@ -157,11 +158,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const networkRef: any = useRef();
     const addressRef: any = useRef();
     const amountRef: any = useRef();
-    const { secondsRemaining, start } = useTimerState()
-
-    const handleStartTimer = useCallback(() => {
-        start(60)
-    }, [])
 
     const partnerImage = partner?.logo ? `${resource_storage_url}${partner?.logo}` : undefined
     return <>
@@ -179,7 +175,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            {({ values, errors, isValid, dirty, isSubmitting }) => (
+            {({ values, errors, isValid }) => (
                 <Form className="h-full">
                     {values && <ConnectedFocusError />}
                     <div className="px-6 md:px-8 h-full flex flex-col justify-between">

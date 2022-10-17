@@ -47,7 +47,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                     return;
                 }
                 const layerswapApiClient = new LayerSwapApiClient(router)
-                const swap = await layerswapApiClient.getSwapDetails(id, authData.access_token)
+                const swap = await layerswapApiClient.getSwapDetails(id)
                 setSwap(swap)
             }
             catch (e) {

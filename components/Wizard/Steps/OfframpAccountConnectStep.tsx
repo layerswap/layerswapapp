@@ -12,17 +12,28 @@ import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import SwitchIcon from '../../icons/switchIcon';
-import { useDelayedInterval } from '../../../hooks/useInterval';
+import { useDelayedInterval, useInterval } from '../../../hooks/useInterval';
+import useSWR from 'swr';
+import LayerSwapApiClient, { UserExchangesResponse } from '../../../lib/layerSwapApiClient';
 
 const OfframpAccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
+    const { exchange } = swapFormData || {}
     const { o_auth_login_url } = swapFormData?.exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const { currentStepName } = useFormWizardState<SwapCreateStep>()
     const { getUserExchanges } = useUserExchangeDataUpdate()
-    const [addressSource, setAddressSource] = useState("")
+    const [authWindow, setAuthWindow] = useState<Window>()
+    const [salon, setSalon] = useState(false)
+
     const authWindowRef = useRef<Window | null>(null);
     const query = useQueryState()
+
+    const layerswapApiClient = new LayerSwapApiClient()
+    const exchange_accounts_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts`
+    const { data: exchanges } = useSWR<UserExchangesResponse>(salon ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
+
+
 
     const { startInterval } = useDelayedInterval(async () => {
         if (currentStepName !== SwapCreateStep.OffRampOAuth)
@@ -43,7 +54,7 @@ const OfframpAccountConnectStep: FC = () => {
         }
         if (!authWindowHref || authWindowHref?.indexOf(window.location.origin) === -1)
             return false
-        const exchanges = await (await getUserExchanges(access_token))?.data
+        const exchanges = await (await getUserExchanges())?.data
         const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange.baseObject?.id)
         if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
             await goToStep(SwapCreateStep.Confirm)
@@ -53,20 +64,49 @@ const OfframpAccountConnectStep: FC = () => {
         return false
     }, [currentStepName, authWindowRef], 2000)
 
+    const checkShouldStartPolling = useCallback(() => {
+        let authWindowHref = ""
+        try {
+            authWindowHref = authWindow?.location?.href
+        }
+        catch (e) {
+            //throws error when accessing href TODO research safe way
+        }
+        if (authWindowHref && authWindowHref?.indexOf(window.location.origin) !== -1) {
+            setSalon(true)
+            authWindow?.close()
+        }
+    }, [authWindow])
+
+    useInterval(
+        checkShouldStartPolling,
+        authWindow && !authWindow.closed ? 1000 : null,
+    )
+
+    useEffect(() => {
+        if (exchanges && salon) {
+            const exchangeIsEnabled = exchanges?.data?.some(e => e.exchange_id === exchange.baseObject?.id)
+            if (!exchange?.baseObject?.authorization_flow || exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
+                goToStep(SwapCreateStep.Confirm)
+                authWindowRef.current?.close()
+            }
+        }
+    }, [exchanges, salon])
+
     const handleConnect = useCallback(() => {
         try {
-            startInterval()
             const access_token = TokenService.getAuthData()?.access_token
             if (!access_token)
                 goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            authWindowRef.current = OpenLink({ link: o_auth_login_url + encoded, swap_data: swapFormData, query })
+            const authWindow = OpenLink({ link: o_auth_login_url + encoded, swap_data: swapFormData, query })
+            setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [o_auth_login_url, addressSource, query])
+    }, [o_auth_login_url, query])
 
     const exchange_name = swapFormData?.exchange?.name
 

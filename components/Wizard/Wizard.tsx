@@ -6,7 +6,7 @@ import GoHomeButton from '../utils/GoHome';
 import { AnimatePresence, motion } from 'framer-motion';
 
 type Props = {
-   children: JSX.Element[];
+   children: JSX.Element | JSX.Element[];
 }
 
 const Wizard: FC<Props> = ({ children }) => {

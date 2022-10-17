@@ -34,7 +34,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                 return;
             }
             const layerswapApiClient = new LayerswapApiClient(router)
-            const response = await layerswapApiClient.GetExchangeDepositAddress(exchange?.baseObject?.internal_name, currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
+            const response = await layerswapApiClient.GetExchangeDepositAddress(exchange?.baseObject?.internal_name, currency?.baseObject?.asset?.toUpperCase())
             updateSwapFormData((old) => ({ ...old, destination_address: response.data }))
         })()
     }, [currentStepName])

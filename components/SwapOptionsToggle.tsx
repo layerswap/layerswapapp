@@ -1,7 +1,7 @@
 import { Web3Provider } from "@ethersproject/providers";
 import { useWeb3React } from "@web3-react/core";
 import { Field, useFormikContext } from "formik";
-import { FC, forwardRef, useCallback, useState } from "react";
+import { forwardRef, useCallback } from "react";
 import { useQueryState } from "../context/query";
 import { useSettingsState } from "../context/settings";
 import { generateSwapInitialValues } from "../lib/generateSwapInitialValues";
@@ -17,6 +17,7 @@ const swapOptions: NavRadioOption[] = [
 const SwapOptionsToggle = forwardRef((props, ref: any) => {
     const {
         values: { swapType },
+        setFieldValue,
         resetForm,
         validateForm
     } = useFormikContext<SwapFormValues>();
@@ -26,6 +27,8 @@ const SwapOptionsToggle = forwardRef((props, ref: any) => {
     const query = useQueryState()
     const name = 'swapType'
 
+    const initialValues = generateSwapInitialValues(swapType, settings, query, account, chainId)
+    
     const handleFieldChange = useCallback((value: SwapType) => {
         const initialValues = generateSwapInitialValues(value, settings, query, account, chainId)
         resetForm({ values: initialValues })

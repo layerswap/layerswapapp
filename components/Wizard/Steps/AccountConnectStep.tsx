@@ -1,11 +1,13 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
+import useSWR, { useSWRConfig } from 'swr';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
 import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useDelayedInterval } from '../../../hooks/useInterval';
+import { useDelayedInterval, useComplexInterval, useInterval } from '../../../hooks/useInterval';
 import { parseJwt } from '../../../lib/jwtParser';
+import LayerSwapApiClient, { UserExchangesResponse } from '../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../lib/openLink';
 import TokenService from '../../../lib/TokenService';
 import { SwapCreateStep } from '../../../Models/Wizard';
@@ -17,52 +19,55 @@ const AccountConnectStep: FC = () => {
     const { exchange, amount, currency } = swapFormData || {}
     const { o_auth_authorization_url } = exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate()
-    const { currentStepName } = useFormWizardState()
-    const { getUserExchanges } = useUserExchangeDataUpdate()
-    const [addressSource, setAddressSource] = useState("")
+
     const [carouselFinished, setCarouselFinished] = useState(false)
-    const authWindowRef = useRef<Window | null>(null)
+    const [authWindow, setAuthWindow] = useState<Window>()
+    const [authorizedAmount, setAuthorizedAmount] = useState<number>()
+
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
 
     const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
+    const layerswapApiClient = new LayerSwapApiClient()
 
-    const { startInterval } = useDelayedInterval(async () => {
-        if (currentStepName !== SwapCreateStep.OAuth)
-            return true
+    const exchange_accounts_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts`
 
-        const { access_token } = TokenService.getAuthData() || {};
-        if (!access_token) {
-            await goToStep(SwapCreateStep.Email)
-            return true;
-        }
+    const { data: exchanges } = useSWR<UserExchangesResponse>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
 
+    const checkShouldStartPolling = useCallback(() => {
         let authWindowHref = ""
         try {
-            authWindowHref = authWindowRef.current?.location?.href
+            authWindowHref = authWindow?.location?.href
         }
         catch (e) {
             //throws error when accessing href TODO research safe way
         }
 
-        if (!authWindowHref || authWindowHref?.indexOf(window.location.origin) === -1)
-            return false
-
-        const exchanges = await (await getUserExchanges(access_token))?.data
-        const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === exchange?.baseObject.id)
-        if (!exchange?.baseObject?.authorization_flow || exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
+        if (authWindowHref && authWindowHref?.indexOf(window.location.origin) !== -1) {
             const authWindowURL = new URL(authWindowHref)
             const authorizedAmount = authWindowURL.searchParams.get("send_limit_amount")
-            if (Number(authorizedAmount) < minimalAuthorizeAmount)
-                toast.error("You did not authorize enough")
-            else
-                await goToStep(SwapCreateStep.Confirm)
-            authWindowRef.current?.close()
-            return true;
+            setAuthorizedAmount(Number(authorizedAmount))
+            authWindow?.close()
         }
-        return false
-    }, [currentStepName, authWindowRef, minimalAuthorizeAmount], 2000)
+    }, [authWindow])
 
+    useInterval(
+        checkShouldStartPolling,
+        authWindow && !authWindow.closed ? 1000 : null,
+    )
+
+    useEffect(() => {
+        if (exchanges && authorizedAmount) {
+            const exchangeIsEnabled = exchanges?.data?.some(e => e.exchange_id === exchange?.baseObject.id)
+            if (!exchange?.baseObject?.authorization_flow || exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
+                if (Number(authorizedAmount) < minimalAuthorizeAmount)
+                    toast.error("You did not authorize enough")
+                else {
+                    goToStep(SwapCreateStep.Confirm)
+                }
+            }
+        }
+    }, [exchanges, authorizedAmount, minimalAuthorizeAmount])
 
     const handleConnect = useCallback(() => {
         try {
@@ -70,18 +75,18 @@ const AccountConnectStep: FC = () => {
                 carouselRef?.current?.next()
                 return;
             }
-            startInterval()
             const access_token = TokenService.getAuthData()?.access_token
             if (!access_token)
                 goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            authWindowRef.current = OpenLink({ link: o_auth_authorization_url + encoded, swap_data: swapFormData, query })
+            const authWindow = OpenLink({ link: o_auth_authorization_url + encoded, swap_data: swapFormData, query })
+            setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [o_auth_authorization_url, carouselRef, carouselFinished, addressSource, query])
+    }, [o_auth_authorization_url, carouselRef, carouselFinished, query])
 
     const exchange_name = exchange?.name
     const onCarouselLast = (value) => {

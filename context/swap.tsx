@@ -47,10 +47,6 @@ export function SwapDataProvider({ children }) {
         setAddressConfirmed(false)
     }, [swapFormData?.destination_address, swapFormData?.exchange])
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 68a2d09 (Fixed by replacing setCodeRequested froim reset to effect)
     useEffect(() => {
         setCodeRequested(false)
     }, [swapFormData?.exchange])
@@ -77,14 +73,14 @@ export function SwapDataProvider({ children }) {
                 external_transaction_id: query.externalTransactionId
             }
 
-            const swap = await layerswapApiClient.createSwap(data, access_token)
+            const swap = await layerswapApiClient.createSwap(data)
 
             if (swap?.error) {
                 throw new Error(swap?.error?.message)
             }
 
             const swapId = swap.data.swap_id;
-            const swapDetails = await layerswapApiClient.getSwapDetails(swapId, access_token)
+            const swapDetails = await layerswapApiClient.getSwapDetails(swapId)
             setSwap(swapDetails)
             return swapDetails;
         }
@@ -102,11 +98,11 @@ export function SwapDataProvider({ children }) {
 
         const layerswapApiClient = new LayerSwapApiClient(router)
 
-        const pendingSwaps = await layerswapApiClient.getPendingSwaps(access_token)
+        const pendingSwaps = await layerswapApiClient.getPendingSwaps()
         const swapToCancel = pendingSwaps.data.find(s => exchange.baseObject.currencies.some(ec => ec.id === s.exchange_currency_id))
         if (!swapToCancel)
             throw new Error("Trying to cancel swap. Pending swap not found")
-        await layerswapApiClient.CancelSwap(swapToCancel.id, access_token)
+        await layerswapApiClient.CancelSwap(swapToCancel.id)
     }, [router, swapFormData])
 
     const processPayment = useCallback(async (swap: SwapItemResponse, twoFactorCode?: string) => {
@@ -114,10 +110,10 @@ export function SwapDataProvider({ children }) {
         if (!authData?.access_token)
             throw new Error("Not authenticated")
         const layerswapApiClient = new LayerSwapApiClient(router)
-        const prcoessPaymentReponse = await layerswapApiClient.ProcessPayment(swap.data.id, authData.access_token, twoFactorCode)
+        const prcoessPaymentReponse = await layerswapApiClient.ProcessPayment(swap.data.id, authData.access_token)
         if (prcoessPaymentReponse.error)
             throw new Error(prcoessPaymentReponse.error)
-        const swapDetails = await layerswapApiClient.getSwapDetails(swap.data.id, authData.access_token)
+        const swapDetails = await layerswapApiClient.getSwapDetails(swap.data.id)
         setSwap(swapDetails)
     }, [getAuthData])
 
@@ -126,7 +122,7 @@ export function SwapDataProvider({ children }) {
         if (!authData?.access_token)
             throw new Error("Not authenticated")
         const layerswapApiClient = new LayerSwapApiClient(router)
-        const swapDetails = await layerswapApiClient.getSwapDetails(id, authData?.access_token)
+        const swapDetails = await layerswapApiClient.getSwapDetails(id)
         setSwap(swapDetails)
         return swapDetails
     }, [])

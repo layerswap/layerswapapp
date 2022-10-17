@@ -14,60 +14,62 @@ export default class LayerSwapApiClient {
         this.authInterceptor = InitializeInstance(router, redirect);
     }
 
+    fetcher = url => this.authInterceptor.get(url).then(r => r.data)
+
     async fetchSettingsAsync(): Promise<LayerSwapSettings> {
         return await axios.get(LayerSwapApiClient.apiBaseEndpoint + '/api/settings').then(res => res.data);
     }
 
-    async createSwap(params: CreateSwapParams, token: string): Promise<CreateSwapResponse> {
+    async createSwap(params: CreateSwapParams): Promise<CreateSwapResponse> {
         const correlationId = uuidv4()
         return await this.authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/api/swaps',
             params,
-            { headers: { 'Access-Control-Allow-Origin': '*', 'X-LS-CORRELATION-ID': correlationId, Authorization: `Bearer ${token}` } })
+            { headers: { 'Access-Control-Allow-Origin': '*', 'X-LS-CORRELATION-ID': correlationId} })
             .then(res => res.data);
     }
-    async getSwaps(page: number, token: string): Promise<SwapListResponse> {
+    async getSwaps(page: number): Promise<SwapListResponse> {
         return await this.authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps?page=${page}`,
-            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            { headers: { 'Access-Control-Allow-Origin': '*'} })
             .then(res => res.data);
     }
-    async getPendingSwaps(token: string): Promise<SwapListResponse> {
+    async getPendingSwaps(): Promise<SwapListResponse> {
         return await this.authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps?status=1`,
-            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            { headers: { 'Access-Control-Allow-Origin': '*' } })
             .then(res => res.data);
     }
-    async CancelSwap(swapid: string, token: string): Promise<ConnectResponse> {
+    async CancelSwap(swapid: string): Promise<ConnectResponse> {
         return await this.authInterceptor.delete(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${swapid}`,
-            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            { headers: { 'Access-Control-Allow-Origin': '*' } })
             .then(res => res.data)
     }
-    async getSwapDetails(id: string, token: string): Promise<SwapItemResponse> {
+    async getSwapDetails(id: string): Promise<SwapItemResponse> {
         return await this.authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${id}`,
-            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            { headers: { 'Access-Control-Allow-Origin': '*' } })
             .then(res => res.data);
     }
-    async GetExchangeAccounts(token: string): Promise<UserExchangesResponse> {
+    async GetExchangeAccounts(): Promise<UserExchangesResponse> {
         return await this.authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + '/api/exchange_accounts')
             .then(res => res.data)
     }
-    async GetExchangeDepositAddress(exchange: string, currency: string, token: string): Promise<ExchangeDepositAddressReponse> {
+    async GetExchangeDepositAddress(exchange: string, currency: string): Promise<ExchangeDepositAddressReponse> {
         return await this.authInterceptor.get(LayerSwapApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}/deposit_address/${currency}`,
-            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            { headers: { 'Access-Control-Allow-Origin': '*'} })
             .then(res => res.data)
     }
-    async DeleteExchange(exchange: string, token: string): Promise<ConnectResponse> {
+    async DeleteExchange(exchange: string): Promise<ConnectResponse> {
         return await this.authInterceptor.delete(LayerSwapApiClient.apiBaseEndpoint + `/api/exchange_accounts/${exchange}`,
-            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            { headers: { 'Access-Control-Allow-Origin': '*' } })
             .then(res => res.data)
     }
-    async ConnectExchangeApiKeys(params: ConnectParams, token: string): Promise<ConnectResponse> {
+    async ConnectExchangeApiKeys(params: ConnectParams): Promise<ConnectResponse> {
         return await this.authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + '/api/exchange_accounts',
             params,
-            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            { headers: { 'Access-Control-Allow-Origin': '*' } })
             .then(res => res.data)
     }
-    async ProcessPayment(id: string, token: string, twoFactorCode?: string): Promise<PaymentProcessreponse> {
+    async ProcessPayment(id: string, twoFactorCode?: string): Promise<PaymentProcessreponse> {
         return await this.authInterceptor.post(LayerSwapApiClient.apiBaseEndpoint + `/api/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`,
-            { headers: { 'Access-Control-Allow-Origin': '*', Authorization: `Bearer ${token}` } })
+            { headers: { 'Access-Control-Allow-Origin': '*' } })
             .then(res => res.data)
     }
 }

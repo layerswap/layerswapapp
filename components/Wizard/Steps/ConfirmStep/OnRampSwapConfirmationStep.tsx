@@ -32,7 +32,6 @@ const OnRampSwapConfirmationStep: FC = () => {
     const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
     const currentValues = formikRef?.current?.values;
 
-    const initialValues: SwapConfirmationFormValues = { RightWallet: addressConfirmed }
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
     const { updateSwapFormData, createAndProcessSwap, setCodeRequested, cancelSwap, setAddressConfirmed } = useSwapDataUpdate()
@@ -135,7 +134,7 @@ const OnRampSwapConfirmationStep: FC = () => {
 
         const layerswapApiClient = new LayerSwapApiClient(router)
 
-        const pendingSwaps = await layerswapApiClient.getPendingSwaps(access_token)
+        const pendingSwaps = await layerswapApiClient.getPendingSwaps()
         return pendingSwaps.data.find(s => exchange.baseObject.currencies.some(ec => ec.id === s.exchange_currency_id))
     }
 

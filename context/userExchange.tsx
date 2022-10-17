@@ -6,7 +6,7 @@ const UserExchangeStateContext = React.createContext<any>(null);
 const UserExchangeDataUpdateContext = React.createContext<any>(null);
 
 type UpdateFns = {
-    getUserExchanges: (token: string) => Promise<UserExchangesResponse>
+    getUserExchanges: () => Promise<UserExchangesResponse>
 }
 
 export function UserExchangeProvider({ children }) {
@@ -16,8 +16,8 @@ export function UserExchangeProvider({ children }) {
     const layerswapApiClient = new LayerSwapApiClient(router)
 
     const updateFns: UpdateFns = {
-        getUserExchanges: async (token: string): Promise<UserExchangesResponse> => {
-            const res = await layerswapApiClient.GetExchangeAccounts(token)
+        getUserExchanges: async (): Promise<UserExchangesResponse> => {
+            const res = await layerswapApiClient.GetExchangeAccounts()
             setUserExchangeData(res)
             return res;
         }

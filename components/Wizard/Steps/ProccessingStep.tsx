@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { FC } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { useInterval } from '../../../hooks/useInterval';
+import { useComplexInterval } from '../../../hooks/useInterval';
 import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
@@ -19,7 +19,7 @@ const ProccessingStep: FC = () => {
     const { swapId } = router.query;
     const { getSwap } = useSwapDataUpdate()
 
-    useInterval(async () => {
+    useComplexInterval(async () => {
         if (currentStep !== SwapWithdrawalStep.Processing)
             return true;
 
