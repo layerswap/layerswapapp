@@ -15,11 +15,6 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     const { data: { exchanges, networks, discovery: { resource_storage_url } } } = settings || {}
     const destAddress = queryParamAddress || account
 
-    const { swapFormData } = useSwapDataState()
-
-    if (swapFormData)
-        return swapFormData
-        
     const networkIsAvailable = (n: CryptoNetwork) => {
         return swapType === SwapType.OffRamp ?
             n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (exchanges.some(e => {
