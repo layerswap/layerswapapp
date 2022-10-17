@@ -9,4 +9,5 @@ export class QueryParams {
     coinbase_redirect?: string = "";
     asset?: string = "";
     externalTransactionId?: string = ""
+    products?: string = ""
 }
