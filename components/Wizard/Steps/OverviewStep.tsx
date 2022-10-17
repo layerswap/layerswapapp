@@ -21,10 +21,6 @@ const OverviewStep: FC = () => {
     const { getSwap } = useSwapDataUpdate()
 
     useEffect(() => {
-        console.log("currentStep",currentStep)
-    },[currentStep])
-
-    useEffect(() => {
         (async () => {
             try {
                 if (currentStep !== SwapWithdrawalStep.Overview)
@@ -55,7 +51,6 @@ const OverviewStep: FC = () => {
                         goToStep(SwapWithdrawalStep.Processing)
                 }
 
-                
                 setTimeout(() => {
                     setLoadingWizard(false)
                 }, 500);
@@ -73,7 +68,7 @@ const OverviewStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
+            <div className="w-full py-12 grid grid-flow-row">
             </div>
         </>
     )

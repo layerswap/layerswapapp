@@ -35,7 +35,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
                 })
                 return true;
             }
-            const layerswapApiClient = new LayerswapApiClient()
+            const layerswapApiClient = new LayerswapApiClient(router)
             const userExchanges = await layerswapApiClient.GetExchangeAccounts(access_token)
 
             if (userExchanges.data.some(e => e.exchange_id === exchange?.id)) {

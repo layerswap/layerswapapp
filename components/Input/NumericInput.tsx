@@ -71,8 +71,14 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
 function limitDecimalPlaces(e, count) {
     if (e.target.value.indexOf('.') == -1) { return; }
     if ((e.target.value.length - e.target.value.indexOf('.')) > count) {
-        e.target.value = parseFloat(e.target.value).toFixed(count);
+        e.target.value = ParseFloat(e.target.value, count);
     }
+}
+
+function ParseFloat(str, val) {
+    str = str.toString();
+    str = str.slice(0, (str.indexOf(".")) + val + 1);
+    return Number(str);
 }
 
 function replaceComma(e) {

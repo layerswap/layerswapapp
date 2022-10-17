@@ -18,7 +18,7 @@ import GoHomeButton from "./utils/GoHome"
 import StatusIcon from "./StatusIcons"
 import Modal from "./modalComponent"
 import HoverTooltip from "./Tooltips/HoverTooltip"
-import { AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast"
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -33,6 +33,49 @@ function TransactionsHistory() {
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const { email } = useAuthState()
 
+  const checkAuth = () => {
+    try {
+      const authData = TokenService.getAuthData();
+      if (!authData) {
+        router.push({
+          pathname: '/auth',
+          query: { redirect: '/transactions' }
+        })
+        return;
+      }
+    }
+    catch (e) {
+      toast(e.message)
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener(
+      'storageChange',
+      checkAuth,
+      false
+    )
+    return () => document.removeEventListener('storageChange', () => { })
+  }, [])
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const authData = TokenService.getAuthData();
+        if (!authData) {
+          router.push({
+            pathname: '/auth',
+            query: { redirect: '/transactions' }
+          })
+          return;
+        }
+      }
+      catch (e) {
+        toast(e.message)
+      }
+    })()
+  }, [swaps])
+
   useEffect(() => {
     (async () => {
       setIsLastPage(false)
@@ -42,11 +85,11 @@ function TransactionsHistory() {
         if (!authData) {
           router.push({
             pathname: '/auth',
-            query: { ...(router.query), redirect: '/transactions' }
+            query: { redirect: '/transactions' }
           })
           return;
         }
-        const layerswapApiClient = new LayerSwapApiClient()
+        const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
         const swaps = await layerswapApiClient.getSwaps(1, authData.access_token)
         setSwaps(swaps)
         setPage(1)
@@ -54,7 +97,7 @@ function TransactionsHistory() {
           setIsLastPage(true)
       }
       catch (e) {
-        setError(e.message)
+        toast(e.message)
       }
       finally {
         setLoading(false)
@@ -73,7 +116,7 @@ function TransactionsHistory() {
         router.push('/auth')
         return;
       }
-      const layerswapApiClient = new LayerSwapApiClient()
+      const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
       const response = await layerswapApiClient.getSwaps(nextPage, authData.access_token)
 
       setSwaps(old => ({ ...response, data: [...(old?.data ? old?.data : []), ...(response.data ? response.data : [])] }))
@@ -82,7 +125,7 @@ function TransactionsHistory() {
         setIsLastPage(true)
     }
     catch (e) {
-      setError(e.message)
+      toast(e.message)
     }
     finally {
       setLoading(false)
@@ -272,14 +315,14 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'px-3 py-3.5 text-sm text-white table-cell'
+                                  'md:px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
                                 <div className="flex space-x-1">
                                   {
                                     swap?.status == 'completed' && swap.received_amount != swap.requested_amount ?
-                                      <div className="flex">
-                                        {swap.received_amount} /
+                                      <div className="flex items-center">
+                                        {swap.received_amount}/
                                         <HoverTooltip text='Requested Amount' moreClassNames="w-32 text-center">
                                           <span className="underline decoration-dotted hover:no-underline">
                                             {swap.requested_amount}
@@ -367,7 +410,7 @@ function TransactionsHistory() {
                       </button>
                     }
                   </div>
-                  <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} className='max-w-md'>
+                  <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} modalSize='medium'>
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {

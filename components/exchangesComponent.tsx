@@ -18,7 +18,6 @@ import HoverTooltip from "./Tooltips/HoverTooltip";
 import { ExchangesComponentSceleton } from "./Sceletons";
 import GoHomeButton from "./utils/GoHome";
 import Modal from "./modalComponent";
-import { AnimatePresence } from "framer-motion";
 
 interface UserExchange extends Exchange {
     note?: string,
@@ -65,18 +64,24 @@ function UserExchanges() {
     }, [router.query])
 
     const getAndMapExchanges = useCallback(async (authData) => {
-        const layerswapApiClient = new LayerswapApiClient()
-        const userExchanges = await layerswapApiClient.GetExchangeAccounts(authData.access_token)
+        try {
+            const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
+            const userExchanges = await layerswapApiClient.GetExchangeAccounts(authData.access_token)
 
-        const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none').map(e => {
-            return {
-                ...e,
-                is_connected: userExchanges.data?.some(ue => ue.exchange_id === e.id),
-                note: userExchanges.data?.find(ue => ue.exchange_id === e.id)?.note
-            }
-        })
-        mappedExchanges.sort((a, b) => (+a.order) - (+b.order))
-        setUserExchanges(mappedExchanges)
+            const mappedExchanges = data.exchanges.filter(x => x.authorization_flow != 'none').map(e => {
+                return {
+                    ...e,
+                    is_connected: userExchanges.data?.some(ue => ue.exchange_id === e.id),
+                    note: userExchanges.data?.find(ue => ue.exchange_id === e.id)?.note
+                }
+            })
+            mappedExchanges.sort((a, b) => (+a.order) - (+b.order))
+            setUserExchanges(mappedExchanges)
+        }
+        catch (e) {
+            toast.error(e.message)
+        }
+
     }, [data.exchanges])
 
     const filteredItems =
@@ -106,7 +111,7 @@ function UserExchanges() {
                 })
                 return;
             }
-            const layerswapApiClient = new LayerswapApiClient()
+            const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
             await layerswapApiClient.DeleteExchange(exchange.internal_name, authData.access_token)
             await getAndMapExchanges(authData)
         }
@@ -258,7 +263,7 @@ function UserExchanges() {
             <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`} >
                 <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' />
             </Modal>
-            <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} className='max-w-xs'>
+            <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} modalSize='small'>
                 <div className="flex justify-items-center space-x-3 max-w-xs">
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" >Yes</SubmitButton>
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small'>No</SubmitButton>

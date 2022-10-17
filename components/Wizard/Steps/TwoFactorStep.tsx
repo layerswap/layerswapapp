@@ -10,6 +10,11 @@ import NumericInput from '../../Input/NumericInput';
 import SubmitButton from '../../buttons/submitButton';
 import { ApiError, KnownwErrorCode } from '../../../Models/ApiError';
 import Timer from '../../TimerComponent';
+import { useTimerState } from '../../../context/timerContext';
+import SpinIcon from '../../icons/spinIcon';
+
+
+const TIMER_SECONDS = 120
 
 interface CodeFormValues {
     Code: string
@@ -19,10 +24,12 @@ interface CodeFormValues {
 const TwoFactorStep: FC = () => {
     const initialValues: CodeFormValues = { Code: '' }
     const { swapFormData, swap, codeRequested } = useSwapDataState()
-    const { createAndProcessSwap } = useSwapDataUpdate()
+    const { createAndProcessSwap, processPayment } = useSwapDataUpdate()
     const router = useRouter();
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
-    const [resendTimerIsStarted, setResendTimerIsStarted] = useState(false)
+    const [loading, setLoading] = useState(false)
+
+    const { start: startTimer } = useTimerState()
 
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
     const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.usd_price * Number(swapFormData?.amount) + 5)
@@ -30,7 +37,6 @@ const TwoFactorStep: FC = () => {
     const formikRef = useRef<FormikProps<CodeFormValues>>(null);
 
     const handleSubmit = useCallback(async (values: CodeFormValues) => {
-        setResendTimerIsStarted(true)
         try {
             const swapId = await createAndProcessSwap(values.Code);
             router.push(`/${swapId}`)
@@ -42,17 +48,16 @@ const TwoFactorStep: FC = () => {
                 toast.error(error.message)
                 return
             }
-
+            //TODO create reusable error handler
             if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
                 goToStep(SwapCreateStep.OAuth)
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
-            else if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
-                goToStep(SwapCreateStep.TwoFactor)
-                toast.error(`Invalid 2FA code`)
-            }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 toast.error(`${swapFormData?.exchange?.name} error: You don't have that much.`)
+            }
+            else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
+                goToStep(SwapCreateStep.OAuth)
             }
             else {
                 toast.error(data.message)
@@ -60,22 +65,49 @@ const TwoFactorStep: FC = () => {
         }
     }, [swapFormData, swap, transferAmount])
 
-    const handleResendTwoFACode = () => {
-        setResendTimerIsStarted(true)
-        formikRef.current.setFieldValue("Code", "");
-    }
+    const handleResendTwoFACode = useCallback(async () => {
+        setLoading(true)
+        try {
+            formikRef.current.setFieldValue("Code", "");
+            await processPayment(swap)
+        } catch (error) {
+            const data: ApiError = error?.response?.data?.error
 
-    useEffect(() => {
-        if (codeRequested) {
-            setResendTimerIsStarted(true)
+            if (!data) {
+                toast.error(error.message)
+                return
+            }
+            if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
+                startTimer(TIMER_SECONDS)
+                return
+            }
+            //TODO create reusable error handler
+            if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
+                goToStep(SwapCreateStep.OAuth)
+                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
+            }
+            else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
+                toast.error(`${swapFormData?.exchange?.name} error: You don't have that much.`)
+            }
+            else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
+                goToStep(SwapCreateStep.OAuth)
+            }
+            else {
+                toast.error(data.message)
+            }
         }
-    }, [codeRequested])
+        finally{
+            setLoading(false)
+        }
+    }, [swap])
+
 
     return (
         <>
             <Formik
                 initialValues={initialValues}
                 validateOnMount={true}
+                innerRef={formikRef}
                 validate={(values: CodeFormValues) => {
                     const errors: FormikErrors<CodeFormValues> = {};
                     if (!/^[0-9]*$/.test(values.Code)) {
@@ -114,7 +146,7 @@ const TwoFactorStep: FC = () => {
                                 />
                             </div>
                             <span className="flex text-sm leading-6 items-center mt-1.5">
-                                <Timer setIsStarted={setResendTimerIsStarted} isStarted={resendTimerIsStarted} seconds={120}
+                                <Timer seconds={120}
                                     waitingComponent={(remainingTime) => (
                                         <span>
                                             Send again in
@@ -123,9 +155,10 @@ const TwoFactorStep: FC = () => {
                                             </span>
                                         </span>
                                     )}>
-                                    <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
+                                    {!loading ? <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
                                         Resend code
                                     </span>
+                                        : <SpinIcon className="animate-spin h-5 w-5" />}
                                 </Timer>
                             </span>
                             <div className='p-4 bg-darkblue-700 mt-5 rounded-lg border border-darkblue-500'>
@@ -143,7 +176,7 @@ const TwoFactorStep: FC = () => {
                                 <p className='mb-5 text-primary-text'>
 
                                 </p>
-                                <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
+                                <SubmitButton type="submit" isDisabled={!isValid || loading} isSubmitting={isSubmitting}>
                                     Confirm
                                 </SubmitButton>
                             </div>

@@ -43,11 +43,10 @@ const WithdrawNetworkStep: FC = () => {
             return;
         }
         const swap = await getSwap(swapId.toString())
-        //TODO implement better GetSwapStatusStep to not check swap status
-        if (swap.data.status === SwapStatus.Initiated)
-            return
+
         const swapStatusStep = GetSwapStatusStep(swap)
-        goToStep(swapStatusStep)
+        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.OffRampWithdrawal)
+            goToStep(swapStatusStep)
     }, [currentStep], 10000)
 
     const handleConfirm = useCallback(async () => {
@@ -133,7 +132,7 @@ const WithdrawNetworkStep: FC = () => {
                                 </p>
                             </BackgroundField>
                         </div>
-                        <BackgroundField isCopiable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Recipient'}>
+                        <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Recipient'}>
                             <p className='break-all'>
                                 {swap?.data?.additonal_data?.deposit_address}
                             </p>

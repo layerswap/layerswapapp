@@ -2,15 +2,37 @@ import { FC } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline';
 import { AnimatePresence, motion } from "framer-motion";
+import { classNames } from './utils/classNames';
 
-interface ModalParams {
+type modalSize = 'small' | 'medium' | 'large';
+
+class ModalParams {
     onDismiss: (isIntentional: boolean) => void;
     isOpen: boolean;
-    title: React.ReactNode;
-    className?: string
+    title?: React.ReactNode;
+    className?: string;
+    modalSize?: modalSize = "large"
 }
 
-const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, className }) => {
+function constructModalSize(size: modalSize) {
+
+    let defaultModalStyle = 'w-full'
+
+    switch (size) {
+        case 'large':
+            defaultModalStyle += " max-w-xl";
+            break;
+        case 'medium':
+            defaultModalStyle += " max-w-md";
+            break;
+        case 'small':
+            defaultModalStyle += " max-w-xs";
+            break;
+    }
+    return defaultModalStyle
+}
+
+const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, className, modalSize = 'large' }) => {
 
     return (
         <AnimatePresence>
@@ -29,8 +51,8 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, className 
                         transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
                     }}
                     className="fixed inset-0 flex min-h-full items-center justify-center bg-black/40">
-                    <Dialog.Panel className={`${className} w-full max-w-xl`}>
-                        <div className="space-y-4 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl">
+                    <Dialog.Panel className={constructModalSize(modalSize)}>
+                        <div className={`${className} space-y-4 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
                             <Dialog.Title as="div" >
                                 <div className='flex justify-between space-x-8'>
                                     <div className="text-lg text-left leading-6 font-medium text-primary-text" >

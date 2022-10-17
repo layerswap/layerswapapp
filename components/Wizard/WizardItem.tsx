@@ -1,5 +1,5 @@
+import { motion } from 'framer-motion';
 import { FC, useEffect } from 'react'
-import { Transition } from "@headlessui/react";
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import { Steps } from '../../Models/Wizard';
 
@@ -11,7 +11,7 @@ type Props = {
 }
 
 const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent }) => {
-    const { currentStepName, moving, wrapperWidth } = useFormWizardState()
+    const { currentStepName, wrapperWidth, moving } = useFormWizardState()
     const { setGoBack, setPositionPercent } = useFormWizardaUpdate()
 
     useEffect(() => {
@@ -21,32 +21,29 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent })
         }
     }, [currentStepName, GoBack, PositionPercent, StepName])
 
-    return <Transition
-        appear={false}
-        unmount={false}
-        show={StepName === currentStepName}
-        enter="transform transition ease-in-out duration-500"
-        enterFrom={
-            moving === "right"
-                ? `translate-x-96 opacity-0`
-                : `-translate-x-96 opacity-0`
-        }
-        enterTo={`translate-x-0 opacity-100`}
-        leave="transform transition ease-in-out duration-500"
-        leaveFrom={`translate-x-0 opacity-100`}
-        leaveTo={
-            moving === "right"
-                ? `-translate-x-96 opacity-0`
-                : `translate-x-96 opacity-0`
-        }
-        className={`${StepName === currentStepName ? 'w-full' : 'w-0'} overflow-visible`}
-        as="div"
-    >
-        <div
-            style={{ width: `${wrapperWidth}px`, minHeight: '504px', height: '100%' }}>
-            {children}
-        </div>
-    </Transition>
+    return currentStepName === StepName ?
+        <motion.div
+            key={currentStepName as string}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            custom={{ direction: moving === "back" ? -1 : 1, width: wrapperWidth }}>
+            <div style={{ width: `${wrapperWidth}px`, minHeight: '504px', height: '100%' }}>
+                {children}
+            </div >
+        </motion.div>
+        : null
 })
+
+let variants = {
+    enter: ({ direction, width }) => ({
+        x: direction * width,
+    }),
+    center: { x: 0 },
+    exit: ({ direction, width }) => ({
+        x: direction * -width,
+    }),
+};
 
 export default WizardItem;

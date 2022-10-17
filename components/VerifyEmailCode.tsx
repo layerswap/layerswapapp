@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/authContext';
+import { useTimerState } from '../context/timerContext';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
@@ -18,18 +19,19 @@ interface CodeFormValues {
     Code: string
 }
 
+const TIMER_SECONDS = 60
+
 const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     const initialValues: CodeFormValues = { Code: '' }
-
+    const { start: startTimer, started } = useTimerState()
     const { email, codeRequested } = useAuthState();
     const { updateAuthData } = useAuthDataUpdate()
-    const [resendTimerIsStarted, setResendTimerIsStarted] = useState(false)
 
     const handleResendCode = useCallback(async () => {
-        setResendTimerIsStarted(true)
         try {
             const apiClient = new LayerSwapAuthApiClient();
             const res = await apiClient.getCodeAsync(email)
+            startTimer(TIMER_SECONDS)
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
@@ -42,13 +44,6 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         }
     }, [email])
 
-    useEffect(() => {
-        if (codeRequested) {
-            setResendTimerIsStarted(true)
-        }
-
-    }, [codeRequested])
-
     return (
         <>
             <Formik
@@ -56,14 +51,12 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                 validateOnMount={true}
                 validate={(values: CodeFormValues) => {
                     const errors: FormikErrors<CodeFormValues> = {};
-
                     if (!/^[0-9]*$/.test(values.Code)) {
                         errors.Code = "Value should be numeric";
                     }
                     else if (values.Code.length != 6) {
                         errors.Code = `The length should be 6 instead of ${values.Code.length}`;
                     }
-
                     return errors;
                 }}
                 onSubmit={async (values: CodeFormValues) => {
@@ -105,7 +98,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                 />
                             </div>
                             <span className="flex text-sm leading-6 items-center mt-1.5">
-                                <Timer setIsStarted={setResendTimerIsStarted} isStarted={resendTimerIsStarted} seconds={60}
+                                <Timer isStarted={started} seconds={60}
                                     waitingComponent={(remainingTime) => (
                                         <span>
                                             Send again in

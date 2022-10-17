@@ -9,6 +9,7 @@ import shortenAddress from './utils/ShortenAddress';
 import CopyButton from './buttons/copyButton';
 import { SwapDetailsComponentSceleton } from './Sceletons';
 import StatusIcon from './StatusIcons';
+import { GetExchangeFee } from '../lib/fees';
 
 
 type Props = {
@@ -17,19 +18,19 @@ type Props = {
 
 const SwapDetails: FC<Props> = ({ id }) => {
     const { data } = useSettingsState()
-    const { exchanges, networks, discovery: { resource_storage_url } } = data
-
+    const { exchanges, networks, currencies, discovery: { resource_storage_url } } = data
     const [swap, setSwap] = useState<SwapItemResponse>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
 
-
-
     const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
+    const currency = currencies.find(x => x.id == swap?.data.exchange_currency_id)
     const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.data?.network_currency_id))
     const source = swap?.data?.type == SwapType.OnRamp ? exchange : network;
     const destination = swap?.data?.type == SwapType.OnRamp ? network : exchange;
     const currencyDetails = exchange?.currencies?.find(x => x.id == swap?.data?.exchange_currency_id)
+    let exchangeFee = GetExchangeFee(currency, exchange);
+
 
     useEffect(() => {
         (async () => {
@@ -45,7 +46,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                     })
                     return;
                 }
-                const layerswapApiClient = new LayerSwapApiClient()
+                const layerswapApiClient = new LayerSwapApiClient(router)
                 const swap = await layerswapApiClient.getSwapDetails(id, authData.access_token)
                 setSwap(swap)
             }
@@ -169,12 +170,12 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className='text-white font-normal'>{parseFloat(swap?.data?.fee?.toFixed(currencyDetails?.precision))} {currencyDetails?.asset}</span>
                         </div>
                         {
-                            swap?.data?.type === SwapType.OnRamp && swap?.data?.fee >= 0 &&
+                            swap?.data?.type === SwapType.OnRamp && exchangeFee != 0 &&
                             <>
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
                                     <span className="text-left">Exchange Fee </span>
-                                    <span className='text-white font-normal'>{parseFloat(swap?.data?.fee?.toFixed(currencyDetails?.precision))} {currencyDetails?.asset}</span>
+                                    <span className='text-white font-normal'>{parseFloat(exchangeFee.toLocaleString())} {currencyDetails?.asset}</span>
                                 </div>
                             </>
                         }
