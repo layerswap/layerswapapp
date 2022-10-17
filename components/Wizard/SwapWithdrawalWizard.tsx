@@ -17,14 +17,14 @@ import WizardItem from "./WizardItem";
 const SwapWithdrawal: FC = () => {
     const { Email, Code } = useSwapWithdrawal()
     const { goToStep } = useFormWizardaUpdate()
-    const GoToEmailStep = useCallback(() => goToStep(SwapWithdrawalStep.Email), [])
+    const GoBackToEmailStep = useCallback(() => goToStep(SwapWithdrawalStep.Email,"back"), [])
 
     return (
         <Wizard>
             <WizardItem StepName={SwapWithdrawalStep.Email}>
                 <EmailStep OnNext={Email.onNext} />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.Email} GoBack={GoToEmailStep}>
+            <WizardItem StepName={SwapWithdrawalStep.Email} GoBack={GoBackToEmailStep}>
                 <CodeStep OnNext={Code.onNext} />
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.Overview}>

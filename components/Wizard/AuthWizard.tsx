@@ -16,7 +16,7 @@ const AuthWizard: FC = () => {
     const CodeOnNext = useCallback(async () => {
         await router.push(redirect?.toString() || '/')
     }, [redirect]);
-    const GoToEmailStep = useCallback(() => goToStep(AuthStep.Email), [])
+    const GoBackToEmailStep = useCallback(() => goToStep(AuthStep.Email, "back"), [])
     const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
 
     return (
@@ -24,7 +24,7 @@ const AuthWizard: FC = () => {
             <WizardItem StepName={SwapCreateStep.Email}>
                 <EmailStep OnNext={GoToCodeStep} />
             </WizardItem>
-            <WizardItem StepName={SwapCreateStep.Code} GoBack={GoToEmailStep}>
+            <WizardItem StepName={SwapCreateStep.Code} GoBack={GoBackToEmailStep}>
                 <CodeStep OnNext={CodeOnNext} />
             </WizardItem>
         </Wizard>
