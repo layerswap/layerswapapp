@@ -14,35 +14,32 @@ import { SettingsProvider } from '../context/settings';
 import SwapWithdrawal from '../components/Wizard/SwapWithdrawalWizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../Models/Wizard';
-import { QueryProvider } from '../context/query';
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
   return (
-    <QueryProvider query>
-      <Layout>
-        <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
-          <div>
-            <div className="flex flex-col text-white animate-fade-in">
-              <AuthProvider>
-                <SettingsProvider data={settings}>
-                  <MenuProvider>
-                    <SwapDataProvider >
-                      <UserExchangeProvider>
-                        <FormWizardProvider initialStep={SwapWithdrawalStep.Overview} initialLoading={true}>
-                          <SwapWithdrawal />
-                        </FormWizardProvider>
-                      </UserExchangeProvider>
-                    </SwapDataProvider >
-                  </MenuProvider>
-                </SettingsProvider>
-              </AuthProvider>
-              <IntroCard />
-            </div >
+    <Layout>
+      <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
+        <div>
+          <div className="flex flex-col text-white animate-fade-in">
+            <AuthProvider>
+              <SettingsProvider data={settings}>
+                <MenuProvider>
+                  <SwapDataProvider >
+                    <UserExchangeProvider>
+                      <FormWizardProvider initialStep={SwapWithdrawalStep.Overview} initialLoading={true}>
+                        <SwapWithdrawal />
+                      </FormWizardProvider>
+                    </UserExchangeProvider>
+                  </SwapDataProvider >
+                </MenuProvider>
+              </SettingsProvider>
+            </AuthProvider>
+            <IntroCard />
           </div >
         </div >
-      </Layout>
-    </QueryProvider>
+      </div >
+    </Layout>
   )
 }
 
