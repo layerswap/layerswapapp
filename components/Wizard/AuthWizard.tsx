@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { FC, useCallback } from "react";
 import { useFormWizardaUpdate } from "../../context/formWizardProvider";
+import { TimerProvider } from "../../context/timerContext";
 import { AuthStep, SwapCreateStep } from "../../Models/Wizard";
 import CodeStep from "./Steps/CodeStep";
 import EmailStep from "./Steps/EmailStep";
@@ -20,14 +21,16 @@ const AuthWizard: FC = () => {
     const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
 
     return (
-        <Wizard>
-            <WizardItem StepName={SwapCreateStep.Email}>
-                <EmailStep OnNext={GoToCodeStep} />
-            </WizardItem>
-            <WizardItem StepName={SwapCreateStep.Code} GoBack={GoBackToEmailStep}>
-                <CodeStep OnNext={CodeOnNext} />
-            </WizardItem>
-        </Wizard>
+        <TimerProvider>
+            <Wizard>
+                <WizardItem StepName={SwapCreateStep.Email}>
+                    <EmailStep OnNext={GoToCodeStep} />
+                </WizardItem>
+                <WizardItem StepName={SwapCreateStep.Code} GoBack={GoBackToEmailStep}>
+                    <CodeStep OnNext={CodeOnNext} />
+                </WizardItem>
+            </Wizard>
+        </TimerProvider>
     )
 }
 
