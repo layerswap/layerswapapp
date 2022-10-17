@@ -18,6 +18,7 @@ import GoHomeButton from "./utils/GoHome"
 import StatusIcon from "./StatusIcons"
 import Modal from "./modalComponent"
 import HoverTooltip from "./Tooltips/HoverTooltip"
+import { AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast"
 
 function TransactionsHistory() {

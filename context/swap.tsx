@@ -48,7 +48,6 @@ export function SwapDataProvider({ children }) {
         setAddressConfirmed(false)
     }, [swapFormData?.destination_address, swapFormData?.exchange])
 
-
     useEffect(() => {
         setCodeRequested(false)
     }, [swapFormData?.exchange])
@@ -87,17 +86,7 @@ export function SwapDataProvider({ children }) {
             return swapDetails;
         }
         catch (e) {
-            const errorData: ApiError = e?.response?.data?.error
-            console.log(errorData)
-            if (errorData?.code !== KnownwErrorCode.EXISTING_SWAP)
-                throw e
-
-            const pendingSwaps = await layerswapApiClient.getPendingSwaps(access_token)
-            const swapToCancel = pendingSwaps.data.find(s => exchange.baseObject.currencies.some(ec => ec.id === s.exchange_currency_id))
-            if (!swapToCancel)
-                throw new Error("Trying to cancel swap. Pending swap not found")
-            await layerswapApiClient.CancelSwap(swapToCancel.id, access_token)
-            return await createSwap(formData, access_token)
+            throw e
         }
     }, [])
 

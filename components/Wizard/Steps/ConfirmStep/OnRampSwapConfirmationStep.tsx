@@ -16,6 +16,7 @@ import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormValues';
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import Modal from '../../../modalComponent';
+import { AnimatePresence } from 'framer-motion';
 import SwapDetails from '../../../swapDetailsComponent';
 import TokenService from '../../../../lib/TokenService';
 import LayerSwapApiClient, { SwapItem } from '../../../../lib/layerSwapApiClient';
