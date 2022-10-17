@@ -3,7 +3,6 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { CreateSwapParams, SwapItemResponse, SwapType } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate } from './authContext';
 import TokenService from '../lib/TokenService';
-import { ApiError, KnownwErrorCode } from '../Models/ApiError';
 import { SwapStatus } from '../Models/SwapStatus';
 import { useRouter } from 'next/router';
 import { useQueryState } from './query';
@@ -47,6 +46,11 @@ export function SwapDataProvider({ children }) {
     useEffect(() => {
         setAddressConfirmed(false)
     }, [swapFormData?.destination_address, swapFormData?.exchange])
+
+
+    useEffect(() => {
+        setCodeRequested(false)
+    }, [swapFormData?.exchange])
 
     const createSwap = useCallback(async (formData: SwapFormValues, query: QueryParams, settings: LayerSwapSettings, access_token: string) => {
         if (!formData)
@@ -143,7 +147,7 @@ export function SwapDataProvider({ children }) {
     }, [swap, swapFormData, query, settings])
 
     const updateFns: UpdateInterface = {
-        clearSwap: () => { setSwap(undefined), setCodeRequested(false) },
+        clearSwap: () => { setSwap(undefined) },
         updateSwapFormData: setSwapFormData,
         createAndProcessSwap: createAndProcessSwap,
         getSwap: getSwap,
