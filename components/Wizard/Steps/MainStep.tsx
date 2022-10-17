@@ -8,7 +8,7 @@ import { useSettingsState } from "../../../context/settings";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
-import { useSwapDataUpdate } from "../../../context/swap";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import React from "react";
 import { useFormWizardaUpdate } from "../../../context/formWizardProvider";
 import { SwapCreateStep } from "../../../Models/Wizard";
@@ -45,6 +45,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
     const [connectRhinoifiIsOpen, setConnectRhinofiIsOpen] = useState(false);
+    const { swapFormData } = useSwapDataState()
 
     let formValues = formikRef.current?.values;
 
@@ -54,7 +55,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const query = useQueryState();
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
-    const router = useRouter();
 
     useEffect(() => {
         if (query.coinbase_redirect) {
@@ -140,7 +140,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         catch (e) {
             toast.error(e.message)
         }
-        finally{
+        finally {
             setLoading(false)
         }
     }, [updateSwapFormData])
@@ -157,7 +157,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const lockAddress = !!account || query.lockAddress
 
-    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
+    const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
 
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
