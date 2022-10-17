@@ -79,7 +79,7 @@ const useCreateSwap = () => {
         Content: EmailStep,
         Name: SwapCreateStep.Email,
         positionPercent: 30,
-        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm), []),
+        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), []),
         onNext: useCallback(async () => goToStep(SwapCreateStep.Code), []),
     }
 
@@ -99,31 +99,31 @@ const useCreateSwap = () => {
                 return goToStep(ExchangeAuthorizationSteps[swapFormData?.exchange?.baseObject?.authorization_flow])
         }, [swapFormData]),
         positionPercent: 35,
-        onBack: useCallback(() => goToStep(SwapCreateStep.Email), []),
+        onBack: useCallback(() => goToStep(SwapCreateStep.Email, "back"), []),
     }
     const OAuth: WizardStep<SwapCreateStep> = {
         Content: AccountConnectStep,
         Name: SwapCreateStep.OAuth,
         positionPercent: 45,
-        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm), []),
+        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), []),
     }
     const ApiKey: WizardStep<SwapCreateStep> = {
         Content: APIKeyStep,
         Name: SwapCreateStep.ApiKey,
         positionPercent: 45,
-        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm), []),
+        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), []),
     }
     const OffRampOAuth: WizardStep<SwapCreateStep> = {
         Content: OfframpAccountConnectStep,
         Name: SwapCreateStep.OffRampOAuth,
         positionPercent: 45,
-        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm), []),
+        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), []),
     }
     const Confirm: WizardStep<SwapCreateStep> = {
         Content: SwapConfirmationStep,
         Name: SwapCreateStep.Confirm,
         positionPercent: 60,
-        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm), []),
+        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), []),
     }
 
     return { MainForm, Email, Code, OAuth, ApiKey, OffRampOAuth, Confirm }

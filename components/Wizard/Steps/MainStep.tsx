@@ -32,6 +32,7 @@ import AmountField from "../../Input/Amount";
 import { SwapType } from "../../../lib/layerSwapApiClient";
 import SlideOver from "../../SlideOver";
 import { useRouter } from "next/router";
+import { useTimerState } from "../../../context/timerContext";
 
 type Props = {
     OnSumbit: (values: SwapFormValues) => Promise<void>
@@ -47,6 +48,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     let formValues = formikRef.current?.values;
 
+    const [loading, setLoading] = useState(false)
     const settings = useSettingsState();
     const { discovery: { resource_storage_url } } = settings.data || {}
     const query = useQueryState();
@@ -114,6 +116,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
+            setLoading(true)
             clearSwap()
             updateSwapFormData(values)
 
@@ -137,6 +140,9 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         catch (e) {
             toast.error(e.message)
         }
+        finally{
+            setLoading(false)
+        }
     }, [updateSwapFormData])
 
     const destAddress: string = account || query.destAddress;
@@ -157,6 +163,11 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const networkRef: any = useRef();
     const addressRef: any = useRef();
     const amountRef: any = useRef();
+    const { secondsRemaining, start } = useTimerState()
+
+    const handleStartTimer = useCallback(() => {
+        start(60)
+    }, [])
 
     const partnerImage = partner?.logo ? `${resource_storage_url}${partner?.logo}` : undefined
     return <>
@@ -224,7 +235,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                             </div>
                         </div>
                         <div className="mt-6">
-                            <SwapButton type='submit' isDisabled={!isValid || !dirty} isSubmitting={isSubmitting}>
+                            <SwapButton type='submit' isDisabled={!isValid} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors, values.swapType)}
                             </SwapButton>
                         </div>

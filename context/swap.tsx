@@ -3,7 +3,6 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { CreateSwapParams, SwapItemResponse, SwapType } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate } from './authContext';
 import TokenService from '../lib/TokenService';
-import { ApiError, KnownwErrorCode } from '../Models/ApiError';
 import { SwapStatus } from '../Models/SwapStatus';
 import { useRouter } from 'next/router';
 import { useQueryState } from './query';
@@ -11,7 +10,7 @@ import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 
-const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined });
+const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
@@ -22,24 +21,35 @@ type UpdateInterface = {
     processPayment: (swap: SwapItemResponse, twoFactorCode?: string) => void,
     getSwap: (id: string) => Promise<SwapItemResponse>;
     setCodeRequested(codeSubmitted: boolean): void;
-    cancelSwap: () => Promise<void>
+    cancelSwap: () => Promise<void>;
+    setAddressConfirmed: (value: boolean) => void
 }
 
 type SwapData = {
     codeRequested: boolean,
     swapFormData?: SwapFormValues,
-    swap?: SwapItemResponse
+    swap?: SwapItemResponse,
+    addressConfirmed: boolean,
 }
 
 export function SwapDataProvider({ children }) {
     const [swapFormData, setSwapFormData] = React.useState<SwapFormValues>();
     const [swap, setSwap] = useState<SwapItemResponse>()
+    const [addressConfirmed, setAddressConfirmed] = React.useState<boolean>(false)
     const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
     const router = useRouter();
 
     const { getAuthData } = useAuthDataUpdate();
     const query = useQueryState();
     const settings = useSettingsState();
+
+    useEffect(() => {
+        setAddressConfirmed(false)
+    }, [swapFormData?.destination_address, swapFormData?.exchange])
+
+    useEffect(() => {
+        setCodeRequested(false)
+    }, [swapFormData?.exchange])
 
     const createSwap = useCallback(async (formData: SwapFormValues, query: QueryParams, settings: LayerSwapSettings, access_token: string) => {
         if (!formData)
@@ -136,17 +146,18 @@ export function SwapDataProvider({ children }) {
     }, [swap, swapFormData, query, settings])
 
     const updateFns: UpdateInterface = {
-        clearSwap: () => { setSwap(undefined), setCodeRequested(false) },
+        clearSwap: () => { setSwap(undefined) },
         updateSwapFormData: setSwapFormData,
         createAndProcessSwap: createAndProcessSwap,
         getSwap: getSwap,
         processPayment: processPayment,
         setCodeRequested: setCodeRequested,
-        cancelSwap: cancelSwap
+        cancelSwap: cancelSwap,
+        setAddressConfirmed: setAddressConfirmed
     };
 
     return (
-        <SwapDataStateContext.Provider value={{ swapFormData, swap, codeRequested }}>
+        <SwapDataStateContext.Provider value={{ swapFormData, swap, codeRequested, addressConfirmed }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>
