@@ -25,7 +25,7 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
     }
 
     return (
-        <RadioGroup value={items.find(i => i.value === value)} disabled={disabled} onChange={onchange} className="mt-2 w-full">
+        <RadioGroup value={items.find(i => i.value === value)} disabled={disabled} onChange={onchange} className="mt-2 w-full my-4">
             <RadioGroup.Label className="font-normal text-primary-text text-sm">{label}</RadioGroup.Label>
             <div className="grid grid-cols-2 gap-1 md:gap-2 p-0.5 md:p-2 rounded-md bg-darkblue-600 border-darkblue-100 border">
                 {items.map((option) => (

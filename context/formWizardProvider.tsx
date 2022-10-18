@@ -4,9 +4,11 @@ import { Steps } from '../Models/Wizard';
 const FormWizardStateContext = React.createContext(null);
 const FormWizardStateUpdateContext = React.createContext(null);
 
+type Direction = "back" | "forward"
+
 export type WizardProvider<T> = {
     currentStepName: T,
-    moving: string,
+    moving: Direction,
     loading: boolean,
     error: string,
     wrapperWidth: number,
@@ -15,7 +17,7 @@ export type WizardProvider<T> = {
 }
 
 type UpdateInterface<T> = {
-    goToStep: (step: T) => void,
+    goToStep: (step: T, move?: Direction) => void,
     setLoading: (value: boolean) => void,
     setWrapperWidth: (value: number) => void,
     setGoBack: (callback) => void,
@@ -31,7 +33,7 @@ type Props<T> = {
 export const FormWizardProvider = <T extends Steps>(props: Props<T>) => {
     const { initialStep, initialLoading, children } = props
     const [currentStepName, setCurrentStepName] = useState<T>(initialStep)
-    const [moving, setmoving] = useState("right")
+    const [moving, setmoving] = useState<Direction>("forward")
     const [loading, setLoading] = useState(initialLoading)
     const [wrapperWidth, setWrapperWidth] = useState(1);
     const [goBack, setGoBack] = useState<{ callback: () => void }>();
@@ -39,8 +41,8 @@ export const FormWizardProvider = <T extends Steps>(props: Props<T>) => {
 
     const handleSetCallback = useCallback((callback) => setGoBack({ callback }), [])
 
-    const goToStep = useCallback((step: T) => {
-        setmoving("right")
+    const goToStep = useCallback((step: T, move?: Direction) => {
+        setmoving(move || "forward")
         setCurrentStepName(step)
     }, [])
 

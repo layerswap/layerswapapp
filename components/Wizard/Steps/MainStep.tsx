@@ -5,9 +5,7 @@ import { Form, Formik, FormikErrors, FormikProps } from "formik";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
-import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { SelectMenuItem } from "../../Select/selectMenuItem";
 import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
@@ -32,11 +30,9 @@ import ExchangesField from "../../Select/Exchange";
 import NetworkField from "../../Select/Network";
 import AmountField from "../../Input/Amount";
 import { SwapType } from "../../../lib/layerSwapApiClient";
-import { AnimatePresence } from "framer-motion";
 import SlideOver from "../../SlideOver";
-import TokenService from "../../../lib/TokenService";
-import LayerswapApiClient from '../../../lib/layerSwapApiClient';
 import { useRouter } from "next/router";
+import { useTimerState } from "../../../context/timerContext";
 
 type Props = {
     OnSumbit: (values: SwapFormValues) => Promise<void>
@@ -47,18 +43,18 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapCreateStep>()
 
-    const [loading, setLoading] = useState(false)
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
     const [connectRhinoifiIsOpen, setConnectRhinofiIsOpen] = useState(false);
+    const { swapFormData } = useSwapDataState()
 
     let formValues = formikRef.current?.values;
 
+    const [loading, setLoading] = useState(false)
     const settings = useSettingsState();
     const { discovery: { resource_storage_url } } = settings.data || {}
     const query = useQueryState();
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
-    const router = useRouter();
 
     useEffect(() => {
         if (query.coinbase_redirect) {
@@ -129,7 +125,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
                 if (!isRegistered) {
                     setConnectImmutableIsOpen(true)
-                    setLoading(false)
                     return
                 }
             } else if (values.network.baseObject.internal_name == KnownInternalNames.Networks.RhinoFiMainnet) {
@@ -137,7 +132,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 const isRegistered = await client.data?.isRegisteredOnDeversifi
                 if (!isRegistered) {
                     setConnectRhinofiIsOpen(true);
-                    setLoading(false)
                     return
                 }
             }
@@ -163,12 +157,17 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const lockAddress = !!account || query.lockAddress
 
-    const initialValues: SwapFormValues = generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
+    const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
 
     const exchangeRef: any = useRef();
     const networkRef: any = useRef();
     const addressRef: any = useRef();
     const amountRef: any = useRef();
+    const { secondsRemaining, start } = useTimerState()
+
+    const handleStartTimer = useCallback(() => {
+        start(60)
+    }, [])
 
     const partnerImage = partner?.logo ? `${resource_storage_url}${partner?.logo}` : undefined
     return <>
@@ -186,14 +185,12 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            {({ values, errors, isValid, dirty }) => (
+            {({ values, errors, isValid, dirty, isSubmitting }) => (
                 <Form className="h-full">
                     <ConnectedFocusError />
                     <div className="px-6 md:px-8 h-full flex flex-col justify-between">
                         <div>
-                            <div className='my-4'>
-                                <SwapOptionsToggle />
-                            </div>
+                            <SwapOptionsToggle />
                             <div className={classNames(values.swapType === SwapType.OffRamp ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
                                 <div className="flex flex-col md:w-80 w-full">
                                     <ExchangesField ref={exchangeRef} />
@@ -236,7 +233,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                             </div>
                         </div>
                         <div className="mt-6">
-                            <SwapButton type='submit' isDisabled={!isValid || !dirty} isSubmitting={loading}>
+                            <SwapButton type='submit' isDisabled={!isValid} isSubmitting={loading}>
                                 {displayErrorsOrSubmit(errors, values.swapType)}
                             </SwapButton>
                         </div>

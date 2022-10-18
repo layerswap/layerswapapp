@@ -10,4 +10,5 @@ export class QueryParams {
     asset?: string = "";
     partnerName?: string = "";
     externalTransactionId?: string = ""
+    products?: string = ""
 }

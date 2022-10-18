@@ -25,7 +25,6 @@ const useSwapWithdrawal = () => {
         Content: CodeStep,
         Name: SwapWithdrawalStep.Code,
         onNext: async () => goToStep(SwapWithdrawalStep.Overview),
-        onBack: () => SwapWithdrawalStep.Email,
         positionPercent: 75
     }
     const Overview: WizardStep<SwapWithdrawalStep> = {

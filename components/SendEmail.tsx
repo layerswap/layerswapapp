@@ -2,7 +2,8 @@ import { UserIcon } from '@heroicons/react/solid';
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useAuthDataUpdate } from '../context/authContext';
+import { useAuthDataUpdate, useAuthState } from '../context/authContext';
+import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
@@ -15,24 +16,27 @@ type EmailFormValues = {
 type Props = {
     onSend: (email: string) => void
 }
+const TIMER_SECONDS = 60
 
 const SendEmail: FC<Props> = ({ onSend }) => {
-    const initialValues: EmailFormValues = { email: '' };
-    const [storedEmail, setStoredEmail] = useState<string>(undefined);
-    const { setCodeRequested } = useAuthDataUpdate();
+    const { email, codeRequested } = useAuthState()
+    const { setCodeRequested, updateEmail } = useAuthDataUpdate();
+    const initialValues: EmailFormValues = { email: email };
+    const { start: startTimer } = useTimerState()
 
     const sendEmail = useCallback(async (values: EmailFormValues) => {
         try {
             const inputEmail = values.email;
-            if (inputEmail != storedEmail) {
+            if (inputEmail != email || !codeRequested) {
                 const apiClient = new LayerSwapAuthApiClient();
                 const res = await apiClient.getCodeAsync(inputEmail)
                 if (res.error)
                     throw new Error(res.error)
                 TokenService.setCodeNextTime(res?.data?.next)
                 setCodeRequested(true);
+                startTimer(TIMER_SECONDS)
             }
-            setStoredEmail(inputEmail);
+            updateEmail(inputEmail);
             onSend(inputEmail)
         }
         catch (error) {
@@ -44,7 +48,7 @@ const SendEmail: FC<Props> = ({ onSend }) => {
                 toast.error(error.message)
             }
         }
-    }, [storedEmail])
+    }, [email])
 
     function validateEmail(values: EmailFormValues) {
         let error: FormikErrors<EmailFormValues> = {};

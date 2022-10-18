@@ -316,14 +316,14 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-100',
-                                  'px-3 py-3.5 text-sm text-white table-cell'
+                                  'md:px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
                                 <div className="flex space-x-1">
                                   {
                                     swap?.status == 'completed' && swap.received_amount != swap.requested_amount ?
-                                      <div className="flex">
-                                        {swap.received_amount} /
+                                      <div className="flex items-center">
+                                        {swap.received_amount}/
                                         <HoverTooltip text='Requested Amount' moreClassNames="w-32 text-center">
                                           <span className="underline decoration-dotted hover:no-underline">
                                             {swap.requested_amount}
