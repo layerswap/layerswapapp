@@ -1,7 +1,6 @@
 import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
-import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { SettingsProvider } from '../context/settings'
 import { AuthProvider } from '../context/authContext'
 import UserExchanges from '../components/exchangesComponent'
@@ -32,7 +31,6 @@ export async function getServerSideProps(context) {
         's-maxage=60, stale-while-revalidate'
     );
 
-    var query = context.query;
     var apiClient = new LayerSwapApiClient();
     const response = await apiClient.fetchSettingsAsync()
 
@@ -48,6 +46,6 @@ export async function getServerSideProps(context) {
     let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 
     return {
-        props: { response, query, isOfframpEnabled },
+        props: { response, isOfframpEnabled },
     }
 }

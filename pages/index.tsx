@@ -2,15 +2,10 @@ import Swap from '../components/swapComponent'
 import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
-import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { SettingsProvider } from '../context/settings'
-import { QueryProvider } from '../context/query'
 import { LayerSwapSettings } from '../Models/LayerSwapSettings'
 import { QueryParams } from '../Models/QueryParams'
 import MaintananceContent from '../components/maintanance/maintanance'
-import { useCallback, useEffect } from 'react'
-import LayerswapApiClient from '../lib/layerSwapApiClient';
-import TokenService from '../lib/TokenService'
 import NetworkSettings from '../lib/NetworkSettings'
 
 type IndexProps = {
@@ -19,7 +14,7 @@ type IndexProps = {
   inMaintanance: boolean,
 }
 
-export default function Home({ settings, query, inMaintanance }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ settings, inMaintanance }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
     <Layout>
       <div className="content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
@@ -30,14 +25,13 @@ export default function Home({ settings, query, inMaintanance }: InferGetServerS
               <MaintananceContent />
               :
               <SettingsProvider data={settings}>
-                <QueryProvider query={query}>
-                  <Swap />
-                </QueryProvider>
+                <Swap />
               </SettingsProvider>
           }
         </div>
       </div>
     </Layout>
+
   )
 }
 
@@ -51,8 +45,6 @@ export async function getServerSideProps(context) {
     's-maxage=60, stale-while-revalidate'
   );
 
-  result.query = context.query;
-  result.query.addressSource && (result.query.addressSource = result.query.addressSource?.toLowerCase());
   var apiClient = new LayerSwapApiClient();
   const response = await apiClient.fetchSettingsAsync()
 

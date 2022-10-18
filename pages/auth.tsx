@@ -14,12 +14,12 @@ export default function AuthPage() {
         <div className="flex flex-col w-full text-white animate-fade-in">
           <AuthProvider>
             <MenuProvider>
-               <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
-                <AuthWizard  />
+              <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
+                <AuthWizard />
               </FormWizardProvider >
             </MenuProvider>
           </AuthProvider>
-          <IntroCard/>
+          <IntroCard />
         </div>
       </div>
     </Layout>

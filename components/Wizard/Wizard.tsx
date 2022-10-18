@@ -67,7 +67,7 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
                      <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-100 cursor-pointer' />
                   </button>
                   :
-                  <div></div>
+                  <div className='h-7 w-7'></div>
             }
             <div className='mx-auto px-4 overflow-hidden md:hidden'>
                <div className="flex justify-center">

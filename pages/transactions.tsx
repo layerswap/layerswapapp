@@ -32,17 +32,16 @@ export async function getServerSideProps(context) {
     's-maxage=60, stale-while-revalidate'
   );
 
-  var query = context.query;
   var apiClient = new LayerSwapApiClient();
   const response = await apiClient.fetchSettingsAsync()
 
   const resource_storage_url = response.data.discovery.resource_storage_url
   if (resource_storage_url[resource_storage_url.length - 1] === "/")
-      response.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+    response.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
   let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 
   return {
-    props: { response, query, isOfframpEnabled },
+    props: { response, isOfframpEnabled },
   }
 }
