@@ -2,7 +2,6 @@ import { FC } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline';
 import { AnimatePresence, motion } from "framer-motion";
-import { classNames } from './utils/classNames';
 
 type modalSize = 'small' | 'medium' | 'large';
 

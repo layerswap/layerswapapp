@@ -9,7 +9,6 @@ import { useQueryState } from './query';
 import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
-import { ApiError, KnownwErrorCode } from '../Models/ApiError';
 
 const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
