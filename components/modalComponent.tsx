@@ -2,6 +2,7 @@ import { FC } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline';
 import { AnimatePresence, motion } from "framer-motion";
+import { useQueryState } from '../context/query';
 
 interface ModalParams {
     onDismiss: (isIntentional: boolean) => void;
@@ -11,11 +12,12 @@ interface ModalParams {
 }
 
 const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, className }) => {
+    const query = useQueryState()
 
     return (
         <AnimatePresence>
             {isOpen && <Dialog
-                className='relative z-40'
+                className={`${query?.partnerName} relative z-40`}
                 onClose={() => onDismiss(false)}
                 open={isOpen}>
                 <motion.div
