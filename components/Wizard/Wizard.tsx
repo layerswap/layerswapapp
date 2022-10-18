@@ -44,7 +44,7 @@ const Wizard: FC<Props> = ({ children }) => {
          <div className="relative">
             <div className="flex items-start"
                ref={wrapper}>
-               <AnimatePresence initial={false} custom={{ direction: moving === "forward" ? 1 : -1}}>
+               <AnimatePresence initial={false} custom={{ direction: moving === "forward" ? 1 : -1, width: wrapperWidth }}>
                   <div className={`flex flex-nowrap min-h-480 `}>
                      {children}
                   </div>

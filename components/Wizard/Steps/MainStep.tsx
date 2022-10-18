@@ -48,7 +48,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const { swapFormData } = useSwapDataState()
 
     let formValues = formikRef.current?.values;
-    const [loading, setLoading] = useState(false)
     const settings = useSettingsState();
     const { discovery: { resource_storage_url } } = settings.data || {}
     const query = useQueryState();
@@ -115,7 +114,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
-            setLoading(true)
             clearSwap()
             updateSwapFormData(values)
 
@@ -138,9 +136,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         }
         catch (e) {
             toast.error(e.message)
-        }
-        finally {
-            setLoading(false)
         }
     }, [updateSwapFormData])
 

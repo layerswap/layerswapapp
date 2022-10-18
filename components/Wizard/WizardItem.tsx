@@ -28,9 +28,9 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent })
             initial="enter"
             animate="center"
             exit="exit"
-            custom={{ direction: moving === "back" ? -1 : 1 }}>
-            <div style={{  minHeight: '504px', height: '100%' }}>
-                {wrapperWidth > 1  && children}
+            custom={{ direction: moving === "back" ? -1 : 1, width: wrapperWidth }}>
+            <div style={{ width: `${wrapperWidth}px`, minHeight: '504px', height: '100%' }}>
+                {wrapperWidth > 1 && children}
             </div >
         </motion.div>
         : null
