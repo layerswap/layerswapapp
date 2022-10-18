@@ -175,7 +175,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            {({ values, errors, isValid }) => (
+            {({ values, errors, isValid, isSubmitting }) => (
                 <Form className="h-full">
                     {values && <ConnectedFocusError />}
                     <div className="px-6 md:px-8 h-full flex flex-col justify-between">

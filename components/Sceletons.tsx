@@ -1,4 +1,6 @@
 import { ChevronRightIcon } from "@heroicons/react/outline"
+import BackgroundField from "./backgroundField"
+import SubmitButton from "./buttons/submitButton"
 import { classNames } from "./utils/classNames"
 
 export const SwapHistoryComponentSceleton = () => {
@@ -243,4 +245,3 @@ export const ExchangesComponentSceleton = () => {
   </>
 
 }
-

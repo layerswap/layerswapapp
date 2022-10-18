@@ -37,11 +37,7 @@ const WithdrawNetworkStep: FC = () => {
     useComplexInterval(async () => {
         if (currentStep !== SwapWithdrawalStep.OffRampWithdrawal)
             return true
-        const authData = TokenService.getAuthData();
-        if (!authData) {
-            goToStep(SwapWithdrawalStep.Email)
-            return;
-        }
+
         const swap = await getSwap(swapId.toString())
 
         const swapStatusStep = GetSwapStatusStep(swap)

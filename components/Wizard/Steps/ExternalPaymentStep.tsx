@@ -26,10 +26,6 @@ const ExternalPaymentStep: FC = () => {
         if (currentStep !== SwapWithdrawalStep.ExternalPayment)
             return true
 
-        const authData = TokenService.getAuthData();
-        if (!authData)
-            goToStep(SwapWithdrawalStep.Email)
-
         const swap = await getSwap(swapId.toString())
         if (swap.data.status === SwapStatus.Initiated)
             return
@@ -44,9 +40,6 @@ const ExternalPaymentStep: FC = () => {
     const exchange_name = exchange?.display_name || ' '
 
     const handleContinue = useCallback(async () => {
-        const access_token = TokenService.getAuthData()?.access_token
-        if (!access_token)
-            goToStep(SwapWithdrawalStep.Email)
         const swap = await getSwap(swapId.toString())
         const payment_url = swap?.data?.additonal_data?.payment_url
         window.open(payment_url, '_blank', 'width=420,height=720')

@@ -1,7 +1,6 @@
 import { FC, useCallback, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
-import { useComplexInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
@@ -15,10 +14,11 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
+import LayerSwapApiClient, { SwapItemResponse } from '../../../lib/layerSwapApiClient';
+import useSWR from 'swr';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const { swap } = useSwapDataState()
     const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
     const { data } = useSettingsState()
     const { exchanges, currencies, discovery: { resource_storage_url } } = data
@@ -28,22 +28,16 @@ const WithdrawExchangeStep: FC = () => {
     const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swapId } })
 
-    useComplexInterval(async () => {
-        if (currentStep !== SwapWithdrawalStep.Withdrawal)
-            return true;
+    const layerswapApiClient = new LayerSwapApiClient()
+    const swap_details_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/swaps/${swapId}`
 
-        const authData = TokenService.getAuthData();
-        if (!authData)
-            goToStep(SwapWithdrawalStep.Email)
+    const { data: swap } = useSWR<SwapItemResponse>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: 2000 })
 
-        const swap = await getSwap(swapId.toString())
-
-        const swapStatusStep = GetSwapStatusStep(swap)
-        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal)
-            goToStep(swapStatusStep)
-    }, [currentStep], 10000)
+    const swapStatusStep = GetSwapStatusStep(swap)
+    if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal)
+        goToStep(swapStatusStep)
 
     const handleConfirm = useCallback(async () => {
         setTransferDone(true)
@@ -57,7 +51,7 @@ const WithdrawExchangeStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-6 md:px-8 flex space-y-5 flex-col justify-between h-full text-primary-text">
+            <div className={`w-full px-6 md:px-8 flex space-y-5 flex-col justify-between h-full text-primary-text`}>
                 <div className='space-y-4'>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">
@@ -99,7 +93,7 @@ const WithdrawExchangeStep: FC = () => {
                             </div>
                         </div>
                     }
-                    <div className='mb-6 grid grid-cols-1 gap-5'>
+                    <div className={`mb-6 grid grid-cols-1 gap-5 `}>
                         <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Address'}>
                             <p className='break-all'>
                                 {swap?.data?.additonal_data?.deposit_address}
@@ -173,7 +167,6 @@ const WithdrawExchangeStep: FC = () => {
                         </div>
                 }
             </div>
-
         </>
     )
 }

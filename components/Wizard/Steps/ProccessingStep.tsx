@@ -22,13 +22,6 @@ const ProccessingStep: FC = () => {
     useComplexInterval(async () => {
         if (currentStep !== SwapWithdrawalStep.Processing)
             return true;
-
-
-        const authData = TokenService.getAuthData();
-        if (!authData) {
-            await goToStep(SwapWithdrawalStep.Email)
-            return;
-        }
         const swap = await getSwap(swapId.toString())
         const swapStatusStep = GetSwapStatusStep(swap)
         if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Processing)
