@@ -33,8 +33,8 @@ const ExchangesField = forwardRef((props: any, ref: any) => {
         <label htmlFor={name} className="block font-normal text-primary-text text-sm">
             {swapType === SwapType.OnRamp ? "From" : "To"}
         </label>
-        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!exchange && (swapType === SwapType.OnRamp || network) ? 'ring-primary border-primary' : ''} focus:ring-primary focus:border-primary border-darkblue-100 border focus:ring-1 overflow-hidden rounded-lg`}>
-            <Field name={name} placeholder="Exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
+        <div ref={ref} tabIndex={0} className={`mt-1.5 `}>
+            <Field name={name}  placeholder="Exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });
