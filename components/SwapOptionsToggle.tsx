@@ -18,6 +18,7 @@ const SwapOptionsToggle = forwardRef((props, ref: any) => {
     const {
         values: { swapType },
         resetForm,
+        validateForm
     } = useFormikContext<SwapFormValues>();
     const { account, chainId } = useWeb3React<Web3Provider>();
 
@@ -27,8 +28,8 @@ const SwapOptionsToggle = forwardRef((props, ref: any) => {
 
     const handleFieldChange = useCallback((value: SwapType) => {
         const initialValues = generateSwapInitialValues(value, settings, query, account, chainId)
-
         resetForm({ values: initialValues })
+        validateForm(initialValues)
     }, [account, chainId, settings,])
 
     return (
