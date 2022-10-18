@@ -44,7 +44,7 @@ const AccountConnectStep: FC = () => {
         catch (e) {
             //throws error when accessing href TODO research safe way
         }
-        
+
         if (!authWindowHref || authWindowHref?.indexOf(window.location.origin) === -1)
             return false
 
@@ -96,7 +96,7 @@ const AccountConnectStep: FC = () => {
                     Please connect your {exchange_name} account
                 </h3>
                 <div className="w-full">
-                    <Carousel onLast={onCarouselLast} ref={carouselRef}>
+                    {swapFormData && <Carousel onLast={onCarouselLast} ref={carouselRef}>
                         <CarouselItem width={100} >
                             <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.01</span>
@@ -722,7 +722,7 @@ const AccountConnectStep: FC = () => {
                             </div>
                         </CarouselItem>
 
-                    </Carousel>
+                    </Carousel>}
                 </div>
 
                 <div className="text-white text-sm  mt-auto">

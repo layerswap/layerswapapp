@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import TokenService from "../lib/TokenService"
-import { ExclamationCircleIcon, SearchIcon } from '@heroicons/react/outline';
+import { ExclamationCircleIcon } from '@heroicons/react/outline';
 import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
 import LayerswapApiClient from "../lib/layerSwapApiClient"

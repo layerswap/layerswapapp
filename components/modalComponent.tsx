@@ -2,6 +2,7 @@ import { FC } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline';
 import { AnimatePresence, motion } from "framer-motion";
+import { useQueryState } from '../context/query';
 
 type modalSize = 'small' | 'medium' | 'large';
 
@@ -36,7 +37,7 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, className,
     return (
         <AnimatePresence>
             {isOpen && <Dialog
-                className='relative z-40'
+                className={`${query?.partnerName} relative z-40`}
                 onClose={() => onDismiss(false)}
                 open={isOpen}>
                 <motion.div

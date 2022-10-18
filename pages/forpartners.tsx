@@ -19,7 +19,6 @@ export default function ForPartners(props) {
                 <Head>
                     <title>For Layerswap Partners</title>
                 </Head>
-
                 <main>
                     <div className="flex-col justify-center py-4 px-8 md:px-0 ">
                         <div className="prose md:prose-xl text-primary-text">
