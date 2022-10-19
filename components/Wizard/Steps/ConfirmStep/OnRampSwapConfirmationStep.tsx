@@ -34,7 +34,7 @@ const OnRampSwapConfirmationStep: FC = () => {
 
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
-    const { updateSwapFormData, createAndProcessSwap, setCodeRequested, cancelSwap, setAddressConfirmed } = useSwapDataUpdate()
+    const { updateSwapFormData, createAndProcessSwap, processPayment, setCodeRequested, cancelSwap, setAddressConfirmed } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [cancelSwapModalOpen, setCancelSwapModalOpen] = useState(false)
@@ -64,8 +64,15 @@ const OnRampSwapConfirmationStep: FC = () => {
             return goToStep(SwapCreateStep.TwoFactor)
 
         try {
-            const swapId = await createAndProcessSwap();
-            router.push(`/${swapId}`)
+            if (!swap) {
+                const swapId = await createAndProcessSwap();
+                router.push(`/${swapId}`)
+            }
+            else {
+                const swapId = swap.data.id
+                await processPayment(swapId)
+                router.push(`/${swapId}`)
+            }
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
@@ -110,7 +117,7 @@ const OnRampSwapConfirmationStep: FC = () => {
 
     const handleCancelSwap = useCallback(async () => {
         try {
-            await cancelSwap()
+            await cancelSwap(exchangePendingSwap.id)
             setCancelSwapModalOpen(false)
             setExchangePendingSwap(null)
         }
@@ -123,7 +130,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 toast.error(data.message)
             }
         }
-    }, [])
+    }, [exchangePendingSwap])
 
     const getExchangePendingSwap = async (swapFormData: SwapFormValues) => {
         const authData = TokenService.getAuthData();
@@ -154,7 +161,6 @@ const OnRampSwapConfirmationStep: FC = () => {
         setEditingAddress(false)
     }, [addressInputValue, network, swapFormData])
     const handleToggleChange = (value: boolean) => {
-        console.log("togglechanged")
         setAddressConfirmed(value)
     }
     return (

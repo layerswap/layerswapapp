@@ -18,32 +18,31 @@ const ExternalPaymentStep: FC = () => {
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
-    const { getSwap } = useSwapDataUpdate()
     const { data } = useSettingsState()
     const { exchanges } = data
 
-    useComplexInterval(async () => {
-        if (currentStep !== SwapWithdrawalStep.ExternalPayment)
-            return true
+    // useComplexInterval(async () => {
+    //     if (currentStep !== SwapWithdrawalStep.ExternalPayment)
+    //         return true
 
-        const swap = await getSwap(swapId.toString())
-        if (swap.data.status === SwapStatus.Initiated)
-            return
+    //     const swap = await getSwap(swapId.toString())
+    //     if (swap.data.status === SwapStatus.Initiated)
+    //         return
 
-        const swapStatusStep = GetSwapStatusStep(swap)
-        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.ExternalPayment)
-            goToStep(swapStatusStep)
+    //     const swapStatusStep = GetSwapStatusStep(swap)
+    //     if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.ExternalPayment)
+    //         goToStep(swapStatusStep)
             
-    }, [currentStep, swapId], 10000)
+    // }, [currentStep, swapId], 10000)
 
     const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
     const exchange_name = exchange?.display_name || ' '
 
-    const handleContinue = useCallback(async () => {
-        const swap = await getSwap(swapId.toString())
-        const payment_url = swap?.data?.additonal_data?.payment_url
-        window.open(payment_url, '_blank', 'width=420,height=720')
-    }, [])
+    // const handleContinue = useCallback(async () => {
+    //     const swap = await getSwap(swapId.toString())
+    //     const payment_url = swap?.data?.additonal_data?.payment_url
+    //     window.open(payment_url, '_blank', 'width=420,height=720')
+    // }, [])
 
     return (
         <>
@@ -64,9 +63,9 @@ const ExternalPaymentStep: FC = () => {
                     </div>
                 </div>
                 <div className="text-white text-lg ">
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleContinue}>
+                    {/* <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleContinue}>
                         Continue to {exchange_name}
-                    </SubmitButton>
+                    </SubmitButton> */}
                 </div>
             </div>
         </>

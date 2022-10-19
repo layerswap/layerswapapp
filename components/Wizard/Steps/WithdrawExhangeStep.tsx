@@ -1,11 +1,9 @@
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
-import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
-import { SwapStatus } from '../../../Models/SwapStatus';
 import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
 import ExchangeSettings from '../../../lib/ExchangeSettings';
@@ -14,30 +12,33 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import LayerSwapApiClient, { SwapItemResponse } from '../../../lib/layerSwapApiClient';
-import useSWR from 'swr';
+import { useEffectOnce } from 'react-use';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
     const { data } = useSettingsState()
-    const { exchanges, currencies, discovery: { resource_storage_url } } = data
+    const { swap } = useSwapDataState()
+    const { setInterval } = useSwapDataUpdate()
+
+    useEffectOnce(() => {
+        setInterval(2000)
+        return () => setInterval(0)
+    })
+
+    const { exchanges, discovery: { resource_storage_url } } = data
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
-    const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, customAttributes: { swapId: swapId } })
 
-    const layerswapApiClient = new LayerSwapApiClient()
-    const swap_details_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/swaps/${swapId}`
-
-    const { data: swap } = useSWR<SwapItemResponse>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: 2000 })
-
     const swapStatusStep = GetSwapStatusStep(swap)
-    if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal)
-        goToStep(swapStatusStep)
+
+    useEffect(() => {
+        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal)
+            goToStep(swapStatusStep)
+    }, [swapStatusStep])
 
     const handleConfirm = useCallback(async () => {
         setTransferDone(true)

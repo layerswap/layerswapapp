@@ -2,8 +2,8 @@
 export class QueryParams {
     sourceExchangeName?: string = "";
     destNetwork?: string = "";
-    lockAddress?: boolean = false;
-    lockNetwork?: boolean = false;
+    lockAddress?: string = "";
+    lockNetwork?: string = "";
     destAddress?: string = "";
     addressSource?: string = "";
     coinbase_redirect?: string = "";

@@ -19,31 +19,31 @@ import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
+import { useEffectOnce } from 'react-use';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const { swap } = useSwapDataState()
-    const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
     const { data } = useSettingsState()
-    const { exchanges, networks, currencies, discovery: { resource_storage_url } } = data
+    const { networks, discovery: { resource_storage_url } } = data
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
-    const { swapId } = router.query;
-    const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
+    const { swap } = useSwapDataState()
+    const { setInterval } = useSwapDataUpdate()
 
-    useComplexInterval(async () => {
-        if (currentStep !== SwapWithdrawalStep.OffRampWithdrawal)
-            return true
+    useEffectOnce(() => {
+        setInterval(2000)
+        return () => setInterval(0)
+    })
 
-        const swap = await getSwap(swapId.toString())
+    const swapStatusStep = GetSwapStatusStep(swap)
 
-        const swapStatusStep = GetSwapStatusStep(swap)
+    useEffect(() => {
         if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.OffRampWithdrawal)
             goToStep(swapStatusStep)
-    }, [currentStep], 10000)
+    }, [swapStatusStep])
 
     const handleConfirm = useCallback(async () => {
         setTransferDone(true)

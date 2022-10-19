@@ -18,8 +18,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
 
     const handleGoHome = useCallback(() => {
         router.push({
-            pathname: "/",
-            query: router.query
+            pathname: "/"
         })
     }, [router.query])
 

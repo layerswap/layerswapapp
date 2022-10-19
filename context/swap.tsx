@@ -2,13 +2,12 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { CreateSwapParams, SwapItemResponse, SwapType } from '../lib/layerSwapApiClient';
 import { useAuthDataUpdate } from './authContext';
-import TokenService from '../lib/TokenService';
-import { SwapStatus } from '../Models/SwapStatus';
 import { useRouter } from 'next/router';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
+import useSWR, { useSWRConfig } from 'swr';
 
 const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
@@ -18,11 +17,11 @@ type UpdateInterface = {
     createAndProcessSwap: (TwoFACode?: string) => Promise<string>,
     //TODO this is stupid need to clean data in confirm step or even do not store it
     clearSwap: () => void,
-    processPayment: (swap: SwapItemResponse, twoFactorCode?: string) => void,
-    getSwap: (id: string) => Promise<SwapItemResponse>;
+    processPayment: (swapId: string, twoFactorCode?: string) => void,
     setCodeRequested(codeSubmitted: boolean): void;
-    cancelSwap: () => Promise<void>;
-    setAddressConfirmed: (value: boolean) => void
+    cancelSwap: (swapId: string) => Promise<void>;
+    setAddressConfirmed: (value: boolean) => void;
+    setInterval: (value: number) => void
 }
 
 type SwapData = {
@@ -34,10 +33,15 @@ type SwapData = {
 
 export function SwapDataProvider({ children }) {
     const [swapFormData, setSwapFormData] = React.useState<SwapFormValues>();
-    const [swap, setSwap] = useState<SwapItemResponse>()
     const [addressConfirmed, setAddressConfirmed] = React.useState<boolean>(false)
     const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
     const router = useRouter();
+    const [swapId, setSwapId] = useState(router.query.swapId?.toString())
+
+    const layerswapApiClient = new LayerSwapApiClient()
+    const swap_details_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/swaps/${swapId}`
+    const [interval, setInterval] = useState(0)
+    const { data: swap } = useSWR<SwapItemResponse>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
     const { getAuthData } = useAuthDataUpdate();
     const query = useQueryState();
@@ -51,7 +55,7 @@ export function SwapDataProvider({ children }) {
         setCodeRequested(false)
     }, [swapFormData?.exchange])
 
-    const createSwap = useCallback(async (formData: SwapFormValues, query: QueryParams, settings: LayerSwapSettings, access_token: string) => {
+    const createSwap = useCallback(async (formData: SwapFormValues, query: QueryParams, settings: LayerSwapSettings) => {
         if (!formData)
             throw new Error("No swap data")
 
@@ -59,7 +63,6 @@ export function SwapDataProvider({ children }) {
 
         if (!network || !currency || !exchange)
             throw new Error("Form data is missing")
-        const layerswapApiClient = new LayerSwapApiClient(router)
 
         try {
             const data: CreateSwapParams = {
@@ -80,80 +83,39 @@ export function SwapDataProvider({ children }) {
             }
 
             const swapId = swap.data.swap_id;
-            const swapDetails = await layerswapApiClient.getSwapDetails(swapId)
-            setSwap(swapDetails)
-            return swapDetails;
+            return swapId;
         }
         catch (e) {
             throw e
         }
     }, [])
 
-    const cancelSwap = useCallback(async () => {
-        const authData = TokenService.getAuthData();
-        if (!authData?.access_token)
-            throw new Error("Not authenticated")
-        const { access_token } = authData
-        const { exchange } = swapFormData
-
-        const layerswapApiClient = new LayerSwapApiClient(router)
-
-        const pendingSwaps = await layerswapApiClient.getPendingSwaps()
-        const swapToCancel = pendingSwaps.data.find(s => exchange.baseObject.currencies.some(ec => ec.id === s.exchange_currency_id))
-        if (!swapToCancel)
-            throw new Error("Trying to cancel swap. Pending swap not found")
-        await layerswapApiClient.CancelSwap(swapToCancel.id)
+    const cancelSwap = useCallback(async (swapId: string) => {
+        await layerswapApiClient.CancelSwap(swapId)
     }, [router, swapFormData])
 
-    const processPayment = useCallback(async (swap: SwapItemResponse, twoFactorCode?: string) => {
-        const authData = getAuthData()
-        if (!authData?.access_token)
-            throw new Error("Not authenticated")
-        const layerswapApiClient = new LayerSwapApiClient(router)
-        const prcoessPaymentReponse = await layerswapApiClient.ProcessPayment(swap.data.id, authData.access_token)
+    const processPayment = useCallback(async (swapId: string, twoFactorCode?: string) => {
+        const prcoessPaymentReponse = await layerswapApiClient.ProcessPayment(swapId, twoFactorCode)
         if (prcoessPaymentReponse.error)
             throw new Error(prcoessPaymentReponse.error)
-        const swapDetails = await layerswapApiClient.getSwapDetails(swap.data.id)
-        setSwap(swapDetails)
     }, [getAuthData])
 
-    const getSwap = useCallback(async (id) => {
-        const authData = TokenService.getAuthData();
-        if (!authData?.access_token)
-            throw new Error("Not authenticated")
-        const layerswapApiClient = new LayerSwapApiClient(router)
-        const swapDetails = await layerswapApiClient.getSwapDetails(id)
-        setSwap(swapDetails)
-        return swapDetails
-    }, [])
-
     const createAndProcessSwap = useCallback(async (TwoFACode?: string) => {
-        const authData = TokenService.getAuthData();
-        if (!authData?.access_token)
-            throw new Error("Not authenticated")
-
-        const _swap = swap?.data?.id ? await getSwap(swap.data.id) : await createSwap(swapFormData, query, settings, authData?.access_token)
-        if (_swap?.data?.status === SwapStatus.Created)
-            await processPayment(_swap, TwoFACode)
-        ///TODO grdon code please refactor
-        else if (_swap?.data?.status === SwapStatus.Cancelled) {
-            const newSwap = await createSwap(swapFormData, query, settings, authData?.access_token)
-            await processPayment(newSwap, TwoFACode)
-            return newSwap.data.id
-        }
-
-        return _swap.data.id
+        const newSwapId = await createSwap(swapFormData, query, settings)
+        setSwapId(newSwapId)
+        await processPayment(newSwapId, TwoFACode)
+        return newSwapId
     }, [swap, swapFormData, query, settings])
 
     const updateFns: UpdateInterface = {
-        clearSwap: () => { setSwap(undefined) },
+        clearSwap: () => { setSwapId(undefined) },
         updateSwapFormData: setSwapFormData,
         createAndProcessSwap: createAndProcessSwap,
-        getSwap: getSwap,
         processPayment: processPayment,
         setCodeRequested: setCodeRequested,
         cancelSwap: cancelSwap,
-        setAddressConfirmed: setAddressConfirmed
+        setAddressConfirmed: setAddressConfirmed,
+        setInterval: setInterval
     };
 
     return (

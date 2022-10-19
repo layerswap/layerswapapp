@@ -33,37 +33,6 @@ const OfframpAccountConnectStep: FC = () => {
     const exchange_accounts_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts`
     const { data: exchanges } = useSWR<UserExchangesResponse>(salon ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
 
-
-
-    const { startInterval } = useDelayedInterval(async () => {
-        if (currentStepName !== SwapCreateStep.OffRampOAuth)
-            return true
-
-        const { access_token } = TokenService.getAuthData() || {};
-        if (!access_token) {
-            await goToStep(SwapCreateStep.Email)
-            return true;
-        }
-
-        let authWindowHref = ""
-        try {
-            authWindowHref = authWindowRef.current?.location?.href
-        }
-        catch (e) {
-
-        }
-        if (!authWindowHref || authWindowHref?.indexOf(window.location.origin) === -1)
-            return false
-        const exchanges = await (await getUserExchanges())?.data
-        const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange.baseObject?.id)
-        if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
-            await goToStep(SwapCreateStep.Confirm)
-            authWindowRef.current?.close()
-            return true;
-        }
-        return false
-    }, [currentStepName, authWindowRef], 2000)
-
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref = ""
         try {

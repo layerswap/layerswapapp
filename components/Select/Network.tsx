@@ -33,7 +33,7 @@ const NetworkField = forwardRef((props: any, ref: any) => {
             name: n.display_name,
             order: n.order,
             imgSrc: n.logo ? `${resource_storage_url}${n.logo}` : null,
-            isAvailable: n.status === "active" && (swapType === SwapType.OffRamp ? !destNetworkIsAvailable : !lockNetwork),
+            isAvailable: n.status === "active" && (swapType === SwapType.OffRamp ? !destNetworkIsAvailable : lockNetwork !== 'true'),
             isDefault: n.is_default
         })).sort(SortingByOrder);
 
@@ -42,7 +42,7 @@ const NetworkField = forwardRef((props: any, ref: any) => {
             {swapType === SwapType.OnRamp ? "To" : "From"}
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 `}>
-            <Field name={name}  placeholder="Network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
+            <Field name={name} placeholder="Network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });

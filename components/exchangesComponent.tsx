@@ -44,15 +44,7 @@ function UserExchanges() {
         (async () => {
             setLoading(true)
             try {
-                const authData = TokenService.getAuthData();
-                if (!authData) {
-                    router.push({
-                        pathname: '/auth',
-                        query: { ...router.query, redirect: '/exchanges' }
-                    })
-                    return;
-                }
-                await getAndMapExchanges(authData)
+                await getAndMapExchanges()
             }
             catch (e) {
                 toast.error(e.message)
@@ -63,7 +55,7 @@ function UserExchanges() {
         })()
     }, [router.query])
 
-    const getAndMapExchanges = useCallback(async (authData) => {
+    const getAndMapExchanges = useCallback(async () => {
         try {
             const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
             const userExchanges = await layerswapApiClient.GetExchangeAccounts()
@@ -103,17 +95,9 @@ function UserExchanges() {
     const handleDisconnectExchange = useCallback(async (exchange: Exchange) => {
         setExchangeLoading(exchange)
         try {
-            const authData = TokenService.getAuthData();
-            if (!authData) {
-                router.push({
-                    pathname: '/auth',
-                    query: { ...(router.query), redirect: '/exchanges' }
-                })
-                return;
-            }
             const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
             await layerswapApiClient.DeleteExchange(exchange.internal_name)
-            await getAndMapExchanges(authData)
+            await getAndMapExchanges()
         }
         catch (e) {
             toast.error(e.message)
@@ -132,15 +116,7 @@ function UserExchanges() {
         setLoading(true)
         setExchangeToConnect(undefined)
         try {
-            const authData = TokenService.getAuthData();
-            if (!authData) {
-                router.push({
-                    pathname: '/auth',
-                    query: { ...(router.query), redirect: '/exchanges' }
-                })
-                return;
-            }
-            await getAndMapExchanges(authData)
+            await getAndMapExchanges()
         }
         catch (e) {
             toast.error(e.message)

@@ -27,14 +27,6 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
             return true
 
         try {
-            const { access_token } = TokenService.getAuthData() || {};
-            if (!access_token) {
-                router.push({
-                    pathname: '/auth',
-                    query: { ...(router.query), redirect: '/exchanges' }
-                })
-                return true;
-            }
             const layerswapApiClient = new LayerswapApiClient(router)
             const userExchanges = await layerswapApiClient.GetExchangeAccounts()
 
@@ -60,7 +52,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
             if (!access_token) {
                 router.push({
                     pathname: '/auth',
-                    query: { ...(router.query), redirect: '/exchanges' }
+                    query: { redirect: '/exchanges' }
                 })
                 return;
             }

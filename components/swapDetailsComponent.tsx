@@ -38,14 +38,6 @@ const SwapDetails: FC<Props> = ({ id }) => {
                 return
             setLoading(true)
             try {
-                const authData = TokenService.getAuthData();
-                if (!authData) {
-                    router.push({
-                        pathname: '/auth',
-                        query: { ...(router.query), redirect: '/transactions' }
-                    })
-                    return;
-                }
                 const layerswapApiClient = new LayerSwapApiClient(router)
                 const swap = await layerswapApiClient.getSwapDetails(id)
                 setSwap(swap)

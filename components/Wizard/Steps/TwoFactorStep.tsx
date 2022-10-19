@@ -23,8 +23,8 @@ interface CodeFormValues {
 //TODO email code is almost identical create reusable component for email and two factor code verification
 const TwoFactorStep: FC = () => {
     const initialValues: CodeFormValues = { Code: '' }
-    const { swapFormData, swap, codeRequested } = useSwapDataState()
-    const { createAndProcessSwap, processPayment } = useSwapDataUpdate()
+    const { swapFormData, swap } = useSwapDataState()
+    const { processPayment } = useSwapDataUpdate()
     const router = useRouter();
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const [loading, setLoading] = useState(false)
@@ -38,7 +38,7 @@ const TwoFactorStep: FC = () => {
 
     const handleSubmit = useCallback(async (values: CodeFormValues) => {
         try {
-            const swapId = await createAndProcessSwap(values.Code);
+            const swapId = await processPayment(swap.data.id, values.Code);
             router.push(`/${swapId}`)
         }
         catch (error) {
@@ -69,7 +69,7 @@ const TwoFactorStep: FC = () => {
         setLoading(true)
         try {
             formikRef.current.setFieldValue("Code", "");
-            await processPayment(swap)
+            await processPayment(swap.data.id)
         } catch (error) {
             const data: ApiError = error?.response?.data?.error
 
@@ -96,7 +96,7 @@ const TwoFactorStep: FC = () => {
                 toast.error(data.message)
             }
         }
-        finally{
+        finally {
             setLoading(false)
         }
     }, [swap])
