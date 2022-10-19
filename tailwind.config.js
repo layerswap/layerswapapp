@@ -1,3 +1,5 @@
+//@ts-check
+
 const colors = require("tailwindcss/colors");
 const plugin = require('tailwindcss/plugin')
 
@@ -37,12 +39,11 @@ module.exports = {
         '35': '.35',
       },
       animation: {
-        fadein: 'fadein 4s',
-      },
-      animation: {
         'spin-slow': 'spin 3s linear infinite',
         'fade-in': 'fade-in 0.5s ease-in',
-        'fade-in-down': 'fade-in-down 0.5s ease-in'
+        'fade-in-down': 'fade-in-down 0.5s ease-in',
+        fadein: 'fadein 4s',
+
       },
       keyframes: {
         'fade-in': {
@@ -75,7 +76,6 @@ module.exports = {
         wide: '.025em',
         wider: '.05em',
         widest: '.1em',
-        widest: '.25em',
       },
       boxShadow: {
         'card': '5px 5px 40px rgba(0, 0, 0, 0.2), 0px 0px 200px rgba(0, 0, 0, 0.43)',

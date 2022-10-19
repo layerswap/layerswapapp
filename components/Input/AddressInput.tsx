@@ -33,7 +33,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             name={name}
                             id={name}
                             disabled={disabled}
-                            className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-100 border rounded-md placeholder-gray-400 truncate focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none',
+                            className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-md placeholder-gray-400 truncate focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none',
                                 className
                             )}
                         />

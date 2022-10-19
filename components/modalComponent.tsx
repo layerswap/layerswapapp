@@ -33,6 +33,7 @@ function constructModalSize(size: modalSize) {
 }
 
 const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, className, modalSize = 'large' }) => {
+    const query = useQueryState()
 
     return (
         <AnimatePresence>
