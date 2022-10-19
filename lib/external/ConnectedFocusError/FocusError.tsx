@@ -12,7 +12,7 @@ export interface FocusErrorProps {
   /**
    * Values from Formik provider.
    */
-  formik: 
+  formik:
   FormikContextType<FormikValues>
   /**
    * Time in ms to execute the focus in the component with the error, by default 100ms.
@@ -40,14 +40,17 @@ export function FocusError({
       if (errorNames.length && typeof document !== "undefined") {
         let errorElement: HTMLElement | null;
 
+        document.querySelector('.focus-peer')?.classList?.remove("focus-peer")
+        
         errorNames.forEach((errorKey) => {
-          if (Object.keys(touched).find(x=> x == errorKey))
-          {
+          console.log("errorKey",errorKey)
+          if (Object.keys(touched).find(x => x == errorKey)) {
             return
           }
           const selector = `[name="${errorKey}"]`;
           if (!errorElement) {
             errorElement = document.querySelector(selector);
+            errorElement?.parentElement?.classList?.add("focus-peer")
             return;
           }
         });

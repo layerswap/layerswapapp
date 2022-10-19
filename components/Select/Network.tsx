@@ -41,8 +41,8 @@ const NetworkField = forwardRef((props: any, ref: any) => {
         <label htmlFor={name} className="block font-normal text-primary-text text-sm">
             {swapType === SwapType.OnRamp ? "To" : "From"}
         </label>
-        <div ref={ref} tabIndex={0} className={`mt-1.5 ${!network && (swapType === SwapType.OffRamp || exchange) ? 'ring-primary border-primary' : ''} focus:ring-primary focus:border-primary border-darkblue-500 border focus:ring-1 overflow-hidden rounded-lg`}>
-            <Field name={name} placeholder="Network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
+        <div ref={ref} tabIndex={0} className={`mt-1.5 `}>
+            <Field name={name}  placeholder="Network" values={networkMenuItems} label="To" value={network} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });

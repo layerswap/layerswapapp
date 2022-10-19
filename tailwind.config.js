@@ -130,6 +130,7 @@ module.exports = {
       // Add a `third` variant, ie. `third:pb-0`
       addVariant('scrollbar', '&::-webkit-scrollbar');
       addVariant('scrollbar-thumb', '&::-webkit-scrollbar-thumb')
+      addVariant('focus-peer', '.focus-peer &')
     }),
     require('tailwindcss-themer')({
       defaultTheme: {

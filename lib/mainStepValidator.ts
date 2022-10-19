@@ -15,34 +15,39 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         if (!values.exchange) {
             (errors.exchange as any) = 'Select an exchange';
         }
-        else if (!values.network) {
+        if (!values.network) {
             (errors.network as any) = 'Select a network';
         }
-        else if (values.swapType === SwapType.OnRamp && !values.destination_address) {
+        if (values.swapType === SwapType.OnRamp && !values.destination_address) {
             errors.destination_address = `Enter ${values?.network?.name} address`;
         }
-        else if (values.swapType === SwapType.OnRamp && !isValidAddress(values.destination_address, values.network?.baseObject)) {
+        if (values.swapType === SwapType.OnRamp && values.network && !isValidAddress(values.destination_address, values.network?.baseObject)) {
             errors.destination_address = `Enter a valid ${values?.network?.name} address`;
         }
-        else if (values.swapType === SwapType.OnRamp && settings.data.blacklisted_addresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
+        if (values.swapType === SwapType.OnRamp && settings.data.blacklisted_addresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
             errors.destination_address = `You can not transfer to this address`;
         }
-        else if (!amount) {
+        if (!amount) {
             errors.amount = 'Enter an amount';
         }
-        else if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
+        if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
             errors.amount = 'Invalid amount';
         }
-        else if (amount < 0) {
+        if (amount < 0) {
             errors.amount = "Can't be negative";
         }
-        else if (maxAllowedAmount != undefined && amount > maxAllowedAmount) {
+        if (maxAllowedAmount != undefined && amount > maxAllowedAmount) {
             errors.amount = `Max amount is ${maxAllowedAmount}`;
         }
-        else if (minAllowedAmount != undefined && amount < minAllowedAmount) {
+        if (minAllowedAmount != undefined && amount < minAllowedAmount) {
             errors.amount = `Min amount is ${minAllowedAmount}`;
         }
 
-        return errors;
+        const errorsOrder: FormikErrors<SwapFormValues> = {
+            [values.swapType === SwapType.OnRamp ? "exchange" : "network"]: null
+        }
+        console.log(errors)
+
+        return Object.assign(errorsOrder, errors);
     };
 }

@@ -152,7 +152,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     name={name}
                     onClick={openModal}
                     disabled={disabled}
-                    className="disabled:cursor-not-allowed disabled:hidden relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-700 font-semibold rounded-none"
+                    className="rounded-lg focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-700 font-semibold"
                 >
                     <span className='flex grow text-left items-center'>
                         {
