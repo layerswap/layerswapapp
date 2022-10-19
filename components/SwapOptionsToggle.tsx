@@ -14,10 +14,9 @@ const swapOptions: NavRadioOption[] = [
     { value: SwapType.OffRamp, isEnabled: true, isHighlighted: true }
 ];
 
-const SwapOptionsToggle = forwardRef((props, ref: any) => {
+const SwapOptionsToggle = forwardRef((ref: any) => {
     const {
         values: { swapType },
-        setFieldValue,
         resetForm,
         validateForm
     } = useFormikContext<SwapFormValues>();
@@ -27,8 +26,6 @@ const SwapOptionsToggle = forwardRef((props, ref: any) => {
     const query = useQueryState()
     const name = 'swapType'
 
-    const initialValues = generateSwapInitialValues(swapType, settings, query, account, chainId)
-    
     const handleFieldChange = useCallback((value: SwapType) => {
         const initialValues = generateSwapInitialValues(value, settings, query, account, chainId)
         resetForm({ values: initialValues })

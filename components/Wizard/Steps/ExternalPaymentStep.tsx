@@ -1,48 +1,41 @@
-import { FC, useCallback } from 'react'
+import { FC, useCallback, useEffect } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import SubmitButton from '../../buttons/submitButton';
-import { useComplexInterval } from '../../../hooks/useInterval';
-import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
-import TokenService from '../../../lib/TokenService';
-import { useRouter } from 'next/router';
-import { SwapStatus } from '../../../Models/SwapStatus';
 import { useSettingsState } from '../../../context/settings';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
+import { useEffectOnce } from 'react-use';
+import SubmitButton from '../../buttons/submitButton';
 
 const ExternalPaymentStep: FC = () => {
 
-    const { swap } = useSwapDataState()
-    const { currentStepName: currentStep } = useFormWizardState()
 
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
-    const router = useRouter();
-    const { swapId } = router.query;
     const { data } = useSettingsState()
     const { exchanges } = data
 
-    // useComplexInterval(async () => {
-    //     if (currentStep !== SwapWithdrawalStep.ExternalPayment)
-    //         return true
+    const { swap } = useSwapDataState()
+    const { setInterval } = useSwapDataUpdate()
 
-    //     const swap = await getSwap(swapId.toString())
-    //     if (swap.data.status === SwapStatus.Initiated)
-    //         return
+    useEffectOnce(() => {
+        setInterval(2000)
+        return () => setInterval(0)
+    })
+    
+    const swapStatusStep = GetSwapStatusStep(swap)
 
-    //     const swapStatusStep = GetSwapStatusStep(swap)
-    //     if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.ExternalPayment)
-    //         goToStep(swapStatusStep)
-            
-    // }, [currentStep, swapId], 10000)
+    useEffect(() => {
+        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.ExternalPayment)
+            goToStep(swapStatusStep)
+    }, [swapStatusStep])
 
     const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
     const exchange_name = exchange?.display_name || ' '
 
-    // const handleContinue = useCallback(async () => {
-    //     const swap = await getSwap(swapId.toString())
-    //     const payment_url = swap?.data?.additonal_data?.payment_url
-    //     window.open(payment_url, '_blank', 'width=420,height=720')
-    // }, [])
+    const handleContinue = useCallback(async () => {
+        const payment_url = swap?.data?.additonal_data?.payment_url
+        window.open(payment_url, '_blank', 'width=420,height=720')
+    }, [swap])
 
     return (
         <>
@@ -63,9 +56,9 @@ const ExternalPaymentStep: FC = () => {
                     </div>
                 </div>
                 <div className="text-white text-lg ">
-                    {/* <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleContinue}>
+                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleContinue}>
                         Continue to {exchange_name}
-                    </SubmitButton> */}
+                    </SubmitButton>
                 </div>
             </div>
         </>

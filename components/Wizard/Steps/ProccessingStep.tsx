@@ -1,10 +1,7 @@
-import { useRouter } from 'next/router';
 import { FC, useEffect } from 'react'
 import { useEffectOnce } from 'react-use';
-import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { useComplexInterval } from '../../../hooks/useInterval';
-import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
@@ -12,8 +9,6 @@ import { GetSwapStatusStep } from '../../utils/SwapStatus';
 const ProccessingStep: FC = () => {
 
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
-    const router = useRouter();
-    const { swapId } = router.query;
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
 
