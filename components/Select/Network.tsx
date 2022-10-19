@@ -33,7 +33,7 @@ const NetworkField = forwardRef((props: any, ref: any) => {
             name: n.display_name,
             order: n.order,
             imgSrc: n.logo ? `${resource_storage_url}${n.logo}` : null,
-            isAvailable: n.status === "active" && (swapType === SwapType.OffRamp ? !destNetworkIsAvailable : lockNetwork !== 'true'),
+            isAvailable: n.status === "active" && (swapType === SwapType.OffRamp ? !destNetworkIsAvailable : !lockNetwork),
             isDefault: n.is_default
         })).sort(SortingByOrder);
 
