@@ -42,6 +42,8 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         if (minAllowedAmount != undefined && amount < minAllowedAmount) {
             errors.amount = `Min amount is ${minAllowedAmount}`;
         }
+        
+        if (Object.keys(errors).length === 0) return errors
 
         const errorsOrder: FormikErrors<SwapFormValues> = {
             [values.swapType === SwapType.OnRamp ? "exchange" : "network"]: null
