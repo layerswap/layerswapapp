@@ -3,7 +3,7 @@ import AccountConnectStep from "../components/Wizard/Steps/AccountConnectStep";
 import APIKeyStep from "../components/Wizard/Steps/APIKeyStep";
 import CodeStep from "../components/Wizard/Steps/CodeStep";
 import EmailStep from "../components/Wizard/Steps/EmailStep";
-import MainStep from "../components/Wizard/Steps/MainStep";
+import MainStep from "../components/Wizard/Steps/MainStep/index";
 import OfframpAccountConnectStep from "../components/Wizard/Steps/OfframpAccountConnectStep";
 import SwapConfirmationStep from "../components/Wizard/Steps/ConfirmStep/OnRampSwapConfirmationStep";
 import { useFormWizardaUpdate } from "../context/formWizardProvider";
@@ -27,13 +27,13 @@ const useCreateSwap = () => {
     const router = useRouter();
 
     const handleCoinbaseOfframp = useCallback(async (formData: SwapFormValues, access_token: string) => {
-        const exchanges = (await getUserExchanges(access_token))?.data
+        const exchanges = (await getUserExchanges())?.data
         const { exchange: selected_exchange, currency } = formData
         const selected_exchange_internal_name = selected_exchange?.baseObject?.internal_name
         const layerswapApiClient = new LayerSwapApiClient(router)
         const asset = currency?.baseObject?.asset
         try {
-            const response = await layerswapApiClient.GetExchangeDepositAddress(selected_exchange_internal_name, asset.toUpperCase(), access_token)
+            const response = await layerswapApiClient.GetExchangeDepositAddress(selected_exchange_internal_name, asset.toUpperCase())
             if (!response.error) {
                 const { data } = response
                 updateSwapFormData({ ...formData, destination_address: data })
@@ -47,7 +47,7 @@ const useCreateSwap = () => {
             const selected_exchange_id = selected_exchange.baseObject.id
             const selected_exchange_auth_flow = selected_exchange?.baseObject?.authorization_flow
             if (exchanges.some(e => e.exchange_id === selected_exchange_id))
-                await layerswapApiClient.DeleteExchange(selected_exchange_internal_name, access_token)
+                await layerswapApiClient.DeleteExchange(selected_exchange_internal_name)
             return goToStep(OfframpExchangeAuthorizationSteps[selected_exchange_auth_flow])
         }
     }, [])
@@ -65,7 +65,7 @@ const useCreateSwap = () => {
                 handleCoinbaseOfframp(values, accessToken)
             }
             else {
-                const exchanges = (await getUserExchanges(accessToken))?.data
+                const exchanges = (await getUserExchanges())?.data
                 const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === values?.exchange?.baseObject.id)
                 if (values?.exchange?.baseObject?.authorization_flow === "none" || !values?.exchange?.baseObject?.authorization_flow || exchangeIsEnabled)
                     return goToStep(SwapCreateStep.Confirm)
@@ -87,7 +87,7 @@ const useCreateSwap = () => {
         Content: CodeStep,
         Name: SwapCreateStep.Code,
         onNext: useCallback(async (res: AuthConnectResponse) => {
-            const exchanges = (await getUserExchanges(res.access_token))?.data
+            const exchanges = (await getUserExchanges())?.data
             const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange?.baseObject.id)
 
             if (swapFormData.swapType === SwapType.OffRamp && swapFormData.exchange.baseObject.internal_name === KnownInternalNames.Exchanges.Coinbase) {

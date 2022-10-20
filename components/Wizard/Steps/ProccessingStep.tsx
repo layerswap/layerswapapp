@@ -1,40 +1,28 @@
-import { useRouter } from 'next/router';
-import { FC } from 'react'
-import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { FC, useEffect } from 'react'
+import { useEffectOnce } from 'react-use';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { useInterval } from '../../../hooks/useInterval';
-import TokenService from '../../../lib/TokenService';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
 const ProccessingStep: FC = () => {
 
-    // const { prevStep, nextStep, goToStep } = useWizardState();
-    const { swap } = useSwapDataState()
-    const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
-
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
-    const router = useRouter();
-    const { swapId } = router.query;
-    const { getSwap } = useSwapDataUpdate()
+    const { swap } = useSwapDataState()
+    const { setInterval } = useSwapDataUpdate()
 
-    useInterval(async () => {
-        if (currentStep !== SwapWithdrawalStep.Processing)
-            return true;
+    useEffectOnce(() => {
+        setInterval(2000)
+        return () => setInterval(0)
+    })
+    
+    const swapStatusStep = GetSwapStatusStep(swap)
 
-
-        const authData = TokenService.getAuthData();
-        if (!authData) {
-            await goToStep(SwapWithdrawalStep.Email)
-            return;
-        }
-        const swap = await getSwap(swapId.toString())
-        const swapStatusStep = GetSwapStatusStep(swap)
+    useEffect(() => {
         if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Processing)
             goToStep(swapStatusStep)
-
-    }, [currentStep, swapId], 2000)
+    }, [swapStatusStep])
 
     return (
         <>

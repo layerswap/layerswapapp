@@ -43,7 +43,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
             setLoading(true)
             const layerswapApiClient = new LayerswapApiClient(router);
             const { access_token } = TokenService.getAuthData() || {};
-            const res = await layerswapApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase }, access_token)
+            const res = await layerswapApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase })
             onSuccess()
         }
         catch (error) {

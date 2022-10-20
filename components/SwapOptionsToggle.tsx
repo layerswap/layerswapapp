@@ -1,7 +1,7 @@
 import { Web3Provider } from "@ethersproject/providers";
 import { useWeb3React } from "@web3-react/core";
 import { Field, useFormikContext } from "formik";
-import { FC, forwardRef, useCallback, useState } from "react";
+import { forwardRef, useCallback } from "react";
 import { useQueryState } from "../context/query";
 import { useSettingsState } from "../context/settings";
 import { generateSwapInitialValues } from "../lib/generateSwapInitialValues";
@@ -14,7 +14,7 @@ const swapOptions: NavRadioOption[] = [
     { value: SwapType.OffRamp, isEnabled: true, isHighlighted: true }
 ];
 
-const SwapOptionsToggle = forwardRef((props, ref: any) => {
+const SwapOptionsToggle = forwardRef((_, ref: any) => {
     const {
         values: { swapType },
         resetForm,

@@ -1,5 +1,4 @@
-import { FC, useEffect } from 'react'
-import { useAuthDataUpdate } from '../../../context/authContext';
+import { FC } from 'react'
 import SendEmail from '../../SendEmail';
 
 type Props = {

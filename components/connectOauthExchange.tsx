@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useInterval } from '../hooks/useInterval';
+import { useComplexInterval } from '../hooks/useInterval';
 import LayerswapApiClient from '../lib/layerSwapApiClient';
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
@@ -22,21 +22,13 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
         setLoading(false)
     }, [exchange])
 
-    useInterval(async () => {
+    useComplexInterval(async () => {
         if (!exchange)
             return true
 
         try {
-            const { access_token } = TokenService.getAuthData() || {};
-            if (!access_token) {
-                router.push({
-                    pathname: '/auth',
-                    query: { ...(router.query), redirect: '/exchanges' }
-                })
-                return true;
-            }
             const layerswapApiClient = new LayerswapApiClient(router)
-            const userExchanges = await layerswapApiClient.GetExchangeAccounts(access_token)
+            const userExchanges = await layerswapApiClient.GetExchangeAccounts()
 
             if (userExchanges.data.some(e => e.exchange_id === exchange?.id)) {
                 authWindowRef.current?.close()
@@ -60,7 +52,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
             if (!access_token) {
                 router.push({
                     pathname: '/auth',
-                    query: { ...(router.query), redirect: '/exchanges' }
+                    query: { redirect: '/exchanges' }
                 })
                 return;
             }

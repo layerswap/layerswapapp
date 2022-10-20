@@ -91,7 +91,7 @@ function TransactionsHistory() {
           return;
         }
         const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
-        const swaps = await layerswapApiClient.getSwaps(1, authData.access_token)
+        const swaps = await layerswapApiClient.getSwaps(1)
         setSwaps(swaps)
         setPage(1)
         if (swaps?.data.length < 5)
@@ -118,7 +118,7 @@ function TransactionsHistory() {
         return;
       }
       const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
-      const response = await layerswapApiClient.getSwaps(nextPage, authData.access_token)
+      const response = await layerswapApiClient.getSwaps(nextPage)
 
       setSwaps(old => ({ ...response, data: [...(old?.data ? old?.data : []), ...(response.data ? response.data : [])] }))
       setPage(nextPage)

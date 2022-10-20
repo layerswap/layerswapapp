@@ -20,10 +20,10 @@ type QRCodeModalProps = {
 const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconWidth, iconClassName }) => {
     const qrCode = (
         <QRCode
-            className="p-4 bg-gray-400 rounded-lg"
+            className="p-4 bg-white rounded-lg"
             value={qrUrl}
             size={250}
-            bgColor={colors.gray[400]}
+            bgColor={colors.white}
             fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
             level={"H"}
         />
@@ -51,7 +51,7 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconW
                         </CopyButton>
                     </p>
                     <SubmitButton onClick={handleCloseModal} isDisabled={false} isSubmitting={false}>
-                        Got it
+                        Close
                     </SubmitButton>
                 </div>
             </Modal>
