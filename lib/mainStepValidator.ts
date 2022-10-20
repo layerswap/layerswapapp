@@ -45,11 +45,11 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         
         if (Object.keys(errors).length === 0) return errors
 
+        if (Object.keys(errors).length === 0) return errors
+
         const errorsOrder: FormikErrors<SwapFormValues> = {
             [values.swapType === SwapType.OnRamp ? "exchange" : "network"]: null
         }
-        console.log(errors)
-
         return Object.assign(errorsOrder, errors);
     };
 }

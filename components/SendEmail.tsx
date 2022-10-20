@@ -1,13 +1,12 @@
 import { UserIcon } from '@heroicons/react/solid';
 import { Field, Form, Formik, FormikErrors } from 'formik';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
-
 
 type EmailFormValues = {
     email: string;
@@ -21,7 +20,7 @@ const TIMER_SECONDS = 60
 const SendEmail: FC<Props> = ({ onSend }) => {
     const { email, codeRequested } = useAuthState()
     const { setCodeRequested, updateEmail } = useAuthDataUpdate();
-    const initialValues: EmailFormValues = { email: email };
+    const initialValues: EmailFormValues = { email: email ?? "" };
     const { start: startTimer } = useTimerState()
 
     const sendEmail = useCallback(async (values: EmailFormValues) => {

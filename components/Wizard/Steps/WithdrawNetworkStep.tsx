@@ -2,7 +2,7 @@ import { SwitchHorizontalIcon } from '@heroicons/react/outline';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
-import { useInterval } from '../../../hooks/useInterval';
+import { useComplexInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep, SwapWizardSteps } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';
@@ -19,35 +19,31 @@ import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
+import { useEffectOnce } from 'react-use';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const { swap } = useSwapDataState()
-    const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
     const { data } = useSettingsState()
-    const { exchanges, networks, currencies, discovery: { resource_storage_url } } = data
+    const { networks, discovery: { resource_storage_url } } = data
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
-    const { swapId } = router.query;
-    const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
+    const { swap } = useSwapDataState()
+    const { setInterval } = useSwapDataUpdate()
 
-    useInterval(async () => {
-        if (currentStep !== SwapWithdrawalStep.OffRampWithdrawal)
-            return true
-        const authData = TokenService.getAuthData();
-        if (!authData) {
-            goToStep(SwapWithdrawalStep.Email)
-            return;
-        }
-        const swap = await getSwap(swapId.toString())
+    useEffectOnce(() => {
+        setInterval(2000)
+        return () => setInterval(0)
+    })
 
-        const swapStatusStep = GetSwapStatusStep(swap)
+    const swapStatusStep = GetSwapStatusStep(swap)
+
+    useEffect(() => {
         if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.OffRampWithdrawal)
             goToStep(swapStatusStep)
-    }, [currentStep], 10000)
+    }, [swapStatusStep])
 
     const handleConfirm = useCallback(async () => {
         setTransferDone(true)

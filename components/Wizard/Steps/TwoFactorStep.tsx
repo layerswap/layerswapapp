@@ -13,7 +13,6 @@ import Timer from '../../TimerComponent';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 
-
 const TIMER_SECONDS = 120
 
 interface CodeFormValues {
@@ -23,8 +22,8 @@ interface CodeFormValues {
 //TODO email code is almost identical create reusable component for email and two factor code verification
 const TwoFactorStep: FC = () => {
     const initialValues: CodeFormValues = { Code: '' }
-    const { swapFormData, swap, codeRequested } = useSwapDataState()
-    const { createAndProcessSwap, processPayment } = useSwapDataUpdate()
+    const { swapFormData, swap } = useSwapDataState()
+    const { processPayment } = useSwapDataUpdate()
     const router = useRouter();
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const [loading, setLoading] = useState(false)
@@ -38,7 +37,7 @@ const TwoFactorStep: FC = () => {
 
     const handleSubmit = useCallback(async (values: CodeFormValues) => {
         try {
-            const swapId = await createAndProcessSwap(values.Code);
+            const swapId = await processPayment(swap.data.id, values.Code);
             router.push(`/${swapId}`)
         }
         catch (error) {
@@ -69,7 +68,7 @@ const TwoFactorStep: FC = () => {
         setLoading(true)
         try {
             formikRef.current.setFieldValue("Code", "");
-            await processPayment(swap)
+            await processPayment(swap.data.id)
         } catch (error) {
             const data: ApiError = error?.response?.data?.error
 
@@ -96,7 +95,7 @@ const TwoFactorStep: FC = () => {
                 toast.error(data.message)
             }
         }
-        finally{
+        finally {
             setLoading(false)
         }
     }, [swap])
@@ -113,8 +112,8 @@ const TwoFactorStep: FC = () => {
                     if (!/^[0-9]*$/.test(values.Code)) {
                         errors.Code = "Value should be numeric";
                     }
-                    else if (values.Code.length != 7) {
-                        errors.Code = `The length should be 6 instead of ${values.Code.length}`;
+                    else if (values.Code.length != 7 && values.Code.length != 6) {
+                        errors.Code = `The length should be 6 or 7 instead of ${values.Code.length}`;
                     }
                     return errors;
                 }}

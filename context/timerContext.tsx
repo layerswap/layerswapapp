@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useInterval } from '../hooks/useInterval';
 
 const TimerStateContext = React.createContext<DataContextType>(null);
 
@@ -51,20 +52,3 @@ export function useTimerState() {
     return data;
 }
 
-function useInterval(callback, delay) {
-    const savedCallback = useRef(undefined)
-
-    useEffect(() => {
-        savedCallback.current = callback
-    }, [callback])
-
-    useEffect(() => {
-        function tick() {
-            savedCallback.current()
-        }
-        if (delay !== null) {
-            let id = setInterval(tick, delay)
-            return () => clearInterval(id)
-        }
-    }, [delay])
-}

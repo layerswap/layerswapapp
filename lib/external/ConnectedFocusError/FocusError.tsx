@@ -43,7 +43,6 @@ export function FocusError({
         document.querySelector('.focus-peer')?.classList?.remove("focus-peer")
         
         errorNames.forEach((errorKey) => {
-          console.log("errorKey",errorKey)
           if (Object.keys(touched).find(x => x == errorKey)) {
             return
           }

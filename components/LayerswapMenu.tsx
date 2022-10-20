@@ -1,7 +1,7 @@
-import { Menu, Transition } from "@headlessui/react";
+import { Menu } from "@headlessui/react";
 import { MenuIcon } from "@heroicons/react/outline";
 import { useRouter } from "next/router";
-import { Fragment, useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../context/authContext";
 import { useMenuState } from "../context/menu";
@@ -99,7 +99,7 @@ export default function () {
                                                                     'block px-4 py-2 text-left hover:bg-darkblue-300 whitespace-nowrap'
                                                                 )}
                                                             >
-                                                                Swap history
+                                                                Swap History
                                                             </a>
                                                         )}
                                                     </Menu.Item>
@@ -160,7 +160,7 @@ export default function () {
                                                                         'block w-full text-left px-4 py-2 whitespace-nowrap'
                                                                     )}
                                                                 >
-                                                                    Sign out
+                                                                    Sign Out
                                                                 </button>
                                                             )}
                                                         </Menu.Item>

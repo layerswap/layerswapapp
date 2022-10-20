@@ -1,8 +1,9 @@
 import React from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
-import { QueryProvider } from "../context/query";
+import QueryProvider from "../context/query";
 import ThemeWrapper from "./themeWrapper";
+import { QueryParams } from "../Models/QueryParams";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -12,7 +13,11 @@ type Props = {
 
 export default function Layout({ hideFooter, hideNavbar, children }: Props) {
   const router = useRouter();
-  const query = router.query
+  const query: QueryParams = {
+    ...router.query,
+    ...(router.query.lockAddress === 'true' ? { lockAddress: true } : {}),
+    ...(router.query.lockNetwork === 'true' ? { lockNetwork: true } : {}),
+  };
 
   return (<>
     <Head>

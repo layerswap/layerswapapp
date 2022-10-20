@@ -18,7 +18,7 @@ const OffRampSwapConfirmationStep: FC = () => {
     const { exchange, currency } = swapFormData || {}
     const { currentStepName } = useFormWizardState<SwapCreateStep>()
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const { createAndProcessSwap, updateSwapFormData } = useSwapDataUpdate()
+    const { createAndProcessSwap, updateSwapFormData, processPayment } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const { network } = swapFormData || {}
     const router = useRouter();
@@ -34,7 +34,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                 return;
             }
             const layerswapApiClient = new LayerswapApiClient(router)
-            const response = await layerswapApiClient.GetExchangeDepositAddress(exchange?.baseObject?.internal_name, currency?.baseObject?.asset?.toUpperCase(), authData.access_token)
+            const response = await layerswapApiClient.GetExchangeDepositAddress(exchange?.baseObject?.internal_name, currency?.baseObject?.asset?.toUpperCase())
             updateSwapFormData((old) => ({ ...old, destination_address: response.data }))
         })()
     }, [currentStepName])
@@ -42,8 +42,15 @@ const OffRampSwapConfirmationStep: FC = () => {
     const handleSubmit = useCallback(async () => {
         setIsSubmitting(true)
         try {
-            const swapId = await createAndProcessSwap();
-            router.push(`/${swapId}`)
+            if (!swap) {
+                const swapId = await createAndProcessSwap();
+                router.push(`/${swapId}`)
+            }
+            else {
+                const swapId = swap.data.id
+                await processPayment(swapId)
+                router.push(`/${swapId}`)
+            }
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error

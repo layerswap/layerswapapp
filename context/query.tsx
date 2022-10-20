@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import useStorage from '../hooks/useStorage';
 import { QueryParams } from '../Models/QueryParams';
 
+const STORAGE_KEY = "settings_query_params"
+
 const QueryStateContext = React.createContext<QueryParams>(null);
 
-
-const STORAGE_KEY = "settings_query_params"
-export function QueryProvider({ children, query }) {
+const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
 
   const [data, setData] = useState<QueryParams>(query)
   const { setItem, getItem } = useStorage()
@@ -51,3 +51,5 @@ export function useQueryState() {
 
   return data;
 }
+
+export default QueryProvider;
