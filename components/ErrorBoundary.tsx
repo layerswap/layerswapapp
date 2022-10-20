@@ -9,7 +9,7 @@ class ErrorBoundary extends React.Component<{}, { hasError: boolean }> {
     constructor(props) {
         super(props)
         // Define a state variable to track whether is an error or not
-        this.state = { hasError: true }
+        this.state = { hasError: false }
     }
     static getDerivedStateFromError(error) {
         // Update state so the next render will show the fallback UI
