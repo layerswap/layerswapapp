@@ -26,6 +26,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     {({ field }) => (
                         <input
                             {...field}
+                            value={field.value || ""}
                             ref={ref}
                             placeholder={"0x123...ab56c"}
                             autoCorrect="off"

@@ -8,7 +8,7 @@ import APIKeyStep from "./Steps/APIKeyStep";
 import CodeStep from "./Steps/CodeStep";
 import SwapConfirmationStep from "./Steps/ConfirmStep";
 import EmailStep from "./Steps/EmailStep";
-import MainStep from "./Steps/MainStep";
+import MainStep from "./Steps/MainStep/index";
 import OfframpAccountConnectStep from "./Steps/OfframpAccountConnectStep";
 import TwoFactorStep from "./Steps/TwoFactorStep";
 import Wizard from "./Wizard";

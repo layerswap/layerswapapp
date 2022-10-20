@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-export function useInterval(callback: () => Promise<boolean>, dependencies: any[] = [], delay: number = 50000) {
+export function useComplexInterval(callback: () => Promise<boolean>, dependencies: any[] = [], delay: number = 50000) {
     const timeoutIdRef = useRef(null)
 
     useEffect(() => {
@@ -26,6 +26,26 @@ export function useInterval(callback: () => Promise<boolean>, dependencies: any[
         }
     }, [...dependencies, delay])
 }
+
+export function useInterval(callback, delay) {
+    const savedCallback = useRef(undefined)
+
+    useEffect(() => {
+        savedCallback.current = callback
+    }, [callback])
+
+    useEffect(() => {
+        function tick() {
+            savedCallback.current()
+        }
+        if (delay !== null) {
+            let id = setInterval(tick, delay)
+            return () => clearInterval(id)
+        }
+    }, [delay])
+}
+
+
 
 export function useDelayedInterval(callback: () => Promise<boolean>, dependencies: any[] = [], delay: number = 50000) {
     const timeoutIdRef = useRef(null)

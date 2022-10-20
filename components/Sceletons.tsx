@@ -243,4 +243,3 @@ export const ExchangesComponentSceleton = () => {
   </>
 
 }
-

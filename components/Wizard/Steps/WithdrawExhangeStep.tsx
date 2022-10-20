@@ -1,12 +1,9 @@
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
-import { useInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
-import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
-import { SwapStatus } from '../../../Models/SwapStatus';
 import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
 import ExchangeSettings from '../../../lib/ExchangeSettings';
@@ -15,35 +12,33 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
+import { useEffectOnce } from 'react-use';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const { swap } = useSwapDataState()
-    const { currentStepName: currentStep } = useFormWizardState<SwapWithdrawalStep>()
     const { data } = useSettingsState()
-    const { exchanges, currencies, discovery: { resource_storage_url } } = data
+    const { swap } = useSwapDataState()
+    const { setInterval } = useSwapDataUpdate()
+
+    useEffectOnce(() => {
+        setInterval(2000)
+        return () => setInterval(0)
+    })
+
+    const { exchanges, discovery: { resource_storage_url } } = data
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
-    const { getSwap } = useSwapDataUpdate()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swapId } })
 
-    useInterval(async () => {
-        if (currentStep !== SwapWithdrawalStep.Withdrawal)
-            return true;
+    const swapStatusStep = GetSwapStatusStep(swap)
 
-        const authData = TokenService.getAuthData();
-        if (!authData)
-            goToStep(SwapWithdrawalStep.Email)
-
-        const swap = await getSwap(swapId.toString())
-
-        const swapStatusStep = GetSwapStatusStep(swap)
+    useEffect(() => {
         if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal)
             goToStep(swapStatusStep)
-    }, [currentStep], 10000)
+    }, [swapStatusStep])
 
     const handleConfirm = useCallback(async () => {
         setTransferDone(true)
@@ -57,7 +52,7 @@ const WithdrawExchangeStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-6 md:px-8 flex space-y-5 flex-col justify-between h-full text-primary-text">
+            <div className={`w-full px-6 md:px-8 flex space-y-5 flex-col justify-between h-full text-primary-text`}>
                 <div className='space-y-4'>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">
@@ -99,7 +94,7 @@ const WithdrawExchangeStep: FC = () => {
                             </div>
                         </div>
                     }
-                    <div className='mb-6 grid grid-cols-1 gap-5'>
+                    <div className={`mb-6 grid grid-cols-1 gap-5 `}>
                         <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Address'}>
                             <p className='break-all'>
                                 {swap?.data?.additonal_data?.deposit_address}
@@ -173,7 +168,6 @@ const WithdrawExchangeStep: FC = () => {
                         </div>
                 }
             </div>
-
         </>
     )
 }

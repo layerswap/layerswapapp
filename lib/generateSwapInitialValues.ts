@@ -14,7 +14,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
 
     const { data: { exchanges, networks, discovery: { resource_storage_url } } } = settings || {}
     const destAddress = queryParamAddress || account
-
+        
     const networkIsAvailable = (n: CryptoNetwork) => {
         return swapType === SwapType.OffRamp ?
             n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (exchanges.some(e => {
@@ -36,7 +36,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
         destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
 
     let initialExchange =
-        availableExchanges.find(x => x.baseObject.internal_name === sourceExchangeName?.toLowerCase() && (swapType === SwapType.OffRamp ? x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)));
+        availableExchanges.find(x => x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() && (swapType === SwapType.OffRamp ? x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)));
 
     let initialSwapType =
         ((products?.toLowerCase() == SwapType.OffRamp || products?.toLowerCase() == SwapType.OnRamp || products?.toLowerCase() == (SwapType.OnRamp, SwapType.OffRamp) || products?.toLowerCase() == (SwapType.OnRamp, SwapType.OffRamp)) && products as SwapType) || swapType

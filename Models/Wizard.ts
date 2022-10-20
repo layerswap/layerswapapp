@@ -32,9 +32,6 @@ export enum SwapCreateStep {
 }
 
 export enum SwapWithdrawalStep {
-    Email = "Email",
-    Code = "Code",
-    Overview = "Overview",
     ExternalPayment = "ExternalPayment",
     Withdrawal = "Withdrawal",
     OffRampWithdrawal = "OffRampWithdrawal",
