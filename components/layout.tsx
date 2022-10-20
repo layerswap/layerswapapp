@@ -13,10 +13,10 @@ type Props = {
 
 export default function Layout({ hideFooter, hideNavbar, children }: Props) {
   const router = useRouter();
-  const query : QueryParams = {
+  const query: QueryParams = {
     ...router.query,
-    lockAddress: router.query.lockAddress === 'true',
-    lockNetwork: router.query.lockNetwork === 'true',
+    ...(router.query.lockAddress === 'true' ? { lockAddress: true } : {}),
+    ...(router.query.lockNetwork === 'true' ? { lockNetwork: true } : {}),
   };
 
   return (<>
