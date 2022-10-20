@@ -3,6 +3,7 @@ import Head from "next/head"
 import { useRouter } from "next/router";
 import { QueryProvider } from "../context/query";
 import ThemeWrapper from "./themeWrapper";
+import ErrorBoundary from "./ErrorBoundary";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -41,10 +42,13 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpeg" />
       <script defer data-domain="layerswap.io" src="https://plausible.io/js/plausible.js"></script>
     </Head>
-    <QueryProvider query={query}>
-      <ThemeWrapper hideFooter={hideFooter} hideNavbar={hideNavbar}>
-        {children}
-      </ThemeWrapper>
-    </QueryProvider>
+    <ErrorBoundary >
+      <QueryProvider query={query}>
+        <ThemeWrapper hideFooter={hideFooter} hideNavbar={hideNavbar}>
+          {children}
+        </ThemeWrapper>
+      </QueryProvider>
+    </ErrorBoundary>
+
   </>)
 }
