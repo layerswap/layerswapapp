@@ -3,7 +3,7 @@ import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../context/authContext';
-import { SendMessage } from '../lib/telegram';
+import { SendFeedbackMessage } from '../lib/telegram';
 import SubmitButton from './buttons/submitButton';
 
 interface SendFeedbackFormValues {
@@ -23,7 +23,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
     const handleSendFeedback = useCallback(async (values: SendFeedbackFormValues) => {
         try {
             if (values.Feedback.length !== 0) {
-                const res = await SendMessage(email,values.Feedback)
+                const res = await SendFeedbackMessage(email,values.Feedback)
                 if (!res.ok) {
                     throw new Error(res.description || "Could not send feedback, something went wrong")
                 } else {

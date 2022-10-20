@@ -1,6 +1,6 @@
 import { NextRouter, withRouter } from "next/router"
 import React from "react"
-import { SendMessage } from "../lib/telegram"
+import { SendErrorMessage } from "../lib/telegram"
 import SubmitButton from "./buttons/submitButton"
 import ContactSupport from "./ContactSupport"
 import Navbar from "./navbar"
@@ -17,7 +17,7 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
     static getDerivedStateFromError(error) {
         // Update state so the next render will show the fallback UI
         try {
-            SendMessage("UI error", error?.message)
+            SendErrorMessage("UI error", error?.message)
         }
         catch (e) {
             //TODO should error be handled? and how?
