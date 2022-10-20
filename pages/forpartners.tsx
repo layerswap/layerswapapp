@@ -17,7 +17,7 @@ export default function ForPartners(props) {
         <Layout>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
                 <Head>
-                    <title>For Layerswap Partners</title>
+                    <title>Layerswap Partners</title>
                 </Head>
                 <main>
                     <div className="flex-col justify-center py-4 px-8 md:px-0 ">
