@@ -40,8 +40,8 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconW
                     <QrcodeIcon className={iconClassName} width={iconWidth ? iconWidth : 16} height={iconHeight ? iconHeight : 16} />
                 </div>
             </div>
-            <Modal onDismiss={handleCloseModal} isOpen={isOpen} className='max-w-sm'>
-                <div className="flex flex-col justify-between items-center space-y-6 md:space-y-8 mt-6 md:mt-8 px-6 md:px-8">
+            <Modal onDismiss={handleCloseModal} isOpen={isOpen} modalSize='medium'>
+                <div className="flex flex-col justify-between items-center space-y-6 md:space-y-8 mt-6 md:mt-8">
                     <div>
                         {qrCode}
                     </div>

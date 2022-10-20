@@ -33,15 +33,15 @@ const Wizard: FC<Props> = ({ children }) => {
    return <>
       <div className={`pb-6 bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative`}>
          <div className="relative">
-            <div className="overflow-hidden h-1 flex rounded-t-lg bg-darkblue-100">
+            <div className="overflow-hidden h-1 flex rounded-t-lg bg-darkblue-500">
                <div style={{ width: `${width}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
             </div>
          </div>
          <WizardHeader wrapperWidth={wrapperWidth} />
-         <div className='text-center text-xl text-darkblue-200'>
+         <div className='text-center text-xl text-darkblue-50'>
 
          </div>
-         <div className="relative">
+         <div className="relative px-6 md:px-8">
             <div className="flex items-start"
                ref={wrapper}>
                <AnimatePresence initial={false} custom={{ direction: moving === "forward" ? 1 : -1, width: wrapperWidth }}>
@@ -64,7 +64,7 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
             {
                goBack ?
                   <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
-                     <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-100 cursor-pointer' />
+                     <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
                   </button>
                   :
                   <div className='h-7 w-7'></div>

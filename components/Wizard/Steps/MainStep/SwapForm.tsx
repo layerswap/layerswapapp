@@ -34,7 +34,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
     return <>
         <Form className="h-full" >
             {values && <ConnectedFocusError />}
-            <div className="px-6 md:px-8 h-full flex flex-col justify-between">
+            <div className="h-full flex flex-col justify-between">
                 <div>
                     <SwapOptionsToggle />
                     <div className={classNames(values.swapType === SwapType.OffRamp ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
@@ -62,7 +62,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                     <AddressInput
                                         disabled={lockAddress || (!values.network || !values.exchange)}
                                         name={"destination_address"}
-                                        className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-600 border-darkblue-100 border rounded-md placeholder-gray-400 truncate')}
+                                        className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-md placeholder-gray-400 truncate')}
                                     />
                                 </div>
                             </div>

@@ -39,12 +39,12 @@ const ExternalPaymentStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-6 md:px-8 flex justify-between h-full flex-col">
+            <div className="w-full flex justify-between h-full flex-col">
                 <div className=' space-y-10'>
                     <div className="flex items-center">
                         <label className="block text-lg font-medium text-white">Complete {exchange_name} transfer</label>
                     </div>
-                    <div className="rounded-md border bg-darkblue-600 w-full grid grid-flow-row p-5 border-darkblue-100">
+                    <div className="rounded-md border bg-darkblue-700 w-full grid grid-flow-row p-5 border-darkblue-500">
                         <ul className='list-disc my-2 pl-5 text-primary-text'>
                             <li>
                                 By clicking Continue you will be directed to {exchange_name} to authorize and pay.

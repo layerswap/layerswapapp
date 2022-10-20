@@ -69,7 +69,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
 
     return (
         <>
-            <div className="w-full grid grid-flow-row px-6 md:px-8 text-primary-text">
+            <div className="w-full grid grid-flow-row text-primary-text">
                 <div className="flex items-center">
                     <h3 className="block text-lg text-white font-medium leading-6 mb-12">
                         You will leave Layerswap and be securely redirected to Coinbase authorization page.

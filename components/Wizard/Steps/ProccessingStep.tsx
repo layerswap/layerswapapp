@@ -26,7 +26,7 @@ const ProccessingStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-3 md:px-8 py-12 grid grid-flow-row">
+            <div className="w-full py-12 grid grid-flow-row">
                 <div className='flex place-content-center mt-20 mb-16 md:mb-8'>
                     <div className='relative'>
                         <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-primary rounded-full animate-ping'></div>

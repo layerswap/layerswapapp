@@ -79,7 +79,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
             >
                 {({ isValid, isSubmitting, errors, handleChange }) => (
                     <Form className='flex flex-col items-stretch min-h-[500px] text-primary-text'>
-                        <div className="w-full px-6 md:px-8 pt-4 flex-col flex-1 flex">
+                        <div className="w-full pt-4 flex-col flex-1 flex">
                             <MailOpenIcon className='w-16 h-16 mt-auto text-primary self-center' />
                             <div className='text-center mt-5'>
                                 <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{email}</span></p>
@@ -93,8 +93,8 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     onChange={e => {
                                         /^[0-9]*$/.test(e.target.value) && handleChange(e)
                                     }}
-                                    className="leading-none h-12 text-2xl pl-5 text-white focus:ring-primary text-center focus:border-primary border-darkblue-100 block
-                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
+                                    className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-darkblue-500 block
+                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-700  w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                             </div>
                             <span className="flex text-sm leading-6 items-center mt-1.5">

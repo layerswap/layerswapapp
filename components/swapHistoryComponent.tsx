@@ -147,7 +147,7 @@ function TransactionsHistory() {
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="hidden md:block">
           <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
-          <span className="text-gray-500 font-medium">{email}</span>
+          <span className="text-primary-text font-medium">{email}</span>
         </div>
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
           <div className="flex justify-center">
@@ -165,16 +165,16 @@ function TransactionsHistory() {
                 <>
                   <div className="mb-2">
                     <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
-                      <table className="min-w-full divide-y divide-darkblue-100">
-                        <thead>
+                      <table className="min-w-full divide-y divide-darkblue-500">
+                        <thead className="text-primary-text">
                           <tr>
                             <th
                               scope="col"
-                              className="hidden pr-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                              className="hidden pr-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
                               Id
                             </th>
-                            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-500 sm:pl-6">
+                            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold  sm:pl-6">
                               <div className="hidden lg:block">
                                 From
                               </div>
@@ -184,32 +184,32 @@ function TransactionsHistory() {
                             </th>
                             <th
                               scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
                               To
                             </th>
                             <th
                               scope="col"
-                              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-500 "
+                              className="px-3 py-3.5 text-left text-sm font-semibold  "
                             >
                               Amount
                             </th>
                             <th
                               scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
                               Transaction
                             </th>
                             <th
                               scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
                               Status
                             </th>
 
                             <th
                               scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
                               Date
                             </th>
@@ -232,19 +232,19 @@ function TransactionsHistory() {
                             return <tr key={swap.id}>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'hidden pr-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
                                 <div className='inline-flex items-center'>
-                                  <CopyButton iconClassName="text-gray-500" toCopy={swap.id}>
+                                  <CopyButton iconClassName="text-primary-text" toCopy={swap.id}>
                                     {shortenAddress(swap.id)}
                                   </CopyButton>
                                 </div>
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
                                 )}
                               >
@@ -283,7 +283,7 @@ function TransactionsHistory() {
                                 <div className="flex items-center mt-1 text-white sm:block lg:hidden">
                                   <span className="block lg:hidden">{(new Date(swap.created_date)).toLocaleString()}</span>
                                 </div>
-                                {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-100" /> : null}
+                                {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
                                 <span className="flex items-center sm:block lg:hidden">
                                   {<StatusIcon status={swap.status} />}
                                   {/* {plan.from} - {plan.to} */}
@@ -291,7 +291,7 @@ function TransactionsHistory() {
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
@@ -315,7 +315,7 @@ function TransactionsHistory() {
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'md:px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
@@ -340,7 +340,7 @@ function TransactionsHistory() {
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
@@ -355,7 +355,7 @@ function TransactionsHistory() {
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'relative px-3 py-3.5 text-sm text-white hidden lg:table-cell group'
                                 )}
                               >
@@ -364,7 +364,7 @@ function TransactionsHistory() {
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-100',
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
                                 )}
                               >
@@ -383,7 +383,7 @@ function TransactionsHistory() {
                                 >
                                   <ChevronRightIcon className="h-5 w-5" />
                                 </button>
-                                {index !== 0 ? <div className="absolute right-6 left-0 -top-px h-px bg-darkblue-100" /> : null}
+                                {index !== 0 ? <div className="absolute right-6 left-0 -top-px h-px bg-darkblue-500" /> : null}
                               </td>
                             </tr>
                           })}
@@ -411,8 +411,8 @@ function TransactionsHistory() {
                       </button>
                     }
                   </div>
-                  <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} className='max-w-md'>
-                    <div className="px-6 md:px-8">
+                  <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} modalSize='medium'>
+                    <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {
                         data.networks && selectedSwap?.transaction_id &&

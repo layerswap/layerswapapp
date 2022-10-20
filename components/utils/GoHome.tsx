@@ -31,7 +31,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
                         <ContextMenuPrimitive.Trigger>
                             <LayerSwapLogo className={className ?? "h-8 w-auto text-primary-logoColor"} />
                         </ContextMenuPrimitive.Trigger>
-                        <ContextMenuPrimitive.Content className="dialog-overlay absolute z-40 border h-fit text-primary-text border-darkblue-200 mt-2 w-fit rounded-md shadow-lg bg-darkblue ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <ContextMenuPrimitive.Content className="dialog-overlay absolute z-40 border h-fit text-primary-text border-darkblue-50 mt-2 w-fit rounded-md shadow-lg bg-darkblue ring-1 ring-black ring-opacity-5 focus:outline-none">
                             <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full rounded-t hover:bg-darkblue-300 whitespace-nowrap">
                                 <CopyButton toCopy={renderToString(<LayerSwapLogo />)}>Copy logo as SVG</CopyButton>
                             </ContextMenuPrimitive.ContextMenuItem >

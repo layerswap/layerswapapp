@@ -10,9 +10,8 @@ function IntroCard(props) {
                         Save up to 10x on fees when moving crypto from Coinbase, Binance or FTX to Arbitrum, zkSync, Loopring and other L2s.
                     </p>
                     <p className="py-4">
-                        <span className="text-sm font-semibold mr-2 rounded-md py-1 px-2 text-primary border border-primary uppercase">New</span>
-
-                        <span className="inline">
+                        <span className="text-sm font-semibold mr-2 rounded-md py-1 px-2 text-white border border-white uppercase">New</span>
+                        <span>
                             Transfer from Loopring to Coinbase and Binance (  🥳  off-ramp)
                         </span>
                     </p>

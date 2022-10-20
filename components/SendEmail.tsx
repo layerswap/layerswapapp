@@ -70,7 +70,7 @@ const SendEmail: FC<Props> = ({ onSend }) => {
                 {({ isValid, isSubmitting }) => (
 
                     <div className='flex flex-col items-stretch min-h-[500px] text-primary-text'>
-                        <div className="w-full px-6 md:px-8 pt-4 flex-col flex-1 flex">
+                        <div className="w-full pt-4 flex-col flex-1 flex">
                             <UserIcon className='w-16 h-16 mt-auto text-primary self-center' />
                             <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
                                 What's your email?
@@ -88,8 +88,8 @@ const SendEmail: FC<Props> = ({ onSend }) => {
                                                 placeholder="john@example.com"
                                                 autoComplete="email"
                                                 type="email"
-                                                className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-100 pr-42 block
-                                                   placeholder:text-primary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md"
+                                                className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-500 pr-42 block
+                                                   placeholder:text-primary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md"
                                             />
                                         )}
                                     </Field>

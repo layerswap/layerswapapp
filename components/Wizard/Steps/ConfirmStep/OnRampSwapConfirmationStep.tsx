@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import ToggleButton from '../../../buttons/toggleButton';
 import { isValidAddress } from '../../../../lib/addressValidator';
 import AddressDetails from '../../../DisclosureComponents/AddressDetails';
-import { Form, Formik, FormikErrors, FormikProps } from 'formik';
+import { FormikProps } from 'formik';
 import { nameOf } from '../../../../lib/external/nameof';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormValues';
@@ -167,7 +167,7 @@ const OnRampSwapConfirmationStep: FC = () => {
     }
     return (
         <>
-            <div className='px-6 md:px-8 h-full flex flex-col justify-between'>
+            <div className='h-full flex flex-col justify-between'>
                 <SwapConfirmMainData>
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
@@ -197,7 +197,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                         Editing your {swapFormData?.network?.name} wallet address</h4>
                 }
             >
-                <div className='grid grid-flow-row px-6 md:px-8 text-primary-text'>
+                <div className='grid grid-flow-row text-primary-text'>
                     <div>
                         <label htmlFor="address" className="block font-normal text-sm text-left">
                             Address
@@ -211,7 +211,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                                 type={"text"}
                                 name="destination_address"
                                 id="destination_address"
-                                className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-600 border-darkblue-100 border rounded-md truncate'}
+                                className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-0 focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-md truncate'}
                             />
                             {
                                 addressInputError &&
@@ -239,7 +239,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                         You already have pending swap for {exchange.name} </h4>
                 }
             >
-                <div className='grid grid-flow-row px-6 md:px-8 text-primary-text'>
+                <div className='grid grid-flow-row text-primary-text'>
                     <div className='mb-4'>
                         <SwapDetails id={exchangePendingSwap?.id} />
                     </div>

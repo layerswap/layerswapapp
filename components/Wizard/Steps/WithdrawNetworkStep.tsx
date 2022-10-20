@@ -65,7 +65,7 @@ const WithdrawNetworkStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-6 md:px-8 space-y-5 flex flex-col justify-between h-full text-primary-text">
+            <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">
@@ -147,7 +147,7 @@ const WithdrawNetworkStep: FC = () => {
                                     </p>
                                 </BackgroundField>
                                 <WarningMessage>
-                                    <p className='font-normal text-sm text-darkblue-600'>
+                                    <p className='font-normal text-sm text-darkblue-700'>
                                         Please include the "Memo" field, it is required for a successful transfer.
                                     </p>
                                 </WarningMessage>

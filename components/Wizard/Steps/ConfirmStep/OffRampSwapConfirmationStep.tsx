@@ -52,7 +52,7 @@ const OffRampSwapConfirmationStep: FC = () => {
 
     return (
         <>
-            <div className='px-6 md:px-8 h-full flex flex-col justify-between'>
+            <div className='h-full flex flex-col justify-between'>
                 <SwapConfirmMainData>
                     {
                         NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage &&

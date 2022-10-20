@@ -21,7 +21,7 @@
 @layer base {
 
   body {
-    @apply bg-gray-900;
+    @apply bg-darkblue-900;
   }
 
   /* On iOS disabled inputs have default opacitiy */

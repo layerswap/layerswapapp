@@ -82,14 +82,14 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                     <span className="ml-3 block truncate">{value.name}</span>
                                 </span>
 
-                                <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-light-blue">
+                                <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-primary-text">
                                     <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
                                 </span>
                             </>
                         }
                     </Listbox.Button>
                     <AnimatePresence>
-                        <Listbox.Options className="ring-1 ring-darkblue-100 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-darkblue-600 rounded-md py-1 overflow-hidden focus:outline-none">
+                        <Listbox.Options className="ring-1 ring-darkblue-500 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-darkblue-700 rounded-md py-1 overflow-hidden focus:outline-none">
                             {values.map((item) => (
                                 <Listbox.Option
                                     key={item.id}
@@ -152,7 +152,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     name={name}
                     onClick={openModal}
                     disabled={disabled}
-                    className="rounded-lg focus-peer:ring-primary focus-peer:border-darkblue-100 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold"
+                    className="rounded-lg focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-700 font-semibold"
                 >
                     <span className='flex grow text-left items-center'>
                         {
@@ -208,7 +208,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                     <div className="block ">
                                         <button
                                             type="button"
-                                            className="rounded-md text-darkblue-200 hover:text-primary-text"
+                                            className="rounded-md text-darkblue-50 hover:text-primary-text"
                                             onClick={closeModal}
                                         >
                                             <span className="sr-only">Close</span>
@@ -231,7 +231,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 aria-hidden="true"
                                             />
                                             <Combobox.Input
-                                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-primary focus:border-primary block font-semibold bg-darkblue-600 border-darkblue-100 border truncate"
+                                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-0 focus:border-primary block font-semibold bg-darkblue-700 border-darkblue-500 border truncate"
                                                 placeholder="Search..."
                                                 onChange={handleQueryInputChange}
                                                 value={query}
@@ -244,7 +244,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                         key={item.id}
                                                         value={item}
                                                         disabled={!item.isAvailable}
-                                                        className={`flex text-left ${item.id === selectedItem?.id ? 'bg-darkblue-300' : 'bg-darkblue-500'} ${!item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-300 select-none rounded-lg p-3`}
+                                                        className={`flex text-left ${item.id === selectedItem?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
                                                         onClick={() => handleSelect(item)}
                                                     >
                                                         {({ active, disabled }) => (
@@ -284,14 +284,14 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                         )}
 
                                         {query !== '' && filteredItems.length === 0 && (
-                                            <div className="py-14 px-6 text-center text-sm sm:px-14">
+                                            <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
                                                 <ExclamationCircleIcon
                                                     type="outline"
                                                     name="exclamation-circle"
-                                                    className="mx-auto h-6 w-6 text-primary-text"
+                                                    className="mx-auto h-16 w-16 text-primary"
                                                 />
-                                                <p className="mt-4 font-semibold text-gray-900">No results found</p>
-                                                <p className="mt-2 text-gray-500">No components found for this search term. Please try again.</p>
+                                                <p className="mt-4 font-semibold">No 'items' found.</p>
+                                                <p className="mt-2">Please try a different search term.</p>
                                             </div>
                                         )}
                                     </Combobox>
