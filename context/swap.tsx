@@ -7,7 +7,7 @@ import { useQueryState } from './query';
 import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
-import useSWR, { useSWRConfig } from 'swr';
+import useSWR from 'swr';
 
 const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
@@ -32,9 +32,9 @@ type SwapData = {
 }
 
 export function SwapDataProvider({ children }) {
-    const [swapFormData, setSwapFormData] = React.useState<SwapFormValues>();
-    const [addressConfirmed, setAddressConfirmed] = React.useState<boolean>(false)
-    const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
+    const [swapFormData, setSwapFormData] = useState<SwapFormValues>();
+    const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
+    const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const router = useRouter();
     const [swapId, setSwapId] = useState(router.query.swapId?.toString())
 
@@ -138,7 +138,6 @@ export function useSwapDataState() {
 
 export function useSwapDataUpdate() {
     const updateFns = React.useContext<UpdateInterface>(SwapDataUpdateContext);
-
     if (updateFns === undefined) {
         throw new Error('useSwapDataUpdate must be used within a SwapDataProvider');
     }

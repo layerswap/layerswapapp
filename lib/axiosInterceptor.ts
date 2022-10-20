@@ -1,12 +1,8 @@
 import axios from "axios";
-import { NextRouter } from "next/router";
-import { AuthData } from "../context/authContext";
 import { parseJwt } from "./jwtParser";
 import TokenService from "./TokenService";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
-
-
-
+import {AuthRefreshFailedError} from './Errors/AuthRefreshFailedError';
 
 type TokenStates = {
     AccessTokenExpires: number;
@@ -14,17 +10,13 @@ type TokenStates = {
     RefreshingToken: boolean;
 }
 
-const REFRESH_BEFORE = 3
-
 const refreshTokenState: TokenStates = {
     AccessTokenExpires: 0,
     RefreshTokenExpires: 0,
     RefreshingToken: false,
 }
 
-
-
-export const InitializeInstance = (router?: NextRouter, redirect?: string) => {
+export const InitializeInstance = () => {
 
     const instance = axios.create({
         baseURL: LayerSwapAuthApiClient.identityBaseEndpoint,
@@ -33,7 +25,7 @@ export const InitializeInstance = (router?: NextRouter, redirect?: string) => {
         },
     });
 
-    async function RefreshAccessToken(refresh_token: string) {
+    async function RefreshAccessToken(refresh_token: string): Promise<boolean> {
         try {
             refreshTokenState.RefreshingToken = true
 
@@ -41,20 +33,17 @@ export const InitializeInstance = (router?: NextRouter, redirect?: string) => {
             params.append('client_id', 'layerswap_bridge_ui');
             params.append('grant_type', 'refresh_token');
             params.append('refresh_token', refresh_token);
-            //application/x-www-form-urlencoded
+
             const rs = await instance.post("/connect/token", params, { headers: { 'Accept': "application/json, text/plain, */*", 'Content-Type': "application/x-www-form-urlencoded;charset=UTF-8", 'Access-Control-Allow-Origin': '*' } });
             const res = rs.data;
             const { exp } = parseJwt(res.access_token) || {}
             refreshTokenState.AccessTokenExpires = exp
             TokenService.setAuthData(res)
+            return true
         }
-        catch (e) {
+        catch {
             TokenService.removeAuthData()
-            router && router.push({
-                pathname: '/auth',
-                query: { redirect: redirect }
-            })
-            throw new Error("Could not authenticate")
+            return false
         }
         finally {
             refreshTokenState.RefreshingToken = false
@@ -74,7 +63,10 @@ export const InitializeInstance = (router?: NextRouter, redirect?: string) => {
             }
 
             if (refresh_token && !refreshTokenState.RefreshingToken && refreshTokenState.AccessTokenExpires < Math.floor(Date.now() * 0.001)) {
-                await RefreshAccessToken(refresh_token)
+                let couldRefresh = await RefreshAccessToken(refresh_token)
+                if (!couldRefresh) {
+                    return Promise.reject(new AuthRefreshFailedError());
+                }
             }
 
             let token = TokenService.getAuthData()?.access_token;
@@ -93,27 +85,32 @@ export const InitializeInstance = (router?: NextRouter, redirect?: string) => {
             return res;
         },
         async (err) => {
-
             const originalConfig = err.config;
             if (err?.response?.status === 401 || err?.response?.status === 403) {
                 if (!originalConfig._retry && !refreshTokenState.RefreshingToken) {
                     originalConfig._retry = true;
+                    const config = { ...originalConfig }
+                    let goToAuth = false;
                     try {
-                        const refres_token = TokenService.getAuthData()?.refresh_token
-                        const config = { ...originalConfig }
-                        if (!refres_token)
-                            return instance(config);
-                        await RefreshAccessToken(refres_token)
-                        return instance(config);
+                        const refresh_token = TokenService.getAuthData()?.refresh_token
+                        if (refresh_token) {
+                            const couldRefreshToken = await RefreshAccessToken(refresh_token);
+                            if (couldRefreshToken) {
+                                return config;
+                            }
+                        }
+
+                        goToAuth = true;
                     } catch (_error) {
-                        router && router.push({
-                            pathname: '/auth',
-                            query: { redirect: redirect }
-                        })
-                        throw new Error("Could not authenticate")
+                        goToAuth = true;
+                    }
+
+                    if (goToAuth) {
+                        return Promise.reject(new AuthRefreshFailedError());
                     }
                 }
             }
+
             return Promise.reject(err);
         }
     );

@@ -1,7 +1,7 @@
 import { PencilAltIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useRef, useState } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
@@ -60,6 +60,7 @@ const OnRampSwapConfirmationStep: FC = () => {
     const transferAmount = `${amount} ${currency?.name}`
     const handleSubmit = useCallback(async (e: any) => {
         setLoading(true)
+        let nextStep:SwapCreateStep;
         if (codeRequested)
             return goToStep(SwapCreateStep.TwoFactor)
 
@@ -76,26 +77,25 @@ const OnRampSwapConfirmationStep: FC = () => {
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
-
             if (!data) {
                 toast.error(error.message)
                 return
             }
             //TODO create reusable error handler
             if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
-                goToStep(SwapCreateStep.OAuth)
+                nextStep = SwapCreateStep.OAuth
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
                 startTimer(TIMER_SECONDS)
                 setCodeRequested(true)
-                goToStep(SwapCreateStep.TwoFactor)
+                nextStep = SwapCreateStep.TwoFactor
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 toast.error(`${exchange.name} error: You don't have that much.`)
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
-                goToStep(SwapCreateStep.OAuth)
+                nextStep = SwapCreateStep.OAuth
             }
             else if (data.code === KnownwErrorCode.EXISTING_SWAP) {
                 const exchangePendingSwap = await getExchangePendingSwap(swapFormData)
@@ -112,6 +112,8 @@ const OnRampSwapConfirmationStep: FC = () => {
         }
         finally {
             setLoading(false)
+            if(nextStep)
+                goToStep(nextStep)
         }
     }, [exchange, swap, transferAmount])
 

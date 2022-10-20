@@ -13,7 +13,6 @@ import Timer from '../../TimerComponent';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 
-
 const TIMER_SECONDS = 120
 
 interface CodeFormValues {
@@ -113,8 +112,8 @@ const TwoFactorStep: FC = () => {
                     if (!/^[0-9]*$/.test(values.Code)) {
                         errors.Code = "Value should be numeric";
                     }
-                    else if (values.Code.length != 7) {
-                        errors.Code = `The length should be 6 instead of ${values.Code.length}`;
+                    else if (values.Code.length != 7 && values.Code.length != 6) {
+                        errors.Code = `The length should be 6 or 7 instead of ${values.Code.length}`;
                     }
                     return errors;
                 }}

@@ -14,7 +14,7 @@ const swapOptions: NavRadioOption[] = [
     { value: SwapType.OffRamp, isEnabled: true, isHighlighted: true }
 ];
 
-const SwapOptionsToggle = forwardRef((ref: any) => {
+const SwapOptionsToggle = forwardRef((_, ref: any) => {
     const {
         values: { swapType },
         resetForm,

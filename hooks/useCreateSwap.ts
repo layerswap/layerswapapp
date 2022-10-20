@@ -3,7 +3,7 @@ import AccountConnectStep from "../components/Wizard/Steps/AccountConnectStep";
 import APIKeyStep from "../components/Wizard/Steps/APIKeyStep";
 import CodeStep from "../components/Wizard/Steps/CodeStep";
 import EmailStep from "../components/Wizard/Steps/EmailStep";
-import MainStep from "../components/Wizard/Steps/MainStep";
+import MainStep from "../components/Wizard/Steps/MainStep/index";
 import OfframpAccountConnectStep from "../components/Wizard/Steps/OfframpAccountConnectStep";
 import SwapConfirmationStep from "../components/Wizard/Steps/ConfirmStep/OnRampSwapConfirmationStep";
 import { useFormWizardaUpdate } from "../context/formWizardProvider";
