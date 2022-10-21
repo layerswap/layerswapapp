@@ -74,11 +74,13 @@ export function CalculateMinAllowedAmount(currency?: Currency, exchange?: Exchan
     const double_fee = fee * 2
 
     let final_min_amount: number;
-    if (swapType == SwapType.OnRamp)
+    if (swapType == SwapType.OnRamp) {
         final_min_amount = Math.max(minAmount + fee, double_fee)
+        final_min_amount += GetExchangeFee(currency, exchange)
+    }
     else
         final_min_amount = (minAmount + double_fee)
-    final_min_amount += GetExchangeFee(currency, exchange)
+
 
     return roundDecimals(final_min_amount, currency.usd_price?.toFixed()?.length) || 0
 }
