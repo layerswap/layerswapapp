@@ -1,6 +1,7 @@
 import KnownInternalNames from "./knownIds";
 
 export default class ExchangeSettings {
+    CustomAuthorizationFlow?: "o_auth2" | "api_credentials";
     ExchangeWithdrawalPageUrl?: string;
     ExchangeApiKeyPageUrl?: string;
     UserApiKeyGuideUrl?: string;
@@ -71,6 +72,7 @@ export default class ExchangeSettings {
             ExchangeApiKeyPageUrl: "https://www.kucoin.com/account/api",
             RequireSelectInternal: true,
             KeyphraseDisplayName: "Keyphrase",
+            CustomAuthorizationFlow: "api_credentials"
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Okex] = {
             WithdrawalWarningMessage: "Please select the 'internal' withdrawal method.",
