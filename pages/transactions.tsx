@@ -10,19 +10,17 @@ import { CryptoNetwork } from '../Models/CryptoNetwork'
 export default function Transactions({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
   return (
-    <Layout>
-      <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8">
-        <div className="flex flex-col text-white animate-fade-in">
-          <SettingsProvider data={response}>
-            <AuthProvider>
-              <MenuProvider>
-                <TransactionsHistory />
-              </MenuProvider>
-            </AuthProvider>
-          </SettingsProvider>
-        </div>
-      </div>
-    </Layout>
+    <div className='wide-page'>
+      <Layout>
+        <SettingsProvider data={response}>
+          <AuthProvider>
+            <MenuProvider>
+              <TransactionsHistory />
+            </MenuProvider>
+          </AuthProvider>
+        </SettingsProvider>
+      </Layout>
+    </div>
   )
 }
 

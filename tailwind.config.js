@@ -131,6 +131,7 @@ module.exports = {
       addVariant('scrollbar', '&::-webkit-scrollbar');
       addVariant('scrollbar-thumb', '&::-webkit-scrollbar-thumb')
       addVariant('focus-peer', '.focus-peer &')
+      addVariant('wide-page', '.wide-page &')
     }),
     require('tailwindcss-themer')({
       defaultTheme: {

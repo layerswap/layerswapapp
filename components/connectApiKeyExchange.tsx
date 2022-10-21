@@ -22,7 +22,6 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
     const [keyphrase, setKeyphrase] = useState("")
-    const [docIframeIsOpen, setDocIframeIsOpen] = useState(false)
     const router = useRouter();
 
     useEffect(() => {
@@ -42,8 +41,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
         try {
             setLoading(true)
             const layerswapApiClient = new LayerswapApiClient(router);
-            const { access_token } = TokenService.getAuthData() || {};
-            const res = await layerswapApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase })
+            await layerswapApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase })
             onSuccess()
         }
         catch (error) {

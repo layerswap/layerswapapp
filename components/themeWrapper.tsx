@@ -38,7 +38,11 @@ export default function ({ hideNavbar, hideFooter, children }: Props) {
 
                 {hideNavbar ?? <Navbar />}
                 <div className={loading ? "animate-pulse" : ""}>
-                    {children}
+                    <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col container mx-auto sm:px-6 lg:px-8 max-w-2xl wide-page:max-w-max">
+                        <div className="flex flex-col w-full text-white animate-fade-in">
+                            {children}
+                        </div>
+                    </div>
                 </div>
                 {hideFooter ?? <FooterComponent />}
             </div>
