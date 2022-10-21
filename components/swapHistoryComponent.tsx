@@ -344,7 +344,7 @@ function TransactionsHistory() {
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
-                                {swap.transaction_id ?
+                                {swap.transaction_id && swap.type == SwapType.OnRamp ?
                                   <>
                                     <div className="underline hover:no-underline">
                                       <a target={"_blank"} href={transaction_explorer_template.replace("{0}", swap.transaction_id)}>{shortenAddress(swap.transaction_id)}</a>
@@ -415,7 +415,7 @@ function TransactionsHistory() {
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {
-                        data.networks && selectedSwap?.transaction_id &&
+                        data.networks && selectedSwap?.transaction_id && selectedSwap.type == SwapType.OnRamp &&
                         <div className="text-white text-sm mt-6">
                           <a href={data.networks.filter(x => x.id === selectedSwap?.id)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
                             target="_blank"
