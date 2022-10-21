@@ -21,9 +21,17 @@ const FailedStep: FC = () => {
                         <path d="M48 48L68 69" stroke="white" strokeWidth="3.15789" strokeLinecap="round" />
                     </svg>
                 </div>
-                <div className="flex items-center mb-14 md:mb-6 mx-5 md:mx-24 text-center grow">
-                    <label className="block text-lg font-lighter leading-6 text-primary-text text-center grow">{swap ? "Swap failed" : "Swap not found"}</label>
-                </div>
+                <p className='mb-12 mt-2 pt-2 md:text-2xl text-lg font-bold text-white leading-6 text-center font-roboto'>
+                    {swap ? "Swap failed" : "Swap not found"}
+                </p>
+                {
+                    swap?.data?.message &&
+                    <div className="mb-12 text-md font-medium space-y-6 text-primary-text">
+                        <p>
+                            {swap.data.message}
+                        </p>
+                    </div>
+                }
                 <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => {
                     boot();
                     show();
