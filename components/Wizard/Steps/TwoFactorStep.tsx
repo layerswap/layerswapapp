@@ -37,8 +37,8 @@ const TwoFactorStep: FC = () => {
 
     const handleSubmit = useCallback(async (values: CodeFormValues) => {
         try {
-            const swapId = await processPayment(swap.data.id, values.Code);
-            router.push(`/${swapId}`)
+            await processPayment(swap.data.id, values.Code);
+            router.push(`/${swap.data.id}`)
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error

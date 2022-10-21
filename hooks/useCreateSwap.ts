@@ -29,7 +29,14 @@ const useCreateSwap = () => {
     const handleCoinbaseOfframp = useCallback(async (formData: SwapFormValues, access_token: string) => {
         const exchanges = (await getUserExchanges())?.data
         const { exchange: selected_exchange, currency } = formData
+        const selected_exchange_id = selected_exchange.baseObject.id
         const selected_exchange_internal_name = selected_exchange?.baseObject?.internal_name
+        const selected_exchange_auth_flow = selected_exchange?.baseObject?.authorization_flow
+
+        const exchangeConncted = exchanges.some(e => e.exchange_id === selected_exchange_id)
+        if (!exchangeConncted)
+            return goToStep(OfframpExchangeAuthorizationSteps[selected_exchange_auth_flow])
+
         const layerswapApiClient = new LayerSwapApiClient(router)
         const asset = currency?.baseObject?.asset
         try {
@@ -44,10 +51,7 @@ const useCreateSwap = () => {
             }
         }
         catch (e) {
-            const selected_exchange_id = selected_exchange.baseObject.id
-            const selected_exchange_auth_flow = selected_exchange?.baseObject?.authorization_flow
-            if (exchanges.some(e => e.exchange_id === selected_exchange_id))
-                await layerswapApiClient.DeleteExchange(selected_exchange_internal_name)
+            await layerswapApiClient.DeleteExchange(selected_exchange_internal_name)
             return goToStep(OfframpExchangeAuthorizationSteps[selected_exchange_auth_flow])
         }
     }, [])
