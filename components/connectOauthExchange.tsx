@@ -66,7 +66,6 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
         }
     }, [exchange, router.query])
 
-
     return (
         <>
             <div className="w-full grid grid-flow-row text-primary-text">
