@@ -94,7 +94,7 @@ const AccountConnectStep: FC = () => {
 
     return (
         <>
-            <div className="w-full px-8 md:grid md:grid-flow-row min-h-[480px] text-primary-text font-light">
+            <div className="w-full md:grid md:grid-flow-row min-h-[480px] text-primary-text font-light">
 
                 <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please connect your {exchange_name} account

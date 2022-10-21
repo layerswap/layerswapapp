@@ -80,37 +80,37 @@ const OfframpAccountConnectStep: FC = () => {
     const exchange_name = swapFormData?.exchange?.name
 
     return (
-        <>
-            <div className="w-full px-8 md:grid md:grid-flow-row min-h-[480px] font-semibold font-roboto text-primary-text">
-                <h3 className=' pt-2 text-xl text-center md:text-left  text-white'>
+        <div className="w-full flex flex-col h-full justify-between font-semibold font-roboto text-primary-text">
+            <div className='text-center md:text-left'>
+                <p className='pt-2 text-lg md:text-xl text-white'>
                     Please connect your {exchange_name} account
-                </h3>
+                </p>
                 <p>
                     Allow Layerswap to read your Coinbase account's <span className='text-white'>email address.</span>
                 </p>
-                <div className="w-full color-white">
-                    <div className="flex justify-center items-center m-7 space-x-3">
-                        <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
-                            <Image
-                                src="/images/coinbaseWhite.png"
-                                alt="Exchange Logo"
-                                height="40"
-                                width="40"
-                                layout="responsive"
-                                className="object-contain rounded-md"
-                            />
-                        </div>
-                        <SwitchIcon />
-                        <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
-                            <Image
-                                src="/images/layerswapWhite.png"
-                                alt="Layerswap Logo"
-                                height="40"
-                                width="40"
-                                layout="responsive"
-                                className="object-contain rounded-md"
-                            />
-                        </div>
+            </div>
+            <div className="w-full color-white">
+                <div className="flex justify-center items-center m-7 space-x-3">
+                    <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
+                        <Image
+                            src="/images/coinbaseWhite.png"
+                            alt="Exchange Logo"
+                            height="40"
+                            width="40"
+                            layout="responsive"
+                            className="object-contain rounded-md"
+                        />
+                    </div>
+                    <SwitchIcon />
+                    <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
+                        <Image
+                            src="/images/layerswapWhite.png"
+                            alt="Layerswap Logo"
+                            height="40"
+                            width="40"
+                            layout="responsive"
+                            className="object-contain rounded-md"
+                        />
                     </div>
                 </div>
                 <div>
@@ -120,18 +120,18 @@ const OfframpAccountConnectStep: FC = () => {
                     <p className='mb-5 leading-5 font-normal'>Requested tokens will be creditted to the Coinbase account associated with that email address.</p>
                     <p className='leading-5 font-normal'>This allows us to read <strong>only your account's email address</strong>, no other permissions will be requested.</p>
                 </div>
-
-                <div className="text-white text-sm  mt-auto">
-                    <div className="flex md:mt-5 font-normal text-sm text-primary mb-3">
-                        <label className="block font-medium text-left leading-5 hover:underline"><a className='flex items-center' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">Read more about Coinbase's OAuth API here <ExternalLinkIcon className='ml-1 h-4 w-4'></ExternalLinkIcon></a> </label>
-                    </div>
-
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
-                        Connect
-                    </SubmitButton>
-                </div>
             </div>
-        </>
+
+            <div className="text-white text-sm  mt-auto">
+                <div className="flex md:mt-5 font-normal text-sm text-primary mb-3">
+                    <label className="block font-medium text-left leading-5 hover:underline"><a className='flex items-center' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">Read more about Coinbase's OAuth API here <ExternalLinkIcon className='ml-1 h-4 w-4'></ExternalLinkIcon></a> </label>
+                </div>
+
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+                    Connect
+                </SubmitButton>
+            </div>
+        </div>
     )
 }
 
