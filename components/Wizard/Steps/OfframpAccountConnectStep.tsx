@@ -1,9 +1,8 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useQueryState } from '../../../context/query';
-import { useSwapDataState } from '../../../context/swap';
-import { useUserExchangeDataUpdate } from '../../../context/userExchange';
+import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { parseJwt } from '../../../lib/jwtParser';
 import { OpenLink } from '../../../lib/openLink';
 import TokenService from '../../../lib/TokenService';
@@ -12,26 +11,28 @@ import SubmitButton from '../../buttons/submitButton';
 import Image from 'next/image'
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import SwitchIcon from '../../icons/switchIcon';
-import { useDelayedInterval, useInterval } from '../../../hooks/useInterval';
+import { useInterval } from '../../../hooks/useInterval';
 import useSWR from 'swr';
-import LayerSwapApiClient, { UserExchangesResponse } from '../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { ExchangeDepositAddressReponse, UserExchangesResponse } from '../../../lib/layerSwapApiClient';
 
 const OfframpAccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
-    const { exchange } = swapFormData || {}
+    const { exchange, currency } = swapFormData || {}
     const { o_auth_login_url } = swapFormData?.exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
-    const { currentStepName } = useFormWizardState<SwapCreateStep>()
-    const { getUserExchanges } = useUserExchangeDataUpdate()
     const [authWindow, setAuthWindow] = useState<Window>()
     const [salon, setSalon] = useState(false)
+    const { updateSwapFormData } = useSwapDataUpdate()
 
     const authWindowRef = useRef<Window | null>(null);
     const query = useQueryState()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const exchange_accounts_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts`
-    const { data: exchanges } = useSWR<UserExchangesResponse>(salon ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
+    const depositad_address_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts/${exchange?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
+
+    const { data: exchange_accouts } = useSWR<UserExchangesResponse>(salon ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
+    const { data: deposit_address } = useSWR<ExchangeDepositAddressReponse>((exchange_accouts && salon) ? depositad_address_endpoint : null, layerswapApiClient.fetcher)
 
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref = ""
@@ -53,14 +54,15 @@ const OfframpAccountConnectStep: FC = () => {
     )
 
     useEffect(() => {
-        if (exchanges && salon) {
-            const exchangeIsEnabled = exchanges?.data?.some(e => e.exchange_id === exchange.baseObject?.id)
+        if (exchange_accouts && salon && deposit_address) {
+            const exchangeIsEnabled = exchange_accouts?.data?.some(e => e.exchange_id === exchange.baseObject?.id)
             if (!exchange?.baseObject?.authorization_flow || exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
+                updateSwapFormData((old) => ({ ...old, destination_address: deposit_address.data }))
                 goToStep(SwapCreateStep.Confirm)
                 authWindowRef.current?.close()
             }
         }
-    }, [exchanges, salon])
+    }, [exchange_accouts, salon])
 
     const handleConnect = useCallback(() => {
         try {
