@@ -417,12 +417,12 @@ function TransactionsHistory() {
                       {
                         data.networks && selectedSwap?.transaction_id && selectedSwap.type == SwapType.OnRamp &&
                         <div className="text-white text-sm mt-6">
-                          <a href={data.networks.filter(x => x.id === selectedSwap?.id)[0]?.transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
+                          <a href={networks?.find(n => n.currencies.some(nc => nc.id === selectedSwap?.network_currency_id)).transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
                             target="_blank"
-                            className="shadowed-button group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                            className="shadowed-button cursor-pointer group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                             View in Explorer
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                          </a>
+                          </a> 
                         </div>
                       }
                       {
