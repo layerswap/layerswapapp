@@ -3,8 +3,10 @@ import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import LayerswapMenu from '../LayerswapMenu';
 import GoHomeButton from '../utils/GoHome';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ChartSquareBarIcon, ChatIcon } from '@heroicons/react/outline';
+import { AnimatePresence } from 'framer-motion';
+import { ChatIcon } from '@heroicons/react/outline';
+import { useIntercom } from 'react-use-intercom';
+import { useAuthState } from '../../context/authContext';
 
 type Props = {
    children: JSX.Element | JSX.Element[];
@@ -58,31 +60,37 @@ const Wizard: FC<Props> = ({ children }) => {
 
 function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
    const { goBack } = useFormWizardState()
+   const { boot, show, update } = useIntercom()
+   const { email } = useAuthState()
+   const updateWithProps = () => update({ email: email })
 
    return <>
-      <div className="w-full flex items-center justify-between px-6 md:px-8 mt-3 h-[44px]" >
-         <>
-            {
-               goBack ?
-                  <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
-                     <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
-                  </button>
-                  :
-                  <div className='h-7 w-7'></div>
-            }
-            <div className='mx-auto px-4 overflow-hidden md:hidden'>
-               <div className="flex justify-center">
-                  <GoHomeButton />
-               </div>
-            </div>
-            <div className='flex items-center space-x-1'>
-               <button className='flex items-center p-2 bg-darkblue-600 rounded-md text-xs space-x-1'>
-                  <ChatIcon className='h-4 w-4' />
-                  <p className='hidden md:block'>Get Help</p>
+      <div className="w-full grid grid-cols-4 md:grid-cols-2 grid-rows-1 items-center px-6 md:px-8 mt-3 h-[44px]" >
+         {
+            goBack ?
+               <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
+                  <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
                </button>
-               <LayerswapMenu />
-            </div>
-         </>
+               :
+               <div className='h-7 w-7'></div>
+         }
+         <div className='mx-auto overflow-hidden md:hidden ml-4'>
+            <GoHomeButton />
+         </div>
+         <div className='flex items-center space-x-1 justify-end col-start-4'>
+            <button
+               className='flex items-center p-2 bg-darkblue-600 hover:bg-darkblue-500 rounded-md text-xs space-x-1'
+               onClick={() => {
+                  boot();
+                  show();
+                  updateWithProps()
+               }}
+            >
+               <ChatIcon className='h-5 w-5' />
+               <p className='hidden md:block'>Get Help</p>
+            </button>
+            <LayerswapMenu />
+         </div>
       </div>
    </>
 }
