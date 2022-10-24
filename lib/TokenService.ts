@@ -4,12 +4,6 @@ class TokenService {
     getAuthData(): (AuthData | undefined | null) {
         return JSON.parse(typeof window !== 'undefined' && window?.localStorage?.getItem("authData")) || undefined;
     }
-    getEmail(): (string | undefined | null) {
-        return typeof window !== 'undefined' && window?.localStorage?.getItem("email");
-    }
-    setEmail(email) {
-        localStorage.setItem("email", email);
-    }
     setAuthData(data) {
         localStorage.setItem("authData", JSON.stringify(data));
     }

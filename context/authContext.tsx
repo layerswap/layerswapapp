@@ -1,12 +1,19 @@
 import React, { useCallback, useEffect } from 'react'
+import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
 
-const AuthStateContext = React.createContext<any>(null);
-const AuthDataUpdateContext = React.createContext<any>(null);
+const AuthStateContext = React.createContext<AuthState>(null);
+const AuthDataUpdateContext = React.createContext<UpdateInterface>(null);
 
+type AuthState = {
+    email: string,
+    authData: AuthData,
+    codeRequested: boolean,
+    tempEmail: string,
+}
 
 export type UpdateInterface = {
-    updateEmail: (email: string) => void,
+    updateTempEmail: (email: string) => void,
     updateAuthData: (data: any) => void,
     getAuthData: () => (AuthData | undefined)
     setCodeRequested(codeSubmitted: boolean): void;
@@ -15,42 +22,47 @@ export type UpdateInterface = {
 export function AuthProvider({ children }) {
 
     const [email, setEmail] = React.useState<string | undefined>()
+    const [tempEmail, setTempEmail] = React.useState<string | undefined>()
     const [authData, setAuthData] = React.useState<AuthData>({})
     const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
 
-    const setData = () => {
-        setEmail(TokenService.getEmail())
-        setAuthData(TokenService.getAuthData())
+    const updateDataFromLocalStorage = () => {
+        const authData = TokenService.getAuthData()
+        if (!authData || !authData.access_token)
+            return
+        const { email } = parseJwt(authData.access_token)
+        setAuthData(authData)
+        setEmail(email)
     }
 
-    useEffect(setData, [])
+    useEffect(updateDataFromLocalStorage, [])
 
     useEffect(() => {
         document.addEventListener(
             'storageChange',
-            setData,
+            updateDataFromLocalStorage,
             false
         )
-        return () => document.removeEventListener('storageChange', setData)
+        return () => document.removeEventListener('storageChange', updateDataFromLocalStorage)
     }, [])
 
     const updateFns: UpdateInterface = {
-        updateEmail: useCallback((email) => {
-            TokenService.setEmail(email)
-            setEmail(email)
+        updateTempEmail: useCallback((email) => {
+            setTempEmail(email)
         }, []),
         updateAuthData: useCallback((data) => {
+            setCodeRequested(false)
             TokenService.setAuthData(data)
-            setAuthData(data)
+            updateDataFromLocalStorage()
         }, []),
         getAuthData: useCallback(() => {
             return TokenService.getAuthData()
         }, []),
-        setCodeRequested: useCallback((codeRequested: boolean) => setCodeRequested(codeRequested),[codeRequested])
+        setCodeRequested: useCallback((codeRequested: boolean) => setCodeRequested(codeRequested), [codeRequested])
     };
 
     return (
-        <AuthStateContext.Provider value={{ email, authData, codeRequested }}>
+        <AuthStateContext.Provider value={{ email, authData, codeRequested, tempEmail }}>
             <AuthDataUpdateContext.Provider value={updateFns}>
                 {children}
             </AuthDataUpdateContext.Provider>
@@ -59,7 +71,7 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuthState() {
-    const data = React.useContext<{ authData: AuthData, email: string, codeRequested: boolean }>(AuthStateContext);
+    const data = React.useContext<AuthState>(AuthStateContext);
 
     if (data === undefined) {
         throw new Error('useAuthState must be used within a AuthStateProvider');
