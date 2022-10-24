@@ -7,6 +7,7 @@ import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/
 import { CryptoNetwork } from '../../Models/CryptoNetwork';
 import { getCurrencyDetails } from '../../helpers/currencyHelper';
 import { SwapType } from '../../lib/layerSwapApiClient';
+import ExchangeSettings from '../../lib/ExchangeSettings';
 
 type Props = {
     amount: number,
@@ -70,7 +71,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                             </label>
                                             <span className="text-center text-white">
                                                 {exchangeFee.toFixed(currencyDetails?.precision)}
-                                                <span>  {currencyDetails?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' /></span>}</span>
+                                                <span>  {currencyDetails?.asset} {ExchangeSettings.KnownSettings[exchange?.internal_name]?.FeeIsRefundable && <span className='inline-flex'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' /></span>}</span>
                                             </span>
                                         </div>
                                     }
