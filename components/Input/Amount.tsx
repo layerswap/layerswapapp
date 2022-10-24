@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef } from "react";
+import { forwardRef, useRef } from "react";
 import { getCurrencyDetails } from "../../helpers/currencyHelper";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -18,17 +18,18 @@ const AmountField = forwardRef((props: any, ref: any) => {
 
     const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currencyDetails?.precision)
+    const amountRef = useRef(ref)
 
     return (<>
         <NumericInput
-            label='Amount'
+            label={<p>Amount {document.activeElement == amountRef?.current && <span className="text-xs text-primary-text">({minAllowedAmount} - {maxAllowedAmount})</span>}</p>}
             disabled={!currency}
             placeholder={placeholder}
             min={minAllowedAmount}
             max={maxAllowedAmount}
             step={isNaN(step) ? 0.01 : step}
             name={name}
-            ref={ref}
+            ref={amountRef}
             precision={currencyDetails?.precision}
         >
             <CurrenciesField />

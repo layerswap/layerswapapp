@@ -4,6 +4,7 @@ import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWiza
 import LayerswapMenu from '../LayerswapMenu';
 import GoHomeButton from '../utils/GoHome';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ChartSquareBarIcon, ChatIcon } from '@heroicons/react/outline';
 
 type Props = {
    children: JSX.Element | JSX.Element[];
@@ -74,7 +75,13 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
                   <GoHomeButton />
                </div>
             </div>
-            <LayerswapMenu />
+            <div className='flex items-center space-x-1'>
+               <button className='flex items-center p-2 bg-darkblue-600 rounded-md text-xs space-x-1'>
+                  <ChatIcon className='h-4 w-4' />
+                  <p className='hidden md:block'>Get Help</p>
+               </button>
+               <LayerswapMenu />
+            </div>
          </>
       </div>
    </>

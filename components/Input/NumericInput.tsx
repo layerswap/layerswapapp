@@ -3,8 +3,8 @@ import { ChangeEvent, FC, forwardRef } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 
-interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
-    label?: string
+type Input = {
+    label?: JSX.Element | JSX.Element[]
     pattern?: string;
     disabled?: boolean;
     placeholder: string;
@@ -20,6 +20,7 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     ref?: any;
     onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
+
 // Use with Formik
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
     ({ label, pattern, disabled, placeholder, min, max, minLength, maxLength, precision, step, name, className, children, onChange }, ref) => {

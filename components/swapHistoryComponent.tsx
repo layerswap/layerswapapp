@@ -323,8 +323,8 @@ function TransactionsHistory() {
                                   {
                                     swap?.status == 'completed' && swap.received_amount != swap.requested_amount ?
                                       <div className="flex items-center">
-                                        {swap.received_amount}/
-                                        <HoverTooltip text='Requested Amount' moreClassNames="w-32 text-center">
+                                        {swap.received_amount} /
+                                        <HoverTooltip text='Amount You Requested' moreClassNames="w-40 text-center">
                                           <span className="underline decoration-dotted hover:no-underline">
                                             {swap.requested_amount}
                                           </span>
