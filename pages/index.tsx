@@ -7,6 +7,7 @@ import { LayerSwapSettings } from '../Models/LayerSwapSettings'
 import { QueryParams } from '../Models/QueryParams'
 import MaintananceContent from '../components/maintanance/maintanance'
 import NetworkSettings from '../lib/NetworkSettings'
+import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 
 type IndexProps = {
   settings?: LayerSwapSettings,
@@ -15,6 +16,7 @@ type IndexProps = {
 }
 
 export default function Home({ settings, inMaintanance }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  LayerSwapAuthApiClient.identityBaseEndpoint = settings.data.discovery.identity_url
   return (
     <Layout>
       {

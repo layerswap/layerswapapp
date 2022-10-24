@@ -24,13 +24,13 @@ const TIMER_SECONDS = 60
 const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     const initialValues: CodeFormValues = { Code: '' }
     const { start: startTimer, started } = useTimerState()
-    const { email, codeRequested } = useAuthState();
+    const { tempEmail } = useAuthState();
     const { updateAuthData } = useAuthDataUpdate()
 
     const handleResendCode = useCallback(async () => {
         try {
             const apiClient = new LayerSwapAuthApiClient();
-            const res = await apiClient.getCodeAsync(email)
+            const res = await apiClient.getCodeAsync(tempEmail)
             startTimer(TIMER_SECONDS)
         }
         catch (error) {
@@ -42,7 +42,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                 toast.error(error.message)
             }
         }
-    }, [email])
+    }, [tempEmail])
 
     return (
         <>
@@ -62,7 +62,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                 onSubmit={async (values: CodeFormValues) => {
                     try {
                         var apiClient = new LayerSwapAuthApiClient();
-                        const res = await apiClient.connectAsync(email, values.Code)
+                        const res = await apiClient.connectAsync(tempEmail, values.Code)
                         updateAuthData(res)
                         await onSuccessfullVerify(res);
                     }
@@ -82,7 +82,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                         <div className="w-full pt-4 flex-col flex-1 flex">
                             <MailOpenIcon className='w-16 h-16 mt-auto text-primary self-center' />
                             <div className='text-center mt-5'>
-                                <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{email}</span></p>
+                                <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{tempEmail}</span></p>
                             </div>
                             <div className="relative rounded-md shadow-sm mt-5">
                                 <NumericInput

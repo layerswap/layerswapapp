@@ -4,7 +4,7 @@ import AppSettings from "./AppSettings";
 
 
 export default class LayerSwapAuthApiClient {
-    static identityBaseEndpoint: string = AppSettings.IdentityApiUri;
+    static identityBaseEndpoint: string;
 
     async getCodeAsync(email): Promise<AuthGetCodeResponse> {
         return await axios.post(LayerSwapAuthApiClient.identityBaseEndpoint + '/api/auth/get_code',

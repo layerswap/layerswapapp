@@ -3,6 +3,7 @@ import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/authContext';
+import { useSettingsState } from '../context/settings';
 import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
@@ -18,24 +19,23 @@ type Props = {
 const TIMER_SECONDS = 60
 
 const SendEmail: FC<Props> = ({ onSend }) => {
-    const { email, codeRequested } = useAuthState()
-    const { setCodeRequested, updateEmail } = useAuthDataUpdate();
-    const initialValues: EmailFormValues = { email: email ?? "" };
+    const { codeRequested, tempEmail } = useAuthState()
+    const { setCodeRequested, updateTempEmail } = useAuthDataUpdate();
+    const initialValues: EmailFormValues = { email: tempEmail ?? "" };
     const { start: startTimer } = useTimerState()
-
     const sendEmail = useCallback(async (values: EmailFormValues) => {
         try {
             const inputEmail = values.email;
-            if (inputEmail != email || !codeRequested) {
+            if (inputEmail != tempEmail || !codeRequested) {
                 const apiClient = new LayerSwapAuthApiClient();
                 const res = await apiClient.getCodeAsync(inputEmail)
                 if (res.error)
                     throw new Error(res.error)
                 TokenService.setCodeNextTime(res?.data?.next)
                 setCodeRequested(true);
+                updateTempEmail(inputEmail)
                 startTimer(TIMER_SECONDS)
             }
-            updateEmail(inputEmail);
             onSend(inputEmail)
         }
         catch (error) {
@@ -47,7 +47,7 @@ const SendEmail: FC<Props> = ({ onSend }) => {
                 toast.error(error.message)
             }
         }
-    }, [email])
+    }, [tempEmail])
 
     function validateEmail(values: EmailFormValues) {
         let error: FormikErrors<EmailFormValues> = {};
