@@ -32,7 +32,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     {label}
                 </label>
             }
-            <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-600 border-darkblue-100 border ">
+            <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border ">
                 <input
                     {...field}
                     pattern={pattern ? pattern : "^[0-9]*[.,]?[0-9]*$"}
@@ -52,7 +52,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     id={name}
                     ref={ref}
                     className={classNames(
-                        'disabled:cursor-not-allowed h-12 bg-darkblue-600 focus:ring-primary focus:border-primary flex-grow block w-full min-w-0 rounded-none rounded-l-md font-semibold placeholder-gray-400 border-0',
+                        'disabled:cursor-not-allowed h-12 bg-darkblue-700 focus:ring-primary focus:border-primary flex-grow block w-full min-w-0 rounded-none rounded-l-md font-semibold placeholder-gray-400 border-0',
                         className
                     )}
                     onChange={onChange ? onChange : e => {
@@ -71,8 +71,14 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
 function limitDecimalPlaces(e, count) {
     if (e.target.value.indexOf('.') == -1) { return; }
     if ((e.target.value.length - e.target.value.indexOf('.')) > count) {
-        e.target.value = parseFloat(e.target.value).toFixed(count);
+        e.target.value = ParseFloat(e.target.value, count);
     }
+}
+
+function ParseFloat(str, val) {
+    str = str.toString();
+    str = str.slice(0, (str.indexOf(".")) + val + 1);
+    return Number(str);
 }
 
 function replaceComma(e) {

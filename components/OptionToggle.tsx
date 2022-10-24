@@ -1,6 +1,7 @@
 import { RadioGroup } from "@headlessui/react";
 import { ArrowRightIcon } from "@heroicons/react/solid";
 import { FC } from "react";
+import { SwapType } from "../lib/layerSwapApiClient";
 import { classNames } from "./utils/classNames";
 
 export interface NavRadioOption {
@@ -24,9 +25,9 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
     }
 
     return (
-        <RadioGroup value={items.find(i => i.value === value)} disabled={disabled} onChange={onchange} className="mt-2 w-full">
+        <RadioGroup value={items.find(i => i.value === value)} disabled={disabled} onChange={onchange} className="mt-2 w-full my-4">
             <RadioGroup.Label className="font-normal text-primary-text text-sm">{label}</RadioGroup.Label>
-            <div className="grid grid-cols-2 gap-1 md:gap-2 p-0.5 md:p-2 rounded-md bg-darkblue-600 border-darkblue-100 border">
+            <div className="grid grid-cols-2 gap-1 md:gap-2 p-0.5 md:p-2 rounded-md bg-darkblue-700 border-darkblue-500 border">
                 {items.map((option) => (
                     <RadioGroup.Option
                         key={option.value}
@@ -35,7 +36,7 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
                             classNames(
                                 option.isEnabled ? 'cursor-pointer focus:outline-none' : 'opacity-25 cursor-not-allowed',
                                 checked
-                                    ? 'bg-darkblue-300 border-transparent text-white'
+                                    ? 'bg-darkblue-500 border-transparent text-white'
                                     : 'bg-transparent border-transparent text-gray-400 hover:text-gray-200',
                                 'border rounded-md p-1 flex items-center justify-center text-sm font-medium sm:flex-1'
                             )
@@ -43,7 +44,7 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
                         disabled={!option.isEnabled}>
                         <div>
                             {
-                                option.value === 'onramp' ?
+                                option.value === SwapType.OnRamp ?
                                     <div className="flex items-center space-x-1 md:space-x-2 md:p-0 p-1.5 text-sm md:text-base">
                                         <span>
                                             Exchange

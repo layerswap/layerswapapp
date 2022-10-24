@@ -3,24 +3,29 @@ import { Disclosure } from "@headlessui/react";
 import HoverTooltip from '../Tooltips/HoverTooltip';
 import { Currency } from '../../Models/Currency';
 import { Exchange } from '../../Models/Exchange';
-import { SwapType } from '../DTOs/SwapFormValues';
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
+import { CryptoNetwork } from '../../Models/CryptoNetwork';
+import { getCurrencyDetails } from '../../helpers/currencyHelper';
+import { SwapType } from '../../lib/layerSwapApiClient';
+import ExchangeSettings from '../../lib/ExchangeSettings';
 
 type Props = {
     amount: number,
     currency: Currency,
     exchange: Exchange,
     swapType: SwapType,
+    network: CryptoNetwork,
 }
 
-export default function AmountAndFeeDetails({ amount, currency, exchange, swapType }: Props) {
+export default function AmountAndFeeDetails({ amount, currency, exchange, network, swapType }: Props) {
     let exchangeFee = GetExchangeFee(currency, exchange);
-    let fee = CalculateFee(amount, currency, exchange, swapType);
-    let receive_amount = CalculateReceiveAmount(amount, currency, exchange, swapType);
+    let fee = CalculateFee(amount, currency, exchange, network, swapType);
+    let receive_amount = CalculateReceiveAmount(amount, currency, exchange, network, swapType);
+    const currencyDetails = getCurrencyDetails(currency, exchange, network, swapType)
 
     return (
         <>
-            <div className="mx-auto w-full rounded-lg border border-darkblue-100 hover:border-darkblue-200 bg-darkblue-500 p-2">
+            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
                 <Disclosure>
                     {({ open }) => (
                         <>
@@ -30,10 +35,10 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
                                     {
                                         receive_amount ?
                                             <span className="font-semibold md:font-bold text-center">
-                                                {receive_amount.toFixed(currency?.precision)}
+                                                {receive_amount.toFixed(currencyDetails?.precision)}
                                                 <span>
                                                     {
-                                                        ` ${currency?.asset || ""}`
+                                                        ` ${currencyDetails?.asset || ""}`
                                                     }
                                                 </span>
                                             </span>
@@ -53,20 +58,20 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, swapTy
                                             Layerswap Fee
                                         </label>
                                         <span className="text-center text-white">
-                                            {fee.toFixed(currency?.precision)}
-                                            <span>  {currency?.asset} </span>
+                                            {fee.toFixed(currencyDetails?.precision)}
+                                            <span>  {currencyDetails?.asset} </span>
                                         </span>
                                     </div>
                                     {
-                                        swapType === "onramp" &&
+                                        swapType === SwapType.OnRamp &&
                                         <div className="mt-2 flex flex-row items-baseline justify-between">
                                             <label className="inline-flex text-left">
                                                 Exchange Fee
                                                 <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36' />
                                             </label>
                                             <span className="text-center text-white">
-                                                {exchangeFee.toFixed(currency?.precision)}
-                                                <span>  {currency?.asset} {exchange?.internal_name === "binance" && <span className='inline-flex'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' /></span>}</span>
+                                                {exchangeFee.toFixed(currencyDetails?.precision)}
+                                                <span>  {currencyDetails?.asset} {ExchangeSettings.KnownSettings[exchange?.internal_name]?.FeeIsRefundable && <span className='inline-flex'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' /></span>}</span>
                                             </span>
                                         </div>
                                     }

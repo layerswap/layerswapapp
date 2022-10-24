@@ -9,57 +9,28 @@ import IntroCard from '../components/introCard';
 import { AuthProvider } from '../context/authContext';
 import { SwapDataProvider } from '../context/swap';
 import { UserExchangeProvider } from '../context/userExchange';
-import { FormWizardProvider } from '../context/formWizardProvider';
-import Wizard from '../components/Wizard/Wizard';
-import { SwapWizardSteps } from '../Models/Wizard';
-import OverviewStep from '../components/Wizard/Steps/OverviewStep';
-import WithdrawExchangeStep from '../components/Wizard/Steps/WithdrawExhangeStep';
-import ProccessingStep from '../components/Wizard/Steps/ProccessingStep';
-import SuccessfulStep from '../components/Wizard/Steps/SuccessfulStep';
-import FailedStep from '../components/Wizard/Steps/FailedStep';
-import EmailStep from '../components/Wizard/Steps/EmailStep';
-import ExternalPaumentStep from '../components/Wizard/Steps/ExternalPaymentStep';
 import { MenuProvider } from '../context/menu';
 import { SettingsProvider } from '../context/settings';
-import SwapCodeStep from '../components/Wizard/Steps/SwapCodeStep';
-import WithdrawNetworkStep from '../components/Wizard/Steps/WithdrawNetworkStep';
-
-const SwapWizard: SwapWizardSteps = {
-  "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 70 },
-  "Code": { title: "Code", content: SwapCodeStep, navigationDisabled: true, dismissOnBack: true, positionPercent: 75 },
-  "Overview": { title: "Payment overview", content: OverviewStep, navigationDisabled: true, positionPercent: 80 },
-  "ExternalPayment": { title: "Withdrawal", content: ExternalPaumentStep, navigationDisabled: true, positionPercent: 90 },
-  "Withdrawal": { title: "Withdrawal", content: WithdrawExchangeStep, positionPercent: 90, navigationDisabled: true },
-  "OffRampWithdrawal": { title: "OffRampWithdrawal", content: WithdrawNetworkStep, positionPercent: 90, navigationDisabled: true },
-  "Processing": { title: "", content: ProccessingStep, positionPercent: 95 },
-  "Success": { title: "", content: SuccessfulStep, navigationDisabled: true, positionPercent: 100 },
-  "Failed": { title: "", content: FailedStep, navigationDisabled: true, positionPercent: 100 },
-}
+import SwapWithdrawalWizard from '../components/Wizard/SwapWithdrawalWizard';
+import { FormWizardProvider } from '../context/formWizardProvider';
+import { SwapWithdrawalStep } from '../Models/Wizard';
+import SwapWithdrawal from '../components/SwapWithdrawal';
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
   return (
     <Layout>
-      <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-2xl">
-        <div>
-          <div className="flex flex-col text-white animate-fade-in">
-            <AuthProvider>
-              <SettingsProvider data={settings}>
-                <MenuProvider>
-                  <SwapDataProvider >
-                    <UserExchangeProvider>
-                      <FormWizardProvider wizard={SwapWizard} initialStep={"Overview"} initialLoading={true}>
-                        <Wizard />
-                      </FormWizardProvider >
-                    </UserExchangeProvider>
-                  </SwapDataProvider >
-                </MenuProvider>
-              </SettingsProvider>
-            </AuthProvider>
-            <IntroCard/>
-          </div >
-        </div >
-      </div >
+      <AuthProvider>
+        <SettingsProvider data={settings}>
+          <MenuProvider>
+            <SwapDataProvider >
+              <UserExchangeProvider>
+                <SwapWithdrawal />
+              </UserExchangeProvider>
+            </SwapDataProvider >
+          </MenuProvider>
+        </SettingsProvider>
+      </AuthProvider>
     </Layout>
   )
 }
@@ -91,6 +62,10 @@ export const getServerSideProps = async (ctx) => {
     var apiClient = new LayerSwapApiClient();
     const data = await apiClient.fetchSettingsAsync()
 
+    const resource_storage_url = data.data.discovery.resource_storage_url
+    if (resource_storage_url[resource_storage_url.length - 1] === "/")
+      data.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+
     try {
       fs.writeFileSync(
         path.join(__dirname, CACHE_PATH),
@@ -102,7 +77,6 @@ export const getServerSideProps = async (ctx) => {
       console.log('ERROR WRITING SETTINGS CACHE TO FILE')
       console.log(error)
     }
-
     settings = data
   }
 

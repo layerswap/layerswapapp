@@ -1,3 +1,5 @@
+//@ts-check
+
 const colors = require("tailwindcss/colors");
 const plugin = require('tailwindcss/plugin')
 
@@ -16,13 +18,17 @@ module.exports = {
     extend: {
       colors: {
         darkblue: {
-          DEFAULT: '#111827',
-          '50': '#203259',
-          '100': '#1A2949',
-          '200': '#2C3C60',
-          '300': '#192846',
-          '500': '#121D33',
-          '600': '#131E36',
+          DEFAULT: '#0C1527',
+          '50': '#213869',
+          '100': '#203665',
+          '200': '#1D325D',
+          '300': '#1B2D55',
+          '400': '#18294E',
+          '500': '#162546',
+          '600': '#14213E',
+          '700': '#111D36',
+          '800': '#0F192F',
+          '900': '#0C1527'
         },
       },
       transitionDuration: {
@@ -33,12 +39,11 @@ module.exports = {
         '35': '.35',
       },
       animation: {
-        fadein: 'fadein 4s',
-      },
-      animation: {
         'spin-slow': 'spin 3s linear infinite',
         'fade-in': 'fade-in 0.5s ease-in',
-        'fade-in-down': 'fade-in-down 0.5s ease-in'
+        'fade-in-down': 'fade-in-down 0.5s ease-in',
+        fadein: 'fadein 4s',
+
       },
       keyframes: {
         'fade-in': {
@@ -71,7 +76,6 @@ module.exports = {
         wide: '.025em',
         wider: '.05em',
         widest: '.1em',
-        widest: '.25em',
       },
       boxShadow: {
         'card': '5px 5px 40px rgba(0, 0, 0, 0.2), 0px 0px 200px rgba(0, 0, 0, 0.43)',
@@ -126,6 +130,8 @@ module.exports = {
       // Add a `third` variant, ie. `third:pb-0`
       addVariant('scrollbar', '&::-webkit-scrollbar');
       addVariant('scrollbar-thumb', '&::-webkit-scrollbar-thumb')
+      addVariant('focus-peer', '.focus-peer &')
+      addVariant('wide-page', '.wide-page &')
     }),
     require('tailwindcss-themer')({
       defaultTheme: {

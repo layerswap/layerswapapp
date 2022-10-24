@@ -1,7 +1,7 @@
 import { InformationCircleIcon } from '@heroicons/react/outline';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
-import { BransferApiClient } from '../lib/bransferApiClients';
+import LayerswapApiClient from '../lib/layerSwapApiClient';
 import ExchangeSettings from '../lib/ExchangeSettings';
 import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
@@ -9,19 +9,20 @@ import SubmitButton from './buttons/submitButton';
 import { DocIframe } from './docInIframe';
 import SlideOver from './SlideOver';
 import WarningMessage from './WarningMessage';
+import { useRouter } from 'next/router';
 
 type Props = {
     exchange: Exchange,
     onSuccess: () => void,
-    slideOverClassNames?: string
+    slideOverPlace?: string
 }
 
-const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassNames }) => {
+const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace }) => {
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
     const [keyphrase, setKeyphrase] = useState("")
-    const [docIframeIsOpen, setDocIframeIsOpen] = useState(false)
+    const router = useRouter();
 
     useEffect(() => {
         setLoading(false)
@@ -39,9 +40,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
     const connect = useCallback(async () => {
         try {
             setLoading(true)
-            const bransferApiClient = new BransferApiClient();
-            const { access_token } = TokenService.getAuthData() || {};
-            const res = await bransferApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase }, access_token)
+            const layerswapApiClient = new LayerswapApiClient(router);
+            await layerswapApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase })
             onSuccess()
         }
         catch (error) {
@@ -59,15 +59,15 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
     }, [key, secret, keyphrase, exchange])
 
     const dataIsValid = secret && key && (exchange?.has_keyphrase ? keyphrase : true)
-    const userGuideURL = ExchangeSettings.KnownSettings[exchange?.id]?.UserApiKeyGuideUrl
+    const userGuideURL = ExchangeSettings.KnownSettings[exchange?.internal_name]?.UserApiKeyGuideUrl
 
     return (
         <>
-            <div className="w-full flex flex-col justify-between h-full px-6 md:px-8 pt-4 space-y-5  text-primary-text">
+            <div className="w-full flex flex-col justify-between h-full pt-4 space-y-5  text-primary-text">
                 <div className="flex items-center">
                     <h3 className="block text-lg font-medium leading-6 text-white">
                         Please enter
-                        {ExchangeSettings.KnownSettings[exchange?.id]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange.id]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.name}</a> : <span className='mx-1'>{exchange?.name}</span>}
+                        {ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange.internal_name]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.display_name}</a> : <span className='mx-1'>{exchange?.display_name}</span>}
                         API keys
                     </h3>
                 </div>
@@ -85,8 +85,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                                 name="apiKey"
                                 id="apiKey"
                                 onChange={handleKeyChange}
-                                className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-100 block
-                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
+                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
                             />
                         </div>
                     </div>
@@ -103,8 +103,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                                 name="apiSecret"
                                 id="apiSecret"
                                 onChange={handleSecretChange}
-                                className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-100 block
-                        placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
+                        placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
                             />
                         </div>
                     </div>
@@ -112,35 +112,35 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                         exchange?.has_keyphrase &&
                         <>
                             <label htmlFor="apiKey" className="block font-normal text-sm">
-                                {ExchangeSettings.KnownSettings[exchange?.id]?.KeyphraseDisplayName}
+                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1">
                                 <input
                                     autoComplete="off"
-                                    placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.id]?.KeyphraseDisplayName}`}
+                                    placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}`}
                                     autoCorrect="off"
                                     type="text"
                                     name="apiKey"
                                     onChange={handleKeyphraseChange}
                                     id="apiKey"
-                                    className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-100 block
-                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600 w-full font-semibold rounded-md placeholder-gray-400"
+                                    className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
+                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                             </div>
                         </>
                     }
                     {
-                        ExchangeSettings.KnownSettings[exchange?.id]?.AuthorizationNote &&
+                        ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&
                         <WarningMessage className=''>
                             <div className='text-black'>
-                                {ExchangeSettings.KnownSettings[exchange?.id]?.AuthorizationNote}
+                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
                             </div>
                         </WarningMessage>
                     }
                     {
                         userGuideURL && <div className="flex items-center">
                             <span className="block text-base text-white font-normal leading-6"> Read about
-                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} moreClassNames={slideOverClassNames}>
+                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} place={slideOverPlace}>
                                     {(close) => (
                                         <DocIframe onConfirm={() => close()} URl={userGuideURL} />
                                     )}
@@ -150,7 +150,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverClassN
                     }
 
                 </div>
-                <div className='p-4 bg-darkblue-500 text-white rounded-lg border border-darkblue-100'>
+                <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500'>
                     <div className="flex items-center">
                         <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
                         <label className="block text-sm md:text-base font-medium leading-6">We're requesting <span className='font-bold'>Read-Only</span> API Keys</label>

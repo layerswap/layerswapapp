@@ -21,7 +21,7 @@
 @layer base {
 
   body {
-    @apply bg-gray-900;
+    @apply bg-darkblue-900;
   }
 
   /* On iOS disabled inputs have default opacitiy */
@@ -31,7 +31,7 @@
   }
 }
 
-iframe body{
+iframe body {
   display: none;
 }
 
@@ -69,7 +69,7 @@ select:-webkit-autofill:focus {
 
 }
 
-.shadowed-button{
+.shadowed-button {
   transform: translate3d(0, 0, 0);
 }
 
@@ -257,8 +257,9 @@ hr.horizontal-gradient {
 tspan {
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
 input::-webkit-input-placeholder {
-  line-height:normal!important;
+  line-height: normal !important;
 }
 
 body {
@@ -268,24 +269,41 @@ body::-webkit-scrollbar {
   --tw-bg-opacity: 1;
   background-color: rgb(18 29 51 / var(--tw-bg-opacity));
 }
+
 body::-webkit-scrollbar {
   width: 0.375rem !important;
 }
+
 body::-webkit-scrollbar {
   height: 0.375rem !important;
 }
+
 body::-webkit-scrollbar-thumb {
   background-color: rgb(100 116 139 / 0.5) !important;
 }
+
 body::-webkit-scrollbar-thumb {
   --tw-bg-opacity: 1 !important;
 }
+
 body::-webkit-scrollbar-thumb {
   border-radius: 0.25rem !important;
 }
-input:disabled, textarea:disabled, input:disabled::placeholder, textarea:disabled::placeholder {
+
+input:disabled,
+textarea:disabled,
+input:disabled::placeholder,
+textarea:disabled::placeholder {
   -webkit-text-fill-color: theme('colors.primary.text');
-  opacity: 1; /* 2. correct opacity on iOS */
+  /* 1. sets text fill to 'primary-text': '#a4afc8' */
+  opacity: 1;
+  /* 2. correct opacity on iOS */
 }
-.space-x-reverse { --space-x-reverse: 1 }
-.space-y-reverse { --space-y-reverse: 1 }
+
+.space-x-reverse {
+  --space-x-reverse: 1
+}
+
+.space-y-reverse {
+  --space-y-reverse: 1
+}

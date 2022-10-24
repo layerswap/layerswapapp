@@ -1,21 +1,23 @@
+import { useRouter } from 'next/router';
 import React from 'react'
-import { BransferApiClient, UserExchangesResponse } from '../lib/bransferApiClients';
+import LayerSwapApiClient, { UserExchangesResponse } from '../lib/layerSwapApiClient';
 
 const UserExchangeStateContext = React.createContext<any>(null);
 const UserExchangeDataUpdateContext = React.createContext<any>(null);
 
 type UpdateFns = {
-    getUserExchanges: (token: string) => Promise<UserExchangesResponse>
+    getUserExchanges: () => Promise<UserExchangesResponse>
 }
 
 export function UserExchangeProvider({ children }) {
     const [exchangeData, setUserExchangeData] = React.useState({});
+    const router = useRouter();
 
-    const bransferApiClient = new BransferApiClient()
+    const layerswapApiClient = new LayerSwapApiClient(router)
 
     const updateFns: UpdateFns = {
-        getUserExchanges: async (token: string): Promise<UserExchangesResponse> => {
-            const res = await bransferApiClient.GetExchangeAccounts(token)
+        getUserExchanges: async (): Promise<UserExchangesResponse> => {
+            const res = await layerswapApiClient.GetExchangeAccounts()
             setUserExchangeData(res)
             return res;
         }

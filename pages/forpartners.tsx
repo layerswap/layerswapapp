@@ -10,15 +10,15 @@ import imageSize from "rehype-img-size";
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
+import NetworkSettings from '../lib/NetworkSettings'
 
-export default function About(props) {
+export default function ForPartners(props) {
     return (
         <Layout>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
                 <Head>
-                    <title>For Layerswap Partners</title>
+                    <title>Layerswap Partners</title>
                 </Head>
-
                 <main>
                     <div className="flex-col justify-center py-4 px-8 md:px-0 ">
                         <div className="prose md:prose-xl text-primary-text">
@@ -31,7 +31,7 @@ export default function About(props) {
                                     <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                                         <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                                             <table className="min-w-full divide-y divide-darkblue-500">
-                                                <thead className="bg-darkblue-50">
+                                                <thead className="bg-darkblue-200">
                                                     <tr>
                                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-primary-text sm:pl-6">
                                                             Network Name
@@ -41,13 +41,13 @@ export default function About(props) {
                                                         </th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-darkblue-600 bg-darkblue-300">
+                                                <tbody className="divide-y divide-darkblue-700 bg-darkblue-300">
                                                     {props?.networks?.map((n) => (
-                                                        <tr key={n.name}>
+                                                        <tr key={n.display_name}>
                                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">
-                                                                {n.name}
+                                                                {n.display_name}
                                                             </td>
-                                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-white italic">{n.code}</td>
+                                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-white italic">{n.internal_name}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -64,7 +64,7 @@ export default function About(props) {
                                     <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                                         <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                                             <table className="min-w-full divide-y divide-darkblue-500">
-                                                <thead className="bg-darkblue-50">
+                                                <thead className="bg-darkblue-200">
                                                     <tr>
                                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-primary-text sm:pl-6">
                                                             Exchange Name
@@ -74,11 +74,11 @@ export default function About(props) {
                                                         </th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-darkblue-600 bg-darkblue-300">
+                                                <tbody className="divide-y divide-darkblue-700 bg-darkblue-300">
                                                     {props?.exchanges?.map((e) => (
-                                                        <tr key={e.name}>
+                                                        <tr key={e.display_name}>
                                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">
-                                                                {e.name}
+                                                                {e.display_name}
                                                             </td>
                                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white italic">{e.internal_name}</td>
                                                         </tr>
@@ -108,8 +108,8 @@ export async function getStaticProps() {
     const response = await apiClient.fetchSettingsAsync()
     var networks: CryptoNetwork[] = [];
     var exchanges: Exchange[] = [];
-    networks = response.data.networks.filter(n => n.is_enabled && !n.is_test_net);
-    exchanges = response.data.exchanges.filter(e => e.is_enabled)
+    networks = response.data.networks.filter(n => n.status !== "inactive");
+    exchanges = response.data.exchanges.filter(e => e.status !== "inactive" && !NetworkSettings.KnownSettings[e?.internal_name]?.ForceDisable)
 
     return {
         props: {

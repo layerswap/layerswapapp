@@ -3,6 +3,7 @@ import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../context/authContext';
+import { SendFeedbackMessage } from '../lib/telegram';
 import SubmitButton from './buttons/submitButton';
 
 interface SendFeedbackFormValues {
@@ -14,8 +15,6 @@ type Props = {
 }
 
 const SendFeedback: FC<Props> = ({ onSend }) => {
-    const token = "5366632516:AAHRlo58yEgoAj2-qe2poJOR19ybOuGMBpQ"
-    const chat_id = "-1001625192521";
     const { email } = useAuthState()
     const initialValues: SendFeedbackFormValues = { Feedback: '' }
     const { boot, show, update } = useIntercom()
@@ -24,7 +23,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
     const handleSendFeedback = useCallback(async (values: SendFeedbackFormValues) => {
         try {
             if (values.Feedback.length !== 0) {
-                const res = await (await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${email} %0A ${values.Feedback}`)).json()
+                const res = await SendFeedbackMessage(email,values.Feedback)
                 if (!res.ok) {
                     throw new Error(res.description || "Could not send feedback, something went wrong")
                 } else {
@@ -70,7 +69,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                                     onChange={e => {
                                         handleChange(e)
                                     }}
-                                    className="no-resize appearance-none block w-full bg-darkblue-600 text-white border border-darkblue-100 rounded-md py-3 px-4 mb-3 leading-tight focus:ring-0 focus:bg-darkblue-500 focus:border-darkblue-200 h-56 resize-none"
+                                    className="no-resize appearance-none block w-full bg-darkblue-700 text-white border border-darkblue-500 rounded-md py-3 px-4 mb-3 leading-tight focus:ring-0 focus:bg-darkblue-500 focus:border-darkblue-50 h-56 resize-none"
                                 />
                             </div>
                         </div>
