@@ -15,8 +15,10 @@ import SwapWithdrawalWizard from '../components/Wizard/SwapWithdrawalWizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../Models/Wizard';
 import SwapWithdrawal from '../components/SwapWithdrawal';
+import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  LayerSwapAuthApiClient.identityBaseEndpoint = settings.data.discovery.identity_url
 
   return (
     <Layout>

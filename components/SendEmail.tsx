@@ -3,6 +3,7 @@ import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/authContext';
+import { useSettingsState } from '../context/settings';
 import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
@@ -22,7 +23,6 @@ const SendEmail: FC<Props> = ({ onSend }) => {
     const { setCodeRequested, updateTempEmail } = useAuthDataUpdate();
     const initialValues: EmailFormValues = { email: tempEmail ?? "" };
     const { start: startTimer } = useTimerState()
-
     const sendEmail = useCallback(async (values: EmailFormValues) => {
         try {
             const inputEmail = values.email;

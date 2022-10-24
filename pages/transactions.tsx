@@ -6,8 +6,10 @@ import { SettingsProvider } from '../context/settings'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
+import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 
 export default function Transactions({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  LayerSwapAuthApiClient.identityBaseEndpoint = response.data.discovery.identity_url
 
   return (
     <div className='wide-page'>

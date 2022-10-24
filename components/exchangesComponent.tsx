@@ -60,12 +60,12 @@ function UserExchanges() {
         try {
             const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
             const userExchanges = await layerswapApiClient.GetExchangeAccounts()
-            const mappedExchanges = data.exchanges.filter(x => ExchangeSettings.KnownSettings[x?.internal_name].CustomAuthorizationFlow || x.authorization_flow != 'none').map(e => {
+            const mappedExchanges = data.exchanges.filter(x => ExchangeSettings.KnownSettings[x?.internal_name]?.CustomAuthorizationFlow || x.authorization_flow != 'none').map(e => {
                 return {
                     ...e,
                     is_connected: userExchanges.data?.some(ue => ue.exchange_id === e.id),
                     note: userExchanges.data?.find(ue => ue.exchange_id === e.id)?.note,
-                    authorization_flow: ExchangeSettings.KnownSettings[e?.internal_name].CustomAuthorizationFlow || e.authorization_flow
+                    authorization_flow: ExchangeSettings.KnownSettings[e?.internal_name]?.CustomAuthorizationFlow || e.authorization_flow
                 }
             })
             mappedExchanges.sort((a, b) => (+a.order) - (+b.order))

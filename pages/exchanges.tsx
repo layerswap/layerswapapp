@@ -6,8 +6,10 @@ import { AuthProvider } from '../context/authContext'
 import UserExchanges from '../components/exchangesComponent'
 import { MenuProvider } from '../context/menu'
 import NetworkSettings from '../lib/NetworkSettings'
+import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 
 export default function Home({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+    LayerSwapAuthApiClient.identityBaseEndpoint = response.data.discovery.identity_url
     return (
         <div className='wide-page'>
             <Layout>
