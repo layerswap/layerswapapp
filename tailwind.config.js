@@ -160,7 +160,7 @@ module.exports = {
       },
       themes: [
         {
-          name: 'immutablex',
+          name: 'imxMarketplace',
           extend: {
             colors: {
               primary: {

@@ -8,14 +8,16 @@ import { QueryParams } from '../Models/QueryParams'
 import MaintananceContent from '../components/maintanance/maintanance'
 import NetworkSettings from '../lib/NetworkSettings'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
+import { enc, HmacSHA256 } from 'crypto-js';
+import { useRouter } from 'next/router'
 
 type IndexProps = {
   settings?: LayerSwapSettings,
-  query?: QueryParams,
   inMaintanance: boolean,
+  validSignatureisPresent?: boolean,
 }
 
-export default function Home({ settings, inMaintanance }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ settings, inMaintanance, validSignatureisPresent }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.data.discovery.identity_url
   return (
     <Layout>
@@ -24,7 +26,7 @@ export default function Home({ settings, inMaintanance }: InferGetServerSideProp
           ?
           <MaintananceContent />
           :
-          <SettingsProvider data={settings}>
+          <SettingsProvider data={settings.data} validSignatureisPresent={validSignatureisPresent} >
             <Swap />
           </SettingsProvider>
       }
@@ -32,9 +34,16 @@ export default function Home({ settings, inMaintanance }: InferGetServerSideProp
   )
 }
 
+const YOUR_LAYERSWAP_API_KEY = "<key>";
+const PARTNER_KEY = "Vaxo"
+const LAYERSWAP_BASE_URL = "https://app-dev.layerswap.cloud";
+
 export async function getServerSideProps(context) {
+
+  const validSignatureIsPresent = validateSignature(context.query)
   let result: IndexProps = {
     inMaintanance: false,
+    validSignatureisPresent: validSignatureIsPresent
   };
 
   context.res.setHeader(
@@ -57,7 +66,53 @@ export async function getServerSideProps(context) {
   if (!result.settings.data.networks.some(x => x.status === "active")) {
     result.inMaintanance = true;
   }
+
+  function validateSignature(queryParams: QueryParams): boolean {
+    //One day
+    const PERIOD_IN_MILISECONDS = 86400000
+    if (!queryParams.timestamp || !queryParams.signature || Number(queryParams.timestamp) < new Date().getTime() - PERIOD_IN_MILISECONDS)
+      return false
+    const paraps: QueryParams = { ...queryParams }
+    const parnerSignature = paraps.signature
+    delete paraps.signature;
+    let dataToSign = formatParams(paraps);
+    let signature = hmac(dataToSign);
+    return signature === parnerSignature
+  }
   return {
     props: result,
   }
+}
+
+const constructSignedParams = () => {
+  let timestamp = new Date().getTime();
+  let queryParams = {
+    "destAddress": "0x4374D3d032B3c96785094ec9f384f07077792768",
+    "lockAddress": 'true',
+    "destNetwork": "IMMUTABLEX_MAINNET",
+    "timestamp": timestamp,
+    "apiKey": YOUR_LAYERSWAP_API_KEY,
+    "addressSource": "imxMarketplace"
+  }
+
+  let dataToSign = formatParams(queryParams);
+  let signature = hmac(dataToSign);
+
+  queryParams["signature"] = signature;
+  const parsedParams = new URLSearchParams()
+  Object.entries(queryParams).forEach(([key, value]) => parsedParams.set(key, value as string));
+  let url = LAYERSWAP_BASE_URL + '?' + parsedParams.toString();
+  console.log("url", url)
+}
+const formatParams = (queryParams) => {
+  // Sort params by key
+  let sortedValues = Object.entries(queryParams).sort(([a], [b]) => a > b ? 1 : -1);
+
+  // Lowercase all the keys and join key and value "key1=value1&key2=value2&..."
+  return sortedValues.map(([key, value]) => `${key.toLowerCase()}=${value}`).join('&');
+}
+const hmac = (data) => {
+  // Compute the signature as a HEX encoded HMAC with SHA-256 and your Secret Key
+  const token = enc.Hex.stringify(HmacSHA256(data.toString(enc.Utf8), PARTNER_KEY));
+  return token;
 }

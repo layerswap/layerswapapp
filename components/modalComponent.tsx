@@ -38,7 +38,7 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, className,
     return (
         <AnimatePresence>
             {isOpen && <Dialog
-                className={`${query?.partnerName} relative z-40`}
+                className={`${query?.addressSource} relative z-40`}
                 onClose={() => onDismiss(false)}
                 open={isOpen}>
                 <motion.div

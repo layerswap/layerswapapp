@@ -141,7 +141,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
     const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
-    const lockAddress = initialValues.destination_address != ""  && !!account || query.lockAddress;
+    const lockAddress = initialValues.destination_address != ""  && !!account || (query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent));
 
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
