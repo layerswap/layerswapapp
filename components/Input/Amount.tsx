@@ -8,9 +8,8 @@ import NumericInput from "./NumericInput";
 
 const AmountField = forwardRef((props: any, ref: any) => {
 
-    const { values: { currency, swapType, exchange, network } } = useFormikContext<SwapFormValues>();
+    const { values: { currency, swapType, exchange, network, amount }, setFieldValue } = useFormikContext<SwapFormValues>();
     const name = "amount"
-    const [amount, setAmount] = useState(undefined)
 
     const minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType);
     const maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType);
@@ -24,15 +23,9 @@ const AmountField = forwardRef((props: any, ref: any) => {
     const amountLabel = (
         <div className="flex items-center space-x-2">
             <p>Amount</p>
-            {document.activeElement == amountRef?.current &&
+            {amount &&
                 <div className="text-xs text-primary-text flex items-center space-x-1">
-                    <button onClick={() => setAmount(minAllowedAmount)} className="py-0.5 px-1 bg-darkblue-600 hover:bg-darkblue-400 rounded-md">
-                        Min {minAllowedAmount}
-                    </button>
-                    <span>-</span>
-                    <button onClick={() => setAmount(maxAllowedAmount)} className="py-0.5 px-1 bg-darkblue-600 hover:bg-darkblue-400 rounded-md">
-                        Max {maxAllowedAmount}
-                    </button>
+                    (Min: {minAllowedAmount} - Max: {maxAllowedAmount})
                 </div>}
         </div>
     )
@@ -49,6 +42,22 @@ const AmountField = forwardRef((props: any, ref: any) => {
             ref={amountRef}
             precision={currencyDetails?.precision}
         >
+            {amount && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
+                <button
+                    type="button"
+                    className="p-1.5  bg-darkblue-400 hover:bg-darkblue-300 rounded-md hidden md:block border border-darkblue-400 hover:border-darkblue-100"
+                    onClick={() => setFieldValue(name, minAllowedAmount)}
+
+                >
+                    MIN
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setFieldValue(name, maxAllowedAmount)}
+                    className="p-1.5  bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100">
+                    MAX
+                </button>
+            </div>}
             <CurrenciesField />
         </NumericInput>
     </>)

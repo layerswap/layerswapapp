@@ -61,7 +61,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     }}
                 />
                 {children &&
-                    <span className="ml-1 inline-flex items-center">
+                    <span className="inline-flex items-center">
                         {children}
                     </span>
                 }

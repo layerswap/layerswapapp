@@ -60,7 +60,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
         return (
             <Listbox disabled={disabled} value={value?.id} onChange={onChangeHandler}>
                 <div className="mt-1 relative">
-                    <Listbox.Button name={name} className="w-full py-0 pl-8 pr-12 border-transparent bg-transparent font-semibold rounded-md">
+                    <Listbox.Button name={name} className="w-full py-0 pl-5 pr-12 border-transparent bg-transparent font-semibold rounded-md">
                         {
                             value &&
                             <>
