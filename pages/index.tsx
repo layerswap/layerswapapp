@@ -34,13 +34,10 @@ export default function Home({ settings, inMaintanance, validSignatureisPresent 
   )
 }
 
-const YOUR_LAYERSWAP_API_KEY = "<key>";
-const PARTNER_KEY = "Vaxo"
-const LAYERSWAP_BASE_URL = "https://app-dev.layerswap.cloud";
-
 export async function getServerSideProps(context) {
 
   const validSignatureIsPresent = validateSignature(context.query)
+
   let result: IndexProps = {
     inMaintanance: false,
     validSignatureisPresent: validSignatureIsPresent
@@ -72,11 +69,15 @@ export async function getServerSideProps(context) {
     const PERIOD_IN_MILISECONDS = 86400000
     if (!queryParams.timestamp || !queryParams.signature || Number(queryParams.timestamp) < new Date().getTime() - PERIOD_IN_MILISECONDS)
       return false
+
+    const secret = JSON.parse(process.env.PARTNER_SECRETS)?.[context.query.addressSource]
+    if (!secret)
+      return true
     const paraps: QueryParams = { ...queryParams }
     const parnerSignature = paraps.signature
     delete paraps.signature;
     let dataToSign = formatParams(paraps);
-    let signature = hmac(dataToSign);
+    let signature = hmac(dataToSign, secret);
     return signature === parnerSignature
   }
   return {
@@ -84,26 +85,6 @@ export async function getServerSideProps(context) {
   }
 }
 
-const constructSignedParams = () => {
-  let timestamp = new Date().getTime();
-  let queryParams = {
-    "destAddress": "0x4374D3d032B3c96785094ec9f384f07077792768",
-    "lockAddress": 'true',
-    "destNetwork": "IMMUTABLEX_MAINNET",
-    "timestamp": timestamp,
-    "apiKey": YOUR_LAYERSWAP_API_KEY,
-    "addressSource": "imxMarketplace"
-  }
-
-  let dataToSign = formatParams(queryParams);
-  let signature = hmac(dataToSign);
-
-  queryParams["signature"] = signature;
-  const parsedParams = new URLSearchParams()
-  Object.entries(queryParams).forEach(([key, value]) => parsedParams.set(key, value as string));
-  let url = LAYERSWAP_BASE_URL + '?' + parsedParams.toString();
-  console.log("url", url)
-}
 const formatParams = (queryParams) => {
   // Sort params by key
   let sortedValues = Object.entries(queryParams).sort(([a], [b]) => a > b ? 1 : -1);
@@ -111,8 +92,8 @@ const formatParams = (queryParams) => {
   // Lowercase all the keys and join key and value "key1=value1&key2=value2&..."
   return sortedValues.map(([key, value]) => `${key.toLowerCase()}=${value}`).join('&');
 }
-const hmac = (data) => {
+const hmac = (data, secret) => {
   // Compute the signature as a HEX encoded HMAC with SHA-256 and your Secret Key
-  const token = enc.Hex.stringify(HmacSHA256(data.toString(enc.Utf8), PARTNER_KEY));
+  const token = enc.Hex.stringify(HmacSHA256(data.toString(enc.Utf8), secret));
   return token;
 }
