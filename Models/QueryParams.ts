@@ -12,4 +12,5 @@ export class QueryParams {
     products?: string = "";
     signature?: string = "";
     timestamp?: string = "";
+    apiKey?: string = "";
 }
