@@ -26,7 +26,7 @@ const useCreateSwap = () => {
     const { swapFormData } = useSwapDataState()
     const router = useRouter();
 
-    const handleCoinbaseOfframp = useCallback(async (formData: SwapFormValues, access_token: string) => {
+    const handleOfframp = useCallback(async (formData: SwapFormValues, access_token: string) => {
         const exchanges = (await getUserExchanges())?.data
         const { exchange: selected_exchange, currency } = formData
         const selected_exchange_id = selected_exchange.baseObject.id
@@ -65,8 +65,8 @@ const useCreateSwap = () => {
             if (!accessToken)
                 return goToStep(SwapCreateStep.Email);
 
-            if (values.swapType === SwapType.OffRamp && values.exchange.baseObject.internal_name === KnownInternalNames.Exchanges.Coinbase) {
-                handleCoinbaseOfframp(values, accessToken)
+            if (values.swapType === SwapType.OffRamp) {
+                handleOfframp(values, accessToken)
             }
             else {
                 const exchanges = (await getUserExchanges())?.data
@@ -94,8 +94,8 @@ const useCreateSwap = () => {
             const exchanges = (await getUserExchanges())?.data
             const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange?.baseObject.id)
 
-            if (swapFormData.swapType === SwapType.OffRamp && swapFormData.exchange.baseObject.internal_name === KnownInternalNames.Exchanges.Coinbase) {
-                handleCoinbaseOfframp(swapFormData, res.access_token)
+            if (swapFormData.swapType === SwapType.OffRamp) {
+                handleOfframp(swapFormData, res.access_token)
             }
             else if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow === "none" || exchangeIsEnabled)
                 return goToStep(SwapCreateStep.Confirm)

@@ -62,7 +62,7 @@ const OfframpAccountConnectStep: FC = () => {
                 authWindowRef.current?.close()
             }
         }
-    }, [exchange_accouts, salon])
+    }, [exchange_accouts, salon, deposit_address])
 
     const handleConnect = useCallback(() => {
         try {
