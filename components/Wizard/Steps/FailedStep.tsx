@@ -29,16 +29,11 @@ const FailedStep: FC = () => {
                                 swap?.data?.message ?
                                     swap.data.message
                                     :
-                                    <div>
-                                        <p>
-                                            Sorry, there was an issue with your swap.
-                                            Nothing to worry, your funds are safe!
-                                            Please contact our support team with the button bellow and we'll help you fix this.
-                                        </p>
-                                        <span className='text-primary ml-1'>
-                                            [contact our support team.]
-                                        </span>
-                                    </div>
+                                    <p>
+                                        Sorry, there was an issue with your swap.
+                                        Nothing to worry, your funds are safe!
+                                        Please contact our support team with the button bellow and we'll help you fix this.
+                                    </p>
                             }
                         </MessageComponent.Description>
 
@@ -74,9 +69,16 @@ const FailedStep: FC = () => {
 
                     </MessageComponent.Content>
                     <MessageComponent.Buttons>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => {
+                            boot();
+                            show();
+                            updateWithProps()
+                        }}>
+                            Contact support
+                        </SubmitButton>
                         <GoHomeButton>
-                            <SubmitButton isDisabled={false} isSubmitting={false}>
-                                Make another swap
+                            <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline'>
+                                Do another swap
                             </SubmitButton>
                         </GoHomeButton>
                     </MessageComponent.Buttons>
@@ -95,7 +97,7 @@ const FailedStep: FC = () => {
                                     swap.data.message
                                     :
                                     <p>
-                                        This swap was not completed during the allocated timeframe and was expired. If you’ve already sent crypto for this swap please contact support.
+                                        This swap was not completed during the allocated timeframe and was expired. If you've already sent crypto for this swap please contact support.
                                     </p>
                             }
                         </MessageComponent.Description>
@@ -109,6 +111,11 @@ const FailedStep: FC = () => {
                         }}>
                             Contact support
                         </SubmitButton>
+                        <GoHomeButton>
+                            <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline'>
+                                Do another swap
+                            </SubmitButton>
+                        </GoHomeButton>
                     </MessageComponent.Buttons>
                 </MessageComponent>
             }
