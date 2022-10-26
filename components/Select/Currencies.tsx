@@ -38,6 +38,8 @@ const CurrenciesField: FC = () => {
 
     useEffect(() => {
         if (!network || !exchange) return;
+        if (currency && currencyIsAvilable(currency.baseObject)) return
+
         const default_currency = data.currencies.find(currencyIsAvilable)
 
         if (default_currency) {
@@ -52,11 +54,11 @@ const CurrenciesField: FC = () => {
             }
             setFieldValue(name, defaultValue)
         }
-        else {
+        else if (currency) {
             setFieldValue(name, null)
         }
 
-    }, [network, exchange, data.currencies, data.exchanges])
+    }, [network, exchange, data.currencies, data.exchanges, currency])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />

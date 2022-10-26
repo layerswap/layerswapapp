@@ -20,18 +20,10 @@ export interface SelectProps<T> {
 export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
     const [query, setQuery] = useState('')
-    const [selectedItem, setSelectedItem] = useState<SelectMenuItem<T> | undefined>(value || undefined)
-    function onChangeHandler(newValue: string) {
-        setFieldValue(name, values.find(x => x.id === newValue));
-    }
 
-    useEffect(() => {
-        if (value) {
-            setSelectedItem(value)
-        }
-        else
-            setSelectedItem(undefined)
-    }, [value])
+    function onChangeHandler(newValue: string) {
+        setFieldValue(name, values.find(x => x.id === newValue), true);
+    }
 
     function closeModal() {
         setIsOpen(false)
@@ -50,7 +42,6 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
     const handleSelect = useCallback((item: SelectMenuItem<T>) => {
         setIsOpen(false)
-        setSelectedItem(item)
         setFieldValue(name, item, true)
     }, [name])
 
@@ -156,11 +147,11 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                 >
                     <span className='flex grow text-left items-center'>
                         {
-                            selectedItem && <div className="flex items-center">
+                            value && <div className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                     {
-                                        selectedItem.imgSrc && <Image
-                                            src={selectedItem.imgSrc}
+                                        value.imgSrc && <Image
+                                            src={value.imgSrc}
                                             alt="Project Logo"
                                             height="40"
                                             width="40"
@@ -174,10 +165,10 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 </div>
                             </div>
                         }
-                        {selectedItem
+                        {value
                             ?
                             <span className="ml-3 block font-medium text-white flex-auto items-center">
-                                {selectedItem?.name}
+                                {value?.name}
                             </span>
                             :
                             <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
@@ -244,7 +235,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                         key={item.id}
                                                         value={item}
                                                         disabled={!item.isAvailable}
-                                                        className={`flex text-left ${item.id === selectedItem?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
+                                                        className={`flex text-left ${item.id === value?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
                                                         onClick={() => handleSelect(item)}
                                                     >
                                                         {({ active, disabled }) => (
@@ -272,7 +263,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                                     </p>
                                                                 </div>
                                                                 {
-                                                                    item.id === selectedItem?.id && <div className="justify-self-end">
+                                                                    item.id === value?.id && <div className="justify-self-end">
                                                                         <CheckIcon className="h-6 w-6" aria-hidden="true" />
                                                                     </div>
                                                                 }
