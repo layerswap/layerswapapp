@@ -1,7 +1,7 @@
 import { InformationCircleIcon } from '@heroicons/react/outline';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
-import LayerswapApiClient, { SwapType } from '../lib/layerSwapApiClient';
+import LayerswapApiClient from '../lib/layerSwapApiClient';
 import ExchangeSettings from '../lib/ExchangeSettings';
 import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
@@ -13,7 +13,7 @@ import { useSwapDataState, useSwapDataUpdate } from '../context/swap';
 
 type Props = {
     exchange: Exchange,
-    onSuccess: () => void,
+    onSuccess: () => Promise<void>,
     slideOverPlace?: string
 }
 
@@ -22,11 +22,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
     const [keyphrase, setKeyphrase] = useState("")
-    const { swapFormData } = useSwapDataState()
-    const { swapType, currency } = swapFormData || {}
-    const asset = currency?.baseObject?.asset
     const router = useRouter();
-    const { updateSwapFormData } = useSwapDataUpdate()
 
     useEffect(() => {
         setLoading(false)
@@ -46,17 +42,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
             setLoading(true)
             const layerswapApiClient = new LayerswapApiClient(router);
             await layerswapApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase })
-            if (swapType === SwapType.OffRamp) {
-                const response = await layerswapApiClient.GetExchangeDepositAddress(exchange.internal_name, asset.toUpperCase())
-                if (!response.error) {
-                    const { data } = response
-                    updateSwapFormData({ ...swapFormData, destination_address: data })
-                }
-                else {
-                    throw Error("Could not get exchange deposit address")
-                }
-            }
-            onSuccess()
+
+            await onSuccess()
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
@@ -70,7 +57,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
         finally {
             setLoading(false)
         }
-    }, [key, secret, keyphrase, exchange, asset])
+    }, [key, secret, keyphrase, exchange])
 
     const dataIsValid = secret && key && (exchange?.has_keyphrase ? keyphrase : true)
     const userGuideURL = ExchangeSettings.KnownSettings[exchange?.internal_name]?.UserApiKeyGuideUrl

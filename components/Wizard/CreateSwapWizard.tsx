@@ -15,7 +15,7 @@ import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 
 const CreateSwap: FC = () => {
-    const { MainForm, Email, Code } = useCreateSwap()
+    const { MainForm, Email, Code, ApiKey } = useCreateSwap()
     const { goToStep } = useFormWizardaUpdate()
 
     const GoBackToMainStep = useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), [])
@@ -43,7 +43,7 @@ const CreateSwap: FC = () => {
                     <OfframpAccountConnectStep />
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.ApiKey} GoBack={GoBackToMainStep} key={SwapCreateStep.ApiKey}>
-                    <APIKeyStep />
+                    <APIKeyStep onSuccess={ApiKey.onNext} />
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.Confirm} GoBack={GoBackToMainStep} key={SwapCreateStep.Confirm}>
                     <SwapConfirmationStep />
