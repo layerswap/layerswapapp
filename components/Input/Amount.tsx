@@ -42,7 +42,7 @@ const AmountField = forwardRef((props: any, ref: any) => {
             ref={amountRef}
             precision={currencyDetails?.precision}
         >
-            {amount && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
+            {currency && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
                 <button
                     type="button"
                     className="p-1.5  bg-darkblue-400 hover:bg-darkblue-300 rounded-md hidden md:block border border-darkblue-400 hover:border-darkblue-100"

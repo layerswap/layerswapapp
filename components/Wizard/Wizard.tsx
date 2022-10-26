@@ -4,9 +4,6 @@ import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWiza
 import LayerswapMenu from '../LayerswapMenu';
 import GoHomeButton from '../utils/GoHome';
 import { AnimatePresence } from 'framer-motion';
-import { ChatIcon } from '@heroicons/react/outline';
-import { useIntercom } from 'react-use-intercom';
-import { useAuthState } from '../../context/authContext';
 
 type Props = {
    children: JSX.Element | JSX.Element[];
@@ -60,12 +57,9 @@ const Wizard: FC<Props> = ({ children }) => {
 
 function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
    const { goBack } = useFormWizardState()
-   const { boot, show, update } = useIntercom()
-   const { email } = useAuthState()
-   const updateWithProps = () => update({ email: email })
 
    return <>
-      <div className="w-full grid grid-cols-4 md:grid-cols-2 grid-rows-1 items-center px-6 md:px-8 mt-3 h-[44px]" >
+      <div className="w-full grid grid-cols-3 md:grid-cols-2 grid-rows-1 items-center px-6 md:px-8 mt-3 h-[44px]" >
          {
             goBack ?
                <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
@@ -74,21 +68,10 @@ function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
                :
                <div className='h-7 w-7'></div>
          }
-         <div className='mx-auto overflow-hidden md:hidden ml-4'>
+         <div className='mx-auto overflow-hidden md:hidden'>
             <GoHomeButton />
          </div>
-         <div className='flex items-center space-x-1 justify-end col-start-4'>
-            <button
-               className='flex items-center p-2 bg-darkblue-600 hover:bg-darkblue-500 rounded-md text-xs space-x-1'
-               onClick={() => {
-                  boot();
-                  show();
-                  updateWithProps()
-               }}
-            >
-               <ChatIcon className='h-5 w-5' />
-               <p className='hidden md:block'>Get Help</p>
-            </button>
+         <div className='flex items-center justify-end'>
             <LayerswapMenu />
          </div>
       </div>
