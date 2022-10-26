@@ -3,7 +3,6 @@ import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import LayerswapApiClient from '../lib/layerSwapApiClient';
 import ExchangeSettings from '../lib/ExchangeSettings';
-import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
 import { DocIframe } from './docInIframe';
@@ -45,8 +44,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
             onSuccess()
         }
         catch (error) {
-            if (error.response?.data?.errors?.length > 0) {
-                const message = error.response.data.errors.map(e => e.message).join(", ")
+            if (error.response?.data?.error) {
+                const message = error.response.data.error.message
                 toast.error(message)
             }
             else {
