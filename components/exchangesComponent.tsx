@@ -39,7 +39,7 @@ function UserExchanges() {
     const [openExchangeToConnectModal, setOpenExchangeToConnectModal] = useState(false)
     const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
-    const { discovery: { resource_storage_url } } = data
+    const { discovery: { resource_storage_url } } = data || { discovery: {} }
 
     useEffect(() => {
         (async () => {

@@ -14,7 +14,7 @@ export default function Transactions({ response }: InferGetServerSidePropsType<t
   return (
     <div className='wide-page'>
       <Layout>
-        <SettingsProvider data={response}>
+        <SettingsProvider data={response.data}>
           <AuthProvider>
             <MenuProvider>
               <TransactionsHistory />
