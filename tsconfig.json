@@ -25,7 +25,7 @@
     "**/*.ts",
     "**/*.tsx",
     "**/**/*.tsx",
-    "pages/_app.jsx"
+    "pages/_app.js"
   ],
   "exclude": [
     "node_modules"
