@@ -11,7 +11,7 @@ export function isValidAddress(address: string, network: CryptoNetwork): boolean
         return false;
     }
     else if (network.internal_name.toLowerCase().startsWith("ZKSYNC".toLowerCase())) {
-        if (address.startsWith("zksync:")) {
+        if (address?.startsWith("zksync:")) {
             return isValidEtherAddress(address.replace("zksync:", ""));
         }
         return isValidEtherAddress(address);

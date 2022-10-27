@@ -92,7 +92,7 @@ export type CreateSwapParams = {
     destination_address: string,
     partner?: string,
     type: number,
-    external_transaction_id?: string,
+    external_id?: string,
 }
 
 export type SwapItemResponse = {

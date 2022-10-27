@@ -73,7 +73,7 @@ export function SwapDataProvider({ children }) {
                 destination_address: formData.destination_address,
                 type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
                 partner: settings.data.partners.find(p => p.is_enabled && p.internal_name?.toLocaleLowerCase() === query.addressSource?.toLocaleLowerCase())?.internal_name,
-                external_transaction_id: query.externalTransactionId
+                external_id: query.externalId
             }
 
             const swap = await layerswapApiClient.createSwap(data)
