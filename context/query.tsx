@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router';
 import React, { FC, useEffect, useState } from 'react'
 import useStorage from '../hooks/useStorage';
 import { QueryParams } from '../Models/QueryParams';
@@ -11,7 +10,6 @@ const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
 
   const [data, setData] = useState<QueryParams>(query)
   const { setItem, getItem } = useStorage()
-  const router = useRouter()
   useEffect(() => {
     const emptyParams = new QueryParams()
     if (query && Object.keys(emptyParams).some(key => query[key] !== undefined))
