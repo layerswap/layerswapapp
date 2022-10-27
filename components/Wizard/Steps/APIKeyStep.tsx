@@ -14,9 +14,7 @@ const APIKeyStep: FC = () => {
         return <></>
 
     return (
-        <>
-            <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} slideOverPlace='inStep' />
-        </>
+        <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} slideOverPlace='inStep' />
     )
 }
 

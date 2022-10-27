@@ -137,16 +137,9 @@ function UserExchanges() {
     return (
         <div className='bg-darkblue px-6 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative'>
             <div className="mt-3 flex items-center justify-between z-20" >
-                <div>
-                    <div className="hidden md:block">
-                        <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
-                        <span className="text-primary-text font-medium">{email}</span>
-                    </div>
-                    <div>
-                        <GoHomeButton>
-                            <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-100 cursor-pointer' />
-                        </GoHomeButton>
-                    </div>
+                <div className="hidden md:block">
+                    <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
+                    <span className="text-primary-text font-medium">{email}</span>
                 </div>
                 <div className='mx-auto px-4 overflow-hidden md:hidden'>
                     <div className="flex justify-center immutablex:hidden">
