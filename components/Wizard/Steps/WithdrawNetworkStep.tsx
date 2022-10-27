@@ -90,24 +90,33 @@ const WithdrawNetworkStep: FC = () => {
                             {network_name}
                         </h3>
                     </div>
-                    <div className='md:flex items-center md:space-x-2 space-y-1 md:space-y-0'>
-                        <div className='flex-none'>
-                            Guide for:
-                        </div>
-                        <div className='flex w-full text-white space-x-2'>
-                            {
-                                userGuideUrlForDesktop && renderGuideButton(userGuideUrlForDesktop, 'Loopring Web')
-                            }
-                            {
-                                userGuideUrlForMobile && renderGuideButton(userGuideUrlForMobile, 'Loopring Mobile')
-                            }
-                        </div>
-                    </div>
+                    <WarningMessage>
+                        <p className='font-semibold text-sm text-darkblue-700'>
+                            Please include the "Memo" field, it is required for a successful transfer.
+                        </p>
+                    </WarningMessage>
+
+                    {
+                        userGuideUrlForDesktop && userGuideUrlForMobile &&
+
+                        <BackgroundField >
+                            <div className='md:space-y-0'>
+                                <span className='flex-none'>
+                                    Watch how to send from
+                                </span>
+                                <GuideLink fullTeext='Loopring Web' shortText='Web' userGuideUrlForDesktop={userGuideUrlForDesktop} />
+                                &nbsp;or
+                                <GuideLink fullTeext='Loopring Mobile' shortText='Mobile' userGuideUrlForDesktop={userGuideUrlForMobile} />
+                            </div>
+                        </BackgroundField>
+
+                    }
+
 
                     <div className='mb-6 grid grid-cols-1 gap-4'>
                         {
                             network_internal_name === KnownInternalNames.Networks.LoopringMainnet &&
-                            <BackgroundField header={'Select as "Where would you like to send your crypto to"'}>
+                            <BackgroundField header={'Send type'}>
                                 <div className='flex items-center space-x-2'>
                                     <SwitchHorizontalIcon className='h-4 w-4' />
                                     <p>
@@ -116,18 +125,6 @@ const WithdrawNetworkStep: FC = () => {
                                 </div>
                             </BackgroundField>
                         }
-                        <div className='flex space-x-4'>
-                            <BackgroundField isCopiable={true} toCopy={swap?.data?.requested_amount} header={'Amount'}>
-                                <p>
-                                    {swap?.data?.requested_amount}
-                                </p>
-                            </BackgroundField>
-                            <BackgroundField header={'Asset'}>
-                                <p>
-                                    {currency?.asset}
-                                </p>
-                            </BackgroundField>
-                        </div>
                         <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Recipient'}>
                             <p className='break-all'>
                                 {swap?.data?.additonal_data?.deposit_address}
@@ -146,19 +143,26 @@ const WithdrawNetworkStep: FC = () => {
                                         {swap?.data?.additonal_data?.memo}
                                     </p>
                                 </BackgroundField>
-                                <WarningMessage>
-                                    <p className='font-normal text-sm text-darkblue-700'>
-                                        Please include the "Memo" field, it is required for a successful transfer.
-                                    </p>
-                                </WarningMessage>
                             </>
                         }
+                        <div className='flex space-x-4'>
+                            <BackgroundField isCopiable={true} toCopy={swap?.data?.requested_amount} header={'Amount'}>
+                                <p>
+                                    {swap?.data?.requested_amount}
+                                </p>
+                            </BackgroundField>
+                            <BackgroundField header={'Asset'}>
+                                <p>
+                                    {currency?.asset}
+                                </p>
+                            </BackgroundField>
+                        </div>
                     </div>
                 </div>
                 {
                     transferDone ?
                         <div>
-                            <div className='flex place-content-center mb-16 mt-3 md:mb-8'>
+                            <div className='flex place-content-center mb-6 mt-3'>
                                 <div className='relative'>
                                     <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-primary rounded-full animate-ping'></div>
                                     <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-primary rounded-full animate-ping'></div>
@@ -166,7 +170,7 @@ const WithdrawNetworkStep: FC = () => {
                                 </div>
                             </div>
                             <div className="flex text-center place-content-center mt-1 md:mt-1">
-                                <label className="block text-lg font-lighter leading-6 text-primary-text">Waiting for a transaction from the network</label>
+                                <label className="block text-lg font-semibold leading-6 text-primary-text">Waiting for you to send from your {network.display_name} wallet</label>
                             </div>
                             <div className='mt-6 space-y-2'>
                                 <SubmitButton onClick={() => {
@@ -202,12 +206,12 @@ const WithdrawNetworkStep: FC = () => {
 
 export default WithdrawNetworkStep;
 
-function renderGuideButton(userGuideUrlForDesktop: string, buttonText: string) {
-    return <div className="w-full items-center">
-        <SlideOver opener={(open) => <SubmitButton onClick={() => open()} buttonStyle='outline' isDisabled={false} size='small' isSubmitting={false}>{buttonText}</SubmitButton>} place='inStep'>
+function GuideLink({ userGuideUrlForDesktop, shortText, fullTeext }: { userGuideUrlForDesktop: string, fullTeext: string, shortText: string }) {
+    return <span className="items-center">
+        <SlideOver opener={(open) => <span className='text-primary cursor-pointer hover:text-primary-400' onClick={open}>&nbsp;<span className='hidden md:inline'>{fullTeext}</span><span className='inline md:hidden'>{shortText}</span></span>} place='inStep'>
             {(close) => (
                 <DocIframe onConfirm={() => close()} URl={userGuideUrlForDesktop} />
             )}
         </SlideOver>
-    </div>;
+    </span>;
 }

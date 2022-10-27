@@ -81,7 +81,13 @@ const WithdrawExchangeStep: FC = () => {
                             </span> and do a withdrawal to the provided address
                         </h3>
                     </div>
+                    <WarningMessage>
+                        <p className='font-semibold text-sm text-darkblue-700'>
+                            Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
+                        </p>
+                    </WarningMessage>
                     {
+
                         ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
                         <div className='flex-col w-full rounded-md bg-primary-700 shadow-lg p-2'>
                             <div className='flex items-center'>
@@ -127,11 +133,6 @@ const WithdrawExchangeStep: FC = () => {
                                         {swap?.data?.additonal_data?.note}
                                     </p>
                                 </BackgroundField>
-                                <WarningMessage>
-                                    <p className='font-normal text-sm text-darkblue-700'>
-                                        Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
-                                    </p>
-                                </WarningMessage>
                             </>
                         }
                     </div>
@@ -139,7 +140,7 @@ const WithdrawExchangeStep: FC = () => {
                 {
                     transferDone ?
                         <div>
-                            <div className='flex place-content-center mb-6 mt-3 md:mb-6'>
+                            <div className='flex place-content-center mb-6 mt-3'>
                                 <div className='relative'>
                                     <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-primary rounded-full animate-ping'></div>
                                     <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-primary rounded-full animate-ping'></div>
@@ -147,9 +148,8 @@ const WithdrawExchangeStep: FC = () => {
                                 </div>
                             </div>
                             <div className="flex text-center place-content-center">
-                                <label className="block text-lg font-lighter leading-6 text-[#4b5670]">Waiting for a transaction from the exchange</label>
+                                <label className="block text-lg font-semibold leading-6 text-primary-text">Waiting for you to do a withdrawal from the exchange</label>
                             </div>
-
                             <div className='mt-6 space-y-2'>
                                 <SubmitButton onClick={() => {
                                     boot();
