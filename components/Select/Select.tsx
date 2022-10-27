@@ -202,7 +202,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                             transition: { duration: 0.5, ease: [0.36, 0.66, 0.04, 1] },
                         }}
                         className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkblue'>
-                        <div className='relative z-40 overflow-hidden bg-darkblue p-6 pt-0'>
+                        <div className='relative z-40 overflow-hidden bg-darkblue px-6 md:px-8 pt-2'>
                             <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
                                 <span className="justify-self-end text-primary-text cursor-pointer">
                                     <div className="block ">
@@ -218,7 +218,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 </span>
                             </div>
                             <div className="relative inset-0 flex flex-col">
-                                <div className="relative min-h-full items-center justify-center p-2 pt-0 text-center">
+                                <div className="relative min-h-full items-center justify-center pt-0 text-center">
                                     <Combobox
                                         as="div"
                                         className="transform transition-all"
@@ -238,7 +238,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                             />
                                         </div>
                                         {filteredItems.length > 0 && (
-                                            <Combobox.Options static className="border-0 max-h-[425px] grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                                            <Combobox.Options static className="border-0 max-h-screen grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
                                                 {filteredItems.map((item) => (
                                                     <Combobox.Option
                                                         key={item.id}

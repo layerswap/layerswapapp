@@ -32,7 +32,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     {label}
                 </label>
             }
-            <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border ">
+            <div className="flex rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border ">
                 <input
                     {...field}
                     pattern={pattern ? pattern : "^[0-9]*[.,]?[0-9]*$"}

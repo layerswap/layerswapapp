@@ -8,25 +8,23 @@ import IntroCard from './introCard';
 import CreateSwap from './Wizard/CreateSwapWizard';
 import { SwapCreateStep } from '../Models/Wizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
+import { useQueryState } from '../context/query';
 
 const Swap: FC = () => {
-
   return (
-    <div>
-      <div className="text-white">
-        <AuthProvider>
-          <MenuProvider>
-            <SwapDataProvider >
-              <UserExchangeProvider>
-                <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={true}>
-                  <CreateSwap />
-                </FormWizardProvider>
-              </UserExchangeProvider>
-            </SwapDataProvider >
-          </MenuProvider>
-        </AuthProvider>
-        <IntroCard />
-      </div >
+    <div className="text-white">
+      <AuthProvider>
+        <MenuProvider>
+          <SwapDataProvider >
+            <UserExchangeProvider>
+              <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={true}>
+                <CreateSwap />
+              </FormWizardProvider>
+            </UserExchangeProvider>
+          </SwapDataProvider >
+        </MenuProvider>
+      </AuthProvider>
+      <IntroCard />
     </div >
   )
 };

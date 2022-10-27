@@ -1,7 +1,6 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import TokenService from "../lib/TokenService"
-import { ExclamationCircleIcon } from '@heroicons/react/outline';
+import { ArrowLeftIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
 import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
 import LayerswapApiClient from "../lib/layerSwapApiClient"
@@ -136,20 +135,27 @@ function UserExchanges() {
     }
 
     return (
-        <div className='bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative'>
+        <div className='bg-darkblue px-6 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative'>
             <div className="mt-3 flex items-center justify-between z-20" >
-                <div className="hidden md:block">
-                    <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
-                    <span className="text-primary-text font-medium">{email}</span>
+                <div>
+                    <div className="hidden md:block">
+                        <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
+                        <span className="text-primary-text font-medium">{email}</span>
+                    </div>
+                    <div>
+                        <GoHomeButton>
+                            <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-100 cursor-pointer' />
+                        </GoHomeButton>
+                    </div>
                 </div>
                 <div className='mx-auto px-4 overflow-hidden md:hidden'>
-                    <div className="flex justify-center">
+                    <div className="flex justify-center immutablex:hidden">
                         <GoHomeButton />
                     </div>
                 </div>
                 <LayerswapMenu />
             </div>
-            <div className="relative mb-6 mt-10 inset-0 flex flex-col scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+            <div className="relative mb-6 md:mt-10 mt-2 inset-0 flex flex-col scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
                 <div className="relative min-h-full items-center justify-center text-center">
                     <Combobox
                         as="div"

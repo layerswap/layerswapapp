@@ -120,8 +120,8 @@ const TwoFactorStep: FC = () => {
                 onSubmit={handleSubmit}
             >
                 {({ isValid, isSubmitting, errors, handleChange }) => (
-                    <Form className='flex flex-col items-stretch min-h-[500px] text-primary-text'>
-                        <div className="w-full pt-4 flex-col flex-1 flex">
+                    <Form className='flex text-primary-text h-full'>
+                        <div className="w-full pt-4 flex-col justify-between flex h-full">
                             <LockClosedIcon className='w-16 h-16 mt-auto text-primary self-center' />
                             <div className='text-center mt-5'>
                                 <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>

@@ -1,6 +1,5 @@
 import Layout from '../components/layout'
 import { AuthProvider } from '../context/authContext'
-import IntroCard from '../components/introCard'
 import { MenuProvider } from '../context/menu'
 import { FormWizardProvider } from '../context/formWizardProvider'
 import { AuthStep } from '../Models/Wizard'
@@ -8,7 +7,6 @@ import AuthWizard from '../components/Wizard/AuthWizard'
 import { InferGetServerSidePropsType } from 'next'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
-import AppSettings from '../lib/AppSettings'
 import { SettingsProvider } from '../context/settings'
 
 export default function AuthPage({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {

@@ -6,7 +6,7 @@ const securityHeaders = [
   },
   {
     key: 'Content-Security-Policy',
-    value: 'frame-ancestors "self" *.immutable.com'
+    value: 'frame-ancestors *.immutable.com'
   },
 ]
 

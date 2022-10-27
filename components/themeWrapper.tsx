@@ -13,6 +13,9 @@ type Props = {
 export default function ({ hideNavbar, hideFooter, children }: Props) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const query = useQueryState()
+
+    if(query?.partnerName?.toLowerCase() == 'immutablex') hideFooter = true
 
     useEffect(() => {
         const handleStart = (url) => (url !== router.asPath) && setLoading(true);
