@@ -108,7 +108,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             clearSwap()
             updateSwapFormData(values)
             const internalName = values.network.baseObject.internal_name 
-            if (internalName == KnownInternalNames.Networks.ImmutableX || KnownInternalNames.Networks.ImmutableXGoerli) {
+            if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
                 const client = await ImmutableXClient.build({ publicApiUrl: internalName == KnownInternalNames.Networks.ImmutableX ? immutableXApiAddress : immutablexGoerliApiAddress })
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
                 if (!isRegistered) {
