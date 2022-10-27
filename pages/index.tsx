@@ -70,7 +70,7 @@ export async function getServerSideProps(context) {
     if (!queryParams.timestamp || !queryParams.signature || Number(queryParams.timestamp) < new Date().getTime() - PERIOD_IN_MILISECONDS)
       return false
 
-    const secret = JSON.parse(process.env.PARTNER_SECRETS)?.[context.query.addressSource]?.[context.query.apiKey]
+    const secret = JSON.parse(process.env.PARTNER_SECRETS || "{}")?.[context.query.addressSource]?.[context.query.apiKey]
     if (!secret)
       return true
     const paraps: QueryParams = { ...queryParams }
