@@ -22,6 +22,7 @@ import { generateSwapInitialValues } from "../../../../lib/generateSwapInitialVa
 import { SwapType } from "../../../../lib/layerSwapApiClient";
 import SlideOver from "../../../SlideOver";
 import SwapForm from "./SwapForm";
+import { isValidAddress } from "../../../../lib/addressValidator";
 
 type Props = {
     OnSumbit: (values: SwapFormValues) => Promise<void>
@@ -43,7 +44,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
 
-    
+
     useEffect(() => {
         if (query.coinbase_redirect) {
             const temp_data = getTempData()
@@ -122,7 +123,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                     return
                 }
             }
-            
+
             await OnSumbit(values)
         }
         catch (e) {
@@ -141,7 +142,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
     const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
-    const lockAddress = initialValues.destination_address != ""  && !!account || (query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent));
+    const lockAddress = isValidAddress(initialValues.destination_address, initialValues.network?.baseObject) && (!!account || (query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
 
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
@@ -157,7 +158,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            <SwapForm resource_storage_url={resource_storage_url} isPartnerWallet={isPartnerWallet} lockAddress={lockAddress}  partner={partner}/>
+            <SwapForm resource_storage_url={resource_storage_url} isPartnerWallet={isPartnerWallet} lockAddress={lockAddress} partner={partner} />
         </Formik >
     </>
 }

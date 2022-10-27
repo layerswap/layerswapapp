@@ -19,7 +19,7 @@ import Modal from '../../../modalComponent';
 import { AnimatePresence } from 'framer-motion';
 import SwapDetails from '../../../swapDetailsComponent';
 import TokenService from '../../../../lib/TokenService';
-import LayerSwapApiClient, { SwapItem } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, SwapType } from '../../../../lib/layerSwapApiClient';
 import { SwapFormValues } from '../../../DTOs/SwapFormValues';
 import { useTimerState } from '../../../../context/timerContext';
 
@@ -144,7 +144,7 @@ const OnRampSwapConfirmationStep: FC = () => {
         const layerswapApiClient = new LayerSwapApiClient(router)
 
         const pendingSwaps = await layerswapApiClient.getPendingSwaps()
-        return pendingSwaps.data.find(s => exchange.baseObject.currencies.some(ec => ec.id === s.exchange_currency_id))
+        return pendingSwaps.data.find(s => s.type === SwapType.OnRamp && exchange.baseObject.currencies.some(ec => ec.id === s.exchange_currency_id))
     }
 
     const handleClose = () => {
