@@ -9,10 +9,11 @@ import { DocIframe } from './docInIframe';
 import SlideOver from './SlideOver';
 import WarningMessage from './WarningMessage';
 import { useRouter } from 'next/router';
+import { useSwapDataState, useSwapDataUpdate } from '../context/swap';
 
 type Props = {
     exchange: Exchange,
-    onSuccess: () => void,
+    onSuccess: () => Promise<void>,
     slideOverPlace?: string
 }
 
@@ -41,7 +42,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
             setLoading(true)
             const layerswapApiClient = new LayerswapApiClient(router);
             await layerswapApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase })
-            onSuccess()
+
+            await onSuccess()
         }
         catch (error) {
             if (error.response?.data?.error) {
