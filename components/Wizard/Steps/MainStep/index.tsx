@@ -101,20 +101,21 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     }, [query])
 
     const immutableXApiAddress = 'https://api.x.immutable.com/v1';
+    const immutablexGoerliApiAddress = 'https://link.sandbox.x.immutable.com';
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             clearSwap()
             updateSwapFormData(values)
-
-            if (values.network.baseObject.internal_name == KnownInternalNames.Networks.ImmutableX || KnownInternalNames.Networks.ImmutableXGoerli) {
-                const client = await ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
+            const internalName = values.network.baseObject.internal_name 
+            if (internalName == KnownInternalNames.Networks.ImmutableX || KnownInternalNames.Networks.ImmutableXGoerli) {
+                const client = await ImmutableXClient.build({ publicApiUrl: internalName == KnownInternalNames.Networks.ImmutableX ? immutableXApiAddress : immutablexGoerliApiAddress })
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
                 if (!isRegistered) {
                     setConnectImmutableIsOpen(true)
                     return
                 }
-            } else if (values.network.baseObject.internal_name == KnownInternalNames.Networks.RhinoFiMainnet) {
+            } else if (internalName == KnownInternalNames.Networks.RhinoFiMainnet) {
                 const client = await axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
                 const isRegistered = await client.data?.isRegisteredOnDeversifi
                 if (!isRegistered) {
