@@ -13,6 +13,8 @@ import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import { useEffectOnce } from 'react-use';
+import GoHomeButton from '../../utils/GoHome';
+import { CheckIcon, HomeIcon } from '@heroicons/react/solid';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -161,10 +163,15 @@ const WithdrawExchangeStep: FC = () => {
                         </div>
 
                         :
-                        <div className="text-white text-base">
+                        <div className="text-white text-base space-y-2">
                             <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConfirm} >
-                                I Did The Transfer
+                                I Did The Transfer <CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />
                             </SubmitButton>
+                            <GoHomeButton>
+                                <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline'>
+                                    Will do it later <HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />
+                                </SubmitButton>
+                            </GoHomeButton>
                         </div>
                 }
             </div>

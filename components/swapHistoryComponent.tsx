@@ -20,6 +20,7 @@ import Modal from "./modalComponent"
 import HoverTooltip from "./Tooltips/HoverTooltip"
 import { AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast"
+import { ArrowLeftIcon } from "@heroicons/react/solid"
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -49,6 +50,10 @@ function TransactionsHistory() {
       toast(e.message)
     }
   }
+
+  const handleGoBack = useCallback(() => {
+    router.back()
+  }, [router])
 
   useEffect(() => {
     document.addEventListener(
@@ -145,10 +150,16 @@ function TransactionsHistory() {
   return (
     <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
       <div className="mt-3 flex items-center justify-between z-20" >
-        <div className="hidden md:block">
-          <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
-          <span className="text-primary-text font-medium">{email}</span>
+        <div className="flex items-left mt-2">
+          <button onClick={handleGoBack} className="">
+            <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+          </button>
+          <div className="hidden md:block ml-5">
+            <p className="text-2xl font-bold">Account</p>
+            <span className="text-primary-text font-medium">{email}</span>
+          </div>
         </div>
+
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
           <div className="flex justify-center">
             <GoHomeButton />
@@ -422,7 +433,7 @@ function TransactionsHistory() {
                             className="shadowed-button cursor-pointer group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                             View in Explorer
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                          </a> 
+                          </a>
                         </div>
                       }
                       {
