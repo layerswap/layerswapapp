@@ -16,7 +16,7 @@ const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
     if (query && Object.keys(emptyParams).some(key => query[key] !== undefined))
       setItem(STORAGE_KEY, JSON.stringify(data), "session")
   }, [query])
-
+  
   useEffect(() => {
     updateData()
   }, [])
