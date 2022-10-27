@@ -150,11 +150,11 @@ function TransactionsHistory() {
   return (
     <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
       <div className="mt-3 flex items-center justify-between z-20" >
-        <div className="flex items-left mt-2">
-          <button onClick={handleGoBack} className="">
+        <div className="flex ">
+          <button onClick={handleGoBack} className="self-start md:mt-2">
             <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
           </button>
-          <div className="hidden md:block ml-5">
+          <div className="hidden md:block ml-4">
             <p className="text-2xl font-bold">Account</p>
             <span className="text-primary-text font-medium">{email}</span>
           </div>

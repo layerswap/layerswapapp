@@ -1,13 +1,12 @@
 import { SwitchHorizontalIcon } from '@heroicons/react/outline';
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { CheckIcon, HomeIcon, ChatIcon } from '@heroicons/react/solid';
+
+import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
-import { useComplexInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep, SwapWizardSteps } from '../../../Models/Wizard';
-import TokenService from '../../../lib/TokenService';
 import { useRouter } from 'next/router';
-import { SwapStatus } from '../../../Models/SwapStatus';
 import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
 import { useIntercom } from 'react-use-intercom';
@@ -20,6 +19,7 @@ import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import { useEffectOnce } from 'react-use';
+import GoHomeButton from '../../utils/GoHome';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -168,23 +168,31 @@ const WithdrawNetworkStep: FC = () => {
                             <div className="flex text-center place-content-center mt-1 md:mt-1">
                                 <label className="block text-lg font-lighter leading-6 text-primary-text">Waiting for a transaction from the network</label>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => {
+                            <div className='mt-6 space-y-2'>
+                                <SubmitButton onClick={() => {
                                     boot();
                                     show();
                                     updateWithProps()
-                                }}
-                                className="mt-3 text-center w-full disabled:text-primary-600 text-primary relative flex justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
-                            >
-                                Need help?
-                            </button>
+                                }} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<ChatIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
+                                    Contact support
+                                </SubmitButton>
+                                <GoHomeButton>
+                                    <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
+                                        Do another swap
+                                    </SubmitButton>
+                                </GoHomeButton>
+                            </div>
                         </div>
                         :
-                        <div className="text-white text-base">
-                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConfirm} >
+                        <div className="text-white text-base space-y-2">
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConfirm} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                 I Did The Transfer
                             </SubmitButton>
+                            <GoHomeButton>
+                                <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
+                                    Will do it later
+                                </SubmitButton>
+                            </GoHomeButton>
                         </div>
                 }
             </div>
