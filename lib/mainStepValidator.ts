@@ -1,5 +1,7 @@
 import { FormikErrors } from "formik";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
+import { BlacklistedAddress } from "../Models/BlacklistedAddress";
+import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { isValidAddress } from "./addressValidator";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "./fees";
@@ -18,14 +20,20 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         if (!values.network) {
             (errors.network as any) = 'Select a network';
         }
-        if (values.swapType === SwapType.OnRamp && !values.destination_address) {
-            errors.destination_address = `Enter ${values?.network?.name} address`;
-        }
-        if (values.swapType === SwapType.OnRamp && values.network && !isValidAddress(values.destination_address, values.network?.baseObject)) {
-            errors.destination_address = `Enter a valid ${values?.network?.name} address`;
-        }
-        if (values.swapType === SwapType.OnRamp && settings.data.blacklisted_addresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
-            errors.destination_address = `You can not transfer to this address`;
+        if (values.swapType === SwapType.OnRamp && values.network)
+        {
+            if (!values.destination_address)
+            {
+                errors.destination_address = `Enter ${values.network.name} address`;
+            }
+            else if (!isValidAddress(values.destination_address, values.network.baseObject))
+            {
+                errors.destination_address = `Enter a valid ${values.network.name} address`;
+            }
+            else if (isBlacklistedAddress(settings.data.blacklisted_addresses, values.network.baseObject, values.destination_address))
+            {
+                errors.destination_address = `You can not transfer to this address`;
+            }
         }
         if (!amount) {
             errors.amount = 'Enter an amount';
@@ -53,3 +61,7 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         return Object.assign(errorsOrder, errors);
     };
 }
+function isBlacklistedAddress(blacklisted_addresses: BlacklistedAddress[], network: CryptoNetwork, address: string) {
+    return blacklisted_addresses?.some(ba => (!ba.network_id || ba.network_id === network?.id) && ba.address?.toLowerCase() === address?.toLowerCase());
+}
+
