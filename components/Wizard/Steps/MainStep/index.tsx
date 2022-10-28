@@ -145,7 +145,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
-            {(close) => <ConnectImmutableX swapFormData={formValues} onClose={close} />}
+            {(close) => <ConnectImmutableX network={formValues?.network?.baseObject} onClose={close} />}
         </SlideOver>
         <SlideOver imperativeOpener={[connectRhinoifiIsOpen, setConnectRhinofiIsOpen]} place='inStep'>
             {() => <ConnectRhinofi />}
