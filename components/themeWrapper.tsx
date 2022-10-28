@@ -44,7 +44,7 @@ export default function ({ hideNavbar, children }: Props) {
                         </div>
                     </div>
                 </div>
-                {!inIframe() ?? <FooterComponent />}
+                {!inIframe() && <FooterComponent />}
             </div>
         </main>
     </div>
