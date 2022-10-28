@@ -105,8 +105,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
-            clearSwap()
-            updateSwapFormData(values)
             const internalName = values.network.baseObject.internal_name 
             if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
                 const client = await ImmutableXClient.build({ publicApiUrl: internalName == KnownInternalNames.Networks.ImmutableX ? immutableXApiAddress : immutablexGoerliApiAddress })
@@ -124,6 +122,8 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 }
             }
             
+            clearSwap()
+            updateSwapFormData(values)
             await OnSumbit(values)
         }
         catch (e) {
