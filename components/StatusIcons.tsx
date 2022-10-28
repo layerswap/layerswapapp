@@ -1,65 +1,62 @@
-export default function StatusIcon({ status }) {
-  if (status === 'failed') {
-    return (
-      <>
+import { SwapStatus } from "../Models/SwapStatus"
+
+export default function StatusIcon({ status }: { status: SwapStatus }) {
+  switch (status) {
+    case SwapStatus.Failed:
+      return (
+        <>
+          <div className="inline-flex items-center">
+            <RedIcon />
+            <p>Failed</p>
+          </div>
+        </>)
+    case SwapStatus.Completed:
+      return (
+        <>
+          <div className="inline-flex items-center">
+            <GreenIcon />
+            <p>Completed</p>
+          </div>
+        </>
+      )
+    case SwapStatus.Cancelled:
+      return (
+        <>
+          <div className="inline-flex items-center">
+            <GreyIcon />
+            <p>Cancelled</p>
+          </div>
+        </>)
+    case SwapStatus.Expired:
+      return (
+        <>
+          <div className="inline-flex items-center">
+            <GreyIcon />
+            <p>Expired</p>
+          </div>
+        </>)
+    case SwapStatus.Initiated:
+      return <>
         <div className="inline-flex items-center">
-          <RedIcon />
-          <p>Failed</p>
-        </div>
-      </>)
-  } else if (status === 'completed') {
-    return (
-      <>
-        <div className="inline-flex items-center">
-          <GreenIcon />
-          <p>Completed</p>
+          <YellowIcon />
+          <p>Pending</p>
         </div>
       </>
-    )
-  }
-  else if (status == "cancelled") {
-    return (
-      <>
+    case SwapStatus.PendingWithdrawal:
+      return <>
         <div className="inline-flex items-center">
-          <GreyIcon />
-          <p>Cancelled</p>
+          <PurpleIcon />
+          <p>Pending Withdrawal</p>
         </div>
-      </>)
-  }
-  else if (status == "expired") {
-    return (
-      <>
-        <div className="inline-flex items-center">
-          <GreyIcon />
-          <p>Expired</p>
-        </div>
-      </>)
-  }
-  else if (status == 'initiated') {
-    return <>
-      <div className="inline-flex items-center">
-        <YellowIcon />
-        <p>Pending</p>
-      </div>
-    </>
-  }
-  else if (status == 'pendingWithdrawal') {
-    return <>
-      <div className="inline-flex items-center">
-        <PurpleIcon />
-        <p>Pending Withdrawal</p>
-      </div>
-    </>
-  } else if (status == 'created') {
-    return <>
-      <div className="inline-flex items-center">
-        <YellowIcon />
-        <p>Created</p>
-      </div>
-    </>
-  }
-  else {
-    return <>Null</>
+      </>
+    case SwapStatus.Created:
+      return (
+        <>
+          <div className="inline-flex items-center">
+            <YellowIcon />
+            <p>Created</p>
+          </div>
+        </>)
   }
 }
 
