@@ -4,16 +4,12 @@ import { LinkIcon } from '@heroicons/react/outline';
 import SubmitButton from '../../buttons/submitButton';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
 import toast from 'react-hot-toast';
-import KnownInternalNames from '../../../lib/knownIds';
+import NetworkSettings from '../../../lib/NetworkSettings';
 
 type Props = {
     swapFormData: SwapFormValues,
     onClose: (address?: string) => void
 }
-
-let linkSDKs: {[id: string]: string} = {};
-linkSDKs[KnownInternalNames.Networks.ImmutableX] = "https://link.x.immutable.com";
-linkSDKs[KnownInternalNames.Networks.ImmutableXGoerli] = "https://link.sandbox.x.immutable.com";
 
 const ConnectImmutableX: FC<Props> = ({ onClose, swapFormData }) => {
 
@@ -22,7 +18,7 @@ const ConnectImmutableX: FC<Props> = ({ onClose, swapFormData }) => {
     async function onImmutableConnectClick() {
         try {
             setLoading(true)
-            const linkSdk = new Link(linkSDKs[swapFormData.network.baseObject.internal_name]);
+            const linkSdk = new Link(NetworkSettings.ImmutableXSettings.linkUri[swapFormData.network.baseObject.internal_name]);
             var connected = await linkSdk.setup({});
             if (connected && connected.address)
                 onClose(connected.address)
