@@ -106,7 +106,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         try {
             const internalName = values.network.baseObject.internal_name 
             if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
-                const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings.apiUri[internalName] })
+                const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[internalName].apiUri })
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
                 if (!isRegistered) {
                     setConnectImmutableIsOpen(true)

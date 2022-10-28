@@ -18,7 +18,7 @@ const ConnectImmutableX: FC<Props> = ({ onClose, network }) => {
     async function onImmutableConnectClick() {
         try {
             setLoading(true)
-            const linkSdk = new Link(NetworkSettings.ImmutableXSettings.linkUri[network.internal_name]);
+            const linkSdk = new Link(NetworkSettings.ImmutableXSettings[network.internal_name].linkUri);
             var connected = await linkSdk.setup({});
             if (connected && connected.address)
                 onClose(connected.address)

@@ -9,9 +9,12 @@ export default class NetworkSettings {
     ForceDisable?: boolean;
 
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
+    
     public static ImmutableXSettings: {
-        linkUri: {[network: string]: string},
-        apiUri: {[network: string]: string},
+        [network: string]: {
+            linkUri: string,
+            apiUri: string
+        }
     }
 
     public static RhinoFiSettings: {
@@ -86,14 +89,22 @@ export default class NetworkSettings {
             ChainId: 2020,
         };
 
-        NetworkSettings.ImmutableXSettings.apiUri[KnownInternalNames.Networks.ImmutableX] = "https://api.x.immutable.com/v1";
-        NetworkSettings.ImmutableXSettings.linkUri[KnownInternalNames.Networks.ImmutableX] = "https://link.x.immutable.com";
-
-        NetworkSettings.ImmutableXSettings.apiUri[KnownInternalNames.Networks.ImmutableXGoerli] = "https://api.sandbox.x.immutable.com/v1";
-        NetworkSettings.ImmutableXSettings.linkUri[KnownInternalNames.Networks.ImmutableXGoerli] = "https://link.sandbox.x.immutable.com";
-
-        NetworkSettings.RhinoFiSettings[KnownInternalNames.Networks.RhinoFiMainnet].apiUri = "https://api.deversifi.com/v1/trading/registrations/";
-        NetworkSettings.RhinoFiSettings[KnownInternalNames.Networks.RhinoFiMainnet].appUri = "https://app.rhinofi.com/";
+        NetworkSettings.ImmutableXSettings = {
+            [KnownInternalNames.Networks.ImmutableX]: {
+                apiUri: "https://api.x.immutable.com/v1",
+                linkUri: "https://link.x.immutable.com"
+            },
+            [KnownInternalNames.Networks.ImmutableXGoerli]: {
+                apiUri: "https://api.sandbox.x.immutable.com/v1",
+                linkUri: "https://link.sandbox.x.immutable.com"
+            }
+        }
+        NetworkSettings.RhinoFiSettings = {
+            [KnownInternalNames.Networks.RhinoFiMainnet]: {
+                apiUri: "https://api.deversifi.com/v1/trading/registrations/",
+                appUri: "https://app.rhinofi.com/",
+            }
+        }
     }
 }
 
