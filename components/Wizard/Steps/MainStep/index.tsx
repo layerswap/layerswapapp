@@ -22,6 +22,7 @@ import { generateSwapInitialValues } from "../../../../lib/generateSwapInitialVa
 import { SwapType } from "../../../../lib/layerSwapApiClient";
 import SlideOver from "../../../SlideOver";
 import SwapForm from "./SwapForm";
+import NetworkSettings from "../../../../lib/NetworkSettings";
 
 type Props = {
     OnSumbit: (values: SwapFormValues) => Promise<void>
@@ -100,21 +101,19 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
     }, [query])
 
-    const immutableXApiAddress = 'https://api.x.immutable.com/v1';
-    const immutablexGoerliApiAddress = 'https://link.sandbox.x.immutable.com';
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             const internalName = values.network.baseObject.internal_name 
             if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
-                const client = await ImmutableXClient.build({ publicApiUrl: internalName == KnownInternalNames.Networks.ImmutableX ? immutableXApiAddress : immutablexGoerliApiAddress })
+                const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings.apiUri[internalName] })
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
                 if (!isRegistered) {
                     setConnectImmutableIsOpen(true)
                     return
                 }
             } else if (internalName == KnownInternalNames.Networks.RhinoFiMainnet) {
-                const client = await axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
+                const client = await axios.get(`${NetworkSettings.RhinoFiSettings[internalName].apiUri}/${values.destination_address}`)
                 const isRegistered = await client.data?.isRegisteredOnDeversifi
                 if (!isRegistered) {
                     setConnectRhinofiIsOpen(true);
