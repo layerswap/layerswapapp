@@ -8,25 +8,31 @@ import IntroCard from './introCard';
 import CreateSwap from './Wizard/CreateSwapWizard';
 import { SwapCreateStep } from '../Models/Wizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
+import { useQueryState } from '../context/query';
+import inIframe from './utils/inIframe';
+
 
 const Swap: FC = () => {
+  const { addressSource } = useQueryState()
 
   return (
-    <div>
-      <div className="text-white">
-        <AuthProvider>
-          <MenuProvider>
-            <SwapDataProvider >
-              <UserExchangeProvider>
-                <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={true}>
-                  <CreateSwap />
-                </FormWizardProvider>
-              </UserExchangeProvider>
-            </SwapDataProvider >
-          </MenuProvider>
-        </AuthProvider>
+    <div className="text-white">
+      <AuthProvider>
+        <MenuProvider>
+          <SwapDataProvider >
+            <UserExchangeProvider>
+              <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={true}>
+                <CreateSwap />
+              </FormWizardProvider>
+            </UserExchangeProvider>
+          </SwapDataProvider >
+        </MenuProvider>
+      </AuthProvider>
+      {
+        !inIframe() &&
         <IntroCard />
-      </div >
+      }
+
     </div >
   )
 };

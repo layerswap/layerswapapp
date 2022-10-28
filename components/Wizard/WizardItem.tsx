@@ -10,8 +10,8 @@ type Props = {
     children: JSX.Element | JSX.Element[];
 }
 
-const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent }) => {
-    const { currentStepName, wrapperWidth, moving } = useFormWizardState()
+const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent }:Props) => {
+    const { currentStepName, wrapperWidth, moving, wrapperHeight } = useFormWizardState()
     const { setGoBack, setPositionPercent } = useFormWizardaUpdate()
 
     useEffect(() => {
@@ -32,7 +32,7 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent })
                 x: { duration: 0.35, type: "tween" },
             }}
             custom={{ direction: moving === "back" ? -1 : 1, width: wrapperWidth }}>
-            <div style={{ width: `${wrapperWidth}px`, minHeight: '504px', height: '100%' }}>
+            <div style={{ width: `${wrapperWidth}px`, minHeight: '504px', height: wrapperHeight }} className="pb-6">
                 {wrapperWidth > 1 && children}
             </div >
         </motion.div>

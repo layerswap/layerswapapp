@@ -1,9 +1,11 @@
-import { FC, useEffect, useRef } from 'react'
+import { FC, forwardRef, useEffect, useRef, useState } from 'react'
 import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import LayerswapMenu from '../LayerswapMenu';
 import GoHomeButton from '../utils/GoHome';
 import { AnimatePresence, motion } from 'framer-motion';
+import inIframe from '../utils/inIframe';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
 
 type Props = {
    children: JSX.Element | JSX.Element[];
@@ -14,8 +16,21 @@ const Wizard: FC<Props> = ({ children }) => {
    const wrapper = useRef(null);
 
    const { wrapperWidth, loading: loadingWizard, positionPercent, moving } = useFormWizardState()
-   const { setWrapperWidth } = useFormWizardaUpdate()
+   const { setWrapperWidth, setWrapperHeight } = useFormWizardaUpdate()
    const loading = loadingWizard
+   const { height } = useWindowDimensions();
+
+   useEffect(() => {
+      if (inIframe()) {
+         const wrapperCurrentHeight = wrapper?.current?.offsetHeight
+         const calculatedHeight = height - wrapper?.current?.getBoundingClientRect()?.top
+         if (calculatedHeight > wrapperCurrentHeight)
+            setWrapperHeight(`${calculatedHeight}px`)
+         else
+            setWrapperHeight('100%')
+      }
+      else setWrapperHeight('100%')
+   }, [height])
 
    useEffect(() => {
       function handleResize() {
@@ -31,7 +46,7 @@ const Wizard: FC<Props> = ({ children }) => {
 
    const width = positionPercent || 0
    return <>
-      <div className={`pb-6 bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative`}>
+      <div className={`bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-darkblue-500">
                <div style={{ width: `${width}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
@@ -54,30 +69,29 @@ const Wizard: FC<Props> = ({ children }) => {
       </div>
    </>
 }
-
-function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
-   const { goBack } = useFormWizardState()
-
-   return <>
-      <div className="w-full flex items-center justify-between px-6 md:px-8 mt-3 h-[44px]" >
-         <>
-            {
-               goBack ?
-                  <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
-                     <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
-                  </button>
-                  :
-                  <div className='h-7 w-7'></div>
-            }
-            <div className='mx-auto px-4 overflow-hidden md:hidden'>
-               <div className="flex justify-center">
-                  <GoHomeButton />
-               </div>
-            </div>
-            <LayerswapMenu />
-         </>
-      </div>
-   </>
+type HeaderProps = {
+   wrapperWidth: number
 }
+const WizardHeader = forwardRef<HTMLDivElement, HeaderProps>(({ wrapperWidth }, ref) => {
+   const { goBack } = useFormWizardState()
+   return (
+      <div className="w-full flex items-center justify-between px-6 md:px-8 mt-3" ref={ref}>
+         {
+            goBack ?
+               <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
+                  <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+               </button>
+               :
+               <div className='h-7 w-7'></div>
+         }
+         <div className='mx-auto px-4 overflow-hidden immutablex:hidden md:hidden'>
+            <div className="flex justify-center">
+               <GoHomeButton />
+            </div>
+         </div>
+         <LayerswapMenu />
+      </div>
+   )
+})
 
 export default Wizard;

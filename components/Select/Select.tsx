@@ -229,7 +229,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                             />
                                         </div>
                                         {filteredItems.length > 0 && (
-                                            <Combobox.Options static className="border-0 max-h-[425px] grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                                            <Combobox.Options static className="border-0 max-h-[425px] grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto styled-scroll">
                                                 {filteredItems.map((item) => (
                                                     <Combobox.Option
                                                         key={item.id}
