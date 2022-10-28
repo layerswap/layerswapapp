@@ -20,12 +20,13 @@ export default function StatusIcon({ status }: { status: SwapStatus }) {
         </>
       )
     case SwapStatus.Cancelled:
-      <>
-        <div className="inline-flex items-center">
-          <GreyIcon />
-          <p>Cancelled</p>
-        </div>
-      </>
+      return (
+        <>
+          <div className="inline-flex items-center">
+            <GreyIcon />
+            <p>Cancelled</p>
+          </div>
+        </>)
     case SwapStatus.Expired:
       return (
         <>
@@ -49,12 +50,13 @@ export default function StatusIcon({ status }: { status: SwapStatus }) {
         </div>
       </>
     case SwapStatus.Created:
-      <>
-        <div className="inline-flex items-center">
-          <YellowIcon />
-          <p>Created</p>
-        </div>
-      </>
+      return (
+        <>
+          <div className="inline-flex items-center">
+            <YellowIcon />
+            <p>Created</p>
+          </div>
+        </>)
   }
 }
 

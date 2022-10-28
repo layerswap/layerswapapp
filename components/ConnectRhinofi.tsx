@@ -1,5 +1,7 @@
 import SubmitButton from './buttons/submitButton';
 import { LinkIcon } from '@heroicons/react/outline';
+import NetworkSettings from '../lib/NetworkSettings';
+import KnownInternalNames from '../lib/knownIds';
 
 const ConnectRhinofi = () => {
     const connectButtonIcon = <LinkIcon className='h-5 w-5'></LinkIcon>
@@ -15,7 +17,7 @@ const ConnectRhinofi = () => {
                 </h3>
 
                 <div className="mt-3 sm:mt-6 text-white text-sm">
-                    <SubmitButton icon={connectButtonIcon} isDisabled={false} isSubmitting={false} onClick={() => window.open('https://app.rhinofi.com/', '_blank')}>
+                    <SubmitButton icon={connectButtonIcon} isDisabled={false} isSubmitting={false} onClick={() => window.open(NetworkSettings.RhinoFiSettings[KnownInternalNames.Networks.RhinoFiMainnet].appUri, '_blank')}>
                         Connect
                     </SubmitButton>
                 </div>

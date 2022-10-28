@@ -46,8 +46,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
             await onSuccess()
         }
         catch (error) {
-            if (error.response?.data?.errors?.length > 0) {
-                const message = error.response.data.errors.map(e => e.message).join(", ")
+            if (error.response?.data?.error) {
+                const message = error.response.data.error.message
                 toast.error(message)
             }
             else {
