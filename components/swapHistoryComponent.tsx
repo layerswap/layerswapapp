@@ -319,11 +319,11 @@ function TransactionsHistory() {
                                   'md:px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
-                                <div className="flex space-x-1">
+                                <div className="md:flex">
                                   {
                                     swap?.status == 'completed' && swap.received_amount != swap.requested_amount ?
-                                      <div className="flex items-center">
-                                        {swap.received_amount} /
+                                      <div className="flex flex-col md:flex-row text-left">
+                                        <span className="ml-1 md:ml-0">{swap.received_amount} /</span>
                                         <HoverTooltip text='Amount You Requested' moreClassNames="w-40 text-center">
                                           <span className="underline decoration-dotted hover:no-underline">
                                             {swap.requested_amount}
@@ -335,7 +335,7 @@ function TransactionsHistory() {
                                         {swap.requested_amount}
                                       </span>
                                   }
-                                  <span>{currency.asset}</span>
+                                  <span className="ml-1">{currency.asset}</span>
                                 </div>
                               </td>
                               <td
@@ -422,7 +422,7 @@ function TransactionsHistory() {
                             className="shadowed-button cursor-pointer group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                             View in Explorer
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                          </a> 
+                          </a>
                         </div>
                       }
                       {
