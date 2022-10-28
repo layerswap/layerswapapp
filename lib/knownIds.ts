@@ -77,12 +77,14 @@ export default class KnownInternalNames {
 
         public static readonly ImmutableX: string = "IMMUTABLEX_MAINNET";
 
+        public static readonly ImmutableXGoerli: string = "IMMUTABLEX_GOERLI";
+
         public static readonly AstarMainnet: string = "ASTAR_MAINNET";
 
         public static readonly NahmiiMainnet: string = "NAHMII_MAINNET";
 
         public static readonly RhinoFiMainnet: string = "RHINO_FI_MAINNET";
-        
+
     }
 
     static LiquidityProviders = class {
