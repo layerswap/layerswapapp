@@ -18,7 +18,6 @@ import GoHomeButton from "./utils/GoHome"
 import StatusIcon from "./StatusIcons"
 import Modal from "./modalComponent"
 import HoverTooltip from "./Tooltips/HoverTooltip"
-import { AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast"
 
 function TransactionsHistory() {
@@ -28,7 +27,6 @@ function TransactionsHistory() {
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapListResponse>()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(false)
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)

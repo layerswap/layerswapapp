@@ -8,7 +8,21 @@ export default class NetworkSettings {
     ChainId?: number;
     ForceDisable?: boolean;
 
-    public static KnownSettings: { [key: string]: NetworkSettings } = {};
+    public static KnownSettings: { [network: string]: NetworkSettings } = {};
+    
+    public static ImmutableXSettings: {
+        [network: string]: {
+            linkUri: string,
+            apiUri: string
+        }
+    }
+
+    public static RhinoFiSettings: {
+        [network: string]: {
+            apiUri: string,
+            appUri: string
+        }
+    }
 
     private static _isInitialized = false;
     public static Initialize() {
@@ -30,7 +44,7 @@ export default class NetworkSettings {
             ChainId: 25,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
-            ForceDisable: true,
+            ForceDisable: false,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumGoerli] = {
             ChainId: 5,
@@ -74,6 +88,23 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.RoninMainnet] = {
             ChainId: 2020,
         };
+
+        NetworkSettings.ImmutableXSettings = {
+            [KnownInternalNames.Networks.ImmutableX]: {
+                apiUri: "https://api.x.immutable.com/v1",
+                linkUri: "https://link.x.immutable.com"
+            },
+            [KnownInternalNames.Networks.ImmutableXGoerli]: {
+                apiUri: "https://api.sandbox.x.immutable.com/v1",
+                linkUri: "https://link.sandbox.x.immutable.com"
+            }
+        }
+        NetworkSettings.RhinoFiSettings = {
+            [KnownInternalNames.Networks.RhinoFiMainnet]: {
+                apiUri: "https://api.deversifi.com/v1/trading/registrations/",
+                appUri: "https://app.rhinofi.com/",
+            }
+        }
     }
 }
 
