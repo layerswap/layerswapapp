@@ -65,7 +65,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
     return (
         <>
             <WizardItemContent>
-                <WizardItemContent.Content>
+                <WizardItemContent.Head>
                     <div className="w-full pt-4 space-y-5 text-primary-text mb-5">
                         <div className="flex items-center">
                             <h3 className="block text-lg font-medium leading-6 text-white">
@@ -164,12 +164,12 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                             </ul>
                         </div>
                     </div>
-                </WizardItemContent.Content>
-                <WizardItemContent.Buttons>
+                </WizardItemContent.Head>
+                <WizardItemContent.Bottom>
                     <SubmitButton isDisabled={!dataIsValid || loading} isSubmitting={loading} onClick={connect}>
                         Connect
                     </SubmitButton>
-                </WizardItemContent.Buttons>
+                </WizardItemContent.Bottom>
             </WizardItemContent>
 
         </>

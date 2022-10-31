@@ -4,20 +4,20 @@ const WizardItemContent = ({ children }) => {
     </div>
 }
 
-const Content = ({ children }) => {
+const Head = ({ children }) => {
     return <div>
         {children}
     </div>
 }
 
-const Buttons = ({ children }) => {
+const Bottom = ({ children }) => {
     return <div>
         {children}
     </div>
 }
 
-WizardItemContent.Content = Content
-WizardItemContent.Buttons = Buttons
+WizardItemContent.Head = Head
+WizardItemContent.Bottom = Bottom
 
 export default WizardItemContent
 

@@ -167,12 +167,12 @@ const OnRampSwapConfirmationStep: FC = () => {
     }
     return (
         <WizardItemContent>
-            <WizardItemContent.Content>
+            <WizardItemContent.Head>
                 <SwapConfirmMainData>
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
-            </WizardItemContent.Content>
-            <WizardItemContent.Buttons>
+            </WizardItemContent.Head>
+            <WizardItemContent.Bottom>
                 <div className="text-white text-sm">
                     <div className="mx-auto w-full rounded-lg font-normal">
                         <div className='flex justify-between mb-4 md:mb-8'>
@@ -189,7 +189,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                         Confirm
                     </SubmitButton>
                 </div>
-            </WizardItemContent.Buttons>
+            </WizardItemContent.Bottom>
             <Modal
                 isOpen={editingAddress}
                 onDismiss={handleClose}
