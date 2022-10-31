@@ -72,7 +72,7 @@ export async function getServerSideProps(context) {
 
     const secret = JSON.parse(process.env.PARTNER_SECRETS || "{}")?.[context.query.addressSource]?.[context.query.apiKey]
     if (!secret)
-      return true
+      return false;
     const paraps: QueryParams = { ...queryParams }
     const parnerSignature = paraps.signature
     delete paraps.signature;
