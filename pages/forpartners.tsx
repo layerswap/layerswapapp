@@ -11,10 +11,10 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
 import NetworkSettings from '../lib/NetworkSettings'
-import { ArrowLeftIcon } from '@heroicons/react/solid'
 import { useRouter } from 'next/router'
-import GoHomeButton from '../components/utils/GoHome'
-import LayerswapMenu from '../components/LayerswapMenu'
+import { AuthProvider } from '../context/authContext'
+import { MenuProvider } from '../context/menu'
+import HeaderWithMenu from '../components/HeaderWithMenu'
 
 export default function ForPartners(props) {
     const router = useRouter();
@@ -25,19 +25,17 @@ export default function ForPartners(props) {
 
     return (
         <Layout>
-            <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+            <div className="bg-darkblue shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto max-w-3xl">
                 <Head>
                     <title>Layerswap Partners</title>
                 </Head>
                 <main>
-                    <div className="flex-col justify-center py-4 px-8 md:px-0 ">
-                        <div className="mt-3 flex items-center justify-between z-20" >
-                            <div className="flex ">
-                                <button onClick={handleGoBack} className="self-start md:mt-2">
-                                    <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
-                                </button>
-                            </div>
-                        </div>
+                    <AuthProvider>
+                        <MenuProvider>
+                            <HeaderWithMenu goBack={handleGoBack} />
+                        </MenuProvider>
+                    </AuthProvider>
+                    <div className="flex-col justify-center py-4 px-8 md:px-0 sm:px-6 lg:px-8">
                         <div className="prose md:prose-xl text-primary-text">
                             <MDXRemote {...props.mdxSource} />
                         </div>

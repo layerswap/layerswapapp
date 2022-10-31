@@ -10,6 +10,9 @@ import Layout from '../../../components/layout';
 import matter from 'gray-matter';
 import { useRouter } from 'next/router';
 import { ArrowLeftIcon } from '@heroicons/react/solid';
+import HeaderWithMenu from '../../../components/HeaderWithMenu';
+import { AuthProvider } from '../../../context/authContext';
+import { MenuProvider } from '../../../context/menu';
 
 const componentOverrides = {
     img: (props) => (
@@ -30,18 +33,18 @@ export default function UserGuide({
 
     return (
         <Layout>
-            <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+            <div className="bg-darkblue shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto max-w-3xl">
                 <Head>
                     <title>{title}</title>
                 </Head>
                 <main>
-                    <div className="flex justify-center">
+                    <AuthProvider>
+                        <MenuProvider>
+                            <HeaderWithMenu goBack={handleGoBack} />
+                        </MenuProvider>
+                    </AuthProvider>
+                    <div className="flex-col justify-center py-4 px-8 md:px-0 sm:px-6 lg:px-8">
                         <div className="py-4 px-8 md:px-0 prose md:prose-xl text-primary-text">
-                            <div className="flex items-center z-20" >
-                                <button onClick={handleGoBack} className="self-start md:mt-2">
-                                    <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
-                                </button>
-                            </div>
                             <MDXRemote {...mdxSource} components={componentOverrides} />
                         </div>
                     </div>
