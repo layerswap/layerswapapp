@@ -257,27 +257,6 @@ const OnRampSwapConfirmationStep: FC = () => {
                     </div>
                 </div>
             </Modal>
-                        {/* <div className='h-full flex flex-col justify-between'>
-                <SwapConfirmMainData>
-                    <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
-                </SwapConfirmMainData>
-                <div className="text-white text-sm">
-                    <div className="mx-auto w-full rounded-lg font-normal">
-                        <div className='flex justify-between mb-4 md:mb-8'>
-                            <div className='flex items-center text-xs md:text-sm font-medium'>
-                                <ExclamationIcon className='h-6 w-6 mr-2' />
-                                I am the owner of this address
-                            </div>
-                            <div className='flex items-center space-x-4'>
-                                <ToggleButton name={nameOfRightWallet} onChange={handleToggleChange} value={addressConfirmed} />
-                            </div>
-                        </div>
-                    </div>
-                    <SubmitButton type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
-                        Confirm
-                    </SubmitButton>
-                </div>
-            </div> */}
         </WizardItemContent>
 
     )
