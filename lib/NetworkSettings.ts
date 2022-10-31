@@ -30,7 +30,7 @@ export default class NetworkSettings {
             ChainId: 25,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
-            ForceDisable: true,
+            ForceDisable: false,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumGoerli] = {
             ChainId: 5,

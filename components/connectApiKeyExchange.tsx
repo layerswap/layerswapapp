@@ -3,7 +3,6 @@ import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import LayerswapApiClient from '../lib/layerSwapApiClient';
 import ExchangeSettings from '../lib/ExchangeSettings';
-import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
 import { DocIframe } from './docInIframe';
@@ -14,7 +13,7 @@ import WizardItemContent from './Wizard/WizardItemContent';
 
 type Props = {
     exchange: Exchange,
-    onSuccess: () => void,
+    onSuccess: () => Promise<void>,
     slideOverPlace?: string
 }
 
@@ -43,7 +42,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
             setLoading(true)
             const layerswapApiClient = new LayerswapApiClient(router);
             await layerswapApiClient.ConnectExchangeApiKeys({ exchange: exchange?.internal_name, api_key: key, api_secret: secret, keyphrase: keyphrase })
-            onSuccess()
+
+            await onSuccess()
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {

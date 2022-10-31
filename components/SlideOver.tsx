@@ -70,7 +70,7 @@ const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, place
                                     </button>
                                 </span>
                             </div>
-                            <div className="relative inset-0 flex flex-col scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                            <div className="relative inset-0 flex flex-col styled-scroll">
                                 <div className="relative min-h-full items-center justify-center pt-0 text-center">
                                     <div className='grid grid-flow-row min-h-[480px] text-primary-text'>
                                         {children && children(handleClose)}

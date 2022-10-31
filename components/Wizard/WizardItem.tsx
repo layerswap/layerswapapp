@@ -1,9 +1,7 @@
 import { motion } from 'framer-motion';
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
-import useWindowDimensions from '../../hooks/useWindowDimensions';
 import { Steps } from '../../Models/Wizard';
-import inIframe from '../utils/inIframe';
 
 type Props = {
     StepName: Steps,
@@ -12,16 +10,9 @@ type Props = {
     children: JSX.Element | JSX.Element[];
 }
 
-const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent }) => {
-    const { currentStepName, wrapperWidth, moving } = useFormWizardState()
+const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent }:Props) => {
+    const { currentStepName, wrapperWidth, moving, wrapperHeight } = useFormWizardState()
     const { setGoBack, setPositionPercent } = useFormWizardaUpdate()
-    const { height } = useWindowDimensions();
-    const [wrapperHeight, setWrapperHeight] = useState('')
-
-    useEffect(() => {
-        if(inIframe()) setWrapperHeight(`${height - 67}px`)
-        else setWrapperHeight('100%')
-    }, [height])
 
     useEffect(() => {
         if (currentStepName === StepName) {
@@ -41,7 +32,7 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent })
                 x: { duration: 0.35, type: "tween" },
             }}
             custom={{ direction: moving === "back" ? -1 : 1, width: wrapperWidth }}>
-            <div className='min-h-[504px] h-full' style={{ width: `${wrapperWidth}px`, height: wrapperHeight }}>
+            <div style={{ width: `${wrapperWidth}px`, minHeight: '504px', height: wrapperHeight }} className="pb-6">
                 {wrapperWidth > 1 && children}
             </div >
         </motion.div>

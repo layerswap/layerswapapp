@@ -148,7 +148,7 @@ function UserExchanges() {
                 </div>
                 <LayerswapMenu />
             </div>
-            <div className="relative mb-6 md:mt-10 mt-2 inset-0 flex flex-col scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+            <div className="relative mb-6 mt-10 inset-0 flex flex-col styled-scroll">
                 <div className="relative min-h-full items-center justify-center text-center">
                     <Combobox
                         as="div"

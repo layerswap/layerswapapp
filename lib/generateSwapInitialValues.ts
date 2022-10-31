@@ -1,6 +1,5 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { SelectMenuItem } from "../components/Select/selectMenuItem";
-import { useSwapDataState } from "../context/swap";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { Exchange } from "../Models/Exchange";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
@@ -14,7 +13,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
 
     const { data: { exchanges, networks, discovery: { resource_storage_url } } } = settings || {}
     const destAddress = queryParamAddress || account
-        
+
     const networkIsAvailable = (n: CryptoNetwork) => {
         return swapType === SwapType.OffRamp ?
             n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (exchanges.some(e => {
@@ -38,8 +37,16 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     let initialExchange =
         availableExchanges.find(x => x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() && (swapType === SwapType.OffRamp ? x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)));
 
-    let initialSwapType =
-        ((products?.toLowerCase() == SwapType.OffRamp || products?.toLowerCase() == SwapType.OnRamp || products?.toLowerCase() == (SwapType.OnRamp, SwapType.OffRamp) || products?.toLowerCase() == (SwapType.OnRamp, SwapType.OffRamp)) && products as SwapType) || swapType
+    let initialSwapType = swapType;
+    if (!swapType && products && products != '') {
+        let lowerCasedProducts = products.toLowerCase();
+        if (lowerCasedProducts == SwapType.OffRamp) {
+            initialSwapType = SwapType.OffRamp;
+        }
+        else if (lowerCasedProducts.includes(SwapType.OnRamp)) {
+            initialSwapType = SwapType.OnRamp
+        }
+    }
 
     return { amount: "", destination_address: swapType === SwapType.OnRamp && (initialAddress || account), swapType: initialSwapType || SwapType.OnRamp, network: swapType === SwapType.OnRamp ? initialNetwork : null, exchange: initialExchange }
 }

@@ -9,8 +9,12 @@ import CreateSwap from './Wizard/CreateSwapWizard';
 import { SwapCreateStep } from '../Models/Wizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
 import { useQueryState } from '../context/query';
+import inIframe from './utils/inIframe';
+
 
 const Swap: FC = () => {
+  const { addressSource } = useQueryState()
+
   return (
     <div className="text-white">
       <AuthProvider>
@@ -24,7 +28,11 @@ const Swap: FC = () => {
           </SwapDataProvider >
         </MenuProvider>
       </AuthProvider>
-      <IntroCard />
+      {
+        !inIframe() &&
+        <IntroCard />
+      }
+
     </div >
   )
 };

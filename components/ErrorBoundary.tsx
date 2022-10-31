@@ -36,8 +36,8 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
         if (this.state.hasError) {
             // You can render any custom fallback UI
             return (
-                <div className={`scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50`}>
-                    <main className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                <div className="styled-scroll">
+                    <main className="styled-scroll">
                         <div className="min-h-screen overflow-hidden relative font-robo">
                             <Navbar />
                             <div className="mx-auto max-w-xl bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative px-0 md:px-8 py-6 h-[500px] min-h-[550px]">

@@ -4,12 +4,15 @@ import { useSwapDataState } from '../../../context/swap';
 import { SwapCreateStep } from '../../../Models/Wizard';
 import ConnectApiKeyExchange from '../../connectApiKeyExchange';
 
-
-const APIKeyStep: FC = () => {
+type Props = {
+    onSuccess: () => Promise<void>,
+}
+const APIKeyStep: FC<Props> = ({onSuccess}) => {
     const { swapFormData } = useSwapDataState()
     const { exchange } = swapFormData || {}
-    const { goToStep } = useFormWizardaUpdate()
-    const onConnect = () => goToStep(SwapCreateStep.Confirm)
+    const onConnect = async () => {
+        await onSuccess()
+    }
     if (!exchange)
         return <></>
 

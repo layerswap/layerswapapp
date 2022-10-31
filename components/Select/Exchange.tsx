@@ -34,7 +34,7 @@ const ExchangesField = forwardRef((props: any, ref: any) => {
             {swapType === SwapType.OnRamp ? "From" : "To"}
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 `}>
-            <Field name={name}  placeholder="Exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
+            <Field name={name} placeholder="Exchange" values={exchangeMenuItems} label="From" value={exchange} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 });

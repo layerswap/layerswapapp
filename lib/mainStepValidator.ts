@@ -24,7 +24,9 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         if (values.swapType === SwapType.OnRamp && values.network && !isValidAddress(values.destination_address, values.network?.baseObject)) {
             errors.destination_address = `Enter a valid ${values?.network?.name} address`;
         }
-        if (values.swapType === SwapType.OnRamp && settings.data.blacklisted_addresses.some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
+        if (values.swapType === SwapType.OnRamp && values.destination_address && 
+            settings.data.blacklisted_addresses
+                .some(ba => (!ba.network_id || ba.network_id === values.network?.baseObject?.id) && ba.address?.toLocaleLowerCase() === values.destination_address?.toLocaleLowerCase())) {
             errors.destination_address = `You can not transfer to this address`;
         }
         if (!amount) {
