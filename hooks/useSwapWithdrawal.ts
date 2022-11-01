@@ -4,14 +4,9 @@ import ProccessingStep from "../components/Wizard/Steps/ProccessingStep";
 import SuccessfulStep from "../components/Wizard/Steps/SuccessfulStep";
 import WithdrawExchangeStep from "../components/Wizard/Steps/WithdrawExhangeStep";
 import WithdrawNetworkStep from "../components/Wizard/Steps/WithdrawNetworkStep";
-import { useFormWizardaUpdate } from "../context/formWizardProvider";
 import { SwapWithdrawalStep, WizardStep } from "../Models/Wizard";
 
-
-
 const useSwapWithdrawal = () => {
-    const { goToStep } = useFormWizardaUpdate()
-
 
     const ExternalPayment: WizardStep<SwapWithdrawalStep> = {
         Content: ExternalPaymentStep,

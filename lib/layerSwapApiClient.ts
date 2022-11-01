@@ -120,6 +120,7 @@ export type SwapItem = {
     network_currency_id: string,
     exchange_currency_id: string,
     additonal_data: {
+        initiate_interval_seconds: number,
         deposit_address: string,
         chain_display_name: string,
         current_withdrawal_fee: number,

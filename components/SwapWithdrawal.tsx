@@ -1,9 +1,9 @@
 import { useRouter } from "next/router";
-import { FC, useCallback } from "react";
+import { FC } from "react";
 import useSWR from "swr";
-import { FormWizardProvider, useFormWizardaUpdate } from "../context/formWizardProvider";
+import { FormWizardProvider } from "../context/formWizardProvider";
 import { useSettingsState } from "../context/settings";
-import useSwapWithdrawal from "../hooks/useSwapWithdrawal";
+import KnownInternalNames from "../lib/knownIds";
 import LayerSwapApiClient, { SwapItemResponse, SwapType } from "../lib/layerSwapApiClient";
 import { DepositFlow } from "../Models/Exchange";
 import { SwapStatus } from "../Models/SwapStatus";
@@ -38,6 +38,8 @@ const SwapWithdrawal: FC = () => {
         initialStep = SwapWithdrawalStep.Success
     else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
         initialStep = SwapWithdrawalStep.Failed
+    else if (swapStatus == SwapStatus.Initiated && swap?.data?.additonal_data?.initiate_interval_seconds >= 60 && exchange.display_name.toUpperCase() == KnownInternalNames.Exchanges.Coinbase)
+        initialStep = SwapWithdrawalStep.Delay
     else {
         if (swap?.data?.type === SwapType.OffRamp)
             initialStep = SwapWithdrawalStep.OffRampWithdrawal ///TODO only for coinbase, implement other flows

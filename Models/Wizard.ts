@@ -37,7 +37,8 @@ export enum SwapWithdrawalStep {
     OffRampWithdrawal = "OffRampWithdrawal",
     Processing = "Processing",
     Success = "Success",
-    Failed = "Failed"
+    Failed = "Failed",
+    Delay = "Delay"
 }
 
 export enum AuthStep {
