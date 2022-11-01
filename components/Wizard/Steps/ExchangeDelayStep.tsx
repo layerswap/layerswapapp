@@ -1,12 +1,8 @@
 import { FC } from 'react'
-import { useSwapDataState } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import MessageComponent from '../../MessageComponent';
-import { useRouter } from 'next/router';
 
 const ExchangeDelay: FC = () => {
-    const { swap } = useSwapDataState()
-    const router = useRouter()
 
     return (
         <MessageComponent>
@@ -25,7 +21,7 @@ const ExchangeDelay: FC = () => {
                     Check Coinbase
                 </SubmitButton>
                 <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={() => {
-
+                    window.open('https://app.gitbook.com/o/QbBlgXv3cYaTIBw4Ijiz/s/60lDEkZWkqpblJDopzKQ/why-is-coinbase-transfer-taking-so-long', '_blank')
                 }}>
                     Learn More
                 </SubmitButton>

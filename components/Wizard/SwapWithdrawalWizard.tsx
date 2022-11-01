@@ -1,5 +1,7 @@
+import { Router, useRouter } from "next/router";
 import { FC } from "react";
-import { SwapWithdrawalStep } from "../../Models/Wizard";
+import { useFormWizardaUpdate } from "../../context/formWizardProvider";
+import { SwapCreateStep, SwapWithdrawalStep } from "../../Models/Wizard";
 import ExchangeDelay from "./Steps/ExchangeDelayStep";
 import ExternalPaymentStep from "./Steps/ExternalPaymentStep";
 import FailedStep from "./Steps/FailedStep";
@@ -11,7 +13,8 @@ import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 
 const SwapWithdrawalWizard: FC = () => {
-
+    const router = useRouter()
+    
     return (
         <Wizard>
             <WizardItem StepName={SwapWithdrawalStep.ExternalPayment} PositionPercent={90}>
@@ -26,7 +29,7 @@ const SwapWithdrawalWizard: FC = () => {
             <WizardItem StepName={SwapWithdrawalStep.Processing} PositionPercent={95}>
                 <ProccessingStep />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.Delay} PositionPercent={95}>
+            <WizardItem StepName={SwapWithdrawalStep.Delay} PositionPercent={95} GoBack={() => router.push('/')}>
                 <ExchangeDelay />
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.Success} PositionPercent={100}>
