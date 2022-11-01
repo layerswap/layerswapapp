@@ -1,4 +1,4 @@
-const { PHASE_PRODUCTION_SERVER } = require('next/constants')
+const { PHASE_DEVELOPMENT_SERVER } = require('next/constants')
 
 const securityHeaders = [
   {
