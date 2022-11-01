@@ -29,7 +29,6 @@ module.exports = (phase, { defaultConfig }) => {
     reactStrictMode: false
   }
 
-  // TODO: Test the phases to see which corresponds to the prod only
   if (phase === PHASE_PRODUCTION_SERVER) {
     nextConfig.headers = async () => {
       return [
