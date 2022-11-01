@@ -14,14 +14,15 @@ const ActiveSwapLimit: FC = () => {
                     Too Many Swaps
                 </MessageComponent.Header>
                 <MessageComponent.Description>
-                    Test
+                    You can't have more than 5 unfinished swaps at the same time.
+                    Please complete or cancel one of them from the Swap History page.
                 </MessageComponent.Description>
-                <MessageComponent.Buttons>
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => router.push('/transactions')}>
-                        Go to cancel Swaps
-                    </SubmitButton>
-                </MessageComponent.Buttons>
             </MessageComponent.Content>
+            <MessageComponent.Buttons>
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => router.push('/transactions')}>
+                    Go To Swap History
+                </SubmitButton>
+            </MessageComponent.Buttons>
         </MessageComponent>
     )
 }
