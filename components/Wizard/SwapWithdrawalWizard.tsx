@@ -29,7 +29,7 @@ const SwapWithdrawalWizard: FC = () => {
             <WizardItem StepName={SwapWithdrawalStep.Processing} PositionPercent={95}>
                 <ProccessingStep />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.Delay} PositionPercent={95} GoBack={() => router.push('/')}>
+            <WizardItem StepName={SwapWithdrawalStep.Delay} PositionPercent={95}>
                 <ExchangeDelay />
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.Success} PositionPercent={100}>
