@@ -2,7 +2,6 @@ import { SwitchHorizontalIcon } from '@heroicons/react/outline';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
-import { useComplexInterval } from '../../../hooks/useInterval';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep, SwapWizardSteps } from '../../../Models/Wizard';
 import TokenService from '../../../lib/TokenService';

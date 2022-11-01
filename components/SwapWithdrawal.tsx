@@ -30,7 +30,7 @@ const SwapWithdrawal: FC = () => {
         initialStep = SwapWithdrawalStep.Failed
     else {
         if (swap?.data?.type === SwapType.OffRamp)
-            initialStep = SwapWithdrawalStep.OffRampWithdrawal ///TODO only for coinbase, implement other flows
+            initialStep = SwapWithdrawalStep.OffRampWithdrawal 
         else if (exchange?.deposit_flow === DepositFlow.Manual)
             initialStep = SwapWithdrawalStep.Withdrawal
         else if (exchange?.deposit_flow === DepositFlow.External)
