@@ -4,6 +4,7 @@ import { TimerProvider } from "../../context/timerContext";
 import useCreateSwap from "../../hooks/useCreateSwap";
 import { SwapCreateStep } from "../../Models/Wizard";
 import AccountConnectStep from "./Steps/AccountConnectStep";
+import ActiveSwapLimit from "./Steps/ActiveSwapLimitStep";
 import APIKeyStep from "./Steps/APIKeyStep";
 import CodeStep from "./Steps/CodeStep";
 import SwapConfirmationStep from "./Steps/ConfirmStep";
@@ -50,6 +51,9 @@ const CreateSwap: FC = () => {
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.TwoFactor} GoBack={GoBackToConfirmStep} key={SwapCreateStep.TwoFactor}>
                     <TwoFactorStep />
+                </WizardItem>
+                <WizardItem StepName={SwapCreateStep.ActiveSwapLimit} GoBack={GoBackToConfirmStep} key={SwapCreateStep.ActiveSwapLimit}>
+                    <ActiveSwapLimit />
                 </WizardItem>
             </Wizard>
         </TimerProvider>

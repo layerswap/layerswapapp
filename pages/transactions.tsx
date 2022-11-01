@@ -7,6 +7,7 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
+import { SwapDataProvider } from '../context/swap'
 
 export default function Transactions({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = response.data.discovery.identity_url
@@ -17,7 +18,9 @@ export default function Transactions({ response }: InferGetServerSidePropsType<t
         <SettingsProvider data={response}>
           <AuthProvider>
             <MenuProvider>
-              <TransactionsHistory />
+              <SwapDataProvider >
+                <TransactionsHistory />
+              </SwapDataProvider >
             </MenuProvider>
           </AuthProvider>
         </SettingsProvider>
