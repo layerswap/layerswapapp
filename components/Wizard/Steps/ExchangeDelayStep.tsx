@@ -18,8 +18,8 @@ const ExchangeDelay: FC = () => {
             </MessageComponent.Content>
             <MessageComponent.Buttons>
                 <GoHomeButton>
-                    <SubmitButton isDisabled={false} isSubmitting={false}>
-                        Go To Homepage
+                    <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false}>
+                        Go Home
                     </SubmitButton>
                 </GoHomeButton>
                 <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={() => {
