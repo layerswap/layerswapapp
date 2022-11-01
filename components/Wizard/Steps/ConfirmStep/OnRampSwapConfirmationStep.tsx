@@ -153,6 +153,10 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleCloseCancelSwapModal = () => {
         setCancelSwapModalOpen(false)
     }
+    const handleGoToPendingSwap = useCallback(async () => {
+        router.push(`/${exchangePendingSwap.id}`)
+    }, [exchangePendingSwap])
+
     const handleSaveAddress = useCallback(() => {
         setAddressInputError("")
         if (!isValidAddress(addressInputValue, network.baseObject)) {
@@ -248,8 +252,8 @@ const OnRampSwapConfirmationStep: FC = () => {
                         <SubmitButton type='button' size='small' isDisabled={!!addressInputError} isSubmitting={false} onClick={handleCancelSwap}>
                             Terminate pending swap
                         </SubmitButton>
-                        <SubmitButton type='button' size='small' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleCloseCancelSwapModal}>
-                            Do another swap
+                        <SubmitButton type='button' size='small' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleGoToPendingSwap}>
+                            Complete swap
                         </SubmitButton>
                     </div>
                 </div>
