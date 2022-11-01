@@ -2,7 +2,7 @@ import { FC } from "react";
 import { FormWizardProvider } from "../context/formWizardProvider";
 import { useSettingsState } from "../context/settings";
 import { useSwapDataState } from "../context/swap";
-import {  SwapType } from "../lib/layerSwapApiClient";
+import { SwapType } from "../lib/layerSwapApiClient";
 import { DepositFlow } from "../Models/Exchange";
 import { SwapStatus } from "../Models/SwapStatus";
 import { SwapWithdrawalStep } from "../Models/Wizard";
@@ -19,7 +19,7 @@ const SwapWithdrawal: FC = () => {
         return <div className={`pb-6 bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative animate-pulse h-[548px]`}>
 
         </div>
-
+    console.log("swap 0", swap)
     const swapStatus = swap?.data?.status;
     const exchange = exchanges.find(e => e.currencies.some(ec => ec.id === swap.data.exchange_currency_id))
 
@@ -30,7 +30,7 @@ const SwapWithdrawal: FC = () => {
         initialStep = SwapWithdrawalStep.Failed
     else {
         if (swap?.data?.type === SwapType.OffRamp)
-            initialStep = SwapWithdrawalStep.OffRampWithdrawal 
+            initialStep = SwapWithdrawalStep.OffRampWithdrawal
         else if (exchange?.deposit_flow === DepositFlow.Manual)
             initialStep = SwapWithdrawalStep.Withdrawal
         else if (exchange?.deposit_flow === DepositFlow.External)
