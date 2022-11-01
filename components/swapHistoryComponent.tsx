@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapListResponse, SwapItem, SwapType } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon } from '@heroicons/react/outline';
+import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
 import { useSettingsState } from "../context/settings"
@@ -19,6 +19,8 @@ import StatusIcon from "./StatusIcons"
 import Modal from "./modalComponent"
 import HoverTooltip from "./Tooltips/HoverTooltip"
 import toast from "react-hot-toast"
+import { SwapStatus } from "../Models/SwapStatus"
+import { useSwapDataUpdate } from "../context/swap"
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -31,6 +33,7 @@ function TransactionsHistory() {
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const { email } = useAuthState()
+  const { cancelSwap } = useSwapDataUpdate()
 
   const checkAuth = () => {
     try {
@@ -424,11 +427,15 @@ function TransactionsHistory() {
                         </div>
                       }
                       {
-                        selectedSwap?.status == 'initiated' &&
-                        <div className="text-white text-sm mt-6">
+                        selectedSwap?.status == SwapStatus.UserTransferPending &&
+                        <div className="text-white text-sm mt-6 space-y-3">
                           <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false}>
                             Complete Swap
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                          </SubmitButton>
+                          <SubmitButton buttonStyle="outline" onClick={() => {cancelSwap(selectedSwap.id); router.reload()}} isDisabled={false} isSubmitting={false}>
+                            Cancel Swap
+                            <XIcon className='ml-2 h-5 w-5' />
                           </SubmitButton>
                         </div>
                       }
