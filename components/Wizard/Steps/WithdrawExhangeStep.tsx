@@ -134,6 +134,14 @@ const WithdrawExchangeStep: FC = () => {
                                 </BackgroundField>
                             </>
                         }
+                        {
+                            ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
+                            <WarningMessage>
+                                <p className='font-normal text-sm text-darkblue-700'>
+                                    {ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage}
+                                </p>
+                            </WarningMessage>
+                        }
                     </div>
                 </div>
                 {

@@ -331,12 +331,12 @@ function TransactionsHistory() {
                                   'md:px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
-                                <div className="flex space-x-1">
+                                <div className="md:flex">
                                   {
                                     swap?.status == 'completed' && swap.received_amount != swap.requested_amount ?
-                                      <div className="flex items-center">
-                                        {swap.received_amount}/
-                                        <HoverTooltip text='Requested Amount' moreClassNames="w-32 text-center">
+                                      <div className="flex flex-col md:flex-row text-left">
+                                        <span className="ml-1 md:ml-0">{swap.received_amount} /</span>
+                                        <HoverTooltip text='Amount You Requested' moreClassNames="w-40 text-center">
                                           <span className="underline decoration-dotted hover:no-underline">
                                             {swap.requested_amount}
                                           </span>
@@ -347,7 +347,7 @@ function TransactionsHistory() {
                                         {swap.requested_amount}
                                       </span>
                                   }
-                                  <span>{currency.asset}</span>
+                                  <span className="ml-1">{currency.asset}</span>
                                 </div>
                               </td>
                               <td

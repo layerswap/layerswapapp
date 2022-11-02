@@ -49,7 +49,7 @@ const CreateSwap: FC = () => {
                 <WizardItem StepName={SwapCreateStep.Confirm} GoBack={GoBackToMainStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.Confirm}>
                     <SwapConfirmationStep />
                 </WizardItem>
-                <WizardItem StepName={SwapCreateStep.TwoFactor} GoBack={GoBackToConfirmStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.TwoFactor}>
+                <WizardItem StepName={SwapCreateStep.TwoFactor} GoBack={GoBackToConfirmStep} PositionPercent={Confirm.positionPercent + 10} key={SwapCreateStep.TwoFactor}>
                     <TwoFactorStep />
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.ActiveSwapLimit} GoBack={GoBackToConfirmStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.ActiveSwapLimit}>

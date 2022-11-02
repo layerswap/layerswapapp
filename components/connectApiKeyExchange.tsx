@@ -111,7 +111,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                     </div>
                     {
                         exchange?.has_keyphrase &&
-                        <>
+                        <div>
                             <label htmlFor="apiKey" className="block font-normal text-sm">
                                 {ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}
                             </label>
@@ -128,7 +128,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                          placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                             </div>
-                        </>
+                        </div>
                     }
                     {
                         ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&

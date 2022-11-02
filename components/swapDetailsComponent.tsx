@@ -139,17 +139,17 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">Requested Amount </span>
+                            <span className="text-left">{swap?.data?.received_amount && swap?.data?.received_amount != swap?.data?.requested_amount  ? 'Amount You Requested' : "Amount"} </span>
                             <span className='text-white font-normal flex'>
                                 {swap?.data?.requested_amount} {currencyDetails?.asset}
                             </span>
                         </div>
                         <hr className='horizontal-gradient' />
                         {
-                            swap?.data?.status == 'completed' &&
+                            swap?.data?.status == 'completed' && swap?.data?.requested_amount != swap?.data?.received_amount &&
                             <>
                                 <div className="flex justify-between items-baseline">
-                                    <span className="text-left">Received Amount </span>
+                                    <span className="text-left">Amount You Sent </span>
                                     <span className='text-white font-normal flex'>
                                         {swap?.data?.received_amount} {currencyDetails?.asset}
                                     </span>

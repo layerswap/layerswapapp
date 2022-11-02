@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import HeaderWithMenu from '../HeaderWithMenu';
 
 type Props = {
@@ -11,9 +11,8 @@ const Wizard: FC<Props> = ({ children }) => {
 
    const wrapper = useRef(null);
 
-   const { wrapperWidth, loading: loadingWizard, positionPercent, moving, goBack } = useFormWizardState()
+   const { wrapperWidth, positionPercent, moving, goBack } = useFormWizardState()
    const { setWrapperWidth } = useFormWizardaUpdate()
-   const loading = loadingWizard
 
    useEffect(() => {
       function handleResize() {
@@ -52,7 +51,5 @@ const Wizard: FC<Props> = ({ children }) => {
       </div>
    </>
 }
-
-
 
 export default Wizard;
