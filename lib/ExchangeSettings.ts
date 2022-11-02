@@ -27,7 +27,7 @@ export default class ExchangeSettings {
             ExchangeApiKeyPageUrl: "https://www.binance.com/en/my/settings/api-management",
             ExchangeWithdrawalPageUrl: "https://www.binance.com/en/my/wallet/account/main/withdrawal/crypto",
             FeeIsRefundable: true,
-            WithdrawalWarningMessage: "Please note that using Binance Pay is not supported and won't be detected."
+            WithdrawalWarningMessage: "Please note that using the PayId method is not supported and won't be detected."
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Bitfinex] = {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/c8cf508a2c5a4780a9225ac87668d349?iframe",
