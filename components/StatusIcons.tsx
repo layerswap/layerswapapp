@@ -35,18 +35,25 @@ export default function StatusIcon({ status }: { status: SwapStatus }) {
             <p>Expired</p>
           </div>
         </>)
-    case SwapStatus.Initiated:
+    case SwapStatus.UserTransferPending:
       return <>
         <div className="inline-flex items-center">
           <YellowIcon />
           <p>Pending</p>
         </div>
       </>
-    case SwapStatus.PendingWithdrawal:
+    case SwapStatus.LsTransferPending:
       return <>
         <div className="inline-flex items-center">
           <PurpleIcon />
           <p>Pending Withdrawal</p>
+        </div>
+      </>
+    case SwapStatus.UserTransferDelayed:
+      return <>
+        <div className="inline-flex items-center">
+          <YellowIcon />
+          <p>Delayed</p>
         </div>
       </>
     case SwapStatus.Created:
@@ -57,6 +64,8 @@ export default function StatusIcon({ status }: { status: SwapStatus }) {
             <p>Created</p>
           </div>
         </>)
+    default:
+      return <></>
   }
 }
 

@@ -1,9 +1,7 @@
 import { FC, useEffect, useRef } from 'react'
-import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
-import LayerswapMenu from '../LayerswapMenu';
-import GoHomeButton from '../utils/GoHome';
 import { AnimatePresence, motion } from 'framer-motion';
+import HeaderWithMenu from '../HeaderWithMenu';
 
 type Props = {
    children: JSX.Element | JSX.Element[];
@@ -13,7 +11,7 @@ const Wizard: FC<Props> = ({ children }) => {
 
    const wrapper = useRef(null);
 
-   const { wrapperWidth, loading: loadingWizard, positionPercent, moving } = useFormWizardState()
+   const { wrapperWidth, loading: loadingWizard, positionPercent, moving, goBack } = useFormWizardState()
    const { setWrapperWidth } = useFormWizardaUpdate()
    const loading = loadingWizard
 
@@ -37,7 +35,7 @@ const Wizard: FC<Props> = ({ children }) => {
                <div style={{ width: `${width}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
             </div>
          </div>
-         <WizardHeader wrapperWidth={wrapperWidth} />
+         <HeaderWithMenu goBack={goBack}/>
          <div className='text-center text-xl text-darkblue-50'>
 
          </div>
@@ -55,29 +53,6 @@ const Wizard: FC<Props> = ({ children }) => {
    </>
 }
 
-function WizardHeader({ wrapperWidth }: { wrapperWidth: number }) {
-   const { goBack } = useFormWizardState()
 
-   return <>
-      <div className="w-full flex items-center justify-between px-6 md:px-8 mt-3 h-[44px]" >
-         <>
-            {
-               goBack ?
-                  <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
-                     <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
-                  </button>
-                  :
-                  <div className='h-7 w-7'></div>
-            }
-            <div className='mx-auto px-4 overflow-hidden md:hidden'>
-               <div className="flex justify-center">
-                  <GoHomeButton />
-               </div>
-            </div>
-            <LayerswapMenu />
-         </>
-      </div>
-   </>
-}
 
 export default Wizard;

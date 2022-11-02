@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback } from "react";
 import CopyButton from "../buttons/copyButton";
 import LayerSwapLogo from "../icons/layerSwapLogo";
 import { PaperClipIcon } from '@heroicons/react/outline'
@@ -10,7 +10,7 @@ import { useQueryState } from "../../context/query";
 
 interface Props {
     className?: string;
-    children?: JSX.Element | JSX.Element[];
+    children?: JSX.Element | JSX.Element[] | string;
 }
 
 const GoHomeButton: FC<Props> = (({ className, children }) => {

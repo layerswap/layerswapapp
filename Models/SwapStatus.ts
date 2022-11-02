@@ -1,12 +1,10 @@
 export enum SwapStatus {
     Created = 'created',
-
-    Initiated="initiated",
-    
+    UserTransferPending= 'user_transfer_pending',
+    UserTransferDelayed = 'user_transfer_delayed',
     Completed = 'completed',
     Failed = 'failed',
-
     Expired = "expired",
-    PendingWithdrawal = "pending_withdrawal",
+    LsTransferPending = "ls_transfer_pending",
     Cancelled = "cancelled",
 }

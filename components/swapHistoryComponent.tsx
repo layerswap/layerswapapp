@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapListResponse, SwapItem, SwapType } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon } from '@heroicons/react/outline';
+import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
 import { useSettingsState } from "../context/settings"
@@ -19,6 +19,9 @@ import StatusIcon from "./StatusIcons"
 import Modal from "./modalComponent"
 import HoverTooltip from "./Tooltips/HoverTooltip"
 import toast from "react-hot-toast"
+import { ArrowLeftIcon } from "@heroicons/react/solid"
+import { SwapStatus } from "../Models/SwapStatus"
+import { useSwapDataUpdate } from "../context/swap"
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -31,6 +34,7 @@ function TransactionsHistory() {
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const { email } = useAuthState()
+  const { cancelSwap } = useSwapDataUpdate()
 
   const checkAuth = () => {
     try {
@@ -47,6 +51,10 @@ function TransactionsHistory() {
       toast(e.message)
     }
   }
+
+  const handleGoBack = useCallback(() => {
+    router.back()
+  }, [router])
 
   useEffect(() => {
     document.addEventListener(
@@ -143,10 +151,16 @@ function TransactionsHistory() {
   return (
     <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
       <div className="mt-3 flex items-center justify-between z-20" >
-        <div className="hidden md:block">
-          <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
-          <span className="text-primary-text font-medium">{email}</span>
+        <div className="flex ">
+          <button onClick={handleGoBack} className="self-start md:mt-2">
+            <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+          </button>
+          <div className="hidden md:block ml-4">
+            <p className="text-2xl font-bold">Account</p>
+            <span className="text-primary-text font-medium">{email}</span>
+          </div>
         </div>
+
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
           <div className="flex justify-center">
             <GoHomeButton />
@@ -420,15 +434,19 @@ function TransactionsHistory() {
                             className="shadowed-button cursor-pointer group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                             View in Explorer
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                          </a> 
+                          </a>
                         </div>
                       }
                       {
-                        selectedSwap?.status == 'initiated' &&
-                        <div className="text-white text-sm mt-6">
+                        selectedSwap?.status == SwapStatus.UserTransferPending &&
+                        <div className="text-white text-sm mt-6 space-y-3">
                           <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false}>
                             Complete Swap
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                          </SubmitButton>
+                          <SubmitButton buttonStyle="outline" onClick={() => {cancelSwap(selectedSwap.id); router.reload()}} isDisabled={false} isSubmitting={false}>
+                            Cancel Swap
+                            <XIcon className='ml-2 h-5 w-5' />
                           </SubmitButton>
                         </div>
                       }
