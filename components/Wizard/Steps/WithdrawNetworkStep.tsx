@@ -18,6 +18,8 @@ import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
+import TokenService from '../../../lib/TokenService';
+import { parseJwt } from '../../../lib/jwtParser';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -26,8 +28,10 @@ const WithdrawNetworkStep: FC = () => {
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { email } = useAuthState()
+    const access_token = TokenService.getAuthData()?.access_token
+    const { sub } = parseJwt(access_token) || {}
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id, userId: sub } })
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
 

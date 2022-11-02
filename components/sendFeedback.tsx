@@ -3,7 +3,9 @@ import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../context/authContext';
+import { parseJwt } from '../lib/jwtParser';
 import { SendFeedbackMessage } from '../lib/telegram';
+import TokenService from '../lib/TokenService';
 import SubmitButton from './buttons/submitButton';
 
 interface SendFeedbackFormValues {
@@ -18,12 +20,14 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
     const { email } = useAuthState()
     const initialValues: SendFeedbackFormValues = { Feedback: '' }
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email })
+    const access_token = TokenService.getAuthData()?.access_token
+    const { sub } = parseJwt(access_token) || {}
+    const updateWithProps = () => update({ email: email, customAttributes: { userId: sub } })
 
     const handleSendFeedback = useCallback(async (values: SendFeedbackFormValues) => {
         try {
             if (values.Feedback.length !== 0) {
-                const res = await SendFeedbackMessage(email,values.Feedback)
+                const res = await SendFeedbackMessage(email, values.Feedback)
                 if (!res.ok) {
                     throw new Error(res.description || "Could not send feedback, something went wrong")
                 } else {
