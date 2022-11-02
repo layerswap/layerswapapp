@@ -10,7 +10,6 @@ import SwapWithdrawalWizard from "./Wizard/SwapWithdrawalWizard";
 
 
 const SwapWithdrawal: FC = () => {
-
     const { data: settings } = useSettingsState()
     const { exchanges } = settings
     const { swap } = useSwapDataState()
@@ -27,6 +26,8 @@ const SwapWithdrawal: FC = () => {
         initialStep = SwapWithdrawalStep.Success
     else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
         initialStep = SwapWithdrawalStep.Failed
+    else if (swapStatus == SwapStatus.UserTransferDelayed)
+        initialStep = SwapWithdrawalStep.Delay
     else {
         if (swap?.data?.type === SwapType.OffRamp)
             initialStep = SwapWithdrawalStep.OffRampWithdrawal
