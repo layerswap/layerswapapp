@@ -64,6 +64,8 @@ export default function StatusIcon({ status }: { status: SwapStatus }) {
             <p>Created</p>
           </div>
         </>)
+    default:
+      return <></>
   }
 }
 

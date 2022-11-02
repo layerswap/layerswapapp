@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
-import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { useRouter } from 'next/router';
 import { useSettingsState } from '../../../context/settings';
@@ -12,7 +12,6 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import { useEffectOnce } from 'react-use';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -20,10 +19,10 @@ const WithdrawExchangeStep: FC = () => {
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
 
-    useEffectOnce(() => {
+    useEffect(() => {
         setInterval(2000)
         return () => setInterval(0)
-    })
+    }, [])
 
     const { exchanges, discovery: { resource_storage_url } } = data
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
