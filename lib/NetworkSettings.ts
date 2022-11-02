@@ -38,7 +38,7 @@ export default class NetworkSettings {
             UserGuideUrlForMobile: "https://app.tango.us/app/embed/500f28ced0254f6dab4256d669999134?iframe",
             ConfirmationWarningMessage: "If you're using the GameStop wallet, please navigate to Loopring.io and use it to transfer funds instead of the GameStop wallet itself",
         };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ImmutableXGoerli] = {
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumRinkeby] = {
             ChainId: 421611,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncMainnet] = {
