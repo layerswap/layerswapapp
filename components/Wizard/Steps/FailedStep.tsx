@@ -6,16 +6,12 @@ import { useAuthState } from '../../../context/authContext';
 import MessageComponent from '../../MessageComponent';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
-import { parseJwt } from '../../../lib/jwtParser';
-import TokenService from '../../../lib/TokenService';
 
 const FailedStep: FC = () => {
     const { swap } = useSwapDataState()
-    const { email } = useAuthState()
-    const access_token = TokenService.getAuthData()?.access_token
-    const { sub } = parseJwt(access_token) || {}
+    const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id, userId: sub } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id, userId: userId } })
 
     return (
         <>

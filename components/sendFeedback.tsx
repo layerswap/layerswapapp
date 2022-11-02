@@ -3,9 +3,7 @@ import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../context/authContext';
-import { parseJwt } from '../lib/jwtParser';
 import { SendFeedbackMessage } from '../lib/telegram';
-import TokenService from '../lib/TokenService';
 import SubmitButton from './buttons/submitButton';
 
 interface SendFeedbackFormValues {
@@ -17,12 +15,10 @@ type Props = {
 }
 
 const SendFeedback: FC<Props> = ({ onSend }) => {
-    const { email } = useAuthState()
+    const { email, userId } = useAuthState()
     const initialValues: SendFeedbackFormValues = { Feedback: '' }
     const { boot, show, update } = useIntercom()
-    const access_token = TokenService.getAuthData()?.access_token
-    const { sub } = parseJwt(access_token) || {}
-    const updateWithProps = () => update({ email: email, customAttributes: { userId: sub } })
+    const updateWithProps = () => update({ email: email, customAttributes: { userId: userId } })
 
     const handleSendFeedback = useCallback(async (values: SendFeedbackFormValues) => {
         try {

@@ -14,8 +14,6 @@ import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
 import { CheckIcon, HomeIcon, ChatIcon } from '@heroicons/react/solid';
-import TokenService from '../../../lib/TokenService';
-import { parseJwt } from '../../../lib/jwtParser';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -32,11 +30,9 @@ const WithdrawExchangeStep: FC = () => {
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
-    const { email } = useAuthState()
-    const access_token = TokenService.getAuthData()?.access_token
-    const { sub } = parseJwt(access_token) || {}
+    const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swapId, userId: sub } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swapId, userId: userId } })
 
     const swapStatusStep = GetSwapStatusStep(swap)
 

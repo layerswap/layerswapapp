@@ -11,17 +11,13 @@ import { classNames } from "./utils/classNames";
 import SlideOver from "./SlideOver";
 import { AnimatePresence, motion } from "framer-motion";
 import GoHomeButton from "./utils/GoHome";
-import { parseJwt } from "../lib/jwtParser";
 
 export default function () {
-    const { email, authData } = useAuthState()
+    const { email, authData, userId } = useAuthState()
     const router = useRouter();
     const { menuVisible } = useMenuState()
-    const access_token = TokenService.getAuthData()?.access_token
-    const { sub } = parseJwt(access_token) || {}
     const { boot, show, update } = useIntercom()
-
-    const updateWithProps = () => update({ email: email, customAttributes: { userId: sub } })
+    const updateWithProps = () => update({ email: email, customAttributes: { userId: userId } })
 
     const [feedbackDrawerIsOpen, setFeedbackDrawerIsOpen] = useState(false);
     const goToLink = (path: string, query: any) => {
