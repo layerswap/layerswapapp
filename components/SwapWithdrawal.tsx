@@ -19,7 +19,6 @@ const SwapWithdrawal: FC = () => {
         return <div className={`pb-6 bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative animate-pulse h-[548px]`}>
 
         </div>
-    console.log("swap 0", swap)
     const swapStatus = swap?.data?.status;
     const exchange = exchanges.find(e => e.currencies.some(ec => ec.id === swap.data.exchange_currency_id))
 
