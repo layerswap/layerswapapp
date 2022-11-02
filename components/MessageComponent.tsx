@@ -1,7 +1,6 @@
 import DelayIcon from "./icons/DelayIcon";
 import FailIcon from "./icons/FailIcon";
 import SuccessIcon from "./icons/SuccessIcon";
-
 type iconStyle = 'red' | 'green' | 'yellow'
 
 class MessageComponentProps {
