@@ -427,7 +427,7 @@ function TransactionsHistory() {
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {
-                        data.networks && selectedSwap?.transaction_id && selectedSwap.type == SwapType.OnRamp &&
+                        data.networks && selectedSwap?.transaction_id && selectedSwap.type == SwapType.OnRamp && selectedSwap?.status == SwapStatus.Completed &&
                         <div className="text-white text-sm mt-6">
                           <a href={networks?.find(n => n.currencies.some(nc => nc.id === selectedSwap?.network_currency_id)).transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
                             target="_blank"
@@ -444,7 +444,7 @@ function TransactionsHistory() {
                             Complete Swap
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
                           </SubmitButton>
-                          <SubmitButton buttonStyle="outline" onClick={() => {cancelSwap(selectedSwap.id); router.reload()}} isDisabled={false} isSubmitting={false}>
+                          <SubmitButton buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false}>
                             Cancel Swap
                             <XIcon className='ml-2 h-5 w-5' />
                           </SubmitButton>

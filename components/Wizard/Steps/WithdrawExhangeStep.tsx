@@ -30,9 +30,9 @@ const WithdrawExchangeStep: FC = () => {
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
-    const { email } = useAuthState()
+    const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swapId } })
+    const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swapId } })
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
@@ -80,13 +80,15 @@ const WithdrawExchangeStep: FC = () => {
                             </span> and do a withdrawal to the provided address
                         </h3>
                     </div>
-                    <WarningMessage>
-                        <p className='font-semibold text-sm text-darkblue-700'>
-                            Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
-                        </p>
-                    </WarningMessage>
                     {
-
+                        swap?.data?.additonal_data?.note &&
+                        <WarningMessage>
+                            <p className='font-semibold text-sm text-darkblue-700'>
+                                Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
+                            </p>
+                        </WarningMessage>
+                    }
+                    {
                         ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
                         <div className='flex-col w-full rounded-md bg-darkblue-600 shadow-lg p-2'>
                             <div className='flex items-center'>

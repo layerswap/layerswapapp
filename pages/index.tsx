@@ -51,8 +51,7 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const response = await apiClient.fetchSettingsAsync()
 
-  response.data.networks = response.data.networks.filter((element) =>
-    element.status !== "inactive" && !NetworkSettings.KnownSettings[element?.internal_name]?.ForceDisable)
+  response.data.networks = response.data.networks.filter((element) => element.status !== "inactive")
   response.data.exchanges = response.data.exchanges.filter((element) => element.status !== "inactive");
 
   const resource_storage_url = response.data.discovery.resource_storage_url

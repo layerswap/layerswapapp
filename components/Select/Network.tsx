@@ -3,6 +3,7 @@ import { forwardRef } from "react";
 import { useQueryState } from "../../context/query";
 import { useSettingsState } from "../../context/settings";
 import { SwapType } from "../../lib/layerSwapApiClient";
+import NetworkSettings from "../../lib/NetworkSettings";
 import { SortingByOrder } from "../../lib/sorting";
 import { CryptoNetwork } from "../../Models/CryptoNetwork";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -21,8 +22,9 @@ const NetworkField = forwardRef((props: any, ref: any) => {
     const { discovery: { resource_storage_url } } = data
 
     const networkIsAvailable = (n: CryptoNetwork) => (swapType === SwapType.OffRamp ?
-        (n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled))))
-        : (n.currencies.some(nc => nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled)))))
+        (n.currencies.some(nc =>!NetworkSettings?.ForceDisable?.[n?.internal_name]?.offramp && nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled))))
+        : (n.currencies.some(nc =>!NetworkSettings?.ForceDisable?.[n?.internal_name]?.onramp && nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled)))))
+    
     const destNetworkIsAvailable = data.networks.some(n => n.internal_name === destNetwork && n.status === "active" && networkIsAvailable(n))
 
     const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks

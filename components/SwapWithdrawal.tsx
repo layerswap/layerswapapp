@@ -1,7 +1,7 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { FormWizardProvider } from "../context/formWizardProvider";
 import { useSettingsState } from "../context/settings";
-import { useSwapDataState } from "../context/swap";
+import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { SwapType } from "../lib/layerSwapApiClient";
 import { DepositFlow } from "../Models/Exchange";
 import { SwapStatus } from "../Models/SwapStatus";
@@ -10,10 +10,14 @@ import SwapWithdrawalWizard from "./Wizard/SwapWithdrawalWizard";
 
 
 const SwapWithdrawal: FC = () => {
-
     const { data: settings } = useSettingsState()
     const { exchanges } = settings
     const { swap } = useSwapDataState()
+    const { mutateSwap } = useSwapDataUpdate()
+
+    useEffect(() => {
+        mutateSwap()
+    }, [])
 
     if (!swap)
         return <div className={`pb-6 bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative animate-pulse h-[548px]`}>
@@ -27,6 +31,8 @@ const SwapWithdrawal: FC = () => {
         initialStep = SwapWithdrawalStep.Success
     else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
         initialStep = SwapWithdrawalStep.Failed
+    else if (swapStatus == SwapStatus.UserTransferDelayed)
+        initialStep = SwapWithdrawalStep.Delay
     else {
         if (swap?.data?.type === SwapType.OffRamp)
             initialStep = SwapWithdrawalStep.OffRampWithdrawal

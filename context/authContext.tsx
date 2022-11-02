@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
 
@@ -10,6 +10,7 @@ type AuthState = {
     authData: AuthData,
     codeRequested: boolean,
     tempEmail: string,
+    userId:string,
 }
 
 export type UpdateInterface = {
@@ -24,15 +25,17 @@ export function AuthProvider({ children }) {
     const [email, setEmail] = React.useState<string | undefined>()
     const [tempEmail, setTempEmail] = React.useState<string | undefined>()
     const [authData, setAuthData] = React.useState<AuthData>({})
+    const [userId, setUserId] = useState<string>()
     const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
 
     const updateDataFromLocalStorage = () => {
         const authData = TokenService.getAuthData()
         if (!authData || !authData.access_token)
             return
-        const { email } = parseJwt(authData.access_token)
+        const { email, sub } = parseJwt(authData.access_token)
         setAuthData(authData)
         setEmail(email)
+        setUserId(sub)
     }
 
     useEffect(updateDataFromLocalStorage, [])
@@ -62,7 +65,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthStateContext.Provider value={{ email, authData, codeRequested, tempEmail }}>
+        <AuthStateContext.Provider value={{ email, authData, codeRequested, tempEmail, userId }}>
             <AuthDataUpdateContext.Provider value={updateFns}>
                 {children}
             </AuthDataUpdateContext.Provider>
