@@ -18,7 +18,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
     const { email, userId } = useAuthState()
     const initialValues: SendFeedbackFormValues = { Feedback: '' }
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { userId: userId } })
+    const updateWithProps = () => update({ email: email, userId: userId })
 
     const handleSendFeedback = useCallback(async (values: SendFeedbackFormValues) => {
         try {
