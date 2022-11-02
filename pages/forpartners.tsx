@@ -4,23 +4,38 @@ import slug from 'rehype-slug'
 import fs from 'fs'
 import path from 'path'
 import { serialize } from "next-mdx-remote/serialize";
-import React from 'react'
+import React, { useCallback } from 'react'
 import { MDXRemote } from 'next-mdx-remote'
 import imageSize from "rehype-img-size";
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
 import NetworkSettings from '../lib/NetworkSettings'
+import { useRouter } from 'next/router'
+import { AuthProvider } from '../context/authContext'
+import { MenuProvider } from '../context/menu'
+import HeaderWithMenu from '../components/HeaderWithMenu'
 
 export default function ForPartners(props) {
+    const router = useRouter();
+
+    const handleGoBack = useCallback(() => {
+        router.back()
+    }, [router])
+
     return (
         <Layout>
-            <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+            <div className="bg-darkblue shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto max-w-3xl">
                 <Head>
                     <title>Layerswap Partners</title>
                 </Head>
                 <main>
-                    <div className="flex-col justify-center py-4 px-8 md:px-0 ">
+                    <AuthProvider>
+                        <MenuProvider>
+                            <HeaderWithMenu goBack={handleGoBack} />
+                        </MenuProvider>
+                    </AuthProvider>
+                    <div className="flex-col justify-center py-4 px-8 md:px-0 sm:px-6 lg:px-8">
                         <div className="prose md:prose-xl text-primary-text">
                             <MDXRemote {...props.mdxSource} />
                         </div>
