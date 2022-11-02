@@ -80,13 +80,15 @@ const WithdrawExchangeStep: FC = () => {
                             </span> and do a withdrawal to the provided address
                         </h3>
                     </div>
-                    <WarningMessage>
-                        <p className='font-semibold text-sm text-darkblue-700'>
-                            Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
-                        </p>
-                    </WarningMessage>
                     {
-
+                        swap?.data?.additonal_data?.note &&
+                        <WarningMessage>
+                            <p className='font-semibold text-sm text-darkblue-700'>
+                                Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
+                            </p>
+                        </WarningMessage>
+                    }
+                    {
                         ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
                         <div className='flex-col w-full rounded-md bg-darkblue-600 shadow-lg p-2'>
                             <div className='flex items-center'>

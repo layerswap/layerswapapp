@@ -34,7 +34,7 @@ const WithdrawNetworkStep: FC = () => {
     useEffect(() => {
         setInterval(2000)
         return () => setInterval(0)
-    },[])
+    }, [])
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
@@ -88,12 +88,14 @@ const WithdrawNetworkStep: FC = () => {
                             {network_name}
                         </h3>
                     </div>
-                    <WarningMessage>
-                        <p className='font-semibold text-sm text-darkblue-700'>
-                            Please include the "Memo" field, it is required for a successful transfer.
-                        </p>
-                    </WarningMessage>
-
+                    {
+                        swap?.data?.additonal_data?.memo &&
+                        <WarningMessage>
+                            <p className='font-semibold text-sm text-darkblue-700'>
+                                Please include the "Memo" field, it is required for a successful transfer.
+                            </p>
+                        </WarningMessage>
+                    }
                     {
                         userGuideUrlForDesktop && userGuideUrlForMobile &&
 
