@@ -4,7 +4,6 @@ import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { useSettingsState } from '../../../context/settings';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import { useEffectOnce } from 'react-use';
 import SubmitButton from '../../buttons/submitButton';
 
 const ExternalPaymentStep: FC = () => {

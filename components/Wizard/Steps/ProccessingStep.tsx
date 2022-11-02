@@ -1,5 +1,4 @@
 import { FC, useEffect } from 'react'
-import { useEffectOnce } from 'react-use';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { SwapStatus } from '../../../Models/SwapStatus';

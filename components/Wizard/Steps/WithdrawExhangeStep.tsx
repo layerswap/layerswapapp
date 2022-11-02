@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
-import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { useRouter } from 'next/router';
 import { useSettingsState } from '../../../context/settings';
