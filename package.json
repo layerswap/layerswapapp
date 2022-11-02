@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@ethersproject/providers": "^5.5.3",
-    "@headlessui/react": "^0.0.0-insiders.f2a813e",
+    "@headlessui/react": "^1.7.3",
     "@heroicons/react": "^1.0.6",
     "@imtbl/imx-sdk": "^1.23.0",
     "@markdoc/markdoc": "^0.1.3",
