@@ -6,10 +6,10 @@ export default class NetworkSettings {
     UserGuideUrlForMobile?: string;
     WithdrawalWarningMessage?: string;
     ChainId?: number;
-    ForceDisable?: boolean;
 
+    public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
-    
+
     public static ImmutableXSettings: {
         [network: string]: {
             linkUri: string,
@@ -32,6 +32,23 @@ export default class NetworkSettings {
 
         NetworkSettings._isInitialized = true;
 
+        if (process.env.NEXT_PUBLIC_NETWORK_FORCE) {
+            NetworkSettings.ForceDisable = {
+                [KnownInternalNames.Networks.StarkNetGoerli]: {
+                    offramp: true,
+                    onramp: true
+                },
+                [KnownInternalNames.Networks.LoopringGoerli]: {
+                    offramp: true,
+                    onramp: true
+                },
+                [KnownInternalNames.Networks.ImmutableXGoerli]: {
+                    offramp: true,
+                    onramp: false
+                },
+            };
+        }
+
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LoopringMainnet] = {
             UserGuideUrlForDesktop: "https://app.tango.us/app/embed/afa9943c138143c583ca791a243772f7?iframe",
             UserGuideUrlForMobile: "https://app.tango.us/app/embed/500f28ced0254f6dab4256d669999134?iframe",
@@ -42,9 +59,6 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncMainnet] = {
             ChainId: 25,
-        };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
-            ForceDisable: false,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumGoerli] = {
             ChainId: 5,

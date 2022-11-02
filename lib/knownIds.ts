@@ -1,4 +1,5 @@
 export default class KnownInternalNames {
+    
     static Exchanges = class {
         public static readonly Coinbase: string = "COINBASE";
 
