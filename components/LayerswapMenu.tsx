@@ -17,7 +17,7 @@ export default function () {
     const router = useRouter();
     const { menuVisible } = useMenuState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { userId: userId } })
+    const updateWithProps = () => update({ email: email, userId: userId })
 
     const [feedbackDrawerIsOpen, setFeedbackDrawerIsOpen] = useState(false);
     const goToLink = (path: string, query: any) => {

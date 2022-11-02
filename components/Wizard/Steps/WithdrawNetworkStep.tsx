@@ -27,7 +27,7 @@ const WithdrawNetworkStep: FC = () => {
     const { email, userId } = useAuthState()
 
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id, userId: userId } })
+    const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.data?.id } })
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
 

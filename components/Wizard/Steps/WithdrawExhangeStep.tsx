@@ -32,7 +32,7 @@ const WithdrawExchangeStep: FC = () => {
     const { swapId } = router.query;
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swapId, userId: userId } })
+    const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swapId } })
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
