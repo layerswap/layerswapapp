@@ -12,7 +12,7 @@ const ExchangeDelay: FC = () => {
                     Swap delayed
                 </MessageComponent.Header>
                 <MessageComponent.Description>
-                    <p>This swap has been processed, but it's being delayed by Coinbase. This usually means that Coinbase needs additional verification.</p>
+                    <p>This swap is being delayed by Coinbase. This usually means that the exchange needs additional verification.</p>
                     <p className='font-bold'>Check the email from Coinbase for details.</p>
                 </MessageComponent.Description>
             </MessageComponent.Content>
