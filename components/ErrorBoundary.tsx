@@ -1,5 +1,5 @@
 import { NextRouter, withRouter } from "next/router"
-import React from "react"
+import React, { Component, ErrorInfo, ReactNode } from "react";
 import { SendErrorMessage } from "../lib/telegram"
 import SubmitButton from "./buttons/submitButton"
 import ContactSupport from "./ContactSupport"
@@ -16,20 +16,13 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
         this.state = { hasError: false }
     }
     static getDerivedStateFromError(error) {
-        // Update state so the next render will show the fallback UI
-        try {
-            if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
-                SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} \n message: ${error?.message} \n stack: ${error?.stack ?? error.stack}`)
-            }
-        }
-        catch (e) {
-            //TODO should error be handled? and how?
-        }
+      
         return { hasError: true }
     }
-    componentDidCatch(error, errorInfo) {
-        // You can use your own error logging service here
-        console.log({ error, errorInfo })
+    componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+        if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+            SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${errorInfo?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
+        }
     }
     render() {
         // Check if the error is thrown
