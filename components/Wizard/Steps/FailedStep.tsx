@@ -4,16 +4,14 @@ import { useIntercom } from 'react-use-intercom';
 import SubmitButton from '../../buttons/submitButton';
 import { useAuthState } from '../../../context/authContext';
 import MessageComponent from '../../MessageComponent';
-import { useRouter } from 'next/router';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
 
 const FailedStep: FC = () => {
     const { swap } = useSwapDataState()
-    const { email } = useAuthState()
+    const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
-    const router = useRouter()
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id, userId: userId } })
 
     return (
         <>

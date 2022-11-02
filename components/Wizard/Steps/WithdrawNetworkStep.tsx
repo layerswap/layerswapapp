@@ -24,10 +24,10 @@ const WithdrawNetworkStep: FC = () => {
     const { data } = useSettingsState()
     const { networks, discovery: { resource_storage_url } } = data
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
-    const router = useRouter();
-    const { email } = useAuthState()
+    const { email, userId } = useAuthState()
+
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id, userId: userId } })
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
 

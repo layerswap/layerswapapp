@@ -30,9 +30,9 @@ const WithdrawExchangeStep: FC = () => {
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
-    const { email } = useAuthState()
+    const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swapId } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swapId, userId: userId } })
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
