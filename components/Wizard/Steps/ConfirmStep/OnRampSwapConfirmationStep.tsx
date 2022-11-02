@@ -37,14 +37,9 @@ const OnRampSwapConfirmationStep: FC = () => {
     const { updateSwapFormData, createAndProcessSwap, processPayment, setCodeRequested, cancelSwap, setAddressConfirmed } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const [editingAddress, setEditingAddress] = useState(false)
-    const [cancelSwapModalOpen, setCancelSwapModalOpen] = useState(false)
-    const [exchangePendingSwap, setExchangePendingSwap] = useState<SwapItem>()
-
     const [addressInputValue, setAddressInputValue] = useState(destination_address)
     const [addressInputError, setAddressInputError] = useState("")
-
     const { start: startTimer } = useTimerState()
-
     const router = useRouter();
 
     const handleStartEditingAddress = () => setEditingAddress(true);
@@ -97,14 +92,8 @@ const OnRampSwapConfirmationStep: FC = () => {
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 nextStep = SwapCreateStep.OAuth
             }
-            else if (data.code === KnownwErrorCode.EXISTING_SWAP) {
-                const exchangePendingSwap = await getExchangePendingSwap(swapFormData)
-                if (!exchangePendingSwap) {
-                    toast.error(`Want to cancel pending swap but could not find one.`)
-                    return
-                }
-                setExchangePendingSwap(exchangePendingSwap)
-                setCancelSwapModalOpen(true)
+            else if (data.code === KnownwErrorCode.ACTIVE_SWAP_LIMIT_EXCEEDED) {
+                goToStep(SwapCreateStep.ActiveSwapLimit)
             }
             else {
                 toast.error(data.message)
@@ -117,41 +106,8 @@ const OnRampSwapConfirmationStep: FC = () => {
         }
     }, [exchange, swap, transferAmount])
 
-    const handleCancelSwap = useCallback(async () => {
-        try {
-            await cancelSwap(exchangePendingSwap.id)
-            setCancelSwapModalOpen(false)
-            setExchangePendingSwap(null)
-        }
-        catch (error) {
-            const data: ApiError = error?.response?.data?.error
-            if (!data) {
-                toast.error(error.message)
-            }
-            else {
-                toast.error(data.message)
-            }
-        }
-    }, [exchangePendingSwap])
-
-    const getExchangePendingSwap = async (swapFormData: SwapFormValues) => {
-        const authData = TokenService.getAuthData();
-        if (!authData?.access_token)
-            throw new Error("Not authenticated")
-        const { access_token } = authData
-        const { exchange } = swapFormData
-
-        const layerswapApiClient = new LayerSwapApiClient(router)
-
-        const pendingSwaps = await layerswapApiClient.getPendingSwaps()
-        return pendingSwaps.data.find(s => exchange.baseObject.currencies.some(ec => ec.id === s.exchange_currency_id))
-    }
-
     const handleClose = () => {
         setEditingAddress(false)
-    }
-    const handleCloseCancelSwapModal = () => {
-        setCancelSwapModalOpen(false)
     }
     const handleSaveAddress = useCallback(() => {
         setAddressInputError("")
@@ -227,29 +183,6 @@ const OnRampSwapConfirmationStep: FC = () => {
                         </SubmitButton>
                         <SubmitButton type='button' size='small' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleClose}>
                             Cancel
-                        </SubmitButton>
-                    </div>
-                </div>
-            </Modal>
-            <Modal
-                isOpen={cancelSwapModalOpen}
-                onDismiss={handleCloseCancelSwapModal}
-                title={
-                    <h4 className='text-lg text-white'>
-                        You already have pending swap for {exchange.name} </h4>
-                }
-            >
-                <div className='grid grid-flow-row text-primary-text'>
-                    <div className='mb-4'>
-                        <SwapDetails id={exchangePendingSwap?.id} />
-                    </div>
-
-                    <div className="mt-auto flex space-x-4">
-                        <SubmitButton type='button' size='small' isDisabled={!!addressInputError} isSubmitting={false} onClick={handleCancelSwap}>
-                            Terminate pending swap
-                        </SubmitButton>
-                        <SubmitButton type='button' size='small' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleCloseCancelSwapModal}>
-                            Do another swap
                         </SubmitButton>
                     </div>
                 </div>

@@ -27,7 +27,8 @@ export enum SwapCreateStep {
     OffRampOAuth = "OffRampOAuth",
     ApiKey = "ApiKey",
     Confirm = "Confirm",
-    TwoFactor = "TwoFactor"
+    TwoFactor = "TwoFactor",
+    ActiveSwapLimit = 'ActiveSwapLimit'
 
 }
 
