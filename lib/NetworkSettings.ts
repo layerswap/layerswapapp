@@ -6,10 +6,10 @@ export default class NetworkSettings {
     UserGuideUrlForMobile?: string;
     WithdrawalWarningMessage?: string;
     ChainId?: number;
-    ForceDisable?: boolean;
 
+    public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
-    
+
     public static ImmutableXSettings: {
         [network: string]: {
             linkUri: string,
@@ -31,6 +31,7 @@ export default class NetworkSettings {
         }
 
         NetworkSettings._isInitialized = true;
+        NetworkSettings.ForceDisable = JSON.parse(process.env.NEXT_PUBLIC_NETWORK_FORCE_SETTINGS || "{}")
 
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LoopringMainnet] = {
             UserGuideUrlForDesktop: "https://app.tango.us/app/embed/afa9943c138143c583ca791a243772f7?iframe",
@@ -42,9 +43,6 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncMainnet] = {
             ChainId: 25,
-        };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
-            ForceDisable: false,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumGoerli] = {
             ChainId: 5,
