@@ -3,35 +3,122 @@ import { useSwapDataState } from '../../../context/swap';
 import { useIntercom } from 'react-use-intercom';
 import SubmitButton from '../../buttons/submitButton';
 import { useAuthState } from '../../../context/authContext';
+import MessageComponent from '../../MessageComponent';
+import { useRouter } from 'next/router';
+import { SwapStatus } from '../../../Models/SwapStatus';
+import GoHomeButton from '../../utils/GoHome';
 
 const FailedStep: FC = () => {
     const { swap } = useSwapDataState()
     const { email } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, customAttributes: { paymentId: swap?.data?.payment?.id } })
+    const updateWithProps = () => update({ email: email, customAttributes: { swapId: swap?.data?.id } })
+    const router = useRouter()
+
     return (
         <>
-            <div className="w-full px-6 md:px-8 py-12 grid grid-flow-row">
-                <div className='flex place-content-center mb-12 md:mb-4'>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="116" height="116" viewBox="0 0 116 116" fill="none">
-                        <circle cx="58" cy="58" r="58" fill="#E43636" fillOpacity="0.1" />
-                        <circle cx="58" cy="58" r="45" fill="#E43636" fillOpacity="0.5" />
-                        <circle cx="58" cy="58" r="30" fill="#E43636" />
-                        <path d="M48 69L68 48" stroke="white" strokeWidth="3.15789" strokeLinecap="round" />
-                        <path d="M48 48L68 69" stroke="white" strokeWidth="3.15789" strokeLinecap="round" />
-                    </svg>
-                </div>
-                <div className="flex items-center mb-14 md:mb-6 mx-5 md:mx-24 text-center grow">
-                    <label className="block text-lg font-lighter leading-6 text-pink-primary-300 text-center grow">{swap ? "Swap failed" : "Swap not found"}</label>
-                </div>
-                <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => {
-                    boot();
-                    show();
-                    updateWithProps()
-                }}>
-                    Contact Support
-                </SubmitButton>
-            </div>
+            {
+                swap?.data?.status == SwapStatus.Failed &&
+                <MessageComponent>
+                    <MessageComponent.Content icon='red'>
+                        <MessageComponent.Header>
+                            {swap?.data.status == SwapStatus.Failed ? 'Swap failed' : 'Swap not found'}
+                        </MessageComponent.Header>
+                        <MessageComponent.Description>
+                            {
+                                swap?.data?.message ?
+                                    swap.data.message
+                                    :
+                                    <p>
+                                        Sorry, there was an issue with your swap.
+                                        Nothing to worry, your funds are safe!
+                                        Please contact our support team with the button bellow and we'll help you fix this.
+                                    </p>
+                            }
+                        </MessageComponent.Description>
+
+                    </MessageComponent.Content>
+                    <MessageComponent.Buttons>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => {
+                            boot();
+                            show();
+                            updateWithProps()
+                        }}>
+                            Contact support
+                        </SubmitButton>
+                    </MessageComponent.Buttons>
+                </MessageComponent>
+            }
+            {
+                swap?.data?.status == SwapStatus.Cancelled &&
+                <MessageComponent>
+                    <MessageComponent.Content icon='red'>
+                        <MessageComponent.Header>
+                            Swap canceled
+                        </MessageComponent.Header>
+                        <MessageComponent.Description>
+                            {
+                                swap?.data?.message ?
+                                    swap.data.message
+                                    :
+                                    <p>
+                                        You've either canceled this swap manually, or you've created a swap immediatly after this and it replaced this one.
+                                    </p>
+                            }
+                        </MessageComponent.Description>
+
+                    </MessageComponent.Content>
+                    <MessageComponent.Buttons>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => {
+                            boot();
+                            show();
+                            updateWithProps()
+                        }}>
+                            Contact support
+                        </SubmitButton>
+                        <GoHomeButton>
+                            <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline'>
+                                Do another swap
+                            </SubmitButton>
+                        </GoHomeButton>
+                    </MessageComponent.Buttons>
+                </MessageComponent>
+            }
+            {
+                swap?.data?.status == SwapStatus.Expired &&
+                <MessageComponent>
+                    <MessageComponent.Content icon='red'>
+                        <MessageComponent.Header>
+                            Swap expired
+                        </MessageComponent.Header>
+                        <MessageComponent.Description>
+                            {
+                                swap?.data?.message ?
+                                    swap.data.message
+                                    :
+                                    <p>
+                                        This swap was not completed during the allocated timeframe and was expired. If you've already sent crypto for this swap please contact support.
+                                    </p>
+                            }
+                        </MessageComponent.Description>
+
+                    </MessageComponent.Content>
+                    <MessageComponent.Buttons>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => {
+                            boot();
+                            show();
+                            updateWithProps()
+                        }}>
+                            Contact support
+                        </SubmitButton>
+                        <GoHomeButton>
+                            <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline'>
+                                Do another swap
+                            </SubmitButton>
+                        </GoHomeButton>
+                    </MessageComponent.Buttons>
+                </MessageComponent>
+            }
         </>
     )
 }

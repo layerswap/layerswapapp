@@ -3,7 +3,6 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     name: string;
     order: number;
     imgSrc: string;
-    isEnabled: boolean;
     isAvailable: boolean = true;
     baseObject: T;
     isDefault: boolean;
@@ -14,7 +13,6 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         this.name = name;
         this.order = order;
         this.imgSrc = imgSrc;
-        this.isEnabled = isEnabled;
         this.isDefault = isDefault;
     }
 }
@@ -23,6 +21,5 @@ export interface ISelectMenuItem {
     id: string;
     name: string;
     imgSrc: string;
-    isEnabled: boolean;
     isDefault: boolean;
 }

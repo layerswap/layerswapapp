@@ -11,12 +11,12 @@ export class SubmitButtonProps {
     onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
     icon?: React.ReactNode;
     buttonStyle?: buttonStyle = 'filled';
-    size?: buttonSize = 'medium'
+    size?: buttonSize = 'medium';
 }
 
 function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {
-    let defaultStyle = 'shadowed-button items-center disabled:text-white-alpha-100 disabled:bg-pink-primary-600 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out'
-    defaultStyle += buttonStyle == 'filled' ? " border-0 bg-pink-primary" : " text-pink-primary border border-pink-primary";
+    let defaultStyle = 'shadowed-button items-center disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out'
+    defaultStyle += buttonStyle == 'filled' ? " border-0 bg-primary text-primary-buttonTextColor" : " text-primary border border-primary";
 
     switch (size) {
         case 'large':
@@ -42,8 +42,7 @@ const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, c
             className={constructClassNames(size, buttonStyle)}
         >
             <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                {(!isDisabled && !isSubmitting) &&
-                    icon}
+                {(!isDisabled && !isSubmitting) && icon}
                 {isSubmitting ?
                     <SpinIcon className="animate-spin h-5 w-5" />
                     : null}

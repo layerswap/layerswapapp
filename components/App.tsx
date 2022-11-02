@@ -6,7 +6,7 @@ const App: FC = () => {
 
     return <>
         <AuthProvider>
-            <div className={`bg-darkBlue shadow-card rounded-lg w-full overflow-hidden relative`}>
+            <div className={`bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative`}>
                 <div>
                     <Swap />
                 </div>

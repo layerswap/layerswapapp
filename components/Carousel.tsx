@@ -9,7 +9,7 @@ interface CarouselItemProps {
 
 export const CarouselItem: React.FC<CarouselItemProps> = ({ children, width }) => {
     return (
-        <div className={`rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkBlue to-darkblue-600 h-100%`} style={{ width: width }}>
+        <div className={`rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkblue to-darkblue-700 h-100%`} style={{ width: width }}>
             {children}
         </div>
     );
@@ -82,11 +82,10 @@ const Carousel = forwardRef<CarouselRef, CarouselProps>((props, ref) => {
                 })}
             </div>
             <div className="flex justify-center">
-
                 {children && React.Children.map(children, (child, index) => {
                     return (
                         <button
-                            className={`${index === activeIndex ? "bg-pink-primary" : "bg-pink-primary-300"} w-3 h-3 m-3 rounded-full`}
+                            className={`${index === activeIndex ? "bg-primary" : "bg-primary-text"} w-3 h-3 m-3 rounded-full`}
                             onClick={() => {
                                 updateIndex(index);
                             }}

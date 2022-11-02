@@ -1,54 +1,72 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
+import useSWR, { useSWRConfig } from 'swr';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
-import { useUserExchangeDataUpdate } from '../../../context/userExchange';
-import { useInterval } from '../../../hooks/useInterval';
+import {  useInterval } from '../../../hooks/useInterval';
 import { parseJwt } from '../../../lib/jwtParser';
+import LayerSwapApiClient, { UserExchangesResponse } from '../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../lib/openLink';
 import TokenService from '../../../lib/TokenService';
-import { FormWizardSteps } from '../../../Models/Wizard';
+import { SwapCreateStep } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
 
 const AccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
-    const { oauth_authorization_redirect_url: oauth_redirect_url } = swapFormData?.exchange?.baseObject || {}
-    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
-    const { currentStep } = useFormWizardState<FormWizardSteps>()
-    const { getUserExchanges } = useUserExchangeDataUpdate()
-    const [poll, setPoll] = useState(false)
-    const [addressSource, setAddressSource] = useState("")
+    const { exchange, amount, currency } = swapFormData || {}
+    const { o_auth_authorization_url } = exchange?.baseObject || {}
+    const { goToStep } = useFormWizardaUpdate()
+
     const [carouselFinished, setCarouselFinished] = useState(false)
-    const authWindowRef = useRef(null);
-    const carouselRef = useRef<CarouselRef>()
+    const [authWindow, setAuthWindow] = useState<Window>()
+    const [authorizedAmount, setAuthorizedAmount] = useState<number>()
+
+    const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
 
-    useEffect(() => {
-        let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
-        let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
-        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
-    }, [query])
+    const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
+    const layerswapApiClient = new LayerSwapApiClient()
 
-    useInterval(async () => {
-        if (currentStep === "ExchangeOAuth" && poll) {
-            const { access_token } = TokenService.getAuthData() || {};
-            if (!access_token) {
-                await goToStep("Email")
-                setPoll(false)
-                return;
-            }
-            const exchanges = await (await getUserExchanges(access_token))?.data
-            const exchangeIsEnabled = exchanges?.some(e => e.exchange === swapFormData?.exchange?.id && e.is_enabled)
-            if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
-                goToStep("SwapConfirmation")
-                setPoll(false)
-                authWindowRef.current?.close()
-            }
+    const exchange_accounts_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts`
 
+    const { data: exchanges } = useSWR<UserExchangesResponse>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
+
+    const checkShouldStartPolling = useCallback(() => {
+        let authWindowHref = ""
+        try {
+            authWindowHref = authWindow?.location?.href
         }
-    }, [currentStep, authWindowRef, poll], 7000)
+        catch (e) {
+            //throws error when accessing href TODO research safe way
+        }
+
+        if (authWindowHref && authWindowHref?.indexOf(window.location.origin) !== -1) {
+            const authWindowURL = new URL(authWindowHref)
+            const authorizedAmount = authWindowURL.searchParams.get("send_limit_amount")
+            setAuthorizedAmount(Number(authorizedAmount))
+            authWindow?.close()
+        }
+    }, [authWindow])
+
+    useInterval(
+        checkShouldStartPolling,
+        authWindow && !authWindow.closed ? 1000 : null,
+    )
+
+    useEffect(() => {
+        if (exchanges && authorizedAmount) {
+            const exchangeIsEnabled = exchanges?.data?.some(e => e.exchange_id === exchange?.baseObject.id)
+            if (!exchange?.baseObject?.authorization_flow || exchange?.baseObject?.authorization_flow == "none" || exchangeIsEnabled) {
+                if (Number(authorizedAmount) < minimalAuthorizeAmount)
+                    toast.error("You did not authorize enough")
+                else {
+                    goToStep(SwapCreateStep.Confirm)
+                }
+            }
+        }
+    }, [exchanges, authorizedAmount, minimalAuthorizeAmount])
 
     const handleConnect = useCallback(() => {
         try {
@@ -56,40 +74,35 @@ const AccountConnectStep: FC = () => {
                 carouselRef?.current?.next()
                 return;
             }
-            setPoll(true)
             const access_token = TokenService.getAuthData()?.access_token
             if (!access_token)
-                goToStep("Email")
+                goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
-            authWindowRef.current = OpenLink({ link: oauth_redirect_url + sub, swap_data: swapFormData, query })
+            const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
+            const authWindow = OpenLink({ link: o_auth_authorization_url + encoded, swap_data: swapFormData, query })
+            setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_redirect_url, carouselRef, carouselFinished, addressSource, query])
+    }, [o_auth_authorization_url, carouselRef, carouselFinished, query])
 
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.price_in_usdt * Number(swapFormData?.amount) + 5)
-
-    const exchange_name = swapFormData?.exchange?.name
+    const exchange_name = exchange?.name
     const onCarouselLast = (value) => {
         setCarouselFinished(value)
     }
 
-    if (!(minimalAuthorizeAmount > 0)) {
-        return null;
-    }
-
     return (
         <>
-            <div className="w-full px-8 md:grid md:grid-flow-row min-h-[480px] text-pink-primary-300 font-light">
+            <div className="w-full md:grid md:grid-flow-row min-h-[480px] text-primary-text font-light">
 
                 <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please connect your {exchange_name} account
                 </h3>
                 <div className="w-full">
-                    <Carousel onLast={onCarouselLast} ref={carouselRef}>
+                    {swapFormData && <Carousel onLast={onCarouselLast} ref={carouselRef}>
                         <CarouselItem width={100} >
-                            <div className='w-full whitespace-normal mb-6 text-pink-primary'>
+                            <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.01</span>
                                 <div className='whitespace-normal text-white font-normal'>After this guide, you'll be taken to {exchange_name} to connect your account. You'll be prompted to log in to your {exchange_name} account if you are not logged in yet</div>
                             </div>
@@ -184,7 +197,7 @@ const AccountConnectStep: FC = () => {
                             </div>
                         </CarouselItem>
                         <CarouselItem width={100}>
-                            <div className='w-full whitespace-normal mb-6 text-pink-primary'>
+                            <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.02</span>
                                 <div className='whitespace-normal font-normal text-white'>When prompted to authorize Layerswap, click <span className='strong-highlight font-medium'>Change this amount</span></div>
                             </div>
@@ -269,7 +282,7 @@ const AccountConnectStep: FC = () => {
                             </div>
                         </CarouselItem>
                         <CarouselItem width={100}>
-                            <div className='w-full whitespace-normal mb-6 text-pink-primary'>
+                            <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.03</span>
                                 <div className='whitespace-normal font-normal text-white'>Change the existing 1.0 value to <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click Save</div>
                             </div>
@@ -462,7 +475,7 @@ const AccountConnectStep: FC = () => {
                             </div>
                         </CarouselItem>
                         <CarouselItem width={100}>
-                            <div className='w-full whitespace-normal mb-6 text-pink-primary'>
+                            <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.04</span>
                                 <div className='whitespace-normal font-normal text-white'>Make sure that the allowed amount is <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click <span className='strong-highlight font-medium'>Authorize</span></div>
                             </div>
@@ -578,9 +591,9 @@ const AccountConnectStep: FC = () => {
                             </div>
                         </CarouselItem>
                         <CarouselItem width={100}>
-                            <div className='w-full whitespace-normal mb-6 text-pink-primary'>
+                            <div className='w-full whitespace-normal mb-6 text-primary'>
                                 <span className='font-medium'>.05</span>
-                                <div className='whitespace-normal font-medium text-white'>Please make sure to change the allowed amount to {minimalAuthorizeAmount}</div>
+                                <div className='whitespace-normal font-medium text-white'>Please make sure to change the allowed amount to <span className='strong-highlight'>{minimalAuthorizeAmount}</span></div>
                             </div>
                             <div className='w-full md:w-1/2'>
                                 <svg viewBox="0 0 447 484" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -713,11 +726,11 @@ const AccountConnectStep: FC = () => {
                             </div>
                         </CarouselItem>
 
-                    </Carousel>
+                    </Carousel>}
                 </div>
 
                 <div className="text-white text-sm  mt-auto">
-                    <div className="flex md:mt-5 font-normal text-sm text-pink-primary-300 mb-3">
+                    <div className="flex md:mt-5 font-normal text-sm text-primary-text mb-3">
                         <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
                     </div>
 

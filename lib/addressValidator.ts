@@ -4,19 +4,19 @@ import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 
 export function isValidAddress(address: string, network: CryptoNetwork): boolean {
-    if (network.code.toLowerCase() === "RONIN_MAINNET".toLowerCase()) {
+    if (network.internal_name.toLowerCase() === "RONIN_MAINNET".toLowerCase()) {
         if (address.startsWith("ronin:")) {
             return isValidEtherAddress(address.replace("ronin:", "0x"));
         }
         return false;
     }
-    else if (network.code.toLowerCase().startsWith("ZKSYNC".toLowerCase())) {
-        if (address.startsWith("zksync:")) {
+    else if (network.internal_name.toLowerCase().startsWith("ZKSYNC".toLowerCase())) {
+        if (address?.startsWith("zksync:")) {
             return isValidEtherAddress(address.replace("zksync:", ""));
         }
         return isValidEtherAddress(address);
     }
-    else if (network.code.toLowerCase().startsWith("STARKNET".toLowerCase()))
+    else if (network.internal_name.toLowerCase().startsWith("STARKNET".toLowerCase()))
     {
         return validateAndParseAddress(address);
     }

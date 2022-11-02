@@ -1,12 +1,13 @@
 import { UserIcon } from '@heroicons/react/solid';
 import { Field, Form, Formik, FormikErrors } from 'formik';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
-import { useAuthDataUpdate } from '../context/authContext';
+import { useAuthDataUpdate, useAuthState } from '../context/authContext';
+import { useSettingsState } from '../context/settings';
+import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
-
 
 type EmailFormValues = {
     email: string;
@@ -15,24 +16,26 @@ type EmailFormValues = {
 type Props = {
     onSend: (email: string) => void
 }
+const TIMER_SECONDS = 60
 
-const EmailStep: FC<Props> = ({ onSend }) => {
-    const initialValues: EmailFormValues = { email: '' };
-    const [storedEmail, setStoredEmail] = useState<string>(undefined);
-    const { setCodeRequested } = useAuthDataUpdate();
-
+const SendEmail: FC<Props> = ({ onSend }) => {
+    const { codeRequested, tempEmail } = useAuthState()
+    const { setCodeRequested, updateTempEmail } = useAuthDataUpdate();
+    const initialValues: EmailFormValues = { email: tempEmail ?? "" };
+    const { start: startTimer } = useTimerState()
     const sendEmail = useCallback(async (values: EmailFormValues) => {
         try {
             const inputEmail = values.email;
-            if (inputEmail != storedEmail) {
+            if (inputEmail != tempEmail || !codeRequested) {
                 const apiClient = new LayerSwapAuthApiClient();
                 const res = await apiClient.getCodeAsync(inputEmail)
-                if (!res.is_success)
-                    throw new Error(res.errors)
+                if (res.error)
+                    throw new Error(res.error)
                 TokenService.setCodeNextTime(res?.data?.next)
                 setCodeRequested(true);
+                updateTempEmail(inputEmail)
+                startTimer(TIMER_SECONDS)
             }
-            setStoredEmail(inputEmail);
             onSend(inputEmail)
         }
         catch (error) {
@@ -44,7 +47,7 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                 toast.error(error.message)
             }
         }
-    }, [storedEmail])
+    }, [tempEmail])
 
     function validateEmail(values: EmailFormValues) {
         let error: FormikErrors<EmailFormValues> = {};
@@ -66,9 +69,9 @@ const EmailStep: FC<Props> = ({ onSend }) => {
             >
                 {({ isValid, isSubmitting }) => (
 
-                    <div className='flex flex-col items-stretch min-h-[500px] text-pink-primary-300'>
-                        <div className="w-full px-6 md:px-8 pt-4 flex-col flex-1 flex">
-                            <UserIcon className='w-16 h-16 mt-auto text-pink-primary self-center' />
+                    <div className='flex flex-col items-stretch min-h-[500px] text-primary-text'>
+                        <div className="w-full pt-4 flex-col flex-1 flex">
+                            <UserIcon className='w-16 h-16 mt-auto text-primary self-center' />
                             <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
                                 What's your email?
                             </p>
@@ -85,8 +88,8 @@ const EmailStep: FC<Props> = ({ onSend }) => {
                                                 placeholder="john@example.com"
                                                 autoComplete="email"
                                                 type="email"
-                                                className="h-12 pb-1 pt-0 text-white  focus:ring-pink-primary focus:border-pink-primary border-darkblue-100 pr-42 block
-                                                   placeholder:text-pink-primary-300 placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-600  w-full font-semibold rounded-md placeholder-gray-400"
+                                                className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-500 pr-42 block
+                                                   placeholder:text-primary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md"
                                             />
                                         )}
                                     </Field>
@@ -105,4 +108,4 @@ const EmailStep: FC<Props> = ({ onSend }) => {
     )
 }
 
-export default EmailStep;
+export default SendEmail;

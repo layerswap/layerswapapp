@@ -1,10 +1,12 @@
-import { Combobox, Listbox, Transition } from '@headlessui/react'
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { Combobox, Listbox } from '@headlessui/react'
+import { useCallback, useState } from 'react'
 import { SearchIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
 import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon } from '@heroicons/react/outline'
 import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
+import { AnimatePresence, motion } from "framer-motion";
+
 export interface SelectProps<T> {
     name: string;
     value: SelectMenuItem<T>;
@@ -19,19 +21,9 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
     const [isOpen, setIsOpen] = useState(false)
     const [query, setQuery] = useState('')
 
-    const [selectedItem, setSelectedItem] = useState<SelectMenuItem<T> | undefined>(value || undefined)
-
     function onChangeHandler(newValue: string) {
-        setFieldValue(name, values.find(x => x.id === newValue));
+        setFieldValue(name, values.find(x => x.id === newValue), true);
     }
-
-    useEffect(() => {
-        if (value) {
-            setSelectedItem(value)
-        }
-        else
-            setSelectedItem(undefined)
-    }, [value])
 
     function closeModal() {
         setIsOpen(false)
@@ -50,7 +42,6 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
     const handleSelect = useCallback((item: SelectMenuItem<T>) => {
         setIsOpen(false)
-        setSelectedItem(item)
         setFieldValue(name, item, true)
     }, [name])
 
@@ -60,54 +51,70 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
         return (
             <Listbox disabled={disabled} value={value?.id} onChange={onChangeHandler}>
                 <div className="mt-1 relative">
-                    <Listbox.Button name={name} className="focus:ring-indigo-500 focus:border-indigo-500 w-full py-0 pl-8 pr-12 border-transparent bg-transparent font-semibold rounded-md">
+                    <Listbox.Button name={name} className="w-full py-0 pl-5 pr-12 border-transparent bg-transparent font-semibold rounded-md">
                         {
                             value &&
                             <>
                                 <span className="flex items-center">
                                     <div className="flex-shrink-0 h-6 w-6 relative">
-                                        <Image
-                                            src={value.imgSrc}
-                                            alt="Project Logo"
-                                            priority
-                                            height="40"
-                                            width="40"
-                                            layout="responsive"
-                                            className="rounded-md object-contain"
-                                        />
+                                        {
+                                            value.imgSrc && <Image
+                                                src={value.imgSrc}
+                                                alt="Project Logo"
+                                                priority
+                                                height="40"
+                                                width="40"
+                                                layout="responsive"
+                                                className="rounded-md object-contain"
+                                            />
+                                        }
+
                                     </div>
                                     <span className="ml-3 block truncate">{value.name}</span>
                                 </span>
 
-                                <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-light-blue">
+                                <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-primary-text">
                                     <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
                                 </span>
                             </>
                         }
                     </Listbox.Button>
-                    <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-                        <Listbox.Options className="ring-1 ring-darkblue-100 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-darkblue-600 rounded-md py-1 overflow-hidden focus:outline-none">
+                    <AnimatePresence>
+                        <Listbox.Options className="ring-1 ring-darkblue-500 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-darkblue-700 rounded-md py-1 overflow-hidden focus:outline-none">
                             {values.map((item) => (
                                 <Listbox.Option
                                     key={item.id}
-                                    disabled={!item.isEnabled}
+                                    disabled={!item.isAvailable}
                                     className={({ active, disabled }) =>
                                         styleOption(active, disabled)
                                     }
                                     value={item.id}
                                 >
                                     {({ selected, disabled }) => (
-                                        <>
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{
+                                                opacity: 1,
+                                                transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
+                                            }}
+                                            exit={{
+                                                opacity: 0,
+                                                transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
+                                            }}
+                                        >
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-6 w-6 relative">
-                                                    <Image
-                                                        src={item.imgSrc}
-                                                        alt="Project Logo"
-                                                        height="40"
-                                                        width="40"
-                                                        layout="responsive"
-                                                        className="rounded-md object-contain "
-                                                    />
+                                                    {
+                                                        item.imgSrc && <Image
+                                                            src={item.imgSrc}
+                                                            alt="Project Logo"
+                                                            height="40"
+                                                            width="40"
+                                                            layout="responsive"
+                                                            className="rounded-md object-contain "
+                                                        />
+                                                    }
+
                                                 </div>
                                                 <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
                                                     <div className={disabled ? 'inline group-hover:hidden' : null}>{item.name}</div>
@@ -120,12 +127,12 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                     <CheckIcon className="h-6 w-6" aria-hidden="true" />
                                                 </span>
                                             ) : null}
-                                        </>
+                                        </motion.div>
                                     )}
                                 </Listbox.Option>
                             ))}
                         </Listbox.Options>
-                    </Transition>
+                    </AnimatePresence>
                 </div>
             </Listbox>)
     return (
@@ -133,35 +140,38 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
             <div className="flex items-center relative">
                 <button
                     type="button"
-                    name={name} 
+                    name={name}
                     onClick={openModal}
                     disabled={disabled}
-                    className="disabled:cursor-not-allowed disabled:hidden relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-600 font-semibold rounded-none"
+                    className="rounded-lg focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-darkblue-700 font-semibold"
                 >
                     <span className='flex grow text-left items-center'>
                         {
-                            selectedItem && <div className="flex items-center">
+                            value && <div className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
-                                    <Image
-                                        src={selectedItem.imgSrc}
-                                        alt="Project Logo"
-                                        height="40"
-                                        width="40"
-                                        loading="eager"
-                                        priority
-                                        layout="responsive"
-                                        className="rounded-md object-contain"
-                                    />
+                                    {
+                                        value.imgSrc && <Image
+                                            src={value.imgSrc}
+                                            alt="Project Logo"
+                                            height="40"
+                                            width="40"
+                                            loading="eager"
+                                            priority
+                                            layout="responsive"
+                                            className="rounded-md object-contain"
+                                        />
+                                    }
+
                                 </div>
                             </div>
                         }
-                        {selectedItem
+                        {value
                             ?
                             <span className="ml-3 block font-medium text-white flex-auto items-center">
-                                {selectedItem?.name}
+                                {value?.name}
                             </span>
                             :
-                            <span className="ml-3 block font-medium text-pink-primary-300 flex-auto items-center">
+                            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
                                 {placeholder}
                             </span>}
                     </span>
@@ -170,69 +180,49 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     </span>
                 </button>
             </div>
-
-            <Transition
-                appear
-                show={isOpen}
-                as={Fragment}
-                enter="ease-in-out duration-300"
-                enterFrom="translate-y-full"
-                enterTo="translate-y-0"
-                leave="ease-in duration-200"
-                leaveFrom="translate-y-0"
-                leaveTo="translate-y-full">
-                <div className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkBlue'>
-                    <div className='relative z-40 overflow-hidden bg-darkBlue p-6 pt-0'>
-                        <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                            <span className="justify-self-end text-pink-primary-300 cursor-pointer">
-                                <div className="block ">
-                                    <button
-                                        type="button"
-                                        className="rounded-md text-darkblue-200 hover:text-pink-primary-300"
-                                        onClick={closeModal}
-                                    >
-                                        <span className="sr-only">Close</span>
-                                        <XIcon className="h-6 w-6" aria-hidden="true" />
-                                    </button>
-                                </div>
-                            </span>
-                        </div>
-                        <Transition.Child
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <div className="relative inset-0" ></div>
-                        </Transition.Child>
-
-                        <div className="relative inset-0 flex flex-col">
-                            <div className="relative min-h-full items-center justify-center p-2 pt-0 text-center">
-                                <Transition.Child
-                                    as={Fragment}
-                                    enter="ease-out duration-300"
-                                    enterFrom="opacity-0 scale-95"
-                                    enterTo="opacity-100 scale-100"
-                                    leave="ease-in duration-200"
-                                    leaveFrom="opacity-100 scale-100"
-                                    leaveTo="opacity-0 scale-95"
-                                >
+            <AnimatePresence>
+                {isOpen &&
+                    <motion.div
+                        initial={{ y: "100%" }}
+                        animate={{
+                            y: 0,
+                            transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
+                        }}
+                        exit={{
+                            y: "100%",
+                            transition: { duration: 0.5, ease: [0.36, 0.66, 0.04, 1] },
+                        }}
+                        className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkblue'>
+                        <div className='relative z-40 overflow-hidden bg-darkblue p-6 pt-0'>
+                            <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
+                                <span className="justify-self-end text-primary-text cursor-pointer">
+                                    <div className="block ">
+                                        <button
+                                            type="button"
+                                            className="rounded-md text-darkblue-50 hover:text-primary-text"
+                                            onClick={closeModal}
+                                        >
+                                            <span className="sr-only">Close</span>
+                                            <XIcon className="h-6 w-6" aria-hidden="true" />
+                                        </button>
+                                    </div>
+                                </span>
+                            </div>
+                            <div className="relative inset-0 flex flex-col">
+                                <div className="relative min-h-full items-center justify-center p-2 pt-0 text-center">
                                     <Combobox
                                         as="div"
-                                        className="transform  transition-all "
+                                        className="transform transition-all"
                                         onChange={handleComboboxChange}
                                         value={query}
                                     >
                                         <div className="relative mb-5">
                                             <SearchIcon
-                                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-pink-primary-300"
+                                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-primary-text"
                                                 aria-hidden="true"
                                             />
                                             <Combobox.Input
-                                                className="h-12 w-full bg-darkblue-500 rounded-lg border-ouline-blue pl-11 pr-4 text-pink-primary-300 placeholder-pink-primary-300 focus:ring-0 sm:text-sm"
+                                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-0 focus:border-primary block font-semibold bg-darkblue-700 border-darkblue-500 border truncate"
                                                 placeholder="Search..."
                                                 onChange={handleQueryInputChange}
                                                 value={query}
@@ -244,23 +234,26 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                     <Combobox.Option
                                                         key={item.id}
                                                         value={item}
-                                                        disabled={!item.isEnabled || !item.isAvailable}
-                                                        className={`flex text-left ${item.id === selectedItem?.id ? 'bg-darkblue-300' : 'bg-darkblue-500'} ${!item.isEnabled || !item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-300 select-none rounded-lg p-3`}
+                                                        disabled={!item.isAvailable}
+                                                        className={`flex text-left ${item.id === value?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
                                                         onClick={() => handleSelect(item)}
                                                     >
                                                         {({ active, disabled }) => (
                                                             <>
                                                                 <div className="flex items-center">
                                                                     <div className="flex-shrink-0 h-6 w-6 relative">
-                                                                        <Image
-                                                                            src={item.imgSrc}
-                                                                            alt="Project Logo"
-                                                                            height="40"
-                                                                            width="40"
-                                                                            loading="eager"
-                                                                            layout="responsive"
-                                                                            className="rounded-md object-contain"
-                                                                        />
+                                                                        {
+                                                                            item.imgSrc && <Image
+                                                                                src={item.imgSrc}
+                                                                                alt="Project Logo"
+                                                                                height="40"
+                                                                                width="40"
+                                                                                loading="eager"
+                                                                                layout="responsive"
+                                                                                className="rounded-md object-contain"
+                                                                            />
+                                                                        }
+
                                                                     </div>
                                                                 </div>
 
@@ -270,7 +263,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                                     </p>
                                                                 </div>
                                                                 {
-                                                                    item.id === selectedItem?.id && <div className="justify-self-end">
+                                                                    item.id === value?.id && <div className="justify-self-end">
                                                                         <CheckIcon className="h-6 w-6" aria-hidden="true" />
                                                                     </div>
                                                                 }
@@ -282,24 +275,23 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                         )}
 
                                         {query !== '' && filteredItems.length === 0 && (
-                                            <div className="py-14 px-6 text-center text-sm sm:px-14">
+                                            <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
                                                 <ExclamationCircleIcon
                                                     type="outline"
                                                     name="exclamation-circle"
-                                                    className="mx-auto h-6 w-6 text-pink-primary-300"
+                                                    className="mx-auto h-16 w-16 text-primary"
                                                 />
-                                                <p className="mt-4 font-semibold text-gray-900">No results found</p>
-                                                <p className="mt-2 text-gray-500">No components found for this search term. Please try again.</p>
+                                                <p className="mt-4 font-semibold">No 'items' found.</p>
+                                                <p className="mt-2">Please try a different search term.</p>
                                             </div>
                                         )}
                                     </Combobox>
-                                </Transition.Child>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-            </Transition>
+                    </motion.div>
+                }
+            </AnimatePresence>
         </>
     )
 }

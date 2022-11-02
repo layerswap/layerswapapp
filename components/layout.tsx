@@ -1,9 +1,10 @@
-import Navbar from "./navbar"
-import React, { useEffect, useState } from "react"
+import React from "react"
 import Head from "next/head"
-import FooterComponent from "./footerComponent"
 import { useRouter } from "next/router";
-import { Toaster } from 'react-hot-toast';
+import QueryProvider from "../context/query";
+import ThemeWrapper from "./themeWrapper";
+import ErrorBoundary from "./ErrorBoundary";
+import { QueryParams } from "../Models/QueryParams";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -13,23 +14,11 @@ type Props = {
 
 export default function Layout({ hideFooter, hideNavbar, children }: Props) {
   const router = useRouter();
-
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const handleStart = (url) => (url !== router.asPath) && setLoading(true);
-    const handleComplete = (url) => (url === router.asPath) && setLoading(false);
-
-    router.events.on('routeChangeStart', handleStart)
-    router.events.on('routeChangeComplete', handleComplete)
-    router.events.on('routeChangeError', handleComplete)
-
-    return () => {
-      router.events.off('routeChangeStart', handleStart)
-      router.events.off('routeChangeComplete', handleComplete)
-      router.events.off('routeChangeError', handleComplete)
-    }
-  })
+  const query: QueryParams = {
+    ...router.query,
+    ...(router.query.lockAddress === 'true' ? { lockAddress: true } : {}),
+    ...(router.query.lockNetwork === 'true' ? { lockNetwork: true } : {}),
+  };
 
   return (<>
     <Head>
@@ -58,19 +47,12 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpeg" />
       <script defer data-domain="layerswap.io" src="https://plausible.io/js/plausible.js"></script>
     </Head>
-    <div className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
-      <main className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
-        <div className="min-h-screen overflow-hidden relative font-robo">
-          <Toaster position="top-center" toastOptions={{ duration: 5000, style: { background: '#131E36', color: '#a4afc8' }, error: { position: 'top-center' } }} />
-          <div className={`top-backdrop md:visible invisible`}></div>
-
-          {hideNavbar ?? <Navbar />}
-          <div className={loading ? "animate-pulse" : ""}>
-            {children}
-          </div>
-          {hideFooter ?? <FooterComponent />}
-        </div>
-      </main>
-    </div>
+    <ErrorBoundary >
+      <QueryProvider query={query}>
+        <ThemeWrapper hideFooter={hideFooter} hideNavbar={hideNavbar}>
+          {children}
+        </ThemeWrapper>
+      </QueryProvider>
+    </ErrorBoundary>
   </>)
 }

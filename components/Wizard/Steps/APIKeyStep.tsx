@@ -1,17 +1,24 @@
-import { FC} from 'react'
+import { FC } from 'react'
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
-import { FormWizardSteps } from '../../../Models/Wizard';
+import { SwapCreateStep } from '../../../Models/Wizard';
 import ConnectApiKeyExchange from '../../connectApiKeyExchange';
 
-
-const APIKeyStep: FC = () => {
+type Props = {
+    onSuccess: () => Promise<void>,
+}
+const APIKeyStep: FC<Props> = ({onSuccess}) => {
     const { swapFormData } = useSwapDataState()
-    const { goToStep } = useFormWizardaUpdate<FormWizardSteps>()
-    const onConnect = () => goToStep("SwapConfirmation")
+    const { exchange } = swapFormData || {}
+    const onConnect = async () => {
+        await onSuccess()
+    }
+    if (!exchange)
+        return <></>
+
     return (
         <>
-            <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} slideOverClassNames="-mt-11 md:-mt-8" />
+            <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} slideOverPlace='inStep' />
         </>
     )
 }

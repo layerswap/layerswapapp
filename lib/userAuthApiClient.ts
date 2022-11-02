@@ -4,11 +4,10 @@ import AppSettings from "./AppSettings";
 
 
 export default class LayerSwapAuthApiClient {
-    static apiBaseEndpoint: string = AppSettings.BransferApiUri;;
-    static identityBaseEndpoint: string = AppSettings.IdentityApiUri;
+    static identityBaseEndpoint: string;
 
     async getCodeAsync(email): Promise<AuthGetCodeResponse> {
-        return await axios.post(LayerSwapAuthApiClient.apiBaseEndpoint + '/api/auth/get_code',
+        return await axios.post(LayerSwapAuthApiClient.identityBaseEndpoint + '/api/auth/get_code',
             { email },
             { headers: { 'Access-Control-Allow-Origin': '*' } })
             .then(res => res.data);
@@ -16,9 +15,8 @@ export default class LayerSwapAuthApiClient {
 
     async connectAsync(email, code): Promise<AuthConnectResponse> {
         const params = new URLSearchParams();
-        params.append('client_id', 'layerswap_ui');
+        params.append('client_id', 'layerswap_bridge_ui');
         params.append('grant_type', 'passwordless');
-        params.append('scopes', 'user_data');
         params.append('email', email);
         params.append('code', code);
 

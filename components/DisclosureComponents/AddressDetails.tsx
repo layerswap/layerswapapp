@@ -6,6 +6,7 @@ import { FC, MouseEventHandler, useEffect } from 'react';
 import shortenAddress from '../utils/ShortenAddress';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import CopyButton from '../buttons/copyButton';
+import { SwapType } from '../../lib/layerSwapApiClient';
 
 export class AddressDetailsProps {
     onClickEditAddress?: MouseEventHandler<HTMLButtonElement> | undefined;
@@ -19,9 +20,9 @@ function constructExplorerUrl(swapFormData: SwapFormValues): string {
 const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, canEditAddress }) => {
     const { swapFormData } = useSwapDataState()
 
-    if (swapFormData?.swapType === "offramp")
+    if (swapFormData?.swapType === SwapType.OffRamp)
         return <>
-            <div className="mx-auto w-full rounded-lg border border-darkblue-100 hover:border-darkblue-200 bg-darkblue-500 p-2">
+            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
                 <div className="flex items-center min-w-0 flex-1">
                     {
                         swapFormData?.exchange?.imgSrc &&
@@ -49,7 +50,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, 
 
     return (
         <>
-            <div className="mx-auto w-full rounded-lg border border-darkblue-100 hover:border-darkblue-200 bg-darkblue-500 p-2">
+            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
                 <Disclosure>
                     {({ open }) => {
                         if (typeof window !== 'undefined') {
@@ -106,21 +107,21 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, 
 
                                     <ChevronDownIcon
                                         className={`${open ? 'rotate-180 transform' : ''
-                                            } h-4 w-4 text-pink-primary-300`}
+                                            } h-4 w-4 text-primary-text`}
                                     />
                                 </Disclosure.Button>
-                                <Disclosure.Panel className="text-sm">
+                                <Disclosure.Panel className="text-sm text-primary-text">
                                     <>
                                         <div className="flex items-center flex-wrap">
-                                            <a className='m-1.5 flex text-pink-primary-300 cursor-pointer items-center hover:text-white' href={constructExplorerUrl(swapFormData)} target='_blank'  >
+                                            <a className='m-1.5 flex cursor-pointer items-center hover:text-white' href={constructExplorerUrl(swapFormData)} target='_blank'  >
                                                 <ExternalLinkIcon className='h-4 w-4 mr-2' />
                                                 <p className=''>View In Explorer</p>
                                             </a>
-                                            <button disabled={!canEditAddress} onClick={onClick} className="text-sm font-normal m-1.5 flex text-pink-primary-300 cursor-pointer items-center hover:text-white">
+                                            <button disabled={!canEditAddress} onClick={onClick} className="text-sm font-normal m-1.5 flex cursor-pointer items-center hover:text-white">
                                                 <PencilAltIcon className='inline-block h-4 w-4 mr-2' />
                                                 Edit Address
                                             </button>
-                                            <div className='cursor-pointer text-pink-primary-300 hover:text-white flex items-center m-1.5'>
+                                            <div className='cursor-pointer hover:text-white flex items-center m-1.5'>
                                                 <CopyButton toCopy={swapFormData?.destination_address}>
                                                     <span className='text-sm font-normal'>Copy Full Address</span>
                                                 </CopyButton>

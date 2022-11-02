@@ -1,34 +1,46 @@
 import Layout from '../components/layout'
 import { AuthProvider } from '../context/authContext'
 import IntroCard from '../components/introCard'
-import Wizard from '../components/Wizard/Wizard'
-import { FormWizardProvider } from '../context/formWizardProvider'
-import { LoginWizardSteps } from '../Models/Wizard'
-import EmailStep from '../components/Wizard/Steps/Login/EmailStep'
 import { MenuProvider } from '../context/menu'
-import LoginCodeStep from '../components/Wizard/Steps/Login/LoginCodeStep'
+import { FormWizardProvider } from '../context/formWizardProvider'
+import { AuthStep } from '../Models/Wizard'
+import AuthWizard from '../components/Wizard/AuthWizard'
+import { InferGetServerSidePropsType } from 'next'
+import LayerSwapApiClient from '../lib/layerSwapApiClient'
+import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
+import AppSettings from '../lib/AppSettings'
+import { SettingsProvider } from '../context/settings'
 
-const loginWizard: LoginWizardSteps = {
-  "Email": { title: "Email confirmation", content: EmailStep, navigationDisabled: true, positionPercent: 50 },
-  "Code": { title: "Code", content: LoginCodeStep, positionPercent: 75 },
-}
-
-export default function AuthPage() {
+export default function AuthPage({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  LayerSwapAuthApiClient.identityBaseEndpoint = response.data.discovery.identity_url
 
   return (
     <Layout>
-      <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col container mx-auto sm:px-6 lg:px-8 max-w-2xl">
-        <div className="flex flex-col w-full text-white animate-fade-in">
-          <AuthProvider>
-            <MenuProvider>
-              <FormWizardProvider wizard={loginWizard} initialStep={"Email"} initialLoading={true}>
-                <Wizard />
-              </FormWizardProvider >
-            </MenuProvider>
-          </AuthProvider>
-          <IntroCard/>
-        </div>
-      </div>
+      <SettingsProvider data={response.data}>
+        <AuthProvider>
+          <MenuProvider>
+            <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
+              <AuthWizard />
+            </FormWizardProvider >
+          </MenuProvider>
+        </AuthProvider>
+      </SettingsProvider>
     </Layout>
   )
+}
+export async function getServerSideProps(context) {
+
+  context.res.setHeader(
+    'Cache-Control',
+    's-maxage=60, stale-while-revalidate'
+  );
+
+  var apiClient = new LayerSwapApiClient();
+  const response = await apiClient.fetchSettingsAsync()
+
+  LayerSwapAuthApiClient.identityBaseEndpoint = response.data.discovery.identity_url
+
+  return {
+    props: { response }
+  }
 }
