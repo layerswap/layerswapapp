@@ -444,7 +444,7 @@ function TransactionsHistory() {
                             Complete Swap
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
                           </SubmitButton>
-                          <SubmitButton buttonStyle="outline" onClick={() => {cancelSwap(selectedSwap.id); router.reload()}} isDisabled={false} isSubmitting={false}>
+                          <SubmitButton buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false}>
                             Cancel Swap
                             <XIcon className='ml-2 h-5 w-5' />
                           </SubmitButton>
