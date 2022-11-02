@@ -1,7 +1,7 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { FormWizardProvider } from "../context/formWizardProvider";
 import { useSettingsState } from "../context/settings";
-import { useSwapDataState } from "../context/swap";
+import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { SwapType } from "../lib/layerSwapApiClient";
 import { DepositFlow } from "../Models/Exchange";
 import { SwapStatus } from "../Models/SwapStatus";
@@ -13,6 +13,11 @@ const SwapWithdrawal: FC = () => {
     const { data: settings } = useSettingsState()
     const { exchanges } = settings
     const { swap } = useSwapDataState()
+    const { mutateSwap } = useSwapDataUpdate()
+
+    useEffect(() => {
+        mutateSwap()
+    }, [])
 
     if (!swap)
         return <div className={`pb-6 bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative animate-pulse h-[548px]`}>
