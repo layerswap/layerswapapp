@@ -18,8 +18,8 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
     static getDerivedStateFromError(error) {
         // Update state so the next render will show the fallback UI
         try {
-            if (process.env.NEXT_PUBLIC_VERCEL_ENV != 'true') {
-                SendErrorMessage("UI error", error?.message)
+            if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+                SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} \n message: ${error?.message} \n stack: ${error?.stack ?? error.stack}`)
             }
         }
         catch (e) {

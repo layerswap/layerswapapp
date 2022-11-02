@@ -21,15 +21,16 @@ const OffRampSwapConfirmationStep: FC = () => {
 
     const handleSubmit = useCallback(async () => {
         setIsSubmitting(true)
+        let nextStep: SwapCreateStep;
         try {
             if (!swap) {
                 const swapId = await createAndProcessSwap();
-                router.push(`/${swapId}`)
+                await router.push(`/${swapId}`)
             }
             else {
                 const swapId = swap.data.id
                 await processPayment(swapId)
-                router.push(`/${swapId}`)
+                await router.push(`/${swapId}`)
             }
         }
         catch (error) {
@@ -39,15 +40,14 @@ const OffRampSwapConfirmationStep: FC = () => {
                 return
             }
             if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
-                goToStep(SwapCreateStep.OffRampOAuth)
+                nextStep = SwapCreateStep.OffRampOAuth
             }
             else
                 toast.error(data?.message)
-
         }
-        finally {
-            setIsSubmitting(false)
-        }
+        setIsSubmitting(false)
+        if (nextStep)
+            goToStep(nextStep)
     }, [network, swap, createAndProcessSwap])
 
     return (

@@ -1,5 +1,4 @@
 import { FC, useEffect } from 'react'
-import { useEffectOnce } from 'react-use';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { SwapStatus } from '../../../Models/SwapStatus';
@@ -12,10 +11,10 @@ const ProccessingStep: FC = () => {
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
 
-    useEffectOnce(() => {
+    useEffect(() => {
         setInterval(2000)
         return () => setInterval(0)
-    })
+    },[])
     
     const swapStatusStep = GetSwapStatusStep(swap)
 
@@ -38,7 +37,7 @@ const ProccessingStep: FC = () => {
                     <label className="block text-lg font-lighter leading-6 text-primary-text">Exchange transaction processed.</label>
                 </div>
                 {
-                    swap?.data?.status == SwapStatus.PendingWithdrawal && <div className="flex text-center place-content-center mt-1 md:mt-1">
+                    swap?.data?.status == SwapStatus.LsTransferPending && <div className="flex text-center place-content-center mt-1 md:mt-1">
                         <label className="block text-lg font-lighter leading-6 text-primary-text"> Awaiting for blockchain transaction. </label>
                     </div>
                 }

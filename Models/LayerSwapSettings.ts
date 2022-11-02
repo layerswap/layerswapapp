@@ -17,4 +17,5 @@ export class LayerSwapSettings {
             resource_storage_url: string;
         }
     }
+    validSignatureisPresent?: boolean;
 };

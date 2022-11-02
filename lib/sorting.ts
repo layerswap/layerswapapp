@@ -1,8 +1,10 @@
-export function SortingByOrder(x: any, y: any) {
-    if (!y.isEnabled) {
+import { SelectMenuItem } from "../components/Select/selectMenuItem";
+
+export function SortingByOrder<T>(x: SelectMenuItem<T>, y: SelectMenuItem<T>) {
+    if (!y.isAvailable) {
         y.order += 100;
-    } else if (!x.isEnabled) {
+    } else if (!x.isAvailable) {
         x.order += 100;
     };
-    return Number(y.isEnabled) - Number(x.isEnabled) + (Number(y.isDefault) - Number(x.isDefault) + x.order - y.order)
+    return Number(y.isAvailable || 0) - Number(x.isAvailable || 0) + (Number(y.isDefault || 0) - Number(x.isDefault || 0) + x.order - y.order)
 }

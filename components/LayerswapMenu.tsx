@@ -10,6 +10,7 @@ import SendFeedback from './sendFeedback'
 import { classNames } from "./utils/classNames";
 import SlideOver from "./SlideOver";
 import { AnimatePresence, motion } from "framer-motion";
+import GoHomeButton from "./utils/GoHome";
 
 export default function () {
     const { email, authData } = useAuthState()
@@ -50,7 +51,7 @@ export default function () {
                     {({ open }) => (
                         <>
                             <div>
-                                <Menu.Button className="inline-flex justify-center w-full rounded-md shadow-sm mt-2  text-sm font-medium">
+                                <Menu.Button className="inline-flex justify-center w-full rounded-md shadow-sm text-sm font-medium">
                                     <MenuIcon className='h-7 w-7 cursor-pointer' />
                                 </Menu.Button>
                             </div>
@@ -74,22 +75,52 @@ export default function () {
                                                     {email}
                                                 </div>
                                                     :
-                                                    <Menu.Item>
-                                                        {({ active }) => (
-                                                            <a onClick={goToLogin}
-                                                                className={classNames(
-                                                                    active ? 'bg-darkblue-300' : '',
-                                                                    'block px-4 text-left py-2 whitespace-nowrap'
-                                                                )}
-                                                            >
-                                                                Login
-                                                            </a>
-                                                        )}
-                                                    </Menu.Item>
+                                                    <>
+                                                        <Menu.Item>
+                                                            {({ active }) => (
+                                                                <GoHomeButton >
+                                                                    <a
+                                                                        className={classNames(
+                                                                            active ? 'bg-darkblue-300' : '',
+                                                                            'block px-4 py-2 text-left hover:bg-darkblue-300 whitespace-nowrap'
+                                                                        )}
+                                                                    >
+                                                                        Home
+                                                                    </a>
+                                                                </GoHomeButton>
+                                                            )}
+                                                        </Menu.Item>
+                                                        <Menu.Item>
+                                                            {({ active }) => (
+                                                                <a onClick={goToLogin}
+                                                                    className={classNames(
+                                                                        active ? 'bg-darkblue-300' : '',
+                                                                        'block px-4 py-2 text-left hover:bg-darkblue-300 whitespace-nowrap'
+                                                                    )}
+                                                                >
+                                                                    Login
+                                                                </a>
+                                                            )}
+                                                        </Menu.Item>
+                                                    </>
                                             }
                                             {
                                                 authData?.access_token &&
                                                 <>
+                                                    <Menu.Item>
+                                                        {({ active }) => (
+                                                            <GoHomeButton >
+                                                                <a
+                                                                    className={classNames(
+                                                                        active ? 'bg-darkblue-300' : '',
+                                                                        'block px-4 py-2 text-left hover:bg-darkblue-300 whitespace-nowrap'
+                                                                    )}
+                                                                >
+                                                                    Home
+                                                                </a>
+                                                            </GoHomeButton>
+                                                        )}
+                                                    </Menu.Item>
                                                     <Menu.Item>
                                                         {({ active }) => (
                                                             <a

@@ -13,7 +13,7 @@ export default function Home({ response }: InferGetServerSidePropsType<typeof ge
     return (
         <div className='wide-page'>
             <Layout>
-                <SettingsProvider data={response}>
+                <SettingsProvider data={response.data}>
                     <AuthProvider>
                         <MenuProvider>
                             <UserExchanges />
