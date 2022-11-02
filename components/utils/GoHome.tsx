@@ -6,7 +6,7 @@ import { PaperClipIcon } from '@heroicons/react/outline'
 import { renderToString } from 'react-dom/server'
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
-
+import { useQueryState } from "../../context/query";
 
 interface Props {
     className?: string;
@@ -15,12 +15,13 @@ interface Props {
 
 const GoHomeButton: FC<Props> = (({ className, children }) => {
     const router = useRouter()
-
+    const query = useQueryState()
     const handleGoHome = useCallback(() => {
         router.push({
-            pathname: "/"
+            pathname: "/",
+            query: { ...query }
         })
-    }, [router.query])
+    }, [query])
 
     return (
         <div onClick={handleGoHome}>

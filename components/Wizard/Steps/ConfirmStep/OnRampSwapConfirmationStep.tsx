@@ -19,7 +19,7 @@ import Modal from '../../../modalComponent';
 import { AnimatePresence } from 'framer-motion';
 import SwapDetails from '../../../swapDetailsComponent';
 import TokenService from '../../../../lib/TokenService';
-import LayerSwapApiClient, { SwapItem } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, SwapType } from '../../../../lib/layerSwapApiClient';
 import { SwapFormValues } from '../../../DTOs/SwapFormValues';
 import { useTimerState } from '../../../../context/timerContext';
 
