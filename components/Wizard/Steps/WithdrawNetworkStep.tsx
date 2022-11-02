@@ -1,11 +1,10 @@
 import { SwitchHorizontalIcon } from '@heroicons/react/outline';
 import { CheckIcon, HomeIcon, ChatIcon } from '@heroicons/react/solid';
-
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
-import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { SwapWithdrawalStep, SwapWizardSteps } from '../../../Models/Wizard';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
+import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { useRouter } from 'next/router';
 import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
@@ -18,7 +17,6 @@ import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import { useEffectOnce } from 'react-use';
 import GoHomeButton from '../../utils/GoHome';
 
 const WithdrawNetworkStep: FC = () => {
@@ -33,10 +31,10 @@ const WithdrawNetworkStep: FC = () => {
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
 
-    useEffectOnce(() => {
+    useEffect(() => {
         setInterval(2000)
         return () => setInterval(0)
-    })
+    },[])
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
