@@ -1,5 +1,4 @@
 import { FC, useEffect } from 'react'
-import { useEffectOnce } from 'react-use';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { SwapStatus } from '../../../Models/SwapStatus';
@@ -12,10 +11,10 @@ const ProccessingStep: FC = () => {
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
 
-    useEffectOnce(() => {
+    useEffect(() => {
         setInterval(2000)
         return () => setInterval(0)
-    })
+    },[])
     
     const swapStatusStep = GetSwapStatusStep(swap)
 

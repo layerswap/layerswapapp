@@ -55,19 +55,19 @@ const OnRampSwapConfirmationStep: FC = () => {
     const transferAmount = `${amount} ${currency?.name}`
     const handleSubmit = useCallback(async (e: any) => {
         setLoading(true)
-        let nextStep:SwapCreateStep;
+        let nextStep: SwapCreateStep;
         if (codeRequested)
             return goToStep(SwapCreateStep.TwoFactor)
 
         try {
             if (!swap) {
                 const swapId = await createAndProcessSwap();
-                router.push(`/${swapId}`)
+                return await router.push(`/${swapId}`)
             }
             else {
                 const swapId = swap.data.id
                 await processPayment(swapId)
-                router.push(`/${swapId}`)
+                return await router.push(`/${swapId}`)
             }
         }
         catch (error) {
@@ -99,11 +99,9 @@ const OnRampSwapConfirmationStep: FC = () => {
                 toast.error(data.message)
             }
         }
-        finally {
-            setLoading(false)
-            if(nextStep)
-                goToStep(nextStep)
-        }
+        setLoading(false)
+        if (nextStep)
+            goToStep(nextStep)
     }, [exchange, swap, transferAmount])
 
     const handleClose = () => {

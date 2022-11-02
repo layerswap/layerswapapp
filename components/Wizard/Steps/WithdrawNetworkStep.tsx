@@ -1,13 +1,10 @@
 import { SwitchHorizontalIcon } from '@heroicons/react/outline';
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
-import { useComplexInterval } from '../../../hooks/useInterval';
-import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { SwapWithdrawalStep, SwapWizardSteps } from '../../../Models/Wizard';
-import TokenService from '../../../lib/TokenService';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
+import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { useRouter } from 'next/router';
-import { SwapStatus } from '../../../Models/SwapStatus';
 import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
 import { useIntercom } from 'react-use-intercom';
@@ -19,7 +16,6 @@ import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import { useEffectOnce } from 'react-use';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -33,10 +29,10 @@ const WithdrawNetworkStep: FC = () => {
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
 
-    useEffectOnce(() => {
+    useEffect(() => {
         setInterval(2000)
         return () => setInterval(0)
-    })
+    },[])
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
