@@ -81,7 +81,7 @@ export default class KnownInternalNames {
 
         public static readonly NahmiiMainnet: string = "NAHMII_MAINNET";
 
-        public static readonly RhinoFiMainnet: string = "RHINO_FI_MAINNET";
+        public static readonly RhinoFiMainnet: string = "RHINOFI_MAINNET";
         
     }
 
