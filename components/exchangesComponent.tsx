@@ -1,7 +1,6 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import TokenService from "../lib/TokenService"
-import { ExclamationCircleIcon } from '@heroicons/react/outline';
+import { ArrowLeftIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
 import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
 import LayerswapApiClient from "../lib/layerSwapApiClient"
@@ -136,14 +135,14 @@ function UserExchanges() {
     }
 
     return (
-        <div className='bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative'>
+        <div className='bg-darkblue px-6 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative'>
             <div className="mt-3 flex items-center justify-between z-20" >
                 <div className="hidden md:block">
                     <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
                     <span className="text-primary-text font-medium">{email}</span>
                 </div>
                 <div className='mx-auto px-4 overflow-hidden md:hidden'>
-                    <div className="flex justify-center">
+                    <div className="flex justify-center immutablex:hidden">
                         <GoHomeButton />
                     </div>
                 </div>

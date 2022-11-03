@@ -57,7 +57,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                         <label className="inline-flex items-center text-left">
                                             Layerswap Fee
                                         </label>
-                                        <span className="text-center text-white">
+                                        <span className="text-white text-right">
                                             {fee.toFixed(currencyDetails?.precision)}
                                             <span>  {currencyDetails?.asset} </span>
                                         </span>
@@ -69,7 +69,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                                 Exchange Fee
                                                 <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36' />
                                             </label>
-                                            <span className="text-center text-white">
+                                            <span className="text-white text-right">
                                                 {exchangeFee.toFixed(currencyDetails?.precision)}
                                                 <span>  {currencyDetails?.asset} {ExchangeSettings.KnownSettings[exchange?.internal_name]?.FeeIsRefundable && <span className='inline-flex'>(Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' /></span>}</span>
                                             </span>
@@ -77,10 +77,10 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                     }
 
                                     <div className="mt-2 flex flex-row items-baseline justify-between">
-                                        <label className="block text-center">
+                                        <label className="block text-left">
                                             Time Of Arrival
                                         </label>
-                                        <span className="text-center text-white">
+                                        <span className="text-white text-right">
                                             ~1-2 minutes
                                         </span>
                                     </div>

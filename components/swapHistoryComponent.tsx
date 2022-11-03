@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapListResponse, SwapItem, SwapType } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon } from '@heroicons/react/outline';
+import { ArrowLeftIcon, ChevronRightIcon, ExternalLinkIcon, RefreshIcon } from '@heroicons/react/outline';
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
 import { useSettingsState } from "../context/settings"
@@ -150,7 +150,7 @@ function TransactionsHistory() {
           <span className="text-primary-text font-medium">{email}</span>
         </div>
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
-          <div className="flex justify-center">
+          <div className="flex justify-center immutablex:hidden">
             <GoHomeButton />
           </div>
         </div>
@@ -164,7 +164,7 @@ function TransactionsHistory() {
               swaps?.data.length > 0 ?
                 <>
                   <div className="mb-2">
-                    <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
+                    <div className="-mx-4 md:mt-10 mt-2 sm:-mx-6 md:mx-0 md:rounded-lg">
                       <table className="min-w-full divide-y divide-darkblue-500">
                         <thead className="text-primary-text">
                           <tr>
@@ -422,7 +422,7 @@ function TransactionsHistory() {
                             className="shadowed-button cursor-pointer group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
                             View in Explorer
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                          </a> 
+                          </a>
                         </div>
                       }
                       {

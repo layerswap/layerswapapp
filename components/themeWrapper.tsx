@@ -13,7 +13,6 @@ type Props = {
 export default function ({ hideNavbar, children }: Props) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const query = useQueryState()
 
     useEffect(() => {
         const handleStart = (url) => (url !== router.asPath) && setLoading(true);

@@ -1,7 +1,10 @@
+import { useQueryState } from '../context/query';
 import CardContainer from './cardContainer';
 
 function IntroCard(props) {
+    const query = useQueryState()
     return (
+        query?.partnerName?.toLowerCase() != 'immutablex' &&
         <CardContainer {...props} >
             <div className="flex flex-col px-4 md:px-8 py-6 text-primary-text font-light">
                 <div>
