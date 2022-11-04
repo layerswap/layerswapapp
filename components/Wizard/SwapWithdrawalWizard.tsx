@@ -1,5 +1,5 @@
 import { Router, useRouter } from "next/router";
-import { FC } from "react";
+import { FC, useCallback } from "react";
 import { useFormWizardaUpdate } from "../../context/formWizardProvider";
 import { SwapCreateStep, SwapWithdrawalStep } from "../../Models/Wizard";
 import ExchangeDelay from "./Steps/ExchangeDelayStep";
@@ -16,7 +16,9 @@ import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 
 const SwapWithdrawalWizard: FC = () => {
-    const router = useRouter()
+    const { goToStep } = useFormWizardaUpdate()
+
+    const GoBackToWalletConnect = useCallback(() => goToStep(SwapWithdrawalStep.WalletConnect, "back"), [])
 
     return (
         <Wizard>
@@ -30,13 +32,13 @@ const SwapWithdrawalWizard: FC = () => {
                 <WithdrawNetworkStep />
             </WizardItem>
 
-            <WizardItem StepName={SwapWithdrawalStep.WalletConnect} PositionPercent={90}>
+            <WizardItem StepName={SwapWithdrawalStep.WalletConnect} PositionPercent={90} >
                 <ConnectWalletStep />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.VerifyAddress} PositionPercent={90}>
+            <WizardItem StepName={SwapWithdrawalStep.VerifyAddress} PositionPercent={90} GoBack={GoBackToWalletConnect}>
                 <VerifyAddressStep />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.TransferFromWallet} PositionPercent={90}>
+            <WizardItem StepName={SwapWithdrawalStep.TransferFromWallet} PositionPercent={90} GoBack={GoBackToWalletConnect}>
                 <TransferStep />
             </WizardItem>
 

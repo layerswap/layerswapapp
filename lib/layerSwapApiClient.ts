@@ -25,6 +25,7 @@ export default class LayerSwapApiClient {
         const correlationId = uuidv4()
         return await this.AuthenticatedRequest<CreateSwapResponse>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
+
     async getSwaps(page: number): Promise<SwapListResponse> {
         return await this.AuthenticatedRequest<SwapListResponse>("GET", `/swaps?page=${page}`);
     }
@@ -58,20 +59,23 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<PaymentProcessreponse>("POST", `/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`);
     }
 
-    // async GetNetworkAccount(networkName: string,): Promise<PaymentProcessreponse> {
-    //     return await this.AuthenticatedRequest<PaymentProcessreponse>("POST", `/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`);
-    // }
+    async GetNetworkAccount(networkName: string, address: string): Promise<NetworkAccountResponse> {
+        return await this.AuthenticatedRequest<NetworkAccountResponse>("GET", `/network_accounts/${networkName}/${address}`);
+    }
+
+    async CreateNetworkAccount(params: NetworkAccountParams): Promise<PaymentProcessreponse> {
+        return await this.AuthenticatedRequest<PaymentProcessreponse>("POST", `/network_accounts`, params);
+    }
+
+    async ApplyNetworkInput(swapId: string, transactionId: string): Promise<void> {
+        return await this.AuthenticatedRequest<void>("POST", `/swaps/${swapId}/apply_network_input`, { transaction_id: transactionId });
+    }
 
     private async AuthenticatedRequest<T>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
-                if (res.data) {
-                    return res.data;
-                }
-                else {
-                    throw new Error("API response data is missing");
-                }
+                return res.data || res
             })
             .catch(async reason => {
                 if (reason instanceof AuthRefreshFailedError) {
@@ -88,7 +92,27 @@ export default class LayerSwapApiClient {
     }
 }
 
-// export type NetworkAcc
+type NetworkAccountParams = {
+    address: string,
+    network: string,
+    note: string,
+    signature: string
+}
+
+export type NetworkAccountResponse = {
+    error: {
+        code: string,
+        message: string
+    },
+    data: {
+        id: string,
+        address: string,
+        note: string,
+        is_verified: boolean,
+        network_id: string,
+        network: string
+    }
+}
 
 export type CreateSwapParams = {
     amount: number,
