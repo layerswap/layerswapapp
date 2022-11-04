@@ -65,6 +65,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<NetworkAccount>>("GET", `/network_accounts/${networkName}/${address}`);
     }
 
+    async GetNetworkAccounts(networkName: string): Promise<ApiResponse<NetworkAccount[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<NetworkAccount[]>>("GET", `/network_accounts/${networkName}`);
+    }
+
     async CreateNetworkAccount(params: NetworkAccountParams): Promise<ApiResponse<void>> {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/network_accounts`, params);
     }

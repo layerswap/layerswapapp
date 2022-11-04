@@ -23,14 +23,15 @@ const ConnectWalletStep: FC = () => {
         try {
             let address: string = walletAddress
             if (!address) {
-                const res = await ImtblClient.ConnectWallet()
+                const imtblClient = new ImtblClient(network.internal_name)
+                const res = await imtblClient.ConnectWallet()
                 setWalletAddress(res.address)
                 address = res.address
             }
 
             const layerSwapApiClient = new LayerSwapApiClient()
-            const account = await layerSwapApiClient.GetNetworkAccount(network.internal_name, address)
-            if (account?.data?.is_verified)
+            const accounts = await layerSwapApiClient.GetNetworkAccounts(network.internal_name)
+            if (accounts?.data?.some(a => a.address === address && a.is_verified))
                 goToStep(SwapWithdrawalStep.TransferFromWallet)
             else
                 goToStep(SwapWithdrawalStep.VerifyAddress)

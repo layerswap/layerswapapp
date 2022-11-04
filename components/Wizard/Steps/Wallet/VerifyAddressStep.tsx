@@ -22,7 +22,8 @@ const VerifyAddressStep: FC = () => {
     const handleVerify = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await ImtblClient.Sign()
+            const imtblClient = new ImtblClient(network.internal_name)
+            const res = await imtblClient.Sign()
             const layerSwapApiClient = new LayerSwapApiClient()
             layerSwapApiClient.CreateNetworkAccount({ signature: res.result, address: walletAddress, network: network.internal_name, note: "" })
             goToStep(SwapWithdrawalStep.TransferFromWallet)
