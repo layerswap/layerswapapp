@@ -9,7 +9,6 @@ import { DocIframe } from './docInIframe';
 import SlideOver from './SlideOver';
 import WarningMessage from './WarningMessage';
 import { useRouter } from 'next/router';
-import { useSwapDataState, useSwapDataUpdate } from '../context/swap';
 
 type Props = {
     exchange: Exchange,

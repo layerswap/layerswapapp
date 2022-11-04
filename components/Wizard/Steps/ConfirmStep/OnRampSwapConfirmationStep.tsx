@@ -2,7 +2,7 @@ import { PencilAltIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useRef, useState } from 'react'
-import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
+import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
@@ -16,11 +16,6 @@ import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormValues';
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import Modal from '../../../modalComponent';
-import { AnimatePresence } from 'framer-motion';
-import SwapDetails from '../../../swapDetailsComponent';
-import TokenService from '../../../../lib/TokenService';
-import LayerSwapApiClient, { SwapItem, SwapType } from '../../../../lib/layerSwapApiClient';
-import { SwapFormValues } from '../../../DTOs/SwapFormValues';
 import { useTimerState } from '../../../../context/timerContext';
 
 const TIMER_SECONDS = 120
@@ -65,7 +60,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 return await router.push(`/${swapId}`)
             }
             else {
-                const swapId = swap.data.id
+                const swapId = swap.id
                 await processPayment(swapId)
                 return await router.push(`/${swapId}`)
             }

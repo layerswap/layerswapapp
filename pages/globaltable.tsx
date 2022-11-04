@@ -1,16 +1,9 @@
 import Head from 'next/head'
 import Layout from '../components/layout'
-import slug from 'rehype-slug'
-import fs from 'fs'
-import path from 'path'
-import { serialize } from "next-mdx-remote/serialize";
 import React, { useCallback } from 'react'
-import { MDXRemote } from 'next-mdx-remote'
-import imageSize from "rehype-img-size";
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
-import NetworkSettings from '../lib/NetworkSettings'
 import { useRouter } from 'next/router'
 import { ArrowLeftIcon } from '@heroicons/react/solid'
 
@@ -20,7 +13,7 @@ export default function GlobalTable(props) {
     const handleGoBack = useCallback(() => {
         router.back()
     }, [router])
-    
+
     return (
         <Layout>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col container mx-auto sm:px-6 lg:px-8 max-w-md md:max-w-3xl">
@@ -84,11 +77,11 @@ export default function GlobalTable(props) {
 
 export async function getStaticProps() {
     var apiClient = new LayerSwapApiClient();
-    const response = await apiClient.fetchSettingsAsync()
+    const { data: settings } = await apiClient.GetSettingsAsync()
     var networks: CryptoNetwork[] = [];
     var exchanges: Exchange[] = [];
-    networks = response.data.networks.filter(n => n.status !== "inactive");
-    exchanges = response.data.exchanges.filter(e => e.status !== "inactive")
+    networks = settings.networks.filter(n => n.status !== "inactive");
+    exchanges = settings.exchanges.filter(e => e.status !== "inactive")
 
     return {
         props: {

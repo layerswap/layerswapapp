@@ -8,9 +8,8 @@ import { SwapStatus } from "../Models/SwapStatus";
 import { SwapWithdrawalStep } from "../Models/Wizard";
 import SwapWithdrawalWizard from "./Wizard/SwapWithdrawalWizard";
 
-
 const SwapWithdrawal: FC = () => {
-    const { data: settings } = useSettingsState()
+    const settings = useSettingsState()
     const { exchanges } = settings
     const { swap } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
@@ -23,8 +22,8 @@ const SwapWithdrawal: FC = () => {
         return <div className={`pb-6 bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative animate-pulse h-[548px]`}>
 
         </div>
-    const swapStatus = swap?.data?.status;
-    const exchange = exchanges.find(e => e.currencies.some(ec => ec.id === swap.data.exchange_currency_id))
+    const swapStatus = swap?.status;
+    const exchange = exchanges.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
 
     let initialStep: SwapWithdrawalStep;
     if (swapStatus == SwapStatus.Completed)
@@ -34,7 +33,7 @@ const SwapWithdrawal: FC = () => {
     else if (swapStatus == SwapStatus.UserTransferDelayed)
         initialStep = SwapWithdrawalStep.Delay
     else {
-        if (swap?.data?.type === SwapType.OffRamp)
+        if (swap?.type === SwapType.OffRamp)
             initialStep = SwapWithdrawalStep.OffRampWithdrawal
         else if (exchange?.deposit_flow === DepositFlow.Manual)
             initialStep = SwapWithdrawalStep.Withdrawal

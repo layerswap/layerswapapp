@@ -8,12 +8,12 @@ import { InferGetServerSidePropsType } from 'next'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { SwapDataProvider } from '../context/swap'
 
-export default function Transactions({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  LayerSwapAuthApiClient.identityBaseEndpoint = response.data.discovery.identity_url
+export default function Transactions({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   return (
     <div className='wide-page'>
       <Layout>
-        <SettingsProvider data={response.data}>
+        <SettingsProvider data={settings}>
           <AuthProvider>
             <MenuProvider>
               <SwapDataProvider >
@@ -34,15 +34,15 @@ export async function getServerSideProps(context) {
   );
 
   var apiClient = new LayerSwapApiClient();
-  const response = await apiClient.fetchSettingsAsync()
+  const { data: settings } = await apiClient.GetSettingsAsync()
 
-  const resource_storage_url = response.data.discovery.resource_storage_url
+  const resource_storage_url = settings.discovery.resource_storage_url
   if (resource_storage_url[resource_storage_url.length - 1] === "/")
-    response.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+    settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
   let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 
   return {
-    props: { response, isOfframpEnabled },
+    props: { settings, isOfframpEnabled },
   }
 }

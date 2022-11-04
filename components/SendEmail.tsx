@@ -3,7 +3,6 @@ import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/authContext';
-import { useSettingsState } from '../context/settings';
 import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';

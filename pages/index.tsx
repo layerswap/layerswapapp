@@ -6,10 +6,8 @@ import { SettingsProvider } from '../context/settings'
 import { LayerSwapSettings } from '../Models/LayerSwapSettings'
 import { QueryParams } from '../Models/QueryParams'
 import MaintananceContent from '../components/maintanance/maintanance'
-import NetworkSettings from '../lib/NetworkSettings'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { enc, HmacSHA256 } from 'crypto-js';
-import { useRouter } from 'next/router'
 
 type IndexProps = {
   settings?: LayerSwapSettings,
@@ -17,8 +15,8 @@ type IndexProps = {
   validSignatureisPresent?: boolean,
 }
 
-export default function Home({ settings, inMaintanance, validSignatureisPresent }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  LayerSwapAuthApiClient.identityBaseEndpoint = settings.data.discovery.identity_url
+export default function Home({ settings, inMaintanance }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   return (
     <Layout>
       {
@@ -26,7 +24,7 @@ export default function Home({ settings, inMaintanance, validSignatureisPresent 
           ?
           <MaintananceContent />
           :
-          <SettingsProvider data={settings.data} validSignatureisPresent={validSignatureisPresent} >
+          <SettingsProvider data={settings}>
             <Swap />
           </SettingsProvider>
       }
@@ -40,7 +38,6 @@ export async function getServerSideProps(context) {
 
   let result: IndexProps = {
     inMaintanance: false,
-    validSignatureisPresent: validSignatureIsPresent
   };
 
   context.res.setHeader(
@@ -49,39 +46,41 @@ export async function getServerSideProps(context) {
   );
 
   var apiClient = new LayerSwapApiClient();
-  const response = await apiClient.fetchSettingsAsync()
+  const { data: settings } = await apiClient.GetSettingsAsync()
 
-  response.data.networks = response.data.networks.filter((element) => element.status !== "inactive")
-  response.data.exchanges = response.data.exchanges.filter((element) => element.status !== "inactive");
+  settings.networks = settings.networks.filter((element) => element.status !== "inactive")
+  settings.exchanges = settings.exchanges.filter((element) => element.status !== "inactive");
 
-  const resource_storage_url = response.data.discovery.resource_storage_url
+  const resource_storage_url = settings.discovery.resource_storage_url
   if (resource_storage_url[resource_storage_url.length - 1] === "/")
-    response.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+    settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
-  result.settings = response;
-  if (!result.settings.data.networks.some(x => x.status === "active")) {
+  result.settings = settings;
+  result.settings.validSignatureisPresent = validSignatureIsPresent;
+  if (!result.settings.networks.some(x => x.status === "active")) {
     result.inMaintanance = true;
   }
 
-  function validateSignature(queryParams: QueryParams): boolean {
-    //One day
-    const PERIOD_IN_MILISECONDS = 86400000
-    if (!queryParams.timestamp || !queryParams.signature || Number(queryParams.timestamp) < new Date().getTime() - PERIOD_IN_MILISECONDS)
-      return false
-
-    const secret = JSON.parse(process.env.PARTNER_SECRETS || "{}")?.[context.query.addressSource]?.[context.query.apiKey]
-    if (!secret)
-      return false;
-    const paraps: QueryParams = { ...queryParams }
-    const parnerSignature = paraps.signature
-    delete paraps.signature;
-    let dataToSign = formatParams(paraps);
-    let signature = hmac(dataToSign, secret);
-    return signature === parnerSignature
-  }
   return {
     props: result,
   }
+}
+
+function validateSignature(queryParams: QueryParams): boolean {
+  //One day
+  const PERIOD_IN_MILISECONDS = 86400000
+  if (!queryParams.timestamp || !queryParams.signature || Number(queryParams.timestamp) < new Date().getTime() - PERIOD_IN_MILISECONDS)
+    return false
+
+  const secret = JSON.parse(process.env.PARTNER_SECRETS || "{}")?.[queryParams.addressSource]?.[queryParams.apiKey]
+  if (!secret)
+    return false;
+  const paraps: QueryParams = { ...queryParams }
+  const parnerSignature = paraps.signature
+  delete paraps.signature;
+  let dataToSign = formatParams(paraps);
+  let signature = hmac(dataToSign, secret);
+  return signature === parnerSignature
 }
 
 const formatParams = (queryParams) => {
