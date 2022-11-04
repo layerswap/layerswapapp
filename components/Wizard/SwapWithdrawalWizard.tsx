@@ -7,6 +7,9 @@ import ExternalPaymentStep from "./Steps/ExternalPaymentStep";
 import FailedStep from "./Steps/FailedStep";
 import ProccessingStep from "./Steps/ProccessingStep";
 import SuccessfulStep from "./Steps/SuccessfulStep";
+import ConnectWalletStep from "./Steps/Wallet/ConnectWalletStep";
+import TransferStep from "./Steps/Wallet/TransferStep";
+import VerifyAddressStep from "./Steps/Wallet/VerifyAddressStep";
 import WithdrawExchangeStep from "./Steps/WithdrawExhangeStep";
 import WithdrawNetworkStep from "./Steps/WithdrawNetworkStep";
 import Wizard from "./Wizard";
@@ -14,7 +17,7 @@ import WizardItem from "./WizardItem";
 
 const SwapWithdrawalWizard: FC = () => {
     const router = useRouter()
-    
+
     return (
         <Wizard>
             <WizardItem StepName={SwapWithdrawalStep.ExternalPayment} PositionPercent={90}>
@@ -26,6 +29,17 @@ const SwapWithdrawalWizard: FC = () => {
             <WizardItem StepName={SwapWithdrawalStep.OffRampWithdrawal} PositionPercent={90}>
                 <WithdrawNetworkStep />
             </WizardItem>
+
+            <WizardItem StepName={SwapWithdrawalStep.WalletConnect} PositionPercent={90}>
+                <ConnectWalletStep />
+            </WizardItem>
+            <WizardItem StepName={SwapWithdrawalStep.VerifyAddress} PositionPercent={90}>
+                <VerifyAddressStep />
+            </WizardItem>
+            <WizardItem StepName={SwapWithdrawalStep.TransferFromWallet} PositionPercent={90}>
+                <TransferStep />
+            </WizardItem>
+
             <WizardItem StepName={SwapWithdrawalStep.Processing} PositionPercent={95}>
                 <ProccessingStep />
             </WizardItem>

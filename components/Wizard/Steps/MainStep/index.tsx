@@ -105,23 +105,24 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
-            const internalName = values.network.baseObject.internal_name 
-            if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
-                const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[internalName].apiUri })
-                const isRegistered = await client.isRegistered({ user: values.destination_address })
-                if (!isRegistered) {
-                    setConnectImmutableIsOpen(true)
-                    return
-                }
-            } else if (internalName == KnownInternalNames.Networks.RhinoFiMainnet) {
-                const client = await axios.get(`${NetworkSettings.RhinoFiSettings[internalName].apiUri}/${values.destination_address}`)
-                const isRegistered = await client.data?.isRegisteredOnDeversifi
-                if (!isRegistered) {
-                    setConnectRhinofiIsOpen(true);
-                    return
+            if (values.swapType === SwapType.OnRamp) {
+                const internalName = values.network.baseObject.internal_name
+                if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
+                    const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[internalName].apiUri })
+                    const isRegistered = await client.isRegistered({ user: values.destination_address })
+                    if (!isRegistered) {
+                        setConnectImmutableIsOpen(true)
+                        return
+                    }
+                } else if (internalName == KnownInternalNames.Networks.RhinoFiMainnet) {
+                    const client = await axios.get(`${NetworkSettings.RhinoFiSettings[internalName].apiUri}/${values.destination_address}`)
+                    const isRegistered = await client.data?.isRegisteredOnDeversifi
+                    if (!isRegistered) {
+                        setConnectRhinofiIsOpen(true);
+                        return
+                    }
                 }
             }
-            
             clearSwap()
             updateSwapFormData(values)
             await OnSumbit(values)
@@ -142,7 +143,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
     const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
-    const lockAddress = 
+    const lockAddress =
         (initialValues.destination_address && initialValues.network)
         && isValidAddress(initialValues.destination_address, initialValues.network?.baseObject)
         && (!!account || (query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));

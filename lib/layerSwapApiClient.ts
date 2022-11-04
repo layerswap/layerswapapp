@@ -58,6 +58,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<PaymentProcessreponse>("POST", `/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`);
     }
 
+    // async GetNetworkAccount(networkName: string,): Promise<PaymentProcessreponse> {
+    //     return await this.AuthenticatedRequest<PaymentProcessreponse>("POST", `/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`);
+    // }
+
     private async AuthenticatedRequest<T>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
@@ -83,6 +87,8 @@ export default class LayerSwapApiClient {
             });
     }
 }
+
+// export type NetworkAcc
 
 export type CreateSwapParams = {
     amount: number,
