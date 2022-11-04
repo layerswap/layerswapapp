@@ -9,12 +9,12 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { SettingsProvider } from '../context/settings'
 
-export default function AuthPage({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  LayerSwapAuthApiClient.identityBaseEndpoint = response.data.discovery.identity_url
+export default function AuthPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
 
   return (
     <Layout>
-      <SettingsProvider data={response.data}>
+      <SettingsProvider data={settings}>
         <AuthProvider>
           <MenuProvider>
             <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
@@ -34,11 +34,11 @@ export async function getServerSideProps(context) {
   );
 
   var apiClient = new LayerSwapApiClient();
-  const response = await apiClient.fetchSettingsAsync()
+  const { data: settings } = await apiClient.GetSettingsAsync()
 
-  LayerSwapAuthApiClient.identityBaseEndpoint = response.data.discovery.identity_url
+  LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
 
   return {
-    props: { response }
+    props: { settings }
   }
 }

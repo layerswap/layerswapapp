@@ -1,7 +1,5 @@
 import axios from "axios";
 import { AuthGetCodeResponse, AuthConnectResponse } from "../Models/LayerSwapAuth";
-import AppSettings from "./AppSettings";
-
 
 export default class LayerSwapAuthApiClient {
     static identityBaseEndpoint: string;

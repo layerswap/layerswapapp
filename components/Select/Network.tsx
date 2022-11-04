@@ -17,17 +17,15 @@ const NetworkField = forwardRef((props: any, ref: any) => {
     } = useFormikContext<SwapFormValues>();
     const name = "network"
     const { lockNetwork, destNetwork } = useQueryState()
-    const { data } = useSettingsState();
-
-    const { discovery: { resource_storage_url } } = data
+    const { discovery: { resource_storage_url }, networks } = useSettingsState();
 
     const networkIsAvailable = (n: CryptoNetwork) => (swapType === SwapType.OffRamp ?
-        (n.currencies.some(nc =>!NetworkSettings?.ForceDisable?.[n?.internal_name]?.offramp && nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled))))
-        : (n.currencies.some(nc =>!NetworkSettings?.ForceDisable?.[n?.internal_name]?.onramp && nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled)))))
-    
-    const destNetworkIsAvailable = data.networks.some(n => n.internal_name === destNetwork && n.status === "active" && networkIsAvailable(n))
+        (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.offramp && nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled))))
+        : (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.onramp && nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled)))))
 
-    const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = data.networks
+    const destNetworkIsAvailable = networks.some(n => n.internal_name === destNetwork && n.status === "active" && networkIsAvailable(n))
+
+    const networkMenuItems: SelectMenuItem<CryptoNetwork>[] = networks
         .filter(networkIsAvailable)
         .map(n => ({
             baseObject: n,

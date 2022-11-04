@@ -1,7 +1,6 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { SwapListResponse, SwapItem, SwapType } from "../lib/layerSwapApiClient"
-import TokenService from "../lib/TokenService"
+import LayerSwapApiClient, { SwapItem, SwapType } from "../lib/layerSwapApiClient"
 import SpinIcon from "./icons/spinIcon"
 import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 import SwapDetails from "./swapDetailsComponent"
@@ -20,15 +19,15 @@ import Modal from "./modalComponent"
 import HoverTooltip from "./Tooltips/HoverTooltip"
 import toast from "react-hot-toast"
 import { ArrowLeftIcon } from "@heroicons/react/solid"
-import { SwapStatus } from "../Models/SwapStatus"
 import { useSwapDataUpdate } from "../context/swap"
+import { SwapStatus } from "../Models/SwapStatus"
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
-  const { data } = useSettingsState()
-  const { exchanges, networks, discovery: { resource_storage_url } } = data
+  const settings = useSettingsState()
+  const { exchanges, networks, discovery: { resource_storage_url } } = settings
   const [isLastPage, setIsLastPage] = useState(false)
-  const [swaps, setSwaps] = useState<SwapListResponse>()
+  const [swaps, setSwaps] = useState<SwapItem[]>()
   const [loading, setLoading] = useState(false)
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
@@ -36,107 +35,50 @@ function TransactionsHistory() {
   const { email } = useAuthState()
   const { cancelSwap } = useSwapDataUpdate()
 
-  const checkAuth = () => {
-    try {
-      const authData = TokenService.getAuthData();
-      if (!authData) {
-        router.push({
-          pathname: '/auth',
-          query: { redirect: '/transactions' }
-        })
-        return;
-      }
-    }
-    catch (e) {
-      toast(e.message)
-    }
-  }
-
   const handleGoBack = useCallback(() => {
     router.back()
   }, [router])
 
   useEffect(() => {
-    document.addEventListener(
-      'storageChange',
-      checkAuth,
-      false
-    )
-    return () => document.removeEventListener('storageChange', () => { })
-  }, [])
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const authData = TokenService.getAuthData();
-        if (!authData) {
-          router.push({
-            pathname: '/auth',
-            query: { redirect: '/transactions' }
-          })
-          return;
-        }
-      }
-      catch (e) {
-        toast(e.message)
-      }
-    })()
-  }, [swaps])
-
-  useEffect(() => {
     (async () => {
       setIsLastPage(false)
       setLoading(true)
-      try {
-        const authData = TokenService.getAuthData();
-        if (!authData) {
-          router.push({
-            pathname: '/auth',
-            query: { redirect: '/transactions' }
-          })
-          return;
-        }
-        const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
-        const swaps = await layerswapApiClient.getSwaps(1)
-        setSwaps(swaps)
-        setPage(1)
-        if (swaps?.data.length < 5)
-          setIsLastPage(true)
+
+      const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
+      const { data, error } = await layerswapApiClient.GetSwapsAsync(1)
+
+      if (error) {
+        toast.error(error.message);
+        return;
       }
-      catch (e) {
-        toast(e.message)
-      }
-      finally {
-        setLoading(false)
-      }
+
+      setSwaps(data)
+      setPage(1)
+      if (data.length < 5)
+        setIsLastPage(true)
+
+      setLoading(false)
     })()
   }, [router.query])
-
 
   const handleLoadMore = useCallback(async () => {
     //TODO refactor page change
     const nextPage = page + 1
-    try {
-      setLoading(true)
-      const authData = TokenService.getAuthData();
-      if (!authData) {
-        router.push('/auth')
-        return;
-      }
-      const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
-      const response = await layerswapApiClient.getSwaps(nextPage)
+    setLoading(true)
+    const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
+    const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage)
 
-      setSwaps(old => ({ ...response, data: [...(old?.data ? old?.data : []), ...(response.data ? response.data : [])] }))
-      setPage(nextPage)
-      if (response?.data.length < 5)
-        setIsLastPage(true)
+    if (error) {
+      toast.error(error.message);
+      return;
     }
-    catch (e) {
-      toast(e.message)
-    }
-    finally {
-      setLoading(false)
-    }
+
+    setSwaps(old => [...(old ? old : []), ...(data ? data : [])])
+    setPage(nextPage)
+    if (data.length < 5)
+      setIsLastPage(true)
+
+    setLoading(false)
   }, [page, setSwaps])
 
   const handleClose = () => {
@@ -173,7 +115,7 @@ function TransactionsHistory() {
           <SwapHistoryComponentSceleton />
           : <>
             {
-              swaps?.data.length > 0 ?
+              swaps?.length > 0 ?
                 <>
                   <div className="mb-2">
                     <div className="-mx-4 md:mt-10 mt-2 sm:-mx-6 md:mx-0 md:rounded-lg">
@@ -231,7 +173,7 @@ function TransactionsHistory() {
                           </tr>
                         </thead>
                         <tbody>
-                          {swaps?.data.map((swap, index) => {
+                          {swaps?.map((swap, index) => {
                             const swapExchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
                             const swapNetwork = networks?.find(n => n.currencies.some(nc => nc.id === swap?.network_currency_id))
                             const currency = swapExchange.currencies.find(x => x.id == swap?.exchange_currency_id)
@@ -427,7 +369,7 @@ function TransactionsHistory() {
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {
-                        data.networks && selectedSwap?.transaction_id && selectedSwap.type == SwapType.OnRamp && selectedSwap?.status == SwapStatus.Completed &&
+                        settings.networks && selectedSwap?.transaction_id && selectedSwap.type == SwapType.OnRamp && selectedSwap?.status == SwapStatus.Completed &&
                         <div className="text-white text-sm mt-6">
                           <a href={networks?.find(n => n.currencies.some(nc => nc.id === selectedSwap?.network_currency_id)).transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
                             target="_blank"

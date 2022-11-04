@@ -17,7 +17,7 @@ import { CheckIcon, HomeIcon, ChatIcon } from '@heroicons/react/solid';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const { data } = useSettingsState()
+    const { exchanges, discovery: { resource_storage_url } } = useSettingsState()
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
 
@@ -26,7 +26,6 @@ const WithdrawExchangeStep: FC = () => {
         return () => setInterval(0)
     }, [])
 
-    const { exchanges, discovery: { resource_storage_url } } = data
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const router = useRouter();
     const { swapId } = router.query;
@@ -45,8 +44,8 @@ const WithdrawExchangeStep: FC = () => {
         setTransferDone(true)
     }, [])
 
-    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
-    const currency = exchange?.currencies?.find(c => c.id === swap?.data?.exchange_currency_id)
+    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
+    const currency = exchange?.currencies?.find(c => c.id === swap?.exchange_currency_id)
     const exchange_name = exchange?.display_name || ' '
     const exchange_internal_name = exchange?.internal_name
     const exchange_logo_url = exchange?.logo
@@ -81,7 +80,7 @@ const WithdrawExchangeStep: FC = () => {
                         </h3>
                     </div>
                     {
-                        swap?.data?.additonal_data?.note &&
+                        swap?.additonal_data?.note &&
                         <WarningMessage>
                             <p className='font-semibold text-sm text-darkblue-700'>
                                 Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
@@ -89,20 +88,20 @@ const WithdrawExchangeStep: FC = () => {
                         </WarningMessage>
                     }
                     <div className={`mb-6 grid grid-cols-1 gap-5 `}>
-                        <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Address'}>
+                        <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.additonal_data?.deposit_address} header={'Address'}>
                             <p className='break-all'>
-                                {swap?.data?.additonal_data?.deposit_address}
+                                {swap?.additonal_data?.deposit_address}
                             </p>
                         </BackgroundField>
                         <BackgroundField header={'Network'}>
                             <p>
-                                {swap?.data?.additonal_data?.chain_display_name}
+                                {swap?.additonal_data?.chain_display_name}
                             </p>
                         </BackgroundField>
                         <div className='flex space-x-4'>
-                            <BackgroundField isCopiable={true} toCopy={swap?.data?.requested_amount} header={'Amount'}>
+                            <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
                                 <p>
-                                    {swap?.data?.requested_amount}
+                                    {swap?.requested_amount}
                                 </p>
                             </BackgroundField>
                             <BackgroundField header={'Asset'}>
@@ -112,11 +111,11 @@ const WithdrawExchangeStep: FC = () => {
                             </BackgroundField>
                         </div>
                         {
-                            swap?.data?.additonal_data?.note &&
+                            swap?.additonal_data?.note &&
                             <>
-                                <BackgroundField isCopiable={true} toCopy={swap?.data?.additonal_data?.note} header={'Remarks'}>
+                                <BackgroundField isCopiable={true} toCopy={swap?.additonal_data?.note} header={'Remarks'}>
                                     <p className='break-all'>
-                                        {swap?.data?.additonal_data?.note}
+                                        {swap?.additonal_data?.note}
                                     </p>
                                 </BackgroundField>
                             </>

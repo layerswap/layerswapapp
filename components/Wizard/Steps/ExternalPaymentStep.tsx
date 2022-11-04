@@ -7,11 +7,8 @@ import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import SubmitButton from '../../buttons/submitButton';
 
 const ExternalPaymentStep: FC = () => {
-
-
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
-    const { data } = useSettingsState()
-    const { exchanges } = data
+    const { exchanges } = useSettingsState()
 
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
@@ -19,8 +16,8 @@ const ExternalPaymentStep: FC = () => {
     useEffect(() => {
         setInterval(2000)
         return () => setInterval(0)
-    },[])
-    
+    }, [])
+
     const swapStatusStep = GetSwapStatusStep(swap)
 
     useEffect(() => {
@@ -28,11 +25,11 @@ const ExternalPaymentStep: FC = () => {
             goToStep(swapStatusStep)
     }, [swapStatusStep])
 
-    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.data?.exchange_currency_id))
+    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
     const exchange_name = exchange?.display_name || ' '
 
     const handleContinue = useCallback(async () => {
-        const payment_url = swap?.data?.additonal_data?.payment_url
+        const payment_url = swap?.additonal_data?.payment_url
         window.open(payment_url, '_blank', 'width=420,height=720')
     }, [swap])
 

@@ -13,7 +13,8 @@ import { ExternalLinkIcon } from '@heroicons/react/outline';
 import SwitchIcon from '../../icons/switchIcon';
 import { useInterval } from '../../../hooks/useInterval';
 import useSWR from 'swr';
-import LayerSwapApiClient, { ExchangeDepositAddressReponse, UserExchangesResponse } from '../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { UserExchangesData } from '../../../lib/layerSwapApiClient';
+import { ApiResponse } from '../../../Models/ApiResponse';
 
 const OfframpAccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
@@ -31,8 +32,8 @@ const OfframpAccountConnectStep: FC = () => {
     const exchange_accounts_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts`
     const depositad_address_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts/${exchange?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
 
-    const { data: exchange_accouts } = useSWR<UserExchangesResponse>(salon ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
-    const { data: deposit_address } = useSWR<ExchangeDepositAddressReponse>((exchange_accouts && salon) ? depositad_address_endpoint : null, layerswapApiClient.fetcher)
+    const { data: exchange_accouts } = useSWR<ApiResponse<UserExchangesData[]>>(salon ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
+    const { data: deposit_address } = useSWR<ApiResponse<string>>((exchange_accouts && salon) ? depositad_address_endpoint : null, layerswapApiClient.fetcher)
 
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref = ""

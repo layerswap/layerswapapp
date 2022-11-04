@@ -40,11 +40,10 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     let formValues = formikRef.current?.values;
     const settings = useSettingsState();
-    const { discovery: { resource_storage_url } } = settings.data || {}
+    const { discovery: { resource_storage_url } } = settings || {}
     const query = useQueryState();
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
-
 
     useEffect(() => {
         if (query.coinbase_redirect) {
@@ -105,7 +104,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
-            const internalName = values.network.baseObject.internal_name 
+            const internalName = values.network.baseObject.internal_name
             if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
                 const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[internalName].apiUri })
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
@@ -121,7 +120,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                     return
                 }
             }
-            
+
             clearSwap()
             updateSwapFormData(values)
             await OnSumbit(values)
@@ -134,7 +133,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const destAddress: string = account || query.destAddress;
 
     const partner = addressSource ?
-        settings.data.partners.find(p => p.internal_name?.toLocaleLowerCase() === addressSource?.toLocaleLowerCase())
+        settings.partners.find(p => p.internal_name?.toLocaleLowerCase() === addressSource?.toLocaleLowerCase())
         : undefined
 
     const isPartnerAddress = partner && destAddress;
@@ -142,7 +141,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
     const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
-    const lockAddress = 
+    const lockAddress =
         (initialValues.destination_address && initialValues.network)
         && isValidAddress(initialValues.destination_address, initialValues.network?.baseObject)
         && (!!account || (query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
