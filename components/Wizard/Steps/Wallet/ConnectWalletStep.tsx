@@ -15,8 +15,8 @@ const ConnectWalletStep: FC = () => {
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { walletAddress, swap } = useSwapDataState()
     const { setWalletAddress } = useSwapDataUpdate()
-    const { data: { networks } } = useSettingsState()
-    const network = swap && networks?.find(n => n.currencies.some(nc => nc.id === swap.data.network_currency_id))
+    const { networks } = useSettingsState()
+    const network = swap && networks?.find(n => n.currencies.some(nc => nc.id === swap.network_currency_id))
 
     const handleConnect = useCallback(async () => {
         setLoading(true)

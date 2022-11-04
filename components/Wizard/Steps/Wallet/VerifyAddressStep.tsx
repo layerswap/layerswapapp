@@ -14,10 +14,10 @@ import SubmitButton from '../../../buttons/submitButton';
 const VerifyAddressStep: FC = () => {
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { walletAddress, swap } = useSwapDataState()
-    const { data: { networks } } = useSettingsState()
+    const { networks } = useSettingsState()
     const [loading, setLoading] = useState(false)
 
-    const network = swap && networks?.find(n => n.currencies.some(nc => nc.id === swap.data.network_currency_id))
+    const network = swap && networks?.find(n => n.currencies.some(nc => nc.id === swap.network_currency_id))
 
     const handleVerify = useCallback(async () => {
         setLoading(true)

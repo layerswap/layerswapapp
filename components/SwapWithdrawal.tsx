@@ -35,7 +35,7 @@ const SwapWithdrawal: FC = () => {
     else if (swapStatus == SwapStatus.UserTransferDelayed)
         initialStep = SwapWithdrawalStep.Delay
     else {
-        if (swap?.data?.type === SwapType.OffRamp)
+        if (swap?.type === SwapType.OffRamp)
             initialStep = network.deposit_method === "redeem" ? SwapWithdrawalStep.WalletConnect : SwapWithdrawalStep.OffRampWithdrawal
         else if (exchange?.deposit_flow === DepositFlow.Manual)
             initialStep = SwapWithdrawalStep.Withdrawal

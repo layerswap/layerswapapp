@@ -31,7 +31,7 @@ const TransferStep: FC = () => {
     const handleTransfer = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await ImtblClient.Deposit(swap.data.requested_amount.toString(), swap.data.additonal_data.deposit_address)
+            const res = await ImtblClient.Deposit(swap.requested_amount.toString(), swap.additonal_data.deposit_address)
             const transactionRes = res.result[0]
             if (!transactionRes)
                 toast('No transaction')
@@ -40,7 +40,7 @@ const TransferStep: FC = () => {
             }
             else if (transactionRes.status == "success") {
                 const layerSwapApiClient = new LayerSwapApiClient()
-                await layerSwapApiClient.ApplyNetworkInput(swap.data.id, transactionRes.txId.toString())
+                await layerSwapApiClient.ApplyNetworkInput(swap.id, transactionRes.txId.toString())
                 setInterval(2000)
             }
         }

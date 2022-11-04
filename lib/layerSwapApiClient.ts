@@ -61,8 +61,8 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`);
     }
 
-    async GetNetworkAccount(networkName: string, address: string): Promise<ApiResponse<NetworkAccountParams>> {
-        return await this.AuthenticatedRequest<ApiResponse<NetworkAccountParams>>("GET", `/network_accounts/${networkName}/${address}`);
+    async GetNetworkAccount(networkName: string, address: string): Promise<ApiResponse<NetworkAccount>> {
+        return await this.AuthenticatedRequest<ApiResponse<NetworkAccount>>("GET", `/network_accounts/${networkName}/${address}`);
     }
 
     async CreateNetworkAccount(params: NetworkAccountParams): Promise<ApiResponse<void>> {
