@@ -4,15 +4,23 @@ import slug from 'rehype-slug'
 import fs from 'fs'
 import path from 'path'
 import { serialize } from "next-mdx-remote/serialize";
-import React from 'react'
+import React, { useCallback } from 'react'
 import { MDXRemote } from 'next-mdx-remote'
 import imageSize from "rehype-img-size";
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
 import NetworkSettings from '../lib/NetworkSettings'
+import { useRouter } from 'next/router'
+import { ArrowLeftIcon } from '@heroicons/react/solid'
 
 export default function GlobalTable(props) {
+    const router = useRouter();
+
+    const handleGoBack = useCallback(() => {
+        router.back()
+    }, [router])
+    
     return (
         <Layout>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col container mx-auto sm:px-6 lg:px-8 max-w-md md:max-w-3xl">
@@ -21,6 +29,13 @@ export default function GlobalTable(props) {
                 </Head>
                 <main>
                     <div className="flex-col justify-center py-4 ">
+                        <div className="mt-3 flex items-center justify-between z-20" >
+                            <div className="flex ">
+                                <button onClick={handleGoBack} className="self-start md:mt-2">
+                                    <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+                                </button>
+                            </div>
+                        </div>
                         <div>
                             <div className="flex flex-col max-w-sm md:max-w-6xl">
                                 <div className="overflow-x-auto ">
@@ -39,7 +54,7 @@ export default function GlobalTable(props) {
                                                                 </th>
                                                             ))
                                                         }
-                                                   
+
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-darkblue-600 bg-darkblue-300">
@@ -73,7 +88,7 @@ export async function getStaticProps() {
     var networks: CryptoNetwork[] = [];
     var exchanges: Exchange[] = [];
     networks = response.data.networks.filter(n => n.status !== "inactive");
-    exchanges = response.data.exchanges.filter(e => e.status !== "inactive" && !NetworkSettings.KnownSettings[e?.internal_name]?.ForceDisable)
+    exchanges = response.data.exchanges.filter(e => e.status !== "inactive")
 
     return {
         props: {

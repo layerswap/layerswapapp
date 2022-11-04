@@ -27,7 +27,8 @@ export enum SwapCreateStep {
     OffRampOAuth = "OffRampOAuth",
     ApiKey = "ApiKey",
     Confirm = "Confirm",
-    TwoFactor = "TwoFactor"
+    TwoFactor = "TwoFactor",
+    ActiveSwapLimit = 'ActiveSwapLimit'
 
 }
 
@@ -37,7 +38,8 @@ export enum SwapWithdrawalStep {
     OffRampWithdrawal = "OffRampWithdrawal",
     Processing = "Processing",
     Success = "Success",
-    Failed = "Failed"
+    Failed = "Failed",
+    Delay = "Delay"
 }
 
 export enum AuthStep {

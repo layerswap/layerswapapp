@@ -46,8 +46,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
             await onSuccess()
         }
         catch (error) {
-            if (error.response?.data?.errors?.length > 0) {
-                const message = error.response.data.errors.map(e => e.message).join(", ")
+            if (error.response?.data?.error) {
+                const message = error.response.data.error.message
                 toast.error(message)
             }
             else {
@@ -108,49 +108,49 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                                         onChange={handleSecretChange}
                                         className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
-                                    />
-                                </div>
-                            </div>
-                            {
-                                exchange?.has_keyphrase &&
-                                <>
-                                    <label htmlFor="apiKey" className="block font-normal text-sm">
-                                        {ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}
-                                    </label>
-                                    <div className="relative rounded-md shadow-sm mt-1">
-                                        <input
-                                            autoComplete="off"
-                                            placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}`}
-                                            autoCorrect="off"
-                                            type="text"
-                                            name="apiKey"
-                                            onChange={handleKeyphraseChange}
-                                            id="apiKey"
-                                            className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
+                            />
+                        </div>
+                    </div>
+                    {
+                        exchange?.has_keyphrase &&
+                        <div>
+                            <label htmlFor="apiKey" className="block font-normal text-sm">
+                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}
+                            </label>
+                            <div className="relative rounded-md shadow-sm mt-1">
+                                <input
+                                    autoComplete="off"
+                                    placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}`}
+                                    autoCorrect="off"
+                                    type="text"
+                                    name="apiKey"
+                                    onChange={handleKeyphraseChange}
+                                    id="apiKey"
+                                    className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
                          placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
-                                        />
-                                    </div>
-                                </>
-                            }
-                            {
-                                ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&
-                                <WarningMessage className=''>
-                                    <div className='text-black'>
-                                        {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
-                                    </div>
-                                </WarningMessage>
-                            }
-                            {
-                                userGuideURL && <div className="flex items-center">
-                                    <span className="block text-base text-white font-normal leading-6"> Read about
-                                        <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} place={slideOverPlace}>
-                                            {(close) => (
-                                                <DocIframe onConfirm={() => close()} URl={userGuideURL} />
-                                            )}
-                                        </SlideOver>
-                                    </span>
-                                </div>
-                            }
+                                />
+                            </div>
+                        </div>
+                    }
+                    {
+                        ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&
+                        <WarningMessage className=''>
+                            <div className='text-black'>
+                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
+                            </div>
+                        </WarningMessage>
+                    }
+                    {
+                        userGuideURL && <div className="flex items-center">
+                            <span className="block text-base text-white font-normal leading-6"> Read about
+                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} place={slideOverPlace}>
+                                    {(close) => (
+                                        <DocIframe onConfirm={() => close()} URl={userGuideURL} />
+                                    )}
+                                </SlideOver>
+                            </span>
+                        </div>
+                    }
 
                         </div>
                         <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500'>

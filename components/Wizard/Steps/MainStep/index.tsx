@@ -22,6 +22,8 @@ import { generateSwapInitialValues } from "../../../../lib/generateSwapInitialVa
 import { SwapType } from "../../../../lib/layerSwapApiClient";
 import SlideOver from "../../../SlideOver";
 import SwapForm from "./SwapForm";
+import { isValidAddress } from "../../../../lib/addressValidator";
+import NetworkSettings from "../../../../lib/NetworkSettings";
 
 type Props = {
     OnSumbit: (values: SwapFormValues) => Promise<void>
@@ -43,7 +45,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
 
-    
+
     useEffect(() => {
         if (query.coinbase_redirect) {
             const temp_data = getTempData()
@@ -100,22 +102,19 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
     }, [query])
 
-    const immutableXApiAddress = 'https://api.x.immutable.com/v1';
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
-            clearSwap()
-            updateSwapFormData(values)
-
-            if (values.network.baseObject.internal_name == KnownInternalNames.Networks.ImmutableX) {
-                const client = await ImmutableXClient.build({ publicApiUrl: immutableXApiAddress })
+            const internalName = values.network.baseObject.internal_name 
+            if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
+                const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[internalName].apiUri })
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
                 if (!isRegistered) {
                     setConnectImmutableIsOpen(true)
                     return
                 }
-            } else if (values.network.baseObject.internal_name == KnownInternalNames.Networks.RhinoFiMainnet) {
-                const client = await axios.get(`https://api.deversifi.com/v1/trading/registrations/${values.destination_address}`)
+            } else if (internalName == KnownInternalNames.Networks.RhinoFiMainnet) {
+                const client = await axios.get(`${NetworkSettings.RhinoFiSettings[internalName].apiUri}/${values.destination_address}`)
                 const isRegistered = await client.data?.isRegisteredOnDeversifi
                 if (!isRegistered) {
                     setConnectRhinofiIsOpen(true);
@@ -123,6 +122,8 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 }
             }
             
+            clearSwap()
+            updateSwapFormData(values)
             await OnSumbit(values)
         }
         catch (e) {
@@ -141,11 +142,14 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
     const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
-    const lockAddress = initialValues.destination_address != ""  && !!account || query.lockAddress;
+    const lockAddress = 
+        (initialValues.destination_address && initialValues.network)
+        && isValidAddress(initialValues.destination_address, initialValues.network?.baseObject)
+        && (!!account || (query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
 
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
-            {(close) => <ConnectImmutableX swapFormData={formValues} onClose={close} />}
+            {(close) => <ConnectImmutableX network={formValues?.network?.baseObject} onClose={close} />}
         </SlideOver>
         <SlideOver imperativeOpener={[connectRhinoifiIsOpen, setConnectRhinofiIsOpen]} place='inStep'>
             {() => <ConnectRhinofi />}
@@ -157,7 +161,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            <SwapForm resource_storage_url={resource_storage_url} isPartnerWallet={isPartnerWallet} lockAddress={lockAddress}  partner={partner}/>
+            <SwapForm resource_storage_url={resource_storage_url} isPartnerWallet={isPartnerWallet} lockAddress={lockAddress} partner={partner} />
         </Formik >
     </>
 }

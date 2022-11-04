@@ -75,7 +75,7 @@ const SendEmail: FC<Props> = ({ onSend }) => {
                                 <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
                                     What's your email?
                                 </p>
-                                <p className='text-center text-base mb-6 px-2'>
+                                <p className='text-center text-base mb-6 px-2 text-primary-text'>
                                     With your email, your exchange credentials will stay linked to your account and you can access your entire transfer history.
                                 </p>
                             </div>

@@ -54,6 +54,5 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
         </ThemeWrapper>
       </QueryProvider>
     </ErrorBoundary>
-
   </>)
 }

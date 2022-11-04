@@ -8,7 +8,9 @@ export class QueryParams {
     addressSource?: string = "";
     coinbase_redirect?: string = "";
     asset?: string = "";
-    partnerName?: string = "";
     externalId?: string = ""
-    products?: string = ""
+    products?: string = "";
+    signature?: string = "";
+    timestamp?: string = "";
+    apiKey?: string = "";
 }

@@ -10,14 +10,14 @@ import SendFeedback from './sendFeedback'
 import { classNames } from "./utils/classNames";
 import SlideOver from "./SlideOver";
 import { AnimatePresence, motion } from "framer-motion";
+import GoHomeButton from "./utils/GoHome";
 
 export default function () {
-    const { email, authData } = useAuthState()
+    const { email, authData, userId } = useAuthState()
     const router = useRouter();
     const { menuVisible } = useMenuState()
     const { boot, show, update } = useIntercom()
-
-    const updateWithProps = () => update({ email: email })
+    const updateWithProps = () => update({ email: email, userId: userId })
 
     const [feedbackDrawerIsOpen, setFeedbackDrawerIsOpen] = useState(false);
     const goToLink = (path: string, query: any) => {
@@ -70,26 +70,56 @@ export default function () {
                                         className="font-bold text-sm text-left border border-darkblue-200 origin-top-right absolute -right-7 mt-2 min-w-56 rounded-md shadow-lg bg-darkblue ring-1 ring-black ring-opacity-5 focus:outline-none">
                                         <div className="relative z-30 py-1">
                                             {
-                                                authData?.access_token ? <div className='font-light block w-full text-left px-4 py-2 text-sm'>
+                                                authData?.access_token ? <div className='font-light block w-full text-left px-4 py-2 text-sm cursor-default'>
                                                     {email}
                                                 </div>
                                                     :
-                                                    <Menu.Item>
-                                                        {({ active }) => (
-                                                            <a onClick={goToLogin}
-                                                                className={classNames(
-                                                                    active ? 'bg-darkblue-300' : '',
-                                                                    'block px-4 text-left py-2 whitespace-nowrap'
-                                                                )}
-                                                            >
-                                                                Login
-                                                            </a>
-                                                        )}
-                                                    </Menu.Item>
+                                                    <>
+                                                        <Menu.Item>
+                                                            {({ active }) => (
+                                                                <GoHomeButton >
+                                                                    <a
+                                                                        className={classNames(
+                                                                            active ? 'bg-darkblue-300' : '',
+                                                                            'block px-4 py-2 text-left hover:bg-darkblue-300 whitespace-nowrap'
+                                                                        )}
+                                                                    >
+                                                                        Home
+                                                                    </a>
+                                                                </GoHomeButton>
+                                                            )}
+                                                        </Menu.Item>
+                                                        <Menu.Item>
+                                                            {({ active }) => (
+                                                                <a onClick={goToLogin}
+                                                                    className={classNames(
+                                                                        active ? 'bg-darkblue-300' : '',
+                                                                        'block px-4 py-2 text-left hover:bg-darkblue-300 whitespace-nowrap'
+                                                                    )}
+                                                                >
+                                                                    Login
+                                                                </a>
+                                                            )}
+                                                        </Menu.Item>
+                                                    </>
                                             }
                                             {
                                                 authData?.access_token &&
                                                 <>
+                                                    <Menu.Item>
+                                                        {({ active }) => (
+                                                            <GoHomeButton >
+                                                                <a
+                                                                    className={classNames(
+                                                                        active ? 'bg-darkblue-300' : '',
+                                                                        'block px-4 py-2 text-left hover:bg-darkblue-300 whitespace-nowrap'
+                                                                    )}
+                                                                >
+                                                                    Home
+                                                                </a>
+                                                            </GoHomeButton>
+                                                        )}
+                                                    </Menu.Item>
                                                     <Menu.Item>
                                                         {({ active }) => (
                                                             <a

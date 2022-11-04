@@ -26,7 +26,8 @@ export default class ExchangeSettings {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/279b954e2d3343038aef5e6a5ad21734?iframe",
             ExchangeApiKeyPageUrl: "https://www.binance.com/en/my/settings/api-management",
             ExchangeWithdrawalPageUrl: "https://www.binance.com/en/my/wallet/account/main/withdrawal/crypto",
-            FeeIsRefundable: true
+            FeeIsRefundable: true,
+            WithdrawalWarningMessage: "Please note that using the PayId method is not supported and won't be detected."
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Bitfinex] = {
             UserApiKeyGuideUrl: "https://app.tango.us/app/embed/c8cf508a2c5a4780a9225ac87668d349?iframe",

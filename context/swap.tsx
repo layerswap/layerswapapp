@@ -7,7 +7,7 @@ import { useQueryState } from './query';
 import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
-import useSWR from 'swr';
+import useSWR, { KeyedMutator } from 'swr';
 
 const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
@@ -21,7 +21,8 @@ type UpdateInterface = {
     setCodeRequested(codeSubmitted: boolean): void;
     cancelSwap: (swapId: string) => Promise<void>;
     setAddressConfirmed: (value: boolean) => void;
-    setInterval: (value: number) => void
+    setInterval: (value: number) => void,
+    mutateSwap: KeyedMutator<SwapItemResponse>
 }
 
 type SwapData = {
@@ -41,7 +42,7 @@ export function SwapDataProvider({ children }) {
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/swaps/${swapId}`
     const [interval, setInterval] = useState(0)
-    const { data: swap } = useSWR<SwapItemResponse>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
+    const { data: swap, mutate } = useSWR<SwapItemResponse>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval})
 
     const { getAuthData } = useAuthDataUpdate();
     const query = useQueryState();
@@ -115,7 +116,8 @@ export function SwapDataProvider({ children }) {
         setCodeRequested: setCodeRequested,
         cancelSwap: cancelSwap,
         setAddressConfirmed: setAddressConfirmed,
-        setInterval: setInterval
+        setInterval: setInterval,
+        mutateSwap: mutate
     };
 
     return (

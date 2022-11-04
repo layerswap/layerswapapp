@@ -13,7 +13,7 @@ export default function Home({ response }: InferGetServerSidePropsType<typeof ge
     return (
         <div className='wide-page'>
             <Layout>
-                <SettingsProvider data={response}>
+                <SettingsProvider data={response.data}>
                     <AuthProvider>
                         <MenuProvider>
                             <UserExchanges />
@@ -35,7 +35,7 @@ export async function getServerSideProps(context) {
     const response = await apiClient.fetchSettingsAsync()
 
     response.data.networks = response.data.networks.filter((element) =>
-        element.status !== "inactive" && !NetworkSettings.KnownSettings[element?.internal_name]?.ForceDisable)
+        element.status !== "inactive")
 
     response.data.exchanges = response.data.exchanges.filter((element) => element.status !== "inactive");
 

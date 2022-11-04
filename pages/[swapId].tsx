@@ -19,7 +19,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
   return (
     <Layout>
       <AuthProvider>
-        <SettingsProvider data={settings}>
+        <SettingsProvider data={settings.data}>
           <MenuProvider>
             <SwapDataProvider >
               <UserExchangeProvider>

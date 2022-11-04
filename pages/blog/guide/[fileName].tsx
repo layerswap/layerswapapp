@@ -4,10 +4,15 @@ import fs from 'fs'
 import path from 'path'
 import { serialize } from "next-mdx-remote/serialize";
 import imageSize from "rehype-img-size";
-import React from 'react'
+import React, { useCallback } from 'react'
 import { MDXRemote } from 'next-mdx-remote'
 import Layout from '../../../components/layout';
 import matter from 'gray-matter';
+import { useRouter } from 'next/router';
+import { ArrowLeftIcon } from '@heroicons/react/solid';
+import HeaderWithMenu from '../../../components/HeaderWithMenu';
+import { AuthProvider } from '../../../context/authContext';
+import { MenuProvider } from '../../../context/menu';
 
 const componentOverrides = {
     img: (props) => (
@@ -20,15 +25,25 @@ export default function UserGuide({
     fileName,
     mdxSource,
 }) {
+    const router = useRouter();
+
+    const handleGoBack = useCallback(() => {
+        router.back()
+    }, [router])
 
     return (
         <Layout>
-            <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto sm:px-6 lg:px-8 max-w-3xl">
+            <div className="bg-darkblue shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto max-w-3xl">
                 <Head>
                     <title>{title}</title>
                 </Head>
                 <main>
-                    <div className="flex justify-center">
+                    <AuthProvider>
+                        <MenuProvider>
+                            <HeaderWithMenu goBack={handleGoBack} />
+                        </MenuProvider>
+                    </AuthProvider>
+                    <div className="flex-col justify-center py-4 px-8 md:px-0 sm:px-6 lg:px-8">
                         <div className="py-4 px-8 md:px-0 prose md:prose-xl text-primary-text">
                             <MDXRemote {...mdxSource} components={componentOverrides} />
                         </div>

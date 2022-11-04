@@ -109,7 +109,7 @@ const useCreateSwap = () => {
     const OAuth: WizardStep<SwapCreateStep> = {
         Content: AccountConnectStep,
         Name: SwapCreateStep.OAuth,
-        positionPercent: 45,
+        positionPercent: 60,
         onBack: useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), []),
     }
     const ApiKey: WizardStep<SwapCreateStep> = {

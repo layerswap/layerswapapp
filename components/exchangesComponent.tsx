@@ -15,7 +15,6 @@ import toast from "react-hot-toast";
 import shortenAddress, { shortenEmail } from "./utils/ShortenAddress";
 import HoverTooltip from "./Tooltips/HoverTooltip";
 import { ExchangesComponentSceleton } from "./Sceletons";
-import GoHomeButton from "./utils/GoHome";
 import Modal from "./modalComponent";
 import ExchangeSettings from "../lib/ExchangeSettings";
 
@@ -38,7 +37,7 @@ function UserExchanges() {
     const [openExchangeToConnectModal, setOpenExchangeToConnectModal] = useState(false)
     const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
-    const { discovery: { resource_storage_url } } = data
+    const { discovery: { resource_storage_url } } = data || { discovery: {} }
 
     useEffect(() => {
         (async () => {
@@ -134,16 +133,20 @@ function UserExchanges() {
         }
     }
 
+    const handleGoBack = useCallback(() => {
+        router.back()
+    }, [router])
+
     return (
         <div className='bg-darkblue px-6 md:px-12 shadow-card rounded-lg w-full text-white overflow-hidden relative'>
             <div className="mt-3 flex items-center justify-between z-20" >
-                <div className="hidden md:block">
-                    <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
-                    <span className="text-primary-text font-medium">{email}</span>
-                </div>
-                <div className='mx-auto px-4 overflow-hidden md:hidden'>
-                    <div className="flex justify-center immutablex:hidden">
-                        <GoHomeButton />
+                <div className="flex ">
+                    <button onClick={handleGoBack} className="self-start md:mt-2">
+                        <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+                    </button>
+                    <div className="hidden md:block ml-4">
+                        <p className="text-2xl font-bold">Account</p>
+                        <span className="text-primary-text font-medium">{email}</span>
                     </div>
                 </div>
                 <LayerswapMenu />

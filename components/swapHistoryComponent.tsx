@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapListResponse, SwapItem, SwapType } from "../lib/layerSwapApiClient"
 import TokenService from "../lib/TokenService"
 import SpinIcon from "./icons/spinIcon"
-import { ArrowLeftIcon, ChevronRightIcon, ExternalLinkIcon, RefreshIcon } from '@heroicons/react/outline';
+import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
 import { useSettingsState } from "../context/settings"
@@ -18,8 +18,10 @@ import GoHomeButton from "./utils/GoHome"
 import StatusIcon from "./StatusIcons"
 import Modal from "./modalComponent"
 import HoverTooltip from "./Tooltips/HoverTooltip"
-import { AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast"
+import { ArrowLeftIcon } from "@heroicons/react/solid"
+import { SwapStatus } from "../Models/SwapStatus"
+import { useSwapDataUpdate } from "../context/swap"
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -28,11 +30,11 @@ function TransactionsHistory() {
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapListResponse>()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(false)
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const { email } = useAuthState()
+  const { cancelSwap } = useSwapDataUpdate()
 
   const checkAuth = () => {
     try {
@@ -49,6 +51,10 @@ function TransactionsHistory() {
       toast(e.message)
     }
   }
+
+  const handleGoBack = useCallback(() => {
+    router.back()
+  }, [router])
 
   useEffect(() => {
     document.addEventListener(
@@ -145,12 +151,18 @@ function TransactionsHistory() {
   return (
     <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
       <div className="mt-3 flex items-center justify-between z-20" >
-        <div className="hidden md:block">
-          <p className="text-2xl mb-1 mt-2 font-bold">Account</p>
-          <span className="text-primary-text font-medium">{email}</span>
+        <div className="flex ">
+          <button onClick={handleGoBack} className="self-start md:mt-2">
+            <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+          </button>
+          <div className="hidden md:block ml-4">
+            <p className="text-2xl font-bold">Account</p>
+            <span className="text-primary-text font-medium">{email}</span>
+          </div>
         </div>
+
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
-          <div className="flex justify-center immutablex:hidden">
+          <div className="flex justify-center imxMarketplace:hidden">
             <GoHomeButton />
           </div>
         </div>
@@ -319,12 +331,12 @@ function TransactionsHistory() {
                                   'md:px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
-                                <div className="flex space-x-1">
+                                <div className="md:flex">
                                   {
                                     swap?.status == 'completed' && swap.received_amount != swap.requested_amount ?
-                                      <div className="flex items-center">
-                                        {swap.received_amount}/
-                                        <HoverTooltip text='Requested Amount' moreClassNames="w-32 text-center">
+                                      <div className="flex flex-col md:flex-row text-left">
+                                        <span className="ml-1 md:ml-0">{swap.received_amount} /</span>
+                                        <HoverTooltip text='Amount You Requested' moreClassNames="w-40 text-center">
                                           <span className="underline decoration-dotted hover:no-underline">
                                             {swap.requested_amount}
                                           </span>
@@ -335,7 +347,7 @@ function TransactionsHistory() {
                                         {swap.requested_amount}
                                       </span>
                                   }
-                                  <span>{currency.asset}</span>
+                                  <span className="ml-1">{currency.asset}</span>
                                 </div>
                               </td>
                               <td
@@ -415,7 +427,7 @@ function TransactionsHistory() {
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {
-                        data.networks && selectedSwap?.transaction_id && selectedSwap.type == SwapType.OnRamp &&
+                        data.networks && selectedSwap?.transaction_id && selectedSwap.type == SwapType.OnRamp && selectedSwap?.status == SwapStatus.Completed &&
                         <div className="text-white text-sm mt-6">
                           <a href={networks?.find(n => n.currencies.some(nc => nc.id === selectedSwap?.network_currency_id)).transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
                             target="_blank"
@@ -426,11 +438,15 @@ function TransactionsHistory() {
                         </div>
                       }
                       {
-                        selectedSwap?.status == 'initiated' &&
-                        <div className="text-white text-sm mt-6">
+                        selectedSwap?.status == SwapStatus.UserTransferPending &&
+                        <div className="text-white text-sm mt-6 space-y-3">
                           <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false}>
                             Complete Swap
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                          </SubmitButton>
+                          <SubmitButton buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false}>
+                            Cancel Swap
+                            <XIcon className='ml-2 h-5 w-5' />
                           </SubmitButton>
                         </div>
                       }

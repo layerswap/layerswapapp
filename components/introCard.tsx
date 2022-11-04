@@ -1,10 +1,7 @@
-import { useQueryState } from '../context/query';
 import CardContainer from './cardContainer';
 
 function IntroCard(props) {
-    const query = useQueryState()
     return (
-        query?.partnerName?.toLowerCase() != 'immutablex' &&
         <CardContainer {...props} >
             <div className="flex flex-col px-4 md:px-8 py-6 text-primary-text font-light">
                 <div>
@@ -13,9 +10,10 @@ function IntroCard(props) {
                         Save up to 10x on fees when moving crypto from Coinbase, Binance or FTX to Arbitrum, zkSync, Loopring and other L2s.
                     </p>
                     <p className="py-4">
-                        <span className="text-sm font-semibold mr-2 rounded-md py-1 px-2 text-white border border-white uppercase">New</span>
-                        <span>
-                            Transfer from Loopring to Coinbase and Binance (  🥳  off-ramp)
+                        <span className="text-sm font-semibold mr-2 rounded-md py-1 px-2 text-pink-primary border border-pink-primary uppercase">New</span>
+
+                        <span className="inline">
+                            SNX (Synthetix) in Optimism L2 
                         </span>
                     </p>
                 </div>

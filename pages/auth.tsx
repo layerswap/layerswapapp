@@ -14,7 +14,7 @@ export default function AuthPage({ response }: InferGetServerSidePropsType<typeo
 
   return (
     <Layout>
-      <SettingsProvider data={response}>
+      <SettingsProvider data={response.data}>
         <AuthProvider>
           <MenuProvider>
             <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>

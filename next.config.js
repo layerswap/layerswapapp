@@ -1,4 +1,4 @@
-const { PHASE_DEVELOPMENT_SERVER } = require('next/constants')
+const { PHASE_PRODUCTION_SERVER } = require('next/constants')
 
 const securityHeaders = [
   {
@@ -21,7 +21,7 @@ module.exports = (phase, { defaultConfig }) => {
       defaultLocale: "en",
     },
     images: {
-      domains: ["bransferstorage.blob.core.windows.net", "devlslayerswapbridgesa.blob.core.windows.net"],
+      domains: ["bransferstorage.blob.core.windows.net", "devlslayerswapbridgesa.blob.core.windows.net", "prodlslayerswapbridgesa.blob.core.windows.net"],
     },
     compiler: {
       removeConsole: false,
@@ -29,8 +29,7 @@ module.exports = (phase, { defaultConfig }) => {
     reactStrictMode: false
   }
 
-  // TODO: Test the phases to see which corresponds to the prod only
-  if (false) {
+  if (phase === PHASE_PRODUCTION_SERVER) {
     nextConfig.headers = async () => {
       return [
         {
