@@ -3,15 +3,13 @@ import { FormWizardProvider } from "../context/formWizardProvider";
 import { useSettingsState } from "../context/settings";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { SwapType } from "../lib/layerSwapApiClient";
-import NetworkSettings from "../lib/NetworkSettings";
 import { DepositFlow } from "../Models/Exchange";
 import { SwapStatus } from "../Models/SwapStatus";
 import { SwapWithdrawalStep } from "../Models/Wizard";
 import SwapWithdrawalWizard from "./Wizard/SwapWithdrawalWizard";
 
-
 const SwapWithdrawal: FC = () => {
-    const { data: settings } = useSettingsState()
+    const settings = useSettingsState()
     const { exchanges, networks } = settings
     const { swap } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
@@ -24,9 +22,10 @@ const SwapWithdrawal: FC = () => {
         return <div className={`pb-6 bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative animate-pulse h-[548px]`}>
 
         </div>
-    const swapStatus = swap?.data?.status;
-    const exchange = exchanges.find(e => e.currencies.some(ec => ec.id === swap.data.exchange_currency_id))
-    const network = networks.find(n => n.currencies.some(ec => ec.id === swap.data.network_currency_id))
+
+    const swapStatus = swap?.status;
+    const exchange = exchanges.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
+    const network = networks.find(n => n.currencies.some(ec => ec.id === swap?.network_currency_id))
 
     let initialStep: SwapWithdrawalStep;
     if (swapStatus == SwapStatus.Completed)

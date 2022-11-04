@@ -40,11 +40,10 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     let formValues = formikRef.current?.values;
     const settings = useSettingsState();
-    const { discovery: { resource_storage_url } } = settings.data || {}
+    const { discovery: { resource_storage_url } } = settings || {}
     const query = useQueryState();
     const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
-
 
     useEffect(() => {
         if (query.coinbase_redirect) {
@@ -135,7 +134,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const destAddress: string = account || query.destAddress;
 
     const partner = addressSource ?
-        settings.data.partners.find(p => p.internal_name?.toLocaleLowerCase() === addressSource?.toLocaleLowerCase())
+        settings.partners.find(p => p.internal_name?.toLocaleLowerCase() === addressSource?.toLocaleLowerCase())
         : undefined
 
     const isPartnerAddress = partner && destAddress;

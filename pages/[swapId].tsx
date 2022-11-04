@@ -14,12 +14,12 @@ import SwapWithdrawal from '../components/SwapWithdrawal';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  LayerSwapAuthApiClient.identityBaseEndpoint = settings.data.discovery.identity_url
+  LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
 
   return (
     <Layout>
       <AuthProvider>
-        <SettingsProvider data={settings.data}>
+        <SettingsProvider data={settings}>
           <MenuProvider>
             <SwapDataProvider >
               <UserExchangeProvider>
@@ -58,11 +58,11 @@ export const getServerSideProps = async (ctx) => {
 
   if (!settings) {
     var apiClient = new LayerSwapApiClient();
-    const data = await apiClient.fetchSettingsAsync()
+    const { data } = await apiClient.GetSettingsAsync()
 
-    const resource_storage_url = data.data.discovery.resource_storage_url
+    const resource_storage_url = data.discovery.resource_storage_url
     if (resource_storage_url[resource_storage_url.length - 1] === "/")
-      data.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+      data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
     try {
       fs.writeFileSync(

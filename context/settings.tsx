@@ -3,11 +3,9 @@ import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 
 const SettingsStateContext = React.createContext<LayerSwapSettings | null>(null);
 
-
-
-export const SettingsProvider: FC<LayerSwapSettings> = ({ children, data, validSignatureisPresent }) => {
+export const SettingsProvider: FC<{data:LayerSwapSettings}> = ({children, data}) => {
   return (
-    <SettingsStateContext.Provider value={{ data: data, validSignatureisPresent: validSignatureisPresent }}>
+    <SettingsStateContext.Provider value={data}>
       {children}
     </SettingsStateContext.Provider>
   );

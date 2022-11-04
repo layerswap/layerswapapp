@@ -1,7 +1,7 @@
 import { InformationCircleIcon, LockClosedIcon } from '@heroicons/react/outline';
 import { Form, Formik, FormikErrors, FormikProps } from 'formik';
 import { useRouter } from 'next/router';
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
@@ -37,8 +37,8 @@ const TwoFactorStep: FC = () => {
 
     const handleSubmit = useCallback(async (values: CodeFormValues) => {
         try {
-            await processPayment(swap.data.id, values.Code);
-            router.push(`/${swap.data.id}`)
+            await processPayment(swap.id, values.Code);
+            router.push(`/${swap.id}`)
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
@@ -68,7 +68,7 @@ const TwoFactorStep: FC = () => {
         setLoading(true)
         try {
             formikRef.current.setFieldValue("Code", "");
-            await processPayment(swap.data.id)
+            await processPayment(swap.id)
         } catch (error) {
             const data: ApiError = error?.response?.data?.error
 

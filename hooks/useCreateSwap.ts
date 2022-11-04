@@ -10,7 +10,6 @@ import { useFormWizardaUpdate } from "../context/formWizardProvider";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { useUserExchangeDataUpdate } from "../context/userExchange";
 import LayerSwapApiClient from "../lib/layerSwapApiClient";
-import KnownInternalNames from "../lib/knownIds";
 import TokenService from "../lib/TokenService";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { ExchangeAuthorizationSteps, OfframpExchangeAuthorizationSteps, SwapCreateStep, WizardStep } from "../Models/Wizard";
@@ -28,7 +27,7 @@ const useCreateSwap = () => {
     const { swapType, exchange, currency } = swapFormData || {}
 
     const handleOfframp = useCallback(async (formData: SwapFormValues, access_token: string) => {
-        const exchanges = (await getUserExchanges())?.data
+        const exchanges = await getUserExchanges()
         const { exchange: selected_exchange, currency } = formData
         const selected_exchange_id = selected_exchange.baseObject.id
         const selected_exchange_internal_name = selected_exchange?.baseObject?.internal_name
@@ -70,7 +69,7 @@ const useCreateSwap = () => {
                 handleOfframp(values, accessToken)
             }
             else {
-                const exchanges = (await getUserExchanges())?.data
+                const exchanges = await getUserExchanges()
                 const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === values?.exchange?.baseObject.id)
                 if (values?.exchange?.baseObject?.authorization_flow === "none" || !values?.exchange?.baseObject?.authorization_flow || exchangeIsEnabled)
                     return goToStep(SwapCreateStep.Confirm)
@@ -92,7 +91,7 @@ const useCreateSwap = () => {
         Content: CodeStep,
         Name: SwapCreateStep.Code,
         onNext: useCallback(async (res: AuthConnectResponse) => {
-            const exchanges = (await getUserExchanges())?.data
+            const exchanges = await getUserExchanges()
             const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange?.baseObject.id)
 
             if (swapFormData.swapType === SwapType.OffRamp) {

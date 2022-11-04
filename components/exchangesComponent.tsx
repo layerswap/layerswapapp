@@ -1,6 +1,5 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import TokenService from "../lib/TokenService"
 import { ExclamationCircleIcon } from '@heroicons/react/outline';
 import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
@@ -16,7 +15,6 @@ import toast from "react-hot-toast";
 import shortenAddress, { shortenEmail } from "./utils/ShortenAddress";
 import HoverTooltip from "./Tooltips/HoverTooltip";
 import { ExchangesComponentSceleton } from "./Sceletons";
-import GoHomeButton from "./utils/GoHome";
 import Modal from "./modalComponent";
 import ExchangeSettings from "../lib/ExchangeSettings";
 import { ArrowLeftIcon } from "@heroicons/react/solid";
@@ -28,7 +26,7 @@ interface UserExchange extends Exchange {
 
 function UserExchanges() {
 
-    const { data } = useSettingsState()
+    const settings = useSettingsState()
     const [userExchanges, setUserExchanges] = useState<UserExchange[]>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
@@ -40,7 +38,7 @@ function UserExchanges() {
     const [openExchangeToConnectModal, setOpenExchangeToConnectModal] = useState(false)
     const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
-    const { discovery: { resource_storage_url } } = data || { discovery: {} }
+    const { discovery: { resource_storage_url } } = settings || { discovery: {} }
 
     useEffect(() => {
         (async () => {
@@ -60,12 +58,18 @@ function UserExchanges() {
     const getAndMapExchanges = useCallback(async () => {
         try {
             const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
-            const userExchanges = await layerswapApiClient.GetExchangeAccounts()
-            const mappedExchanges = data.exchanges.filter(x => ExchangeSettings.KnownSettings[x?.internal_name]?.CustomAuthorizationFlow || x.authorization_flow != 'none').map(e => {
+            const { data: userExchanges, error } = await layerswapApiClient.GetExchangeAccounts()
+
+            if (error) {
+                toast.error(error.message);
+                return;
+            }
+
+            const mappedExchanges = settings.exchanges.filter(x => ExchangeSettings.KnownSettings[x?.internal_name]?.CustomAuthorizationFlow || x.authorization_flow != 'none').map(e => {
                 return {
                     ...e,
-                    is_connected: userExchanges.data?.some(ue => ue.exchange_id === e.id),
-                    note: userExchanges.data?.find(ue => ue.exchange_id === e.id)?.note,
+                    is_connected: userExchanges?.some(ue => ue.exchange_id === e.id),
+                    note: userExchanges?.find(ue => ue.exchange_id === e.id)?.note,
                     authorization_flow: ExchangeSettings.KnownSettings[e?.internal_name]?.CustomAuthorizationFlow || e.authorization_flow
                 }
             })
@@ -76,7 +80,7 @@ function UserExchanges() {
             toast.error(e.message)
         }
 
-    }, [data.exchanges])
+    }, [settings.exchanges])
 
     const filteredItems =
         query === ''
@@ -84,10 +88,6 @@ function UserExchanges() {
             : userExchanges.filter((item) => {
                 return item.display_name.toLowerCase().includes(query.toLowerCase())
             })
-
-
-    const handleComboboxChange = useCallback(() => { }, [])
-    const handleQueryInputChange = useCallback((event) => setQuery(event.target.value), [])
 
     const handleConnectExchange = (exchange: Exchange) => {
         setExchangeToConnect(exchange)
@@ -159,7 +159,6 @@ function UserExchanges() {
                     <Combobox
                         as="div"
                         className="transform transition-all"
-                        onChange={handleComboboxChange}
                         value={query}
                     >
                         <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2">

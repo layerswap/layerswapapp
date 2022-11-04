@@ -11,21 +11,21 @@ const FailedStep: FC = () => {
     const { swap } = useSwapDataState()
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.data?.id } })
+    const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
 
     return (
         <>
             {
-                swap?.data?.status == SwapStatus.Failed &&
+                swap?.status == SwapStatus.Failed &&
                 <MessageComponent>
                     <MessageComponent.Content icon='red'>
                         <MessageComponent.Header>
-                            {swap?.data.status == SwapStatus.Failed ? 'Swap failed' : 'Swap not found'}
+                            {swap.status == SwapStatus.Failed ? 'Swap failed' : 'Swap not found'}
                         </MessageComponent.Header>
                         <MessageComponent.Description>
                             {
-                                swap?.data?.message ?
-                                    swap.data.message
+                                swap?.message ?
+                                    swap.message
                                     :
                                     <p>
                                         Sorry, there was an issue with your swap.
@@ -48,7 +48,7 @@ const FailedStep: FC = () => {
                 </MessageComponent>
             }
             {
-                swap?.data?.status == SwapStatus.Cancelled &&
+                swap?.status == SwapStatus.Cancelled &&
                 <MessageComponent>
                     <MessageComponent.Content icon='red'>
                         <MessageComponent.Header>
@@ -56,8 +56,8 @@ const FailedStep: FC = () => {
                         </MessageComponent.Header>
                         <MessageComponent.Description>
                             {
-                                swap?.data?.message ?
-                                    swap.data.message
+                                swap?.message ?
+                                    swap.message
                                     :
                                     <p>
                                         You've either canceled this swap manually, or you've created a swap immediatly after this and it replaced this one.
@@ -83,7 +83,7 @@ const FailedStep: FC = () => {
                 </MessageComponent>
             }
             {
-                swap?.data?.status == SwapStatus.Expired &&
+                swap?.status == SwapStatus.Expired &&
                 <MessageComponent>
                     <MessageComponent.Content icon='red'>
                         <MessageComponent.Header>
@@ -91,8 +91,8 @@ const FailedStep: FC = () => {
                         </MessageComponent.Header>
                         <MessageComponent.Description>
                             {
-                                swap?.data?.message ?
-                                    swap.data.message
+                                swap?.message ?
+                                    swap.message
                                     :
                                     <p>
                                         This swap was not completed during the allocated timeframe and was expired. If you've already sent crypto for this swap please contact support.

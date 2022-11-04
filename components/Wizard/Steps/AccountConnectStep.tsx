@@ -1,14 +1,15 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import useSWR, { useSWRConfig } from 'swr';
-import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
+import useSWR from 'swr';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
-import {  useInterval } from '../../../hooks/useInterval';
+import { useInterval } from '../../../hooks/useInterval';
 import { parseJwt } from '../../../lib/jwtParser';
-import LayerSwapApiClient, { UserExchangesResponse } from '../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { UserExchangesData } from '../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../lib/openLink';
 import TokenService from '../../../lib/TokenService';
+import { ApiResponse } from '../../../Models/ApiResponse';
 import { SwapCreateStep } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
@@ -31,7 +32,7 @@ const AccountConnectStep: FC = () => {
 
     const exchange_accounts_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts`
 
-    const { data: exchanges } = useSWR<UserExchangesResponse>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
+    const { data: exchanges } = useSWR<ApiResponse<UserExchangesData[]>>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
 
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref = ""
