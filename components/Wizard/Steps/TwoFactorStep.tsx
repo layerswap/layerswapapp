@@ -54,6 +54,7 @@ const TwoFactorStep: FC = () => {
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 toast.error(`${swapFormData?.exchange?.name} error: You don't have that much.`)
+                goToStep(SwapCreateStep.Error)
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 goToStep(SwapCreateStep.OAuth)
