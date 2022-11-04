@@ -18,7 +18,7 @@ type UpdateInterface = {
     createAndProcessSwap: (TwoFACode?: string) => Promise<string>,
     //TODO this is stupid need to clean data in confirm step or even do not store it
     clearSwap: () => void,
-    processPayment: (swapId: string, twoFactorCode?: string) => void,
+    processPayment: (swapId: string, twoFactorCode?: string) => Promise<void>,
     setCodeRequested(codeSubmitted: boolean): void;
     cancelSwap: (swapId: string) => Promise<void>;
     setAddressConfirmed: (value: boolean) => void;

@@ -37,7 +37,7 @@ const TwoFactorStep: FC = () => {
 
     const handleSubmit = useCallback(async (values: CodeFormValues) => {
         try {
-            processPayment(swap.id, values.Code);
+            await processPayment(swap.id, values.Code);
             router.push(`/${swap.id}`)
         }
         catch (error) {
