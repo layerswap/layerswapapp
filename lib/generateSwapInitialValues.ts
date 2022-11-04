@@ -11,7 +11,7 @@ import NetworkSettings from "./NetworkSettings";
 export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams, account: string, chainId: number): SwapFormValues {
     const { destNetwork, destAddress: queryParamAddress, sourceExchangeName, products } = queryParams
 
-    const { data: { exchanges, networks, discovery: { resource_storage_url } } } = settings || {}
+    const { exchanges, networks, discovery: { resource_storage_url  } } = settings || {}
     const destAddress = queryParamAddress || account
 
     const networkIsAvailable = (n: CryptoNetwork) => {
@@ -25,7 +25,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     const availableNetworks = networks.filter(networkIsAvailable)
         .map(c => new SelectMenuItem<CryptoNetwork>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
 
-    let availableExchanges = settings.data.exchanges
+    let availableExchanges = settings.exchanges
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
 
     const initialNetwork =

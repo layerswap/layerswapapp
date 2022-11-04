@@ -6,16 +6,14 @@ import { Partner } from "./Partner";
 
 
 export class LayerSwapSettings {
-    data: {
-        exchanges: Exchange[];
-        networks: CryptoNetwork[];
-        currencies: Currency[];
-        partners: Partner[];
-        blacklisted_addresses: BlacklistedAddress[];
-        discovery: {
-            identity_url: string;
-            resource_storage_url: string;
-        }
+    exchanges: Exchange[];
+    networks: CryptoNetwork[];
+    currencies: Currency[];
+    partners: Partner[];
+    blacklisted_addresses: BlacklistedAddress[];
+    discovery: {
+        identity_url: string;
+        resource_storage_url: string;
     }
     validSignatureisPresent?: boolean;
 };

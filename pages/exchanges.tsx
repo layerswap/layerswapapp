@@ -5,15 +5,14 @@ import { SettingsProvider } from '../context/settings'
 import { AuthProvider } from '../context/authContext'
 import UserExchanges from '../components/exchangesComponent'
 import { MenuProvider } from '../context/menu'
-import NetworkSettings from '../lib/NetworkSettings'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 
-export default function Home({ response }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-    LayerSwapAuthApiClient.identityBaseEndpoint = response.data.discovery.identity_url
+export default function Home({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+    LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
     return (
         <div className='wide-page'>
             <Layout>
-                <SettingsProvider data={response.data}>
+                <SettingsProvider data={settings}>
                     <AuthProvider>
                         <MenuProvider>
                             <UserExchanges />
@@ -32,20 +31,20 @@ export async function getServerSideProps(context) {
     );
 
     var apiClient = new LayerSwapApiClient();
-    const response = await apiClient.fetchSettingsAsync()
+    const { data: settings } = await apiClient.GetSettingsAsync()
 
-    response.data.networks = response.data.networks.filter((element) =>
+    settings.networks = settings.networks.filter((element) =>
         element.status !== "inactive")
 
-    response.data.exchanges = response.data.exchanges.filter((element) => element.status !== "inactive");
+    settings.exchanges = settings.exchanges.filter((element) => element.status !== "inactive");
 
-    const resource_storage_url = response.data.discovery.resource_storage_url
+    const resource_storage_url = settings.discovery.resource_storage_url
     if (resource_storage_url[resource_storage_url.length - 1] === "/")
-        response.data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+        settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
     let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 
     return {
-        props: { response, isOfframpEnabled },
+        props: { settings, isOfframpEnabled },
     }
 }

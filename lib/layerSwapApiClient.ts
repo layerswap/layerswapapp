@@ -1,4 +1,3 @@
-import { ApiError } from "../Models/ApiError";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { SwapStatus } from "../Models/SwapStatus";
 import AppSettings from "./AppSettings";
@@ -7,6 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 import axios, { AxiosInstance, Method } from "axios";
 import { NextRouter } from "next/router";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
+import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
+
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
 
@@ -15,59 +16,56 @@ export default class LayerSwapApiClient {
         this._authInterceptor = InitializeInstance();
     }
 
-    fetcher = url => this._authInterceptor.get(url).then(r => r.data)
+    fetcher = (url: string) => this._authInterceptor.get(url).then(r => r.data)
 
-    async fetchSettingsAsync(): Promise<LayerSwapSettings> {
+    async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
         return await axios.get(LayerSwapApiClient.apiBaseEndpoint + '/api/settings').then(res => res.data);
     }
 
-    async createSwap(params: CreateSwapParams): Promise<CreateSwapResponse> {
+    async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {
         const correlationId = uuidv4()
-        return await this.AuthenticatedRequest<CreateSwapResponse>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
-    }
-    async getSwaps(page: number): Promise<SwapListResponse> {
-        return await this.AuthenticatedRequest<SwapListResponse>("GET", `/swaps?page=${page}`);
+        return await this.AuthenticatedRequest<ApiResponse<CreateSwapData>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
-    async getPendingSwaps(): Promise<SwapListResponse> {
-        return await this.AuthenticatedRequest<SwapListResponse>("GET", `/swaps?status=1`);
-    }
-    async CancelSwap(swapid: string): Promise<ConnectResponse> {
-        return await this.AuthenticatedRequest<ConnectResponse>("DELETE", `/swaps/${swapid}`);
+    async GetSwapsAsync(page: number): Promise<ApiResponse<SwapItem[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}`);
     }
 
-    async getSwapDetails(id: string): Promise<SwapItemResponse> {
-        return await this.AuthenticatedRequest<SwapItemResponse>("GET", `/swaps/${id}`);
+    async GetPendingSwapsAsync(): Promise<ApiResponse<SwapItem[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=1`);
     }
 
-    async GetExchangeAccounts(): Promise<UserExchangesResponse> {
-        return await this.AuthenticatedRequest<UserExchangesResponse>("GET", '/exchange_accounts');
+    async CancelSwapAsync(swapid: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/swaps/${swapid}`);
     }
 
-    async GetExchangeDepositAddress(exchange: string, currency: string): Promise<ExchangeDepositAddressReponse> {
-        return await this.AuthenticatedRequest<ExchangeDepositAddressReponse>("GET", `/exchange_accounts/${exchange}/deposit_address/${currency}`);
-    }
-    async DeleteExchange(exchange: string): Promise<ConnectResponse> {
-        return await this.AuthenticatedRequest<ConnectResponse>("DELETE", `/exchange_accounts/${exchange}`);
-    }
-    async ConnectExchangeApiKeys(params: ConnectParams): Promise<ConnectResponse> {
-        return await this.AuthenticatedRequest<ConnectResponse>("POST", '/exchange_accounts', params);
+    async GetSwapDetailsAsync(id: string): Promise<ApiResponse<SwapItem>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}`);
     }
 
-    async ProcessPayment(id: string, twoFactorCode?: string): Promise<PaymentProcessreponse> {
-        return await this.AuthenticatedRequest<PaymentProcessreponse>("POST", `/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`);
+    async GetExchangeAccounts(): Promise<ApiResponse<UserExchangesData[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<UserExchangesData[]>>("GET", '/exchange_accounts');
     }
 
-    private async AuthenticatedRequest<T>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
+    async GetExchangeDepositAddress(exchange: string, currency: string): Promise<ApiResponse<string>> {
+        return await this.AuthenticatedRequest<ApiResponse<string>>("GET", `/exchange_accounts/${exchange}/deposit_address/${currency}`);
+    }
+    async DeleteExchange(exchange: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/exchange_accounts/${exchange}`);
+    }
+    async ConnectExchangeApiKeys(params: ConnectParams): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", '/exchange_accounts', params);
+    }
+
+    async ProcessPayment(id: string, twoFactorCode?: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`);
+    }
+
+    private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
-                if (res.data) {
-                    return res.data;
-                }
-                else {
-                    throw new Error("API response data is missing");
-                }
+                return res?.data;
             })
             .catch(async reason => {
                 if (reason instanceof AuthRefreshFailedError) {
@@ -76,10 +74,11 @@ export default class LayerSwapApiClient {
                         query: { redirect: this._redirect }
                     });
 
-                    return Promise.reject();
+                    return Promise.resolve(new EmptyApiResponse({ message: "Login required", code: "" }));
                 }
-
-                return Promise.reject(reason);
+                else {
+                    return Promise.reject(reason);
+                }
             });
     }
 }
@@ -93,16 +92,6 @@ export type CreateSwapParams = {
     partner?: string,
     type: number,
     external_id?: string,
-}
-
-export type SwapItemResponse = {
-    data: SwapItem,
-    error: ApiError,
-}
-
-export type SwapListResponse = {
-    data: SwapItem[],
-    error: ApiError,
 }
 
 export type SwapItem = {
@@ -135,45 +124,6 @@ export enum SwapType {
     OffRamp = "network_to_cex",
 }
 
-export type Payment = {
-    id: string,
-    status: 'completed' | 'closed' | 'processing' | "created" | "expired",
-    close_reason: string,
-    flow: string,
-    amount: number,
-    currency: string,
-    exchange: string,
-    message: string,
-    withdrawal_fee: number,
-    manual_flow_context?: {
-        current_withdrawal_fee: number,
-        require_select_internal: boolean,
-        display_network: boolean,
-        is_fee_refundable: boolean,
-        has_memo: boolean,
-        address: string,
-        memo: string,
-        network_display_name: string,
-        withdrawal_fee: number,
-        withdrawal_amount: number,
-        total_withdrawal_amount: number,
-        note: string,
-        require_note: boolean
-    },
-    sequence_number: string,
-}
-
-
-export type PaymentProcessreponse = {
-    error: string
-}
-
-export type ExchangeDepositAddressReponse = {
-    data: string,
-    error: ApiError
-}
-
-
 export type ConnectParams = {
     api_key: string,
     api_secret: string,
@@ -181,29 +131,11 @@ export type ConnectParams = {
     exchange: string
 }
 
-export type ConnectResponse = {
-    request_id: string,
-    error: ApiError
+export type UserExchangesData = {
+    exchange_id: string,
+    note: string
 }
 
-
-export interface UserExchangesResponse {
-    data: [
-        {
-            exchange_id: string,
-            note: string
-        }
-    ],
-    error: ApiError
+export type CreateSwapData = {
+    swap_id: string
 }
-
-
-type CreateSwapResponse = {
-    data: {
-        swap_id: string
-    },
-    error: ApiError
-}
-
-
-

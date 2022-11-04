@@ -8,18 +8,16 @@ import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
 
 const SuccessfulStep: FC = () => {
-
-    const { data } = useSettingsState()
+    const { networks } = useSettingsState()
     const { swap } = useSwapDataState()
-    const { networks } = data
 
-    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.data?.network_currency_id))
+    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.network_currency_id))
 
     const handleViewInExplorer = useCallback(() => {
         if (!network)
             return
         const { transaction_explorer_template } = network
-        window.open(transaction_explorer_template.replace("{0}", swap?.data.transaction_id), '_blank')
+        window.open(transaction_explorer_template.replace("{0}", swap?.transaction_id), '_blank')
     }, [network])
 
     return (
@@ -31,7 +29,7 @@ const SuccessfulStep: FC = () => {
                     </MessageComponent.Header>
                     <MessageComponent.Description>
                         {
-                            swap?.data?.type === SwapType.OnRamp ?
+                            swap?.type === SwapType.OnRamp ?
                                 <span>Your swap successfully completed. You can view it in the explorer, or go ahead swap more!</span>
                                 :
                                 <span>Your swap successfully completed. Your assets are on their way to your exchange account.</span>
@@ -40,7 +38,7 @@ const SuccessfulStep: FC = () => {
                 </MessageComponent.Content>
                 <MessageComponent.Buttons>
                     {
-                        data.networks && swap?.data?.type === SwapType.OnRamp && swap?.data.transaction_id &&
+                        networks && swap?.type === SwapType.OnRamp && swap?.transaction_id &&
                         <SubmitButton buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer}>View in Explorer <ExternalLinkIcon className='ml-2 h-5 w-5' /></SubmitButton>
                     }
                     <GoHomeButton>

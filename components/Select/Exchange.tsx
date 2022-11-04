@@ -10,14 +10,13 @@ import { SelectMenuItem } from "./selectMenuItem";
 
 const ExchangesField = forwardRef((props: any, ref: any) => {
     const {
-        values: { exchange, swapType, network },
+        values: { exchange, swapType },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = 'exchange'
-    const settings = useSettingsState();
-    const { discovery: { resource_storage_url } } = settings.data || {}
+    const { discovery: { resource_storage_url }, exchanges } = useSettingsState();
 
-    const exchangeMenuItems: SelectMenuItem<Exchange>[] = settings.data.exchanges
+    const exchangeMenuItems: SelectMenuItem<Exchange>[] = exchanges
         .filter(e => (swapType === SwapType.OffRamp ? e.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : e.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)))
         .map(e => ({
             baseObject: e,

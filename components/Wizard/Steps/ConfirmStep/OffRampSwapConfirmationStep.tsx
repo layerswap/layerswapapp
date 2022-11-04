@@ -28,7 +28,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                 await router.push(`/${swapId}`)
             }
             else {
-                const swapId = swap.data.id
+                const swapId = swap.id
                 await processPayment(swapId)
                 await router.push(`/${swapId}`)
             }

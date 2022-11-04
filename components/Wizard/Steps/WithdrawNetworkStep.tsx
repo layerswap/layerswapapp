@@ -5,7 +5,6 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton from '../../buttons/submitButton';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
-import { useRouter } from 'next/router';
 import { useSettingsState } from '../../../context/settings';
 import Image from 'next/image'
 import { useIntercom } from 'react-use-intercom';
@@ -21,13 +20,12 @@ import GoHomeButton from '../../utils/GoHome';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const { data } = useSettingsState()
-    const { networks, discovery: { resource_storage_url } } = data
+    const  { networks, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
 
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.data?.id } })
+    const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
 
@@ -47,14 +45,14 @@ const WithdrawNetworkStep: FC = () => {
         setTransferDone(true)
     }, [])
 
-    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.data?.network_currency_id))
-    const currency = network?.currencies.find(n => n.id === swap?.data?.network_currency_id)
+    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.network_currency_id))
+    const currency = network?.currencies.find(n => n.id === swap?.network_currency_id)
 
     const network_name = network?.display_name || ' '
     const network_logo_url = network?.logo
     const network_internal_name = network?.internal_name
 
-    if (!swap?.data?.additonal_data) {
+    if (!swap?.additonal_data) {
         return null;
     }
 
@@ -89,7 +87,7 @@ const WithdrawNetworkStep: FC = () => {
                         </h3>
                     </div>
                     {
-                        swap?.data?.additonal_data?.memo &&
+                        swap?.additonal_data?.memo &&
                         <WarningMessage>
                             <p className='font-semibold text-sm text-darkblue-700'>
                                 Please include the "Memo" field, it is required for a successful transfer.
@@ -125,9 +123,9 @@ const WithdrawNetworkStep: FC = () => {
                                 </div>
                             </BackgroundField>
                         }
-                        <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.data?.additonal_data?.deposit_address} header={'Recipient'}>
+                        <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.additonal_data?.deposit_address} header={'Recipient'}>
                             <p className='break-all'>
-                                {swap?.data?.additonal_data?.deposit_address}
+                                {swap?.additonal_data?.deposit_address}
                             </p>
                         </BackgroundField>
                         <BackgroundField header={'Address Type'}>
@@ -136,19 +134,19 @@ const WithdrawNetworkStep: FC = () => {
                             </p>
                         </BackgroundField>
                         {
-                            swap?.data?.additonal_data?.memo &&
+                            swap?.additonal_data?.memo &&
                             <>
-                                <BackgroundField isCopiable={true} toCopy={swap?.data?.additonal_data?.memo} header={'Memo'}>
+                                <BackgroundField isCopiable={true} toCopy={swap?.additonal_data?.memo} header={'Memo'}>
                                     <p className='break-all'>
-                                        {swap?.data?.additonal_data?.memo}
+                                        {swap?.additonal_data?.memo}
                                     </p>
                                 </BackgroundField>
                             </>
                         }
                         <div className='flex space-x-4'>
-                            <BackgroundField isCopiable={true} toCopy={swap?.data?.requested_amount} header={'Amount'}>
+                            <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
                                 <p>
-                                    {swap?.data?.requested_amount}
+                                    {swap?.requested_amount}
                                 </p>
                             </BackgroundField>
                             <BackgroundField header={'Asset'}>
