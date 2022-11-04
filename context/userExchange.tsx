@@ -18,6 +18,10 @@ export function UserExchangeProvider({ children }) {
     const updateFns: UpdateFns = {
         getUserExchanges: async (): Promise<UserExchangesData[]> => {
             const res = await layerswapApiClient.GetExchangeAccounts()
+            if (res.error) {
+                throw res.error;
+            }
+            
             setUserExchangeData(res.data)
             return res.data;
         }
