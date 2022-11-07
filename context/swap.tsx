@@ -10,7 +10,7 @@ import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 
-const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false });
+const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "" });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
@@ -24,6 +24,7 @@ type UpdateInterface = {
     setAddressConfirmed: (value: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapItem>>
+    setWalletAddress: (value: string) => void,
 }
 
 type SwapData = {
@@ -31,12 +32,14 @@ type SwapData = {
     swapFormData?: SwapFormValues,
     swap?: SwapItem,
     addressConfirmed: boolean,
+    walletAddress: string
 }
 
 export function SwapDataProvider({ children }) {
     const [swapFormData, setSwapFormData] = useState<SwapFormValues>();
     const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
+    const [walletAddress, setWalletAddress] = useState<string>()
     const router = useRouter();
     const [swapId, setSwapId] = useState(router.query.swapId?.toString())
 
@@ -110,11 +113,12 @@ export function SwapDataProvider({ children }) {
         cancelSwap: cancelSwap,
         setAddressConfirmed: setAddressConfirmed,
         setInterval: setInterval,
-        mutateSwap: mutate
+        mutateSwap: mutate,
+        setWalletAddress
     };
 
     return (
-        <SwapDataStateContext.Provider value={{ swapFormData, swap: swapResponse?.data, codeRequested, addressConfirmed }}>
+        <SwapDataStateContext.Provider value={{ swapFormData, swap: swapResponse?.data, codeRequested, addressConfirmed, walletAddress }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>
