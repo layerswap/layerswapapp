@@ -18,8 +18,16 @@ export default class ImtblClient {
     }
 
     async ConnectWallet(): Promise<LinkResults.Setup> {
-        let result = await this.link.setup({})
-        return result
+        try {
+            let result = await this.link.setup({})
+            return result
+        }
+        catch (e) {
+            if (e.code === 1003)
+                throw new Error("You closed ImmutableX connect wallet window")
+            else
+                throw e
+        }
     }
 
     async Transfer(amount: string, toAddress: string) {
@@ -31,11 +39,9 @@ export default class ImtblClient {
                     toAddress: toAddress
                 }
             ])
-            debugger
             return res;
         }
         catch (e) {
-            debugger
             console.log(e)
         }
     }
