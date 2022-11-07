@@ -144,31 +144,25 @@ const ConnectWalletStep: FC = () => {
                     </p>
                 </div>
                 <WalletSteps steps={steps} />
-                <div className="space-y-2">
-                    {
-                        !walletAddress &&
-                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<LinkIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Connect
-                        </SubmitButton>
-                    }
-                    {
-                        walletAddress && !verified &&
-                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleVerify} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Verify wallet
-                        </SubmitButton>
-                    }
-                    {
-                        verified &&
-                        <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Transfer
-                        </SubmitButton>
-                    }
-                    <GoHomeButton>
-                        <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
-                            Will do it later
-                        </SubmitButton>
-                    </GoHomeButton>
-                </div>
+                {
+                    !walletAddress &&
+                    <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<LinkIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        Connect
+                    </SubmitButton>
+                }
+                {
+                    walletAddress && !verified &&
+                    <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleVerify} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        Verify wallet
+                    </SubmitButton>
+                }
+                {
+                    verified &&
+                    <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        Transfer
+                    </SubmitButton>
+                }
+
             </div>
         </>
     )

@@ -17,6 +17,10 @@ import WizardItem from "./WizardItem";
 
 const SwapWithdrawalWizard: FC = () => {
     const { goToStep } = useFormWizardaUpdate()
+    const router = useRouter();
+    const handleGoBack = useCallback(() => {
+        router.back()
+      }, [router])
 
     const GoBackToWalletConnect = useCallback(() => goToStep(SwapWithdrawalStep.WalletConnect, "back"), [])
 
@@ -32,7 +36,7 @@ const SwapWithdrawalWizard: FC = () => {
                 <WithdrawNetworkStep />
             </WizardItem>
 
-            <WizardItem StepName={SwapWithdrawalStep.WalletConnect} PositionPercent={90} >
+            <WizardItem StepName={SwapWithdrawalStep.WalletConnect} GoBack={handleGoBack} PositionPercent={90} >
                 <ConnectWalletStep />
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.VerifyAddress} PositionPercent={90} GoBack={GoBackToWalletConnect}>
