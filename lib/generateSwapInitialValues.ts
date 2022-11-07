@@ -9,11 +9,10 @@ import { isValidAddress } from "./addressValidator";
 import { SwapType } from "./layerSwapApiClient";
 import NetworkSettings from "./NetworkSettings";
 
-export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams, account: string, chainId: number): SwapFormValues {
-    const { destNetwork, destAddress: queryParamAddress, sourceExchangeName, products, amount, asset } = queryParams
+export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams): SwapFormValues {
+    const { destNetwork, destAddress, sourceExchangeName, products, amount, asset } = queryParams
 
-    const { exchanges, networks, discovery: { resource_storage_url  } } = settings || {}
-    const destAddress = queryParamAddress || account
+    const { currencies, exchanges, networks, discovery: { resource_storage_url } } = settings || {}
 
     let initialSwapType = swapType ?? SwapType.OnRamp;
     if (!swapType && products && products != '') {
@@ -37,14 +36,14 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     const availableNetworks = networks.filter(networkIsAvailable)
         .map(c => new SelectMenuItem<CryptoNetwork>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
 
-    let availableExchanges = settings.exchanges
+    let availableExchanges = exchanges
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
 
-    const availableCurrencies = settings.data.currencies
+    const availableCurrencies = currencies
         .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, initialExchange?.baseObject?.currencies?.find(ec => ec.asset === c.asset)?.order || 0, `${resource_storage_url}${c.logo}`))
 
     const initialNetwork =
-        availableNetworks.find(x => (x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() || (chainId && NetworkSettings.KnownSettings[x.baseObject.internal_name]?.ChainId === chainId)) && x.isAvailable)
+        availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable)
 
     let initialAddress =
         destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
@@ -55,5 +54,5 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     let initialCurrency =
         amount && availableCurrencies.find(c => c.baseObject.asset == asset)
 
-    return { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: initialSwapType == SwapType.OnRamp && (initialAddress || account), swapType: initialSwapType, network: initialNetwork, exchange: initialExchange }
+    return { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: initialSwapType == SwapType.OnRamp && initialAddress, swapType: initialSwapType, network: initialNetwork, exchange: initialExchange }
 }
