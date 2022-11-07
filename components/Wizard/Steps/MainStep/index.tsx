@@ -141,8 +141,8 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
-    const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
-    const lockAddress =
+    const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType, settings, query, account, chainId)
+    const lockAddress = 
         (initialValues.destination_address && initialValues.network)
         && isValidAddress(initialValues.destination_address, initialValues.network?.baseObject)
         && (!!account || (query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
