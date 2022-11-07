@@ -1,4 +1,4 @@
-import { CheckIcon } from '@heroicons/react/solid';
+import { CheckIcon, HomeIcon, LinkIcon, SwitchHorizontalIcon } from '@heroicons/react/solid';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
@@ -6,11 +6,13 @@ import SubmitButton from '../../../buttons/submitButton';
 import ImtblClient from '../../../../lib/imtbl';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapType } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import { classNames } from '../../../utils/classNames';
 import { useInterval } from '../../../../hooks/useInterval';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
+import GoHomeButton from '../../../utils/GoHome';
+import shortenAddress from "../../../utils/ShortenAddress"
 
 
 const ConnectWalletStep: FC = () => {
@@ -23,19 +25,21 @@ const ConnectWalletStep: FC = () => {
     const { walletAddress, swap } = useSwapDataState()
     const { setWalletAddress } = useSwapDataUpdate()
     const { setInterval } = useSwapDataUpdate()
-    const { networks } = useSettingsState()
+    const { networks, exchanges } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const network = swap && networks?.find(n => n.currencies.some(nc => nc.id === swap.network_currency_id))
+    const exchange = swap && exchanges?.find(e => e.currencies.some(ec => ec.id === swap.exchange_currency_id))
+    const asset = network && network.currencies.find(c => c.id === swap.network_currency_id)?.asset
 
     const steps = [
-        { name: 'Connect wallet', description: 'Connect your ImmutableX wallet to Layerswap', href: '#', status: walletAddress ? 'complete' : 'current' },
+        { name: walletAddress ? `Connected to ${shortenAddress(walletAddress)}` : 'Connect wallet', description: 'Connect your ImmutableX wallet', href: '#', status: walletAddress ? 'complete' : 'current' },
         {
-            name: 'Verify Wallet',
-            description: "Verify that you are the owner of the wallet that you've connected",
+            name: verified ? 'Wallet is verified ' : 'Verify Wallet',
+            description: "Verify that you are the owner of the connected wallet",
             href: '#',
             status: walletAddress ? (verified ? 'complete' : 'current') : 'upcoming',
         },
-        { name: 'Transfer', description: "We'll help you initiate a transfer from your ImmutableX wallet to our address", href: '#', status: verified ? 'current' : 'upcoming' },
+        { name: 'Transfer', description: "Initiate a transfer from your wallet to our address", href: '#', status: verified ? 'current' : 'upcoming' },
     ]
 
     const applyNetworkInput = useCallback(async () => {
@@ -132,33 +136,39 @@ const ConnectWalletStep: FC = () => {
                 <div className='space-y-4'>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">
-                            Send crypto
+                            Complete the transfer
                         </h3>
                     </div>
                     <p className='leading-5'>
-                        To complete the transfer, we'll help you to send crypto from your ImmutableX wallet.
+                        We’ll help you to send crypto from your ImmutableX wallet
                     </p>
                 </div>
                 <WalletSteps steps={steps} />
-                {
-                    !walletAddress &&
-                    <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                        Connect
-                    </SubmitButton>
-                }
-                {
-                    walletAddress && !verified &&
-                    <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleVerify} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                        Verify wallet
-                    </SubmitButton>
-                }
-                {
-                    verified &&
-                    <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                        Transfer
-                    </SubmitButton>
-                }
-
+                <div className="space-y-2">
+                    {
+                        !walletAddress &&
+                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<LinkIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                            Connect
+                        </SubmitButton>
+                    }
+                    {
+                        walletAddress && !verified &&
+                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleVerify} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                            Verify wallet
+                        </SubmitButton>
+                    }
+                    {
+                        verified &&
+                        <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                            Transfer
+                        </SubmitButton>
+                    }
+                    <GoHomeButton>
+                        <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
+                            Will do it later
+                        </SubmitButton>
+                    </GoHomeButton>
+                </div>
             </div>
         </>
     )
@@ -175,24 +185,24 @@ function WalletSteps({ steps }) {
                                 {stepIdx !== steps.length - 1 ? (
                                     <div className="absolute top-4 left-4 -ml-px mt-0.5 h-full w-0.5 bg-primary" aria-hidden="true" />
                                 ) : null}
-                                <a href={step.href} className="group relative flex items-start">
+                                <div className="group relative flex items-start">
                                     <span className="flex h-9 items-center">
-                                        <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full  bg-primary group-hover:bg-primary-800">
+                                        <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full  bg-primary">
                                             <CheckIcon className="h-5 w-5 text-white" aria-hidden="true" />
                                         </span>
                                     </span>
                                     <span className="ml-4 flex min-w-0 flex-col">
                                         <span className="text-sm font-medium text-gray-300">{step.name}</span>
-                                        <span className="text-sm text-primary-text">{step.description}</span>
+                                        {/* <span className="text-sm text-primary-text">{step.description}</span> */}
                                     </span>
-                                </a>
+                                </div>
                             </>
                         ) : step.status === 'current' ? (
                             <>
                                 {stepIdx !== steps.length - 1 ? (
                                     <div className="absolute top-4 left-4 -ml-px mt-0.5 h-full w-0.5 bg-gray-300" aria-hidden="true" />
                                 ) : null}
-                                <a href={step.href} className="group relative flex items-start" aria-current="step">
+                                <div className="group relative flex items-start" aria-current="step">
                                     <span className="flex h-9 items-center" aria-hidden="true">
                                         <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-white">
                                             <span className="h-2.5 w-2.5 rounded-full bg-primary" />
@@ -202,24 +212,24 @@ function WalletSteps({ steps }) {
                                         <span className="text-sm font-medium text-primary">{step.name}</span>
                                         <span className="text-sm text-primary-text">{step.description}</span>
                                     </span>
-                                </a>
+                                </div>
                             </>
                         ) : (
                             <>
                                 {stepIdx !== steps.length - 1 ? (
                                     <div className="absolute top-4 left-4 -ml-px mt-0.5 h-full w-0.5 bg-gray-300" aria-hidden="true" />
                                 ) : null}
-                                <a href={step.href} className="group relative flex items-start">
+                                <div className="group relative flex items-start">
                                     <span className="flex h-9 items-center" aria-hidden="true">
-                                        <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white group-hover:border-gray-400">
-                                            <span className="h-2.5 w-2.5 rounded-full bg-transparent group-hover:bg-gray-300" />
+                                        <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white">
+                                            <span className="h-2.5 w-2.5 rounded-full bg-transparent " />
                                         </span>
                                     </span>
                                     <span className="ml-4 flex min-w-0 flex-col">
                                         <span className="text-sm font-medium text-primary-text">{step.name}</span>
                                         <span className="text-sm text-primary-text">{step.description}</span>
                                     </span>
-                                </a>
+                                </div>
                             </>
                         )}
                     </li>
