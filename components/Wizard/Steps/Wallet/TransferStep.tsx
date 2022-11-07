@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import { useInterval } from '../../../../hooks/useInterval';
 import ImtblClient from '../../../../lib/imtbl';
 import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
@@ -17,8 +18,27 @@ const TransferStep: FC = () => {
     const { walletAddress, swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
     const [loading, setLoading] = useState(false)
+    const [txidApplied, setTxidApplied] = useState(false)
+    const [applyCount, setApplyCount] = useState(0)
+    const [transactionId, setTransactionId] = useState<string>()
     const { networks } = useSettingsState()
     const network = swap && networks?.find(n => n.currencies.some(nc => nc.id === swap.network_currency_id))
+
+    const applyNetworkInput = useCallback(async () => {
+        try {
+            setApplyCount(old => old + 1)
+            const layerSwapApiClient = new LayerSwapApiClient()
+            await layerSwapApiClient.ApplyNetworkInput(swap.id, transactionId)
+        }
+        catch (e) {
+            setTxidApplied(true)
+        }
+    }, [transactionId])
+
+    useInterval(
+        applyNetworkInput,
+        transactionId && !txidApplied && applyCount < 10 ? 8000 : null,
+    )
 
     useEffect(() => {
         return () => setInterval(0)
@@ -33,25 +53,25 @@ const TransferStep: FC = () => {
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)
-        try {
-            const imtblClient = new ImtblClient(network.internal_name)
-            const res = await imtblClient.Transfer(swap.requested_amount.toString(), swap.additonal_data.deposit_address)
-            const transactionRes = res?.result?.[0]
-            if (!transactionRes)
-                toast('No transaction')
-            if (transactionRes.status == "error") {
-                toast(transactionRes.message)
-            }
-            else if (transactionRes.status == "success") {
-                const layerSwapApiClient = new LayerSwapApiClient()
-                await layerSwapApiClient.ApplyNetworkInput(swap.id, transactionRes.txId.toString())
-                setInterval(2000)
-            }
-        }
-        catch (e) {
-            if (e?.message)
-                toast(e.message)
-        }
+        // try {
+        //     const imtblClient = new ImtblClient(network.internal_name)
+        //     const res = await imtblClient.Transfer(swap.requested_amount.toString(), swap.additonal_data.deposit_address)
+        //     const transactionRes = res?.result?.[0]
+        //     if (!transactionRes)
+        //         toast('No transaction')
+        //     if (transactionRes.status == "error") {
+        //         toast(transactionRes.message)
+        //     }
+        //     else if (transactionRes.status == "success") {
+        //         setTransactionId(transactionRes.txId.toString())
+        //         setInterval(2000)
+        //     }
+        // }
+        // catch (e) {
+        //     if (e?.message)
+        //         toast(e.message)
+        // }
+        setTransactionId("123456")
         setLoading(false)
     }, [walletAddress, swap, network])
 
