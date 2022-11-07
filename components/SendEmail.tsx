@@ -7,6 +7,8 @@ import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
+import Wizard from './Wizard/Wizard';
+import WizardItemContent from './Wizard/WizardItemContent';
 
 type EmailFormValues = {
     email: string;
@@ -67,40 +69,44 @@ const SendEmail: FC<Props> = ({ onSend }) => {
                 validate={validateEmail}
             >
                 {({ isValid, isSubmitting }) => (
-
                     <Form autoComplete='true' className='w-full h-full'>
-                        <div className='flex flex-col h-full justify-between'>
-                            <UserIcon className='w-16 h-16 text-primary self-center mt-auto' />
-                            <div>
-                                <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
-                                    What's your email?
-                                </p>
-                                <p className='text-center text-base mb-6 px-2 text-primary-text'>
-                                    With your email, your exchange credentials will stay linked to your account and you can access your entire transfer history.
-                                </p>
-                            </div>
-                            <div className="relative rounded-md shadow-sm">
-                                <Field name="email">
-                                    {({ field }) => (
-                                        <input
-                                            {...field}
-                                            id='email'
-                                            placeholder="john@example.com"
-                                            autoComplete="email"
-                                            type="email"
-                                            className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-500 pr-42 block
+                        <WizardItemContent>
+                            <div />
+                            <WizardItemContent.Head>
+                                <div className='flex flex-col justify-between'>
+                                    <UserIcon className='w-16 h-16 text-primary self-center mt-auto' />
+                                    <div>
+                                        <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
+                                            What's your email?
+                                        </p>
+                                        <p className='text-center text-base mb-6 px-2 text-primary-text'>
+                                            With your email, your exchange credentials will stay linked to your account and you can access your entire transfer history.
+                                        </p>
+                                    </div>
+                                    <div className="relative rounded-md shadow-sm">
+                                        <Field name="email">
+                                            {({ field }) => (
+                                                <input
+                                                    {...field}
+                                                    id='email'
+                                                    placeholder="john@example.com"
+                                                    autoComplete="email"
+                                                    type="email"
+                                                    className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-500 pr-42 block
                                                    placeholder:text-primary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md"
-                                        />
-                                    )}
-                                </Field>
-                            </div>
-                            <div className="text-white text-sm mt-auto">
+                                                />
+                                            )}
+                                        </Field>
+                                    </div>
+
+                                </div>
+                            </WizardItemContent.Head>
+                            <WizardItemContent.Bottom>
                                 <SubmitButton isDisabled={!isValid} isSubmitting={isSubmitting} >
                                     Continue
                                 </SubmitButton>
-                            </div>
-                        </div>
-
+                            </WizardItemContent.Bottom>
+                        </WizardItemContent>
                     </Form>
                 )}
             </Formik >

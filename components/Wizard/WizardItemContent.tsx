@@ -1,5 +1,5 @@
 const WizardItemContent = ({ children }) => {
-    return <div className="w-full flex flex-col h-full justify-between min-h-full">
+    return <div className="w-full flex flex-col h-full justify-between min-h-full space-y-6">
         {children}
     </div>
 }

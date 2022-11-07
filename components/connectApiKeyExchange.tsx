@@ -108,51 +108,55 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                                         onChange={handleSecretChange}
                                         className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
-                            />
-                        </div>
-                    </div>
-                    {
-                        exchange?.has_keyphrase &&
-                        <div>
-                            <label htmlFor="apiKey" className="block font-normal text-sm">
-                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}
-                            </label>
-                            <div className="relative rounded-md shadow-sm mt-1">
-                                <input
-                                    autoComplete="off"
-                                    placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}`}
-                                    autoCorrect="off"
-                                    type="text"
-                                    name="apiKey"
-                                    onChange={handleKeyphraseChange}
-                                    id="apiKey"
-                                    className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
+                                    />
+                                </div>
+                            </div>
+                            {
+                                exchange?.has_keyphrase &&
+                                <div>
+                                    <label htmlFor="apiKey" className="block font-normal text-sm">
+                                        {ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}
+                                    </label>
+                                    <div className="relative rounded-md shadow-sm mt-1">
+                                        <input
+                                            autoComplete="off"
+                                            placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}`}
+                                            autoCorrect="off"
+                                            type="text"
+                                            name="apiKey"
+                                            onChange={handleKeyphraseChange}
+                                            id="apiKey"
+                                            className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
                          placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
-                                />
-                            </div>
-                        </div>
-                    }
-                    {
-                        ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&
-                        <WarningMessage className=''>
-                            <div className='text-black'>
-                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
-                            </div>
-                        </WarningMessage>
-                    }
-                    {
-                        userGuideURL && <div className="flex items-center">
-                            <span className="block text-base text-white font-normal leading-6"> Read about
-                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} place={slideOverPlace}>
-                                    {(close) => (
-                                        <DocIframe onConfirm={() => close()} URl={userGuideURL} />
-                                    )}
-                                </SlideOver>
-                            </span>
-                        </div>
-                    }
+                                        />
+                                    </div>
+                                </div>
+                            }
+                            {
+                                ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&
+                                <WarningMessage className=''>
+                                    <div className='text-black'>
+                                        {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
+                                    </div>
+                                </WarningMessage>
+                            }
+                            {
+                                userGuideURL && <div className="flex items-center">
+                                    <span className="block text-base text-white font-normal leading-6"> Read about
+                                        <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} place={slideOverPlace}>
+                                            {(close) => (
+                                                <DocIframe onConfirm={() => close()} URl={userGuideURL} />
+                                            )}
+                                        </SlideOver>
+                                    </span>
+                                </div>
+                            }
 
                         </div>
+                    </div>
+                </WizardItemContent.Head>
+                <WizardItemContent.Bottom>
+                    <div className='space-y-6'>
                         <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500'>
                             <div className="flex items-center">
                                 <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
@@ -163,12 +167,10 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                                 <li>We use it to get your withdrawal history and match with our records</li>
                             </ul>
                         </div>
+                        <SubmitButton isDisabled={!dataIsValid || loading} isSubmitting={loading} onClick={connect}>
+                            Connect
+                        </SubmitButton>
                     </div>
-                </WizardItemContent.Head>
-                <WizardItemContent.Bottom>
-                    <SubmitButton isDisabled={!dataIsValid || loading} isSubmitting={loading} onClick={connect}>
-                        Connect
-                    </SubmitButton>
                 </WizardItemContent.Bottom>
             </WizardItemContent>
 

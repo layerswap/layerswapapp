@@ -17,10 +17,11 @@ import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
+import WizardItemContent from '../WizardItemContent';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const  { networks, discovery: { resource_storage_url } } = useSettingsState()
+    const { networks, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
 
@@ -60,15 +61,15 @@ const WithdrawNetworkStep: FC = () => {
     const userGuideUrlForMobile = NetworkSettings.KnownSettings[network?.internal_name]?.UserGuideUrlForMobile
 
     return (
-        <>
-            <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
-                <div className='space-y-4'>
+        <WizardItemContent>
+            <WizardItemContent.Head>
+                <div className="w-full space-y-4 flex flex-col justify-between h-full text-primary-text">
                     <div className="flex items-center">
-                        <h3 className="block text-lg font-medium text-white leading-6 text-left">
-                            Send {currency?.asset} to the provided address in
+                        <p className="block text-lg font-medium text-white leading-6 text-left">
+                            <span className='mr-1'>Send {currency?.asset} to the provided address in</span>
                             {
                                 network_logo_url && resource_storage_url &&
-                                <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
+                                <div className="inline-block mr-1" style={{ position: "relative", top: '6px' }}>
                                     <div className="flex-shrink-0 h-6 w-6 relative">
                                         <Image
                                             src={`${resource_storage_url}${network_logo_url}`}
@@ -84,7 +85,7 @@ const WithdrawNetworkStep: FC = () => {
                                 </div>
                             }
                             {network_name}
-                        </h3>
+                        </p>
                     </div>
                     {
                         swap?.additonal_data?.memo &&
@@ -96,7 +97,6 @@ const WithdrawNetworkStep: FC = () => {
                     }
                     {
                         userGuideUrlForDesktop && userGuideUrlForMobile &&
-
                         <BackgroundField >
                             <div className='md:space-y-0'>
                                 <span className='flex-none'>
@@ -107,11 +107,8 @@ const WithdrawNetworkStep: FC = () => {
                                 <GuideLink fullTeext='Loopring Mobile' shortText='Mobile' userGuideUrlForDesktop={userGuideUrlForMobile} />
                             </div>
                         </BackgroundField>
-
                     }
-
-
-                    <div className='mb-6 grid grid-cols-1 gap-4'>
+                    <div className='grid grid-cols-1 gap-4'>
                         {
                             network_internal_name === KnownInternalNames.Networks.LoopringMainnet &&
                             <BackgroundField header={'Send type'}>
@@ -157,6 +154,8 @@ const WithdrawNetworkStep: FC = () => {
                         </div>
                     </div>
                 </div>
+            </WizardItemContent.Head>
+            <WizardItemContent.Bottom>
                 {
                     transferDone ?
                         <div>
@@ -197,8 +196,8 @@ const WithdrawNetworkStep: FC = () => {
                             </GoHomeButton>
                         </div>
                 }
-            </div>
-        </>
+            </WizardItemContent.Bottom>
+        </WizardItemContent>
     )
 }
 

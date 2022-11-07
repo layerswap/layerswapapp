@@ -10,6 +10,7 @@ import NetworkSettings from '../../../../lib/NetworkSettings';
 import WarningMessage from '../../../WarningMessage';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
+import WizardItemContent from '../../WizardItemContent';
 
 const OffRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
@@ -52,22 +53,27 @@ const OffRampSwapConfirmationStep: FC = () => {
 
     return (
         <>
-            <div className='h-full flex flex-col justify-between'>
-                <SwapConfirmMainData>
-                    {
-                        NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
-                        <WarningMessage className='mb-4'>
-                            <p className='font-normal text-sm text-darkblue-600'>
-                                {NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}
-                            </p>
-                        </WarningMessage>
-                    }
-                    <AddressDetails canEditAddress={false} />
-                </SwapConfirmMainData>
-                <SubmitButton type='submit' isDisabled={false} isSubmitting={isSubmitting} onClick={handleSubmit}>
-                    Confirm
-                </SubmitButton>
-            </div>
+            <WizardItemContent>
+                <WizardItemContent.Head>
+                    <SwapConfirmMainData>
+                        {
+                            NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
+                            <WarningMessage className='mb-4'>
+                                <p className='font-normal text-sm text-darkblue-600'>
+                                    {NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}
+                                </p>
+                            </WarningMessage>
+                        }
+                        <AddressDetails canEditAddress={false} />
+                    </SwapConfirmMainData>
+                </WizardItemContent.Head>
+                <WizardItemContent.Bottom>
+                    <SubmitButton type='submit' isDisabled={false} isSubmitting={isSubmitting} onClick={handleSubmit}>
+                        Confirm
+                    </SubmitButton>
+                </WizardItemContent.Bottom>
+            </WizardItemContent>
+
         </>
     )
 }

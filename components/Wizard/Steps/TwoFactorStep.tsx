@@ -12,6 +12,7 @@ import { ApiError, KnownwErrorCode } from '../../../Models/ApiError';
 import Timer from '../../TimerComponent';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
+import WizardItemContent from '../WizardItemContent';
 
 const TIMER_SECONDS = 120
 
@@ -121,62 +122,68 @@ const TwoFactorStep: FC = () => {
             >
                 {({ isValid, isSubmitting, errors, handleChange }) => (
                     <Form className='flex text-primary-text h-full'>
-                        <div className="w-full pt-4 flex-col justify-between flex h-full">
-                            <LockClosedIcon className='w-16 h-16 mt-auto text-primary self-center' />
-                            <div className='text-center mt-5'>
-                                <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
-                                    {swapFormData?.exchange?.baseObject?.display_name} 2FA
-                                </p>
-                                <p className='text-center text-base px-2'>
-                                    Please enter the 2 step verification code of your {swapFormData?.exchange?.baseObject?.display_name} account.
-                                </p>
-                            </div>
-                            <div className="relative rounded-md shadow-sm mt-5">
-                                <NumericInput
-                                    pattern='^[0-9]*$'
-                                    placeholder="XXXXXXX"
-                                    maxLength={7}
-                                    name='Code'
-                                    onChange={e => {
-                                        /^[0-9]*$/.test(e.target.value) && handleChange(e)
-                                    }}
-                                    className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-darkblue-500 block
+                        <WizardItemContent>
+                            <div/>
+                            <WizardItemContent.Head>
+                                <div className="w-full flex-col justify-between flex h-full mt-4">
+                                    <LockClosedIcon className='w-16 h-16 mt-auto text-primary self-center' />
+                                    <div className='text-center mt-5'>
+                                        <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
+                                            {swapFormData?.exchange?.baseObject?.display_name} 2FA
+                                        </p>
+                                        <p className='text-center text-base px-2'>
+                                            Please enter the 2 step verification code of your {swapFormData?.exchange?.baseObject?.display_name} account.
+                                        </p>
+                                    </div>
+                                    <div className="relative rounded-md shadow-sm mt-5">
+                                        <NumericInput
+                                            pattern='^[0-9]*$'
+                                            placeholder="XXXXXXX"
+                                            maxLength={7}
+                                            name='Code'
+                                            onChange={e => {
+                                                /^[0-9]*$/.test(e.target.value) && handleChange(e)
+                                            }}
+                                            className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-darkblue-500 block
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-700  w-full font-semibold rounded-md placeholder-gray-400"
-                                />
-                            </div>
-                            <span className="flex text-sm leading-6 items-center mt-1.5">
-                                <Timer seconds={120}
-                                    waitingComponent={(remainingTime) => (
-                                        <span>
-                                            Send again in
-                                            <span className='ml-1'>
-                                                {remainingTime}
+                                        />
+                                    </div>
+                                    <span className="flex text-sm leading-6 items-center mt-1.5">
+                                        <Timer seconds={120}
+                                            waitingComponent={(remainingTime) => (
+                                                <span>
+                                                    Send again in
+                                                    <span className='ml-1'>
+                                                        {remainingTime}
+                                                    </span>
+                                                </span>
+                                            )}>
+                                            {!loading ? <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
+                                                Resend code
                                             </span>
-                                        </span>
-                                    )}>
-                                    {!loading ? <span onClick={handleResendTwoFACode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
-                                        Resend code
+                                                : <SpinIcon className="animate-spin h-5 w-5" />}
+                                        </Timer>
                                     </span>
-                                        : <SpinIcon className="animate-spin h-5 w-5" />}
-                                </Timer>
-                            </span>
-                            <div className='p-4 bg-darkblue-700 mt-5 rounded-lg border border-darkblue-500'>
-                                <div className="flex items-center">
-                                    <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
-                                    <label className="block text-sm md:text-base font-medium leading-6">To obtain the 2 step verification code, check:</label>
                                 </div>
-                                <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8">
-                                    <li>your authenticator app (Google, Microsoft, or other), or</li>
-                                    <li>text messages of the phone number associated with your Coinbase account</li>
-                                </ul>
-                            </div>
-
-                            <div className="text-white text-sm mt-auto">
-                                <SubmitButton type="submit" isDisabled={!isValid || loading} isSubmitting={isSubmitting}>
-                                    Confirm
-                                </SubmitButton>
-                            </div>
-                        </div>
+                            </WizardItemContent.Head>
+                            <WizardItemContent.Bottom>
+                                <div className='space-y-6'>
+                                    <div className='p-4 bg-darkblue-700 mt-5 rounded-lg border border-darkblue-500'>
+                                        <div className="flex items-center">
+                                            <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
+                                            <label className="block text-sm md:text-base font-medium leading-6">To obtain the 2 step verification code, check:</label>
+                                        </div>
+                                        <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8">
+                                            <li>your authenticator app (Google, Microsoft, or other), or</li>
+                                            <li>text messages of the phone number associated with your Coinbase account</li>
+                                        </ul>
+                                    </div>
+                                    <SubmitButton type="submit" isDisabled={!isValid || loading} isSubmitting={isSubmitting}>
+                                        Confirm
+                                    </SubmitButton>
+                                </div>
+                            </WizardItemContent.Bottom>
+                        </WizardItemContent>
                     </Form >
                 )}
             </Formik>
