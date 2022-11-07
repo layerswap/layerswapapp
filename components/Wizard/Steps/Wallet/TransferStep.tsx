@@ -53,25 +53,24 @@ const TransferStep: FC = () => {
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)
-        // try {
-        //     const imtblClient = new ImtblClient(network.internal_name)
-        //     const res = await imtblClient.Transfer(swap.requested_amount.toString(), swap.additonal_data.deposit_address)
-        //     const transactionRes = res?.result?.[0]
-        //     if (!transactionRes)
-        //         toast('No transaction')
-        //     if (transactionRes.status == "error") {
-        //         toast(transactionRes.message)
-        //     }
-        //     else if (transactionRes.status == "success") {
-        //         setTransactionId(transactionRes.txId.toString())
-        //         setInterval(2000)
-        //     }
-        // }
-        // catch (e) {
-        //     if (e?.message)
-        //         toast(e.message)
-        // }
-        setTransactionId("123456")
+        try {
+            const imtblClient = new ImtblClient(network.internal_name)
+            const res = await imtblClient.Transfer(swap.requested_amount.toString(), swap.additonal_data.deposit_address)
+            const transactionRes = res?.result?.[0]
+            if (!transactionRes)
+                toast('No transaction')
+            if (transactionRes.status == "error") {
+                toast(transactionRes.message)
+            }
+            else if (transactionRes.status == "success") {
+                setTransactionId(transactionRes.txId.toString())
+                setInterval(2000)
+            }
+        }
+        catch (e) {
+            if (e?.message)
+                toast(e.message)
+        }
         setLoading(false)
     }, [walletAddress, swap, network])
 
