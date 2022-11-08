@@ -61,6 +61,22 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`);
     }
 
+    async GetNetworkAccount(networkName: string, address: string): Promise<ApiResponse<NetworkAccount>> {
+        return await this.AuthenticatedRequest<ApiResponse<NetworkAccount>>("GET", `/network_accounts/${networkName}/${address}`);
+    }
+
+    async GetNetworkAccounts(networkName: string): Promise<ApiResponse<NetworkAccount[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<NetworkAccount[]>>("GET", `/network_accounts/${networkName}`);
+    }
+
+    async CreateNetworkAccount(params: NetworkAccountParams): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/network_accounts`, params);
+    }
+
+    async ApplyNetworkInput(swapId: string, transactionId: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/apply_network_input`, { transaction_id: transactionId });
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
@@ -81,6 +97,22 @@ export default class LayerSwapApiClient {
                 }
             });
     }
+}
+
+type NetworkAccountParams = {
+    address: string,
+    network: string,
+    note: string,
+    signature: string
+}
+
+export type NetworkAccount = {
+    id: string,
+    address: string,
+    note: string,
+    is_verified: boolean,
+    network_id: string,
+    network: string
 }
 
 export type CreateSwapParams = {

@@ -31,7 +31,6 @@ type Props = {
 
 const MainStep: FC<Props> = ({ OnSumbit }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
-    const { activate, active, account, chainId } = useWeb3React<Web3Provider>();
     const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapCreateStep>()
 
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
@@ -62,63 +61,24 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         }, 500);
     }, [query])
 
-    useEffect(() => {
-        let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
-        let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
-
-        if (isImtoken || isTokenPocket) {
-            if (isImtoken) {
-                setAddressSource("imtoken");
-            }
-            else if (isTokenPocket) {
-                setAddressSource("tokenpocket");
-            }
-            const injected = new InjectedConnector({
-                // Commented to allow visitors from other networks to use this page
-                //supportedChainIds: supportedNetworks.map(x => x.chain_id)
-            });
-
-            if (!active) {
-                activate(injected, onerror => {
-                    if (onerror.message.includes('user_canceled')) {
-                        new Error('You canceled the operation, please refresh and try to reauthorize.')
-                        return
-                    }
-                    else if (onerror.message.includes('Unsupported chain')) {
-                        // Do nothing
-                    }
-                    else {
-                        new Error(`Failed to connect: ${onerror.message}`)
-                        return
-                    }
-                });
-            }
-        }
-    }, [settings])
-
-    useEffect(() => {
-        let isImtoken = (window as any)?.ethereum?.isImToken !== undefined;
-        let isTokenPocket = (window as any)?.ethereum?.isTokenPocket !== undefined;
-        setAddressSource((isImtoken && 'imtoken') || (isTokenPocket && 'tokenpocket') || query.addressSource)
-    }, [query])
-
-
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
-            const internalName = values.network.baseObject.internal_name
-            if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
-                const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[internalName].apiUri })
-                const isRegistered = await client.isRegistered({ user: values.destination_address })
-                if (!isRegistered) {
-                    setConnectImmutableIsOpen(true)
-                    return
-                }
-            } else if (internalName == KnownInternalNames.Networks.RhinoFiMainnet) {
-                const client = await axios.get(`${NetworkSettings.RhinoFiSettings[internalName].apiUri}/${values.destination_address}`)
-                const isRegistered = await client.data?.isRegisteredOnDeversifi
-                if (!isRegistered) {
-                    setConnectRhinofiIsOpen(true);
-                    return
+            if (values.swapType === SwapType.OnRamp) {
+                const internalName = values.network.baseObject.internal_name
+                if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
+                    const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[internalName].apiUri })
+                    const isRegistered = await client.isRegistered({ user: values.destination_address })
+                    if (!isRegistered) {
+                        setConnectImmutableIsOpen(true)
+                        return
+                    }
+                } else if (internalName == KnownInternalNames.Networks.RhinoFiMainnet) {
+                    const client = await axios.get(`${NetworkSettings.RhinoFiSettings[internalName].apiUri}/${values.destination_address}`)
+                    const isRegistered = await client.data?.isRegisteredOnDeversifi
+                    if (!isRegistered) {
+                        setConnectRhinofiIsOpen(true);
+                        return
+                    }
                 }
             }
             if (formikRef.current?.dirty)
@@ -131,7 +91,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         }
     }, [updateSwapFormData])
 
-    const destAddress: string = account || query.destAddress;
+    const destAddress: string = query.destAddress;
 
     const partner = addressSource ?
         settings.partners.find(p => p.internal_name?.toLocaleLowerCase() === addressSource?.toLocaleLowerCase())
@@ -141,11 +101,11 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
-    const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType ?? SwapType.OnRamp, settings, query, account, chainId)
-    const lockAddress =
+    const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType, settings, query)
+    const lockAddress = 
         (initialValues.destination_address && initialValues.network)
         && isValidAddress(initialValues.destination_address, initialValues.network?.baseObject)
-        && (!!account || (query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
+        && ((query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
 
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
