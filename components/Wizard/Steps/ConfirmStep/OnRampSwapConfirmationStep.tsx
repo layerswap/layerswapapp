@@ -51,7 +51,7 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleSubmit = useCallback(async (e: any) => {
         setLoading(true)
         let nextStep: SwapCreateStep;
-        if (codeRequested)
+        if (swap && codeRequested)
             return goToStep(SwapCreateStep.TwoFactor)
 
         try {
