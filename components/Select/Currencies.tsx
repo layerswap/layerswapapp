@@ -15,14 +15,13 @@ const CurrenciesField: FC = () => {
     } = useFormikContext<SwapFormValues>();
 
     const name = "currency"
-    const { data } = useSettingsState();
-    const { discovery: { resource_storage_url } } = data || {}
+    const { discovery: { resource_storage_url }, currencies, exchanges } = useSettingsState();
 
     const currencyIsAvilable = useCallback((c: Currency) => exchange && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType === SwapType.OffRamp ?
         ec.is_withdrawal_enabled : ec.is_deposit_enabled)) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === SwapType.OffRamp ?
             nc.is_deposit_enabled : nc.is_withdrawal_enabled)), [exchange, network, swapType])
 
-    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? data.currencies
+    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? currencies
         .filter(currencyIsAvilable)
         .map(c => ({
             baseObject: c,
@@ -40,7 +39,7 @@ const CurrenciesField: FC = () => {
         if (!network || !exchange) return;
         if (currency && currencyIsAvilable(currency.baseObject)) return
 
-        const default_currency = data.currencies.find(currencyIsAvilable)
+        const default_currency = currencies.find(currencyIsAvilable)
 
         if (default_currency) {
             const defaultValue: SelectMenuItem<Currency> = {
@@ -58,7 +57,7 @@ const CurrenciesField: FC = () => {
             setFieldValue(name, null)
         }
 
-    }, [network, exchange, data.currencies, data.exchanges, currency])
+    }, [network, exchange, currencies, exchanges, currency])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />

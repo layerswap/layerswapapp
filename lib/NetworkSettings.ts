@@ -86,7 +86,7 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.RoninMainnet] = {
             ChainId: 2020,
         };
-
+        
         NetworkSettings.ImmutableXSettings = {
             [KnownInternalNames.Networks.ImmutableX]: {
                 apiUri: "https://api.x.immutable.com/v1",

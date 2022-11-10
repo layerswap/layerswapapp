@@ -30,7 +30,7 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
             {
                 errors.destination_address = `Enter a valid ${values.network.name} address`;
             }
-            else if (isBlacklistedAddress(settings.data.blacklisted_addresses, values.network.baseObject, values.destination_address))
+            else if (isBlacklistedAddress(settings.blacklisted_addresses, values.network.baseObject, values.destination_address))
             {
                 errors.destination_address = `You can not transfer to this address`;
             }
