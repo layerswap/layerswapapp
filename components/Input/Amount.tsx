@@ -23,7 +23,7 @@ const AmountField = forwardRef((props: any, ref: any) => {
     const amountLabel = (
         <div className="flex items-center space-x-2">
             <p>Amount</p>
-            {amount &&
+            {exchange && network && amount &&
                 <div className="text-xs text-primary-text flex items-center space-x-1">
                     (Min: {minAllowedAmount} - Max: {maxAllowedAmount})
                 </div>}
@@ -42,7 +42,7 @@ const AmountField = forwardRef((props: any, ref: any) => {
             ref={amountRef}
             precision={currencyDetails?.precision}
         >
-            {currency && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
+            {exchange && network && currency && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
                 <button
                     type="button"
                     className="p-1.5  bg-darkblue-400 hover:bg-darkblue-300 rounded-md hidden md:block border border-darkblue-400 hover:border-darkblue-100"
