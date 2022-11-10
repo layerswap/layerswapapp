@@ -95,20 +95,16 @@ const WithdrawNetworkStep: FC = () => {
                         </WarningMessage>
                     }
                     {
-                        userGuideUrlForDesktop && userGuideUrlForMobile &&
+                        userGuideUrlForDesktop &&
                         <BackgroundField >
                             <div className='md:space-y-0'>
                                 <span className='flex-none'>
                                     Learn how to send from
                                 </span>
                                 <GuideLink fullTeext='Loopring Web' shortText='Web' userGuideUrlForDesktop={userGuideUrlForDesktop} />
-                                &nbsp;or
-                                <GuideLink fullTeext='Loopring Mobile' shortText='Mobile' userGuideUrlForDesktop={userGuideUrlForMobile} />
                             </div>
                         </BackgroundField>
                     }
-
-
                     <div className='mb-6 grid grid-cols-1 gap-4'>
                         {
                             network_internal_name === KnownInternalNames.Networks.LoopringMainnet &&

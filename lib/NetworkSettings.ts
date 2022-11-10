@@ -36,7 +36,6 @@ export default class NetworkSettings {
 
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LoopringMainnet] = {
             UserGuideUrlForDesktop: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/loopring",
-            UserGuideUrlForMobile: "https://app.tango.us/app/embed/500f28ced0254f6dab4256d669999134?iframe",
             ConfirmationWarningMessage: "If you're using the GameStop wallet, please navigate to Loopring.io and use it to transfer funds instead of the GameStop wallet itself",
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumRinkeby] = {

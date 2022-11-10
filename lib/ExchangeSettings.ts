@@ -63,7 +63,6 @@ export default class ExchangeSettings {
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/ftx.com",
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.FtxUs] = {
-            UserApiKeyGuideUrl: "https://app.tango.us/app/embed/7221bd286bf5445fa124994ec02f4d85?iframe",
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Huobi] = {
             ExchangeApiKeyPageUrl: "https://www.huobi.com/en-us/apikey/",

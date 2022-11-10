@@ -97,7 +97,7 @@ const WithdrawExchangeStep: FC = () => {
                                     <span className='flex-none'>
                                         Learn how to send from
                                     </span>
-                                    <SlideOver opener={(open) => <span className='text-primary cursor-pointer hover:text-primary-400' onClick={open}>&nbsp;<span className=''>{exchange_internal_name}</span></span>} place='inStep'>
+                                    <SlideOver opener={(open) => <span className='text-primary cursor-pointer hover:text-primary-400' onClick={open}>&nbsp;<span>{exchange_internal_name}</span></span>} place='inStep'>
                                         {(close) => (
                                             <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
                                         )}
