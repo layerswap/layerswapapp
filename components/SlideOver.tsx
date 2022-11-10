@@ -56,7 +56,7 @@ const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, place
                             y: "100%",
                             transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
                         }}
-                        className={`absolute inset-0 z-40 flex flex-col w-full bg-darkblue ${moreClassNames}`}>
+                        className={`absolute inset-0 z-40 flex flex-col w-full bg-darkblue rounded-t-2xl md:rounded-none ${moreClassNames}`}>
                         <span className='relative z-40 overflow-hidden bg-darkblue px-6 pb-6 sm:px-8 sm:pb-8 pt-0'>
                             <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
                                 <span className="justify-self-end text-primary-text cursor-pointer">

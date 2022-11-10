@@ -83,11 +83,12 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                 <Dialog
                     className={`${query?.addressSource} relative z-40`}
                     onClose={() => setShowModal(false)}
-                    open={showModal}>
+                    open={showModal}
+                    as={motion.div}>
                     <Dialog.Overlay>
                         <motion.div
                             key="backdrop"
-                            className="fixed inset-0 z-30 bg-black/40 bg-opacity-10"
+                            className="fixed inset-0 z-20 bg-black/40 bg-opacity-10"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -108,7 +109,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                         dragElastic={{ top: 0, bottom: 1 }}
                         dragConstraints={{ top: 0, bottom: 0 }}
                     >
-                        <Dialog.Panel>
+                        <div>
                             <div className="h-7  rounded-t-4xl -mb-1 flex w-full items-center justify-center">
                                 <div className="-mr-1 h-1 w-6 rounded-full bg-darkblue-100 transition-all group-active:rotate-12" />
                                 <div className="h-1 w-6 rounded-full bg-darkblue-100 transition-all group-active:-rotate-12" />
@@ -117,12 +118,12 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                                 {title}
                             </Dialog.Title>
                             {children}
-                        </Dialog.Panel>
+                        </div>
                     </motion.div>
                     <motion.div
                         ref={desktopModalRef}
                         key="desktop-modal"
-                        className={`fixed inset-0 z-40 hidden min-h-screen items-center justify-center sm:flex `}
+                        className={`fixed inset-0 z-30 hidden min-h-screen items-center justify-center sm:flex `}
                         initial={{ opacity: 0 }}
                         animate={{
                             opacity: 1,
@@ -139,7 +140,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                         }}
                     >
                         <div className={constructModalSize(modalSize)}>
-                            <Dialog.Panel className={`${className} space-y-4 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
+                            <div className={`${className} space-y-4 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
                                 <Dialog.Title className='flex justify-between space-x-8'>
                                     <div className="text-lg text-left leading-6 font-medium text-primary-text" >
                                         {title}
@@ -155,7 +156,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                                     </button>
                                 </Dialog.Title>
                                 {children}
-                            </Dialog.Panel>
+                            </div>
                         </div>
                     </motion.div>
                 </Dialog>
