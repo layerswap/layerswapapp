@@ -55,18 +55,18 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, className,
                     <Dialog.Panel className={constructModalSize(modalSize)}>
                         <div className={`${className} space-y-4 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
                             <Dialog.Title as="div" >
-                                <div className='flex justify-between space-x-8'>
+                                <div className='flex items-center justify-between space-x-8'>
                                     <div className="text-lg text-left leading-6 font-medium text-primary-text" >
                                         {title}
                                     </div>
                                     <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200 hover:text-primary-text"
+                                        className="rounded-md hover:text-darkblue-200 text-primary-text"
                                         onClick={() => {
                                             onDismiss(true);
                                         }}                                                >
                                         <span className="sr-only">Close</span>
-                                        <XIcon className="h-6 w-6" aria-hidden="true" />
+                                        <XIcon className="h-7 w-7" aria-hidden="true" />
                                     </button>
                                 </div>
                             </Dialog.Title>

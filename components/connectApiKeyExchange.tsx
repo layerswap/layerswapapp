@@ -139,8 +139,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                     }
                     {
                         userGuideURL && <div className="flex items-center">
-                            <span className="block text-base text-white font-normal leading-6"> Read about
-                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} place={slideOverPlace}>
+                            <span className="block text-base text-white font-normal leading-6 h-full"> Learn how to get
+                                <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>API Keys</a>&nbsp;</>} place={slideOverPlace}>
                                     {(close) => (
                                         <DocIframe onConfirm={() => close()} URl={userGuideURL} />
                                     )}

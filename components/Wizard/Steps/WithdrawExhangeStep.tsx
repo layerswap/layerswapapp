@@ -14,6 +14,8 @@ import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
 import { CheckIcon, HomeIcon, ChatIcon } from '@heroicons/react/solid';
+import SlideOver from '../../SlideOver';
+import { DocIframe } from '../../docInIframe';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -88,6 +90,21 @@ const WithdrawExchangeStep: FC = () => {
                         </WarningMessage>
                     }
                     <div className={`mb-6 grid grid-cols-1 gap-5 `}>
+                        {
+                            ExchangeSettings?.KnownSettings[exchange_internal_name]?.ExchangeWithdrawalGuideUrl &&
+                            <BackgroundField >
+                                <div className='md:space-y-0'>
+                                    <span className='flex-none'>
+                                        Learn how to send from
+                                    </span>
+                                    <SlideOver opener={(open) => <span className='text-primary cursor-pointer hover:text-primary-400' onClick={open}>&nbsp;<span className=''>{exchange_internal_name}</span></span>} place='inStep'>
+                                        {(close) => (
+                                            <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                                        )}
+                                    </SlideOver>
+                                </div>
+                            </BackgroundField>
+                        }
                         <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.additonal_data?.deposit_address} header={'Address'}>
                             <p className='break-all'>
                                 {swap?.additonal_data?.deposit_address}

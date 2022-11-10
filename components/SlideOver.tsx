@@ -7,15 +7,15 @@ import { FC, Fragment, ReactNode, useState } from "react"
 export type slideOverPlace = 'inStep' | 'inModal' | 'inMenu'
 
 type Props = {
+    header?: string;
     opener?: (open: () => void) => JSX.Element | JSX.Element[],
     children?: (close: () => void) => JSX.Element | JSX.Element[];
     moreClassNames?: string;
-    slide?: boolean;
     place: slideOverPlace | string
     imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
 
-const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, place, children, slide = true }) => {
+const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassNames, place, children }) => {
     const [open, setOpen] = useState(false)
     const handleClose = () => {
         setOpen(false)
@@ -31,10 +31,10 @@ const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, place
             moreClassNames += " -mt-10";
             break;
         case 'inModal':
-            moreClassNames += " pt-7";
+            moreClassNames += " pt-4";
             break;
         case 'inMenu':
-            moreClassNames += " pt-5";
+            moreClassNames += " pt-4";
             break;
     }
 
@@ -56,23 +56,26 @@ const SlideOver: FC<Props> = (({ opener, imperativeOpener, moreClassNames, place
                             y: "100%",
                             transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
                         }}
-                        className={`absolute inset-0 z-40 flex flex-col w-full bg-darkblue ${moreClassNames}`}>
-                        <span className='relative z-40 overflow-hidden bg-darkblue px-6 pb-6 sm:px-8 sm:pb-8 pt-0'>
+                        className={`absolute inset-0 z-40 w-full mt-1 bg-darkblue ${moreClassNames}`}>
+                        <span className='relative h-full flex flex-col z-40 overflow-hidden px-6 md:px-8 pb-6'>
                             <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                                <span className="justify-self-end text-primary-text cursor-pointer">
+                                <span className="flex items-center justify-between text-primary-text cursor-pointer">
+                                    <p className="text-xl text-white font-semibold">
+                                        {header}
+                                    </p>
                                     <button
                                         type="button"
-                                        className="rounded-md text-darkblue-200 hover:text-primary-text"
+                                        className="rounded-md hover:text-darkblue-200"
                                         onClick={handleClose}
                                     >
                                         <span className="sr-only">Close</span>
-                                        <XIcon className="h-6 w-6" aria-hidden="true" />
+                                        <XIcon className="h-7 w-7" aria-hidden="true" />
                                     </button>
                                 </span>
                             </div>
-                            <div className="relative inset-0 flex flex-col scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                            <div className="relative h-full inset-0 flex flex-col scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
                                 <div className="relative min-h-full items-center justify-center pt-0 text-center">
-                                    <div className='grid grid-flow-row min-h-[480px] text-primary-text'>
+                                    <div className='grid grid-flow-row min-h-[480px] h-full text-primary-text'>
                                         {children && children(handleClose)}
                                     </div>
                                 </div>

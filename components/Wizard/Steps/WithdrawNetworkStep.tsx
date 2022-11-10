@@ -20,7 +20,7 @@ import GoHomeButton from '../../utils/GoHome';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const  { networks, discovery: { resource_storage_url } } = useSettingsState()
+    const { networks, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
 
@@ -96,18 +96,16 @@ const WithdrawNetworkStep: FC = () => {
                     }
                     {
                         userGuideUrlForDesktop && userGuideUrlForMobile &&
-
                         <BackgroundField >
                             <div className='md:space-y-0'>
                                 <span className='flex-none'>
-                                    Watch how to send from
+                                    Learn how to send from
                                 </span>
                                 <GuideLink fullTeext='Loopring Web' shortText='Web' userGuideUrlForDesktop={userGuideUrlForDesktop} />
                                 &nbsp;or
                                 <GuideLink fullTeext='Loopring Mobile' shortText='Mobile' userGuideUrlForDesktop={userGuideUrlForMobile} />
                             </div>
                         </BackgroundField>
-
                     }
 
 

@@ -53,14 +53,11 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
             }}
         >
             {({ handleChange, isValid, isSubmitting }) => (
-                <Form className='flex flex-col justify-between'>
-                    <div>
-                        <h3 className='mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
-                            Send Feedback
-                            <p className='mb-10 pt-2 text-base text-center md:text-left font-roboto text-primary-text font-light'>
-                                Please help us shape the product, catch bugs, and prioritize features. Your feedback will go directly into our Telegram channel.
-                            </p>
-                        </h3>
+                <Form className='flex flex-col justify-between max-h-[600px]'>
+                    <div className='space-y-8 h-full'>
+                        <p className='text-base text-left font-roboto text-primary-text font-light'>
+                            Please help us shape the product, catch bugs, and prioritize features. Your feedback will go directly into our Telegram channel.
+                        </p>
                         <div className="flex flex-wrap -mx-3">
                             <div className="w-full px-3">
                                 <textarea
@@ -69,7 +66,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                                     onChange={e => {
                                         handleChange(e)
                                     }}
-                                    className="no-resize appearance-none block w-full bg-darkblue-700 text-white border border-darkblue-500 rounded-md py-3 px-4 mb-3 leading-tight focus:ring-0 focus:bg-darkblue-500 focus:border-darkblue-50 h-56 resize-none"
+                                    className="appearance-none block w-full bg-darkblue-700 text-white border border-darkblue-500 rounded-md py-3 px-4 mb-3 leading-tight focus:ring-0 focus:bg-darkblue-500 focus:border-darkblue-50 h-72 resize-none"
                                 />
                             </div>
                         </div>

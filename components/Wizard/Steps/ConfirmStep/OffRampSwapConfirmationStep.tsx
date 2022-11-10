@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { FC, useCallback, useState } from 'react'
-import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
+import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
@@ -10,6 +10,7 @@ import NetworkSettings from '../../../../lib/NetworkSettings';
 import WarningMessage from '../../../WarningMessage';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
+import KnownInternalNames from '../../../../lib/knownIds';
 
 const OffRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
@@ -57,8 +58,12 @@ const OffRampSwapConfirmationStep: FC = () => {
                     {
                         NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
                         <WarningMessage className='mb-4'>
-                            <p className='font-normal text-sm text-darkblue-600'>
-                                {NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}
+                            <p className='font-normal space-x-1 text-sm text-darkblue-600'>
+                                <span>{NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}.</span>
+                                {
+                                    network?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
+                                    <a className='underline hover:no-underline' target="_blank" href='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex'>Learn how</a>
+                                }
                             </p>
                         </WarningMessage>
                     }
