@@ -138,8 +138,8 @@ const OnRampSwapConfirmationStep: FC = () => {
                 </div>
             </div>
             <Modal
-                isOpen={editingAddress}
-                onDismiss={handleClose}
+                showModal={editingAddress}
+                setShowModal={setEditingAddress}
                 title={
                     <h4 className='text-lg text-white'>
                         <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
