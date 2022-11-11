@@ -17,7 +17,7 @@ import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormVa
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import Modal from '../../../modalComponent';
 import { useTimerState } from '../../../../context/timerContext';
-import WizardItemContent from '../../WizardItemContent';
+import Widget from '../../Widget';
 
 const TIMER_SECONDS = 120
 
@@ -116,13 +116,14 @@ const OnRampSwapConfirmationStep: FC = () => {
         setAddressConfirmed(value)
     }
     return (
-        <WizardItemContent>
-            <WizardItemContent.Head>
+        <Widget>
+            <Widget.Content>
                 <SwapConfirmMainData>
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
-            </WizardItemContent.Head>
-            <WizardItemContent.Bottom>
+
+            </Widget.Content>
+            <Widget.Footer>
                 <div className="text-white text-sm">
                     <div className="mx-auto w-full rounded-lg font-normal">
                         <div className='flex justify-between mb-4 md:mb-8'>
@@ -139,7 +140,8 @@ const OnRampSwapConfirmationStep: FC = () => {
                         Confirm
                     </SubmitButton>
                 </div>
-            </WizardItemContent.Bottom>
+            </Widget.Footer>
+
             <Modal
                 isOpen={editingAddress}
                 onDismiss={handleClose}
@@ -183,7 +185,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                     </div>
                 </div>
             </Modal>
-        </WizardItemContent>
+        </Widget>
     )
 }
 

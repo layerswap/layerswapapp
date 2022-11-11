@@ -10,8 +10,7 @@ import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
 import NumericInput from './Input/NumericInput';
 import Timer from './TimerComponent';
-import WizardItemContent from './Wizard/WizardItemContent';
-
+import Widget from './Wizard/Widget';
 interface VerifyEmailCodeProps {
     onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
 }
@@ -80,9 +79,8 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
             >
                 {({ isValid, isSubmitting, errors, handleChange }) => (
                     <Form className='h-full text-primary-text'>
-                        <WizardItemContent>
-                            <div/>
-                            <WizardItemContent.Head>
+                        <Widget>
+                            <Widget.Content>
                                 <div className="w-full pt-4 flex-col flex h-full justify-between">
                                     <MailOpenIcon className='w-16 h-16 mt-auto text-primary self-center' />
                                     <div className='text-center mt-5'>
@@ -117,18 +115,17 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                         </span>
                                     </div>
                                 </div>
-                            </WizardItemContent.Head>
-                            <WizardItemContent.Bottom>
-                                <div className="space-y-2">
-                                    <p className='text-primary-text text-sm'>
-                                        By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'> Terms of Service</a></Link> and <Link href="/blog/guide/Privacy_Policy"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
-                                    </p>
-                                    <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
-                                        Confirm
-                                    </SubmitButton>
-                                </div>
-                            </WizardItemContent.Bottom>
-                        </WizardItemContent>
+                            </Widget.Content>
+                            <div />
+                            <Widget.Footer>
+                                <p className='text-primary-text text-sm'>
+                                    By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'> Terms of Service</a></Link> and <Link href="/blog/guide/Privacy_Policy"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
+                                </p>
+                                <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
+                                    Confirm
+                                </SubmitButton>
+                            </Widget.Footer>
+                        </Widget>
                     </Form >
                 )}
             </Formik>

@@ -1,4 +1,5 @@
 import CardContainer from './cardContainer';
+import FooterComponent from './footerComponent';
 
 function IntroCard(props) {
     return (
@@ -13,11 +14,11 @@ function IntroCard(props) {
                         <span className="text-sm font-semibold mr-2 rounded-md py-1 px-2 text-pink-primary border border-pink-primary uppercase">New</span>
 
                         <span className="inline">
-                            SNX (Synthetix) in Optimism L2 
+                            SNX (Synthetix) in Optimism L2
                         </span>
                     </p>
                 </div>
-
+                <FooterComponent />
             </div>
         </CardContainer>
     );

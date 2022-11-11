@@ -10,7 +10,7 @@ import NetworkSettings from '../../../../lib/NetworkSettings';
 import WarningMessage from '../../../WarningMessage';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
-import WizardItemContent from '../../WizardItemContent';
+import Widget from '../../Widget';
 
 const OffRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
@@ -52,29 +52,26 @@ const OffRampSwapConfirmationStep: FC = () => {
     }, [network, swap, createAndProcessSwap])
 
     return (
-        <>
-            <WizardItemContent>
-                <WizardItemContent.Head>
-                    <SwapConfirmMainData>
-                        {
-                            NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
-                            <WarningMessage className='mb-4'>
-                                <p className='font-normal text-sm text-darkblue-600'>
-                                    {NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}
-                                </p>
-                            </WarningMessage>
-                        }
-                        <AddressDetails canEditAddress={false} />
-                    </SwapConfirmMainData>
-                </WizardItemContent.Head>
-                <WizardItemContent.Bottom>
-                    <SubmitButton type='submit' isDisabled={false} isSubmitting={isSubmitting} onClick={handleSubmit}>
-                        Confirm
-                    </SubmitButton>
-                </WizardItemContent.Bottom>
-            </WizardItemContent>
-
-        </>
+        <Widget>
+            <Widget.Content>
+                <SwapConfirmMainData>
+                    {
+                        NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
+                        <WarningMessage className='mb-4'>
+                            <p className='font-normal text-sm text-darkblue-600'>
+                                {NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}
+                            </p>
+                        </WarningMessage>
+                    }
+                    <AddressDetails canEditAddress={false} />
+                </SwapConfirmMainData>
+            </Widget.Content>
+            <Widget.Footer>
+                <SubmitButton type='submit' isDisabled={false} isSubmitting={isSubmitting} onClick={handleSubmit}>
+                    Confirm
+                </SubmitButton>
+            </Widget.Footer>
+        </Widget>
     )
 }
 

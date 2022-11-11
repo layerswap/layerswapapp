@@ -15,12 +15,13 @@ import AmountField from "../../../Input/Amount";
 import { SwapType } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { Partner } from "../../../../Models/Partner";
+import Widget from "../../Widget";
 
 type Props = {
     isPartnerWallet: boolean,
     partner?: Partner,
     lockAddress: boolean,
-    resource_storage_url:string
+    resource_storage_url: string
 }
 const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_storage_url }) => {
 
@@ -34,8 +35,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
     return <>
         <Form className="h-full" >
             {values && <ConnectedFocusError />}
-            <div className="h-full flex flex-col justify-between">
-                <div>
+            <Widget>
+                <Widget.Content>
                     <SwapOptionsToggle />
                     <div className={classNames(values.swapType === SwapType.OffRamp ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
                         <div className="flex flex-col md:w-80 w-full">
@@ -68,7 +69,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                             </div>
                         </div>
                     }
-
                     <div className="mb-6 leading-4">
                         <AmountField />
                     </div>
@@ -76,13 +76,13 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                     <div className="w-full">
                         <AmountAndFeeDetails amount={Number(values?.amount)} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} network={values.network?.baseObject} />
                     </div>
-                </div>
-                <div className="mt-6">
+                </Widget.Content>
+                <Widget.Footer>
                     <SwapButton type='submit' isDisabled={!isValid} isSubmitting={isSubmitting}>
                         {displayErrorsOrSubmit(errors, values.swapType)}
                     </SwapButton>
-                </div>
-            </div >
+                </Widget.Footer>
+            </Widget>
         </Form >
     </>
 }

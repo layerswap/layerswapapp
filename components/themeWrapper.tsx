@@ -43,7 +43,7 @@ export default function ({ hideNavbar, children }: Props) {
                         </div>
                     </div>
                 </div>
-                {!inIframe() && <FooterComponent />}
+                <div id="offset-for-stickyness"></div>
             </div>
         </main>
     </div>

@@ -7,8 +7,7 @@ import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
-import Wizard from './Wizard/Wizard';
-import WizardItemContent from './Wizard/WizardItemContent';
+import Widget from './Wizard/Widget';
 
 type EmailFormValues = {
     email: string;
@@ -70,9 +69,9 @@ const SendEmail: FC<Props> = ({ onSend }) => {
             >
                 {({ isValid, isSubmitting }) => (
                     <Form autoComplete='true' className='w-full h-full'>
-                        <WizardItemContent>
-                            <div />
-                            <WizardItemContent.Head>
+                        <div />
+                        <Widget>
+                            <Widget.Content>
                                 <div className='flex flex-col justify-between'>
                                     <UserIcon className='w-16 h-16 text-primary self-center mt-auto' />
                                     <div>
@@ -98,15 +97,14 @@ const SendEmail: FC<Props> = ({ onSend }) => {
                                             )}
                                         </Field>
                                     </div>
-
                                 </div>
-                            </WizardItemContent.Head>
-                            <WizardItemContent.Bottom>
+                            </Widget.Content>
+                            <Widget.Footer>
                                 <SubmitButton isDisabled={!isValid} isSubmitting={isSubmitting} >
                                     Continue
                                 </SubmitButton>
-                            </WizardItemContent.Bottom>
-                        </WizardItemContent>
+                            </Widget.Footer>
+                        </Widget>
                     </Form>
                 )}
             </Formik >

@@ -13,21 +13,8 @@ const Wizard: FC<Props> = ({ children }) => {
 
    const wrapper = useRef(null);
 
-   const { setWrapperWidth, setWrapperHeight } = useFormWizardaUpdate()
-   const { height } = useWindowDimensions();
-   const { wrapperWidth, positionPercent, moving, goBack } = useFormWizardState()
-   
-   useEffect(() => {
-      if (inIframe()) {
-         const wrapperCurrentHeight = wrapper?.current?.offsetHeight
-         const calculatedHeight = height - wrapper?.current?.getBoundingClientRect()?.top
-         if (calculatedHeight > wrapperCurrentHeight)
-            setWrapperHeight(`${calculatedHeight}px`)
-         else
-            setWrapperHeight('100%')
-      }
-      else setWrapperHeight('100%')
-   }, [height])
+   const { setWrapperWidth } = useFormWizardaUpdate()
+   const { wrapperWidth, positionPercent, moving, goBack, hasFooter } = useFormWizardState()
 
    useEffect(() => {
       function handleResize() {
@@ -43,13 +30,13 @@ const Wizard: FC<Props> = ({ children }) => {
 
    const width = positionPercent || 0
    return <>
-      <div className={`bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative`}>
+      <div className={`bg-darkblue md:shadow-card rounded-lg w-full overflow-hidden relative`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-darkblue-500">
                <div style={{ width: `${width}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
             </div>
          </div>
-         <HeaderWithMenu goBack={goBack}/>
+         <HeaderWithMenu goBack={goBack} />
          <div className='text-center text-xl text-darkblue-50'>
 
          </div>
@@ -63,6 +50,16 @@ const Wizard: FC<Props> = ({ children }) => {
                </AnimatePresence>
             </div>
          </div>
+         {
+            hasFooter && <div className={`text-white text-base mt-3
+            md:hidden
+            h-20
+            max-sm:fixed
+            max-sm:inset-x-0
+            max-sm:bottom-0 
+            max-sm:z-40 max-sm:bg-darkblue max-sm:w-full`}>
+            </div>
+         }
       </div>
    </>
 }

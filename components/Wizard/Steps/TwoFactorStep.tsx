@@ -12,7 +12,7 @@ import { ApiError, KnownwErrorCode } from '../../../Models/ApiError';
 import Timer from '../../TimerComponent';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
-import WizardItemContent from '../WizardItemContent';
+import Widget from '../Widget';
 
 const TIMER_SECONDS = 120
 
@@ -122,9 +122,9 @@ const TwoFactorStep: FC = () => {
             >
                 {({ isValid, isSubmitting, errors, handleChange }) => (
                     <Form className='flex text-primary-text h-full'>
-                        <WizardItemContent>
-                            <div/>
-                            <WizardItemContent.Head>
+                        <Widget>
+                            <Widget.Content>
+                                <div />
                                 <div className="w-full flex-col justify-between flex h-full mt-4">
                                     <LockClosedIcon className='w-16 h-16 mt-auto text-primary self-center' />
                                     <div className='text-center mt-5'>
@@ -165,25 +165,23 @@ const TwoFactorStep: FC = () => {
                                         </Timer>
                                     </span>
                                 </div>
-                            </WizardItemContent.Head>
-                            <WizardItemContent.Bottom>
-                                <div className='space-y-6'>
-                                    <div className='p-4 bg-darkblue-700 mt-5 rounded-lg border border-darkblue-500'>
-                                        <div className="flex items-center">
-                                            <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
-                                            <label className="block text-sm md:text-base font-medium leading-6">To obtain the 2 step verification code, check:</label>
-                                        </div>
-                                        <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8">
-                                            <li>your authenticator app (Google, Microsoft, or other), or</li>
-                                            <li>text messages of the phone number associated with your Coinbase account</li>
-                                        </ul>
+                            </Widget.Content>
+                            <Widget.Footer>
+                                <div className='p-4 bg-darkblue-700 mt-5 rounded-lg border border-darkblue-500'>
+                                    <div className="flex items-center">
+                                        <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
+                                        <label className="block text-sm md:text-base font-medium leading-6">To obtain the 2 step verification code, check:</label>
                                     </div>
-                                    <SubmitButton type="submit" isDisabled={!isValid || loading} isSubmitting={isSubmitting}>
-                                        Confirm
-                                    </SubmitButton>
+                                    <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8">
+                                        <li>your authenticator app (Google, Microsoft, or other), or</li>
+                                        <li>text messages of the phone number associated with your Coinbase account</li>
+                                    </ul>
                                 </div>
-                            </WizardItemContent.Bottom>
-                        </WizardItemContent>
+                                <SubmitButton type="submit" isDisabled={!isValid || loading} isSubmitting={isSubmitting}>
+                                    Confirm
+                                </SubmitButton>
+                            </Widget.Footer>
+                        </Widget>
                     </Form >
                 )}
             </Formik>

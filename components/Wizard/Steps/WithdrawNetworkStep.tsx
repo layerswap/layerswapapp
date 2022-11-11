@@ -17,7 +17,7 @@ import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
-import WizardItemContent from '../WizardItemContent';
+import Widget from '../Widget';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -61,8 +61,8 @@ const WithdrawNetworkStep: FC = () => {
     const userGuideUrlForMobile = NetworkSettings.KnownSettings[network?.internal_name]?.UserGuideUrlForMobile
 
     return (
-        <WizardItemContent>
-            <WizardItemContent.Head>
+        <Widget>
+            <Widget.Content>
                 <div className="w-full space-y-4 flex flex-col justify-between h-full text-primary-text">
                     <div className="flex items-center">
                         <p className="block text-lg font-medium text-white leading-6 text-left">
@@ -154,8 +154,8 @@ const WithdrawNetworkStep: FC = () => {
                         </div>
                     </div>
                 </div>
-            </WizardItemContent.Head>
-            <WizardItemContent.Bottom>
+            </Widget.Content>
+            <Widget.Footer>
                 {
                     transferDone ?
                         <div>
@@ -196,8 +196,8 @@ const WithdrawNetworkStep: FC = () => {
                             </GoHomeButton>
                         </div>
                 }
-            </WizardItemContent.Bottom>
-        </WizardItemContent>
+            </Widget.Footer>
+        </Widget>
     )
 }
 

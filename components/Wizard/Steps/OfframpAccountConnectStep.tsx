@@ -15,12 +15,12 @@ import { useInterval } from '../../../hooks/useInterval';
 import useSWR from 'swr';
 import LayerSwapApiClient, { UserExchangesData } from '../../../lib/layerSwapApiClient';
 import { ApiResponse } from '../../../Models/ApiResponse';
-import WizardItemContent from '../WizardItemContent';
+import Widget from '../Widget';
 
 const OfframpAccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
     const { exchange, currency } = swapFormData || {}
-    const { o_auth_login_url } = swapFormData?.exchange?.baseObject || {}
+    const { o_auth_login_url } = exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const [authWindow, setAuthWindow] = useState<Window>()
     const [salon, setSalon] = useState(false)
@@ -84,8 +84,8 @@ const OfframpAccountConnectStep: FC = () => {
     const exchange_name = swapFormData?.exchange?.name
 
     return (
-        <WizardItemContent>
-            <WizardItemContent.Head>
+        <Widget>
+            <Widget.Content>
                 <div className="w-full flex flex-col h-full justify-between font-semibold text-primary-text">
                     <div className='text-center md:text-left'>
                         <p className='pt-2 text-lg md:text-xl text-white'>
@@ -121,40 +121,38 @@ const OfframpAccountConnectStep: FC = () => {
                         </div>
                     </div>
                 </div>
-            </WizardItemContent.Head>
-            <WizardItemContent.Bottom>
-                <div className="space-y-3">
-                    <div className='font-normal'>
-                        <div className='text-primary-800 uppercase'>
-                            Why
-                        </div>
-                        <p className='mb-5 leading-5'>
-                            We will send the tokens to the Coinbase account associated with that email address.
-                        </p>
-                        <div className='text-primary-800 uppercase'>
-                            Note
-                        </div>
-                        <p className='leading-5'>
-                            <strong>Only the email address</strong> of your account will be read, no other permissions will be asked.
-                        </p>
+            </Widget.Content>
+            <Widget.Footer>
+                <div className='font-normal'>
+                    <div className='text-primary-800 uppercase'>
+                        Why
                     </div>
-
-                    <div className="flex md:mt-5 font-normal mb-3">
-                        <label className="block font-medium text-left leading-5 underline hover:text-primary underline-offset-2">
-                            <a className='flex items-center' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
-                                Read more about Coinbase's OAuth API here
-                                <ExternalLinkIcon className='ml-1 h-4 w-4'>
-                                </ExternalLinkIcon>
-                            </a>
-                        </label>
+                    <p className='mb-5 leading-5'>
+                        We will send the tokens to the Coinbase account associated with that email address.
+                    </p>
+                    <div className='text-primary-800 uppercase'>
+                        Note
                     </div>
-
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
-                        Connect
-                    </SubmitButton>
+                    <p className='leading-5'>
+                        <strong>Only the email address</strong> of your account will be read, no other permissions will be asked.
+                    </p>
                 </div>
-            </WizardItemContent.Bottom>
-        </WizardItemContent>
+
+                <div className="flex md:mt-5 font-normal mb-3">
+                    <label className="block font-medium text-left leading-5 underline hover:text-primary underline-offset-2">
+                        <a className='flex items-center' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
+                            Read more about Coinbase's OAuth API here
+                            <ExternalLinkIcon className='ml-1 h-4 w-4'>
+                            </ExternalLinkIcon>
+                        </a>
+                    </label>
+                </div>
+
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+                    Connect
+                </SubmitButton>
+            </Widget.Footer>
+        </Widget>
     )
 }
 
