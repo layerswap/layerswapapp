@@ -365,7 +365,7 @@ function TransactionsHistory() {
                       </button>
                     }
                   </div>
-                  <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} modalSize='medium'>
+                  <Modal showModal={openSwapDetailsModal} setShowModal={setOpenSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} modalSize='medium'>
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {

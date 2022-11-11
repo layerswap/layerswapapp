@@ -238,13 +238,13 @@ function UserExchanges() {
                 </div>
             </div>
 
-            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`} >
+            <Modal showModal={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
                 <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
             </Modal>
-            <Modal isOpen={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} onDismiss={handleClose} title={`Connect ${exchangeToConnect?.display_name}`} >
-                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' />
+            <Modal showModal={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
+                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} />
             </Modal>
-            <Modal isOpen={openExchangeToDisconnectModal} onDismiss={handleClose} title={'Are you sure?'} modalSize='small'>
+            <Modal showModal={openExchangeToDisconnectModal} setShowModal={setOpenExchangeToDisconnectModal} title={'Are you sure?'} modalSize='small'>
                 <div className="flex justify-items-center space-x-3 max-w-xs">
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" >Yes</SubmitButton>
                     <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small'>No</SubmitButton>
