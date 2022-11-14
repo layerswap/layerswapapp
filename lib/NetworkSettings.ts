@@ -6,7 +6,6 @@ export default class NetworkSettings {
     UserGuideUrlForMobile?: string;
     WithdrawalWarningMessage?: string;
     ChainId?: number;
-    HasWalletConnect?: boolean;
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
@@ -85,9 +84,6 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.RoninMainnet] = {
             ChainId: 2020,
-        };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ImmutableX] = {
-            HasWalletConnect: true,
         };
         
         NetworkSettings.ImmutableXSettings = {

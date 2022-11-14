@@ -21,6 +21,7 @@ import toast from "react-hot-toast"
 import { ArrowLeftIcon } from "@heroicons/react/solid"
 import { useSwapDataUpdate } from "../context/swap"
 import { SwapStatus } from "../Models/SwapStatus"
+import { DepositFlow } from "../Models/Exchange";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -34,6 +35,7 @@ function TransactionsHistory() {
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const { email } = useAuthState()
   const { cancelSwap } = useSwapDataUpdate()
+  const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending && !(selectedSwap?.type == SwapType.OnRamp && exchanges?.find(e => e.currencies.some(ec => ec.id === selectedSwap?.exchange_currency_id)).deposit_flow == DepositFlow.Automatic)
 
   const handleGoBack = useCallback(() => {
     router.back()
@@ -392,16 +394,16 @@ function TransactionsHistory() {
                         </div>
                       }
                       {
-                        selectedSwap?.status == SwapStatus.UserTransferPending &&
+                        canCompleteCancelSwap &&
                         <div className="text-white text-sm mt-6 space-y-3">
                           <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false}>
                             Complete Swap
                             <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                          </SubmitButton>
-                          <SubmitButton buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false}>
-                            Cancel Swap
-                            <XIcon className='ml-2 h-5 w-5' />
-                          </SubmitButton>
+                          </SubmitButton>                             
+                            <SubmitButton buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false}>
+                              Cancel Swap
+                              <XIcon className='ml-2 h-5 w-5' />
+                            </SubmitButton>
                         </div>
                       }
                     </div>

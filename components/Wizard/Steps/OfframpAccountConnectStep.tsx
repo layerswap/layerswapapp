@@ -19,7 +19,7 @@ import { ApiResponse } from '../../../Models/ApiResponse';
 const OfframpAccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
     const { exchange, currency } = swapFormData || {}
-    const { o_auth_login_url } = swapFormData?.exchange?.baseObject || {}
+    const { o_auth_login_url } = exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const [authWindow, setAuthWindow] = useState<Window>()
     const [salon, setSalon] = useState(false)
