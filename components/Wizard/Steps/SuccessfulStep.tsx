@@ -53,7 +53,7 @@ const SuccessfulStep: FC = () => {
                                     </div>
                                     <div className='basis-2/3 grow '>
                                         <GoHomeButton>
-                                            <SubmitButton text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                            <SubmitButton button_align='right' text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
                                                 <DoubleLineText
                                                     colorStyle='mltln-text-dark'
                                                     primaryText='Swap'

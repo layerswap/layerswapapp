@@ -74,7 +74,7 @@ const Expired = ({ swap, onGetHelp }: Props) => {
                 </div>
                 <div className='basis-2/3'>
                     <GoHomeButton>
-                        <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
                             <DoubleLineText
                                 colorStyle='mltln-text-dark'
                                 primaryText='Swap'
@@ -118,7 +118,7 @@ const Canceled = ({ swap, onGetHelp }: Props) => {
                 </div>
                 <div className='basis-2/3'>
                     <GoHomeButton>
-                        <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
                             <DoubleLineText
                                 colorStyle='mltln-text-dark'
                                 primaryText='Swap'
@@ -164,7 +164,7 @@ const Failed = ({ swap, onGetHelp }: Props) => {
                     </div>
                     <div className='basis-2/3'>
                         <GoHomeButton>
-                            <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                            <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
                                 <DoubleLineText
                                     colorStyle='mltln-text-dark'
                                     primaryText='Swap'

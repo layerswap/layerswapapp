@@ -108,6 +108,8 @@ const WithdrawNetworkStep: FC = () => {
                             </div>
                         </BackgroundField>
                     }
+
+
                     <div className='grid grid-cols-1 gap-4'>
                         {
                             network_internal_name === KnownInternalNames.Networks.LoopringMainnet &&
@@ -125,21 +127,24 @@ const WithdrawNetworkStep: FC = () => {
                                 {swap?.additonal_data?.deposit_address}
                             </p>
                         </BackgroundField>
-                        <BackgroundField header={'Address Type'}>
-                            <p>
-                                EOA Wallet
-                            </p>
-                        </BackgroundField>
-                        {
-                            swap?.additonal_data?.memo &&
-                            <>
-                                <BackgroundField isCopiable={true} toCopy={swap?.additonal_data?.memo} header={'Memo'}>
-                                    <p className='break-all'>
-                                        {swap?.additonal_data?.memo}
-                                    </p>
-                                </BackgroundField>
-                            </>
-                        }
+
+                        <div className='flex space-x-4'>
+                            <BackgroundField header={'Address Type'}>
+                                <p>
+                                    EOA Wallet
+                                </p>
+                            </BackgroundField>
+                            {
+                                swap?.additonal_data?.memo &&
+                                <>
+                                    <BackgroundField isCopiable={true} toCopy={swap?.additonal_data?.memo} header={'Memo'}>
+                                        <p className='break-all'>
+                                            {swap?.additonal_data?.memo}
+                                        </p>
+                                    </BackgroundField>
+                                </>
+                            }
+                        </div>
                         <div className='flex space-x-4'>
                             <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
                                 <p>
@@ -183,7 +188,7 @@ const WithdrawNetworkStep: FC = () => {
                                 </div>
                                 <div className='basis-2/3'>
                                     <GoHomeButton>
-                                        <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
                                             <DoubleLineText
                                                 colorStyle='mltln-text-dark'
                                                 primaryText='Swap'
@@ -208,7 +213,7 @@ const WithdrawNetworkStep: FC = () => {
                                 </GoHomeButton>
                             </div>
                             <div className='basis-2/3'>
-                                <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} onClick={handleConfirm} icon={<CheckIcon className="h-5 w-5" aria-hidden="true" />} >
+                                <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleConfirm} icon={<CheckIcon className="h-5 w-5" aria-hidden="true" />} >
                                     <DoubleLineText
                                         colorStyle='mltln-text-light'
                                         primaryText='Done'

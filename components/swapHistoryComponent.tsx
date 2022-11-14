@@ -391,7 +391,7 @@ function TransactionsHistory() {
                               </SubmitButton>
                             </div>
                             <div className='basis-2/3'>
-                              <SubmitButton text_align="left" onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='h-5 w-5' />}>
+                              <SubmitButton button_align='right' text_align="left" onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='h-5 w-5' />}>
                                 Complete Swap
                               </SubmitButton>
                             </div>
