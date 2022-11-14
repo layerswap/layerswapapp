@@ -21,37 +21,29 @@ const CurrenciesField: FC = () => {
         ec.is_withdrawal_enabled : ec.is_deposit_enabled)) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === SwapType.OffRamp ?
             nc.is_deposit_enabled : nc.is_withdrawal_enabled)), [exchange, network, swapType])
 
+    const mapCurranceToMenuItem = (c:Currency):SelectMenuItem<Currency> => ({
+        baseObject: c,
+        id: c.id,
+        name: c.asset,
+        order: exchange?.baseObject?.currencies?.find(ec => ec.asset === c.asset)?.order || 0, //TODO offramp, before doing check network currencies order is set in settings
+        imgSrc: c.logo ? `${resource_storage_url}${c.logo}` : null,
+        isAvailable: true,
+        isDefault: false,
+    })
+    
     const currencyMenuItems: SelectMenuItem<Currency>[] = network ? currencies
         .filter(currencyIsAvilable)
-        .map(c => ({
-            baseObject: c,
-            id: c.id,
-            name: c.asset,
-            order: exchange?.baseObject?.currencies?.find(ec => ec.asset === c.asset)?.order || 0, //TODO offramp
-            imgSrc: c.logo ? `${resource_storage_url}${c.logo}` : null,
-            isAvailable: true,
-            isEnabled: true,
-            isDefault: false,
-        })).sort(SortingByOrder)
+        .map(mapCurranceToMenuItem).sort(SortingByOrder)
         : []
 
     useEffect(() => {
         if (!network || !exchange) return;
         if (currency && currencyIsAvilable(currency.baseObject)) return
 
-        const default_currency = currencies.find(currencyIsAvilable)
+        const default_currency = currencies.filter(currencyIsAvilable)?.map(mapCurranceToMenuItem)?.sort(SortingByOrder)?.[0]
 
         if (default_currency) {
-            const defaultValue: SelectMenuItem<Currency> = {
-                baseObject: default_currency,
-                id: default_currency.id,
-                name: default_currency.asset,
-                order: exchange.baseObject.currencies.find(ec => ec.asset === default_currency.asset)?.order || 0,
-                imgSrc: default_currency.logo ? `${resource_storage_url}${default_currency.logo}` : null,
-                isAvailable: true,
-                isDefault: false,
-            }
-            setFieldValue(name, defaultValue)
+            setFieldValue(name, default_currency)
         }
         else if (currency) {
             setFieldValue(name, null)

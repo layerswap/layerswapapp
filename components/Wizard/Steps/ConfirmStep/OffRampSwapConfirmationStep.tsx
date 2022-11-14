@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
@@ -11,14 +11,27 @@ import WarningMessage from '../../../WarningMessage';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import Widget from '../../Widget';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
+import useSWR from 'swr';
+import { ApiResponse } from '../../../../Models/ApiResponse';
 
 const OffRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const { createAndProcessSwap, processPayment } = useSwapDataUpdate()
+    const { createAndProcessSwap, processPayment, updateSwapFormData } = useSwapDataUpdate()
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const { network } = swapFormData || {}
     const router = useRouter();
+    const { exchange, destination_address, currency } = swapFormData || {}
+
+    const layerswapApiClient = new LayerSwapApiClient()
+    const depositad_address_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts/${exchange?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
+    const { data: deposite_address } = useSWR<ApiResponse<string>>((exchange && !destination_address) ? depositad_address_endpoint : null, layerswapApiClient.fetcher)
+
+    useEffect(() => {
+        if (deposite_address?.data)
+            updateSwapFormData((old) => ({ ...old, destination_address: deposite_address.data }))
+    }, [deposite_address])
 
     const handleSubmit = useCallback(async () => {
         setIsSubmitting(true)

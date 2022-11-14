@@ -38,6 +38,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const { swapFormData } = useSwapDataState()
 
     let formValues = formikRef.current?.values;
+
     const settings = useSettingsState();
     const { discovery: { resource_storage_url } } = settings || {}
     const query = useQueryState();
@@ -80,7 +81,8 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                     }
                 }
             }
-            clearSwap()
+            if (formikRef.current?.dirty)
+                clearSwap()
             updateSwapFormData(values)
             await OnSumbit(values)
         }
