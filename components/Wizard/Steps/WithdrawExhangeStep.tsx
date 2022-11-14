@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import SubmitButton from '../../buttons/submitButton';
+import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { useRouter } from 'next/router';
@@ -138,42 +138,63 @@ const WithdrawExchangeStep: FC = () => {
                 {
                     transferDone ?
                         <div>
-                            <div className='flex place-content-center mb-6 mt-3'>
+                            <div className="flex text-center mb-4 space-x-2">
                                 <div className='relative'>
-                                    <div className='absolute top-1 left-1 w-10 h-10 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                    <div className='absolute top-2 left-2 w-8 h-8 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                    <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-primary-800 rounded-full'></div>
+                                    <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
+                                </div>
+                                <label className="text-xs self-center md:text-sm font-semibold text-primary-text">Waiting for you to do a withdrawal from the exchange</label>
+                            </div>
+                            <div className="flex flex-row text-white text-base space-x-2">
+                                <div className='basis-1/3'>
+                                    <SubmitButton text_align='left' onClick={() => {
+                                        boot();
+                                        show();
+                                        updateWithProps()
+                                    }} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<ChatIcon className="h-5 w-5" aria-hidden="true" />}>
+                                        <DoubleLineText
+                                            colorStyle='mltln-text-dark'
+                                            primaryText='Support'
+                                            secondarytext='Contact'
+                                        />
+                                    </SubmitButton>
+                                </div>
+                                <div className='basis-2/3'>
+                                    <GoHomeButton>
+                                        <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                            <DoubleLineText
+                                                colorStyle='mltln-text-dark'
+                                                primaryText='Swap'
+                                                secondarytext='Do another'
+                                            />
+                                        </SubmitButton>
+                                    </GoHomeButton>
                                 </div>
                             </div>
-                            <div className="flex text-center place-content-center">
-                                <label className="block text-lg font-semibold leading-6 text-primary-text">Waiting for you to do a withdrawal from the exchange</label>
-                            </div>
-                            <div className='mt-6 space-y-2'>
-                                <SubmitButton onClick={() => {
-                                    boot();
-                                    show();
-                                    updateWithProps()
-                                }} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<ChatIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
-                                    Contact support
-                                </SubmitButton>
+                        </div>
+                        :
+                        <div className="flex flex-row text-white text-base space-x-2">
+                            <div className='basis-1/3'>
                                 <GoHomeButton>
-                                    <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
-                                        Do another swap
+                                    <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                        <DoubleLineText
+                                            colorStyle='mltln-text-dark'
+                                            primaryText='Later'
+                                            secondarytext='Will do it'
+                                        />
                                     </SubmitButton>
                                 </GoHomeButton>
                             </div>
-                        </div>
-
-                        :
-                        <div className="text-white text-base space-y-2">
-                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConfirm} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                                I Did The Transfer
-                            </SubmitButton>
-                            <GoHomeButton>
-                                <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
-                                    Will do it later
+                            <div className='basis-2/3'>
+                                <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} onClick={handleConfirm} icon={<CheckIcon className="h-5 w-5" aria-hidden="true" />} >
+                                    <DoubleLineText
+                                        colorStyle='mltln-text-light'
+                                        primaryText='Done'
+                                        secondarytext='The transfer is'
+                                    />
                                 </SubmitButton>
-                            </GoHomeButton>
+                            </div>
                         </div>
                 }
             </Widget.Footer>

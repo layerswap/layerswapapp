@@ -21,6 +21,7 @@
   .styled-scroll {
     @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300  scrollbar-thumb:!bg-slate-500/50;
   }
+  
 }
 
 @layer base {

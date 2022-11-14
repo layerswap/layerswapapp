@@ -382,14 +382,18 @@ function TransactionsHistory() {
                       {
                         selectedSwap?.status == SwapStatus.UserTransferPending &&
                         <div className="text-white text-sm mt-6 space-y-3">
-                          <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false}>
-                            Complete Swap
-                            <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                          </SubmitButton>
-                          <SubmitButton buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false}>
-                            Cancel Swap
-                            <XIcon className='ml-2 h-5 w-5' />
-                          </SubmitButton>
+                          <div className="flex flex-row text-white text-base space-x-2">
+                            <div className='basis-1/3'>
+                              <SubmitButton text_align="left" buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false} icon={<XIcon className='h-5 w-5' />}>
+                                Cancel
+                              </SubmitButton>
+                            </div>
+                            <div className='basis-2/3'>
+                              <SubmitButton text_align="left" onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='h-5 w-5' />}>
+                                Complete Swap
+                              </SubmitButton>
+                            </div>
+                          </div>
                         </div>
                       }
                     </div>

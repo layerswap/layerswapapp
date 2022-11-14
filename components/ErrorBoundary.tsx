@@ -1,3 +1,4 @@
+import { HomeIcon, RefreshIcon } from "@heroicons/react/solid";
 import { NextRouter, withRouter } from "next/router"
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { SendErrorMessage } from "../lib/telegram"
@@ -16,7 +17,7 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
         this.state = { hasError: false }
     }
     static getDerivedStateFromError(error) {
-      
+
         return { hasError: true }
     }
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -49,18 +50,24 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
                                         </MessageComponent.Description>
                                     </MessageComponent.Content>
                                     <MessageComponent.Buttons>
-                                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => {
-                                            this.setState({ hasError: false })
-                                        }}>
-                                            Try Again
-                                        </SubmitButton>
-                                        {
-                                            this.props.router.asPath !== "/" && <GoHomeButton>
-                                                <SubmitButton buttonStyle="outline" isDisabled={false} isSubmitting={false}>
-                                                    Go home
+                                        <div className="flex flex-row text-white text-base space-x-2">
+                                            <div className='basis-1/3'>
+                                                {
+                                                    this.props.router.asPath !== "/" && <GoHomeButton>
+                                                        <SubmitButton text_align="left" buttonStyle="outline" isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                                            Go home
+                                                        </SubmitButton>
+                                                    </GoHomeButton>
+                                                }
+                                            </div>
+                                            <div className='basis-2/3'>
+                                                <SubmitButton button_align="right" text_align="left" isDisabled={false} isSubmitting={false} onClick={() => {
+                                                    this.setState({ hasError: false })
+                                                }} icon={<RefreshIcon className="h-5 w-5" aria-hidden="true" />}>
+                                                    Try Again
                                                 </SubmitButton>
-                                            </GoHomeButton>
-                                        }
+                                            </div>
+                                        </div>
                                     </MessageComponent.Buttons>
                                 </MessageComponent>
                             </div>

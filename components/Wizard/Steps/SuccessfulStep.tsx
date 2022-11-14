@@ -1,9 +1,10 @@
 import { ArrowRightIcon, ExternalLinkIcon } from '@heroicons/react/outline';
+import { HomeIcon } from '@heroicons/react/solid';
 import { FC, useCallback } from 'react'
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
 import { SwapType } from '../../../lib/layerSwapApiClient';
-import SubmitButton from '../../buttons/submitButton';
+import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
 
@@ -37,13 +38,42 @@ const SuccessfulStep: FC = () => {
                     </MessageComponent.Description>
                 </MessageComponent.Content>
                 <MessageComponent.Buttons>
-                    {
-                        networks && swap?.type === SwapType.OnRamp && swap?.transaction_id &&
-                        <SubmitButton buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer}>View in Explorer <ExternalLinkIcon className='ml-2 h-5 w-5' /></SubmitButton>
-                    }
-                    <GoHomeButton>
-                        <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false}>Swap more <ArrowRightIcon className='ml-2 h-5 w-5' /></SubmitButton>
-                    </GoHomeButton>
+                    <div className="flex flex-row text-white text-base space-x-2">
+                        {
+                            (networks && swap?.type === SwapType.OnRamp && swap?.transaction_id) ?
+                                <>
+                                    <div className='basis-1/3'>
+                                        <SubmitButton text_align='left' buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer} icon={<ExternalLinkIcon className='h-5 w-5' />}>
+                                            <DoubleLineText
+                                                colorStyle='mltln-text-light'
+                                                primaryText='Explorer'
+                                                secondarytext='View in'
+                                            />
+                                        </SubmitButton>
+                                    </div>
+                                    <div className='basis-2/3 grow '>
+                                        <GoHomeButton>
+                                            <SubmitButton text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                                <DoubleLineText
+                                                    colorStyle='mltln-text-dark'
+                                                    primaryText='Swap'
+                                                    secondarytext='Do another'
+                                                />
+                                            </SubmitButton>
+                                        </GoHomeButton>
+                                    </div>
+                                </>
+                                :
+                                <div className='grow'>
+                                    <GoHomeButton>
+                                        <SubmitButton text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                            Swap more
+                                        </SubmitButton>
+                                    </GoHomeButton>
+                                </div>
+                        }
+
+                    </div>
                 </MessageComponent.Buttons>
             </MessageComponent>
         </>

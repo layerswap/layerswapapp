@@ -33,7 +33,7 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent }:
                 x: { duration: 0.35, type: "spring" },
             }}
             custom={{ direction: moving === "back" ? -1 : 1, width: wrapperWidth }}>
-            <div style={{ width: `${wrapperWidth}px`, minHeight: '504px' }} className="pb-6">
+            <div style={{ width: `${wrapperWidth}px`, minHeight: '504px', height: '100%' }} className="pb-6">
                 {wrapperWidth > 1 && children}
             </div>
         </motion.div>

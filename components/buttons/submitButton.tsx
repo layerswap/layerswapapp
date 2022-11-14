@@ -3,6 +3,8 @@ import SpinIcon from "../icons/spinIcon";
 
 type buttonStyle = 'outline' | 'filled';
 type buttonSize = 'small' | 'medium' | 'large';
+type text_align = 'center' | 'left'
+type button_align = 'left' | 'right'
 
 export class SubmitButtonProps {
     isDisabled: boolean;
@@ -12,10 +14,12 @@ export class SubmitButtonProps {
     icon?: React.ReactNode;
     buttonStyle?: buttonStyle = 'filled';
     size?: buttonSize = 'medium';
+    text_align?: text_align = 'center'
+    button_align?: button_align = 'left'
 }
 
 function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {
-    let defaultStyle = 'shadowed-button items-center disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out'
+    let defaultStyle = 'shadowed-button items-center space-x-2 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out'
     defaultStyle += buttonStyle == 'filled' ? " border-0 bg-primary text-primary-buttonTextColor" : " text-primary border border-primary";
 
     switch (size) {
@@ -33,7 +37,7 @@ function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {
     return defaultStyle;
 }
 
-const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, children, type, onClick, buttonStyle = 'filled', size = 'medium' }) => {
+const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, children, type, onClick, buttonStyle = 'filled', size = 'medium', text_align = 'center', button_align = 'left' }) => {
     return (
         <button
             disabled={isDisabled || isSubmitting}
@@ -41,15 +45,40 @@ const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, c
             onClick={onClick}
             className={constructClassNames(size, buttonStyle)}
         >
-            <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+            <span className={`${button_align === "right" ? 'order-last':'order-first'} ${text_align === 'center' ? "absolute left-0 inset-y-0 flex items-center pl-3" : "relative"}`}>
                 {(!isDisabled && !isSubmitting) && icon}
                 {isSubmitting ?
                     <SpinIcon className="animate-spin h-5 w-5" />
                     : null}
             </span>
-            {children}
+            <span className={`grow ${text_align === 'left' ? 'text-left' : 'text-center'}`}>{children}</span>
         </button>
     );
+}
+
+
+type DoubleLineTextProps = {
+    primaryText: string,
+    secondarytext: string,
+    colorStyle: 'mltln-text-light' | 'mltln-text-dark'
+}
+
+const text_styles = {
+    'mltln-text-light': {
+        primary: 'text-white',
+        secondary: 'text-primary-100'
+    },
+    'mltln-text-dark': {
+        primary: 'text-primary',
+        secondary: 'text-primary-700'
+    }
+}
+
+export const DoubleLineText = ({ primaryText, secondarytext, colorStyle }: DoubleLineTextProps) => {
+    return <div className={`leading-3`}>
+        <div className={`text-xs ${text_styles[colorStyle].secondary}`}>{secondarytext}</div>
+        <div className={`${text_styles[colorStyle].primary}`}>{primaryText}</div>
+    </div>
 }
 
 export default SubmitButton;

@@ -8,7 +8,7 @@ const Widget = ({ children }) => {
     return <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">{children}</div>
 }
 const Content = ({ children }) => {
-    return <><div className='space-y-4'>{children}</div><div></div></>
+    return <><div className='space-y-4'>{children}</div></>
 }
 const variants = {
     enter: {
