@@ -6,6 +6,7 @@ import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
 import Modal from '../modalComponent'
+import SlideOver from '../SlideOver'
 
 export interface SelectProps<T> {
     name: string;
@@ -279,9 +280,11 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     </motion.div>
                 }
             </AnimatePresence>
-            <Modal showModal={isOpen} setShowModal={setIsOpen} modaltype='mobile'>
-                {valueList}
-            </Modal>
+            <SlideOver imperativeOpener={[isOpen, setIsOpen]} place='inStep'>
+                {(close) => (
+                    valueList
+                )}
+            </SlideOver>
         </>
     )
 }

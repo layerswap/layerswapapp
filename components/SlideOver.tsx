@@ -1,9 +1,8 @@
-import { Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
-import { FC, Fragment, ReactNode, useState } from "react"
-import Modal from "./modalComponent";
+import { FC, useState } from "react"
+import { MobileModal } from "./modalComponent";
 
 export type slideOverPlace = 'inStep' | 'inModal' | 'inMenu'
 
@@ -39,6 +38,12 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
     useEffect(() => {
         imperativeOpener && setOpen(imperativeOpener[0])
     }, [imperativeOpener?.[0]])
+
+    useEffect(() => {
+        if (open) imperativeOpener?.[1](true)
+        else imperativeOpener?.[1](false)
+    }, [open])
+
     return (
         <>
             <span>{opener && opener(handleOpen)}</span>
@@ -75,12 +80,12 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
                                 </div>
                             </div>
                         </motion.div>
+                        <MobileModal showModal={open} setShowModal={setOpen} title={header}>
+                            {children && children(handleClose)}
+                        </MobileModal>
                     </>
                 }
             </AnimatePresence>
-            <Modal modaltype="mobile" showModal={open} setShowModal={setOpen} title={header}>
-                {children && children(handleClose)}
-            </Modal>
         </>
     )
 })
