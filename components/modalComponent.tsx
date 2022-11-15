@@ -176,7 +176,7 @@ export const MobileModal: FC<ModalParams> = ({ showModal, setShowModal, children
                 <div className="text-lg text-center leading-6 font-medium text-primary-text mb-3">
                     {title}
                 </div>
-                <div className='inline-block max-w-screen-xl h-full max-h-[calc(100vh-170px)] w-full transform overflow-scroll'>
+                <div className='inline-block max-w-screen-xl max-h-[calc(100vh-170px)] w-full transform overflow-scroll'>
                     {children}
                 </div>
             </motion.div>

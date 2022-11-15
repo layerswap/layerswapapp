@@ -58,8 +58,8 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                         <p className='text-base text-left font-roboto text-primary-text font-light'>
                             Please help us shape the product, catch bugs, and prioritize features. Your feedback will go directly into our Telegram channel.
                         </p>
-                        <div className="flex flex-wrap -mx-3">
-                            <div className="w-full px-3">
+                        <div className="flex flex-wrap">
+                            <div className="w-full">
                                 <textarea
                                     id='Feedback'
                                     name='Feedback'
@@ -71,7 +71,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                             </div>
                         </div>
                     </div>
-                    <div className="text-white text-sm space-y-4">
+                    <div className="text-white text-sm space-y-4 flex flex-col">
                         <button
                             type="button"
                             onClick={() => {
@@ -79,7 +79,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                                 show();
                                 updateWithProps()
                             }}
-                            className="text-center disabled:text-primary-800 text-primary relative justify-center border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                            className="text-center f disabled:text-primary-800 text-primary border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
                         >
                             Need help?
                         </button>
