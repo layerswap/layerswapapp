@@ -101,6 +101,24 @@ export default function () {
                                                                 </a>
                                                             )}
                                                         </Menu.Item>
+                                                        <Menu.Item>
+                                                            {({ active }) => (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        boot();
+                                                                        show();
+                                                                        updateWithProps()
+                                                                    }}
+                                                                    type="button"
+                                                                    className={classNames(
+                                                                        active ? 'bg-darkblue-300' : '',
+                                                                        'block w-full text-left px-4 py-2  whitespace-nowrap'
+                                                                    )}
+                                                                >
+                                                                    Get Help
+                                                                </button>
+                                                            )}
+                                                        </Menu.Item>
                                                     </>
                                             }
                                             {
