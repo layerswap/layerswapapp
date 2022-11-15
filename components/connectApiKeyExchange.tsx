@@ -65,7 +65,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
         <>
             <div className="w-full flex flex-col justify-between h-full pt-4 space-y-5  text-primary-text">
                 <div className="flex items-center">
-                    <h3 className="block text-lg font-medium leading-6 text-white">
+                    <h3 className="block sm:text-lg font-medium leading-6 text-white">
                         Please enter
                         {ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange.internal_name]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.display_name}</a> : <span className='mx-1'>{exchange?.display_name}</span>}
                         API keys
