@@ -42,7 +42,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const settings = useSettingsState();
     const { discovery: { resource_storage_url } } = settings || {}
     const query = useQueryState();
-    const [addressSource, setAddressSource] = useState("")
     const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
 
     useEffect(() => {
@@ -93,8 +92,8 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const destAddress: string = query.destAddress;
 
-    const partner = addressSource ?
-        settings.partners.find(p => p.internal_name?.toLocaleLowerCase() === addressSource?.toLocaleLowerCase())
+    const partner = query?.addressSource ?
+        settings.partners.find(p => p.internal_name?.toLocaleLowerCase() === query?.addressSource?.toLocaleLowerCase())
         : undefined
 
     const isPartnerAddress = partner && destAddress;
