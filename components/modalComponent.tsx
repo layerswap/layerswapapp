@@ -169,7 +169,7 @@ export const MobileModal: FC<ModalParams> = ({ showModal, setShowModal, children
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className="h-7 rounded-t-4xl -mb-1 flex w-full items-center justify-center">
+                <div tabIndex={0} className="h-7 rounded-t-4xl -mb-1 flex w-full items-center justify-center">
                     <div className="-mr-1 h-1 w-6 rounded-full bg-darkblue-100 transition-all group-active:rotate-12" />
                     <div className="h-1 w-6 rounded-full bg-darkblue-100 transition-all group-active:-rotate-12" />
                 </div>
