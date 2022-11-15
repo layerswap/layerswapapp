@@ -1,3 +1,4 @@
+import { Dialog } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
@@ -80,10 +81,16 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
                                 </div>
                             </div>
                         </motion.div>
+                    </>
+                }
+            </AnimatePresence>
+            <AnimatePresence>
+                {open &&
+                    <Dialog open={open} onClose={() => setOpen(false)}>
                         <MobileModal showModal={open} setShowModal={setOpen} title={header}>
                             {children && children(handleClose)}
                         </MobileModal>
-                    </>
+                    </Dialog>
                 }
             </AnimatePresence>
         </>

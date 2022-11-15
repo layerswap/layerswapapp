@@ -5,7 +5,6 @@ import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon } from '@heroi
 import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
-import Modal from '../modalComponent'
 import SlideOver from '../SlideOver'
 
 export interface SelectProps<T> {
@@ -49,16 +48,16 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
     const handleComboboxChange = useCallback(() => { }, [])
 
     const valueList = (
-        <div className="relative inset-0 flex flex-col">
+        <div className="relative inset-0 flex flex-col h-full">
             <div className="relative min-h-full items-center justify-center p-2 pt-0 text-center text-white">
                 <Combobox
                     as="div"
-                    className="transform transition-all"
+                    className="transform transition-all h-full"
                     onChange={handleComboboxChange}
                     value={query}
                 >
                     {filteredItems.length > 0 && (
-                        <Combobox.Options static className="border-0 max-h-[425px] grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                        <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
                             {filteredItems.map((item) => (
                                 <Combobox.Option
                                     key={item.id}
