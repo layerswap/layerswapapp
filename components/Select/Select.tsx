@@ -19,26 +19,14 @@ export interface SelectProps<T> {
 
 export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
-    const [query, setQuery] = useState('')
 
     function onChangeHandler(newValue: string) {
         setFieldValue(name, values.find(x => x.id === newValue), true);
     }
 
-    function closeModal() {
-        setIsOpen(false)
-    }
-
     function openModal() {
         setIsOpen(true)
     }
-
-    const filteredItems =
-        query === ''
-            ? values
-            : values.filter((item) => {
-                return item.name.toLowerCase().includes(query.toLowerCase())
-            })
 
     const handleSelect = useCallback((item: SelectMenuItem<T>) => {
         setIsOpen(false)
@@ -54,11 +42,10 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     as="div"
                     className="transform transition-all h-full"
                     onChange={handleComboboxChange}
-                    value={query}
                 >
-                    {filteredItems.length > 0 && (
+                    {values.length > 0 && (
                         <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
-                            {filteredItems.map((item) => (
+                            {values.map((item) => (
                                 <Combobox.Option
                                     key={item.id}
                                     value={item}
@@ -97,7 +84,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                         </Combobox.Options>
                     )}
 
-                    {query !== '' && filteredItems.length === 0 && (
+                    {values.length === 0 && (
                         <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
                             <ExclamationCircleIcon
                                 type="outline"
@@ -246,39 +233,6 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     </span>
                 </button>
             </div>
-            <AnimatePresence>
-                {isOpen &&
-                    <motion.div
-                        initial={{ y: "100%" }}
-                        animate={{
-                            y: 0,
-                            transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
-                        }}
-                        exit={{
-                            y: "100%",
-                            transition: { duration: 0.5, ease: [0.36, 0.66, 0.04, 1] },
-                        }}
-                        className='absolute inset-0 z-40 -inset-y-11 flex-col w-full bg-darkblue hidden sm:flex'>
-                        <div className='relative z-40 overflow-hidden bg-darkblue p-6 md:px-8 pt-0'>
-                            <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                                <span className="justify-self-end text-primary-text cursor-pointer">
-                                    <div className="block ">
-                                        <button
-                                            type="button"
-                                            className="rounded-md text-darkblue-50 hover:text-primary-text"
-                                            onClick={closeModal}
-                                        >
-                                            <span className="sr-only">Close</span>
-                                            <XIcon className="h-6 w-6" aria-hidden="true" />
-                                        </button>
-                                    </div>
-                                </span>
-                            </div>
-                            {valueList}
-                        </div>
-                    </motion.div>
-                }
-            </AnimatePresence>
             <SlideOver imperativeOpener={[isOpen, setIsOpen]} place='inStep'>
                 {(close) => (
                     valueList
