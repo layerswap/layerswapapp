@@ -17,6 +17,7 @@ import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
+import GuideLink from '../../guideLink';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -101,7 +102,7 @@ const WithdrawNetworkStep: FC = () => {
                                 <span className='flex-none'>
                                     Learn how to send from
                                 </span>
-                                <GuideLink fullTeext='Loopring Web' shortText='Web' userGuideUrlForDesktop={userGuideUrlForDesktop} />
+                                <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inModal"></GuideLink>
                             </div>
                         </BackgroundField>
                     }
@@ -180,30 +181,20 @@ const WithdrawNetworkStep: FC = () => {
                             </div>
                         </div>
                         :
-                        <div className="text-white text-base space-y-2">
-                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConfirm} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                                I Did The Transfer
+                    <div className="text-white text-base space-y-2">
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConfirm} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                            I Did The Transfer
+                        </SubmitButton>
+                        <GoHomeButton>
+                            <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
+                                Will do it later
                             </SubmitButton>
-                            <GoHomeButton>
-                                <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
-                                    Will do it later
-                                </SubmitButton>
-                            </GoHomeButton>
-                        </div>
+                        </GoHomeButton>
+                    </div>
                 }
-            </div>
-        </>
-    )
+                </div>
+            </>
+            )
 }
 
-export default WithdrawNetworkStep;
-
-function GuideLink({ userGuideUrlForDesktop, shortText, fullTeext }: { userGuideUrlForDesktop: string, fullTeext: string, shortText: string }) {
-    return <span className="items-center">
-        <SlideOver opener={(open) => <span className='text-primary cursor-pointer hover:text-primary-400' onClick={open}>&nbsp;<span className='hidden md:inline'>{fullTeext}</span><span className='inline md:hidden'>{shortText}</span></span>} place='inStep'>
-            {(close) => (
-                <DocIframe onConfirm={() => close()} URl={userGuideUrlForDesktop} />
-            )}
-        </SlideOver>
-    </span>;
-}
+            export default WithdrawNetworkStep;

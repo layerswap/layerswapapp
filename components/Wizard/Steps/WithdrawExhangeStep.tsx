@@ -16,12 +16,14 @@ import GoHomeButton from '../../utils/GoHome';
 import { CheckIcon, HomeIcon, ChatIcon } from '@heroicons/react/solid';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
+import GuideLink from '../../guideLink';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const { exchanges, discovery: { resource_storage_url } } = useSettingsState()
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
+    const [openDocSlideover, setOpenDocSlideover] = useState(false)
 
     useEffect(() => {
         setInterval(2000)
@@ -54,6 +56,11 @@ const WithdrawExchangeStep: FC = () => {
 
     return (
         <>
+            <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
+                {(close) => (
+                    <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                )}
+            </SlideOver>
             <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
                     <div className="flex items-center">
@@ -97,11 +104,8 @@ const WithdrawExchangeStep: FC = () => {
                                     <span className='flex-none'>
                                         Learn how to send from
                                     </span>
-                                    <SlideOver opener={(open) => <span className='text-primary cursor-pointer hover:text-primary-400' onClick={open}>&nbsp;<span>{exchange_internal_name}</span></span>} place='inStep'>
-                                        {(close) => (
-                                            <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
-                                        )}
-                                    </SlideOver>
+                                    <GuideLink text={exchange_internal_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                                    {/* <span className='text-primary cursor-pointer hover:text-primary-400' onClick={() => setOpenDocSlideover(true)}>{exchange_internal_name}</span> */}
                                 </div>
                             </BackgroundField>
                         }
