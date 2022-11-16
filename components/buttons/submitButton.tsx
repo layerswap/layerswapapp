@@ -19,7 +19,7 @@ export class SubmitButtonProps {
 }
 
 function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {
-    let defaultStyle = 'shadowed-button items-center space-x-2 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out'
+    let defaultStyle = 'shadowed-button items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out'
     defaultStyle += buttonStyle == 'filled' ? " border-0 bg-primary text-primary-buttonTextColor" : " text-primary border border-primary";
 
     switch (size) {
@@ -27,10 +27,10 @@ function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {
             defaultStyle += " py-4 px-4";
             break;
         case 'medium':
-            defaultStyle += " py-3 px-4";
+            defaultStyle += " py-3 px-3";
             break;
         case 'small':
-            defaultStyle += " py-1 px-4";
+            defaultStyle += " py-1 px-1";
             break;
     }
 
@@ -45,7 +45,7 @@ const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, c
             onClick={onClick}
             className={constructClassNames(size, buttonStyle)}
         >
-            <span className={`${button_align === "right" ? 'order-last':'order-first'} ${text_align === 'center' ? "absolute left-0 inset-y-0 flex items-center pl-3" : "relative"}`}>
+            <span className={`${button_align === "right" ? 'order-last' : 'order-first'} ${text_align === 'center' ? "absolute left-0 inset-y-0 flex items-center pl-3" : "relative"}`}>
                 {(!isDisabled && !isSubmitting) && icon}
                 {isSubmitting ?
                     <SpinIcon className="animate-spin h-5 w-5" />
@@ -60,7 +60,8 @@ const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, c
 type DoubleLineTextProps = {
     primaryText: string,
     secondarytext: string,
-    colorStyle: 'mltln-text-light' | 'mltln-text-dark'
+    colorStyle: 'mltln-text-light' | 'mltln-text-dark',
+    reversed?: boolean
 }
 
 const text_styles = {
@@ -74,8 +75,8 @@ const text_styles = {
     }
 }
 
-export const DoubleLineText = ({ primaryText, secondarytext, colorStyle }: DoubleLineTextProps) => {
-    return <div className={`leading-3`}>
+export const DoubleLineText = ({ primaryText, secondarytext, colorStyle, reversed }: DoubleLineTextProps) => {
+    return <div className={`leading-3 flex ${reversed ? 'flex-col-reverse' : 'flex-col'}`}>
         <div className={`text-xs ${text_styles[colorStyle].secondary}`}>{secondarytext}</div>
         <div className={`${text_styles[colorStyle].primary}`}>{primaryText}</div>
     </div>

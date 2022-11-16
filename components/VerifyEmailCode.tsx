@@ -80,8 +80,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                 {({ isValid, isSubmitting, errors, handleChange }) => (
                     <Form className='h-full text-primary-text'>
                         <Widget>
-                            <Widget.Content>
-                                <div className="w-full pt-4 flex-col flex h-full justify-between">
+                            <Widget.Content center={true}>
                                     <MailOpenIcon className='w-16 h-16 mt-auto text-primary self-center' />
                                     <div className='text-center mt-5'>
                                         <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{tempEmail}</span></p>
@@ -114,11 +113,10 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                             </Timer>
                                         </span>
                                     </div>
-                                </div>
                             </Widget.Content>
                             <div />
                             <Widget.Footer>
-                                <p className='text-primary-text text-sm'>
+                                <p className='text-primary-text text-sm mb-3 md:mb-5'>
                                     By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'> Terms of Service</a></Link> and <Link href="/blog/guide/Privacy_Policy"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
                                 </p>
                                 <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>

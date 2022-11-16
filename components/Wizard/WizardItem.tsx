@@ -44,7 +44,12 @@ let variants = {
     enter: ({ direction, width }) => ({
         x: direction * width,
     }),
-    center: { x: 0 },
+    center: {
+        x: 0, 
+        transition: {
+            when: "beforeChildren",
+        },
+    },
     exit: ({ direction, width }) => ({
         x: direction * -width,
     }),

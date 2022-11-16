@@ -64,7 +64,7 @@ const Modal: FC<ModalParams> = ({ onDismiss, isOpen, children, title, className,
                                         className="rounded-md text-darkblue-200 hover:text-primary-text"
                                         onClick={() => {
                                             onDismiss(true);
-                                        }}                                                >
+                                        }}>
                                         <span className="sr-only">Close</span>
                                         <XIcon className="h-6 w-6" aria-hidden="true" />
                                     </button>

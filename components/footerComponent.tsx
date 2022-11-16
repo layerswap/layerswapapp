@@ -48,7 +48,7 @@ export default function FooterComponent() {
         </div>
         <nav className="mt-4 flex flex-wrap flex-row" aria-label="Footer">
           {navigation.main.map((item) => (
-            <a key={item.name} href={item.href} target={item.target} className="ml-2 mb-2 items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 hover:cursor-pointer">
+            <a key={item.name} href={item.href} target={item.target} className="ml-2 first:ml-0 mb-2 items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 hover:cursor-pointer">
               {item.name}
             </a>
           ))}

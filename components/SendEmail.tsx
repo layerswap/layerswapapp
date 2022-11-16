@@ -71,32 +71,30 @@ const SendEmail: FC<Props> = ({ onSend }) => {
                     <Form autoComplete='true' className='w-full h-full'>
                         <div />
                         <Widget>
-                            <Widget.Content>
-                                <div className='flex flex-col justify-between'>
-                                    <UserIcon className='w-16 h-16 text-primary self-center mt-auto' />
-                                    <div>
-                                        <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
-                                            What's your email?
-                                        </p>
-                                        <p className='text-center text-base mb-6 px-2 text-primary-text'>
-                                            With your email, your exchange credentials will stay linked to your account and you can access your entire transfer history.
-                                        </p>
-                                    </div>
-                                    <div className="relative rounded-md shadow-sm">
-                                        <Field name="email">
-                                            {({ field }) => (
-                                                <input
-                                                    {...field}
-                                                    id='email'
-                                                    placeholder="john@example.com"
-                                                    autoComplete="email"
-                                                    type="email"
-                                                    className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-500 pr-42 block
+                            <Widget.Content center={true}>
+                                <UserIcon className='w-16 h-16 text-primary self-center mt-auto' />
+                                <div>
+                                    <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
+                                        What's your email?
+                                    </p>
+                                    <p className='text-center text-base mb-6 px-2 text-primary-text'>
+                                        With your email, your exchange credentials will stay linked to your account and you can access your entire transfer history.
+                                    </p>
+                                </div>
+                                <div className="relative rounded-md shadow-sm">
+                                    <Field name="email">
+                                        {({ field }) => (
+                                            <input
+                                                {...field}
+                                                id='email'
+                                                placeholder="john@example.com"
+                                                autoComplete="email"
+                                                type="email"
+                                                className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-500 pr-42 block
                                                    placeholder:text-primary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md"
-                                                />
-                                            )}
-                                        </Field>
-                                    </div>
+                                            />
+                                        )}
+                                    </Field>
                                 </div>
                             </Widget.Content>
                             <Widget.Footer>

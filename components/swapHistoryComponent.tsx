@@ -10,7 +10,7 @@ import Image from 'next/image'
 import { useAuthState } from "../context/authContext"
 import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
-import SubmitButton from "./buttons/submitButton"
+import SubmitButton, { DoubleLineText } from "./buttons/submitButton"
 import CopyButton from "./buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "./Sceletons"
 import GoHomeButton from "./utils/GoHome"
@@ -387,12 +387,22 @@ function TransactionsHistory() {
                           <div className="flex flex-row text-white text-base space-x-2">
                             <div className='basis-1/3'>
                               <SubmitButton text_align="left" buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false} icon={<XIcon className='h-5 w-5' />}>
-                                Cancel
+                                <DoubleLineText
+                                  colorStyle='mltln-text-dark'
+                                  primaryText='Cancel'
+                                  secondarytext='the swap'
+                                  reversed={true}
+                                />
                               </SubmitButton>
                             </div>
                             <div className='basis-2/3'>
                               <SubmitButton button_align='right' text_align="left" onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='h-5 w-5' />}>
-                                Complete Swap
+                                <DoubleLineText
+                                  colorStyle='mltln-text-light'
+                                  primaryText="Complete"
+                                  secondarytext='the swap'
+                                  reversed={true}
+                                />
                               </SubmitButton>
                             </div>
                           </div>
