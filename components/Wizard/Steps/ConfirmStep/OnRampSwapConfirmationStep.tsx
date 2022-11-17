@@ -17,6 +17,8 @@ import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormVa
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import Modal from '../../../modalComponent';
 import { useTimerState } from '../../../../context/timerContext';
+import WarningMessage from '../../../WarningMessage';
+import SwapSettings from '../../../../lib/SwapSettings';
 
 const TIMER_SECONDS = 120
 
@@ -114,12 +116,24 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleToggleChange = (value: boolean) => {
         setAddressConfirmed(value)
     }
+    const currentNetwork = swapFormData?.network?.baseObject;
+    const currentExchange = swapFormData?.exchange?.baseObject;
+    const currentCurrency = swapFormData?.currency?.baseObject;
+
     return (
         <>
-            <div className='h-full flex flex-col justify-between'>
+            <div className='h-full flex flex-col justify-between sm:space-y-4'>
                 <SwapConfirmMainData>
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
+                {
+                    SwapSettings?.NativeSupportedPaths[currentExchange.internal_name]?.[currentNetwork.internal_name]?.includes(currentCurrency.asset) &&
+                    <WarningMessage messageType='informating'>
+                        <>
+                            You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly
+                        </>
+                    </WarningMessage>
+                }
                 <div className="text-white text-sm">
                     <div className="mx-auto w-full rounded-lg font-normal">
                         <div className='flex justify-between mb-4 md:mb-8'>
