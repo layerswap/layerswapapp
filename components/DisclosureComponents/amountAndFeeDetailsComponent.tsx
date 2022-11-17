@@ -47,7 +47,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                                     </p>
                                                     {
                                                         KnownInternalNames.Networks.BNBChainMainnet == network?.internal_name &&
-                                                        <p className='text-[12px] text-primary'>
+                                                        <p className='text-[12px] text-slate-300'>
                                                             + 0.0015 BNB
                                                         </p>
                                                     }
