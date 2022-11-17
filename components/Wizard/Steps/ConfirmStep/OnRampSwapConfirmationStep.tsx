@@ -127,7 +127,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
                 {
-                    SwapSettings?.NativeSupportedPaths[currentExchange.internal_name][currentNetwork.internal_name].includes(currentCurrency.asset) &&
+                    SwapSettings?.NativeSupportedPaths[currentExchange.internal_name]?.[currentNetwork.internal_name]?.includes(currentCurrency.asset) &&
                     <WarningMessage messageType='informating'>
                         <>
                             You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly
