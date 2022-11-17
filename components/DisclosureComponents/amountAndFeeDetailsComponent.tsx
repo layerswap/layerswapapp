@@ -26,17 +26,17 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
 
     return (
         <>
-            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
+            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 px-3.5 py-3">
                 <Disclosure>
                     {({ open }) => (
                         <>
-                            <Disclosure.Button className="items-center flex w-full relative justify-between rounded-lg p-1.5 text-left text-base font-medium">
+                            <Disclosure.Button className="items-center flex w-full relative justify-between rounded-lg text-left text-base font-medium">
                                 <span className="md:font-semibold text-sm md:text-base text-primary-text">You will receive</span>
-                                <div className='flex items-center space-x-1'>
+                                <div className='flex items-center space-x-2'>
                                     <span className="text-sm md:text-base">
                                         {
                                             receive_amount ?
-                                                <span className="font-semibold md:font-bold text-right">
+                                                <span className="font-semibold md:font-bold text-right leading-4">
                                                     <p>
                                                         {receive_amount.toFixed(currencyDetails?.precision)}
                                                         <span>
@@ -47,7 +47,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                                     </p>
                                                     {
                                                         KnownInternalNames.Networks.BNBChainMainnet == network?.internal_name &&
-                                                        <p className='text-[11px] text-primary'>
+                                                        <p className='text-[12px] text-primary'>
                                                             + 0.0015 BNB
                                                         </p>
                                                     }
@@ -62,7 +62,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                     />
                                 </div>
                             </Disclosure.Button>
-                            <Disclosure.Panel className="p-2 text-sm text-primary-text font-normal">
+                            <Disclosure.Panel className="text-sm text-primary-text font-normal">
                                 <>
                                     <div className="mt-2 flex flex-row items-baseline justify-between">
                                         <label className="inline-flex items-center text-left">
