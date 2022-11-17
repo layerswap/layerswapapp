@@ -1,11 +1,9 @@
 import KnownInternalNames from "./knownIds";
 
 export default class SwapSettings {
-
-    public static InformationMessageCase: {
-        [from: string]: {
-            to: string,
-            InformationMessage?: string
+    public static NativeSupportedPaths: {
+        [exchangeName: string]: {
+            [networkName: string]: string[];
         }
     }
 
@@ -15,19 +13,30 @@ export default class SwapSettings {
             return;
         }
 
-        SwapSettings._isInitialized = true;
-
-        SwapSettings.InformationMessageCase = {
-            [KnownInternalNames.Exchanges.Coinbase]: {
-                to: KnownInternalNames.Networks.LoopringMainnet,
-                InformationMessage: 'gagulik'
+        SwapSettings.NativeSupportedPaths = {
+            [KnownInternalNames.Exchanges.Binance]: {
+                [KnownInternalNames.Networks.BNBChainMainnet]: [KnownInternalNames.Currencies.ETH, KnownInternalNames.Currencies.USDT, KnownInternalNames.Currencies.USDC],
+                [KnownInternalNames.Networks.ArbitrumMainnet]: [KnownInternalNames.Currencies.ETH],
+                [KnownInternalNames.Networks.OptimismMainnet]: [KnownInternalNames.Currencies.ETH],
             },
             [KnownInternalNames.Exchanges.Kucoin]: {
-                to: KnownInternalNames.Networks.LoopringMainnet,
-                InformationMessage: 'glglik'
+                [KnownInternalNames.Networks.BNBChainMainnet]: [KnownInternalNames.Currencies.USDT],
+                [KnownInternalNames.Networks.OptimismMainnet]: [KnownInternalNames.Currencies.ETH, KnownInternalNames.Currencies.USDC],
+                [KnownInternalNames.Networks.ArbitrumMainnet]: [KnownInternalNames.Currencies.ETH, KnownInternalNames.Currencies.USDC],
             },
+            [KnownInternalNames.Exchanges.Huobi]: {
+                [KnownInternalNames.Networks.BNBChainMainnet]: [KnownInternalNames.Currencies.USDT, KnownInternalNames.Currencies.USDC],
+                [KnownInternalNames.Networks.OptimismMainnet]: [KnownInternalNames.Currencies.ETH, KnownInternalNames.Currencies.USDC],
+                [KnownInternalNames.Networks.ArbitrumMainnet]: [KnownInternalNames.Currencies.ETH, KnownInternalNames.Currencies.USDC],
+            },
+            [KnownInternalNames.Exchanges.Okex]: {
+                [KnownInternalNames.Networks.BNBChainMainnet]: [KnownInternalNames.Currencies.USDC],
+                [KnownInternalNames.Networks.OptimismMainnet]: [KnownInternalNames.Currencies.ETH, KnownInternalNames.Currencies.USDC],
+                [KnownInternalNames.Networks.ArbitrumMainnet]: [KnownInternalNames.Currencies.ETH, KnownInternalNames.Currencies.USDC],
+            }
         }
 
+        SwapSettings._isInitialized = true;
     }
 }
 

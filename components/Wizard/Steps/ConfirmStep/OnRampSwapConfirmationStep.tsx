@@ -116,18 +116,22 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleToggleChange = (value: boolean) => {
         setAddressConfirmed(value)
     }
+    const currentNetwork = swapFormData?.network?.baseObject;
+    const currentExchange = swapFormData?.exchange?.baseObject;
+    const currentCurrency = swapFormData?.currency?.baseObject;
+
     return (
         <>
-            <div className='h-full flex flex-col justify-between'>
+            <div className='h-full flex flex-col justify-between sm:space-y-4'>
                 <SwapConfirmMainData>
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
                 {
-                    //SwapSettings usage example
-                    SwapSettings?.InformationMessageCase[swapFormData?.exchange?.baseObject?.internal_name] &&
-                    SwapSettings?.InformationMessageCase[swapFormData?.exchange?.baseObject?.internal_name].to == swapFormData?.network?.baseObject?.internal_name &&
+                    SwapSettings?.NativeSupportedPaths[currentExchange.internal_name][currentNetwork.internal_name].includes(currentCurrency.asset) &&
                     <WarningMessage messageType='informating'>
-                        {SwapSettings?.InformationMessageCase[swapFormData?.exchange?.baseObject?.internal_name].InformationMessage}
+                        <>
+                            You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly
+                        </>
                     </WarningMessage>
                 }
                 <div className="text-white text-sm">
