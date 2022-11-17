@@ -99,7 +99,7 @@ const OnRampSwapConfirmationStep: FC = () => {
         setLoading(false)
         if (nextStep)
             goToStep(nextStep)
-    }, [exchange, swap, transferAmount])
+    }, [exchange, swap, transferAmount, createAndProcessSwap])
 
     const handleClose = () => {
         setEditingAddress(false)
