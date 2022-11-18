@@ -18,6 +18,8 @@ import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import Modal from '../../../modalComponent';
 import { useTimerState } from '../../../../context/timerContext';
 import Widget from '../../Widget';
+import WarningMessage from '../../../WarningMessage';
+import SwapSettings from '../../../../lib/SwapSettings';
 
 const TIMER_SECONDS = 120
 
@@ -98,7 +100,7 @@ const OnRampSwapConfirmationStep: FC = () => {
         setLoading(false)
         if (nextStep)
             goToStep(nextStep)
-    }, [exchange, swap, transferAmount])
+    }, [exchange, swap, transferAmount, createAndProcessSwap])
 
     const handleClose = () => {
         setEditingAddress(false)
@@ -115,13 +117,24 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleToggleChange = (value: boolean) => {
         setAddressConfirmed(value)
     }
+    const currentNetwork = swapFormData?.network?.baseObject;
+    const currentExchange = swapFormData?.exchange?.baseObject;
+    const currentCurrency = swapFormData?.currency?.baseObject;
+
     return (
         <Widget>
             <Widget.Content>
                 <SwapConfirmMainData>
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
-
+                {
+                    SwapSettings?.NativeSupportedPaths[currentExchange.internal_name]?.[currentNetwork.internal_name]?.includes(currentCurrency.asset) &&
+                    <WarningMessage messageType='informating'>
+                        <>
+                            You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly
+                        </>
+                    </WarningMessage>
+                }
             </Widget.Content>
             <Widget.Footer>
                 <div className="text-white text-sm">

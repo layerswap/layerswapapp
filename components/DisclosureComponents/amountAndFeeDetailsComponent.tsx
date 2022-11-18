@@ -8,6 +8,7 @@ import { CryptoNetwork } from '../../Models/CryptoNetwork';
 import { getCurrencyDetails } from '../../helpers/currencyHelper';
 import { SwapType } from '../../lib/layerSwapApiClient';
 import ExchangeSettings from '../../lib/ExchangeSettings';
+import KnownInternalNames from '../../lib/knownIds';
 
 type Props = {
     amount: number,
@@ -25,33 +26,43 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
 
     return (
         <>
-            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
+            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 px-3.5 py-3">
                 <Disclosure>
                     {({ open }) => (
                         <>
-                            <Disclosure.Button className="items-center flex w-full relative justify-between rounded-lg p-1.5 text-left text-base font-medium">
+                            <Disclosure.Button className="items-center flex w-full relative justify-between rounded-lg text-left text-base font-medium">
                                 <span className="md:font-semibold text-sm md:text-base text-primary-text">You will receive</span>
-                                <span className="absolute right-9">
-                                    {
-                                        receive_amount ?
-                                            <span className="font-semibold md:font-bold text-center">
-                                                {receive_amount.toFixed(currencyDetails?.precision)}
-                                                <span>
+                                <div className='flex items-center space-x-2'>
+                                    <span className="text-sm md:text-base">
+                                        {
+                                            receive_amount ?
+                                                <span className="font-semibold md:font-bold text-right leading-4">
+                                                    <p>
+                                                        {receive_amount.toFixed(currencyDetails?.precision)}
+                                                        <span>
+                                                            {
+                                                                ` ${currencyDetails?.asset || ""}`
+                                                            }
+                                                        </span>
+                                                    </p>
                                                     {
-                                                        ` ${currencyDetails?.asset || ""}`
+                                                        KnownInternalNames.Networks.BNBChainMainnet == network?.internal_name &&
+                                                        <p className='text-[12px] text-slate-300'>
+                                                            + 0.0015 BNB
+                                                        </p>
                                                     }
                                                 </span>
-                                            </span>
-                                            : '-'
-                                    }
+                                                : '-'
+                                        }
 
-                                </span>
-                                <ChevronDownIcon
-                                    className={`${open ? 'rotate-180 transform' : ''
-                                        } h-4 w-4 text-primary-text`}
-                                />
+                                    </span>
+                                    <ChevronDownIcon
+                                        className={`${open ? 'rotate-180 transform' : ''
+                                            } h-4 w-4 text-primary-text`}
+                                    />
+                                </div>
                             </Disclosure.Button>
-                            <Disclosure.Panel className="p-2 text-sm text-primary-text font-normal">
+                            <Disclosure.Panel className="text-sm text-primary-text font-normal">
                                 <>
                                     <div className="mt-2 flex flex-row items-baseline justify-between">
                                         <label className="inline-flex items-center text-left">

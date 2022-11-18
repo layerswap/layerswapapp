@@ -83,8 +83,19 @@ export default class KnownInternalNames {
 
         public static readonly NahmiiMainnet: string = "NAHMII_MAINNET";
 
-        public static readonly RhinoFiMainnet: string = "RHINOFI_MAINNET";
-        
+        public static readonly RhinoFiMainnet: string = "RHINO_FI_MAINNET";
+
+        public static readonly BNBChainMainnet: string = "BSC_MAINNET";
+    }
+
+    static Currencies = class{
+        public static readonly USDT: string = "USDT";
+        public static readonly ETH: string = "ETH";
+        public static readonly USDC: string = "USDC";
+        public static readonly LRC: string = "LRC";
+        public static readonly IMX: string = "IMX";
+        public static readonly SNX: string = "SNX";
+        public static readonly ZKS: string = "ZKS";
     }
 
     static LiquidityProviders = class {
