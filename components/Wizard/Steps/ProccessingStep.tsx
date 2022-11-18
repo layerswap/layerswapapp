@@ -2,7 +2,6 @@ import { FC, useEffect } from 'react'
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { SwapType } from '../../../lib/layerSwapApiClient';
-import { SwapStatus } from '../../../Models/SwapStatus';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
@@ -15,8 +14,8 @@ const ProccessingStep: FC = () => {
     useEffect(() => {
         setInterval(2000)
         return () => setInterval(0)
-    },[])
-    
+    }, [])
+
     const swapStatusStep = GetSwapStatusStep(swap)
 
     useEffect(() => {
@@ -34,16 +33,15 @@ const ProccessingStep: FC = () => {
                         <div className='relative top-0 left-0 w-12 h-12 scale-75 bg bg-primary-800 rounded-full'></div>
                     </div>
                 </div>
-                <div className="flex text-center place-content-center mt-1 md:mt-1">
-                    <label className="block text-lg font-lighter leading-6 text-primary-text">{swap?.type == SwapType.OnRamp ? 'Exchange' : 'Network'} transaction received.</label>
+                <div className="flex flex-col text-center place-content-center mt-1 text-lg font-lighter text-primary-text">
+                    <p>
+                        {swap?.type == SwapType.OnRamp ? 'Exchange' : 'Network'} transaction completed.
+                    </p>
+                    <p>
+                        Your assets are on their way.
+                    </p>
                 </div>
-                {
-                    swap?.status == SwapStatus.LsTransferPending && <div className="flex text-center place-content-center mt-1 md:mt-1">
-                        <label className="block text-lg font-lighter leading-6 text-primary-text">Your assets are on their way. </label>
-                    </div>
-                }
             </div>
-
         </>
     )
 }

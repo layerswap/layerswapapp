@@ -1,20 +1,37 @@
+import { ExclamationIcon, InformationCircleIcon } from "@heroicons/react/outline";
 import { FC } from "react";
+
+type messageType = 'warning' | 'informating'
 
 type Props = {
     children: JSX.Element | JSX.Element[] | string;
+    messageType?: messageType;
     className?: string
 }
 
-const WarningMessage: FC<Props> = (({ children, className }) => {
+function constructIcons(messageType: messageType) {
+
+    let iconStyle: JSX.Element
+
+    switch (messageType) {
+        case 'warning':
+            iconStyle = <ExclamationIcon className="sm:h-5 sm:w-5 h-4 w-4 text-black" />;
+            break;
+        case 'informating':
+            iconStyle = <InformationCircleIcon className="sm:h-5 sm:w-5 h-4 w-4 text-white" />;
+            break;
+    }
+    return iconStyle
+}
+
+const WarningMessage: FC<Props> = (({ children, className, messageType = 'warning' }) => {
     return (
-        <div className={`flex-col w-full rounded-md bg-yellow-400 shadow-lg p-2 ${className}`}>
+        <div className={`flex-col w-full rounded-md ${messageType == 'warning' ? 'bg-yellow-400' : "bg-slate-800 text-white"} shadow-lg p-2 ${className}`}>
             <div className='flex items-center'>
-                <div className='mr-2 p-2 rounded-lg bg-yellow-500'>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="black" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
+                <div className={`mr-2 p-2 rounded-lg ${messageType == 'warning' ? 'bg-yellow-500' : "bg-slate-900 text-white"}`}>
+                    {constructIcons(messageType)}
                 </div>
-                <div className="text-sm">
+                <div className="text-xs sm:text-sm">
                     {children}
                 </div>
             </div>
