@@ -1,9 +1,10 @@
-import { Dispatch, FC, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
-import { Dialog, FocusTrap } from '@headlessui/react'
+import { Dispatch, FC, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef } from 'react'
+import { Dialog } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline';
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useQueryState } from '../context/query';
 import { useRouter } from 'next/router';
+import { forwardRef } from 'react';
 
 type modalSize = 'small' | 'medium' | 'large';
 
@@ -13,7 +14,7 @@ class ModalParams {
     closeWithX?: boolean;
     title?: React.ReactNode;
     className?: string;
-    modalSize?: modalSize = "large"
+    modalSize?: modalSize = "large";
 }
 
 function constructModalSize(size: modalSize) {
@@ -57,6 +58,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
         <AnimatePresence>
             {showModal && (
                 <Dialog
+                    static
                     className={`${query?.addressSource} relative z-40`}
                     onClose={() => setShowModal(false)}
                     open={showModal}
@@ -119,7 +121,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
     );
 }
 
-export const MobileModal: FC<ModalParams> = ({ showModal, setShowModal, children, title }) => {
+export const MobileModal = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, setShowModal, children, title }, topmostRef) => {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 42 };
@@ -146,7 +148,7 @@ export const MobileModal: FC<ModalParams> = ({ showModal, setShowModal, children
     }, [showModal]);
 
     return (
-        <>
+        <div ref={topmostRef}>
             <motion.div
                 key="backdrop"
                 className="fixed inset-0 z-20 bg-black/40 bg-opacity-10 sm:hidden block"
@@ -180,8 +182,8 @@ export const MobileModal: FC<ModalParams> = ({ showModal, setShowModal, children
                     {children}
                 </div>
             </motion.div>
-        </>
+        </div>
     )
-}
+})
 
 export default Modal;

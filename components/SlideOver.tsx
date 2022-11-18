@@ -1,7 +1,7 @@
 import { Dialog } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { Dispatch, SetStateAction, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useRef } from "react";
 import { FC, useState } from "react"
 import { MobileModal } from "./modalComponent";
 
@@ -18,6 +18,7 @@ type Props = {
 
 const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassNames, place, children }) => {
     const [open, setOpen] = useState(false)
+    const mobileModalRef = useRef(null)
     const handleClose = () => {
         setOpen(false)
         imperativeOpener?.[1](false);
@@ -89,8 +90,8 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
             </AnimatePresence>
             <AnimatePresence>
                 {open &&
-                    <Dialog open={open} onClose={() => {}}>
-                        <MobileModal showModal={open} setShowModal={setOpen} title={header}>
+                    <Dialog initialFocus={mobileModalRef} static open={open} onClose={() => {}} >
+                        <MobileModal ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header}>
                             {children && children(handleClose)}
                         </MobileModal>
                     </Dialog>
