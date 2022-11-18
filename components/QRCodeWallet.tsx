@@ -45,11 +45,11 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconW
                     <div>
                         {qrCode}
                     </div>
-                    <p className="text-xl md:text-2xl text-primary-text">
+                    <div className="text-xl md:text-2xl text-primary-text">
                         <CopyButton toCopy={qrUrl} iconHeight={22} iconWidth={22}>
                             <span>{shortenAddress(qrUrl)}</span>
                         </CopyButton>
-                    </p>
+                    </div>
                     <SubmitButton onClick={handleCloseModal} isDisabled={false} isSubmitting={false}>
                         Close
                     </SubmitButton>

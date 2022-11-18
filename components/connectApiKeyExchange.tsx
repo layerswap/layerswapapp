@@ -130,7 +130,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                 }
                 {
                     ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&
-                    <WarningMessage className=''>
+                    <WarningMessage>
                         {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
                     </WarningMessage>
                 }
