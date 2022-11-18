@@ -63,30 +63,13 @@ const WithdrawExchangeStep: FC = () => {
             </SlideOver>
             <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
-                    <div className="flex items-center">
-                        <h3 className="block sm:text-lg font-medium text-white leading-6 text-left">
-                            Go to
-                            {
-                                exchange_logo_url &&
-                                <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
-                                    <div className="flex-shrink-0 h-6 w-6 relative">
-                                        <Image
-                                            src={`${resource_storage_url}${exchange_logo_url}`}
-                                            alt="Exchange Logo"
-                                            height="40"
-                                            width="40"
-                                            loading="eager"
-                                            priority
-                                            layout="responsive"
-                                            className="rounded-md object-contain"
-                                        />
-                                    </div>
-                                </div>
-                            }
-                            <span className='mr-1'>
-                                {exchange_name}
-                            </span> and do a withdrawal to the provided address
-                        </h3>
+                    <div className="text-left">
+                        <p className="block text-md sm:text-lg font-medium text-white">
+                            Send {currency?.asset} to the provided address
+                        </p>
+                        <p className='text-sm sm:text-base'>
+                            The swap will be completed when your transfer is detected
+                        </p>
                     </div>
                     {
                         swap?.additonal_data?.note &&
@@ -95,18 +78,6 @@ const WithdrawExchangeStep: FC = () => {
                         </WarningMessage>
                     }
                     <div className={`mb-6 grid grid-cols-1 gap-5 `}>
-                        {
-                            ExchangeSettings?.KnownSettings[exchange_internal_name]?.ExchangeWithdrawalGuideUrl &&
-                            <BackgroundField >
-                                <div className='md:space-y-0'>
-                                    <span className='flex-none'>
-                                        Learn how to send from
-                                    </span>
-                                    <GuideLink text={exchange_internal_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
-                                    {/* <span className='text-primary cursor-pointer hover:text-primary-400' onClick={() => setOpenDocSlideover(true)}>{exchange_internal_name}</span> */}
-                                </div>
-                            </BackgroundField>
-                        }
                         <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.additonal_data?.deposit_address} header={'Address'}>
                             <p className='break-all'>
                                 {swap?.additonal_data?.deposit_address}
@@ -146,6 +117,16 @@ const WithdrawExchangeStep: FC = () => {
                                     {ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage}
                                 </span>
                             </WarningMessage>
+                        }
+                        {
+                            ExchangeSettings?.KnownSettings[exchange_internal_name]?.ExchangeWithdrawalGuideUrl &&
+                            <WarningMessage messageType='informating'>
+                                <span className='flex-none'>
+                                    Learn how to send from
+                                </span>
+                                <GuideLink text={exchange_internal_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                            </WarningMessage>
+
                         }
                     </div>
                 </div>

@@ -29,7 +29,7 @@ export default class ExchangeSettings {
             ExchangeWithdrawalPageUrl: "https://www.binance.com/en/my/wallet/account/main/withdrawal/crypto",
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/binance",
             FeeIsRefundable: true,
-            WithdrawalWarningMessage: "Please note that using the PayId method is not supported and won't be detected."
+            WithdrawalWarningMessage: "Please note that using the PayId method (Binance Pay) is not supported and won't be detected."
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Bitfinex] = {
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/bitfinex",

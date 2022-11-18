@@ -64,6 +64,14 @@ const WithdrawNetworkStep: FC = () => {
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
+                <div className="text-left">
+                        <p className="block text-md sm:text-lg font-medium text-white">
+                            Send crypto to the provided address
+                        </p>
+                        <p className='text-sm sm:text-base'>
+                            The swap will be completed after the transfer is detected
+                        </p>
+                    </div>
                     <div className="flex items-center">
                         <h3 className="block text-lg font-medium text-white leading-6 text-left">
                             Send {currency?.asset} to the provided address in
