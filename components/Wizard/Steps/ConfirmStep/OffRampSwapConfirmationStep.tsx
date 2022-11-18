@@ -14,6 +14,7 @@ import KnownInternalNames from '../../../../lib/knownIds';
 import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
+import GuideLink from '../../../guideLink';
 
 const OffRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
@@ -71,13 +72,11 @@ const OffRampSwapConfirmationStep: FC = () => {
                     {
                         NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
                         <WarningMessage className='mb-4'>
-                            <p className='font-normal space-x-1 text-sm text-darkblue-600'>
-                                <span>{NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}.</span>
-                                {
-                                    network?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
-                                    <a className='underline hover:no-underline' target="_blank" href='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex'>Learn how</a>
-                                }
-                            </p>
+                            <span>{NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}.</span>
+                            {
+                                network?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
+                                <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how' place='inStep' />
+                            }
                         </WarningMessage>
                     }
                     <AddressDetails canEditAddress={false} />

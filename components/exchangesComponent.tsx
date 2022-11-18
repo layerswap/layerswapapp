@@ -18,6 +18,7 @@ import { ExchangesComponentSceleton } from "./Sceletons";
 import Modal from "./modalComponent";
 import ExchangeSettings from "../lib/ExchangeSettings";
 import { ArrowLeftIcon } from "@heroicons/react/solid";
+import KnownInternalNames from "../lib/knownIds";
 
 interface UserExchange extends Exchange {
     note?: string,
@@ -246,9 +247,19 @@ function UserExchanges() {
                 <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' />
             </Modal>
             <Modal showModal={openExchangeToDisconnectModal} setShowModal={setOpenExchangeToDisconnectModal} title={'Are you sure?'} modalSize='small'>
-                <div className="flex justify-items-center space-x-3">
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" >Yes</SubmitButton>
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small'>No</SubmitButton>
+                <div className="space-y-3">
+                    <p className="text-slate-300 text-sm font-medium">
+                        {
+                            exchangeToDisconnect?.internal_name == KnownInternalNames.Exchanges.Coinbase ?
+                                <span>The Layerswap application will be disconnected from your Coinbase account.</span>
+                                :
+                                <span>Your API Keys will be permanently removed from Layerswap.</span>
+                        } If you have an in progress swap, it'll fail.
+                    </p>
+                    <div className="flex items-center space-x-3">
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => { handleDisconnectExchange(exchangeToDisconnect); handleClose() }} buttonStyle='outline' size="small" >Yes</SubmitButton>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleClose} size='small'>No</SubmitButton>
+                    </div>
                 </div>
             </Modal>
         </>

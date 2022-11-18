@@ -90,9 +90,7 @@ const WithdrawNetworkStep: FC = () => {
                     {
                         swap?.additonal_data?.memo &&
                         <WarningMessage>
-                            <p className='font-semibold text-sm text-darkblue-700'>
-                                Please include the "Memo" field, it is required for a successful transfer.
-                            </p>
+                            Please include the "Memo" field, it is required for a successful transfer.
                         </WarningMessage>
                     }
                     {
@@ -181,20 +179,20 @@ const WithdrawNetworkStep: FC = () => {
                             </div>
                         </div>
                         :
-                    <div className="text-white text-base space-y-2">
-                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConfirm} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            I Did The Transfer
-                        </SubmitButton>
-                        <GoHomeButton>
-                            <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
-                                Will do it later
+                        <div className="text-white text-base space-y-2">
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConfirm} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                I Did The Transfer
                             </SubmitButton>
-                        </GoHomeButton>
-                    </div>
+                            <GoHomeButton>
+                                <SubmitButton isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
+                                    Will do it later
+                                </SubmitButton>
+                            </GoHomeButton>
+                        </div>
                 }
-                </div>
-            </>
-            )
+            </div>
+        </>
+    )
 }
 
-            export default WithdrawNetworkStep;
+export default WithdrawNetworkStep;

@@ -29,13 +29,13 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
 
     switch (place) {
         case 'inStep':
-            moreClassNames += " -inset-y-14";
+            moreClassNames += " -mt-14";
             break;
         case 'inMenu':
-            moreClassNames += " inset-y-2";
+            moreClassNames += " pt-2";
             break;
         case 'inModal':
-            moreClassNames += " -inset-y-2";
+            moreClassNames += " ";
             break;
     }
 
@@ -89,7 +89,7 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
             </AnimatePresence>
             <AnimatePresence>
                 {open &&
-                    <Dialog open={open} onClose={() => setOpen(false)}>
+                    <Dialog open={open} onClose={() => {}}>
                         <MobileModal showModal={open} setShowModal={setOpen} title={header}>
                             {children && children(handleClose)}
                         </MobileModal>

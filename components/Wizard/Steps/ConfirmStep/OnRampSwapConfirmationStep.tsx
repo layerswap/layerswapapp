@@ -129,9 +129,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 {
                     SwapSettings?.NativeSupportedPaths[currentExchange.internal_name]?.[currentNetwork.internal_name]?.includes(currentCurrency.asset) &&
                     <WarningMessage messageType='informating'>
-                        <>
-                            You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly
-                        </>
+                        <span>You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly</span>
                     </WarningMessage>
                 }
                 <div className="text-white text-sm">

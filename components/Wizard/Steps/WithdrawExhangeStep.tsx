@@ -91,9 +91,7 @@ const WithdrawExchangeStep: FC = () => {
                     {
                         swap?.additonal_data?.note &&
                         <WarningMessage>
-                            <p className='font-semibold text-sm text-darkblue-700'>
-                                Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
-                            </p>
+                            Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
                         </WarningMessage>
                     }
                     <div className={`mb-6 grid grid-cols-1 gap-5 `}>
@@ -144,9 +142,9 @@ const WithdrawExchangeStep: FC = () => {
                         {
                             ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
                             <WarningMessage>
-                                <p className='font-normal text-sm text-darkblue-700'>
+                                <span>
                                     {ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage}
-                                </p>
+                                </span>
                             </WarningMessage>
                         }
                     </div>

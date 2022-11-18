@@ -75,7 +75,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 </p>
                                             </div>
                                             {item.id === value?.id && <div className="justify-self-end">
-                                                <CheckIcon className="h-6 w-6" aria-hidden="true" />
+                                                <CheckIcon className="h-5 w-5" aria-hidden="true" />
                                             </div>}
                                         </>
                                     )}
@@ -132,7 +132,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                         }
                     </Listbox.Button>
                     <AnimatePresence>
-                        <Listbox.Options className="ring-1 ring-darkblue-500 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-darkblue-700 rounded-md py-1 overflow-hidden focus:outline-none">
+                        <Listbox.Options className="ring-1 ring-darkblue-500 absolute origin-top-right right-0 z-10 mt-2 x-1 w-40 md:w-56 bg-darkblue-700 rounded-md py-1 overflow-hidden focus:outline-none">
                             {values.map((item) => (
                                 <Listbox.Option
                                     key={item.id}

@@ -131,9 +131,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                 {
                     ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&
                     <WarningMessage className=''>
-                        <div className='text-black'>
-                            {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
-                        </div>
+                        {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
                     </WarningMessage>
                 }
                 {
