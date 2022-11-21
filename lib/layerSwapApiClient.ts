@@ -13,7 +13,7 @@ export default class LayerSwapApiClient {
 
     _authInterceptor: AxiosInstance;
     constructor(private readonly _router?: NextRouter, private readonly _redirect?: string) {
-        this._authInterceptor = InitializeInstance();
+        this._authInterceptor = InitializeInstance(LayerSwapApiClient.apiBaseEndpoint);
     }
 
     fetcher = (url: string) => this._authInterceptor.get(url).then(r => r.data)

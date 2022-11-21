@@ -17,7 +17,7 @@ export function validateSignature(queryParams: QueryParams): boolean {
     let signature = hmac(dataToSign, secret);
     return signature === parnerSignature
 }
-const formatParams = (queryParams) => {
+export const formatParams = (queryParams) => {
     // Sort params by key
     let sortedValues = Object.entries(queryParams).sort(([a], [b]) => a > b ? 1 : -1);
 

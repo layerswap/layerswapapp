@@ -1,5 +1,6 @@
 import { FC, useEffect } from "react";
 import { FormWizardProvider } from "../context/formWizardProvider";
+import { useQueryState } from "../context/query";
 import { useSettingsState } from "../context/settings";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { SwapType } from "../lib/layerSwapApiClient";
@@ -14,7 +15,7 @@ const SwapWithdrawal: FC = () => {
     const { exchanges, networks } = settings
     const { swap } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
-
+    const query = useQueryState()
     useEffect(() => {
         mutateSwap()
     }, [])
@@ -30,8 +31,13 @@ const SwapWithdrawal: FC = () => {
     let initialStep: SwapWithdrawalStep = GetSwapStatusStep(swap);
 
     if (!initialStep) {
-        if (swap?.type === SwapType.OffRamp)
-            initialStep = network.deposit_method === "redeem" ? SwapWithdrawalStep.WalletConnect : SwapWithdrawalStep.OffRampWithdrawal
+        if (swap?.type === SwapType.OffRamp) {
+            if (network.deposit_method === "address")
+                initialStep = (query.signature && query.addressSource === "imxMarketplace") ? SwapWithdrawalStep.ProcessingWalletTransaction : SwapWithdrawalStep.WalletConnect
+            else {
+                initialStep = SwapWithdrawalStep.OffRampWithdrawal
+            }
+        }
         else if (exchange?.deposit_flow === DepositFlow.Manual)
             initialStep = SwapWithdrawalStep.Withdrawal
         else if (exchange?.deposit_flow === DepositFlow.External)
