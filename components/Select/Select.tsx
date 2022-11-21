@@ -37,7 +37,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
     const valueList = (
         <div className="relative inset-0 flex flex-col h-full">
-            <div className="relative min-h-full items-center justify-center p-2 pt-0 text-center text-white">
+            <div className="relative min-h-full items-center justify-center pt-0 text-center text-white">
                 <Combobox
                     as="div"
                     className="transform transition-all h-full"

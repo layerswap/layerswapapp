@@ -1,10 +1,10 @@
 import { Dispatch, FC, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef } from 'react'
-import { Dialog } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline';
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useQueryState } from '../context/query';
 import { useRouter } from 'next/router';
 import { forwardRef } from 'react';
+import { Root, Portal, Overlay, Content, Title, Close, } from '@radix-ui/react-dialog';
 
 type modalSize = 'small' | 'medium' | 'large';
 
@@ -57,71 +57,69 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
     return (
         <AnimatePresence>
             {showModal && (
-                <Dialog
-                    static
-                    className={`${query?.addressSource} relative z-40`}
-                    onClose={() => setShowModal(false)}
+                <Root
+                    onOpenChange={() => setShowModal(false)}
                     open={showModal}
-                    as={motion.div}>
-                    <MobileModal showModal={showModal} setShowModal={setShowModal} title={title}>
-                        {children}
-                    </MobileModal>
-                    <Dialog.Overlay>
-                        <motion.div
-                            key="backdrop"
-                            className="fixed inset-0 z-20 bg-black/40 bg-opacity-10 hidden sm:block"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => closeModal(closeWithX)}
-                        />
-                    </Dialog.Overlay>
-                    <motion.div
-                        ref={desktopModalRef}
-                        key="desktop-modal"
-                        className={`fixed inset-0 z-30 hidden min-h-screen items-center justify-center sm:flex `}
-                        initial={{ opacity: 0 }}
-                        animate={{
-                            opacity: 1,
-                            transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
-                        }}
-                        exit={{
-                            opacity: 0,
-                            transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
-                        }}
-                        onMouseDown={(e) => {
-                            if (desktopModalRef.current === e.target) {
-                                closeModal(closeWithX);
-                            }
-                        }}
-                    >
-                        <div className={constructModalSize(modalSize)}>
-                            <div className={`${className} space-y-2 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
-                                <Dialog.Title className='flex justify-between space-x-8'>
-                                    <div className="text-lg text-left font-medium text-primary-text" >
-                                        {title}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className="rounded-md hover:text-darkblue-200 text-primary-text"
-                                        onClick={() => {
-                                            setShowModal(false);
-                                        }}                                                >
-                                        <span className="sr-only">Close</span>
-                                        <XIcon className="h-7 w-7" aria-hidden="true" />
-                                    </button>
-                                </Dialog.Title>
+                >
+                    <Portal>
+                        <Overlay />
+                        <Content>
+                            <MobileModalContent showModal={showModal} setShowModal={setShowModal} title={title}>
                                 {children}
-                            </div>
-                        </div>
-                    </motion.div>
-                </Dialog>
+                            </MobileModalContent>
+                            <motion.div
+                                key="backdrop"
+                                className="fixed inset-0  bg-black/60 bg-opacity-10 hidden sm:block"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => closeModal(closeWithX)}
+                            />
+                            <motion.div
+                                ref={desktopModalRef}
+                                key="desktop-modal"
+                                className={`fixed inset-0  hidden min-h-screen items-center justify-center sm:flex `}
+                                initial={{ opacity: 0 }}
+                                animate={{
+                                    opacity: 1,
+                                    transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
+                                }}
+                                exit={{
+                                    opacity: 0,
+                                    transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
+                                }}
+                                onMouseDown={(e) => {
+                                    if (desktopModalRef.current === e.target) {
+                                        closeModal(closeWithX);
+                                    }
+                                }}
+                            >
+                                <div className={constructModalSize(modalSize)}>
+                                    <div className={`${className} space-y-2 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
+                                        <div className='flex justify-between space-x-8'>
+                                            <Title className="text-lg text-left font-medium text-primary-text" >
+                                                {title}
+                                            </Title>
+                                            <Close
+                                                type="button"
+                                                className="rounded-md hover:text-darkblue-200 text-primary-text" >
+                                                <span className="sr-only">Close</span>
+                                                <XIcon className="h-7 w-7" aria-hidden="true" />
+                                            </Close>
+                                        </div>
+                                        {children}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </Content>
+                    </Portal>
+                </Root>
             )}
         </AnimatePresence>
     );
 }
 
-export const MobileModal = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, setShowModal, children, title }, topmostRef) => {
+export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, setShowModal, children, title }, topmostRef) => {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 42 };
@@ -151,7 +149,7 @@ export const MobileModal = forwardRef<HTMLDivElement, PropsWithChildren<ModalPar
         <div ref={topmostRef}>
             <motion.div
                 key="backdrop"
-                className="fixed inset-0 z-20 bg-black/40 bg-opacity-10 sm:hidden block"
+                className="fixed inset-0 z-20 bg-black/50 sm:hidden block"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
