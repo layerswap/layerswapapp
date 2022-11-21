@@ -55,7 +55,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                             <div className="relative rounded-md shadow-sm mt-1.5">
                                 {isPartnerWallet &&
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Image className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
+                                        <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
                                     </div>
                                 }
                                 <div>
