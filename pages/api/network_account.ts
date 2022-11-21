@@ -38,7 +38,7 @@ const getAccessToken = async (): Promise<AuthConnectResponse> => {
     const params = new URLSearchParams();
     params.append('client_id', 'layerswap_bridge_internal');
     params.append('grant_type', 'client_credentials');
-    params.append('client_secret', 'cmZahvBKO00BBjpWAMV5');
+    params.append('client_secret', process.env.INTERNAL_API_SECRET);
     var apiClient = new LayerSwapApiClient();
     const { data: { discovery: { identity_url } } } = await apiClient.GetSettingsAsync()
 
