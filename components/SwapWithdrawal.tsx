@@ -31,7 +31,7 @@ const SwapWithdrawal: FC = () => {
 
     if (!initialStep) {
         if (swap?.type === SwapType.OffRamp)
-            initialStep = network.deposit_method === "redeem" ? SwapWithdrawalStep.WalletConnect : SwapWithdrawalStep.OffRampWithdrawal
+            initialStep = network.deposit_method === "address" ? SwapWithdrawalStep.WalletConnect : SwapWithdrawalStep.OffRampWithdrawal
         else if (exchange?.deposit_flow === DepositFlow.Manual)
             initialStep = SwapWithdrawalStep.Withdrawal
         else if (exchange?.deposit_flow === DepositFlow.External)
