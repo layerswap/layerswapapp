@@ -87,11 +87,11 @@ const OfframpAccountConnectStep: FC = () => {
         <Widget>
             <Widget.Content>
                 <div className="w-full flex flex-col h-full justify-between font-semibold text-primary-text">
-                    <div className='text-center md:text-left'>
+                    <div className='text-left space-y-1'>
                         <p className='pt-2 text-lg md:text-xl text-white'>
                             {exchange_name} Connect
                         </p>
-                        <p>
+                        <p className='text-sm sm:text-base'>
                             Allow Layerswap to read your Coinbase account's <span className='text-white'>email address.</span>
                         </p>
                     </div>
@@ -124,30 +124,23 @@ const OfframpAccountConnectStep: FC = () => {
             </Widget.Content>
             <Widget.Footer>
                 <div className='font-normal'>
-                    <div className='text-primary-800 uppercase'>
+                    <div className='text-primary-800 font-bold uppercase'>
                         Why
                     </div>
-                    <p className='mb-5 leading-5'>
-                        We will send the tokens to the Coinbase account associated with that email address.
-                    </p>
-                    <div className='text-primary-800 uppercase'>
-                        Note
+                    <div>
+                        <div className='text-primary font-bold uppercase'>
+                            Note
+                        </div>
+                        <p>
+                            <span className='font-semibold'>Only the email address</span> of your account will be read, no other permissions will be asked.
+                        </p>
                     </div>
-                    <p className='leading-5'>
-                        <strong>Only the email address</strong> of your account will be read, no other permissions will be asked.
-                    </p>
                 </div>
-
-                <div className="flex md:mt-5 font-normal mb-3">
-                    <label className="block font-medium text-left leading-5 underline hover:text-primary underline-offset-2">
-                        <a className='flex items-center' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
-                            Read more about Coinbase's OAuth API here
-                            <ExternalLinkIcon className='ml-1 h-4 w-4'>
-                            </ExternalLinkIcon>
-                        </a>
-                    </label>
-                </div>
-
+                <a className='flex text-sm items-center text-left underline hover:text-primary' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
+                    Read more about Coinbase's OAuth API here
+                    <ExternalLinkIcon className='ml-1 h-4 w-4'>
+                    </ExternalLinkIcon>
+                </a>
                 <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
                     Connect
                 </SubmitButton>

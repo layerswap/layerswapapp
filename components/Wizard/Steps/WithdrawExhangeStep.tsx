@@ -18,6 +18,9 @@ import Widget from '../Widget';
 import Modal from '../../modalComponent';
 import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
+import SlideOver from '../../SlideOver';
+import { DocIframe } from '../../docInIframe';
+import GuideLink from '../../guideLink';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -45,6 +48,7 @@ const WithdrawExchangeStep: FC = () => {
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
     }
+    const [openDocSlideover, setOpenDocSlideover] = useState(false)
 
     useEffect(() => {
         setInterval(2000)
@@ -77,89 +81,80 @@ const WithdrawExchangeStep: FC = () => {
 
     return (
         <>
+            <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
+                {(close) => (
+                    <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                )}
+            </SlideOver>
             <Widget>
                 <Widget.Content>
-                    <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text">
-                        <div className='space-y-4'>
-                            <div className="flex items-center">
-                                <h3 className="block text-lg font-medium text-white leading-6 text-left">
-                                    Go to
-                                    {
-                                        exchange_logo_url &&
-                                        <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
-                                            <div className="flex-shrink-0 h-6 w-6 relative">
-                                                <Image
-                                                    src={`${resource_storage_url}${exchange_logo_url}`}
-                                                    alt="Exchange Logo"
-                                                    height="40"
-                                                    width="40"
-                                                    loading="eager"
-                                                    priority
-                                                    layout="responsive"
-                                                    className="rounded-md object-contain"
-                                                />
-                                            </div>
-                                        </div>
-                                    }
-                                    <span className='mr-1'>
-                                        {exchange_name}
-                                    </span> and do a withdrawal to the provided address
-                                </h3>
-                            </div>
-                            {
-                                swap?.additonal_data?.note &&
-                                <WarningMessage>
-                                    <p className='font-semibold text-sm text-darkblue-700'>
-                                        Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
-                                    </p>
-                                </WarningMessage>
-                            }
-                            <div className={`mb-6 grid grid-cols-1 gap-5 `}>
-                                <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.additonal_data?.deposit_address} header={'Address'}>
+            <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text">
+                <div className='space-y-4'>
+                    <div className="text-left">
+                        <p className="block text-md sm:text-lg font-medium text-white">
+                            Send {currency?.asset} to the provided address
+                        </p>
+                        <p className='text-sm sm:text-base'>
+                            The swap will be completed when your transfer is detected
+                        </p>
+                    </div>
+                    {
+                        swap?.additonal_data?.note &&
+                        <WarningMessage>
+                            Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
+                        </WarningMessage>
+                    }
+                    <div className={`mb-6 grid grid-cols-1 gap-5 `}>
+                        <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.additonal_data?.deposit_address} header={'Address'}>
+                            <p className='break-all'>
+                                {swap?.additonal_data?.deposit_address}
+                            </p>
+                        </BackgroundField>
+                        <BackgroundField header={'Network'}>
+                            <p>
+                                {swap?.additonal_data?.chain_display_name}
+                            </p>
+                        </BackgroundField>
+                        <div className='flex space-x-4'>
+                            <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
+                                <p>
+                                    {swap?.requested_amount}
+                                </p>
+                            </BackgroundField>
+                            <BackgroundField header={'Asset'}>
+                                <p>
+                                    {currency?.asset}
+                                </p>
+                            </BackgroundField>
+                        </div>
+                        {
+                            swap?.additonal_data?.note &&
+                            <>
+                                <BackgroundField isCopiable={true} toCopy={swap?.additonal_data?.note} header={'Remarks'}>
                                     <p className='break-all'>
-                                        {swap?.additonal_data?.deposit_address}
+                                        {swap?.additonal_data?.note}
                                     </p>
                                 </BackgroundField>
-                                <div className='flex space-x-4'>
-                                    <BackgroundField header={'Network'}>
-                                        <p>
-                                            {swap?.additonal_data?.chain_display_name}
-                                        </p>
-                                    </BackgroundField>
-                                    {
-                                        swap?.additonal_data?.note &&
-                                        <>
-                                            <BackgroundField isCopiable={true} toCopy={swap?.additonal_data?.note} header={'Remarks'}>
-                                                <p className='break-all'>
-                                                    {swap?.additonal_data?.note}
-                                                </p>
-                                            </BackgroundField>
-                                        </>
-                                    }
-                                </div>
-                                <div className='flex space-x-4'>
-                                    <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
-                                        <p>
-                                            {swap?.requested_amount}
-                                        </p>
-                                    </BackgroundField>
-                                    <BackgroundField header={'Asset'}>
-                                        <p>
-                                            {currency?.asset}
-                                        </p>
-                                    </BackgroundField>
-                                </div>
+                            </>
+                        }
+                        {
+                            ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
+                            <WarningMessage>
+                                <span>
+                                    {ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage}
+                                </span>
+                            </WarningMessage>
+                        }
+                        {
+                            ExchangeSettings?.KnownSettings[exchange_internal_name]?.ExchangeWithdrawalGuideUrl &&
+                            <WarningMessage messageType='informating'>
+                                <span className='flex-none'>
+                                    Learn how to send from
+                                </span>
+                                <GuideLink text={exchange_internal_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                            </WarningMessage>
 
-                                {
-                                    ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
-                                    <WarningMessage>
-                                        <p className='font-normal text-sm text-darkblue-700'>
-                                            {ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage}
-                                        </p>
-                                    </WarningMessage>
-                                }
-                            </div>
-                        </div>
+                        }
                     </div>
                 </Widget.Content>
                 <Widget.Footer>

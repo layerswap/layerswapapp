@@ -1,11 +1,11 @@
 import { Combobox, Listbox } from '@headlessui/react'
 import { useCallback, useState } from 'react'
-import { SearchIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
 import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon } from '@heroicons/react/outline'
 import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
+import SlideOver from '../SlideOver'
 
 export interface SelectProps<T> {
     name: string;
@@ -19,26 +19,14 @@ export interface SelectProps<T> {
 
 export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
-    const [query, setQuery] = useState('')
 
     function onChangeHandler(newValue: string) {
         setFieldValue(name, values.find(x => x.id === newValue), true);
     }
 
-    function closeModal() {
-        setIsOpen(false)
-    }
-
     function openModal() {
         setIsOpen(true)
     }
-
-    const filteredItems =
-        query === ''
-            ? values
-            : values.filter((item) => {
-                return item.name.toLowerCase().includes(query.toLowerCase())
-            })
 
     const handleSelect = useCallback((item: SelectMenuItem<T>) => {
         setIsOpen(false)
@@ -46,7 +34,71 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
     }, [name])
 
     const handleComboboxChange = useCallback(() => { }, [])
-    const handleQueryInputChange = useCallback((event) => setQuery(event.target.value), [])
+
+    const valueList = (
+        <div className="relative inset-0 flex flex-col h-full">
+            <div className="relative min-h-full items-center justify-center pt-0 text-center text-white">
+                <Combobox
+                    as="div"
+                    className="transform transition-all h-full"
+                    onChange={handleComboboxChange}
+                >
+                    {values.length > 0 && (
+                        <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                            {values.map((item) => (
+                                <Combobox.Option
+                                    key={item.id}
+                                    value={item}
+                                    disabled={!item.isAvailable}
+                                    className={`flex text-left ${item.id === value?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
+                                    onClick={() => handleSelect(item)}
+                                >
+                                    {({ active, disabled }) => (
+                                        <>
+                                            <div className="flex items-center">
+                                                <div className="flex-shrink-0 h-6 w-6 relative">
+                                                    {item.imgSrc && <Image
+                                                        src={item.imgSrc}
+                                                        alt="Project Logo"
+                                                        height="40"
+                                                        width="40"
+                                                        loading="eager"
+                                                        layout="responsive"
+                                                        className="rounded-md object-contain" />}
+
+                                                </div>
+                                            </div>
+
+                                            <div className="ml-4 flex-auto">
+                                                <p className='text-sm font-medium'>
+                                                    {item.name}
+                                                </p>
+                                            </div>
+                                            {item.id === value?.id && <div className="justify-self-end">
+                                                <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                            </div>}
+                                        </>
+                                    )}
+                                </Combobox.Option>
+                            ))}
+                        </Combobox.Options>
+                    )}
+
+                    {values.length === 0 && (
+                        <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
+                            <ExclamationCircleIcon
+                                type="outline"
+                                name="exclamation-circle"
+                                className="mx-auto h-16 w-16 text-primary" />
+                            <p className="mt-4 font-semibold">No 'items' found.</p>
+                            <p className="mt-2">Please try a different search term.</p>
+                        </div>
+                    )}
+                </Combobox>
+            </div>
+        </div>
+    )
+
     if (smallDropdown)
         return (
             <Listbox disabled={disabled} value={value?.id} onChange={onChangeHandler}>
@@ -80,7 +132,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                         }
                     </Listbox.Button>
                     <AnimatePresence>
-                        <Listbox.Options className="ring-1 ring-darkblue-500 absolute origin-top-right right-0 z-10 mt-2 x-1 w-full md:w-56 bg-darkblue-700 rounded-md py-1 overflow-hidden focus:outline-none">
+                        <Listbox.Options className="ring-1 ring-darkblue-500 absolute origin-top-right right-0 z-10 mt-2 x-1 w-40 md:w-56 bg-darkblue-700 rounded-md py-1 overflow-hidden focus:outline-none">
                             {values.map((item) => (
                                 <Listbox.Option
                                     key={item.id}
@@ -135,6 +187,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     </AnimatePresence>
                 </div>
             </Listbox>)
+
     return (
         <>
             <div className="flex items-center relative">
@@ -180,118 +233,11 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     </span>
                 </button>
             </div>
-            <AnimatePresence>
-                {isOpen &&
-                    <motion.div
-                        initial={{ y: "100%" }}
-                        animate={{
-                            y: 0,
-                            transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
-                        }}
-                        exit={{
-                            y: "100%",
-                            transition: { duration: 0.5, ease: [0.36, 0.66, 0.04, 1] },
-                        }}
-                        className='absolute inset-0 z-40 -inset-y-11 flex flex-col w-full bg-darkblue'>
-                        <div className='relative z-40 overflow-hidden bg-darkblue px-6 md:px-8 pt-2'>
-                            <div className='relative grid grid-cols-1 gap-4 place-content-end z-40 mb-2 mt-1'>
-                                <span className="justify-self-end text-primary-text cursor-pointer">
-                                    <div className="block ">
-                                        <button
-                                            type="button"
-                                            className="rounded-md text-darkblue-50 hover:text-primary-text"
-                                            onClick={closeModal}
-                                        >
-                                            <span className="sr-only">Close</span>
-                                            <XIcon className="h-6 w-6" aria-hidden="true" />
-                                        </button>
-                                    </div>
-                                </span>
-                            </div>
-                            <div className="relative inset-0 flex flex-col">
-                                <div className="relative min-h-full items-center justify-center pt-0 text-center">
-                                    <Combobox
-                                        as="div"
-                                        className="transform transition-all"
-                                        onChange={handleComboboxChange}
-                                        value={query}
-                                    >
-                                        <div className="relative mb-5">
-                                            <SearchIcon
-                                                className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-primary-text"
-                                                aria-hidden="true"
-                                            />
-                                            <Combobox.Input
-                                                className="h-12 w-full pl-11 pr-4 text-primary-text rounded-lg placeholder-primary-text disabled:cursor-not-allowed leading-4 focus:ring-0 focus:border-primary block font-semibold bg-darkblue-700 border-darkblue-500 border truncate"
-                                                placeholder="Search..."
-                                                onChange={handleQueryInputChange}
-                                                value={query}
-                                            />
-                                        </div>
-                                        {filteredItems.length > 0 && (
-                                            <Combobox.Options static className="border-0 max-h-[425px] grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto styled-scroll scroll overscroll-auto">
-                                                {filteredItems.map((item) => (
-                                                    <Combobox.Option
-                                                        key={item.id}
-                                                        value={item}
-                                                        disabled={!item.isAvailable}
-                                                        className={`flex text-left ${item.id === value?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
-                                                        onClick={() => handleSelect(item)}
-                                                    >
-                                                        {({ active, disabled }) => (
-                                                            <>
-                                                                <div className="flex items-center">
-                                                                    <div className="flex-shrink-0 h-6 w-6 relative">
-                                                                        {
-                                                                            item.imgSrc && <Image
-                                                                                src={item.imgSrc}
-                                                                                alt="Project Logo"
-                                                                                height="40"
-                                                                                width="40"
-                                                                                loading="eager"
-                                                                                layout="responsive"
-                                                                                className="rounded-md object-contain"
-                                                                            />
-                                                                        }
-
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="ml-4 flex-auto">
-                                                                    <p className='text-sm font-medium'>
-                                                                        {item.name}
-                                                                    </p>
-                                                                </div>
-                                                                {
-                                                                    item.id === value?.id && <div className="justify-self-end">
-                                                                        <CheckIcon className="h-6 w-6" aria-hidden="true" />
-                                                                    </div>
-                                                                }
-                                                            </>
-                                                        )}
-                                                    </Combobox.Option>
-                                                ))}
-                                            </Combobox.Options>
-                                        )}
-
-                                        {query !== '' && filteredItems.length === 0 && (
-                                            <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
-                                                <ExclamationCircleIcon
-                                                    type="outline"
-                                                    name="exclamation-circle"
-                                                    className="mx-auto h-16 w-16 text-primary"
-                                                />
-                                                <p className="mt-4 font-semibold">No 'items' found.</p>
-                                                <p className="mt-2">Please try a different search term.</p>
-                                            </div>
-                                        )}
-                                    </Combobox>
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                }
-            </AnimatePresence>
+            <SlideOver imperativeOpener={[isOpen, setIsOpen]} place='inStep'>
+                {(close) => (
+                    valueList
+                )}
+            </SlideOver>
         </>
     )
 }

@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem, SwapType } from "../lib/layerSwapApiClient"
 import SpinIcon from "./icons/spinIcon"
-import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
 import { useSettingsState } from "../context/settings"
@@ -92,8 +92,20 @@ function TransactionsHistory() {
     setOpenSwapDetailsModal(true)
   }
 
+  const formatDate = (date: string) => {
+    const swapDate = new Date(date);
+    const yyyy = swapDate.getFullYear();
+    let mm = swapDate.getMonth() + 1; // Months start at 0!
+    let dd = swapDate.getDate();
+
+    if (dd < 10) dd = 0 + dd;
+    if (mm < 10) mm = 0 + mm;
+
+    return dd + '/' + mm + '/' + yyyy;
+  }
+
   return (
-    <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
+    <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative`}>
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="flex ">
           <button onClick={handleGoBack} className="self-start md:mt-2">
@@ -120,8 +132,8 @@ function TransactionsHistory() {
               swaps?.length > 0 ?
                 <>
                   <div className="mb-2">
-                    <div className="-mx-4 md:mt-10 mt-2 sm:-mx-6 md:mx-0 md:rounded-lg">
-                      <table className="min-w-full divide-y divide-darkblue-500">
+                    <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
+                      <table className="w-full divide-y divide-darkblue-500">
                         <thead className="text-primary-text">
                           <tr>
                             <th
@@ -135,7 +147,7 @@ function TransactionsHistory() {
                                 From
                               </div>
                               <div className="block lg:hidden">
-                                From - To / Date
+                                Swap details
                               </div>
                             </th>
                             <th
@@ -219,7 +231,8 @@ function TransactionsHistory() {
                                         />
                                       }
                                     </div>
-                                    <div className="mx-1">{source?.display_name}</div>
+                                    <div className="mx-1 hidden lg:block">{source?.display_name}</div>
+                                    <ArrowRightIcon className="h-4 w-4 lg:hidden mx-2" />
                                     <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
                                       {
                                         destination?.logo &&
@@ -233,11 +246,10 @@ function TransactionsHistory() {
                                         />
                                       }
                                     </div>
-                                    <div className="mx-1 block lg:hidden">{destination?.display_name}</div>
                                   </div>
                                 </div>
                                 <div className="flex items-center mt-1 text-white sm:block lg:hidden">
-                                  <span className="block lg:hidden">{(new Date(swap.created_date)).toLocaleString()}</span>
+                                  <span className="block lg:hidden">{formatDate(swap.created_date)}</span>
                                 </div>
                                 {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
                                 <span className="flex items-center sm:block lg:hidden">
@@ -272,7 +284,7 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'md:px-3 py-3.5 text-sm text-white table-cell'
+                                  'px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
                                 <div className="md:flex">
@@ -367,7 +379,7 @@ function TransactionsHistory() {
                       </button>
                     }
                   </div>
-                  <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} modalSize='medium'>
+                  <Modal showModal={openSwapDetailsModal} setShowModal={setOpenSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} modalSize='medium'>
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {

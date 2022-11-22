@@ -13,5 +13,5 @@ export class CryptoNetwork {
     status: "active" | "inactive" | string;
     currencies: CurrencyDetails[];
     fee_in_usd: number;
-    deposit_method: "redeem" | "memo"
+    deposit_method: "address" | "memo"
 }

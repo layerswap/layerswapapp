@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
+import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { FC, useCallback, useEffect, useState } from 'react'
-import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
@@ -10,10 +10,12 @@ import NetworkSettings from '../../../../lib/NetworkSettings';
 import WarningMessage from '../../../WarningMessage';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
+import KnownInternalNames from '../../../../lib/knownIds';
 import Widget from '../../Widget';
 import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
+import GuideLink from '../../../guideLink';
 
 const OffRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
@@ -71,9 +73,11 @@ const OffRampSwapConfirmationStep: FC = () => {
                     {
                         NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
                         <WarningMessage className='mb-4'>
-                            <p className='font-normal text-sm text-darkblue-600'>
-                                {NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}
-                            </p>
+                            <span>{NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}.</span>
+                            {
+                                network?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
+                                <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how' place='inStep' />
+                            }
                         </WarningMessage>
                     }
                     <AddressDetails canEditAddress={false} />

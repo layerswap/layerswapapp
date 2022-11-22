@@ -5,16 +5,17 @@ import LayerswapApiClient from '../lib/layerSwapApiClient';
 import ExchangeSettings from '../lib/ExchangeSettings';
 import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
-import { DocIframe } from './docInIframe';
-import SlideOver from './SlideOver';
+import { slideOverPlace } from './SlideOver';
 import WarningMessage from './WarningMessage';
 import { useRouter } from 'next/router';
 import Widget from './Wizard/Widget';
+import GuideLink from './guideLink';
+
 
 type Props = {
     exchange: Exchange,
     onSuccess: () => Promise<void>,
-    slideOverPlace?: string
+    slideOverPlace?: slideOverPlace
 }
 
 const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace }) => {
@@ -65,9 +66,9 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
     return (
         <Widget>
             <Widget.Content>
-                <div className="w-full pt-4 space-y-5 text-primary-text mb-5">
+                <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">
                     <div className="flex items-center">
-                        <h3 className="block text-lg font-medium leading-6 text-white">
+                        <h3 className="block sm:text-lg font-medium leading-6 text-white">
                             Please enter
                             {ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange.internal_name]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.display_name}</a> : <span className='mx-1'>{exchange?.display_name}</span>}
                             API keys
@@ -133,24 +134,17 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                         }
                         {
                             ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&
-                            <WarningMessage className=''>
-                                <div className='text-black'>
-                                    {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
-                                </div>
+                            <WarningMessage>
+                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
                             </WarningMessage>
                         }
                         {
                             userGuideURL && <div className="flex items-center">
-                                <span className="block text-base text-white font-normal leading-6"> Read about
-                                    <SlideOver opener={(open) => <>&nbsp;<a className='text-base text-primary cursor-pointer underline decoration-primary' onClick={() => open()}>How to get API Keys</a>&nbsp;</>} place={slideOverPlace}>
-                                        {(close) => (
-                                            <DocIframe onConfirm={() => close()} URl={userGuideURL} />
-                                        )}
-                                    </SlideOver>
+                                <span className="block text-base text-white font-normal leading-6 h-full"> Learn how to get
+                                    <GuideLink text="API Keys" userGuideUrl={userGuideURL} place={slideOverPlace} />
                                 </span>
                             </div>
                         }
-
                     </div>
                 </div>
             </Widget.Content>
