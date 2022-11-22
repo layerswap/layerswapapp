@@ -51,7 +51,6 @@ const verifyWallet = async (query: QueryParams, user_id: string, access_token: s
     const data = {
         "address": query.destAddress,
         "network": query.destNetwork,
-        "signature": "Your address must be verified once before it can be used for a swap. Signing does not require gas and does not permit us to perform transactions with your wallet.",
         "user_id": user_id
     }
     const res = axios.post<AuthConnectResponse>(`${LayerSwapApiClient.apiBaseEndpoint}/api/network_accounts/internal`, data, { headers: { "Content-Type": "application/json", "Authorization": 'Bearer ' + access_token } })
