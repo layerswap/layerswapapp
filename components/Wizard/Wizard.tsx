@@ -57,7 +57,7 @@ const Wizard: FC<Props> = ({ children }) => {
             max-sm:fixed
             max-sm:inset-x-0
             max-sm:bottom-0 
-            max-sm:z-40 max-sm:bg-darkblue max-sm:w-full`}>
+            max-sm:z-20 max-sm:bg-darkblue max-sm:w-full`}>
             </div>
          }
       </div>

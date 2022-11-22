@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FC } from 'react'
 import { SwapDataProvider } from '../context/swap';
 import { AuthProvider } from '../context/authContext';
@@ -13,7 +13,11 @@ import inIframe from './utils/inIframe';
 
 
 const Swap: FC = () => {
-  const { addressSource } = useQueryState()
+  const [embadded, setEmbadded] = useState<boolean>()
+
+  useEffect(() => {
+    setEmbadded(inIframe())
+  }, [])
 
   return (
     <div className="text-white">
@@ -29,10 +33,9 @@ const Swap: FC = () => {
         </MenuProvider>
       </AuthProvider>
       {
-        !inIframe() &&
+        !embadded &&
         <IntroCard />
       }
-
     </div >
   )
 };

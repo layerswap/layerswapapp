@@ -17,7 +17,6 @@ import HoverTooltip from "./Tooltips/HoverTooltip";
 import { ExchangesComponentSceleton } from "./Sceletons";
 import Modal from "./modalComponent";
 import ExchangeSettings from "../lib/ExchangeSettings";
-import { ArrowLeftIcon } from "@heroicons/react/solid";
 import KnownInternalNames from "../lib/knownIds";
 
 interface UserExchange extends Exchange {
