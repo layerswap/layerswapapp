@@ -17,10 +17,11 @@ import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
+import GuideLink from '../../guideLink';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const  { networks, discovery: { resource_storage_url } } = useSettingsState()
+    const { networks, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
 
@@ -63,54 +64,20 @@ const WithdrawNetworkStep: FC = () => {
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
-                    <div className="flex items-center">
-                        <h3 className="block text-lg font-medium text-white leading-6 text-left">
-                            Send {currency?.asset} to the provided address in
-                            {
-                                network_logo_url && resource_storage_url &&
-                                <div className="inline-block ml-2 mr-1" style={{ position: "relative", top: '6px' }}>
-                                    <div className="flex-shrink-0 h-6 w-6 relative">
-                                        <Image
-                                            src={`${resource_storage_url}${network_logo_url}`}
-                                            alt="Network Logo"
-                                            height="40"
-                                            width="40"
-                                            loading="eager"
-                                            priority
-                                            layout="responsive"
-                                            className="rounded-md object-contain"
-                                        />
-                                    </div>
-                                </div>
-                            }
-                            {network_name}
-                        </h3>
+                    <div className="text-left">
+                        <p className="block text-md sm:text-lg font-medium text-white">
+                            Send crypto to the provided address
+                        </p>
+                        <p className='text-sm sm:text-base'>
+                            The swap will be completed after the transfer is detected
+                        </p>
                     </div>
                     {
                         swap?.additonal_data?.memo &&
                         <WarningMessage>
-                            <p className='font-semibold text-sm text-darkblue-700'>
-                                Please include the "Memo" field, it is required for a successful transfer.
-                            </p>
+                            Please include the "Memo" field, it is required for a successful transfer.
                         </WarningMessage>
                     }
-                    {
-                        userGuideUrlForDesktop && userGuideUrlForMobile &&
-
-                        <BackgroundField >
-                            <div className='md:space-y-0'>
-                                <span className='flex-none'>
-                                    Watch how to send from
-                                </span>
-                                <GuideLink fullTeext='Loopring Web' shortText='Web' userGuideUrlForDesktop={userGuideUrlForDesktop} />
-                                &nbsp;or
-                                <GuideLink fullTeext='Loopring Mobile' shortText='Mobile' userGuideUrlForDesktop={userGuideUrlForMobile} />
-                            </div>
-                        </BackgroundField>
-
-                    }
-
-
                     <div className='mb-6 grid grid-cols-1 gap-4'>
                         {
                             network_internal_name === KnownInternalNames.Networks.LoopringMainnet &&
@@ -155,6 +122,15 @@ const WithdrawNetworkStep: FC = () => {
                                 </p>
                             </BackgroundField>
                         </div>
+                        {
+                            userGuideUrlForDesktop &&
+                            <WarningMessage messageType='informating'>
+                                <span className='flex-none'>
+                                    Learn how to send from
+                                </span>
+                                <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep"></GuideLink>
+                            </WarningMessage>
+                        }
                     </div>
                 </div>
                 {
@@ -203,13 +179,3 @@ const WithdrawNetworkStep: FC = () => {
 }
 
 export default WithdrawNetworkStep;
-
-function GuideLink({ userGuideUrlForDesktop, shortText, fullTeext }: { userGuideUrlForDesktop: string, fullTeext: string, shortText: string }) {
-    return <span className="items-center">
-        <SlideOver opener={(open) => <span className='text-primary cursor-pointer hover:text-primary-400' onClick={open}>&nbsp;<span className='hidden md:inline'>{fullTeext}</span><span className='inline md:hidden'>{shortText}</span></span>} place='inStep'>
-            {(close) => (
-                <DocIframe onConfirm={() => close()} URl={userGuideUrlForDesktop} />
-            )}
-        </SlideOver>
-    </span>;
-}
