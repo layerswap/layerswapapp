@@ -12,6 +12,7 @@ import { ApiError, KnownwErrorCode } from '../../../Models/ApiError';
 import Timer from '../../TimerComponent';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
+import { CalculateMinimalAuthorizeAmount } from '../../../lib/fees';
 
 const TIMER_SECONDS = 120
 
@@ -31,7 +32,7 @@ const TwoFactorStep: FC = () => {
     const { start: startTimer } = useTimerState()
 
     const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
-    const minimalAuthorizeAmount = Math.round(swapFormData?.currency?.baseObject?.usd_price * Number(swapFormData?.amount) + 5)
+    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(swapFormData?.currency?.baseObject?.usd_price, Number(swapFormData?.amount))
 
     const formikRef = useRef<FormikProps<CodeFormValues>>(null);
 
