@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import { FC, useEffect } from "react";
 import { FormWizardProvider } from "../context/formWizardProvider";
 import { useQueryState } from "../context/query";
@@ -16,6 +17,7 @@ const SwapWithdrawal: FC = () => {
     const { swap } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
     const query = useQueryState()
+    const router = useRouter()
     useEffect(() => {
         mutateSwap()
     }, [])
@@ -25,7 +27,6 @@ const SwapWithdrawal: FC = () => {
 
         </div>
 
-    const swapStatus = swap?.status;
     const exchange = exchanges.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
     const network = networks.find(n => n.currencies.some(ec => ec.id === swap?.network_currency_id))
     let initialStep: SwapWithdrawalStep = GetSwapStatusStep(swap);
@@ -45,9 +46,10 @@ const SwapWithdrawal: FC = () => {
         else
             initialStep = SwapWithdrawalStep.Processing
     }
+    const key = Object.keys(query).join("")
 
     return (
-        <FormWizardProvider initialStep={initialStep} initialLoading={true}>
+        <FormWizardProvider initialStep={initialStep} initialLoading={true} key={key}>
             <SwapWithdrawalWizard />
         </FormWizardProvider>
     )
