@@ -86,7 +86,7 @@ const WithdrawNetworkStep: FC = () => {
     const userGuideUrlForDesktop = NetworkSettings.KnownSettings[network?.internal_name]?.UserGuideUrlForDesktop
     const userGuideUrlForMobile = NetworkSettings.KnownSettings[network?.internal_name]?.UserGuideUrlForMobile
 
-    return (
+    return (<>
         <Widget>
             <Widget.Content>
                 <div className="w-full space-y-4 flex flex-col justify-between h-full text-primary-text">
@@ -235,32 +235,33 @@ const WithdrawNetworkStep: FC = () => {
                         </div>
                 }
             </Widget.Footer>
-            <Modal isOpen={openCancelConfirmModal} onDismiss={handleClose} title={'Do not cancel if you have already sent crypto'} modalSize='small'>
-                <div className='text-primary-text mb-4'></div>
-                <div className="flex flex-row text-white text-base space-x-2">
-                    <div className='basis-1/2'>
-                        <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                            <DoubleLineText
-                                colorStyle='mltln-text-dark'
-                                primaryText='Cancel'
-                                secondarytext='and go to home'
-                                reversed={true}
-                            />
-                        </SubmitButton>
-                    </div>
-                    <div className='basis-1/2'>
-                        <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                            <DoubleLineText
-                                colorStyle='mltln-text-light'
-                                primaryText="Dont't"
-                                secondarytext='cancel'
-                                reversed={true}
-                            />
-                        </SubmitButton>
-                    </div>
-                </div>
-            </Modal>
         </Widget>
+        <Modal isOpen={openCancelConfirmModal} onDismiss={handleClose} title={'Do not cancel if you have already sent crypto'} modalSize='small'>
+            <div className='text-primary-text mb-4'></div>
+            <div className="flex flex-row text-white text-base space-x-2">
+                <div className='basis-1/2'>
+                    <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
+                        <DoubleLineText
+                            colorStyle='mltln-text-dark'
+                            primaryText='Cancel the swap'
+                            secondarytext='and go to home'
+                            reversed={true}
+                        />
+                    </SubmitButton>
+                </div>
+                <div className='basis-1/2'>
+                    <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
+                        <DoubleLineText
+                            colorStyle='mltln-text-light'
+                            primaryText="Don't"
+                            secondarytext='cancel'
+                            reversed={true}
+                        />
+                    </SubmitButton>
+                </div>
+            </div>
+        </Modal>
+    </>
     )
 }
 
