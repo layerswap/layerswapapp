@@ -75,7 +75,7 @@ const Footer = ({ children, hidden }: FooterProps) => {
                         max-sm:fixed
                         max-sm:inset-x-0
                         max-sm:bottom-0 
-                        max-sm:z-30 max-sm:bg-darkblue max-sm:widget-footer max-sm:p-4 max-sm:shadow-card max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
+                        max-sm:z-30 max-sm:bg-darkblue max-sm:shadow-widget-footer max-sm:p-4 max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
                     {children}
                 </motion.div>
                 <ReactPortal wrapperId='offset-for-stickyness'>
