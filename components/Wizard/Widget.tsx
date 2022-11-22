@@ -1,8 +1,8 @@
 import { AnimatePresence, motion, usePresence } from 'framer-motion';
 import React, { useEffect, useRef } from 'react';
 import { useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useFormWizardaUpdate } from '../../context/formWizardProvider';
+import { createPortal } from 'react-dom';
 
 const Widget = ({ children }) => {
     return <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">{children}</div>
@@ -20,7 +20,7 @@ const Content = ({ children, center }: ContetProps) => {
                 </div>
             </div>
         </div>
-        : <div className='space-y-4'>{children}</div>
+        : <div className='space-y-4 py-1 mt-1 md:py-0 md:mt-0'>{children}</div>
 }
 let variants = {
     enter: ({ direction, width }) => {
@@ -75,7 +75,7 @@ const Footer = ({ children, hidden }: FooterProps) => {
                         max-sm:fixed
                         max-sm:inset-x-0
                         max-sm:bottom-0 
-                        max-sm:z-30 max-sm:bg-darkblue max-sm:p-4 max-sm:shadow-card max-sm:rounded-lg max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
+                        max-sm:z-30 max-sm:bg-darkblue-800 max-sm:p-4 max-sm:shadow-card max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
                     {children}
                 </motion.div>
                 <ReactPortal wrapperId='offset-for-stickyness'>

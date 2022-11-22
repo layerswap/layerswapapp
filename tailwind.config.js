@@ -95,6 +95,7 @@ module.exports = {
         widest: '.1em',
       },
       boxShadow: {
+        'widget-footer': '-1px -28px 21px -6px rgb(14 20 38)',
         'card': '5px 5px 40px rgba(0, 0, 0, 0.2), 0px 0px 200px rgba(0, 0, 0, 0.43)',
       },
       typography: (theme) => ({
