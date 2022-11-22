@@ -129,9 +129,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 {
                     SwapSettings?.NativeSupportedPaths[currentExchange.internal_name]?.[currentNetwork.internal_name]?.includes(currentCurrency.asset) &&
                     <WarningMessage messageType='informating'>
-                        <>
-                            You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly
-                        </>
+                        <span>You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly</span>
                     </WarningMessage>
                 }
                 <div className="text-white text-sm">
@@ -152,8 +150,8 @@ const OnRampSwapConfirmationStep: FC = () => {
                 </div>
             </div>
             <Modal
-                isOpen={editingAddress}
-                onDismiss={handleClose}
+                showModal={editingAddress}
+                setShowModal={setEditingAddress}
                 title={
                     <h4 className='text-lg text-white'>
                         <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
