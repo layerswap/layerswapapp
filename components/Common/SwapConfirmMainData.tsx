@@ -18,7 +18,7 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
     const currencyDetails = getCurrencyDetails(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType)
 
     return <div>
-        <h3 className='mb-7 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
+        <h3 className='mb-7 pt-2 sm:text-lg text-center md:text-left font-roboto text-white font-semibold'>
             Please confirm your swap
         </h3>
         <div className="w-full">

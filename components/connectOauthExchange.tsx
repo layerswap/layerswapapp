@@ -58,7 +58,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
             }
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = window.open(exchange.o_auth_authorization_url + encoded, '_blank', 'width=420,height=720')
+            const authWindow = window.open(exchange.o_auth_login_url + encoded, '_blank', 'width=420,height=720')
             authWindowRef.current = authWindow
         }
         catch (e) {
@@ -70,7 +70,7 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
         <>
             <div className="w-full grid grid-flow-row text-primary-text">
                 <div className="flex items-center">
-                    <h3 className="block text-lg text-white font-medium leading-6 mb-12">
+                    <h3 className="block sm:text-lg text-white font-medium leading-6 mb-12">
                         You will leave Layerswap and be securely redirected to Coinbase authorization page.
                     </h3>
                 </div>
