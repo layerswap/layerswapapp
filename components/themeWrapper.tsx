@@ -4,13 +4,13 @@ import { Toaster } from "react-hot-toast"
 import { useQueryState } from "../context/query"
 import FooterComponent from "./footerComponent"
 import Navbar from "./navbar"
+import inIframe from "./utils/inIframe";
 
 type Props = {
-    hideFooter: boolean,
     hideNavbar: boolean,
     children: JSX.Element | JSX.Element[]
 }
-export default function ({ hideNavbar, hideFooter, children }: Props) {
+export default function ({ hideNavbar, children }: Props) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
 
@@ -29,22 +29,21 @@ export default function ({ hideNavbar, hideFooter, children }: Props) {
         }
     })
     const { addressSource } = useQueryState()
-    return <div className={` ${addressSource} scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50`}>
-        <div className="invisible immutablex"></div>
-        <main className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+    return <div className={` ${addressSource} styled-scroll`}>
+        <div className="invisible imxMarketplace"></div>
+        <main className="styled-scroll">
             <div className="min-h-screen overflow-hidden relative font-robo">
                 <Toaster position="top-center" toastOptions={{ duration: 5000, style: { background: '#131E36', color: '#a4afc8' }, error: { position: 'top-center' } }} />
-                <div className={`top-backdrop md:visible invisible`}></div>
-
+                <div className={`top-backdrop md:block hidden`}></div>
                 {hideNavbar ?? <Navbar />}
                 <div className={loading ? "animate-pulse" : ""}>
-                    <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col container mx-auto sm:px-6 lg:px-8 max-w-2xl wide-page:max-w-max">
-                        <div className="flex flex-col w-full text-white animate-fade-in">
+                    <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 lg:px-8 max-w-2xl wide-page:max-w-max">
+                        <div className="flex flex-col w-full text-white">
                             {children}
                         </div>
                     </div>
                 </div>
-                {hideFooter ?? <FooterComponent />}
+                <div id="offset-for-stickyness"></div>
             </div>
         </main>
     </div>

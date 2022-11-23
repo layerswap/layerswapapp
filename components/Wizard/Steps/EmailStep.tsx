@@ -7,9 +7,7 @@ type Props = {
 
 const EmailStep: FC<Props> = ({ OnNext }) => {
     return (
-        <>
-            <SendEmail onSend={OnNext} />
-        </>
+        <SendEmail onSend={OnNext} />
     )
 }
 

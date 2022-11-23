@@ -5,7 +5,6 @@ import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
 
 const ExchangeDelay: FC = () => {
-
     return (
         <MessageComponent>
             <MessageComponent.Content icon='yellow'>
@@ -27,16 +26,22 @@ const ExchangeDelay: FC = () => {
                 </MessageComponent.Description>
             </MessageComponent.Content>
             <MessageComponent.Buttons>
-                <SubmitButton buttonStyle='outline' icon={<BookOpenIcon className="h-5 w-5 ml-2" />} isDisabled={false} isSubmitting={false} onClick={() => {
-                    window.open('https://docs.layerswap.io/user-docs/why-is-coinbase-transfer-taking-so-long', '_blank')
-                }}>
-                    Learn More
-                </SubmitButton>
-                <GoHomeButton>
-                    <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5 ml-2" aria-hidden="true" />}>
-                        Go Home
-                    </SubmitButton>
-                </GoHomeButton>
+                <div className="flex flex-row text-white text-base space-x-2">
+                    <div className='basis-1/3'>
+                        <GoHomeButton>
+                            <SubmitButton text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                Go Home
+                            </SubmitButton>
+                        </GoHomeButton>
+                    </div>
+                    <div className='basis-2/3'>
+                        <SubmitButton button_align='right' text_align='left' buttonStyle='outline' icon={<BookOpenIcon className="h-5 w-5" />} isDisabled={false} isSubmitting={false} onClick={() => {
+                            window.open('https://docs.layerswap.io/user-docs/why-is-coinbase-transfer-taking-so-long', '_blank')
+                        }}>
+                            Learn More
+                        </SubmitButton>
+                    </div>
+                </div>
             </MessageComponent.Buttons>
         </MessageComponent>
     )

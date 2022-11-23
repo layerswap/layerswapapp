@@ -11,6 +11,7 @@ import WarningMessage from '../../../WarningMessage';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import KnownInternalNames from '../../../../lib/knownIds';
+import Widget from '../../Widget';
 import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
@@ -66,8 +67,8 @@ const OffRampSwapConfirmationStep: FC = () => {
     }, [network, swap, createAndProcessSwap])
 
     return (
-        <>
-            <div className='h-full flex flex-col justify-between'>
+        <Widget>
+            <Widget.Content>
                 <SwapConfirmMainData>
                     {
                         NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
@@ -81,11 +82,13 @@ const OffRampSwapConfirmationStep: FC = () => {
                     }
                     <AddressDetails canEditAddress={false} />
                 </SwapConfirmMainData>
+            </Widget.Content>
+            <Widget.Footer>
                 <SubmitButton type='submit' isDisabled={false} isSubmitting={isSubmitting} onClick={handleSubmit}>
                     Confirm
                 </SubmitButton>
-            </div>
-        </>
+            </Widget.Footer>
+        </Widget>
     )
 }
 

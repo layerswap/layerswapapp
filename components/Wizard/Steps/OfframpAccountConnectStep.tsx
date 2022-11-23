@@ -15,6 +15,7 @@ import { useInterval } from '../../../hooks/useInterval';
 import useSWR from 'swr';
 import LayerSwapApiClient, { UserExchangesData } from '../../../lib/layerSwapApiClient';
 import { ApiResponse } from '../../../Models/ApiResponse';
+import Widget from '../Widget';
 
 const OfframpAccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
@@ -83,74 +84,74 @@ const OfframpAccountConnectStep: FC = () => {
     const exchange_name = swapFormData?.exchange?.name
 
     return (
-        <div className="w-full flex flex-col h-full justify-between font-semibold font-roboto text-primary-text">
-            <div className='text-left space-y-1'>
-                <p className='pt-2 text-lg md:text-xl text-white'>
-                    {exchange_name} Connect
-                </p>
-                <p className='text-sm sm:text-base'>
-                    Allow Layerswap to read your Coinbase account's <span className='text-white'>email address.</span>
-                </p>
-            </div>
-            <div className="w-full color-white">
-                <div className="flex justify-center items-center m-7 space-x-3">
-                    <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
-                        <Image
-                            src="/images/coinbaseWhite.png"
-                            alt="Exchange Logo"
-                            height="40"
-                            width="40"
-                            layout="responsive"
-                            className="object-contain rounded-md"
-                        />
-                    </div>
-                    <SwitchIcon />
-                    <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
-                        <Image
-                            src="/images/layerswapWhite.png"
-                            alt="Layerswap Logo"
-                            height="40"
-                            width="40"
-                            layout="responsive"
-                            className="object-contain rounded-md"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div className="text-primary-text space-y-5">
-                <div className='space-y-4 font-light'>
-                    <div>
-                        <div className='text-primary font-bold uppercase'>
-                            Why
-                        </div>
-                        <p>
-                            We will send the tokens to the Coinbase account associated with that email address.
+        <Widget>
+            <Widget.Content>
+                <div className="mt-4 w-full flex flex-col h-full justify-between font-semibold text-primary-text">
+                    <div className='text-left space-y-1'>
+                        <p className='pt-2 text-lg md:text-xl text-white'>
+                            {exchange_name} Connect
+                        </p>
+                        <p className='text-sm sm:text-base'>
+                            Allow Layerswap to read your Coinbase account's <span className='text-white'>email address.</span>
                         </p>
                     </div>
-                    <div>
-                        <div className='text-primary font-bold uppercase'>
-                            Note
+                    <div className="w-full color-white">
+                        <div className="flex justify-center items-center m-7 space-x-3">
+                            <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
+                                <Image
+                                    src="/images/coinbaseWhite.png"
+                                    alt="Exchange Logo"
+                                    height="40"
+                                    width="40"
+                                    layout="responsive"
+                                    className="object-contain rounded-md"
+                                />
+                            </div>
+                            <SwitchIcon />
+                            <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
+                                <Image
+                                    src="/images/layerswapWhite.png"
+                                    alt="Layerswap Logo"
+                                    height="40"
+                                    width="40"
+                                    layout="responsive"
+                                    className="object-contain rounded-md"
+                                />
+                            </div>
                         </div>
-                        <p>
-                            <span className='font-semibold'>Only the email address</span> of your account will be read, no other permissions will be asked.
-                        </p>
+                    </div>
+                    <div className='font-normal space-y-4'>
+                        <div>
+                            <div className='text-primary  uppercase'>
+                                Why
+                            </div>
+                            <p>
+                                We will send the tokens to the Coinbase account associated with that email address.
+                            </p>
+                        </div>
+                        <div>
+                            <div className='text-primary  uppercase'>
+                                Note
+                            </div>
+                            <p>
+                                <span className='font-semibold'>Only the email address</span> of your account will be read, no other permissions will be asked.
+                            </p>
+                        </div>
                     </div>
                 </div>
+            </Widget.Content>
+            <Widget.Footer>
 
-                <div className='space-y-2'>
-                    <a className='flex text-sm items-center text-left underline hover:text-primary' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
-                        Read more about Coinbase's OAuth API here
-                        <ExternalLinkIcon className='ml-1 h-4 w-4'>
-                        </ExternalLinkIcon>
-                    </a>
-
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
-                        Connect
-                    </SubmitButton>
-                </div>
-            </div>
-        </div>
+                <a className='mb-2 flex text-sm items-center text-left underline hover:text-primary' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
+                    Read more about Coinbase's OAuth API here
+                    <ExternalLinkIcon className='ml-1 h-4 w-4'>
+                    </ExternalLinkIcon>
+                </a>
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+                    Connect
+                </SubmitButton>
+            </Widget.Footer>
+        </Widget>
     )
 }
 

@@ -13,9 +13,7 @@ const CodeStep: FC<Props> = ({ OnNext }) => {
     }, [OnNext]);
 
     return (
-        <>
-            <VerifyEmailCode onSuccessfullVerify={onSuccessfullVerifyHandler} />
-        </>
+        <VerifyEmailCode onSuccessfullVerify={onSuccessfullVerifyHandler} />
     )
 }
 

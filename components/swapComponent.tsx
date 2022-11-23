@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FC } from 'react'
 import { SwapDataProvider } from '../context/swap';
 import { AuthProvider } from '../context/authContext';
@@ -8,25 +8,34 @@ import IntroCard from './introCard';
 import CreateSwap from './Wizard/CreateSwapWizard';
 import { SwapCreateStep } from '../Models/Wizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
+import { useQueryState } from '../context/query';
+import inIframe from './utils/inIframe';
+
 
 const Swap: FC = () => {
+  const [embadded, setEmbadded] = useState<boolean>()
+
+  useEffect(() => {
+    setEmbadded(inIframe())
+  }, [])
 
   return (
-    <div>
-      <div className="text-white">
-        <AuthProvider>
-          <MenuProvider>
-            <SwapDataProvider >
-              <UserExchangeProvider>
-                <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={true}>
-                  <CreateSwap />
-                </FormWizardProvider>
-              </UserExchangeProvider>
-            </SwapDataProvider >
-          </MenuProvider>
-        </AuthProvider>
+    <div className="text-white">
+      <AuthProvider>
+        <MenuProvider>
+          <SwapDataProvider >
+            <UserExchangeProvider>
+              <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={true}>
+                <CreateSwap />
+              </FormWizardProvider>
+            </UserExchangeProvider>
+          </SwapDataProvider >
+        </MenuProvider>
+      </AuthProvider>
+      {
+        !embadded &&
         <IntroCard />
-      </div >
+      }
     </div >
   )
 };

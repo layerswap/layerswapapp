@@ -1,3 +1,4 @@
+import { HomeIcon, RefreshIcon } from "@heroicons/react/solid";
 import { NextRouter, withRouter } from "next/router"
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { SendErrorMessage } from "../lib/telegram"
@@ -16,7 +17,7 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
         this.state = { hasError: false }
     }
     static getDerivedStateFromError(error) {
-      
+
         return { hasError: true }
     }
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -29,8 +30,8 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
         if (this.state.hasError) {
             // You can render any custom fallback UI
             return (
-                <div className={`scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50`}>
-                    <main className="scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                <div className="styled-scroll">
+                    <main className="styled-scroll">
                         <div className="min-h-screen overflow-hidden relative font-robo">
                             <Navbar />
                             <div className="mx-auto max-w-xl bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative px-0 md:px-8 py-6 h-[500px] min-h-[550px]">
@@ -49,18 +50,24 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
                                         </MessageComponent.Description>
                                     </MessageComponent.Content>
                                     <MessageComponent.Buttons>
-                                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => {
-                                            this.setState({ hasError: false })
-                                        }}>
-                                            Try Again
-                                        </SubmitButton>
-                                        {
-                                            this.props.router.asPath !== "/" && <GoHomeButton>
-                                                <SubmitButton buttonStyle="outline" isDisabled={false} isSubmitting={false}>
-                                                    Go home
+                                        <div className="flex flex-row text-white text-xs sm:text-base space-x-2">
+                                            <div className='basis-1/3'>
+                                                {
+                                                    this.props.router.asPath !== "/" && <GoHomeButton>
+                                                        <SubmitButton text_align="left" buttonStyle="outline" isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                                            Go home
+                                                        </SubmitButton>
+                                                    </GoHomeButton>
+                                                }
+                                            </div>
+                                            <div className='basis-2/3'>
+                                                <SubmitButton button_align="right" text_align="left" isDisabled={false} isSubmitting={false} onClick={() => {
+                                                    this.setState({ hasError: false })
+                                                }} icon={<RefreshIcon className="h-5 w-5" aria-hidden="true" />}>
+                                                    Try Again
                                                 </SubmitButton>
-                                            </GoHomeButton>
-                                        }
+                                            </div>
+                                        </div>
                                     </MessageComponent.Buttons>
                                 </MessageComponent>
                             </div>

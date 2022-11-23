@@ -14,6 +14,7 @@ import { ApiResponse } from '../../../Models/ApiResponse';
 import { SwapCreateStep } from '../../../Models/Wizard';
 import SubmitButton from '../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../Carousel';
+import Widget from '../Widget';
 
 const AccountConnectStep: FC = () => {
     const { swapFormData } = useSwapDataState()
@@ -95,9 +96,8 @@ const AccountConnectStep: FC = () => {
     }
 
     return (
-        <>
-            <div className="w-full md:grid md:grid-flow-row min-h-[480px] text-primary-text font-light">
-
+        <Widget>
+            <Widget.Content>
                 <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please connect your {exchange_name} account
                 </h3>
@@ -730,21 +730,18 @@ const AccountConnectStep: FC = () => {
 
                     </Carousel>}
                 </div>
-
-                <div className="text-white text-sm  mt-auto">
-                    <div className="flex md:mt-5 font-normal text-sm text-primary-text mb-3">
-                        <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
-                    </div>
-
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
-                        {
-                            carouselFinished ? "Connect" : "Next"
-                        }
-                    </SubmitButton>
+            </Widget.Content>
+            <Widget.Footer>
+                <div className="flex font-normal text-sm text-primary-text">
+                    <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
                 </div>
-            </div>
-
-        </>
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+                    {
+                        carouselFinished ? "Connect" : "Next"
+                    }
+                </SubmitButton>
+            </Widget.Footer>
+        </Widget>
     )
 }
 

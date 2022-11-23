@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import { ExclamationCircleIcon } from '@heroicons/react/outline';
+import { ArrowLeftIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
 import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
 import LayerswapApiClient from "../lib/layerSwapApiClient"
@@ -17,7 +17,6 @@ import HoverTooltip from "./Tooltips/HoverTooltip";
 import { ExchangesComponentSceleton } from "./Sceletons";
 import Modal from "./modalComponent";
 import ExchangeSettings from "../lib/ExchangeSettings";
-import { ArrowLeftIcon } from "@heroicons/react/solid";
 import KnownInternalNames from "../lib/knownIds";
 
 interface UserExchange extends Exchange {
@@ -244,7 +243,7 @@ function UserExchanges() {
                 <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
             </Modal>
             <Modal showModal={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
-                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' />
+                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' stickyFooter={false}/>
             </Modal>
             <Modal showModal={openExchangeToDisconnectModal} setShowModal={setOpenExchangeToDisconnectModal} title={'Are you sure?'} modalSize='small'>
                 <div className="space-y-3">

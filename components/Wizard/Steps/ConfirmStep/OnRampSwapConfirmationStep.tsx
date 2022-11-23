@@ -17,6 +17,7 @@ import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormVa
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import Modal from '../../../modalComponent';
 import { useTimerState } from '../../../../context/timerContext';
+import Widget from '../../Widget';
 import WarningMessage from '../../../WarningMessage';
 import SwapSettings from '../../../../lib/SwapSettings';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
@@ -122,8 +123,8 @@ const OnRampSwapConfirmationStep: FC = () => {
     const currentCurrency = swapFormData?.currency?.baseObject;
 
     return (
-        <>
-            <div className='h-full flex flex-col justify-between sm:space-y-4'>
+        <Widget>
+            <Widget.Content>
                 <SwapConfirmMainData>
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
@@ -133,6 +134,8 @@ const OnRampSwapConfirmationStep: FC = () => {
                         <span>You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly</span>
                     </WarningMessage>
                 }
+            </Widget.Content>
+            <Widget.Footer>
                 <div className="text-white text-sm">
                     <div className="mx-auto w-full rounded-lg font-normal">
                         <div className='flex justify-between mb-4 md:mb-8'>
@@ -149,7 +152,8 @@ const OnRampSwapConfirmationStep: FC = () => {
                         Confirm
                     </SubmitButton>
                 </div>
-            </div>
+            </Widget.Footer>
+
             <Modal
                 showModal={editingAddress}
                 setShowModal={setEditingAddress}
@@ -193,7 +197,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                     </div>
                 </div>
             </Modal>
-        </>
+        </Widget>
     )
 }
 
