@@ -32,7 +32,11 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
 
     switch (place) {
         case 'inStep':
+<<<<<<< HEAD
             moreClassNames += " -mt-14";
+=======
+            moreClassNames += " -mt-11";
+>>>>>>> dev
             break;
         case 'inMenu':
             moreClassNames += " pt-2";

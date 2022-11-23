@@ -49,7 +49,7 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
     </Head>
     <ErrorBoundary >
       <QueryProvider query={query}>
-        <ThemeWrapper hideFooter={hideFooter} hideNavbar={hideNavbar}>
+        <ThemeWrapper hideNavbar={hideNavbar}>
           {children}
         </ThemeWrapper>
       </QueryProvider>
