@@ -1,7 +1,6 @@
-import { AnimatePresence, motion, usePresence } from 'framer-motion';
-import React, { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { useRef } from 'react';
 import { useState } from 'react';
-import { useFormWizardaUpdate } from '../../context/formWizardProvider';
 import { createPortal } from 'react-dom';
 
 const Widget = ({ children }) => {
@@ -13,9 +12,9 @@ type ContetProps = {
 }
 const Content = ({ children, center }: ContetProps) => {
     return center ?
-        <div className='flex flex-col self-center grow'>
-            <div className='flex self-center grow'>
-                <div className='flex flex-col self-center'>
+        <div className='flex flex-col self-center grow w-full'>
+            <div className='flex self-center grow w-full'>
+                <div className='flex flex-col self-center w-full'>
                     {children}
                 </div>
             </div>
@@ -46,24 +45,21 @@ let variants = {
 type FooterProps = {
     hidden?: boolean,
     children?: JSX.Element | JSX.Element[];
+    sticky?: boolean
 }
-const Footer = ({ children, hidden }: FooterProps) => {
+const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
     const [height, setHeight] = useState(0)
     const ref = useRef(null)
-    const { setHasFooter } = useFormWizardaUpdate()
 
-    useEffect(() => {
-        setHasFooter(true)
-    }, [])
     const handleAnimationEnd = (variant) => {
         if (variant == "center") {
             setHeight(ref?.current?.clientHeight)
         }
     }
-    return <>
-        {
+    return (
+        sticky ?
             <>
-                <motion.div 
+                <motion.div
                     onAnimationComplete={handleAnimationEnd}
                     ref={ref}
                     transition={{
@@ -75,7 +71,7 @@ const Footer = ({ children, hidden }: FooterProps) => {
                         max-sm:fixed
                         max-sm:inset-x-0
                         max-sm:bottom-0 
-                        max-sm:z-30 max-sm:bg-darkblue max-sm:shadow-widget-footer max-sm:p-4 max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
+                        max-sm:z-30 max-sm:bg-darkblue max-sm:shadow-widget-footer max-sm:p-4 max-sm:px-6 max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
                     {children}
                 </motion.div>
                 <ReactPortal wrapperId='offset-for-stickyness'>
@@ -86,9 +82,12 @@ const Footer = ({ children, hidden }: FooterProps) => {
                              max-sm:p-4 max-sm:w-full invisible`}>
                     </div>
                 </ReactPortal>
+            </ >
+            :
+            <>
+                {children}
             </>
-        }
-    </ >
+    )
 }
 
 Widget.Content = Content

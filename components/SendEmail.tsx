@@ -69,7 +69,6 @@ const SendEmail: FC<Props> = ({ onSend }) => {
             >
                 {({ isValid, isSubmitting }) => (
                     <Form autoComplete='true' className='w-full h-full'>
-                        <div />
                         <Widget>
                             <Widget.Content center={true}>
                                 <UserIcon className='w-16 h-16 text-primary self-center mt-auto' />

@@ -14,7 +14,7 @@ const Wizard: FC<Props> = ({ children }) => {
    const wrapper = useRef(null);
 
    const { setWrapperWidth } = useFormWizardaUpdate()
-   const { wrapperWidth, positionPercent, moving, goBack, hasFooter } = useFormWizardState()
+   const { wrapperWidth, positionPercent, moving, goBack } = useFormWizardState()
 
    useEffect(() => {
       function handleResize() {
@@ -50,16 +50,6 @@ const Wizard: FC<Props> = ({ children }) => {
                </AnimatePresence>
             </div>
          </div>
-         {
-            hasFooter && <div className={`text-white text-base mt-3
-            md:hidden
-            h-20
-            max-sm:fixed
-            max-sm:inset-x-0
-            max-sm:bottom-0 
-            max-sm:z-20 max-sm:bg-darkblue max-sm:w-full`}>
-            </div>
-         }
       </div>
    </>
 }

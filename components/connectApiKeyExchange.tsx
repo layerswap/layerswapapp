@@ -15,10 +15,11 @@ import GuideLink from './guideLink';
 type Props = {
     exchange: Exchange,
     onSuccess: () => Promise<void>,
-    slideOverPlace?: slideOverPlace
+    slideOverPlace?: slideOverPlace,
+    stickyFooter?: boolean
 }
 
-const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace }) => {
+const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace, stickyFooter = true }) => {
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
@@ -148,8 +149,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace 
                     </div>
                 </div>
             </Widget.Content>
-            <Widget.Footer>
-                <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500'>
+            <Widget.Footer sticky={stickyFooter}>
+                <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500 mb-5'>
                     <div className="flex items-center">
                         <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
                         <label className="block text-sm md:text-base font-medium leading-6">We're requesting <span className='font-bold'>Read-Only</span> API Keys</label>
