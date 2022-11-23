@@ -86,7 +86,7 @@ const OfframpAccountConnectStep: FC = () => {
     return (
         <Widget>
             <Widget.Content>
-                <div className="w-full flex flex-col h-full justify-between font-semibold text-primary-text">
+                <div className="mt-4 w-full flex flex-col h-full justify-between font-semibold text-primary-text">
                     <div className='text-left space-y-1'>
                         <p className='pt-2 text-lg md:text-xl text-white'>
                             {exchange_name} Connect
@@ -120,23 +120,29 @@ const OfframpAccountConnectStep: FC = () => {
                             </div>
                         </div>
                     </div>
+                    <div className='font-normal space-y-4'>
+                        <div>
+                            <div className='text-primary  uppercase'>
+                                Why
+                            </div>
+                            <p>
+                                We will send the tokens to the Coinbase account associated with that email address.
+                            </p>
+                        </div>
+                        <div>
+                            <div className='text-primary  uppercase'>
+                                Note
+                            </div>
+                            <p>
+                                <span className='font-semibold'>Only the email address</span> of your account will be read, no other permissions will be asked.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </Widget.Content>
             <Widget.Footer>
-                <div className='font-normal'>
-                    <div className='text-primary-800 font-bold uppercase'>
-                        Why
-                    </div>
-                    <div>
-                        <div className='text-primary font-bold uppercase'>
-                            Note
-                        </div>
-                        <p>
-                            <span className='font-semibold'>Only the email address</span> of your account will be read, no other permissions will be asked.
-                        </p>
-                    </div>
-                </div>
-                <a className='flex text-sm items-center text-left underline hover:text-primary' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
+
+                <a className='mb-2 flex text-sm items-center text-left underline hover:text-primary' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
                     Read more about Coinbase's OAuth API here
                     <ExternalLinkIcon className='ml-1 h-4 w-4'>
                     </ExternalLinkIcon>
