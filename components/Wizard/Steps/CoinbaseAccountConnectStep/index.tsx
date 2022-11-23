@@ -6,6 +6,7 @@ import { useQueryState } from '../../../../context/query';
 import { useSwapDataState } from '../../../../context/swap';
 import { useInterval } from '../../../../hooks/useInterval';
 import { usePersistedState } from '../../../../hooks/usePersistedState';
+import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 import { parseJwt } from '../../../../lib/jwtParser';
 import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../../lib/openLink';
@@ -15,6 +16,7 @@ import { SwapCreateStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
 import ToggleButton from '../../../buttons/toggleButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
+import Widget from '../../Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectScreens';
 
 const AccountConnectStep: FC = () => {
@@ -30,7 +32,7 @@ const AccountConnectStep: FC = () => {
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
 
-    const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
+    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.baseObject?.usd_price, Number(amount))
     const layerswapApiClient = new LayerSwapApiClient()
 
     const exchange_accounts_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts`
@@ -105,12 +107,11 @@ const AccountConnectStep: FC = () => {
     }
 
     return (
-        <>
-            <div className="w-full md:grid md:grid-flow-row min-h-[480px] text-primary-text font-light">
-
-                <p className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
+        <Widget>
+            <Widget.Content>
+                <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
                     Please connect your {exchange_name} account
-                </p>
+                </h3>
                 {
                     alreadyFamiliar ?
                         <div>
@@ -153,21 +154,18 @@ const AccountConnectStep: FC = () => {
                             }
                         </div>
                 }
-
-                <div className="text-white text-sm  mt-auto">
-                    <div className="flex mt-5 font-normal text-sm text-primary-text mb-3">
-                        <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
-                    </div>
-
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
-                        {
-                            carouselFinished || alreadyFamiliar ? "Connect" : "Next"
-                        }
-                    </SubmitButton>
+            </Widget.Content>
+            <Widget.Footer>
+                <div className="flex font-normal text-sm text-primary-text">
+                    <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
                 </div>
-            </div>
-
-        </>
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+                    {
+                        carouselFinished ? "Connect" : "Next"
+                    }
+                </SubmitButton>
+            </Widget.Footer>
+        </Widget>
     )
 }
 
