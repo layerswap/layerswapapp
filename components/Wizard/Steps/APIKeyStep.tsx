@@ -1,7 +1,5 @@
 import { FC } from 'react'
-import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState } from '../../../context/swap';
-import { SwapCreateStep } from '../../../Models/Wizard';
 import ConnectApiKeyExchange from '../../connectApiKeyExchange';
 
 type Props = {
@@ -17,9 +15,7 @@ const APIKeyStep: FC<Props> = ({onSuccess}) => {
         return <></>
 
     return (
-        <>
-            <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} slideOverPlace='inStep' />
-        </>
+        <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} slideOverPlace='inStep' />
     )
 }
 

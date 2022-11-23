@@ -1,5 +1,6 @@
 import CardContainer from './cardContainer';
 import { ChevronRightIcon } from '@heroicons/react/solid';
+import FooterComponent from './footerComponent';
 
 function IntroCard(props) {
     return (
@@ -16,7 +17,7 @@ function IntroCard(props) {
                         <ChevronRightIcon className="ml-2 h-5 w-5 text-primary-text group-hover:text-primary-500" aria-hidden="true" />
                     </a>
                 </div>
-
+                <FooterComponent />
             </div>
         </CardContainer>
     );
