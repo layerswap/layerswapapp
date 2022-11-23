@@ -20,6 +20,7 @@ import { useTimerState } from '../../../../context/timerContext';
 import Widget from '../../Widget';
 import WarningMessage from '../../../WarningMessage';
 import SwapSettings from '../../../../lib/SwapSettings';
+import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 
 const TIMER_SECONDS = 120
 
@@ -49,7 +50,7 @@ const OnRampSwapConfirmationStep: FC = () => {
             setAddressInputError(`Enter a valid ${network.name} address`)
     }, [network])
 
-    const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
+    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.baseObject?.usd_price, Number(amount))
     const transferAmount = `${amount} ${currency?.name}`
     const handleSubmit = useCallback(async (e: any) => {
         setLoading(true)

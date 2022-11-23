@@ -5,6 +5,7 @@ import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useQueryState } from '../../../context/query';
 import { useSwapDataState } from '../../../context/swap';
 import { useInterval } from '../../../hooks/useInterval';
+import { CalculateMinimalAuthorizeAmount } from '../../../lib/fees';
 import { parseJwt } from '../../../lib/jwtParser';
 import LayerSwapApiClient, { UserExchangesData } from '../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../lib/openLink';
@@ -28,7 +29,7 @@ const AccountConnectStep: FC = () => {
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
 
-    const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
+    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.baseObject?.usd_price, Number(amount))
     const layerswapApiClient = new LayerSwapApiClient()
 
     const exchange_accounts_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts`
