@@ -104,6 +104,7 @@ const AccountConnectStep: FC = () => {
 
     const handleToggleChange = (value: boolean) => {
         setAlreadyFamiliar(value)
+        onCarouselLast(value)
     }
 
     return (
@@ -114,12 +115,12 @@ const AccountConnectStep: FC = () => {
                 </h3>
                 {
                     alreadyFamiliar ?
-                        <div>
+                        <div className='space-y-3 flex flex-col justify-center'>
                             <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkblue to-darkblue-700 h-100%`} style={{ width: '100%' }}>
                                 <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                             </div>
-                            <button className='' onClick={() => { handleToggleChange(false); }}>
-                                Show me full guide.
+                            <button onClick={() => handleToggleChange(false)} className="p-1.5 bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100">
+                                Show me full guide
                             </button>
                         </div>
                         :
@@ -157,7 +158,7 @@ const AccountConnectStep: FC = () => {
             </Widget.Content>
             <Widget.Footer>
                 <div className="flex font-normal text-sm text-primary-text">
-                    <label className="block font-lighter text-left leading-6"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
+                    <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
                 </div>
                 <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
                     {
