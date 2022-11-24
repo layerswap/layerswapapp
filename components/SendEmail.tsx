@@ -7,6 +7,7 @@ import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
+import Widget from './Wizard/Widget';
 
 type EmailFormValues = {
     email: string;
@@ -67,18 +68,19 @@ const SendEmail: FC<Props> = ({ onSend }) => {
                 validate={validateEmail}
             >
                 {({ isValid, isSubmitting }) => (
-
-                    <div className='flex flex-col items-stretch min-h-[500px] text-primary-text'>
-                        <div className="w-full pt-4 flex-col flex-1 flex">
-                            <UserIcon className='w-16 h-16 mt-auto text-primary self-center' />
-                            <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
-                                What's your email?
-                            </p>
-                            <p className='text-center text-base mb-6 px-2'>
-                                With your email, your exchange credentials will stay linked to your account and you can access your entire transfer history.
-                            </p>
-                            <Form autoComplete='true'>
-                                <div className="relative rounded-md shadow-sm mt-1 mb-12 md:mb-11">
+                    <Form autoComplete='true' className='w-full h-full'>
+                        <Widget>
+                            <Widget.Content center={true}>
+                                <UserIcon className='w-16 h-16 text-primary self-center mt-auto' />
+                                <div>
+                                    <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
+                                        What's your email?
+                                    </p>
+                                    <p className='text-center text-base mb-6 px-2 text-primary-text'>
+                                        With your email, your exchange credentials will stay linked to your account and you can access your entire transfer history.
+                                    </p>
+                                </div>
+                                <div className="relative rounded-md shadow-sm">
                                     <Field name="email">
                                         {({ field }) => (
                                             <input
@@ -93,14 +95,14 @@ const SendEmail: FC<Props> = ({ onSend }) => {
                                         )}
                                     </Field>
                                 </div>
-                                <div className="text-white text-sm mt-24 sm:mt-28">
-                                    <SubmitButton isDisabled={!isValid} isSubmitting={isSubmitting} >
-                                        Continue
-                                    </SubmitButton>
-                                </div>
-                            </Form>
-                        </div>
-                    </div >
+                            </Widget.Content>
+                            <Widget.Footer>
+                                <SubmitButton isDisabled={!isValid} isSubmitting={isSubmitting} >
+                                    Continue
+                                </SubmitButton>
+                            </Widget.Footer>
+                        </Widget>
+                    </Form>
                 )}
             </Formik >
         </>

@@ -41,6 +41,7 @@ const AmountField = forwardRef((props: any, ref: any) => {
             name={name}
             ref={amountRef}
             precision={currencyDetails?.precision}
+            className="rounded-r-none"
         >
             {exchange && network && currency && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
                 <button

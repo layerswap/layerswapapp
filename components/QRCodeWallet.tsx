@@ -40,16 +40,16 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconW
                     <QrcodeIcon className={iconClassName} width={iconWidth ? iconWidth : 16} height={iconHeight ? iconHeight : 16} />
                 </div>
             </div>
-            <Modal onDismiss={handleCloseModal} isOpen={isOpen} modalSize='medium'>
+            <Modal showModal={isOpen} setShowModal={setIsOpen} modalSize='medium'>
                 <div className="flex flex-col justify-between items-center space-y-6 md:space-y-8 mt-6 md:mt-8">
                     <div>
                         {qrCode}
                     </div>
-                    <p className="text-xl md:text-2xl text-primary-text">
+                    <div className="text-xl md:text-2xl text-primary-text">
                         <CopyButton toCopy={qrUrl} iconHeight={22} iconWidth={22}>
                             <span>{shortenAddress(qrUrl)}</span>
                         </CopyButton>
-                    </p>
+                    </div>
                     <SubmitButton onClick={handleCloseModal} isDisabled={false} isSubmitting={false}>
                         Close
                     </SubmitButton>

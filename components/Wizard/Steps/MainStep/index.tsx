@@ -1,6 +1,4 @@
-import { Web3Provider } from "@ethersproject/providers";
 import { ImmutableXClient } from "@imtbl/imx-sdk";
-import { useWeb3React } from "@web3-react/core";
 import { Formik, FormikProps } from "formik";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../../context/query";
@@ -14,7 +12,6 @@ import axios from "axios";
 import ConnectImmutableX from "../ConnectImmutableX";
 import ConnectRhinofi from "../../../ConnectRhinofi";
 import toast from "react-hot-toast";
-import { InjectedConnector } from "@web3-react/injected-connector";
 import { clearTempData, getTempData } from "../../../../lib/openLink";
 import KnownInternalNames from "../../../../lib/knownIds";
 import MainStepValidation from "../../../../lib/mainStepValidator";

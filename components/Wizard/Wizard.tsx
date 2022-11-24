@@ -1,4 +1,6 @@
 import { FC, useEffect, useRef } from 'react'
+import inIframe from '../utils/inIframe';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import { AnimatePresence } from 'framer-motion';
 import HeaderWithMenu from '../HeaderWithMenu';
@@ -11,8 +13,8 @@ const Wizard: FC<Props> = ({ children }) => {
 
    const wrapper = useRef(null);
 
-   const { wrapperWidth, positionPercent, moving, goBack } = useFormWizardState()
    const { setWrapperWidth } = useFormWizardaUpdate()
+   const { wrapperWidth, positionPercent, moving, goBack } = useFormWizardState()
 
    useEffect(() => {
       function handleResize() {
@@ -28,13 +30,13 @@ const Wizard: FC<Props> = ({ children }) => {
 
    const width = positionPercent || 0
    return <>
-      <div className={`pb-6 bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative`}>
+      <div className={`bg-darkblue md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-darkblue-500">
                <div style={{ width: `${width}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
             </div>
          </div>
-         <HeaderWithMenu goBack={goBack}/>
+         <HeaderWithMenu goBack={goBack} />
          <div className='text-center text-xl text-darkblue-50'>
 
          </div>
@@ -42,7 +44,7 @@ const Wizard: FC<Props> = ({ children }) => {
             <div className="flex items-start"
                ref={wrapper}>
                <AnimatePresence initial={false} custom={{ direction: moving === "forward" ? 1 : -1, width: wrapperWidth }}>
-                  <div className={`flex flex-nowrap min-h-480 `}>
+                  <div className={`flex flex-nowrap`}>
                      {children}
                   </div>
                </AnimatePresence>
