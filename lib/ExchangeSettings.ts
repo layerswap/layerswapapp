@@ -6,7 +6,6 @@ export default class ExchangeSettings {
     ExchangeApiKeyPageUrl?: string;
     UserApiKeyGuideUrl?: string;
     UserWithdrawalGuideUrl?: string;
-    RequireSelectInternal?: boolean = false;
     AuthorizationNote?: string;
     WithdrawalWarningMessage?: string;
     KeyphraseDisplayName?: string;
