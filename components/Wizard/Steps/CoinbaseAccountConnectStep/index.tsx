@@ -25,7 +25,10 @@ const AccountConnectStep: FC = () => {
     const { o_auth_authorization_url } = exchange?.baseObject || {}
     const { goToStep } = useFormWizardaUpdate()
 
-    const [carouselFinished, setCarouselFinished] = useState(false)
+    const localStorageItemKey = "alreadyFamiliarWithCoinbaseConnect";
+    let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<boolean>(false, localStorageItemKey)
+
+    const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar)
     const [authWindow, setAuthWindow] = useState<Window>()
     const [authorizedAmount, setAuthorizedAmount] = useState<number>()
 
@@ -39,8 +42,6 @@ const AccountConnectStep: FC = () => {
 
     const { data: exchanges } = useSWR<ApiResponse<UserExchangesData[]>>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
 
-    const localStorageItemKey = "alreadyFamiliarWithCoinbaseConnect";
-    let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<boolean>(false, localStorageItemKey)
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref = ""
         try {
@@ -110,22 +111,17 @@ const AccountConnectStep: FC = () => {
     return (
         <Widget>
             <Widget.Content>
-                <h3 className='md:mb-4 pt-2 text-xl text-center md:text-left font-roboto text-white font-semibold'>
+                <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
                     Please connect your {exchange_name} account
                 </h3>
                 {
                     alreadyFamiliar ?
-                        <div className='space-y-3 flex flex-col justify-center'>
-                            <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkblue to-darkblue-700 h-100%`} style={{ width: '100%' }}>
-                                <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                            </div>
-                            <button onClick={() => handleToggleChange(false)} className="p-1.5 bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100">
-                                Show me full guide
-                            </button>
+                        <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkblue to-darkblue-700 h-100%`} style={{ width: '100%' }}>
+                            <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                         </div>
                         :
                         <div className="w-full space-y-3">
-                            {swapFormData && !alreadyFamiliar && <Carousel onLast={onCarouselLast} ref={carouselRef}>
+                            {swapFormData && <Carousel onLast={onCarouselLast} ref={carouselRef}>
                                 <CarouselItem width={100} >
                                     <FirstScreen exchange_name={exchange_name} />
                                 </CarouselItem>
@@ -142,24 +138,33 @@ const AccountConnectStep: FC = () => {
                                     <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                                 </CarouselItem>
                             </Carousel>}
-                            {
-                                carouselFinished && !alreadyFamiliar &&
-                                <div className='flex justify-between'>
-                                    <div className='flex items-center text-xs md:text-sm font-medium'>
-                                        I'm already familiar with the process.
-                                    </div>
-                                    <div className='flex items-center space-x-4'>
-                                        <ToggleButton name='Already Familiar' onChange={handleToggleChange} value={alreadyFamiliar} />
-                                    </div>
-                                </div>
-                            }
                         </div>
                 }
-            </Widget.Content>
-            <Widget.Footer>
                 <div className="flex font-normal text-sm text-primary-text">
                     <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
                 </div>
+            </Widget.Content>
+            <Widget.Footer>
+                {
+                    alreadyFamiliar && carouselFinished ?
+                        <button onClick={() => handleToggleChange(false)} className="p-1.5 bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100 w-full mb-3">
+                            Show me full guide
+                        </button>
+                        :
+                        <div className="flex items-center mb-3">
+                            <input
+                                name="alreadyFamiliar"
+                                id='alreadyFamiliar'
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-priamry-text text-priamry focus:ring-primary"
+                                onChange={() => handleToggleChange(true)}
+                                checked={alreadyFamiliar}
+                            />
+                            <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
+                                I'm already familiar with the process.
+                            </label>
+                        </div>
+                }
                 <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
                     {
                         carouselFinished ? "Connect" : "Next"

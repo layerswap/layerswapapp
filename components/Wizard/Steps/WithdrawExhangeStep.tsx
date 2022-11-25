@@ -89,7 +89,7 @@ const WithdrawExchangeStep: FC = () => {
                 <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text">
                     <div className='space-y-4'>
                         <div className="text-left">
-                            <p className="block text-md sm:text-lg font-medium text-white">
+                            <p className="block sm:text-lg font-medium text-white">
                                 Send {currency?.asset} to the provided address
                             </p>
                             <p className='text-sm sm:text-base'>
