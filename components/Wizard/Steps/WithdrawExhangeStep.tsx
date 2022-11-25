@@ -145,13 +145,12 @@ const WithdrawExchangeStep: FC = () => {
                             }
                             {
                                 ExchangeSettings?.KnownSettings[exchange_internal_name]?.ExchangeWithdrawalGuideUrl &&
-                                <WarningMessage messageType='informating'>
-                                    <span className='flex-none'>
+                                <div className='flex items-center'>
+                                    <span className='flex-none text-white'>
                                         Learn how to send from
                                     </span>
-                                    <GuideLink text={exchange_internal_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
-                                </WarningMessage>
-
+                                    <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                                </div>
                             }
                         </div>
                     </div>
