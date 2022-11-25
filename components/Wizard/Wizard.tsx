@@ -30,7 +30,7 @@ const Wizard: FC<Props> = ({ children }) => {
 
    const width = positionPercent || 0
    return <>
-      <div className={`bg-darkblue md:shadow-card rounded-lg w-full overflow-hidden relative`}>
+      <div className={`bg-darkblue md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
          <div className="relative">
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-darkblue-500">
                <div style={{ width: `${width}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>

@@ -124,8 +124,7 @@ const TwoFactorStep: FC = () => {
                 {({ isValid, isSubmitting, errors, handleChange }) => (
                     <Form className='flex text-primary-text h-full'>
                         <Widget>
-                            <Widget.Content>
-                                <div />
+                            <Widget.Content center>
                                 <div className="w-full flex-col justify-between flex h-full mt-4">
                                     <LockClosedIcon className='w-16 h-16 mt-auto text-primary self-center' />
                                     <div className='text-center mt-5'>
@@ -166,7 +165,9 @@ const TwoFactorStep: FC = () => {
                                         </Timer>
                                     </span>
                                 </div>
-                                <div className='p-4 bg-darkblue-700 mt-5 rounded-lg border border-darkblue-500'>
+                            </Widget.Content>
+                            <Widget.Footer>
+                                <div className='p-4 bg-darkblue-700 mt-5 text-primary-text rounded-lg border border-darkblue-500 mb-5'>
                                     <div className="flex items-center">
                                         <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
                                         <label className="block text-sm md:text-base font-medium leading-6">To obtain the 2 step verification code, check:</label>
@@ -176,9 +177,6 @@ const TwoFactorStep: FC = () => {
                                         <li>text messages of the phone number associated with your Coinbase account</li>
                                     </ul>
                                 </div>
-                            </Widget.Content>
-                            <Widget.Footer>
-
                                 <SubmitButton type="submit" isDisabled={!isValid || loading} isSubmitting={isSubmitting}>
                                     Confirm
                                 </SubmitButton>
