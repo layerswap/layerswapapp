@@ -156,7 +156,7 @@ const AccountConnectStep: FC = () => {
                                 name="alreadyFamiliar"
                                 id='alreadyFamiliar'
                                 type="checkbox"
-                                className="h-4 w-4 rounded border-priamry-text text-priamry focus:ring-primary"
+                                className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
                                 onChange={() => handleToggleChange(true)}
                                 checked={alreadyFamiliar}
                             />
