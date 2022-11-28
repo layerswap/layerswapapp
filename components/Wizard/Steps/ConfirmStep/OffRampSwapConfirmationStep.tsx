@@ -12,10 +12,13 @@ import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import KnownInternalNames from '../../../../lib/knownIds';
 import Widget from '../../Widget';
-import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapType } from '../../../../lib/layerSwapApiClient';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
 import GuideLink from '../../../guideLink';
+import { useQueryState } from '../../../../context/query';
+import InternalApiClient from '../../../../lib/internalApiClient';
+import { useSettingsState } from '../../../../context/settings';
 
 const OffRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
@@ -25,6 +28,8 @@ const OffRampSwapConfirmationStep: FC = () => {
     const { network } = swapFormData || {}
     const router = useRouter();
     const { exchange, destination_address, currency } = swapFormData || {}
+    const query = useQueryState();
+    const settings = useSettingsState();
 
     const layerswapApiClient = new LayerSwapApiClient()
     const depositad_address_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts/${exchange?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
@@ -40,6 +45,13 @@ const OffRampSwapConfirmationStep: FC = () => {
         let nextStep: SwapCreateStep;
         try {
             if (!swap) {
+                if (query.addressSource === "imxMarketplace" && settings.validSignatureisPresent) {
+                    const accounts = await layerswapApiClient.GetNetworkAccounts(swapFormData.network.baseObject.internal_name)
+                    if (!accounts?.data?.some(a => a.address === query.destAddress && a.is_verified)) {
+                        const internalApiClient = new InternalApiClient()
+                        await internalApiClient.VerifyWallet(window.location.search);
+                    }
+                }
                 const swapId = await createAndProcessSwap();
                 await router.push(`/${swapId}`)
             }
@@ -51,20 +63,20 @@ const OffRampSwapConfirmationStep: FC = () => {
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
-            if (!data) {
-                toast.error(error.message)
-                return
-            }
-            if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
+            if (data?.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 nextStep = SwapCreateStep.OffRampOAuth
             }
-            else
+            else if (data?.message)
                 toast.error(data?.message)
+            else if (error.message)
+                toast.error(error.message)
+            else
+                toast.error(error)
         }
         setIsSubmitting(false)
         if (nextStep)
             goToStep(nextStep)
-    }, [network, swap, createAndProcessSwap])
+    }, [network, swap, createAndProcessSwap, settings, query])
 
     return (
         <Widget>

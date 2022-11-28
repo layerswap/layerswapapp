@@ -12,6 +12,7 @@ import { MenuProvider } from '../context/menu';
 import { SettingsProvider } from '../context/settings';
 import SwapWithdrawal from '../components/SwapWithdrawal';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
+import { validateSignature } from '../helpers/validateSignature';
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
@@ -46,6 +47,7 @@ export const getServerSideProps = async (ctx) => {
       }
     }
   }
+  const validSignatureIsPresent = validateSignature(ctx.query)
 
   let settings: LayerSwapSettings;
   try {
@@ -77,6 +79,8 @@ export const getServerSideProps = async (ctx) => {
     }
     settings = data
   }
+
+  settings.validSignatureisPresent = validSignatureIsPresent
 
   return {
     props: {

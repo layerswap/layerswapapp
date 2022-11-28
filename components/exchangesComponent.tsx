@@ -185,7 +185,7 @@ function UserExchanges() {
                                                                             src={`${resource_storage_url}${item.logo}`}
                                                                             alt="Exchange Logo"
                                                                             height="30"
-                                                                            width="30display_name"
+                                                                            width="30"
                                                                             layout="fixed"
                                                                             className="rounded-md h-8 w-8 object-contain"
                                                                         />
