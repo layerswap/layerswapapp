@@ -20,6 +20,7 @@ export type WizardProvider<T> = {
 type UpdateInterface<T> = {
     goToStep: (step: T, move?: Direction) => void,
     setLoading: (value: boolean) => void,
+    setError: (value: string) => void,
     setWrapperWidth: (value: number) => void,
     setWrapperHeight: (value: string) => void,
     setGoBack: (callback) => void,
@@ -39,6 +40,7 @@ export const FormWizardProvider = <T extends Steps>(props: Props<T>) => {
     const [loading, setLoading] = useState(initialLoading)
     const [wrapperWidth, setWrapperWidth] = useState(1);
     const [wrapperHeight, setWrapperHeight] = useState(1);
+    const [error, setError] = useState('error')
 
     const [goBack, setGoBack] = useState<{ callback: () => void }>();
     const [positionPercent, setPositionPercent] = useState<() => void>();
@@ -51,8 +53,8 @@ export const FormWizardProvider = <T extends Steps>(props: Props<T>) => {
     }, [])
 
     return (
-        <FormWizardStateContext.Provider value={{ currentStepName, moving, loading, wrapperWidth, wrapperHeight, goBack: goBack?.callback, positionPercent }}>
-            <FormWizardStateUpdateContext.Provider value={{ goToStep, setLoading, setWrapperWidth, setWrapperHeight, setGoBack: handleSetCallback, setPositionPercent }}>
+        <FormWizardStateContext.Provider value={{ currentStepName, moving, loading, error, wrapperWidth, wrapperHeight, goBack: goBack?.callback, positionPercent }}>
+            <FormWizardStateUpdateContext.Provider value={{ goToStep, setLoading, setError, setWrapperWidth, setWrapperHeight, setGoBack: handleSetCallback, setPositionPercent }}>
                 {children}
             </FormWizardStateUpdateContext.Provider>
         </FormWizardStateContext.Provider >
