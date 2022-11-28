@@ -9,7 +9,7 @@ type Props = {
     header?: string;
     children: JSX.Element | JSX.Element[];
 }
- 
+
 const BackgroundField: FC<Props> = (({ isCopiable, toCopy, header, children, isQRable }) => {
     return (
         <div className='w-full rounded-md px-3 py-3 shadow-sm border border-darkblue-500  bg-darkblue-700'>
