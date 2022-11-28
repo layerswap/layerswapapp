@@ -15,9 +15,9 @@ const componentOverrides = {
         <img {...props}></img>
     ),
     a: (props) => (
-        <Link {...props}>
-            <a {...props} />
-        </Link>
+        (<Link {...props}>
+
+        </Link>)
     )
 };
 
@@ -97,7 +97,7 @@ export default function UserGuide(props) {
                     <div className="mx-auto px-8 pb-20 max-w-xl md:max-w-3xl">
                         <ul role="list" className="space-y-4 sm:grid sm:grid-cols-2 sm:gap-6 sm:space-y-0 lg:grid-cols-3 lg:gap-8">
                             {exchanges.map((exchange) => (
-                                <Link href={exchange.guideUrl} key={exchange.name}>
+                                <Link href={exchange.guideUrl} key={exchange.name} legacyBehavior>
                                     <li key={exchange.name} className="py-6 md:py-10 px-4 md:px-6 bg-gray-800 text-center rounded-lg xl:px-10 hover:cursor-pointer hover:bg-gray-600">
                                         <div className="space-y-2 md:space-y-6 xl:space-y-10">
                                             <Image
@@ -119,7 +119,7 @@ export default function UserGuide(props) {
                 </main>
             </div>
         </Layout>
-    )
+    );
 }
 
 export async function getStaticProps() {
