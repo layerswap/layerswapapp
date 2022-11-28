@@ -7,7 +7,6 @@ export default class ExchangeSettings {
     ExchangeWithdrawalGuideUrl?: string;
     UserApiKeyGuideUrl?: string;
     UserWithdrawalGuideUrl?: string;
-    RequireSelectInternal?: boolean = false;
     AuthorizationNote?: string;
     WithdrawalWarningMessage?: string;
     KeyphraseDisplayName?: string;
@@ -81,14 +80,12 @@ export default class ExchangeSettings {
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Kucoin] = {
             ExchangeWithdrawalPageUrl: "https://www.kucoin.com/assets/withdraw",
             ExchangeApiKeyPageUrl: "https://www.kucoin.com/account/api",
-            RequireSelectInternal: true,
             KeyphraseDisplayName: "Keyphrase",
             CustomAuthorizationFlow: "api_credentials",
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/kucoin",
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Okex] = {
             WithdrawalWarningMessage: "Please select the 'internal' withdrawal method.",
-            RequireSelectInternal: true,
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/okx",
             KeyphraseDisplayName: "Passphrase",
             ExchangeApiKeyPageUrl: "https://www.okx.com/account/my-api",
