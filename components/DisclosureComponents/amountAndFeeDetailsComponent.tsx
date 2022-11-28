@@ -80,12 +80,8 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                                 Exchange Fee
                                                 <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36' />
                                             </label>
-                                            <span className="text-white text-right flex flex-col md:flex-row">
-                                                <p>{parseFloat(exchangeFee.toFixed(currencyDetails?.precision))} {currencyDetails?.asset}</p>
-                                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.FeeIsRefundable &&
-                                                    <span className='inline-flex ml-1 text-primary-text'>
-                                                        (Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' />
-                                                    </span>}
+                                            <span className="text-white text-right">
+                                                {parseFloat(exchangeFee.toFixed(currencyDetails?.precision))} {currencyDetails?.asset}
                                             </span>
                                         </div>
                                     }
