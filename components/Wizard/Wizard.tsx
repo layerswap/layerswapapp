@@ -1,6 +1,4 @@
 import { FC, useEffect, useRef } from 'react'
-import inIframe from '../utils/inIframe';
-import useWindowDimensions from '../../hooks/useWindowDimensions';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import { AnimatePresence } from 'framer-motion';
 import HeaderWithMenu from '../HeaderWithMenu';
