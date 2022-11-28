@@ -86,7 +86,6 @@ export default class ExchangeSettings {
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Okex] = {
             WithdrawalWarningMessage: "Please select the 'internal' withdrawal method.",
-            RequireSelectInternal: true,
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/okx",
             KeyphraseDisplayName: "Passphrase",
             ExchangeApiKeyPageUrl: "https://www.okx.com/account/my-api",
