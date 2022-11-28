@@ -12,6 +12,7 @@ export default class ExchangeSettings {
     WithdrawalWarningMessage?: string;
     KeyphraseDisplayName?: string;
     FeeIsRefundable?: boolean;
+    EstimatedTransferTime?: number;
 
     public static KnownSettings: { [key: string]: ExchangeSettings } = {};
 
