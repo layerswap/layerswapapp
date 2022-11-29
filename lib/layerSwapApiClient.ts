@@ -110,7 +110,6 @@ export type NetworkAccount = {
     id: string,
     address: string,
     note: string,
-    is_verified: boolean,
     network_id: string,
     network: string
 }
