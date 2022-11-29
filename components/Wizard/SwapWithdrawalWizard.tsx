@@ -6,6 +6,7 @@ import ExchangeDelay from "./Steps/ExchangeDelayStep";
 import ExternalPaymentStep from "./Steps/ExternalPaymentStep";
 import FailedStep from "./Steps/FailedStep";
 import ProccessingStep from "./Steps/ProccessingStep";
+import ProccessingWalletTransactionStep from "./Steps/ProccessingWalletTransactionStep";
 import SuccessfulStep from "./Steps/SuccessfulStep";
 import ConnectWalletStep from "./Steps/Wallet/ConnectWalletStep";
 import TransferStep from "./Steps/Wallet/TransferStep";
@@ -48,6 +49,9 @@ const SwapWithdrawalWizard: FC = () => {
 
             <WizardItem StepName={SwapWithdrawalStep.Processing} PositionPercent={95}>
                 <ProccessingStep />
+            </WizardItem>
+            <WizardItem StepName={SwapWithdrawalStep.ProcessingWalletTransaction} PositionPercent={95}>
+                <ProccessingWalletTransactionStep />
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.Delay} PositionPercent={95}>
                 <ExchangeDelay />

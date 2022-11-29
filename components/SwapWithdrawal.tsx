@@ -1,5 +1,7 @@
+import { useRouter } from "next/router";
 import { FC, useEffect } from "react";
 import { FormWizardProvider } from "../context/formWizardProvider";
+import { useQueryState } from "../context/query";
 import { useSettingsState } from "../context/settings";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { SwapType } from "../lib/layerSwapApiClient";
@@ -14,7 +16,8 @@ const SwapWithdrawal: FC = () => {
     const { exchanges, networks } = settings
     const { swap } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
-
+    const query = useQueryState()
+    const router = useRouter()
     useEffect(() => {
         mutateSwap()
     }, [])
@@ -24,14 +27,18 @@ const SwapWithdrawal: FC = () => {
 
         </div>
 
-    const swapStatus = swap?.status;
     const exchange = exchanges.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
     const network = networks.find(n => n.currencies.some(ec => ec.id === swap?.network_currency_id))
     let initialStep: SwapWithdrawalStep = GetSwapStatusStep(swap);
 
     if (!initialStep) {
-        if (swap?.type === SwapType.OffRamp)
-            initialStep = network.deposit_method === "address" ? SwapWithdrawalStep.WalletConnect : SwapWithdrawalStep.OffRampWithdrawal
+        if (swap?.type === SwapType.OffRamp) {
+            if (network.deposit_method === "address")
+                initialStep = (query.signature && query.addressSource === "imxMarketplace") ? SwapWithdrawalStep.ProcessingWalletTransaction : SwapWithdrawalStep.WalletConnect
+            else {
+                initialStep = SwapWithdrawalStep.OffRampWithdrawal
+            }
+        }
         else if (exchange?.deposit_flow === DepositFlow.Manual)
             initialStep = SwapWithdrawalStep.Withdrawal
         else if (exchange?.deposit_flow === DepositFlow.External)
@@ -39,9 +46,10 @@ const SwapWithdrawal: FC = () => {
         else
             initialStep = SwapWithdrawalStep.Processing
     }
+    const key = Object.keys(query).join("")
 
     return (
-        <FormWizardProvider initialStep={initialStep} initialLoading={true}>
+        <FormWizardProvider initialStep={initialStep} initialLoading={true} key={key}>
             <SwapWithdrawalWizard />
         </FormWizardProvider>
     )

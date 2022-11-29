@@ -2,7 +2,7 @@ import axios from "axios";
 import { parseJwt } from "./jwtParser";
 import TokenService from "./TokenService";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
-import {AuthRefreshFailedError} from './Errors/AuthRefreshFailedError';
+import { AuthRefreshFailedError } from './Errors/AuthRefreshFailedError';
 
 type TokenStates = {
     AccessTokenExpires: number;
@@ -16,10 +16,10 @@ const refreshTokenState: TokenStates = {
     RefreshingToken: false,
 }
 
-export const InitializeInstance = () => {
+export const InitializeInstance = (baseURL?: string) => {
 
     const instance = axios.create({
-        baseURL: LayerSwapAuthApiClient.identityBaseEndpoint,
+        baseURL: baseURL || "",
         headers: {
             "Content-Type": "application/json",
         },

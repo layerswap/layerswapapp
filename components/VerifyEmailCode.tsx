@@ -115,7 +115,11 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                         </Widget.Content>
                         <Widget.Footer>
                             <p className='text-primary-text text-xs sm:text-sm mb-3 md:mb-5'>
-                                By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'> Terms of Service</a></Link> and <Link href="/blog/guide/Privacy_Policy"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
+                                By clicking Confirm you agree to Layerswap's <Link
+                                href="/blog/guide/Terms_of_Service"
+                                className='decoration decoration-primary underline-offset-1 underline hover:no-underline'> Terms of Service</Link> and <Link
+                                href="/blog/guide/Privacy_Policy"
+                                className='decoration decoration-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</Link>
                             </p>
                             <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
                                 Confirm
@@ -125,7 +129,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                 </Form >
             )}
         </Formik>
-    )
+    );
 }
 
 export default VerifyEmailCode;
