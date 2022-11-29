@@ -88,7 +88,7 @@ const OnRampSwapConfirmationStep: FC = () => {
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 toast.error(`${exchange.name} error: You don't have that much.`)
                 goToStep(SwapCreateStep.Error)
-                setError(data.code)
+                setError({Code:data.code,Step:SwapCreateStep.Confirm})
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 nextStep = SwapCreateStep.OAuth

@@ -56,7 +56,7 @@ const CreateSwap: FC = () => {
                 <WizardItem StepName={SwapCreateStep.ActiveSwapLimit} GoBack={GoBackToConfirmStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.ActiveSwapLimit}>
                     <ActiveSwapLimit />
                 </WizardItem>
-                <WizardItem StepName={SwapCreateStep.Error} GoBack={GoBackToConfirmStep} PositionPercent={100} key={SwapCreateStep.Error}>
+                <WizardItem StepName={SwapCreateStep.Error} PositionPercent={100} key={SwapCreateStep.Error}>
                     <ErrorStep />
                 </WizardItem>
             </Wizard>

@@ -1,25 +1,22 @@
-import { FC } from 'react'
-import { useSwapDataState } from '../../../context/swap';
-import { useIntercom } from 'react-use-intercom';
+import { FC, useEffect } from 'react'
 import SubmitButton from '../../buttons/submitButton';
-import { useAuthState } from '../../../context/authContext';
 import MessageComponent from '../../MessageComponent';
-import { SwapStatus } from '../../../Models/SwapStatus';
-import GoHomeButton from '../../utils/GoHome';
-import { useFormWizardState } from '../../../context/formWizardProvider';
+import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { KnownwErrorCode } from '../../../Models/ApiError';
 
 const ErrorStep: FC = () => {
-    const { swap } = useSwapDataState()
-    const { email, userId } = useAuthState()
-    const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
     const { error } = useFormWizardState()
+    const { setGoBack, goToStep } = useFormWizardaUpdate()
+
+    useEffect(() => {
+        if (error?.Step)
+            setGoBack(() => goToStep(error.Step, "back"))
+    }, [error])
 
     return (
         <>
             {
-                error == KnownwErrorCode.INSUFFICIENT_FUNDS &&
+                error?.Code == KnownwErrorCode.INSUFFICIENT_FUNDS &&
                 <MessageComponent>
                     <MessageComponent.Content icon='red'>
                         <MessageComponent.Header>
@@ -39,7 +36,7 @@ const ErrorStep: FC = () => {
                 </MessageComponent>
             }
             {
-                error == KnownwErrorCode.FUNDS_ON_HOLD &&
+                error?.Code == KnownwErrorCode.FUNDS_ON_HOLD &&
                 <MessageComponent>
                     <MessageComponent.Content icon='red'>
                         <MessageComponent.Header>
