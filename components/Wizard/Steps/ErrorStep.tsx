@@ -1,4 +1,4 @@
-import { FC, useEffect } from 'react'
+import { FC, useCallback, useEffect } from 'react'
 import SubmitButton from '../../buttons/submitButton';
 import MessageComponent from '../../MessageComponent';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
@@ -10,7 +10,7 @@ const ErrorStep: FC = () => {
 
     useEffect(() => {
         if (error?.Step)
-            setGoBack(() => goToStep(error.Step, "back"))
+            setGoBack(() => goToStep(error?.Step, "back"))
     }, [error])
 
     return (
