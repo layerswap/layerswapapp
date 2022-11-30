@@ -1,9 +1,6 @@
 export const FirstScreen = ({ exchange_name }) => {
     return <>
-        <div className='w-full whitespace-normal mb-6 text-primary'>
-            <span className='font-medium'>.01</span>
-            <div className='whitespace-normal text-white font-normal'>After this guide, you'll be taken to {exchange_name} to connect your account. You'll be prompted to log in to your {exchange_name} account if you are not logged in yet</div>
-        </div>
+        <div className='whitespace-normal text-white font-normal mb-6'><span className='font-medium text-primary'>.01</span> After this guide, you'll be taken to {exchange_name} to connect your account. You'll be prompted to log in to your {exchange_name} account if you are not logged in yet</div>
         <div className='w-full md:w-1/2'>
             <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1740_2402)">
@@ -98,10 +95,7 @@ export const FirstScreen = ({ exchange_name }) => {
 
 export const SecondScreen = () => {
     return <>
-        <div className='w-full whitespace-normal mb-6 text-primary'>
-            <span className='font-medium'>.02</span>
-            <div className='whitespace-normal font-normal text-white'>When prompted to authorize Layerswap, click <span className='strong-highlight font-medium'>Change this amount</span></div>
-        </div>
+        <div className='whitespace-normal font-normal text-white mb-6'><span className='font-medium text-primary'>.02</span> When prompted to authorize Layerswap, click <span className='strong-highlight font-medium'>Change this amount</span></div>
         <div className='w-full md:w-1/2'>
             <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1741_2568)">
@@ -186,10 +180,7 @@ export const SecondScreen = () => {
 
 export const ThirdScreen = ({ minimalAuthorizeAmount }) => {
     return <>
-        <div className='w-full whitespace-normal mb-6 text-primary'>
-            <span className='font-medium'>.03</span>
-            <div className='whitespace-normal font-normal text-white'>Change the existing 1.0 value to <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click Save</div>
-        </div>
+        <div className='whitespace-normal font-normal text-white mb-6 w-full'><span className='font-medium text-primary'>.03</span> Change the existing 1.0 value to <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click Save</div>
         <div className='w-full md:w-1/2'>
             <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1740_1883)">
@@ -382,10 +373,7 @@ export const ThirdScreen = ({ minimalAuthorizeAmount }) => {
 
 export const FourthScreen = ({ minimalAuthorizeAmount }) => {
     return <>
-        <div className='w-full whitespace-normal mb-6 text-primary'>
-            <span className='font-medium'>.04</span>
-            <div className='whitespace-normal font-normal text-white'>Make sure that the allowed amount is <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click <span className='strong-highlight font-medium'>Authorize</span></div>
-        </div>
+        <div className='whitespace-normal font-normal text-white mb-6 w-full'><span className='font-medium text-primary'>.04</span> Make sure that the allowed amount is <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click <span className='strong-highlight font-medium'>Authorize</span></div>
         <div className='w-full md:w-1/2'>
             <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1743_2570)">
@@ -501,10 +489,7 @@ export const FourthScreen = ({ minimalAuthorizeAmount }) => {
 
 export const LastScreen = ({ minimalAuthorizeAmount }) => {
     return <>
-        <div className='w-full whitespace-normal mb-6 text-primary'>
-            <span className='font-medium'>.05</span>
-            <div className='whitespace-normal font-medium text-white'>Please make sure to change the allowed amount to <span className='strong-highlight'>{minimalAuthorizeAmount}</span></div>
-        </div>
+        <div className='whitespace-normal font-medium text-white mb-6 w-full'><span className='font-medium text-primary'>.05</span> Please make sure to change the allowed amount to <span className='strong-highlight'>{minimalAuthorizeAmount}</span></div>
         <div className='w-full md:w-1/2'>
             <svg viewBox="0 0 447 484" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1743_2866)">
