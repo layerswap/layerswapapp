@@ -6,14 +6,11 @@ import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { useSettingsState } from '../../../context/settings';
-import Image from 'next/image'
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import NetworkSettings from '../../../lib/NetworkSettings';
-import SlideOver from '../../SlideOver';
-import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
@@ -85,7 +82,6 @@ const WithdrawNetworkStep: FC = () => {
     }
 
     const userGuideUrlForDesktop = NetworkSettings.KnownSettings[network?.internal_name]?.UserGuideUrlForDesktop
-    const userGuideUrlForMobile = NetworkSettings.KnownSettings[network?.internal_name]?.UserGuideUrlForMobile
 
     return (
         <>
@@ -156,12 +152,12 @@ const WithdrawNetworkStep: FC = () => {
                                 </div>
                                 {
                                     userGuideUrlForDesktop &&
-                                    <WarningMessage messageType='informating'>
-                                        <span className='flex-none'>
+                                    <div className='flex items-center'>
+                                        <span className='flex-none text-white'>
                                             Learn how to send from
                                         </span>
                                         <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep"></GuideLink>
-                                    </WarningMessage>
+                                    </div>
                                 }
                             </div>
                         </div>
