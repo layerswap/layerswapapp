@@ -43,6 +43,7 @@ export enum SwapWithdrawalStep {
     ProcessingWalletTransaction = "ProcessingWalletTransaction",
     Success = "Success",
     Failed = "Failed",
+    Error = "Error",
     Delay = "Delay"
 }
 

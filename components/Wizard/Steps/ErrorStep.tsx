@@ -1,13 +1,19 @@
-import { FC, useCallback, useEffect } from 'react'
+import { FC, useEffect } from 'react'
 import SubmitButton from '../../buttons/submitButton';
 import MessageComponent from '../../MessageComponent';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { KnownwErrorCode } from '../../../Models/ApiError';
+import { useIntercom } from 'react-use-intercom';
+import { useSwapDataState } from '../../../context/swap';
+import { useAuthState } from '../../../context/authContext';
 
 const ErrorStep: FC = () => {
     const { error } = useFormWizardState()
     const { setGoBack, goToStep } = useFormWizardaUpdate()
-
+    const { swap } = useSwapDataState()
+    const { email, userId } = useAuthState()
+    const { boot, show, update } = useIntercom()
+    const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
     useEffect(() => {
         if (error?.Step)
             setGoBack(() => goToStep(error?.Step, "back"))
@@ -51,6 +57,28 @@ const ErrorStep: FC = () => {
                             window.open("https://help.coinbase.com/en/coinbase/trading-and-funding/sending-or-receiving-cryptocurrency/available-balance-faq", "_blank")
                         }}>
                             Learn More
+                        </SubmitButton>
+                    </MessageComponent.Buttons>
+                </MessageComponent>
+            }
+            {
+                error?.Code == KnownwErrorCode.NETWORK_ACCOUNT_ALREADY_EXISTS &&
+                <MessageComponent>
+                    <MessageComponent.Content icon='red'>
+                        <MessageComponent.Header>
+                            Connection failed
+                        </MessageComponent.Header>
+                        <MessageComponent.Description>
+                            This sending address is already connected to another Layerswap account. For further clarification please contact support.
+                        </MessageComponent.Description>
+                    </MessageComponent.Content>
+                    <MessageComponent.Buttons>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => {
+                            boot();
+                            show();
+                            updateWithProps()
+                        }}>
+                            Contact Support
                         </SubmitButton>
                     </MessageComponent.Buttons>
                 </MessageComponent>

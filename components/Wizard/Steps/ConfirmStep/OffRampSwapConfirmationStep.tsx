@@ -24,7 +24,7 @@ const OffRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const { createAndProcessSwap, processPayment, updateSwapFormData } = useSwapDataUpdate()
-    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
+    const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
     const { network } = swapFormData || {}
     const router = useRouter();
     const { exchange, destination_address, currency } = swapFormData || {}
@@ -65,6 +65,10 @@ const OffRampSwapConfirmationStep: FC = () => {
             const data: ApiError = error?.response?.data?.error
             if (data?.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 nextStep = SwapCreateStep.OffRampOAuth
+            }
+            else if (data?.code === KnownwErrorCode.NETWORK_ACCOUNT_ALREADY_EXISTS) {
+                goToStep(SwapCreateStep.Error)
+                setError({ Code: data.code, Step: SwapCreateStep.Confirm })
             }
             else if (data?.message)
                 toast.error(data?.message)
