@@ -172,7 +172,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
                 <div className='px-5 grid grid-cols-6 items-center py-3 rounded-t-2xl bg-darkblue'>
-                    <button className='text-base text-primary-text col-start-1 justify-self-start hover:text-darkblue-200' onClick={handleCloseModal}>
+                    <button className='text-base text-gray-600 col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
                         Close
                     </button>
                     {
