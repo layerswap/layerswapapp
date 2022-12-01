@@ -171,7 +171,10 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className='px-6 grid grid-cols-6 items-center py-2 rounded-t-2xl bg-darkblue'>
+                <div className='px-5 grid grid-cols-6 items-center py-3 rounded-t-2xl bg-darkblue'>
+                    <button className='text-base text-primary-text col-start-1 justify-self-start hover:text-darkblue-200' onClick={handleCloseModal}>
+                        Close
+                    </button>
                     {
                         title ?
                             <div className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-primary-text">
@@ -183,12 +186,8 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                                 <div className="h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:-rotate-12" />
                             </div>
                     }
-                    <button className='text-base text-primary-text col-start-6 justify-self-end hover:text-darkblue-200' onClick={handleCloseModal}>
-                        Close
-                        {/* <XIcon className="h-7" aria-hidden="true" /> */}
-                    </button>
                 </div>
-                <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0' : 'px-6'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto`}>
+                <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto`}>
                     {children}
                 </div>
             </motion.div>
