@@ -18,8 +18,8 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
     const currencyDetails = getCurrencyDetails(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType)
 
     return <div>
-        <h3 className='mb-7 pt-2 sm:text-lg text-center md:text-left font-roboto text-white font-semibold'>
-            Please confirm your swap
+        <h3 className='mb-7 pt-2 sm:text-lg font-roboto text-white font-semibold'>
+            Please confirm the swap details
         </h3>
         <div className="w-full">
             <div className="rounded-md w-full mb-3">
@@ -44,7 +44,7 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
                             </div>
                         </span>
                         <ArrowRightIcon className='h-5 w-5 block md:hidden' />
-                        <span className="flex"><span className='hidden md:block'>{swapType ===  SwapType.OnRamp ? "To" : "From"}</span>
+                        <span className="flex"><span className='hidden md:block'>{swapType === SwapType.OnRamp ? "To" : "From"}</span>
                             <div className="flex items-center">
                                 <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
                                     {
