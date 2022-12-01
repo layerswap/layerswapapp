@@ -16,7 +16,10 @@ export default class LayerSwapApiClient {
         this._authInterceptor = InitializeInstance(LayerSwapApiClient.apiBaseEndpoint);
     }
 
-    fetcher = (url: string) => this._authInterceptor.get(url).then(r => r.data)
+    fetcher = (url: string) => {
+        console.log("blah blah")
+        return this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
+    }
 
     async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
         return await axios.get(LayerSwapApiClient.apiBaseEndpoint + '/api/settings').then(res => res.data);

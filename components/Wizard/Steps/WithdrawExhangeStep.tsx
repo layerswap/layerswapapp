@@ -242,7 +242,7 @@ const WithdrawExchangeStep: FC = () => {
                     <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
                         <DoubleLineText
                             colorStyle='mltln-text-light'
-                            primaryText="Don't"
+                            primaryText="DON'T"
                             secondarytext='cancel'
                             reversed={true}
                         />

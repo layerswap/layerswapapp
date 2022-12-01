@@ -44,7 +44,7 @@ export function SwapDataProvider({ children }) {
     const [swapId, setSwapId] = useState(router.query.swapId?.toString())
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const swap_details_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/swaps/${swapId}`
+    const swap_details_endpoint = `/swaps/${swapId}`
     const [interval, setInterval] = useState(0)
     const { data: swapResponse, mutate } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
