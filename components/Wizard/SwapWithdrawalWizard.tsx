@@ -2,6 +2,7 @@ import { Router, useRouter } from "next/router";
 import { FC, useCallback } from "react";
 import { useFormWizardaUpdate } from "../../context/formWizardProvider";
 import { SwapCreateStep, SwapWithdrawalStep } from "../../Models/Wizard";
+import ErrorStep from "./Steps/ErrorStep";
 import ExchangeDelay from "./Steps/ExchangeDelayStep";
 import ExternalPaymentStep from "./Steps/ExternalPaymentStep";
 import FailedStep from "./Steps/FailedStep";
@@ -48,6 +49,9 @@ const SwapWithdrawalWizard: FC = () => {
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.Success} PositionPercent={100} GoBack={handleGoBack}>
                 <SuccessfulStep />
+            </WizardItem>
+            <WizardItem StepName={SwapWithdrawalStep.Error} PositionPercent={100}>
+                <ErrorStep />
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.Failed} PositionPercent={100} GoBack={handleGoBack}>
                 <FailedStep />

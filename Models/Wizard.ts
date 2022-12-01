@@ -28,8 +28,8 @@ export enum SwapCreateStep {
     ApiKey = "ApiKey",
     Confirm = "Confirm",
     TwoFactor = "TwoFactor",
-    ActiveSwapLimit = 'ActiveSwapLimit'
-
+    ActiveSwapLimit = 'ActiveSwapLimit',
+    Error = "Error"
 }
 
 export enum SwapWithdrawalStep {
@@ -41,6 +41,7 @@ export enum SwapWithdrawalStep {
     ProcessingWalletTransaction = "ProcessingWalletTransaction",
     Success = "Success",
     Failed = "Failed",
+    Error = "Error",
     Delay = "Delay"
 }
 

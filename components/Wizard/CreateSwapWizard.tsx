@@ -9,6 +9,7 @@ import APIKeyStep from "./Steps/APIKeyStep";
 import CodeStep from "./Steps/CodeStep";
 import SwapConfirmationStep from "./Steps/ConfirmStep";
 import EmailStep from "./Steps/EmailStep";
+import ErrorStep from "./Steps/ErrorStep";
 import MainStep from "./Steps/MainStep/index";
 import OfframpAccountConnectStep from "./Steps/OfframpAccountConnectStep";
 import TwoFactorStep from "./Steps/TwoFactorStep";
@@ -54,6 +55,9 @@ const CreateSwap: FC = () => {
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.ActiveSwapLimit} GoBack={GoBackToConfirmStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.ActiveSwapLimit}>
                     <ActiveSwapLimit />
+                </WizardItem>
+                <WizardItem StepName={SwapCreateStep.Error} PositionPercent={100} key={SwapCreateStep.Error}>
+                    <ErrorStep />
                 </WizardItem>
             </Wizard>
         </TimerProvider>

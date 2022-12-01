@@ -27,7 +27,7 @@ const TwoFactorStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
     const { processPayment } = useSwapDataUpdate()
     const router = useRouter();
-    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
+    const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
     const [loading, setLoading] = useState(false)
 
     const { start: startTimer } = useTimerState()
@@ -56,6 +56,8 @@ const TwoFactorStep: FC = () => {
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 toast.error(`${swapFormData?.exchange?.name} error: You don't have that much.`)
+                goToStep(SwapCreateStep.Error)
+                setError({ Code: data.code, Step: SwapCreateStep.TwoFactor })
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 goToStep(SwapCreateStep.OAuth)

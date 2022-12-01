@@ -34,7 +34,7 @@ const OnRampSwapConfirmationStep: FC = () => {
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
     const { updateSwapFormData, createAndProcessSwap, processPayment, setCodeRequested, cancelSwap, setAddressConfirmed } = useSwapDataUpdate()
-    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
+    const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState(destination_address)
     const [addressInputError, setAddressInputError] = useState("")
@@ -87,6 +87,8 @@ const OnRampSwapConfirmationStep: FC = () => {
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 toast.error(`${exchange.name} error: You don't have that much.`)
+                goToStep(SwapCreateStep.Error)
+                setError({Code:data.code,Step:SwapCreateStep.Confirm})
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 nextStep = SwapCreateStep.OAuth
