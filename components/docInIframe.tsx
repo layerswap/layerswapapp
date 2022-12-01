@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { ExternalLinkIcon } from "@heroicons/react/outline";
 import { DocInFrameSceleton } from "./Sceletons";
-import SubmitButton from "./buttons/submitButton";
 
 type Props = {
     URl: string;
@@ -17,34 +16,23 @@ export function DocIframe({ URl, onConfirm }: Props) {
 
     return (
         <div className="flex flex-col justify-between space-y-4 h-full">
-            <div className={`relative ${loading ? '' : 'pb-96'} h-full`}>
+            <div className='h-full'>
                 {
                     loading && <DocInFrameSceleton />
                 }
-                <iframe src={URl} className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down'} border-0 self-center absolute w-full h-full rounded-md`} />
+                <iframe src={URl} className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down min-h-[calc(100vh-170px)] sm:min-h-[430px]'} border-0 self-center w-full sm:rounded-lg`} />
             </div>
             {
                 !loading &&
-                <div>
-                    <SubmitButton
-                        type="button"
-                        onClick={onConfirm}
-                        size={'medium'}
-                        isDisabled={false}
-                        isSubmitting={false}
-                    >
-                        Got it
-                    </SubmitButton>
-                    <a
-                        target="_blank"
-                        href={URl}
-                        onClick={onConfirm}
-                        className="shadowed-button flex justify-center items-center mt-3 group disabled:white disabled:bg-primary-600 disabled:cursor-not-allowed text-primary relative w-full font-semibold focus:outline-none"
-                    >
-                        View in new tab
-                        <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                    </a>
-                </div>
+                <a
+                    target="_blank"
+                    href={URl}
+                    onClick={onConfirm}
+                    className="shadowed-button hidden sm:flex justify-center items-center mt-3 group disabled:white disabled:bg-primary-600 disabled:cursor-not-allowed text-primary relative w-full font-semibold focus:outline-none"
+                >
+                    View in new tab
+                    <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                </a>
             }
         </div>)
 }
