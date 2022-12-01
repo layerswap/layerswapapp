@@ -196,6 +196,7 @@ function TransactionsHistory() {
 
                             const source = swap.type == SwapType.OnRamp ? swapExchange : swapNetwork;
                             const destination = swap.type == SwapType.OnRamp ? swapNetwork : swapExchange;
+                            const formatedDate = formatDate(swap.created_date)
 
                             return <tr key={swap.id}>
                               <td
@@ -249,7 +250,7 @@ function TransactionsHistory() {
                                   </div>
                                 </div>
                                 <div className="flex items-center mt-1 text-white sm:block lg:hidden">
-                                  <span className="block lg:hidden">{formatDate(swap.created_date)}</span>
+                                  <span className="block lg:hidden">{formatedDate}</span>
                                 </div>
                                 {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
                                 <span className="flex items-center sm:block lg:hidden">
