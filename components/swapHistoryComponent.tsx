@@ -92,7 +92,7 @@ function TransactionsHistory() {
     setOpenSwapDetailsModal(true)
   }
 
-  const formatDate = (date: string) => {
+  const FormattedDate = ({ date }: { date: string }) => {
     const swapDate = new Date(date);
     const yyyy = swapDate.getFullYear();
     let mm = swapDate.getMonth() + 1; // Months start at 0!
@@ -101,7 +101,7 @@ function TransactionsHistory() {
     if (dd < 10) dd = 0 + dd;
     if (mm < 10) mm = 0 + mm;
 
-    return dd + '/' + mm + '/' + yyyy;
+    return <>{dd + '/' + mm + '/' + yyyy}</>;
   }
 
   return (
@@ -196,7 +196,6 @@ function TransactionsHistory() {
 
                             const source = swap.type == SwapType.OnRamp ? swapExchange : swapNetwork;
                             const destination = swap.type == SwapType.OnRamp ? swapNetwork : swapExchange;
-                            const formatedDate = formatDate(swap.created_date)
 
                             return <tr key={swap.id}>
                               <td
@@ -250,7 +249,7 @@ function TransactionsHistory() {
                                   </div>
                                 </div>
                                 <div className="flex items-center mt-1 text-white sm:block lg:hidden">
-                                  <span className="block lg:hidden">{formatedDate}</span>
+                                  <span className="block lg:hidden"><FormattedDate date={swap.created_date} /></span>
                                 </div>
                                 {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
                                 <span className="flex items-center sm:block lg:hidden">
