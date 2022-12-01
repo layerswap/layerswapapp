@@ -80,7 +80,7 @@ export default class ExchangeSettings {
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Kucoin] = {
             ExchangeWithdrawalPageUrl: "https://www.kucoin.com/assets/withdraw",
             ExchangeApiKeyPageUrl: "https://www.kucoin.com/account/api",
-            KeyphraseDisplayName: "Keyphrase",
+            KeyphraseDisplayName: "Passphrase",
             CustomAuthorizationFlow: "api_credentials",
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/kucoin",
         };
