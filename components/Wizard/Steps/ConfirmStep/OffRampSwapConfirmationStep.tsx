@@ -47,7 +47,7 @@ const OffRampSwapConfirmationStep: FC = () => {
             if (!swap) {
                 if (query.addressSource === "imxMarketplace" && settings.validSignatureisPresent) {
                     const accounts = await layerswapApiClient.GetNetworkAccounts(swapFormData.network.baseObject.internal_name)
-                    if (!accounts?.data?.some(a => a.address === query.destAddress && a.is_verified)) {
+                    if (!accounts?.data?.some(a => a.address?.toLowerCase() === query?.destAddress?.toLowerCase())) {
                         const internalApiClient = new InternalApiClient()
                         await internalApiClient.VerifyWallet(window.location.search);
                     }

@@ -11,7 +11,6 @@ import { useSettingsState } from '../../../../context/settings';
 import { classNames } from '../../../utils/classNames';
 import { useInterval } from '../../../../hooks/useInterval';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
-import GoHomeButton from '../../../utils/GoHome';
 import shortenAddress from "../../../utils/ShortenAddress"
 
 
@@ -82,7 +81,7 @@ const ConnectWalletStep: FC = () => {
             }
             const layerSwapApiClient = new LayerSwapApiClient()
             const accounts = await layerSwapApiClient.GetNetworkAccounts(network.internal_name)
-            if (accounts?.data?.some(a => a.address === address && a.is_verified))
+            if (accounts?.data?.some(a => a.address === address))
                 setVerified(true)
         }
         catch (e) {
