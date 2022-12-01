@@ -32,7 +32,7 @@ const OffRampSwapConfirmationStep: FC = () => {
     const settings = useSettingsState();
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const depositad_address_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts/${exchange?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
+    const depositad_address_endpoint = `/exchange_accounts/${exchange?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
     const { data: deposite_address } = useSWR<ApiResponse<string>>((exchange && !destination_address) ? depositad_address_endpoint : null, layerswapApiClient.fetcher)
 
     useEffect(() => {

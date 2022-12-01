@@ -37,9 +37,7 @@ const AccountConnectStep: FC = () => {
 
     const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.baseObject?.usd_price, Number(amount))
     const layerswapApiClient = new LayerSwapApiClient()
-
-    const exchange_accounts_endpoint = `${LayerSwapApiClient.apiBaseEndpoint}/api/exchange_accounts`
-
+    const exchange_accounts_endpoint = `/exchange_accounts`
     const { data: exchanges } = useSWR<ApiResponse<UserExchangesData[]>>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
 
     const checkShouldStartPolling = useCallback(() => {
