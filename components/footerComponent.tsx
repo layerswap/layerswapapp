@@ -37,7 +37,14 @@ const navigation = {
 export default function FooterComponent() {
   return (
     <footer>
-      <div className="max-w-xl mt-8 mx-auto space-y-6">
+      <div className="max-w-xl mt-6 mx-auto space-y-6">
+        <nav className="mt-4 flex flex-wrap flex-row gap-2" aria-label="Footer">
+          {navigation.main.map((item) => (
+            <a key={item.name} href={item.href} target={item.target} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 hover:cursor-pointer">
+              {item.name}
+            </a>
+          ))}
+        </nav>
         <div className="flex space-x-6">
           {navigation.social.map((item) => (
             <a key={item.name} target="_blank" href={item.href} className="text-primary-text hover:text-gray-400">
@@ -46,13 +53,6 @@ export default function FooterComponent() {
             </a>
           ))}
         </div>
-        <nav className="mt-4 flex flex-wrap flex-row gap-2" aria-label="Footer">
-          {navigation.main.map((item) => (
-            <a key={item.name} href={item.href} target={item.target} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 hover:cursor-pointer">
-              {item.name}
-            </a>
-          ))}
-        </nav>
       </div>
     </footer>
   )

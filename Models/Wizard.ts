@@ -37,8 +37,6 @@ export enum SwapWithdrawalStep {
     Withdrawal = "Withdrawal",
     OffRampWithdrawal = "OffRampWithdrawal",
     WalletConnect = "WalletConnect",
-    VerifyAddress = "VerifyAddress",
-    TransferFromWallet = "TransferFromWallet",
     Processing = "Processing",
     ProcessingWalletTransaction = "ProcessingWalletTransaction",
     Success = "Success",

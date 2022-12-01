@@ -3,7 +3,7 @@ import { useFormWizardaUpdate } from "../../context/formWizardProvider";
 import { TimerProvider } from "../../context/timerContext";
 import useCreateSwap from "../../hooks/useCreateSwap";
 import { SwapCreateStep } from "../../Models/Wizard";
-import AccountConnectStep from "./Steps/AccountConnectStep";
+import AccountConnectStep from "./Steps/CoinbaseAccountConnectStep";
 import ActiveSwapLimit from "./Steps/ActiveSwapLimitStep";
 import APIKeyStep from "./Steps/APIKeyStep";
 import CodeStep from "./Steps/CodeStep";

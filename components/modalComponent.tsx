@@ -176,7 +176,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 <div className="text-lg text-center leading-6 font-medium text-primary-text mb-3">
                     {title}
                 </div>
-                <div className='inline-block max-w-screen-xl max-h-[calc(100vh-170px)] w-full transform overflow-scroll'>
+                <div className='inline-block max-w-screen-xl max-h-[calc(100vh-170px)] w-full transform overflow-y-auto styled-scroll'>
                     {children}
                 </div>
             </motion.div>

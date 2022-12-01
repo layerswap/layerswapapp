@@ -82,7 +82,7 @@ const ConnectWalletStep: FC = () => {
             }
             const layerSwapApiClient = new LayerSwapApiClient()
             const accounts = await layerSwapApiClient.GetNetworkAccounts(network.internal_name)
-            if (accounts?.data?.some(a => a.address === address && a.is_verified))
+            if (accounts?.data?.some(a => a.address === address))
                 setVerified(true)
         }
         catch (e) {

@@ -5,7 +5,6 @@ import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { useRouter } from 'next/router';
 import { useSettingsState } from '../../../context/settings';
-import Image from 'next/image'
 import ExchangeSettings from '../../../lib/ExchangeSettings';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
@@ -90,7 +89,7 @@ const WithdrawExchangeStep: FC = () => {
                 <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text">
                     <div className='space-y-4'>
                         <div className="text-left">
-                            <p className="block text-md sm:text-lg font-medium text-white">
+                            <p className="block sm:text-lg font-medium text-white">
                                 Send {currency?.asset} to the provided address
                             </p>
                             <p className='text-sm sm:text-base'>
@@ -146,13 +145,12 @@ const WithdrawExchangeStep: FC = () => {
                             }
                             {
                                 ExchangeSettings?.KnownSettings[exchange_internal_name]?.ExchangeWithdrawalGuideUrl &&
-                                <WarningMessage messageType='informating'>
-                                    <span className='flex-none'>
+                                <div className='flex items-center'>
+                                    <span className='flex-none text-white'>
                                         Learn how to send from
                                     </span>
-                                    <GuideLink text={exchange_internal_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
-                                </WarningMessage>
-
+                                    <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                                </div>
                             }
                         </div>
                     </div>
