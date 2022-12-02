@@ -64,7 +64,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                     <Portal>
                         <Overlay />
                         <Content>
-                            <MobileModalContent showModal={showModal} setShowModal={setShowModal} title={title}>
+                            <MobileModalContent className={className} showModal={showModal} setShowModal={setShowModal} title={title}>
                                 {children}
                             </MobileModalContent>
                             <motion.div
@@ -95,7 +95,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                                 }}
                             >
                                 <div className={constructModalSize(modalSize)}>
-                                    <div className={`${className} space-y-2 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
+                                    <div className={`${className} space-y-3 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
                                         <div className='flex justify-between space-x-8'>
                                             <Title className="text-lg text-left font-medium text-primary-text" >
                                                 {title}
@@ -187,7 +187,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                             </div>
                     }
                 </div>
-                <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto`}>
+                <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto`}>
                     {children}
                 </div>
             </motion.div>

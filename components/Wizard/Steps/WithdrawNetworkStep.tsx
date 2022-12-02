@@ -152,12 +152,12 @@ const WithdrawNetworkStep: FC = () => {
                                 </div>
                                 {
                                     userGuideUrlForDesktop &&
-                                    <div className='flex items-center'>
-                                        <span className='flex-none text-white'>
+                                    <WarningMessage messageType='informing'>
+                                        <span className='flex-none'>
                                             Learn how to send from
                                         </span>
                                         <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep"></GuideLink>
-                                    </div>
+                                    </WarningMessage>
                                 }
                             </div>
                         </div>

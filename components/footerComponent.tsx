@@ -12,8 +12,8 @@ const navigation = {
     { name: 'User Docs', href: 'https://docs.layerswap.io/', target: '_blank' }
   ],
   iframe: [
-    { name: 'Privacy Policy', href: 'https://docs.layerswap.io/user-docs/information/privacy-policy', target: '_self' },
-    { name: 'Terms of Service', href: 'https://docs.layerswap.io/user-docs/information/terms-of-services', target: '_self' },
+    { name: 'Privacy Policy', href: 'https://docs.layerswap.io/user-docs/information/privacy-policy' },
+    { name: 'Terms of Service', href: 'https://docs.layerswap.io/user-docs/information/terms-of-services' },
   ],
   social: [
     {
@@ -39,10 +39,11 @@ const navigation = {
   ],
 }
 
+
+
 export default function FooterComponent() {
-  const [openModal, setOpenModal] = useState(false)
-  const handleOpenModal = () => setOpenModal(true)
-  const handleCloseModal = () => setOpenModal(false)
+  const [modalUrl, setModalUrl] = useState<string>(null);
+
   return (
     <footer>
       <div className="max-w-xl mt-6 mx-auto space-y-6">
@@ -52,17 +53,18 @@ export default function FooterComponent() {
               {item.name}
             </a>
           ))}
-
-          {navigation.iframe.map((item) => (
-            <div key={item.name}>
-              <button onClick={handleOpenModal} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800">
-                {item.name}
-              </button>
-              <Modal showModal={openModal} setShowModal={setOpenModal}>
-                <DocIframe URl={item.href} onConfirm={handleCloseModal} />
-              </Modal>
-            </div>
-          ))}
+          {navigation.iframe.map((item) => {
+            return (
+              <div key={item.name}>
+                <button onClick={() => setModalUrl(item.href)} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800">
+                  {item.name}
+                </button>
+              </div>
+            )
+          })}
+          <Modal className="bg-[#181c1f] sm:!pb-6 !pb-0" showModal={modalUrl != null} setShowModal={()=> setModalUrl(null)} >
+            <DocIframe URl={modalUrl} />
+          </Modal>
         </nav>
         <div className="flex space-x-6">
           {navigation.social.map((item) => (

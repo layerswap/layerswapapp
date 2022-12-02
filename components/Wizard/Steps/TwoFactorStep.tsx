@@ -55,7 +55,6 @@ const TwoFactorStep: FC = () => {
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
-                toast.error(`${swapFormData?.exchange?.name} error: You don't have that much.`)
                 goToStep(SwapCreateStep.Error)
                 setError({ Code: data.code, Step: SwapCreateStep.TwoFactor })
             }
@@ -88,9 +87,6 @@ const TwoFactorStep: FC = () => {
             if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
                 goToStep(SwapCreateStep.OAuth)
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
-            }
-            else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
-                toast.error(`${swapFormData?.exchange?.name} error: You don't have that much.`)
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 goToStep(SwapCreateStep.OAuth)
