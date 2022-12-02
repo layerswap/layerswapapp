@@ -100,7 +100,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     <Timer isStarted={started} seconds={60}
                                         waitingComponent={(remainingTime) => (
                                             <span>
-                                                Send again in
+                                                Resend in
                                                 <span className='ml-1'>
                                                     {remainingTime}
                                                 </span>
