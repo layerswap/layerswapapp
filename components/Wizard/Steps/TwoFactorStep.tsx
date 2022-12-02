@@ -149,7 +149,7 @@ const TwoFactorStep: FC = () => {
                                     <Timer seconds={120}
                                         waitingComponent={(remainingTime) => (
                                             <span>
-                                                Send again in
+                                                Resend in
                                                 <span className='ml-1'>
                                                     {remainingTime}
                                                 </span>

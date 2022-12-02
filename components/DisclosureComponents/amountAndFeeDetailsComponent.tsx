@@ -87,7 +87,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
 
                                     <div className="mt-2 flex flex-row items-baseline justify-between">
                                         <label className="block text-left">
-                                            Time of Arrival
+                                            Estimated arrival
                                         </label>
                                         <span className="text-right">
                                             ~1-2 minutes
