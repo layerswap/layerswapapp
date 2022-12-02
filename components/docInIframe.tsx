@@ -11,7 +11,7 @@ export function DocIframe({ URl, onConfirm }: Props) {
     useEffect(() => {
         setTimeout(() => {
             setLoading(false)
-        }, 2000);
+        }, 500);
     }, [])
 
     return (
@@ -20,7 +20,7 @@ export function DocIframe({ URl, onConfirm }: Props) {
                 {
                     loading && <DocInFrameSceleton />
                 }
-                <iframe src={URl} className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down min-h-[calc(100vh-170px)] sm:min-h-full'} border-0 self-center w-full sm:rounded-lg`} />
+                <iframe src={URl} className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down min-h-[calc(100vh-170px)]'} border-0 self-center w-full sm:rounded-md`} />
             </div>
             {
                 !loading &&

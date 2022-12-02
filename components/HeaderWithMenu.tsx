@@ -4,23 +4,21 @@ import GoHomeButton from "./utils/GoHome"
 
 function HeaderWithMenu({ goBack }: { goBack: () => void }) {
 
-    return <>
-      <div className="w-full flex items-center justify-between px-6 md:px-8 mt-3" >
+   return (
+      <div className="w-full grid grid-cols-5 px-6 md:px-8 mt-3" >
          {
-            goBack ?
-               <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
-                  <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
-               </button>
-               :
-               <div className='h-7 w-7'></div>
+            goBack &&
+            <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
+               <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+            </button>
          }
-         <div className='mx-auto px-4 overflow-hidden imxMarketplace:hidden md:hidden'>
-            <div className="flex justify-center">
-               <GoHomeButton />
-            </div>
+         <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden imxMarketplace:hidden md:hidden'>
+            <GoHomeButton />
          </div>
-         <LayerswapMenu />
+         <div className="col-start-5 justify-self-end self-center">
+            <LayerswapMenu />
+         </div>
       </div>
-    </>
- }
- export default HeaderWithMenu
+   )
+}
+export default HeaderWithMenu

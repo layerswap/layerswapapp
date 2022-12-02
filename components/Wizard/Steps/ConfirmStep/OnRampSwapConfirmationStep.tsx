@@ -86,7 +86,6 @@ const OnRampSwapConfirmationStep: FC = () => {
                 nextStep = SwapCreateStep.TwoFactor
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
-                toast.error(`${exchange.name} error: You don't have that much.`)
                 goToStep(SwapCreateStep.Error)
                 setError({Code:data.code,Step:SwapCreateStep.Confirm})
             }
@@ -132,7 +131,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 </SwapConfirmMainData>
                 {
                     SwapSettings?.NativeSupportedPaths[currentExchange.internal_name]?.[currentNetwork.internal_name]?.includes(currentCurrency.asset) &&
-                    <WarningMessage messageType='informating'>
+                    <WarningMessage messageType='informing'>
                         <span>You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly</span>
                     </WarningMessage>
                 }

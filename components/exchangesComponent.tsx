@@ -18,6 +18,7 @@ import { ExchangesComponentSceleton } from "./Sceletons";
 import Modal from "./modalComponent";
 import ExchangeSettings from "../lib/ExchangeSettings";
 import KnownInternalNames from "../lib/knownIds";
+import GoHomeButton from "./utils/GoHome";
 
 interface UserExchange extends Exchange {
     note?: string,
@@ -149,8 +150,14 @@ function UserExchanges() {
                             <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
                         </button>
                         <div className="hidden md:block ml-4">
-                            <p className="text-2xl font-bold">Account</p>
-                            <span className="text-primary-text font-medium">{email}</span>
+                            <p className="text-2xl font-bold relative">Account</p>
+                            <span className="text-primary-text font-medium absolute">{email}</span>
+                        </div>
+                    </div>
+
+                    <div className='mx-auto px-4 overflow-hidden md:hidden'>
+                        <div className="flex justify-center imxMarketplace:hidden">
+                            <GoHomeButton />
                         </div>
                     </div>
                     <LayerswapMenu />
@@ -243,7 +250,7 @@ function UserExchanges() {
                 <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
             </Modal>
             <Modal showModal={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
-                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' stickyFooter={false}/>
+                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' stickyFooter={false} />
             </Modal>
             <Modal showModal={openExchangeToDisconnectModal} setShowModal={setOpenExchangeToDisconnectModal} title={'Are you sure?'} modalSize='small'>
                 <div className="space-y-3">

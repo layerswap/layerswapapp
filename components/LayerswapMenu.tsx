@@ -49,8 +49,8 @@ export default function () {
                 <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
                     {({ open }) => (
                         <>
-                            <div>
-                                <Menu.Button className="inline-flex justify-center w-full rounded-md shadow-sm text-sm font-medium">
+                            <div className="relative top-1">
+                                <Menu.Button className="w-full rounded-md shadow-sm text-sm font-medium">
                                     <MenuIcon className='h-7 w-7 cursor-pointer' />
                                 </Menu.Button>
                             </div>

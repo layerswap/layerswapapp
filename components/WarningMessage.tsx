@@ -1,7 +1,7 @@
 import { ExclamationIcon, AcademicCapIcon } from "@heroicons/react/outline";
 import { FC } from "react";
 
-type messageType = 'warning' | 'informating'
+type messageType = 'warning' | 'informing'
 
 type Props = {
     children: JSX.Element | JSX.Element[] | string;
@@ -17,7 +17,7 @@ function constructIcons(messageType: messageType) {
         case 'warning':
             iconStyle = <ExclamationIcon className="sm:h-5 h-4 text-black inline sm:block" />;
             break;
-        case 'informating':
+        case 'informing':
             iconStyle = <AcademicCapIcon className="sm:h-5 h-4 text-white inline self-center sm:block" />;
             break;
     }
