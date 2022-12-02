@@ -225,31 +225,31 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget>
-        <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title={'Do not cancel if you have already sent crypto'} modalSize='medium'>
-            <div className='text-primary-text mb-4'></div>
-            <div className="flex flex-row text-white text-base space-x-2">
-                <div className='basis-1/2'>
-                    <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                        <DoubleLineText
-                            colorStyle='mltln-text-dark'
-                            primaryText='Cancel the swap'
-                            secondarytext='and go to home'
-                            reversed={true}
-                        />
-                    </SubmitButton>
+        <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
+                <div className='text-primary-text mb-4'></div>
+                <div className="flex flex-row text-white text-base space-x-2">
+                    <div className='basis-1/2'>
+                        <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
+                            <DoubleLineText
+                                colorStyle='mltln-text-dark'
+                                primaryText='Cancel the swap'
+                                secondarytext='and go to home'
+                                reversed={true}
+                            />
+                        </SubmitButton>
+                    </div>
+                    <div className='basis-1/2'>
+                        <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
+                            <DoubleLineText
+                                colorStyle='mltln-text-light'
+                                primaryText="Don't"
+                                secondarytext='cancel'
+                                reversed={true}
+                            />
+                        </SubmitButton>
+                    </div>
                 </div>
-                <div className='basis-1/2'>
-                    <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                        <DoubleLineText
-                            colorStyle='mltln-text-light'
-                            primaryText="DON'T"
-                            secondarytext='cancel'
-                            reversed={true}
-                        />
-                    </SubmitButton>
-                </div>
-            </div>
-        </Modal>
+            </Modal>
     </>
     )
 }
