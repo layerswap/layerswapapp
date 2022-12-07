@@ -8,11 +8,10 @@ type Props = {
 }
 export function DocIframe({ URl, onConfirm }: Props) {
     const [loading, setLoading] = useState(true)
-    useEffect(() => {
-        setTimeout(() => {
-            setLoading(false)
-        }, 500);
-    }, [])
+
+    const handleLoad = ()=>{
+        setLoading(false)
+    }
 
     return (
         <div className="flex flex-col justify-between space-y-4 h-full">
@@ -20,7 +19,7 @@ export function DocIframe({ URl, onConfirm }: Props) {
                 {
                     loading && <DocInFrameSceleton />
                 }
-                <iframe src={URl} height="100%" className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down'} h-full border-0 self-center w-full sm:rounded-md`} />
+                <iframe onLoad={handleLoad} src={URl} height="100%" className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down'} h-full border-0 self-center w-full sm:rounded-md`} />
             </div>
             {
                 !loading &&
