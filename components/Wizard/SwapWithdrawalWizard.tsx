@@ -44,16 +44,16 @@ const SwapWithdrawalWizard: FC = () => {
             <WizardItem StepName={SwapWithdrawalStep.ProcessingWalletTransaction} PositionPercent={95} GoBack={handleGoBack}>
                 <ProccessingWalletTransactionStep />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.Delay} PositionPercent={95} GoBack={handleGoBack} GoBack={handleGoBack}>
+            <WizardItem StepName={SwapWithdrawalStep.Delay} PositionPercent={95} GoBack={handleGoBack}>
                 <ExchangeDelay />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.Success} PositionPercent={100} GoBack={handleGoBack} GoBack={handleGoBack}>
+            <WizardItem StepName={SwapWithdrawalStep.Success} PositionPercent={100} GoBack={handleGoBack}>
                 <SuccessfulStep />
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.Error} PositionPercent={100}>
                 <ErrorStep />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.Failed} PositionPercent={100} GoBack={handleGoBack} GoBack={handleGoBack}>
+            <WizardItem StepName={SwapWithdrawalStep.Failed} PositionPercent={100} GoBack={handleGoBack}>
                 <FailedStep />
             </WizardItem>
         </Wizard>
