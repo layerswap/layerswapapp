@@ -19,7 +19,7 @@ const refreshTokenState: TokenStates = {
 export const InitializeInstance = (baseURL?: string) => {
 
     const instance = axios.create({
-        baseURL: window['identity_url'] || "",
+        baseURL: LayerSwapAuthApiClient.identityBaseEndpoint || "",
         headers: {
             "Content-Type": "application/json",
         },

@@ -28,11 +28,6 @@ export function AuthProvider({ children }) {
     const [authData, setAuthData] = React.useState<AuthData>({})
     const [userId, setUserId] = useState<string>()
     const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
-    const { discovery: { identity_url } } = useSettingsState()
-
-    useEffect(() => {
-        window['identity_url'] = identity_url
-    }, [identity_url])
 
     const updateDataFromLocalStorage = () => {
         const authData = TokenService.getAuthData()
