@@ -3,12 +3,13 @@ import { useFormWizardaUpdate } from "../../context/formWizardProvider";
 import { TimerProvider } from "../../context/timerContext";
 import useCreateSwap from "../../hooks/useCreateSwap";
 import { SwapCreateStep } from "../../Models/Wizard";
-import AccountConnectStep from "./Steps/AccountConnectStep";
+import AccountConnectStep from "./Steps/CoinbaseAccountConnectStep";
 import ActiveSwapLimit from "./Steps/ActiveSwapLimitStep";
 import APIKeyStep from "./Steps/APIKeyStep";
 import CodeStep from "./Steps/CodeStep";
 import SwapConfirmationStep from "./Steps/ConfirmStep";
 import EmailStep from "./Steps/EmailStep";
+import ErrorStep from "./Steps/ErrorStep";
 import MainStep from "./Steps/MainStep/index";
 import OfframpAccountConnectStep from "./Steps/OfframpAccountConnectStep";
 import TwoFactorStep from "./Steps/TwoFactorStep";
@@ -54,6 +55,9 @@ const CreateSwap: FC = () => {
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.ActiveSwapLimit} GoBack={GoBackToConfirmStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.ActiveSwapLimit}>
                     <ActiveSwapLimit />
+                </WizardItem>
+                <WizardItem StepName={SwapCreateStep.Error} PositionPercent={100} key={SwapCreateStep.Error}>
+                    <ErrorStep />
                 </WizardItem>
             </Wizard>
         </TimerProvider>

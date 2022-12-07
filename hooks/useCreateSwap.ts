@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import AccountConnectStep from "../components/Wizard/Steps/AccountConnectStep";
+import AccountConnectStep from "../components/Wizard/Steps/CoinbaseAccountConnectStep";
 import APIKeyStep from "../components/Wizard/Steps/APIKeyStep";
 import CodeStep from "../components/Wizard/Steps/CodeStep";
 import EmailStep from "../components/Wizard/Steps/EmailStep";

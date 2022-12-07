@@ -42,8 +42,8 @@ module.exports = {
         'spin-slow': 'spin 3s linear infinite',
         'fade-in': 'fade-in 0.5s ease-in',
         'fade-in-down': 'fade-in-down 0.5s ease-in',
-        fadein: 'fadein 4s',
-
+        'fadein': 'fadein 4s',
+        'slide-in': 'slide-in 300ms',
       },
       keyframes: {
         'fade-in': {
@@ -66,7 +66,24 @@ module.exports = {
             opacity: '1',
             transform: 'translateY(0)'
           },
+        },
+        'slide-in': {
+          '0%': {
+            transform: 'translateY(100%)',
+          },
+          '100%': {
+            transform: 'translateY(0)',
+          },
+        },
+        'slide-out': {
+          '0%': {
+            transform: 'translateY(0)',
+          },
+          '100%': {
+            transform: 'translateY(100%)',
+          },
         }
+
       },
       letterSpacing: {
         tightest: '-.075em',
@@ -78,6 +95,7 @@ module.exports = {
         widest: '.1em',
       },
       boxShadow: {
+        'widget-footer': '-1px -28px 21px -6px rgb(14 20 38)',
         'card': '5px 5px 40px rgba(0, 0, 0, 0.2), 0px 0px 200px rgba(0, 0, 0, 0.43)',
       },
       typography: (theme) => ({
@@ -145,7 +163,7 @@ module.exports = {
               '300': '#ED6EA3',
               '400': '#E8498C',
               '500': '#E42575',
-              '600': '#760045',
+              '600': '#A6335E',
               '700': '#881143',
               '800': '#930863',
               '900': '#6e0040',

@@ -10,7 +10,7 @@ import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
 import NumericInput from './Input/NumericInput';
 import Timer from './TimerComponent';
-
+import Widget from './Wizard/Widget';
 interface VerifyEmailCodeProps {
     onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
 }
@@ -45,41 +45,41 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     }, [tempEmail])
 
     return (
-        <>
-            <Formik
-                initialValues={initialValues}
-                validateOnMount={true}
-                validate={(values: CodeFormValues) => {
-                    const errors: FormikErrors<CodeFormValues> = {};
-                    if (!/^[0-9]*$/.test(values.Code)) {
-                        errors.Code = "Value should be numeric";
+        <Formik
+            initialValues={initialValues}
+            validateOnMount={true}
+            validate={(values: CodeFormValues) => {
+                const errors: FormikErrors<CodeFormValues> = {};
+                if (!/^[0-9]*$/.test(values.Code)) {
+                    errors.Code = "Value should be numeric";
+                }
+                else if (values.Code.length != 6) {
+                    errors.Code = `The length should be 6 instead of ${values.Code.length}`;
+                }
+                return errors;
+            }}
+            onSubmit={async (values: CodeFormValues) => {
+                try {
+                    var apiClient = new LayerSwapAuthApiClient();
+                    const res = await apiClient.connectAsync(tempEmail, values.Code)
+                    updateAuthData(res)
+                    await onSuccessfullVerify(res);
+                }
+                catch (error) {
+                    if (error.response?.data?.error_description) {
+                        const message = error.response.data.error_description
+                        toast.error(message)
                     }
-                    else if (values.Code.length != 6) {
-                        errors.Code = `The length should be 6 instead of ${values.Code.length}`;
+                    else {
+                        toast.error(error.message)
                     }
-                    return errors;
-                }}
-                onSubmit={async (values: CodeFormValues) => {
-                    try {
-                        var apiClient = new LayerSwapAuthApiClient();
-                        const res = await apiClient.connectAsync(tempEmail, values.Code)
-                        updateAuthData(res)
-                        await onSuccessfullVerify(res);
-                    }
-                    catch (error) {
-                        if (error.response?.data?.error_description) {
-                            const message = error.response.data.error_description
-                            toast.error(message)
-                        }
-                        else {
-                            toast.error(error.message)
-                        }
-                    }
-                }}
-            >
-                {({ isValid, isSubmitting, errors, handleChange }) => (
-                    <Form className='flex flex-col items-stretch min-h-[500px] text-primary-text'>
-                        <div className="w-full pt-4 flex-col flex-1 flex">
+                }
+            }}
+        >
+            {({ isValid, isSubmitting, errors, handleChange }) => (
+                <Form className='h-full w-full text-primary-text'>
+                    <Widget>
+                        <Widget.Content center={true}>
                             <MailOpenIcon className='w-16 h-16 mt-auto text-primary self-center' />
                             <div className='text-center mt-5'>
                                 <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{tempEmail}</span></p>
@@ -96,36 +96,40 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-darkblue-500 block
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-700  w-full font-semibold rounded-md placeholder-gray-400"
                                 />
-                            </div>
-                            <span className="flex text-sm leading-6 items-center mt-1.5">
-                                <Timer isStarted={started} seconds={60}
-                                    waitingComponent={(remainingTime) => (
-                                        <span>
-                                            Send again in
-                                            <span className='ml-1'>
-                                                {remainingTime}
+                                <span className="flex text-sm leading-6 items-center mt-1.5">
+                                    <Timer isStarted={started} seconds={60}
+                                        waitingComponent={(remainingTime) => (
+                                            <span>
+                                                Resend in
+                                                <span className='ml-1'>
+                                                    {remainingTime}
+                                                </span>
                                             </span>
+                                        )}>
+                                        <span onClick={handleResendCode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
+                                            Resend code
                                         </span>
-                                    )}>
-                                    <span onClick={handleResendCode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
-                                        Resend code
-                                    </span>
-                                </Timer>
-                            </span>
-                            <div className="text-primary-text text-sm mt-auto">
-                                <p className='mb-5'>
-                                    By clicking Confirm you agree to Layerswap's <Link href="/blog/guide/Terms_of_Service"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'> Terms of Service</a></Link> and <Link href="/blog/guide/Privacy_Policy"><a className='decoration decoration-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</a></Link>
-                                </p>
-                                <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
-                                    Confirm
-                                </SubmitButton>
+                                    </Timer>
+                                </span>
                             </div>
-                        </div>
-                    </Form >
-                )}
-            </Formik>
-        </>
-    )
+                        </Widget.Content>
+                        <Widget.Footer>
+                            <p className='text-primary-text text-xs sm:text-sm mb-3 md:mb-5'>
+                                By clicking Confirm you agree to Layerswap's <Link
+                                href="/blog/guide/Terms_of_Service"
+                                className='decoration decoration-primary underline-offset-1 underline hover:no-underline'> Terms of Service</Link> and <Link
+                                href="/blog/guide/Privacy_Policy"
+                                className='decoration decoration-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</Link>
+                            </p>
+                            <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
+                                Confirm
+                            </SubmitButton>
+                        </Widget.Footer>
+                    </Widget>
+                </Form >
+            )}
+        </Formik>
+    );
 }
 
 export default VerifyEmailCode;

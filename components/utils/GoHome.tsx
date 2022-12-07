@@ -1,12 +1,11 @@
-import { useRouter } from "next/router";
-import { FC, useCallback } from "react";
+import { FC } from "react";
 import CopyButton from "../buttons/copyButton";
 import LayerSwapLogo from "../icons/layerSwapLogo";
 import { PaperClipIcon } from '@heroicons/react/outline'
 import { renderToString } from 'react-dom/server'
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
-import { useQueryState } from "../../context/query";
+import { useGoHome } from "../../hooks/useGoHome";
 
 interface Props {
     className?: string;
@@ -14,17 +13,10 @@ interface Props {
 }
 
 const GoHomeButton: FC<Props> = (({ className, children }) => {
-    const router = useRouter()
-    const query = useQueryState()
-    const handleGoHome = useCallback(() => {
-        router.push({
-            pathname: "/",
-            query: { ...query }
-        })
-    }, [query])
+    const goHome = useGoHome()
 
     return (
-        <div onClick={handleGoHome}>
+        <div onClick={goHome}>
             {
                 children ??
                 <>

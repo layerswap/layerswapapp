@@ -27,13 +27,13 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
 
-        return (<>
+        return <>
             {label &&
                 <label htmlFor={name} className="block font-normal text-primary-text text-sm">
                     {label}
                 </label>
             }
-            <div className="flex rounded-md shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border ">
+            <div className="flex rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border ">
                 <input
                     {...field}
                     pattern={pattern ? pattern : "^[0-9]*[.,]?[0-9]*$"}
@@ -53,7 +53,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     id={name}
                     ref={ref}
                     className={classNames(
-                        'disabled:cursor-not-allowed h-12 bg-darkblue-700 focus:ring-primary focus:border-primary flex-grow block w-full min-w-0 rounded-none rounded-l-md font-semibold placeholder-gray-400 border-0',
+                        'disabled:cursor-not-allowed h-12 leading-4 bg-darkblue-700 focus:ring-primary focus:border-primary flex-grow block w-full min-w-0 rounded-md font-semibold placeholder-gray-400 border-0',
                         className
                     )}
                     onChange={onChange ? onChange : e => {
@@ -66,7 +66,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     </span>
                 }
             </div>
-        </>)
+        </>;
     });
 
 function limitDecimalPlaces(e, count) {

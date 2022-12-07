@@ -17,8 +17,10 @@ import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormVa
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import Modal from '../../../modalComponent';
 import { useTimerState } from '../../../../context/timerContext';
+import Widget from '../../Widget';
 import WarningMessage from '../../../WarningMessage';
 import SwapSettings from '../../../../lib/SwapSettings';
+import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 
 const TIMER_SECONDS = 120
 
@@ -32,7 +34,7 @@ const OnRampSwapConfirmationStep: FC = () => {
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
     const { updateSwapFormData, createAndProcessSwap, processPayment, setCodeRequested, cancelSwap, setAddressConfirmed } = useSwapDataUpdate()
-    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
+    const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState(destination_address)
     const [addressInputError, setAddressInputError] = useState("")
@@ -48,7 +50,7 @@ const OnRampSwapConfirmationStep: FC = () => {
             setAddressInputError(`Enter a valid ${network.name} address`)
     }, [network])
 
-    const minimalAuthorizeAmount = Math.round(currency?.baseObject?.usd_price * Number(amount) + 5)
+    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.baseObject?.usd_price, Number(amount))
     const transferAmount = `${amount} ${currency?.name}`
     const handleSubmit = useCallback(async (e: any) => {
         setLoading(true)
@@ -84,7 +86,8 @@ const OnRampSwapConfirmationStep: FC = () => {
                 nextStep = SwapCreateStep.TwoFactor
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
-                toast.error(`${exchange.name} error: You don't have that much.`)
+                goToStep(SwapCreateStep.Error)
+                setError({Code:data.code,Step:SwapCreateStep.Confirm})
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 nextStep = SwapCreateStep.OAuth
@@ -121,19 +124,19 @@ const OnRampSwapConfirmationStep: FC = () => {
     const currentCurrency = swapFormData?.currency?.baseObject;
 
     return (
-        <>
-            <div className='h-full flex flex-col justify-between sm:space-y-4'>
+        <Widget>
+            <Widget.Content>
                 <SwapConfirmMainData>
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
                 {
                     SwapSettings?.NativeSupportedPaths[currentExchange.internal_name]?.[currentNetwork.internal_name]?.includes(currentCurrency.asset) &&
-                    <WarningMessage messageType='informating'>
-                        <>
-                            You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly
-                        </>
+                    <WarningMessage messageType='informing'>
+                        <span>You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly</span>
                     </WarningMessage>
                 }
+            </Widget.Content>
+            <Widget.Footer>
                 <div className="text-white text-sm">
                     <div className="mx-auto w-full rounded-lg font-normal">
                         <div className='flex justify-between mb-4 md:mb-8'>
@@ -150,10 +153,11 @@ const OnRampSwapConfirmationStep: FC = () => {
                         Confirm
                     </SubmitButton>
                 </div>
-            </div>
+            </Widget.Footer>
+
             <Modal
-                isOpen={editingAddress}
-                onDismiss={handleClose}
+                showModal={editingAddress}
+                setShowModal={setEditingAddress}
                 title={
                     <h4 className='text-lg text-white'>
                         <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
@@ -194,7 +198,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                     </div>
                 </div>
             </Modal>
-        </>
+        </Widget>
     )
 }
 

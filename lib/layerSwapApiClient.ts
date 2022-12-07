@@ -13,10 +13,10 @@ export default class LayerSwapApiClient {
 
     _authInterceptor: AxiosInstance;
     constructor(private readonly _router?: NextRouter, private readonly _redirect?: string) {
-        this._authInterceptor = InitializeInstance();
+        this._authInterceptor = InitializeInstance(LayerSwapApiClient.apiBaseEndpoint);
     }
 
-    fetcher = (url: string) => this._authInterceptor.get(url).then(r => r.data)
+    fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
     async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
         return await axios.get(LayerSwapApiClient.apiBaseEndpoint + '/api/settings').then(res => res.data);
@@ -85,10 +85,10 @@ export default class LayerSwapApiClient {
             })
             .catch(async reason => {
                 if (reason instanceof AuthRefreshFailedError) {
-                    this._router && await this._router.push({
+                    this._router && (await this._router.push({
                         pathname: '/auth',
                         query: { redirect: this._redirect }
-                    });
+                    }));
 
                     return Promise.resolve(new EmptyApiResponse({ message: "Login required", code: "" }));
                 }
@@ -110,7 +110,6 @@ export type NetworkAccount = {
     id: string,
     address: string,
     note: string,
-    is_verified: boolean,
     network_id: string,
     network: string
 }

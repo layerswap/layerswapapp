@@ -10,8 +10,8 @@ type Props = {
     children: JSX.Element | JSX.Element[];
 }
 
-const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent }) => {
-    const { currentStepName, wrapperWidth, moving } = useFormWizardState()
+const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent }: Props) => {
+    const { currentStepName, wrapperWidth, moving, wrapperHeight } = useFormWizardState()
     const { setGoBack, setPositionPercent } = useFormWizardaUpdate()
 
     useEffect(() => {
@@ -23,18 +23,19 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent })
 
     return currentStepName === StepName ?
         <motion.div
+            whileInView="done"
             key={currentStepName as string}
             variants={variants}
             initial="enter"
             animate="center"
             exit="exit"
             transition={{
-                x: { duration: 0.35, type: "tween" },
+                x: { duration: 0.35, type: "spring" },
             }}
             custom={{ direction: moving === "back" ? -1 : 1, width: wrapperWidth }}>
-            <div style={{ width: `${wrapperWidth}px`, minHeight: '504px', height: '100%' }}>
+            <div style={{ width: `${wrapperWidth}px`, minHeight: '504px', height: '100%' }} className="pb-6">
                 {wrapperWidth > 1 && children}
-            </div >
+            </div>
         </motion.div>
         : null
 })
@@ -43,7 +44,12 @@ let variants = {
     enter: ({ direction, width }) => ({
         x: direction * width,
     }),
-    center: { x: 0 },
+    center: {
+        x: 0,
+        transition: {
+            when: "beforeChildren",
+        },
+    },
     exit: ({ direction, width }) => ({
         x: direction * -width,
     }),

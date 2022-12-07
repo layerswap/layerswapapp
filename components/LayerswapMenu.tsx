@@ -40,7 +40,7 @@ export default function () {
     return <>
         {
             authData?.access_token &&
-            <SlideOver imperativeOpener={[feedbackDrawerIsOpen, setFeedbackDrawerIsOpen]} place='inMenu'>
+            <SlideOver imperativeOpener={[feedbackDrawerIsOpen, setFeedbackDrawerIsOpen]} place='inMenu' header="Send Feedback">
                 {(close) => <SendFeedback onSend={() => close()} />}
             </SlideOver>
         }
@@ -49,8 +49,8 @@ export default function () {
                 <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
                     {({ open }) => (
                         <>
-                            <div>
-                                <Menu.Button className="inline-flex justify-center w-full rounded-md shadow-sm text-sm font-medium">
+                            <div className="relative top-1">
+                                <Menu.Button className="w-full rounded-md shadow-sm text-sm font-medium">
                                     <MenuIcon className='h-7 w-7 cursor-pointer' />
                                 </Menu.Button>
                             </div>
@@ -99,6 +99,24 @@ export default function () {
                                                                 >
                                                                     Login
                                                                 </a>
+                                                            )}
+                                                        </Menu.Item>
+                                                        <Menu.Item>
+                                                            {({ active }) => (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        boot();
+                                                                        show();
+                                                                        updateWithProps()
+                                                                    }}
+                                                                    type="button"
+                                                                    className={classNames(
+                                                                        active ? 'bg-darkblue-300' : '',
+                                                                        'block w-full text-left px-4 py-2  whitespace-nowrap'
+                                                                    )}
+                                                                >
+                                                                    Get Help
+                                                                </button>
                                                             )}
                                                         </Menu.Item>
                                                     </>

@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem, SwapType } from "../lib/layerSwapApiClient"
 import SpinIcon from "./icons/spinIcon"
-import { ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 import SwapDetails from "./swapDetailsComponent"
 import LayerswapMenu from "./LayerswapMenu"
 import { useSettingsState } from "../context/settings"
@@ -10,7 +10,7 @@ import Image from 'next/image'
 import { useAuthState } from "../context/authContext"
 import shortenAddress from "./utils/ShortenAddress"
 import { classNames } from "./utils/classNames"
-import SubmitButton from "./buttons/submitButton"
+import SubmitButton, { DoubleLineText } from "./buttons/submitButton"
 import CopyButton from "./buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "./Sceletons"
 import GoHomeButton from "./utils/GoHome"
@@ -92,21 +92,33 @@ function TransactionsHistory() {
     setOpenSwapDetailsModal(true)
   }
 
+  const FormattedDate = ({ date }: { date: string }) => {
+    const swapDate = new Date(date);
+    const yyyy = swapDate.getFullYear();
+    let mm = swapDate.getMonth() + 1; // Months start at 0!
+    let dd = swapDate.getDate();
+
+    if (dd < 10) dd = 0 + dd;
+    if (mm < 10) mm = 0 + mm;
+
+    return <>{dd + '/' + mm + '/' + yyyy}</>;
+  }
+
   return (
-    <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative min-h`}>
+    <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative`}>
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="flex ">
           <button onClick={handleGoBack} className="self-start md:mt-2">
             <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
           </button>
           <div className="hidden md:block ml-4">
-            <p className="text-2xl font-bold">Account</p>
-            <span className="text-primary-text font-medium">{email}</span>
+            <p className="text-2xl font-bold relative">Account</p>
+            <span className="text-primary-text font-medium absolute">{email}</span>
           </div>
         </div>
 
         <div className='mx-auto px-4 overflow-hidden md:hidden'>
-          <div className="flex justify-center">
+          <div className="flex justify-center imxMarketplace:hidden">
             <GoHomeButton />
           </div>
         </div>
@@ -121,7 +133,7 @@ function TransactionsHistory() {
                 <>
                   <div className="mb-2">
                     <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
-                      <table className="min-w-full divide-y divide-darkblue-500">
+                      <table className="w-full divide-y divide-darkblue-500">
                         <thead className="text-primary-text">
                           <tr>
                             <th
@@ -135,7 +147,7 @@ function TransactionsHistory() {
                                 From
                               </div>
                               <div className="block lg:hidden">
-                                From - To / Date
+                                Swap details
                               </div>
                             </th>
                             <th
@@ -201,46 +213,44 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
+                                  'relative py-4 pl-4 sm:pl-6 pr-3 text-sm sm:flex items-center sm:space-x-2'
                                 )}
                               >
-                                <div className="text-white ">
-                                  <div className="flex items-center">
-                                    <div className="flex-shrink-0 h-5 w-5 relative">
-                                      {
-                                        source?.logo &&
-                                        <Image
-                                          src={`${resource_storage_url}${source?.logo}`}
-                                          alt="From Logo"
-                                          height="60"
-                                          width="60"
-                                          layout="responsive"
-                                          className="rounded-md object-contain"
-                                        />
-                                      }
-                                    </div>
-                                    <div className="mx-1">{source?.display_name}</div>
-                                    <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
-                                      {
-                                        destination?.logo &&
-                                        <Image
-                                          src={`${resource_storage_url}${destination?.logo}`}
-                                          alt="To Logo"
-                                          height="60"
-                                          width="60"
-                                          layout="responsive"
-                                          className="rounded-md object-contain"
-                                        />
-                                      }
-                                    </div>
-                                    <div className="mx-1 block lg:hidden">{destination?.display_name}</div>
+                                <div className="text-white flex items-center">
+                                  <div className="flex-shrink-0 h-5 w-5 relative">
+                                    {
+                                      source?.logo &&
+                                      <Image
+                                        src={`${resource_storage_url}${source?.logo}`}
+                                        alt="From Logo"
+                                        height="60"
+                                        width="60"
+                                        layout="responsive"
+                                        className="rounded-md object-contain"
+                                      />
+                                    }
+                                  </div>
+                                  <div className="mx-1 hidden lg:block">{source?.display_name}</div>
+                                  <ArrowRightIcon className="h-4 w-4 lg:hidden mx-2" />
+                                  <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
+                                    {
+                                      destination?.logo &&
+                                      <Image
+                                        src={`${resource_storage_url}${destination?.logo}`}
+                                        alt="To Logo"
+                                        height="60"
+                                        width="60"
+                                        layout="responsive"
+                                        className="rounded-md object-contain"
+                                      />
+                                    }
                                   </div>
                                 </div>
-                                <div className="flex items-center mt-1 text-white sm:block lg:hidden">
-                                  <span className="block lg:hidden">{(new Date(swap.created_date)).toLocaleString()}</span>
+                                <div className="flex items-center text-white lg:hidden">
+                                  <FormattedDate date={swap.created_date} />
                                 </div>
                                 {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
-                                <span className="flex items-center sm:block lg:hidden">
+                                <span className="flex items-center lg:hidden">
                                   {<StatusIcon status={swap.status} />}
                                   {/* {plan.from} - {plan.to} */}
                                 </span>
@@ -272,7 +282,7 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'md:px-3 py-3.5 text-sm text-white table-cell'
+                                  'px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
                                 <div className="md:flex">
@@ -367,7 +377,7 @@ function TransactionsHistory() {
                       </button>
                     }
                   </div>
-                  <Modal onDismiss={handleClose} isOpen={openSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} modalSize='medium'>
+                  <Modal showModal={openSwapDetailsModal} setShowModal={setOpenSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} modalSize='medium'>
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {
@@ -384,14 +394,28 @@ function TransactionsHistory() {
                       {
                         canCompleteCancelSwap &&
                         <div className="text-white text-sm mt-6 space-y-3">
-                          <SubmitButton onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false}>
-                            Complete Swap
-                            <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                          </SubmitButton>                             
-                            <SubmitButton buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false}>
-                              Cancel Swap
-                              <XIcon className='ml-2 h-5 w-5' />
-                            </SubmitButton>
+                          <div className="flex flex-row text-white text-base space-x-2">
+                            <div className='basis-1/3'>
+                              <SubmitButton text_align="left" buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false} icon={<XIcon className='h-5 w-5' />}>
+                                <DoubleLineText
+                                  colorStyle='mltln-text-dark'
+                                  primaryText='Cancel'
+                                  secondarytext='the swap'
+                                  reversed={true}
+                                />
+                              </SubmitButton>
+                            </div>
+                            <div className='basis-2/3'>
+                              <SubmitButton button_align='right' text_align="left" onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='h-5 w-5' />}>
+                                <DoubleLineText
+                                  colorStyle='mltln-text-light'
+                                  primaryText="Complete"
+                                  secondarytext='the swap'
+                                  reversed={true}
+                                />
+                              </SubmitButton>
+                            </div>
+                          </div>
                         </div>
                       }
                     </div>

@@ -1,52 +1,38 @@
 import { useEffect, useState } from "react"
 import { ExternalLinkIcon } from "@heroicons/react/outline";
 import { DocInFrameSceleton } from "./Sceletons";
-import SubmitButton from "./buttons/submitButton";
 
 type Props = {
     URl: string;
+    className?: string;
     onConfirm?: () => void
 }
-export function DocIframe({ URl, onConfirm }: Props) {
+export function DocIframe({ URl, onConfirm, className }: Props) {
     const [loading, setLoading] = useState(true)
-    useEffect(() => {
-        setTimeout(() => {
-            setLoading(false)
-        }, 2000);
-    }, [])
 
-    return <>
-        <div className="text-white text-base scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50 mb-4">
-            <div className={`relative ${loading ? '' : 'pb-96'} scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50`}>
+    const handleLoad = () => {
+        setLoading(false)
+    }
+
+    return (
+        <div className="flex flex-col justify-between space-y-4 h-full">
+            <div className='h-full'>
                 {
                     loading && <DocInFrameSceleton />
                 }
-                <iframe src={URl} className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down'} scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50 border-0 self-center absolute w-full h-full`}></iframe>
-
+                <iframe onLoad={handleLoad} height="100%"  src={URl} className={`${loading ? 'invisible h-0 w-0' : `visible animate-fade-in-down ${className}`} h-full min-h-[calc(100vh-170px)] md:min-h-full border-0 self-center w-full sm:rounded-md`} />
             </div>
-        </div>
-        {
-            !loading &&
-            <>
-                <SubmitButton
-                    type="button"
-                    onClick={onConfirm}
-                    size={'medium'}
-                    isDisabled={false}
-                    isSubmitting={false}
-                >
-                    Got it
-                </SubmitButton>
+            {
+                !loading &&
                 <a
                     target="_blank"
                     href={URl}
                     onClick={onConfirm}
-                    className="shadowed-button flex justify-center items-center mt-3 group disabled:white disabled:bg-primary-600 disabled:cursor-not-allowed text-primary relative w-full font-semibold focus:outline-none"
+                    className="shadowed-button hidden sm:flex justify-center items-center mt-3 group disabled:white disabled:bg-primary-600 disabled:cursor-not-allowed text-primary relative w-full font-semibold focus:outline-none"
                 >
                     View in new tab
                     <ExternalLinkIcon className='ml-2 h-5 w-5' />
                 </a>
-            </>
-        }
-    </>
+            }
+        </div>)
 }

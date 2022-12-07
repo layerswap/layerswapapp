@@ -8,7 +8,9 @@ import { SwapType } from "./layerSwapApiClient";
 export function GetExchangeFee(currency?: Currency, exchange?: Exchange): number {
     return exchange?.currencies.find(ec => ec.asset === currency?.asset)?.current_withdrawal_fee || 0;
 }
-
+export function CalculateMinimalAuthorizeAmount(usd_price: number, amount: number) {
+    return Math.ceil((usd_price * amount) + (usd_price * amount * 0.02))
+}
 export function CalculateFee(amount?: number, currency?: Currency, exchange?: Exchange, network?: CryptoNetwork, swapType?: SwapType): number {
     if (!currency || !exchange || !network)
         return 0;
