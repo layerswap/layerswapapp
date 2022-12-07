@@ -1,4 +1,4 @@
-import { CheckIcon, HomeIcon, LinkIcon, SwitchHorizontalIcon } from '@heroicons/react/solid';
+import { CheckIcon, LinkIcon, SwitchHorizontalIcon } from '@heroicons/react/solid';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
@@ -6,13 +6,13 @@ import SubmitButton from '../../../buttons/submitButton';
 import ImtblClient from '../../../../lib/imtbl';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient, { SwapType } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import { classNames } from '../../../utils/classNames';
 import { useInterval } from '../../../../hooks/useInterval';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
-import GoHomeButton from '../../../utils/GoHome';
 import shortenAddress from "../../../utils/ShortenAddress"
+import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 
 
 const ConnectWalletStep: FC = () => {
@@ -26,7 +26,7 @@ const ConnectWalletStep: FC = () => {
     const { setWalletAddress } = useSwapDataUpdate()
     const { setInterval } = useSwapDataUpdate()
     const { networks, exchanges } = useSettingsState()
-    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
+    const { goToStep, setError } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const network = swap && networks?.find(n => n.currencies.some(nc => nc.id === swap.network_currency_id))
     const exchange = swap && exchanges?.find(e => e.currencies.some(ec => ec.id === swap.exchange_currency_id))
     const asset = network && network.currencies.find(c => c.id === swap.network_currency_id)?.asset
@@ -82,7 +82,7 @@ const ConnectWalletStep: FC = () => {
             }
             const layerSwapApiClient = new LayerSwapApiClient()
             const accounts = await layerSwapApiClient.GetNetworkAccounts(network.internal_name)
-            if (accounts?.data?.some(a => a.address === address && a.is_verified))
+            if (accounts?.data?.some(a => a.address === address))
                 setVerified(true)
         }
         catch (e) {
@@ -101,6 +101,11 @@ const ConnectWalletStep: FC = () => {
             setVerified(true)
         }
         catch (e) {
+            const data: ApiError = e?.response?.data?.error
+            if(data.code == KnownwErrorCode.NETWORK_ACCOUNT_ALREADY_EXISTS) {
+                goToStep(SwapWithdrawalStep.Error)
+                setError({ Code: data.code, Step: SwapWithdrawalStep.WalletConnect })
+            }
             toast(e.message)
         }
         setLoading(false)

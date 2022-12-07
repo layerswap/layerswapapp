@@ -54,7 +54,6 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                                 </span>
                                                 : '-'
                                         }
-
                                     </span>
                                     <ChevronDownIcon
                                         className={`${open ? 'rotate-180 transform' : ''
@@ -68,7 +67,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                         <label className="inline-flex items-center text-left">
                                             Layerswap Fee
                                         </label>
-                                        <span className="text-white text-right">
+                                        <span className="text-right">
                                             {fee.toFixed(currencyDetails?.precision)}
                                             <span>  {currencyDetails?.asset} </span>
                                         </span>
@@ -80,21 +79,17 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                                 Exchange Fee
                                                 <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36' />
                                             </label>
-                                            <span className="text-white text-right flex flex-col md:flex-row">
-                                                <p>{parseFloat(exchangeFee.toFixed(currencyDetails?.precision))} {currencyDetails?.asset}</p>
-                                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.FeeIsRefundable &&
-                                                    <span className='inline-flex ml-1 text-primary-text'>
-                                                        (Refundable) <HoverTooltip text="After initiating the withdrawal, this fee will be refunded to your Binance account." moreClassNames='w-36' />
-                                                    </span>}
+                                            <span className="text-right">
+                                                {parseFloat(exchangeFee.toFixed(currencyDetails?.precision))} {currencyDetails?.asset}
                                             </span>
                                         </div>
                                     }
 
                                     <div className="mt-2 flex flex-row items-baseline justify-between">
                                         <label className="block text-left">
-                                            Time Of Arrival
+                                            Estimated arrival
                                         </label>
-                                        <span className="text-white text-right">
+                                        <span className="text-right">
                                             ~1-2 minutes
                                         </span>
                                     </div>

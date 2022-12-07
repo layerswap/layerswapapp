@@ -1,12 +1,10 @@
-import { useRouter } from "next/router";
-import { FC, useCallback } from "react";
+import { FC } from "react";
 import CopyButton from "../buttons/copyButton";
 import LayerSwapLogo from "../icons/layerSwapLogo";
 import { PaperClipIcon } from '@heroicons/react/outline'
 import { renderToString } from 'react-dom/server'
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
-import { useQueryState } from "../../context/query";
 import { useGoHome } from "../../hooks/useGoHome";
 
 interface Props {

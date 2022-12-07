@@ -45,7 +45,7 @@ let variants = {
         x: direction * width,
     }),
     center: {
-        x: 0, 
+        x: 0,
         transition: {
             when: "beforeChildren",
         },

@@ -6,7 +6,6 @@ import MessageComponent from '../../MessageComponent';
 const ActiveSwapLimit: FC = () => {
 
     const router = useRouter()
-
     return (
         <MessageComponent>
             <MessageComponent.Content icon='red'>

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
+import { useSettingsState } from './settings';
 
 const AuthStateContext = React.createContext<AuthState>(null);
 const AuthDataUpdateContext = React.createContext<UpdateInterface>(null);
@@ -10,7 +11,7 @@ type AuthState = {
     authData: AuthData,
     codeRequested: boolean,
     tempEmail: string,
-    userId:string,
+    userId: string,
 }
 
 export type UpdateInterface = {

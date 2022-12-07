@@ -54,9 +54,14 @@ const Expired = ({ swap, onGetHelp }: Props) => {
                     swap?.message ?
                         swap.message
                         :
-                        <p>
-                            This swap was not completed during the allocated timeframe and was expired. If you've already sent crypto for this swap please contact support.
-                        </p>
+                        <>
+                            <p>
+                                The transfer wasn’t completed during the allocated timeframe.
+                            </p>
+                            <p>
+                                If you’ve already sent crypto for this swap, your funds are safe, please contact our support.
+                            </p>
+                        </>
                 }
             </MessageComponent.Description>
 
@@ -100,7 +105,7 @@ const Canceled = ({ swap, onGetHelp }: Props) => {
                         swap.message
                         :
                         <p>
-                            You've either canceled this swap manually, or you've created a swap immediatly after this and it replaced this one.
+                            You've either canceled this swap manually, or you've created a swap without completing this one.
                         </p>
                 }
             </MessageComponent.Description>
@@ -135,18 +140,19 @@ const Failed = ({ swap, onGetHelp }: Props) => {
     return <MessageComponent>
         <MessageComponent.Content icon='red'>
             <MessageComponent.Header>
-                {swap.status == SwapStatus.Failed ? 'Swap failed' : 'Swap not found'}
+                Swap failed
             </MessageComponent.Header>
             <MessageComponent.Description>
                 {
                     swap?.message ?
                         swap.message
                         :
-                        <p>
-                            Sorry, there was an issue with your swap.
-                            Nothing to worry, your funds are safe!
-                            Please contact our support team with the button bellow and we'll help you fix this.
-                        </p>
+                        <>
+                            <p>
+                                Your funds are safe, but there seems to be an issue with the swap.
+                            </p>
+                            <p>  Please contact our support team and we’ll help you fix this.</p>
+                        </>
                 }
             </MessageComponent.Description>
         </MessageComponent.Content>

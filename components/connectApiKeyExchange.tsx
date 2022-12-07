@@ -140,11 +140,13 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
                             </WarningMessage>
                         }
                         {
-                            userGuideURL && <div className="flex items-center">
-                                <span className="block text-base text-white font-normal leading-6 h-full"> Learn how to get
-                                    <GuideLink text="API Keys" userGuideUrl={userGuideURL} place={slideOverPlace} />
+                            userGuideURL &&
+                            <WarningMessage messageType='informing'>
+                                <span className='flex-none'>
+                                    Learn how to get
                                 </span>
-                            </div>
+                                <GuideLink text="API Keys" userGuideUrl={userGuideURL} place={slideOverPlace} />
+                            </WarningMessage>
                         }
                     </div>
                 </div>

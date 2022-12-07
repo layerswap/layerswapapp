@@ -18,9 +18,9 @@ const BackgroundField: FC<Props> = (({ isCopiable, toCopy, header, children, isQ
                     {header}
                 </p>
             }
-            <div className="flex items-center justify-between w-full mt-1">
+            <div className="flex items-center justify-between w-full mt-1 space-x-1">
                 {children}
-                <div className="space-x-2 flex">
+                <div className="space-x-2 flex self-start">
                     {
                         isQRable &&
                         <QRCodeModal qrUrl={toCopy?.toLocaleString()} iconHeight={17} iconWidth={17} className='p-1 bg-darkblue-200 rounded' />

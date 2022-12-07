@@ -39,17 +39,18 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     let availableExchanges = exchanges
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
 
+    let initialExchange =
+        availableExchanges.find(x => x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() && (initialSwapType === SwapType.OffRamp ? x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)));
+
     const availableCurrencies = currencies
         .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, initialExchange?.baseObject?.currencies?.find(ec => ec.asset === c.asset)?.order || 0, `${resource_storage_url}${c.logo}`))
 
     const initialNetwork =
-        availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable)
+        availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable && (initialSwapType ? !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp : !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp))
 
     let initialAddress =
         destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
 
-    let initialExchange =
-        availableExchanges.find(x => x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() && (initialSwapType === SwapType.OffRamp ? x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)));
 
     let initialCurrency =
         amount && availableCurrencies.find(c => c.baseObject.asset == asset)

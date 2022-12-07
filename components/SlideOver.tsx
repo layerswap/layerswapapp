@@ -30,15 +30,17 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
         imperativeOpener?.[1](true);
     }
 
+    let heightControl =''
+
     switch (place) {
         case 'inStep':
-            moreClassNames += " -mt-11";
+            heightControl += " -mt-11";
             break;
         case 'inMenu':
-            moreClassNames += " pt-2";
+            heightControl += " pt-2";
             break;
         case 'inModal':
-            moreClassNames += " ";
+            heightControl += " ";
             break;
     }
 
@@ -66,8 +68,8 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
                             y: "100%",
                             transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
                         }}
-                        className={`absolute inset-0 z-40 w-full ${moreClassNames} hidden sm:block`}>
-                        <div className='relative z-40 overflow-hidden flex flex-col rounded-t-2xl md:rounded-none bg-darkblue px-6 sm:px-8 h-full space-y-3 py-4'>
+                        className={`absolute inset-0 z-40 w-full ${heightControl} hidden sm:block`}>
+                        <div className={`relative z-40 overflow-hidden flex flex-col rounded-t-2xl md:rounded-none bg-darkblue px-6 sm:px-8 h-full space-y-3 py-4`}>
                             <div className="flex items-center justify-between text-primary-text cursor-pointer">
                                 <p className="text-xl text-white font-semibold">
                                     {header}
@@ -94,7 +96,7 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
                         <Portal>
                             <Overlay />
                             <Content>
-                                <MobileModalContent ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header}>
+                                <MobileModalContent ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
                                     {children && children(handleClose)}
                                 </MobileModalContent>
                             </Content>

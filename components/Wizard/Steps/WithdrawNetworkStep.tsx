@@ -6,14 +6,11 @@ import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { useSettingsState } from '../../../context/settings';
-import Image from 'next/image'
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import NetworkSettings from '../../../lib/NetworkSettings';
-import SlideOver from '../../SlideOver';
-import { DocIframe } from '../../docInIframe';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
@@ -156,7 +153,7 @@ const WithdrawNetworkStep: FC = () => {
                                 </div>
                                 {
                                     userGuideUrlForDesktop &&
-                                    <WarningMessage messageType='informating'>
+                                    <WarningMessage messageType='informing'>
                                         <span className='flex-none'>
                                             Learn how to send from
                                         </span>
@@ -224,7 +221,7 @@ const WithdrawNetworkStep: FC = () => {
                     }
                 </Widget.Footer>
             </Widget>
-            <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title={'Do not cancel if you have already sent crypto'} modalSize='small'>
+            <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
                 <div className='text-primary-text mb-4'></div>
                 <div className="flex flex-row text-white text-base space-x-2">
                     <div className='basis-1/2'>

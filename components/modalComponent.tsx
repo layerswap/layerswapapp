@@ -58,13 +58,13 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
         <AnimatePresence>
             {showModal && (
                 <Root
-                    onOpenChange={() => setShowModal(false)}
+                    onOpenChange={closeModal}
                     open={showModal}
                 >
                     <Portal>
                         <Overlay />
                         <Content>
-                            <MobileModalContent showModal={showModal} setShowModal={setShowModal} title={title}>
+                            <MobileModalContent className={className} showModal={showModal} setShowModal={setShowModal} title={title}>
                                 {children}
                             </MobileModalContent>
                             <motion.div
@@ -78,7 +78,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                             <motion.div
                                 ref={desktopModalRef}
                                 key="desktop-modal"
-                                className={`fixed inset-0  hidden min-h-screen items-center justify-center sm:flex `}
+                                className={`fixed inset-0 z-40 hidden min-h-screen items-center justify-center sm:flex `}
                                 initial={{ opacity: 0 }}
                                 animate={{
                                     opacity: 1,
@@ -95,7 +95,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                                 }}
                             >
                                 <div className={constructModalSize(modalSize)}>
-                                    <div className={`${className} space-y-2 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
+                                    <div className={`${className} space-y-3 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
                                         <div className='flex justify-between space-x-8'>
                                             <Title className="text-lg text-left font-medium text-primary-text" >
                                                 {title}
@@ -119,7 +119,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
     );
 }
 
-export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, setShowModal, children, title }, topmostRef) => {
+export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, setShowModal, children, title, className }, topmostRef) => {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 42 };
@@ -145,6 +145,8 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
         }
     }, [showModal]);
 
+    const handleCloseModal = () => setShowModal(false)
+
     return (
         <div ref={topmostRef}>
             <motion.div
@@ -153,12 +155,12 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setShowModal(false)}
+                onClick={handleCloseModal}
             />
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`group fixed overflow-x-auto inset-x-0 bottom-0 z-40 w-screen cursor-grab active:cursor-grabbing bg-darkblue px-6 rounded-t-2xl shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
+                className={`group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue ${className} shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
                 initial={{ y: "100%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
@@ -169,14 +171,23 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div tabIndex={0} className="h-7 rounded-t-4xl -mb-1 flex w-full items-center justify-center">
-                    <div className="-mr-1 h-1 w-6 rounded-full bg-darkblue-100 transition-all group-active:rotate-12" />
-                    <div className="h-1 w-6 rounded-full bg-darkblue-100 transition-all group-active:-rotate-12" />
+                <div className='px-5 grid grid-cols-6 items-center py-3 rounded-t-2xl bg-darkblue'>
+                    <button className='text-base text-gray-600 col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
+                        Close
+                    </button>
+                    {
+                        title ?
+                            <div className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-primary-text">
+                                {title}
+                            </div>
+                            :
+                            <div tabIndex={0} className="rounded-t-4xl flex items-center col-start-2 col-span-4 justify-self-center">
+                                <div className="-mr-1 h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:rotate-12" />
+                                <div className="h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:-rotate-12" />
+                            </div>
+                    }
                 </div>
-                <div className="text-lg text-center leading-6 font-medium text-primary-text mb-3">
-                    {title}
-                </div>
-                <div className='inline-block max-w-screen-xl max-h-[calc(100vh-170px)] w-full transform overflow-scroll'>
+                <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto`}>
                     {children}
                 </div>
             </motion.div>

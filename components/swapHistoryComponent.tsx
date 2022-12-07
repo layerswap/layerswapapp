@@ -92,7 +92,7 @@ function TransactionsHistory() {
     setOpenSwapDetailsModal(true)
   }
 
-  const formatDate = (date: string) => {
+  const FormattedDate = ({ date }: { date: string }) => {
     const swapDate = new Date(date);
     const yyyy = swapDate.getFullYear();
     let mm = swapDate.getMonth() + 1; // Months start at 0!
@@ -101,7 +101,7 @@ function TransactionsHistory() {
     if (dd < 10) dd = 0 + dd;
     if (mm < 10) mm = 0 + mm;
 
-    return dd + '/' + mm + '/' + yyyy;
+    return <>{dd + '/' + mm + '/' + yyyy}</>;
   }
 
   return (
@@ -112,8 +112,8 @@ function TransactionsHistory() {
             <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
           </button>
           <div className="hidden md:block ml-4">
-            <p className="text-2xl font-bold">Account</p>
-            <span className="text-primary-text font-medium">{email}</span>
+            <p className="text-2xl font-bold relative">Account</p>
+            <span className="text-primary-text font-medium absolute">{email}</span>
           </div>
         </div>
 
@@ -213,46 +213,44 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
+                                  'relative py-4 pl-4 sm:pl-6 pr-3 text-sm sm:flex items-center sm:space-x-2'
                                 )}
                               >
-                                <div className="text-white ">
-                                  <div className="flex items-center">
-                                    <div className="flex-shrink-0 h-5 w-5 relative">
-                                      {
-                                        source?.logo &&
-                                        <Image
-                                          src={`${resource_storage_url}${source?.logo}`}
-                                          alt="From Logo"
-                                          height="60"
-                                          width="60"
-                                          layout="responsive"
-                                          className="rounded-md object-contain"
-                                        />
-                                      }
-                                    </div>
-                                    <div className="mx-1 hidden lg:block">{source?.display_name}</div>
-                                    <ArrowRightIcon className="h-4 w-4 lg:hidden mx-2" />
-                                    <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
-                                      {
-                                        destination?.logo &&
-                                        <Image
-                                          src={`${resource_storage_url}${destination?.logo}`}
-                                          alt="To Logo"
-                                          height="60"
-                                          width="60"
-                                          layout="responsive"
-                                          className="rounded-md object-contain"
-                                        />
-                                      }
-                                    </div>
+                                <div className="text-white flex items-center">
+                                  <div className="flex-shrink-0 h-5 w-5 relative">
+                                    {
+                                      source?.logo &&
+                                      <Image
+                                        src={`${resource_storage_url}${source?.logo}`}
+                                        alt="From Logo"
+                                        height="60"
+                                        width="60"
+                                        layout="responsive"
+                                        className="rounded-md object-contain"
+                                      />
+                                    }
+                                  </div>
+                                  <div className="mx-1 hidden lg:block">{source?.display_name}</div>
+                                  <ArrowRightIcon className="h-4 w-4 lg:hidden mx-2" />
+                                  <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
+                                    {
+                                      destination?.logo &&
+                                      <Image
+                                        src={`${resource_storage_url}${destination?.logo}`}
+                                        alt="To Logo"
+                                        height="60"
+                                        width="60"
+                                        layout="responsive"
+                                        className="rounded-md object-contain"
+                                      />
+                                    }
                                   </div>
                                 </div>
-                                <div className="flex items-center mt-1 text-white sm:block lg:hidden">
-                                  <span className="block lg:hidden">{formatDate(swap.created_date)}</span>
+                                <div className="flex items-center text-white lg:hidden">
+                                  <FormattedDate date={swap.created_date} />
                                 </div>
                                 {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
-                                <span className="flex items-center sm:block lg:hidden">
+                                <span className="flex items-center lg:hidden">
                                   {<StatusIcon status={swap.status} />}
                                   {/* {plan.from} - {plan.to} */}
                                 </span>

@@ -27,7 +27,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
 
-        return (<>
+        return <>
             {label &&
                 <label htmlFor={name} className="block font-normal text-primary-text text-sm">
                     {label}
@@ -66,7 +66,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     </span>
                 }
             </div>
-        </>)
+        </>;
     });
 
 function limitDecimalPlaces(e, count) {

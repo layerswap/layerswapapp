@@ -31,9 +31,9 @@ const SuccessfulStep: FC = () => {
                     <MessageComponent.Description>
                         {
                             swap?.type === SwapType.OnRamp ?
-                                <span>Your swap successfully completed. You can view it in the explorer, or go ahead swap more!</span>
+                                <span>Your swap was successfully completed. Go ahead, swap more!</span>
                                 :
-                                <span>Your swap successfully completed. Your assets are on their way to your exchange account.</span>
+                                <span>Your swap was successfully completed. Your assets are on their way to your exchange account.</span>
                         }
                     </MessageComponent.Description>
                 </MessageComponent.Content>

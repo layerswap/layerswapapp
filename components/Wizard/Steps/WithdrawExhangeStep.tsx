@@ -5,7 +5,6 @@ import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { useRouter } from 'next/router';
 import { useSettingsState } from '../../../context/settings';
-import Image from 'next/image'
 import ExchangeSettings from '../../../lib/ExchangeSettings';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
@@ -95,7 +94,7 @@ const WithdrawExchangeStep: FC = () => {
                 <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text">
                     <div className='space-y-4'>
                         <div className="text-left">
-                            <p className="block text-md sm:text-lg font-medium text-white">
+                            <p className="block sm:text-lg font-medium text-white">
                                 Send {currency?.asset} to the provided address
                             </p>
                             <p className='text-sm sm:text-base'>
@@ -151,13 +150,12 @@ const WithdrawExchangeStep: FC = () => {
                             }
                             {
                                 ExchangeSettings?.KnownSettings[exchange_internal_name]?.ExchangeWithdrawalGuideUrl &&
-                                <WarningMessage messageType='informating'>
+                                <WarningMessage messageType='informing'>
                                     <span className='flex-none'>
                                         Learn how to send from
                                     </span>
-                                    <GuideLink text={exchange_internal_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                                    <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
                                 </WarningMessage>
-
                             }
                         </div>
                     </div>
@@ -225,31 +223,31 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget>
-        <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title={'Do not cancel if you have already sent crypto'} modalSize='medium'>
-            <div className='text-primary-text mb-4'></div>
-            <div className="flex flex-row text-white text-base space-x-2">
-                <div className='basis-1/2'>
-                    <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                        <DoubleLineText
-                            colorStyle='mltln-text-dark'
-                            primaryText='Cancel the swap'
-                            secondarytext='and go to home'
-                            reversed={true}
-                        />
-                    </SubmitButton>
+        <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
+                <div className='text-primary-text mb-4'></div>
+                <div className="flex flex-row text-white text-base space-x-2">
+                    <div className='basis-1/2'>
+                        <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
+                            <DoubleLineText
+                                colorStyle='mltln-text-dark'
+                                primaryText='Cancel the swap'
+                                secondarytext='and go to home'
+                                reversed={true}
+                            />
+                        </SubmitButton>
+                    </div>
+                    <div className='basis-1/2'>
+                        <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
+                            <DoubleLineText
+                                colorStyle='mltln-text-light'
+                                primaryText="Don't"
+                                secondarytext='cancel'
+                                reversed={true}
+                            />
+                        </SubmitButton>
+                    </div>
                 </div>
-                <div className='basis-1/2'>
-                    <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                        <DoubleLineText
-                            colorStyle='mltln-text-light'
-                            primaryText="Don't"
-                            secondarytext='cancel'
-                            reversed={true}
-                        />
-                    </SubmitButton>
-                </div>
-            </div>
-        </Modal>
+            </Modal>
     </>
     )
 }
