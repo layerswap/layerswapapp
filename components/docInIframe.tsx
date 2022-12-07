@@ -4,12 +4,13 @@ import { DocInFrameSceleton } from "./Sceletons";
 
 type Props = {
     URl: string;
+    className?: string;
     onConfirm?: () => void
 }
-export function DocIframe({ URl, onConfirm }: Props) {
+export function DocIframe({ URl, onConfirm, className }: Props) {
     const [loading, setLoading] = useState(true)
 
-    const handleLoad = ()=>{
+    const handleLoad = () => {
         setLoading(false)
     }
 
@@ -19,7 +20,7 @@ export function DocIframe({ URl, onConfirm }: Props) {
                 {
                     loading && <DocInFrameSceleton />
                 }
-                <iframe onLoad={handleLoad} src={URl} height="100%" className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down'} h-full min-h-[calc(100vh-170px)] md:min-h-full border-0 self-center w-full sm:rounded-md`} />
+                <iframe onLoad={handleLoad} height="100%"  src={URl} className={`${loading ? 'invisible h-0 w-0' : `visible animate-fade-in-down ${className}`} h-full min-h-[calc(100vh-170px)] md:min-h-full border-0 self-center w-full sm:rounded-md`} />
             </div>
             {
                 !loading &&
