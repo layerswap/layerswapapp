@@ -20,7 +20,7 @@ export function DocIframe({ URl, onConfirm }: Props) {
                 {
                     loading && <DocInFrameSceleton />
                 }
-                <iframe src={URl} className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down min-h-[calc(100vh-170px)]'} border-0 self-center w-full sm:rounded-md`} />
+                <iframe src={URl} height="100%" className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down'} h-full border-0 self-center w-full sm:rounded-md`} />
             </div>
             {
                 !loading &&
