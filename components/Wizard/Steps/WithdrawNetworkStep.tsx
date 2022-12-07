@@ -56,7 +56,7 @@ const WithdrawNetworkStep: FC = () => {
 
     const handleTransferDone = useCallback(async () => {
         setTransferDone(true)
-        const estimatedTransferTimeInSeconds = estimatedTransferTime ? (estimatedTransferTime * 60 * 1000) : 120000
+        const estimatedTransferTimeInSeconds = estimatedTransferTime ? (estimatedTransferTime * 60 * 1000) : 420000
         setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
     }, [estimatedTransferTime])
 
