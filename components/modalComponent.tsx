@@ -78,7 +78,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                             <motion.div
                                 ref={desktopModalRef}
                                 key="desktop-modal"
-                                className={`fixed inset-0  hidden min-h-screen items-center justify-center sm:flex `}
+                                className={`fixed inset-0 z-40 hidden min-h-screen items-center justify-center sm:flex `}
                                 initial={{ opacity: 0 }}
                                 animate={{
                                     opacity: 1,

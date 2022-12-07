@@ -49,21 +49,21 @@ export default function FooterComponent() {
       <div className="max-w-xl mt-6 mx-auto space-y-6">
         <nav className="mt-4 flex flex-wrap flex-row gap-2" aria-label="Footer">
           {navigation.main.map((item) => (
-            <a key={item.name} href={item.href} target={item.target} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 hover:cursor-pointer">
+            <a key={item.name} href={item.href} target={item.target} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 hover:cursor-pointer transition-all duration-200">
               {item.name}
             </a>
           ))}
           {navigation.iframe.map((item) => {
             return (
               <div key={item.name}>
-                <button onClick={() => setModalUrl(item.href)} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800">
+                <button onClick={() => setModalUrl(item.href)} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 transition-all duration-200">
                   {item.name}
                 </button>
               </div>
             )
           })}
           <Modal className="bg-[#181c1f] sm:!pb-6 !pb-0" showModal={modalUrl != null} setShowModal={()=> setModalUrl(null)} >
-            <DocIframe URl={modalUrl} />
+            <DocIframe URl={modalUrl} className='md:min-h-[calc(100vh-170px)]'/>
           </Modal>
         </nav>
         <div className="flex space-x-6">
