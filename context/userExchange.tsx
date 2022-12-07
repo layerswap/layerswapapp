@@ -13,10 +13,9 @@ export function UserExchangeProvider({ children }) {
     const [exchangeData, setUserExchangeData] = React.useState({});
     const router = useRouter();
 
-    const layerswapApiClient = new LayerSwapApiClient(router)
-
     const updateFns: UpdateFns = {
         getUserExchanges: async (): Promise<UserExchangesData[]> => {
+            const layerswapApiClient = new LayerSwapApiClient(router)
             const res = await layerswapApiClient.GetExchangeAccounts()
             if (res.error) {
                 throw res.error;
