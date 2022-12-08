@@ -9,7 +9,7 @@ type TimerProps = {
     children: JSX.Element | JSX.Element[]
 }
 
-const Timer: FC<TimerProps> = (({ isStarted, waitingComponent, children }, ref) => {
+const TimerWithContext: FC<TimerProps> = (({ isStarted, waitingComponent, children }, ref) => {
     const { secondsRemaining, started } = useTimerState()
     const twoDigits = (num) => String(num).padStart(2, '0')
 
@@ -30,4 +30,4 @@ const Timer: FC<TimerProps> = (({ isStarted, waitingComponent, children }, ref) 
 })
 
 
-export default Timer
+export default TimerWithContext

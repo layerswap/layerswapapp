@@ -20,19 +20,19 @@ const SwapWithdrawalWizard: FC = () => {
     const router = useRouter();
     const handleGoBack = useCallback(() => {
         router.back()
-      }, [router])
+    }, [router])
 
     const GoBackToWalletConnect = useCallback(() => goToStep(SwapWithdrawalStep.WalletConnect, "back"), [])
 
     return (
         <Wizard>
-            <WizardItem StepName={SwapWithdrawalStep.ExternalPayment} PositionPercent={90}>
+            <WizardItem StepName={SwapWithdrawalStep.ExternalPayment} PositionPercent={90} GoBack={handleGoBack}>
                 <ExternalPaymentStep />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.Withdrawal} PositionPercent={90}>
+            <WizardItem StepName={SwapWithdrawalStep.Withdrawal} PositionPercent={90} GoBack={handleGoBack}>
                 <WithdrawExchangeStep />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.OffRampWithdrawal} PositionPercent={90}>
+            <WizardItem StepName={SwapWithdrawalStep.OffRampWithdrawal} PositionPercent={90} GoBack={handleGoBack}>
                 <WithdrawNetworkStep />
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.WalletConnect} GoBack={handleGoBack} PositionPercent={90} >

@@ -9,7 +9,7 @@ import { SwapCreateStep } from '../../../Models/Wizard';
 import NumericInput from '../../Input/NumericInput';
 import SubmitButton from '../../buttons/submitButton';
 import { ApiError, KnownwErrorCode } from '../../../Models/ApiError';
-import Timer from '../../TimerComponent';
+import TimerWithContext from '../../TimerComponent';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 import Widget from '../Widget';
@@ -146,7 +146,7 @@ const TwoFactorStep: FC = () => {
                                     />
                                 </div>
                                 <span className="flex text-sm leading-6 items-center mt-1.5">
-                                    <Timer seconds={120}
+                                    <TimerWithContext seconds={120}
                                         waitingComponent={(remainingTime) => (
                                             <span>
                                                 Resend in
@@ -159,7 +159,7 @@ const TwoFactorStep: FC = () => {
                                             Resend code
                                         </span>
                                             : <SpinIcon className="animate-spin h-5 w-5" />}
-                                    </Timer>
+                                    </TimerWithContext>
                                 </span>
                             </div>
                         </Widget.Content>
