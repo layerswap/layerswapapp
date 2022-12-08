@@ -55,8 +55,8 @@ const TwoFactorStep: FC = () => {
                 toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
-                goToStep(SwapCreateStep.Error)
                 setError({ Code: data.code, Step: SwapCreateStep.TwoFactor })
+                goToStep(SwapCreateStep.Error)
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 goToStep(SwapCreateStep.OAuth)
