@@ -22,6 +22,7 @@ import { ArrowLeftIcon } from "@heroicons/react/solid"
 import { useSwapDataUpdate } from "../context/swap"
 import { SwapStatus } from "../Models/SwapStatus"
 import { DepositFlow } from "../Models/Exchange";
+import FormattedDate from "./Common/FormattedDate";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -90,18 +91,6 @@ function TransactionsHistory() {
   const handleopenSwapDetails = (swap: SwapItem) => {
     setSelectedSwap(swap)
     setOpenSwapDetailsModal(true)
-  }
-
-  const FormattedDate = ({ date }: { date: string }) => {
-    const swapDate = new Date(date);
-    const yyyy = swapDate.getFullYear();
-    let mm = swapDate.getMonth() + 1; // Months start at 0!
-    let dd = swapDate.getDate();
-
-    if (dd < 10) dd = 0 + dd;
-    if (mm < 10) mm = 0 + mm;
-
-    return <>{dd + '/' + mm + '/' + yyyy}</>;
   }
 
   return (
