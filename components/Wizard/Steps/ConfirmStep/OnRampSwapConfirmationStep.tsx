@@ -1,7 +1,7 @@
 import { PencilAltIcon } from '@heroicons/react/outline';
 import { ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
-import { FC, useCallback, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
@@ -38,6 +38,7 @@ const OnRampSwapConfirmationStep: FC = () => {
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState(destination_address)
     const [addressInputError, setAddressInputError] = useState("")
+
     const { start: startTimer } = useTimerState()
     const router = useRouter();
 
@@ -87,7 +88,7 @@ const OnRampSwapConfirmationStep: FC = () => {
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 goToStep(SwapCreateStep.Error)
-                setError({Code:data.code,Step:SwapCreateStep.Confirm})
+                setError({ Code: data.code, Step: SwapCreateStep.Confirm })
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 nextStep = SwapCreateStep.OAuth
@@ -123,7 +124,7 @@ const OnRampSwapConfirmationStep: FC = () => {
     const currentExchange = swapFormData?.exchange?.baseObject;
     const currentCurrency = swapFormData?.currency?.baseObject;
 
-    return (
+    return (<>
         <Widget>
             <Widget.Content>
                 <SwapConfirmMainData>
@@ -154,7 +155,6 @@ const OnRampSwapConfirmationStep: FC = () => {
                     </SubmitButton>
                 </div>
             </Widget.Footer>
-
             <Modal
                 showModal={editingAddress}
                 setShowModal={setEditingAddress}
@@ -199,6 +199,8 @@ const OnRampSwapConfirmationStep: FC = () => {
                 </div>
             </Modal>
         </Widget>
+    </>
+
     )
 }
 

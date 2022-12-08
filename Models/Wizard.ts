@@ -23,6 +23,7 @@ export enum SwapCreateStep {
     MainForm = "MainForm",
     Email = "Email",
     Code = "Code",
+    PendingSwaps = "PendingSwaps",
     OAuth = "OAuth",
     OffRampOAuth = "OffRampOAuth",
     ApiKey = "ApiKey",
