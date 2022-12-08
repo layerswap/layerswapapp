@@ -8,7 +8,9 @@ import { useTimerState } from '../context/timerContext';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
+import { DocIframe } from './docInIframe';
 import NumericInput from './Input/NumericInput';
+import Modal from './modalComponent';
 import TimerWithContext from './TimerComponent';
 import Widget from './Wizard/Widget';
 interface VerifyEmailCodeProps {
@@ -26,6 +28,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     const { start: startTimer, started } = useTimerState()
     const { tempEmail } = useAuthState();
     const { updateAuthData } = useAuthDataUpdate()
+    const [modalUrl, setModalUrl] = useState<string>(null);
 
     const handleResendCode = useCallback(async () => {
         try {
@@ -44,7 +47,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         }
     }, [tempEmail])
 
-    return (
+    return (<>
         <Formik
             initialValues={initialValues}
             validateOnMount={true}
@@ -98,13 +101,13 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                 />
                                 <span className="flex text-sm leading-6 items-center mt-1.5">
                                     <TimerWithContext isStarted={started} seconds={60} waitingComponent={(remainingTime) => (
-                                            <span>
-                                                Resend in
-                                                <span className='ml-1'>
-                                                    {remainingTime}
-                                                </span>
+                                        <span>
+                                            Resend in
+                                            <span className='ml-1'>
+                                                {remainingTime}
                                             </span>
-                                        )}>
+                                        </span>
+                                    )}>
                                         <span onClick={handleResendCode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
                                             Resend code
                                         </span>
@@ -114,11 +117,14 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                         </Widget.Content>
                         <Widget.Footer>
                             <p className='text-primary-text text-xs sm:text-sm mb-3 md:mb-5'>
-                                By clicking Confirm you agree to Layerswap's <Link
-                                href="/blog/guide/Terms_of_Service"
-                                className='decoration decoration-primary underline-offset-1 underline hover:no-underline'> Terms of Service</Link> and <Link
-                                href="/blog/guide/Privacy_Policy"
-                                className='decoration decoration-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</Link>
+                                By clicking Confirm you agree to Layerswap's <span
+                                    onClick={() => setModalUrl('https://docs.layerswap.io/user-docs/information/terms-of-services')}
+                                    className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'> Terms of Service
+                                </span> and&nbsp;
+                                <span
+                                    onClick={() => setModalUrl('https://docs.layerswap.io/user-docs/information/privacy-policy')}
+                                    className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'>Privacy Policy
+                                </span>
                             </p>
                             <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
                                 Confirm
@@ -128,6 +134,11 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                 </Form >
             )}
         </Formik>
+        <Modal className="bg-[#181c1f] sm:!pb-6 !pb-0" showModal={modalUrl != null} setShowModal={() => setModalUrl(null)} >
+            <DocIframe URl={modalUrl} className='md:min-h-[calc(100vh-170px)]' />
+        </Modal>
+    </>
+
     );
 }
 
