@@ -87,8 +87,8 @@ const OnRampSwapConfirmationStep: FC = () => {
                 nextStep = SwapCreateStep.TwoFactor
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
-                goToStep(SwapCreateStep.Error)
                 setError({ Code: data.code, Step: SwapCreateStep.Confirm })
+                goToStep(SwapCreateStep.Error)
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 nextStep = SwapCreateStep.OAuth

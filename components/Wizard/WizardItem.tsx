@@ -16,7 +16,7 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent }:
 
     useEffect(() => {
         if (currentStepName === StepName) {
-            setGoBack(GoBack)
+            if (GoBack) { setGoBack(GoBack) }
             setPositionPercent(PositionPercent)
         }
     }, [currentStepName, GoBack, PositionPercent, StepName])
