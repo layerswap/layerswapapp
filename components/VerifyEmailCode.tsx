@@ -11,6 +11,7 @@ import SubmitButton from './buttons/submitButton';
 import { DocIframe } from './docInIframe';
 import NumericInput from './Input/NumericInput';
 import Modal from './modalComponent';
+import SlideOver from './SlideOver';
 import TimerWithContext from './TimerComponent';
 import Widget from './Wizard/Widget';
 interface VerifyEmailCodeProps {
@@ -29,6 +30,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     const { tempEmail } = useAuthState();
     const { updateAuthData } = useAuthDataUpdate()
     const [modalUrl, setModalUrl] = useState<string>(null);
+    const [openDocSlideover, setOpenDocSlideover] = useState(false)
 
     const handleResendCode = useCallback(async () => {
         try {
@@ -47,7 +49,19 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         }
     }, [tempEmail])
 
+    const openDoc = (url: string) => {
+        setModalUrl(url)
+        setOpenDocSlideover(true)
+    }
+    const handleOpenTerms = ()=>openDoc('https://docs.layerswap.io/user-docs/information/terms-of-services')
+    const handleOpenPrivacyPolicy = ()=>openDoc('https://docs.layerswap.io/user-docs/information/privacy-policy')
+
     return (<>
+        <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
+            {(close) => (
+                <DocIframe onConfirm={() => close()} URl={modalUrl} />
+            )}
+        </SlideOver>
         <Formik
             initialValues={initialValues}
             validateOnMount={true}
@@ -118,11 +132,11 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                         <Widget.Footer>
                             <p className='text-primary-text text-xs sm:text-sm mb-3 md:mb-5'>
                                 By clicking Confirm you agree to Layerswap's <span
-                                    onClick={() => setModalUrl('https://docs.layerswap.io/user-docs/information/terms-of-services')}
+                                    onClick={handleOpenTerms}
                                     className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'> Terms of Service
                                 </span> and&nbsp;
                                 <span
-                                    onClick={() => setModalUrl('https://docs.layerswap.io/user-docs/information/privacy-policy')}
+                                    onClick={handleOpenPrivacyPolicy}
                                     className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'>Privacy Policy
                                 </span>
                             </p>
@@ -134,9 +148,6 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                 </Form >
             )}
         </Formik>
-        <Modal className="bg-[#181c1f] sm:!pb-6 !pb-0" showModal={modalUrl != null} setShowModal={() => setModalUrl(null)} >
-            <DocIframe URl={modalUrl} className='md:min-h-[calc(100vh-170px)]' />
-        </Modal>
     </>
 
     );
