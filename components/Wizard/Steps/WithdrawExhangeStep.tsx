@@ -20,9 +20,11 @@ import toast from 'react-hot-toast';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import GuideLink from '../../guideLink';
+import SimpleTimer from '../../Common/Timer';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
+    const [transferDoneTime, setTransferDoneTime] = useState<number>()
     const { exchanges, discovery: { resource_storage_url } } = useSettingsState()
     const { swap } = useSwapDataState()
     const { setInterval, cancelSwap } = useSwapDataUpdate()
@@ -68,15 +70,18 @@ const WithdrawExchangeStep: FC = () => {
             goToStep(swapStatusStep)
     }, [swapStatusStep])
 
-    const handleTransferDone = useCallback(async () => {
-        setTransferDone(true)
-    }, [])
-
     const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
     const currency = exchange?.currencies?.find(c => c.id === swap?.exchange_currency_id)
     const exchange_name = exchange?.display_name || ' '
     const exchange_internal_name = exchange?.internal_name
     const exchange_logo_url = exchange?.logo
+    const estimatedTransferTime = ExchangeSettings.KnownSettings[exchange_internal_name]?.EstimatedTransferTime
+
+    const handleTransferDone = useCallback(async () => {
+        setTransferDone(true)
+        const estimatedTransferTimeInSeconds = estimatedTransferTime ? (estimatedTransferTime * 60 * 1000) : 420000
+        setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
+    }, [estimatedTransferTime])
 
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
@@ -157,47 +162,20 @@ const WithdrawExchangeStep: FC = () => {
                 </div>
             </Widget.Content>
             <Widget.Footer>
-                <div className="flex text-center mb-4 space-x-2">
-                    <div className='relative'>
-                        <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                        <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                        <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
-                    </div>
-                    <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to do a withdrawal from the exchange</label>
-                </div>
+
                 {
                     <>
                         {
-                            transferDone ?
-                                <div>
-                                    <div className="flex flex-row text-white text-base space-x-2">
-                                        <div className='basis-1/3'>
-                                            <SubmitButton text_align='left' onClick={() => {
-                                                boot();
-                                                show();
-                                                updateWithProps()
-                                            }} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<ChatIcon className="h-5 w-5" aria-hidden="true" />}>
-                                                <DoubleLineText
-                                                    colorStyle='mltln-text-dark'
-                                                    primaryText='Support'
-                                                    secondarytext='Contact'
-                                                />
-                                            </SubmitButton>
-                                        </div>
-                                        <div className='basis-2/3'>
-                                            <GoHomeButton>
-                                                <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
-                                                    <DoubleLineText
-                                                        colorStyle='mltln-text-dark'
-                                                        primaryText='Swap'
-                                                        secondarytext='Do another'
-                                                    />
-                                                </SubmitButton>
-                                            </GoHomeButton>
-                                        </div>
+                            !transferDone &&
+                            <>
+                                <div className="flex text-center mb-4 space-x-2">
+                                    <div className='relative'>
+                                        <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                        <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                        <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
                                     </div>
+                                    <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to do a withdrawal from the exchange</label>
                                 </div>
-                                :
                                 <div className="flex flex-row text-white text-base space-x-2">
                                     <div className='basis-1/3'>
                                         <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<XIcon className='h-5 w-5' />}>
@@ -220,6 +198,26 @@ const WithdrawExchangeStep: FC = () => {
                                         </SubmitButton>
                                     </div>
                                 </div>
+                            </>
+
+                        }
+                        {
+                            transferDone &&
+                            <SimpleTimer time={transferDoneTime} text={
+                                (remainingSeconds) => <>
+                                    {remainingSeconds > 60 ? `We should receive the transfer in ${(Math.ceil((remainingSeconds / 60) % 60))} minutes` : `We should receive the transfer in a minute`}
+                                </>}
+                            >
+                                <div className="flex flex-row text-white text-base space-x-2">
+                                    <SubmitButton onClick={() => {
+                                        boot();
+                                        show();
+                                        updateWithProps()
+                                    }} isDisabled={false} isSubmitting={false} text_align="left" buttonStyle='outline' icon={<ChatIcon className="h-5 w-5" aria-hidden="true" />}>
+                                        Contact support
+                                    </SubmitButton>
+                                </div>
+                            </SimpleTimer>
                         }
                     </>
                 }

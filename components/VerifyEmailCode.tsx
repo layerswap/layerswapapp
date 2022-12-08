@@ -9,7 +9,7 @@ import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
 import NumericInput from './Input/NumericInput';
-import Timer from './TimerComponent';
+import TimerWithContext from './TimerComponent';
 import Widget from './Wizard/Widget';
 interface VerifyEmailCodeProps {
     onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
@@ -97,8 +97,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-700  w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                                 <span className="flex text-sm leading-6 items-center mt-1.5">
-                                    <Timer isStarted={started} seconds={60}
-                                        waitingComponent={(remainingTime) => (
+                                    <TimerWithContext isStarted={started} seconds={60} waitingComponent={(remainingTime) => (
                                             <span>
                                                 Resend in
                                                 <span className='ml-1'>
@@ -109,7 +108,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                         <span onClick={handleResendCode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
                                             Resend code
                                         </span>
-                                    </Timer>
+                                    </TimerWithContext>
                                 </span>
                             </div>
                         </Widget.Content>
