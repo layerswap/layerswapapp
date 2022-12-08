@@ -14,6 +14,7 @@ const ErrorStep: FC = () => {
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
+
     useEffect(() => {
         if (error?.Step)
             setGoBack(() => goToStep(error?.Step, "back"))
