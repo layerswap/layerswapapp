@@ -8,7 +8,6 @@ import IntroCard from './introCard';
 import CreateSwap from './Wizard/CreateSwapWizard';
 import { SwapCreateStep } from '../Models/Wizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
-import { useQueryState } from '../context/query';
 import inIframe from './utils/inIframe';
 
 

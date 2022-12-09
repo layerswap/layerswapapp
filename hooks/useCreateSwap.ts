@@ -9,14 +9,13 @@ import SwapConfirmationStep from "../components/Wizard/Steps/ConfirmStep/OnRampS
 import { useFormWizardaUpdate } from "../context/formWizardProvider";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { useUserExchangeDataUpdate } from "../context/userExchange";
-import LayerSwapApiClient from "../lib/layerSwapApiClient";
+import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient";
 import TokenService from "../lib/TokenService";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { ExchangeAuthorizationSteps, OfframpExchangeAuthorizationSteps, SwapCreateStep, WizardStep } from "../Models/Wizard";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { useRouter } from "next/router";
 import LayerswapApiClient, { SwapType } from '../lib/layerSwapApiClient';
-
 
 const useCreateSwap = () => {
     const { goToStep } = useFormWizardaUpdate()
@@ -60,12 +59,21 @@ const useCreateSwap = () => {
         Content: MainStep,
         Name: SwapCreateStep.MainForm,
         positionPercent: 0,
-        onNext: async (values: SwapFormValues) => {
+        onNext: useCallback(async (values: SwapFormValues) => {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken)
                 return goToStep(SwapCreateStep.Email);
 
-            if (values.swapType === SwapType.OffRamp) {
+            const layerswapApiClient = new LayerswapApiClient(router);
+            const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
+            const exchangePendingSwapsToCancel = values.swapType == SwapType.OnRamp ?
+                allPendingSwaps?.data?.filter(s => s.type == SwapType.OnRamp && values?.exchange?.baseObject?.currencies?.some(ec => ec.id === s.exchange_currency_id))
+                : allPendingSwaps?.data?.filter(s => s.type == SwapType.OffRamp && values?.network?.baseObject?.currencies?.some(ec => ec.id === s.network_currency_id))
+
+            if (exchangePendingSwapsToCancel.length > 0) {
+                return goToStep(SwapCreateStep.PendingSwaps)
+            }
+            else if (values.swapType === SwapType.OffRamp) {
                 handleOfframp(values, accessToken)
             }
             else {
@@ -76,7 +84,7 @@ const useCreateSwap = () => {
                 else
                     return goToStep(ExchangeAuthorizationSteps[values?.exchange?.baseObject?.authorization_flow])
             }
-        },
+        }, []),
     }
 
     const Email: WizardStep<SwapCreateStep> = {
@@ -93,8 +101,14 @@ const useCreateSwap = () => {
         onNext: useCallback(async (res: AuthConnectResponse) => {
             const exchanges = await getUserExchanges()
             const exchangeIsEnabled = exchanges?.some(e => e.exchange_id === swapFormData?.exchange?.baseObject.id)
+            const layerswapApiClient = new LayerswapApiClient(router);
+            const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
+            const exchangePendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.type == SwapType.OnRamp ? swapFormData?.exchange?.baseObject?.currencies?.some(ec => ec.id === s.exchange_currency_id) : swapFormData?.network?.baseObject?.currencies?.some(ec => ec.id === s.network_currency_id))
 
-            if (swapFormData.swapType === SwapType.OffRamp) {
+            if (exchangePendingSwapsToCancel.length > 0) {
+                return goToStep(SwapCreateStep.PendingSwaps)
+            }
+            else if (swapFormData.swapType === SwapType.OffRamp) {
                 handleOfframp(swapFormData, res.access_token)
             }
             else if (!swapFormData?.exchange?.baseObject?.authorization_flow || swapFormData?.exchange?.baseObject?.authorization_flow === "none" || exchangeIsEnabled)

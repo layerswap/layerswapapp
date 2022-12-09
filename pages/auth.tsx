@@ -8,10 +8,18 @@ import { InferGetServerSidePropsType } from 'next'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { SettingsProvider } from '../context/settings'
+import { useEffect, useState } from 'react'
+import inIframe from '../components/utils/inIframe'
+import IntroCard from '../components/introCard'
 
 export default function AuthPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+  const [embadded, setEmbadded] = useState<boolean>()
 
+  useEffect(() => {
+    setEmbadded(inIframe())
+  }, [])
+  
   return (
     <Layout>
       <SettingsProvider data={settings}>
@@ -23,6 +31,10 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
           </MenuProvider>
         </AuthProvider>
       </SettingsProvider>
+      {
+        !embadded &&
+        <IntroCard />
+      }
     </Layout>
   )
 }

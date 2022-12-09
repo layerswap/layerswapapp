@@ -22,6 +22,7 @@ import { ArrowLeftIcon } from "@heroicons/react/solid"
 import { useSwapDataUpdate } from "../context/swap"
 import { SwapStatus } from "../Models/SwapStatus"
 import { DepositFlow } from "../Models/Exchange";
+import FormattedDate from "./Common/FormattedDate";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -92,20 +93,8 @@ function TransactionsHistory() {
     setOpenSwapDetailsModal(true)
   }
 
-  const FormattedDate = ({ date }: { date: string }) => {
-    const swapDate = new Date(date);
-    const yyyy = swapDate.getFullYear();
-    let mm = swapDate.getMonth() + 1; // Months start at 0!
-    let dd = swapDate.getDate();
-
-    if (dd < 10) dd = 0 + dd;
-    if (mm < 10) mm = 0 + mm;
-
-    return <>{dd + '/' + mm + '/' + yyyy}</>;
-  }
-
   return (
-    <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative`}>
+    <div className={`bg-darkblue px-8 md:px-12 md:mb-12 shadow-card rounded-lg w-full overflow-hidden relative`}>
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="flex ">
           <button onClick={handleGoBack} className="self-start md:mt-2">
@@ -213,7 +202,7 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'relative py-4 pl-4 sm:pl-6 pr-3 text-sm sm:flex items-center sm:space-x-2'
+                                  'relative px-3.5 pl-4 sm:pl-6 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
                                 <div className="text-white flex items-center">
@@ -254,6 +243,7 @@ function TransactionsHistory() {
                                   {<StatusIcon status={swap.status} />}
                                   {/* {plan.from} - {plan.to} */}
                                 </span>
+
                               </td>
                               <td
                                 className={classNames(
