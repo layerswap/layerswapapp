@@ -105,7 +105,7 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className={`bg-darkblue px-8 md:px-12 shadow-card rounded-lg w-full overflow-hidden relative`}>
+    <div className={`bg-darkblue px-8 md:px-12 md:mb-12 shadow-card rounded-lg w-full overflow-hidden relative`}>
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="flex ">
           <button onClick={handleGoBack} className="self-start md:mt-2">
@@ -213,7 +213,7 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'relative py-4 pl-4 sm:pl-6 pr-3 text-sm sm:flex items-center sm:space-x-2'
+                                  'relative px-3.5 pl-4 sm:pl-6 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
                                 <div className="text-white flex items-center">
@@ -254,6 +254,7 @@ function TransactionsHistory() {
                                   {<StatusIcon status={swap.status} />}
                                   {/* {plan.from} - {plan.to} */}
                                 </span>
+
                               </td>
                               <td
                                 className={classNames(
