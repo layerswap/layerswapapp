@@ -96,7 +96,7 @@ export const InitializeInstance = (baseURL?: string) => {
                         if (refresh_token) {
                             const couldRefreshToken = await RefreshAccessToken(refresh_token);
                             if (couldRefreshToken) {
-                                return config;
+                                return instance(config);
                             }
                         }
                         goToAuth = true;

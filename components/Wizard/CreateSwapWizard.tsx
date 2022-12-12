@@ -15,6 +15,7 @@ import OfframpAccountConnectStep from "./Steps/OfframpAccountConnectStep";
 import TwoFactorStep from "./Steps/TwoFactorStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
+import PendingSwapsStep from "./Steps/PendingSwapsStep";
 
 const CreateSwap: FC = () => {
     const { MainForm, Email, Code, OAuth, OffRampOAuth, ApiKey, Confirm } = useCreateSwap()
@@ -33,11 +34,12 @@ const CreateSwap: FC = () => {
                 <WizardItem StepName={SwapCreateStep.Email} GoBack={GoBackToMainStep} PositionPercent={Email.positionPercent} key={SwapCreateStep.Email}>
                     <EmailStep OnNext={Email.onNext} />
                 </WizardItem>
-
                 <WizardItem StepName={SwapCreateStep.Code} GoBack={GoBackToEmailStep} PositionPercent={Code.positionPercent} key={SwapCreateStep.Code}>
                     <CodeStep OnNext={Code.onNext} />
                 </WizardItem>
-
+                <WizardItem StepName={SwapCreateStep.PendingSwaps} GoBack={GoBackToMainStep} PositionPercent={MainForm.positionPercent} key={SwapCreateStep.PendingSwaps}>
+                    <PendingSwapsStep />
+                </WizardItem>
                 <WizardItem StepName={SwapCreateStep.OAuth} GoBack={GoBackToMainStep} PositionPercent={OAuth.positionPercent} key={SwapCreateStep.OAuth}>
                     <AccountConnectStep />
                 </WizardItem>

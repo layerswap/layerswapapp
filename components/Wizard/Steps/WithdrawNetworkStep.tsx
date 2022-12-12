@@ -53,7 +53,7 @@ const WithdrawNetworkStep: FC = () => {
 
     const handleTransferDone = useCallback(async () => {
         setTransferDone(true)
-        const estimatedTransferTimeInSeconds = estimatedTransferTime ? (estimatedTransferTime * 60 * 1000) : 420000
+        const estimatedTransferTimeInSeconds = estimatedTransferTime ? (estimatedTransferTime * 60 * 1000) : 180000
         setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
     }, [estimatedTransferTime])
 
@@ -205,17 +205,21 @@ const WithdrawNetworkStep: FC = () => {
                         transferDone &&
                         <SimpleTimer time={transferDoneTime} text={
                             (remainingSeconds) => <>
-                                {remainingSeconds > 60 ? `We should receive the transfer in ${(Math.ceil((remainingSeconds / 60) % 60))} minutes` : `We should receive the transfer in a minute`}
+                                {`The swap will get completed in ~${remainingSeconds > 60 ? `${(Math.ceil((remainingSeconds / 60) % 60))} minutes` : '1 minute'}  after you send from ${network?.display_name}`}
                             </>}
                         >
-                            <div className="flex flex-row text-white text-base space-x-2">
-                                <SubmitButton onClick={() => {
-                                    boot();
-                                    show();
-                                    updateWithProps()
-                                }} isDisabled={false} isSubmitting={false} text_align="left" buttonStyle='outline' icon={<ChatIcon className="h-5 w-5" aria-hidden="true" />}>
-                                    Contact support
-                                </SubmitButton>
+                            <div className="flex text-center mb-4 space-x-2">
+                                <div className='relative'>
+                                    <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
+                                </div>
+                                <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Did the transfer but the swap is not completed yet?&nbsp;
+                                    <span onClick={() => {
+                                        boot();
+                                        show();
+                                        updateWithProps()
+                                    }} className="underline hover:no-underline cursor-pointer text-primary">Contact support</span></label>
                             </div>
                         </SimpleTimer>
                     }
