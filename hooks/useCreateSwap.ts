@@ -70,7 +70,7 @@ const useCreateSwap = () => {
                 allPendingSwaps?.data?.filter(s => s.type == SwapType.OnRamp && values?.exchange?.baseObject?.currencies?.some(ec => ec.id === s.exchange_currency_id))
                 : allPendingSwaps?.data?.filter(s => s.type == SwapType.OffRamp && values?.network?.baseObject?.currencies?.some(ec => ec.id === s.network_currency_id))
 
-            if (exchangePendingSwapsToCancel.length > 0) {
+            if (exchangePendingSwapsToCancel?.length > 0) {
                 return goToStep(SwapCreateStep.PendingSwaps)
             }
             else if (values.swapType === SwapType.OffRamp) {
@@ -105,7 +105,7 @@ const useCreateSwap = () => {
             const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
             const exchangePendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.type == SwapType.OnRamp ? swapFormData?.exchange?.baseObject?.currencies?.some(ec => ec.id === s.exchange_currency_id) : swapFormData?.network?.baseObject?.currencies?.some(ec => ec.id === s.network_currency_id))
 
-            if (exchangePendingSwapsToCancel.length > 0) {
+            if (exchangePendingSwapsToCancel?.length > 0) {
                 return goToStep(SwapCreateStep.PendingSwaps)
             }
             else if (swapFormData.swapType === SwapType.OffRamp) {
