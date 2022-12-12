@@ -72,14 +72,13 @@ const WithdrawExchangeStep: FC = () => {
         setTransferDone(true)
     }, [])
 
-    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
-    const currency = exchange?.currencies?.find(c => c.id === swap?.exchange_currency_id)
-    const exchange_name = exchange?.display_name || ' '
-    const exchange_internal_name = exchange?.internal_name
-    const exchange_logo_url = exchange?.logo
+    // const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
+    // const currency = exchange?.currencies?.find(c => c.id === swap?.exchange_currency_id)
+    // const exchange_name = exchange?.display_name || ' '
+    // const exchange_internal_name = exchange?.internal_name
 
     return (<>
-        <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
+        {/* <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
             {(close) => (
                 <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
             )}
@@ -226,30 +225,30 @@ const WithdrawExchangeStep: FC = () => {
             </Widget.Footer>
         </Widget>
         <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
-                <div className='text-primary-text mb-4'></div>
-                <div className="flex flex-row text-white text-base space-x-2">
-                    <div className='basis-1/2'>
-                        <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                            <DoubleLineText
-                                colorStyle='mltln-text-dark'
-                                primaryText='Cancel the swap'
-                                secondarytext='and go to home'
-                                reversed={true}
-                            />
-                        </SubmitButton>
-                    </div>
-                    <div className='basis-1/2'>
-                        <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                            <DoubleLineText
-                                colorStyle='mltln-text-light'
-                                primaryText="Don't"
-                                secondarytext='cancel'
-                                reversed={true}
-                            />
-                        </SubmitButton>
-                    </div>
+            <div className='text-primary-text mb-4'></div>
+            <div className="flex flex-row text-white text-base space-x-2">
+                <div className='basis-1/2'>
+                    <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
+                        <DoubleLineText
+                            colorStyle='mltln-text-dark'
+                            primaryText='Cancel the swap'
+                            secondarytext='and go to home'
+                            reversed={true}
+                        />
+                    </SubmitButton>
                 </div>
-            </Modal>
+                <div className='basis-1/2'>
+                    <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
+                        <DoubleLineText
+                            colorStyle='mltln-text-light'
+                            primaryText="Don't"
+                            secondarytext='cancel'
+                            reversed={true}
+                        />
+                    </SubmitButton>
+                </div>
+            </div>
+        </Modal> */}
     </>
     )
 }

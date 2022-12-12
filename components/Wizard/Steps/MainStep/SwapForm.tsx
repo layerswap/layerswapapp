@@ -11,11 +11,11 @@ import SwapOptionsToggle from "../../../SwapOptionsToggle";
 import { ConnectedFocusError } from "../../../../lib/external/ConnectedFocusError";
 import ExchangesField from "../../../Select/Exchange";
 import NetworkField from "../../../Select/Network";
-import AmountField from "../../../Input/Amount";
 import { SwapType } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { Partner } from "../../../../Models/Partner";
 import Widget from "../../Widget";
+import Currencies from "../../../Select/Currencies";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -45,6 +45,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                         <div className="flex flex-col md:w-80 w-full">
                             <NetworkField />
                         </div>
+                        <div className="flex flex-col basis-1/4 md:w-80 w-full">
+                            <Currencies />
+                        </div>
                     </div>
                     {
                         values.swapType === SwapType.OnRamp &&
@@ -69,13 +72,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                             </div>
                         </div>
                     }
-                    <div className="mb-6 leading-4">
-                        <AmountField />
-                    </div>
-
-                    <div className="w-full">
-                        <AmountAndFeeDetails amount={Number(values?.amount)} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} network={values.network?.baseObject} />
-                    </div>
                 </Widget.Content>
                 <Widget.Footer>
                     <SwapButton type='submit' isDisabled={!isValid} isSubmitting={isSubmitting}>
@@ -89,10 +85,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
 
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
     if (swapType == SwapType.OnRamp) {
-        return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
+        return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || "Swap now"
     }
     else {
-        return errors.network?.toString() || errors.exchange?.toString() || errors.amount || "Swap now"
+        return errors.network?.toString() || errors.exchange?.toString() || "Swap now"
     }
 }
 

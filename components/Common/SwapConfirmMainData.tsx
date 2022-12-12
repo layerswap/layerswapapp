@@ -13,9 +13,9 @@ type Props = {
 
 const SwapConfirmMainData: FC<Props> = ({ children }) => {
     const { swapFormData } = useSwapDataState()
-    const { amount, swapType, currency, exchange, network } = swapFormData || {}
-    const receive_amount = CalculateReceiveAmount(Number(amount), currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType)
-    const currencyDetails = getCurrencyDetails(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType)
+    const { swapType, currency, exchange, network } = swapFormData || {}
+    // const receive_amount = CalculateReceiveAmount(Number(amount), currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType)
+    // const currencyDetails = getCurrencyDetails(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType)
 
     return <div>
         <h3 className='mb-7 pt-2 sm:text-lg font-roboto text-white font-semibold'>
@@ -64,19 +64,19 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
                         </span>
                     </div>
 
-                    <div className="flex justify-between px-4 py-3 items-baseline">
+                    {/* <div className="flex justify-between px-4 py-3 items-baseline">
                         <span className="text-left">Amount</span>
                         <span className="text-white">{amount} {currency?.name}
                         </span>
-                    </div>
-                    <div className="flex justify-between bg-darkblue-700 rounded-md px-4 py-3 items-baseline">
+                    </div> */}
+                    {/* <div className="flex justify-between bg-darkblue-700 rounded-md px-4 py-3 items-baseline">
                         <span className="text-left">Fee</span>
                         <span className="text-white">{(Number(amount) - receive_amount).toFixed(currencyDetails.precision)} {currency?.name}</span>
-                    </div>
-                    <div className="flex justify-between px-4 py-3  items-baseline">
+                    </div> */}
+                    {/* <div className="flex justify-between px-4 py-3  items-baseline">
                         <span className="text-left">You will receive</span>
                         <span className="text-white">{receive_amount} {currency?.name}</span>
-                    </div>
+                    </div> */}
                 </div>
             </div>
             {children}

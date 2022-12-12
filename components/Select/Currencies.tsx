@@ -17,20 +17,19 @@ const CurrenciesField: FC = () => {
     const name = "currency"
     const { discovery: { resource_storage_url }, currencies, exchanges } = useSettingsState();
 
-    const currencyIsAvilable = useCallback((c: Currency) => exchange && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType === SwapType.OffRamp ?
-        ec.is_withdrawal_enabled : ec.is_deposit_enabled)) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === SwapType.OffRamp ?
-            nc.is_deposit_enabled : nc.is_withdrawal_enabled)), [exchange, network, swapType])
+    const currencyIsAvilable = useCallback((c: Currency) => exchange && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === SwapType.OffRamp ?
+        nc.is_deposit_enabled : nc.is_withdrawal_enabled)), [exchange, network, swapType])
 
-    const mapCurranceToMenuItem = (c:Currency):SelectMenuItem<Currency> => ({
+    const mapCurranceToMenuItem = (c: Currency): SelectMenuItem<Currency> => ({
         baseObject: c,
         id: c.id,
         name: c.asset,
-        order: exchange?.baseObject?.currencies?.find(ec => ec.asset === c.asset)?.order || 0, //TODO offramp, before doing check network currencies order is set in settings
-        imgSrc: c.logo ? `${resource_storage_url}${c.logo}` : null,
+        order: 0, // TODO implement in settings
+        imgSrc: `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`,
         isAvailable: true,
         isDefault: false,
     })
-    
+
     const currencyMenuItems: SelectMenuItem<Currency>[] = network ? currencies
         .filter(currencyIsAvilable)
         .map(mapCurranceToMenuItem).sort(SortingByOrder)
@@ -52,7 +51,12 @@ const CurrenciesField: FC = () => {
     }, [network, exchange, currencies, exchanges, currency])
 
     return (<>
-        <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />
+        <label htmlFor={name} className="block font-normal text-primary-text text-sm">
+            Send
+        </label>
+        <div tabIndex={0} className="mt-1.5">
+            <Field disabled={!currencyMenuItems?.length} placeholder="Crypto" label="Asset" name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} />
+        </div>
     </>)
 };
 export default CurrenciesField
