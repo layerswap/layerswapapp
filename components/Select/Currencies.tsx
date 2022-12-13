@@ -22,7 +22,7 @@ const CurrenciesField: FC = () => {
 
     const mapCurranceToMenuItem = (c: Currency): SelectMenuItem<Currency> => ({
         baseObject: c,
-        id: c.id,
+        id: c.asset,
         name: c.asset,
         order: 0, // TODO implement in settings
         imgSrc: `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`,

@@ -23,86 +23,85 @@ interface CodeFormValues {
 
 //TODO email code is almost identical create reusable component for email and two factor code verification
 const TwoFactorStep: FC = () => {
-    const initialValues: CodeFormValues = { Code: '' }
-    const { swapFormData, swap } = useSwapDataState()
-    const { processPayment } = useSwapDataUpdate()
-    const router = useRouter();
-    const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
-    const [loading, setLoading] = useState(false)
+    // const initialValues: CodeFormValues = { Code: '' }
+    // const { swapFormData, swap } = useSwapDataState()
+    // const router = useRouter();
+    // const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
+    // const [loading, setLoading] = useState(false)
 
-    const { start: startTimer } = useTimerState()
+    // const { start: startTimer } = useTimerState()
 
-    const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
-    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(swapFormData?.currency?.baseObject?.usd_price, Number(swapFormData?.amount))
+    // // const transferAmount = `${swapFormData?.amount} ${swapFormData?.currency?.name}`
+    // const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(swapFormData?.currency?.baseObject?.usd_price, Number(swapFormData?.amount))
 
-    const formikRef = useRef<FormikProps<CodeFormValues>>(null);
+    // const formikRef = useRef<FormikProps<CodeFormValues>>(null);
 
-    const handleSubmit = useCallback(async (values: CodeFormValues) => {
-        try {
-            await processPayment(swap.id, values.Code);
-            router.push(`/${swap.id}`)
-        }
-        catch (error) {
-            const data: ApiError = error?.response?.data?.error
+    // const handleSubmit = useCallback(async (values: CodeFormValues) => {
+    //     try {
+    //         // await processPayment(swap.id, values.Code);
+    //         router.push(`/${swap.id}`)
+    //     }
+    //     catch (error) {
+    //         const data: ApiError = error?.response?.data?.error
 
-            if (!data) {
-                toast.error(error.message)
-                return
-            }
-            //TODO create reusable error handler
-            if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
-                goToStep(SwapCreateStep.OAuth)
-                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
-            }
-            else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
-                goToStep(SwapCreateStep.Error)
-                setError({ Code: data.code, Step: SwapCreateStep.TwoFactor })
-            }
-            else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
-                goToStep(SwapCreateStep.OAuth)
-            }
-            else {
-                toast.error(data.message)
-            }
-        }
-    }, [swapFormData, swap, transferAmount])
+    //         if (!data) {
+    //             toast.error(error.message)
+    //             return
+    //         }
+    //         //TODO create reusable error handler
+    //         if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
+    //             goToStep(SwapCreateStep.OAuth)
+    //             // toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
+    //         }
+    //         else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
+    //             goToStep(SwapCreateStep.Error)
+    //             setError({ Code: data.code, Step: SwapCreateStep.TwoFactor })
+    //         }
+    //         else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
+    //             goToStep(SwapCreateStep.OAuth)
+    //         }
+    //         else {
+    //             toast.error(data.message)
+    //         }
+    //     }
+    // }, [swapFormData, swap, transferAmount])
 
-    const handleResendTwoFACode = useCallback(async () => {
-        setLoading(true)
-        try {
-            formikRef.current.setFieldValue("Code", "");
-            await processPayment(swap.id)
-        } catch (error) {
-            const data: ApiError = error?.response?.data?.error
+    // const handleResendTwoFACode = useCallback(async () => {
+    //     setLoading(true)
+    //     try {
+    //         formikRef.current.setFieldValue("Code", "");
+    //         await processPayment(swap.id)
+    //     } catch (error) {
+    //         const data: ApiError = error?.response?.data?.error
 
-            if (!data) {
-                toast.error(error.message)
-                return
-            }
-            if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
-                startTimer(TIMER_SECONDS)
-                return
-            }
-            //TODO create reusable error handler
-            if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
-                goToStep(SwapCreateStep.OAuth)
-                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
-            }
-            else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
-                goToStep(SwapCreateStep.OAuth)
-            }
-            else {
-                toast.error(data.message)
-            }
-        }
-        finally {
-            setLoading(false)
-        }
-    }, [swap])
+    //         if (!data) {
+    //             toast.error(error.message)
+    //             return
+    //         }
+    //         if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
+    //             startTimer(TIMER_SECONDS)
+    //             return
+    //         }
+    //         //TODO create reusable error handler
+    //         if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
+    //             goToStep(SwapCreateStep.OAuth)
+    //             toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
+    //         }
+    //         else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
+    //             goToStep(SwapCreateStep.OAuth)
+    //         }
+    //         else {
+    //             toast.error(data.message)
+    //         }
+    //     }
+    //     finally {
+    //         setLoading(false)
+    //     }
+    // }, [swap])
 
 
     return <>
-        <Formik
+        {/* <Formik
             initialValues={initialValues}
             validateOnMount={true}
             innerRef={formikRef}
@@ -181,7 +180,7 @@ const TwoFactorStep: FC = () => {
                     </Widget>
                 </Form >
             )}
-        </Formik>
+        </Formik> */}
     </>;
 }
 

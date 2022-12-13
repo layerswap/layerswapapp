@@ -43,7 +43,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
         availableExchanges.find(x => x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() && (initialSwapType === SwapType.OffRamp ? x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)));
 
     const availableCurrencies = currencies
-        .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, initialExchange?.baseObject?.currencies?.find(ec => ec.asset === c.asset)?.order || 0, `${resource_storage_url}${c.logo}`))
+        .map(c => new SelectMenuItem<Currency>(c, c.asset, c.asset, initialExchange?.baseObject?.currencies?.find(ec => ec.asset === c.asset)?.order || 0, `${resource_storage_url}${c.logo}`))
 
     const initialNetwork =
         availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable && (initialSwapType ? !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp : !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp))

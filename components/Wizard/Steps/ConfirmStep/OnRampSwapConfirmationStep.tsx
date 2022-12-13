@@ -33,7 +33,7 @@ const OnRampSwapConfirmationStep: FC = () => {
 
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
-    const { updateSwapFormData, createAndProcessSwap, processPayment, setCodeRequested, cancelSwap, setAddressConfirmed } = useSwapDataUpdate()
+    const { updateSwapFormData, createAndProcessSwap, setAddressConfirmed } = useSwapDataUpdate()
     const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState(destination_address)
@@ -63,7 +63,7 @@ const OnRampSwapConfirmationStep: FC = () => {
             }
             else {
                 const swapId = swap.id
-                await processPayment(swapId)
+                // await processPayment(swapId)
                 return await router.push(`/${swapId}`)
             }
         }

@@ -9,6 +9,8 @@ import CopyButton from './buttons/copyButton';
 import { SwapDetailsComponentSceleton } from './Sceletons';
 import StatusIcon from './StatusIcons';
 import { GetExchangeFee } from '../lib/fees';
+import { Exchange } from '../Models/Exchange';
+import { CryptoNetwork } from '../Models/CryptoNetwork';
 
 type Props = {
     id: string
@@ -20,13 +22,42 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const [loading, setLoading] = useState(false)
     const router = useRouter();
 
-    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
-    const currency = currencies.find(x => x.id == swap?.exchange_currency_id)
-    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.network_currency_id))
-    const source = swap?.type == SwapType.OnRamp ? exchange : network;
-    const destination = swap?.type == SwapType.OnRamp ? network : exchange;
-    const currencyDetails = exchange?.currencies?.find(x => x.id == swap?.exchange_currency_id)
-    let exchangeFee = GetExchangeFee(currency, exchange);
+    let source: Exchange | CryptoNetwork
+    let destination: Exchange | CryptoNetwork
+
+    let source_display_name: string
+    let destination_display_name: string
+
+    let source_logo: string;
+    let destination_logo: string;
+
+    if (swap) {
+        if (swap.source_exchange) {
+            source = exchanges?.find(e => e?.internal_name?.toUpperCase() === swap?.source_exchange?.toUpperCase())
+            source_display_name = source.display_name;
+            source_logo = `${resource_storage_url}/layerswap/exchanges/${source?.internal_name?.toLocaleLowerCase()}.png`
+        }
+        else {
+            source = networks?.find(e => e?.internal_name?.toUpperCase() === swap?.source_network?.toUpperCase())
+            source_display_name = source.display_name;
+            source_logo = `${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`
+        }
+
+        if (swap.destination_exchange) {
+            destination = exchanges?.find(e => e?.internal_name?.toUpperCase() === swap?.destination_exchange?.toUpperCase())
+            destination_display_name = destination.display_name;
+            destination_logo = `${resource_storage_url}/layerswap/exchanges/${destination?.internal_name?.toLocaleLowerCase()}.png`
+        }
+        else {
+            destination = networks?.find(e => e?.internal_name?.toUpperCase() === swap?.destination_network?.toUpperCase())
+            destination_display_name = destination.display_name;
+            destination_logo = `${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`
+        }
+    }
+
+    const exchange = (swap?.source_exchange ? source : destination) as Exchange
+    const currency = exchange?.currencies?.find(c => c.network?.toUpperCase() === swap?.source_network?.toUpperCase())
+    const currency_precision = currencies?.find(c => currency?.asset === c.asset)?.precision
 
     useEffect(() => {
         (async () => {
@@ -79,14 +110,13 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">From {swap?.type === SwapType.OnRamp ? 'Exchange' : "Network"} </span>
+                            <span className="text-left">From  </span>
                             {
                                 source && <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
-                                            source.logo &&
                                             <Image
-                                                src={`${resource_storage_url}${source?.logo}`}
+                                                src={source_logo}
                                                 alt="Exchange Logo"
                                                 height="60"
                                                 width="60"
@@ -102,14 +132,13 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">To {swap?.type === SwapType.OnRamp ? 'Network' : "Exchange"} </span>
+                            <span className="text-left">To </span>
                             {
                                 destination && <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
-                                            destination.logo &&
                                             <Image
-                                                src={`${resource_storage_url}${destination?.logo}`}
+                                                src={destination_logo}
                                                 alt="Exchange Logo"
                                                 height="60"
                                                 width="60"
@@ -135,38 +164,30 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">{swap?.received_amount && swap?.received_amount != swap?.requested_amount ? 'Amount You Requested' : "Amount"} </span>
+                            <span className="text-left">Amount we received</span>
                             <span className='text-white font-normal flex'>
-                                {swap?.requested_amount} {currencyDetails?.asset}
+                                {swap?.input_transaction?.amount} {currency?.asset}
                             </span>
                         </div>
                         <hr className='horizontal-gradient' />
+                        <div className="flex justify-between items-baseline">
+                            <span className="text-left">Layerswap Fee </span>
+                            <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currency_precision))} {currency?.asset}</span>
+                        </div>
+                        <hr className='horizontal-gradient' />
                         {
-                            swap?.status == 'completed' && swap?.requested_amount != swap?.received_amount &&
+                            swap?.status == 'completed' &&
                             <>
                                 <div className="flex justify-between items-baseline">
-                                    <span className="text-left">Amount You Sent </span>
+                                    <span className="text-left">Amount You Received</span>
                                     <span className='text-white font-normal flex'>
-                                        {swap?.received_amount} {currencyDetails?.asset}
+                                        {swap?.output_transaction?.amount} {currency?.asset}
                                     </span>
                                 </div>
                                 <hr className='horizontal-gradient' />
                             </>
                         }
-                        <div className="flex justify-between items-baseline">
-                            <span className="text-left">Layerswap Fee </span>
-                            <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currencyDetails?.precision))} {currencyDetails?.asset}</span>
-                        </div>
-                        {
-                            swap?.type === SwapType.OnRamp && exchangeFee != 0 &&
-                            <>
-                                <hr className='horizontal-gradient' />
-                                <div className="flex justify-between items-baseline">
-                                    <span className="text-left">Exchange Fee </span>
-                                    <span className='text-white font-normal'>{parseFloat(exchangeFee.toLocaleString())} {currencyDetails?.asset}</span>
-                                </div>
-                            </>
-                        }
+                        
                     </div>
                 </div>
             </div>
