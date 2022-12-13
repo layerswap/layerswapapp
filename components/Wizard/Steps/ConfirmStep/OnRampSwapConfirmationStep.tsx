@@ -79,7 +79,7 @@ const OnRampSwapConfirmationStep: FC = () => {
             //TODO create reusable error handler
             if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
                 nextStep = SwapCreateStep.OAuth
-                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authirize at least ${minimalAuthorizeAmount}$`)
+                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authorize at least ${minimalAuthorizeAmount}$`)
             }
             else if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
                 startTimer(TIMER_SECONDS)
