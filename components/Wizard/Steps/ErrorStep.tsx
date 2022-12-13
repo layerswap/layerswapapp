@@ -9,16 +9,10 @@ import { useAuthState } from '../../../context/authContext';
 
 const ErrorStep: FC = () => {
     const { error } = useFormWizardState()
-    const { setGoBack, goToStep } = useFormWizardaUpdate()
     const { swap } = useSwapDataState()
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
-
-    useEffect(() => {
-        if (error?.Step)
-            setGoBack(() => goToStep(error?.Step, "back"))
-    }, [error])
 
     return (
         <>
