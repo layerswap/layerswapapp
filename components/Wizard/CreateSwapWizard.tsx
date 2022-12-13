@@ -1,5 +1,5 @@
 import { FC, useCallback } from "react";
-import { useFormWizardaUpdate } from "../../context/formWizardProvider";
+import { useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
 import { TimerProvider } from "../../context/timerContext";
 import useCreateSwap from "../../hooks/useCreateSwap";
 import { SwapCreateStep } from "../../Models/Wizard";
@@ -19,11 +19,13 @@ import PendingSwapsStep from "./Steps/PendingSwapsStep";
 
 const CreateSwap: FC = () => {
     const { MainForm, Email, Code, OAuth, OffRampOAuth, ApiKey, Confirm } = useCreateSwap()
+    const { error } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
 
     const GoBackToMainStep = useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), [])
     const GoBackToConfirmStep = useCallback(() => goToStep(SwapCreateStep.Confirm, "back"), [])
     const GoBackToEmailStep = useCallback(() => goToStep(SwapCreateStep.Email, "back"), [])
+    const GoBackFromError = useCallback(() => goToStep(error.Step, "back"), [])
 
     return (
         <TimerProvider>
@@ -58,7 +60,7 @@ const CreateSwap: FC = () => {
                 <WizardItem StepName={SwapCreateStep.ActiveSwapLimit} GoBack={GoBackToConfirmStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.ActiveSwapLimit}>
                     <ActiveSwapLimit />
                 </WizardItem>
-                <WizardItem StepName={SwapCreateStep.Error} PositionPercent={100} key={SwapCreateStep.Error}>
+                <WizardItem StepName={SwapCreateStep.Error} GoBack={GoBackFromError} PositionPercent={100} key={SwapCreateStep.Error}>
                     <ErrorStep />
                 </WizardItem>
             </Wizard>
