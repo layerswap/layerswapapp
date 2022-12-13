@@ -4,15 +4,15 @@ import { DocInFrameSceleton } from "./Sceletons";
 
 type Props = {
     URl: string;
+    className?: string;
     onConfirm?: () => void
 }
-export function DocIframe({ URl, onConfirm }: Props) {
+export function DocIframe({ URl, onConfirm, className }: Props) {
     const [loading, setLoading] = useState(true)
-    useEffect(() => {
-        setTimeout(() => {
-            setLoading(false)
-        }, 500);
-    }, [])
+
+    const handleLoad = () => {
+        setLoading(false)
+    }
 
     return (
         <div className="flex flex-col justify-between space-y-4 h-full">
@@ -20,7 +20,7 @@ export function DocIframe({ URl, onConfirm }: Props) {
                 {
                     loading && <DocInFrameSceleton />
                 }
-                <iframe src={URl} className={`${loading ? 'invisible h-0 w-0' : 'visible animate-fade-in-down min-h-[calc(100vh-170px)]'} border-0 self-center w-full sm:rounded-md`} />
+                <iframe onLoad={handleLoad} height="100%"  src={URl} className={`${loading ? 'invisible h-0 w-0' : `visible animate-fade-in-down ${className}`} h-full min-h-[calc(100vh-170px)] md:min-h-full border-0 self-center w-full sm:rounded-md`} />
             </div>
             {
                 !loading &&

@@ -1,6 +1,6 @@
 import { Router, useRouter } from "next/router";
 import { FC, useCallback } from "react";
-import { useFormWizardaUpdate } from "../../context/formWizardProvider";
+import { useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
 import { SwapCreateStep, SwapWithdrawalStep } from "../../Models/Wizard";
 import ErrorStep from "./Steps/ErrorStep";
 import ExchangeDelay from "./Steps/ExchangeDelayStep";
@@ -16,23 +16,24 @@ import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 
 const SwapWithdrawalWizard: FC = () => {
-    const { goToStep } = useFormWizardaUpdate()
     const router = useRouter();
     const handleGoBack = useCallback(() => {
         router.back()
-      }, [router])
+    }, [router])
+    const { goToStep } = useFormWizardaUpdate()
+    const { error } = useFormWizardState()
 
-    const GoBackToWalletConnect = useCallback(() => goToStep(SwapWithdrawalStep.WalletConnect, "back"), [])
+    const GoBackFromError = useCallback(() => goToStep(error?.Step, "back"), [error])
 
     return (
         <Wizard>
-            <WizardItem StepName={SwapWithdrawalStep.ExternalPayment} PositionPercent={90}>
+            <WizardItem StepName={SwapWithdrawalStep.ExternalPayment} PositionPercent={90} GoBack={handleGoBack}>
                 <ExternalPaymentStep />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.Withdrawal} PositionPercent={90}>
+            <WizardItem StepName={SwapWithdrawalStep.Withdrawal} PositionPercent={90} GoBack={handleGoBack}>
                 <WithdrawExchangeStep />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.OffRampWithdrawal} PositionPercent={90}>
+            <WizardItem StepName={SwapWithdrawalStep.OffRampWithdrawal} PositionPercent={90} GoBack={handleGoBack}>
                 <WithdrawNetworkStep />
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.WalletConnect} GoBack={handleGoBack} PositionPercent={90} >
@@ -50,7 +51,7 @@ const SwapWithdrawalWizard: FC = () => {
             <WizardItem StepName={SwapWithdrawalStep.Success} PositionPercent={100} GoBack={handleGoBack}>
                 <SuccessfulStep />
             </WizardItem>
-            <WizardItem StepName={SwapWithdrawalStep.Error} PositionPercent={100}>
+            <WizardItem StepName={SwapWithdrawalStep.Error} PositionPercent={100} GoBack={GoBackFromError}>
                 <ErrorStep />
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.Failed} PositionPercent={100} GoBack={handleGoBack}>

@@ -1,10 +1,11 @@
 import { keccak256 } from "js-sha3";
 import { BlacklistedAddress } from "../Models/BlacklistedAddress";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
+import KnownInternalNames from "./knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 
 export function isValidAddress(address: string, network: CryptoNetwork): boolean {
-    if (network.internal_name.toLowerCase() === "RONIN_MAINNET".toLowerCase()) {
+    if (network.internal_name === KnownInternalNames.Networks.RoninMainnet) {
         if (address.startsWith("ronin:")) {
             return isValidEtherAddress(address.replace("ronin:", "0x"));
         }
@@ -16,9 +17,14 @@ export function isValidAddress(address: string, network: CryptoNetwork): boolean
         }
         return isValidEtherAddress(address);
     }
-    else if (network.internal_name.toLowerCase().startsWith("STARKNET".toLowerCase()))
-    {
+    else if (network.internal_name.toLowerCase().startsWith("STARKNET".toLowerCase())) {
         return validateAndParseAddress(address);
+    }
+    else if (network.internal_name === KnownInternalNames.Networks.Osmosis) {
+        if (/^(osmo1)?[a-z0-9]{38}$/.test(address)) {
+            return true
+        }
+        return false
     }
     else {
         return isValidEtherAddress(address);

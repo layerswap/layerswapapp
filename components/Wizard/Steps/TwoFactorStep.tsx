@@ -9,7 +9,7 @@ import { SwapCreateStep } from '../../../Models/Wizard';
 import NumericInput from '../../Input/NumericInput';
 import SubmitButton from '../../buttons/submitButton';
 import { ApiError, KnownwErrorCode } from '../../../Models/ApiError';
-import Timer from '../../TimerComponent';
+import TimerWithContext from '../../TimerComponent';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 import Widget from '../Widget';
@@ -74,6 +74,7 @@ const TwoFactorStep: FC = () => {
     //     } catch (error) {
     //         const data: ApiError = error?.response?.data?.error
 
+<<<<<<< HEAD
     //         if (!data) {
     //             toast.error(error.message)
     //             return
@@ -98,6 +99,32 @@ const TwoFactorStep: FC = () => {
     //         setLoading(false)
     //     }
     // }, [swap])
+=======
+            if (!data) {
+                toast.error(error.message)
+                return
+            }
+            if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
+                startTimer(TIMER_SECONDS)
+                return
+            }
+            //TODO create reusable error handler
+            if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
+                goToStep(SwapCreateStep.OAuth)
+                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authorize at least ${minimalAuthorizeAmount}$`)
+            }
+            else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
+                goToStep(SwapCreateStep.OAuth)
+            }
+            else {
+                toast.error(data.message)
+            }
+        }
+        finally {
+            setLoading(false)
+        }
+    }, [swap])
+>>>>>>> dev
 
 
     return <>
@@ -145,7 +172,7 @@ const TwoFactorStep: FC = () => {
                                     />
                                 </div>
                                 <span className="flex text-sm leading-6 items-center mt-1.5">
-                                    <Timer seconds={120}
+                                    <TimerWithContext seconds={120}
                                         waitingComponent={(remainingTime) => (
                                             <span>
                                                 Resend in
@@ -158,7 +185,7 @@ const TwoFactorStep: FC = () => {
                                             Resend code
                                         </span>
                                             : <SpinIcon className="animate-spin h-5 w-5" />}
-                                    </Timer>
+                                    </TimerWithContext>
                                 </span>
                             </div>
                         </Widget.Content>

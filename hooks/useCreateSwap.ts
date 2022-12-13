@@ -8,14 +8,13 @@ import SwapConfirmationStep from "../components/Wizard/Steps/ConfirmStep/OnRampS
 import { useFormWizardaUpdate } from "../context/formWizardProvider";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { useUserExchangeDataUpdate } from "../context/userExchange";
-import LayerSwapApiClient from "../lib/layerSwapApiClient";
+import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient";
 import TokenService from "../lib/TokenService";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { ExchangeAuthorizationSteps, OfframpExchangeAuthorizationSteps, SwapCreateStep, WizardStep } from "../Models/Wizard";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { useRouter } from "next/router";
 import LayerswapApiClient, { SwapType } from '../lib/layerSwapApiClient';
-
 
 const useCreateSwap = () => {
     const { goToStep } = useFormWizardaUpdate()
@@ -30,14 +29,14 @@ const useCreateSwap = () => {
         Content: MainStep,
         Name: SwapCreateStep.MainForm,
         positionPercent: 0,
-        onNext: async (values: SwapFormValues) => {
+        onNext: useCallback(async (values: SwapFormValues) => {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken)
                 return goToStep(SwapCreateStep.Email);
             else {
                 return goToStep(SwapCreateStep.Confirm)
             }
-        },
+        }, []),
     }
 
     const Email: WizardStep<SwapCreateStep> = {
