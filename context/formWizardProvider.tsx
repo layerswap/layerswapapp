@@ -1,22 +1,22 @@
 import React, { useCallback, useState } from 'react'
 import { KnownwErrorCode } from '../Models/ApiError';
-import { Steps, SwapCreateStep, SwapWithdrawalStep } from '../Models/Wizard';
+import { Steps } from '../Models/Wizard';
 
 const FormWizardStateContext = React.createContext(null);
 const FormWizardStateUpdateContext = React.createContext(null);
 
 type Direction = "back" | "forward"
 
-type StepError = {
+type StepError<T> = {
     Code: KnownwErrorCode,
-    Step: SwapCreateStep | SwapWithdrawalStep
+    Step: T
 }
 
 export type WizardProvider<T> = {
     currentStepName: T,
     moving: Direction,
     loading: boolean,
-    error: StepError,
+    error: StepError<T>,
     wrapperWidth: number,
     wrapperHeight: string,
     goBack: () => void,
@@ -26,7 +26,7 @@ export type WizardProvider<T> = {
 type UpdateInterface<T> = {
     goToStep: (step: T, move?: Direction) => void,
     setLoading: (value: boolean) => void,
-    setError: (error: StepError) => void,
+    setError: (error: StepError<T>) => void,
     setWrapperWidth: (value: number) => void,
     setWrapperHeight: (value: string) => void,
     setGoBack: (callback) => void,
@@ -46,7 +46,7 @@ export const FormWizardProvider = <T extends Steps>(props: Props<T>) => {
     const [loading, setLoading] = useState(initialLoading)
     const [wrapperWidth, setWrapperWidth] = useState(1);
     const [wrapperHeight, setWrapperHeight] = useState(1);
-    const [error, setError] = useState<StepError>()
+    const [error, setError] = useState<StepError<T>>()
 
     const [goBack, setGoBack] = useState<{ callback: () => void }>();
     const [positionPercent, setPositionPercent] = useState<() => void>();
