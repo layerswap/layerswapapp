@@ -113,7 +113,7 @@ const WithdrawExchangeStep: FC = () => {
                                     {swap?.additonal_data?.deposit_address}
                                 </p>
                             </BackgroundField>
-                            <BackgroundField header={'Network'}>
+                            <BackgroundField header={'Network'} highlited>
                                 <p>
                                     {swap?.additonal_data?.chain_display_name}
                                 </p>
@@ -140,6 +140,11 @@ const WithdrawExchangeStep: FC = () => {
                                     </BackgroundField>
                                 </>
                             }
+                            <WarningMessage>
+                                <span>
+                                    Please make sure that the withdrawal network is set to {swap?.additonal_data?.chain_display_name}
+                                </span>
+                            </WarningMessage>
                             {
                                 ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
                                 <WarningMessage>
