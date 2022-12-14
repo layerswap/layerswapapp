@@ -49,12 +49,12 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const { data: settings } = await apiClient.GetSettingsAsync()
 
-  settings.networks = settings.networks
+  settings.networks = settings.networks.filter(n => n.status !== "inactive");
   settings.exchanges = settings.exchanges
 
   const resource_storage_url = settings.discovery.resource_storage_url
   if (resource_storage_url[resource_storage_url.length - 1] === "/")
-    settings.discovery.resource_storage_url = 'https://devlslayerswapbridgesa.blob.core.windows.net'
+    settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
   result.settings = settings;
   result.settings.validSignatureisPresent = validSignatureIsPresent;

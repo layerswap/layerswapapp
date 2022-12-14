@@ -24,11 +24,12 @@ import { SwapStatus } from "../Models/SwapStatus"
 import { Exchange } from "../Models/Exchange";
 import FormattedDate from "./Common/FormattedDate";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
+import { GetSourceDestinationData } from "../helpers/swapHelper";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const settings = useSettingsState()
-  const { exchanges, networks, discovery: { resource_storage_url } } = settings
+  const { currencies, exchanges, networks, discovery: { resource_storage_url } } = settings
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapItem[]>()
   const [loading, setLoading] = useState(false)
@@ -179,39 +180,7 @@ function TransactionsHistory() {
                         <tbody>
                           {swaps?.map((swap, index) => {
 
-                            let source: Exchange | CryptoNetwork
-                            let destination: Exchange | CryptoNetwork
-
-                            let source_display_name: string
-                            let destination_display_name: string
-
-                            let source_logo: string;
-                            let destination_logo: string;
-
-                            if (swap.source_exchange) {
-                              source = exchanges?.find(e => e?.internal_name?.toUpperCase() === swap?.source_exchange?.toUpperCase())
-                              source_display_name = source.display_name;
-                              source_logo = `${resource_storage_url}/layerswap/exchanges/${source?.internal_name?.toLocaleLowerCase()}.png`
-                            }
-                            else {
-                              source = networks?.find(e => e?.internal_name?.toUpperCase() === swap?.source_network?.toUpperCase())
-                              source_display_name = source.display_name;
-                              source_logo = `${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`
-                            }
-
-                            if (swap.destination_exchange) {
-                              destination = exchanges?.find(e => e?.internal_name?.toUpperCase() === swap?.destination_exchange?.toUpperCase())
-                              destination_display_name = destination.display_name;
-                              destination_logo = `${resource_storage_url}/layerswap/exchanges/${destination?.internal_name?.toLocaleLowerCase()}.png`
-                            }
-                            else {
-                              destination = networks?.find(e => e?.internal_name?.toUpperCase() === swap?.destination_network?.toUpperCase())
-                              destination_display_name = destination.display_name;
-                              destination_logo = `${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`
-                            }
-
-                            const exchange = (swap.source_exchange ? source : destination) as Exchange
-                            const currency = exchange.currencies?.find(c => c.network?.toUpperCase() === swap.source_network?.toUpperCase())
+                            const { currency, destination, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
                             //TODO implement transaction_explorer_template in exchange & network settings
                             // const { transaction_explorer_template } = swapNetwork
@@ -248,7 +217,7 @@ function TransactionsHistory() {
                                       />
                                     }
                                   </div>
-                                  <div className="mx-1 hidden lg:block">{source_display_name}</div>
+                                  <div className="mx-1 hidden lg:block">{source.display_name}</div>
                                   <ArrowRightIcon className="h-4 w-4 lg:hidden mx-2" />
                                   <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
                                     {
@@ -292,7 +261,7 @@ function TransactionsHistory() {
                                       />
                                     }
                                   </div>
-                                  <div className="ml-1">{destination_display_name}</div>
+                                  <div className="ml-1">{destination.display_name}</div>
                                 </div>
 
                               </td>

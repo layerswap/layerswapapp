@@ -1,16 +1,14 @@
 import { useRouter } from 'next/router';
 import { FC, useEffect, useState } from 'react'
 import { useSettingsState } from '../context/settings';
-import LayerSwapApiClient, { SwapItem, SwapType } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem } from '../lib/layerSwapApiClient';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
 import shortenAddress from './utils/ShortenAddress';
 import CopyButton from './buttons/copyButton';
 import { SwapDetailsComponentSceleton } from './Sceletons';
 import StatusIcon from './StatusIcons';
-import { GetExchangeFee } from '../lib/fees';
-import { Exchange } from '../Models/Exchange';
-import { CryptoNetwork } from '../Models/CryptoNetwork';
+import { GetSourceDestinationData } from '../helpers/swapHelper';
 
 type Props = {
     id: string
@@ -22,42 +20,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const [loading, setLoading] = useState(false)
     const router = useRouter();
 
-    let source: Exchange | CryptoNetwork
-    let destination: Exchange | CryptoNetwork
-
-    let source_display_name: string
-    let destination_display_name: string
-
-    let source_logo: string;
-    let destination_logo: string;
-
-    if (swap) {
-        if (swap.source_exchange) {
-            source = exchanges?.find(e => e?.internal_name?.toUpperCase() === swap?.source_exchange?.toUpperCase())
-            source_display_name = source.display_name;
-            source_logo = `${resource_storage_url}/layerswap/exchanges/${source?.internal_name?.toLocaleLowerCase()}.png`
-        }
-        else {
-            source = networks?.find(e => e?.internal_name?.toUpperCase() === swap?.source_network?.toUpperCase())
-            source_display_name = source.display_name;
-            source_logo = `${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`
-        }
-
-        if (swap.destination_exchange) {
-            destination = exchanges?.find(e => e?.internal_name?.toUpperCase() === swap?.destination_exchange?.toUpperCase())
-            destination_display_name = destination.display_name;
-            destination_logo = `${resource_storage_url}/layerswap/exchanges/${destination?.internal_name?.toLocaleLowerCase()}.png`
-        }
-        else {
-            destination = networks?.find(e => e?.internal_name?.toUpperCase() === swap?.destination_network?.toUpperCase())
-            destination_display_name = destination.display_name;
-            destination_logo = `${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`
-        }
-    }
-
-    const exchange = (swap?.source_exchange ? source : destination) as Exchange
-    const currency = exchange?.currencies?.find(c => c.network?.toUpperCase() === swap?.source_network?.toUpperCase())
-    const currency_precision = currencies?.find(c => currency?.asset === c.asset)?.precision
+    const { currency, destination, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
     useEffect(() => {
         (async () => {
@@ -164,7 +127,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">Amount we received</span>
+                            <span className="text-left">Transfered amount</span>
                             <span className='text-white font-normal flex'>
                                 {swap?.input_transaction?.amount} {currency?.asset}
                             </span>
@@ -172,7 +135,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Layerswap Fee </span>
-                            <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currency_precision))} {currency?.asset}</span>
+                            <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currency.precision))} {currency?.asset}</span>
                         </div>
                         <hr className='horizontal-gradient' />
                         {
@@ -187,7 +150,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 <hr className='horizontal-gradient' />
                             </>
                         }
-                        
+
                     </div>
                 </div>
             </div>

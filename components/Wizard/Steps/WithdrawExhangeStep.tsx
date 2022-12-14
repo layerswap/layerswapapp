@@ -21,11 +21,13 @@ import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
+import { GetSourceDestinationData } from '../../../helpers/swapHelper';
+import Image from 'next/image'
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { exchanges, discovery: { resource_storage_url } } = useSettingsState()
+    const { exchanges, currencies, networks, discovery: { resource_storage_url } } = useSettingsState()
     const { swap } = useSwapDataState()
     const { setInterval, cancelSwap } = useSwapDataUpdate()
     const goHome = useGoHome()
@@ -70,23 +72,19 @@ const WithdrawExchangeStep: FC = () => {
             goToStep(swapStatusStep)
     }, [swapStatusStep])
 
-    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
-    const currency = exchange?.currencies?.find(c => c.id === swap?.exchange_currency_id)
-    const exchange_name = exchange?.display_name || ' '
-    const exchange_internal_name = exchange?.internal_name
-    const exchange_logo_url = exchange?.logo
-    const estimatedTransferTime = ExchangeSettings.KnownSettings[exchange_internal_name]?.EstimatedTransferTime
+    const { currency, exchange, network_chain_logo, currency_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+
 
     const handleTransferDone = useCallback(async () => {
         setTransferDone(true)
-        const estimatedTransferTimeInSeconds = estimatedTransferTime ? (estimatedTransferTime * 60 * 1000) : 180000
+        const estimatedTransferTimeInSeconds = 180000
         setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
-    }, [estimatedTransferTime])
+    }, [])
 
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
             {(close) => (
-                <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
             )}
         </SlideOver>
         <Widget>
@@ -101,65 +99,65 @@ const WithdrawExchangeStep: FC = () => {
                                 The swap will be completed when your transfer is detected
                             </p>
                         </div>
-                        {
-                            swap?.additonal_data?.note &&
-                            <WarningMessage>
-                                Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
-                            </WarningMessage>
-                        }
                         <div className={`mb-6 grid grid-cols-1 gap-5 `}>
-                            <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.additonal_data?.deposit_address} header={'Address'}>
+                            <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.deposit_address} header={'Address'}>
                                 <p className='break-all'>
-                                    {swap?.additonal_data?.deposit_address}
-                                </p>
-                            </BackgroundField>
-                            <BackgroundField header={'Network'} highlited>
-                                <p>
-                                    {swap?.additonal_data?.chain_display_name}
+                                    {swap?.deposit_address}
                                 </p>
                             </BackgroundField>
                             <div className='flex space-x-4'>
-                                <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
-                                    <p>
-                                        {swap?.requested_amount}
-                                    </p>
-                                </BackgroundField>
-                                <BackgroundField header={'Asset'}>
-                                    <p>
-                                        {currency?.asset}
-                                    </p>
+                                <div>
+                                    <BackgroundField header={'Asset'}>
+                                        <div className="text-white flex items-center">
+                                            <div className="flex-shrink-0 h-5 w-5 relative">
+                                                {
+                                                    <Image
+                                                        src={currency_logo}
+                                                        alt="From Logo"
+                                                        height="60"
+                                                        width="60"
+                                                        layout="responsive"
+                                                        className="rounded-md object-contain"
+                                                    />
+                                                }
+                                            </div>
+                                            <div className="mx-1 hidden lg:block">{currency?.asset}</div>
+                                        </div>
+                                    </BackgroundField>
+                                </div>
+                                <BackgroundField header={'Network'}>
+                                    <div className="text-white flex items-center">
+                                        <div className="flex-shrink-0 h-5 w-5 relative">
+                                            {
+                                                <Image
+                                                    src={network_chain_logo}
+                                                    alt="From Logo"
+                                                    height="60"
+                                                    width="60"
+                                                    layout="responsive"
+                                                    className="rounded-md object-contain"
+                                                />
+                                            }
+                                        </div>
+                                        <div className="mx-1 hidden lg:block">{currency?.chain_display_name}</div>
+                                    </div>
                                 </BackgroundField>
                             </div>
                             {
-                                swap?.additonal_data?.note &&
-                                <>
-                                    <BackgroundField isCopiable={true} toCopy={swap?.additonal_data?.note} header={'Remarks'}>
-                                        <p className='break-all'>
-                                            {swap?.additonal_data?.note}
-                                        </p>
-                                    </BackgroundField>
-                                </>
-                            }
-                            <WarningMessage>
-                                <span>
-                                    Please make sure that the withdrawal network is set to {swap?.additonal_data?.chain_display_name}
-                                </span>
-                            </WarningMessage>
-                            {
-                                ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
+                                ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage &&
                                 <WarningMessage>
                                     <span>
-                                        {ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage}
+                                        {ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage}
                                     </span>
                                 </WarningMessage>
                             }
                             {
-                                ExchangeSettings?.KnownSettings[exchange_internal_name]?.ExchangeWithdrawalGuideUrl &&
+                                ExchangeSettings?.KnownSettings[exchange.internal_name]?.ExchangeWithdrawalGuideUrl &&
                                 <WarningMessage messageType='informing'>
                                     <span className='flex-none'>
                                         Learn how to send from
                                     </span>
-                                    <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                                    <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
                                 </WarningMessage>
                             }
                         </div>

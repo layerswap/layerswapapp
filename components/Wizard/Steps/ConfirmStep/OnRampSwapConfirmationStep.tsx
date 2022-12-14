@@ -20,9 +20,7 @@ import { useTimerState } from '../../../../context/timerContext';
 import Widget from '../../Widget';
 import WarningMessage from '../../../WarningMessage';
 import SwapSettings from '../../../../lib/SwapSettings';
-import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 
-const TIMER_SECONDS = 120
 
 const OnRampSwapConfirmationStep: FC = () => {
     const [loading, setLoading] = useState(false)

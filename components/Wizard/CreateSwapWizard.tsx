@@ -10,14 +10,12 @@ import SwapConfirmationStep from "./Steps/ConfirmStep";
 import EmailStep from "./Steps/EmailStep";
 import ErrorStep from "./Steps/ErrorStep";
 import MainStep from "./Steps/MainStep/index";
-import OfframpAccountConnectStep from "./Steps/OfframpAccountConnectStep";
-import TwoFactorStep from "./Steps/TwoFactorStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 import PendingSwapsStep from "./Steps/PendingSwapsStep";
 
 const CreateSwap: FC = () => {
-    const { MainForm, Email, Code, OffRampOAuth, Confirm } = useCreateSwap()
+    const { MainForm, Email, Code, Confirm } = useCreateSwap()
     const { error } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
 

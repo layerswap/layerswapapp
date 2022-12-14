@@ -4,7 +4,6 @@ import { BlacklistedAddress } from "../Models/BlacklistedAddress";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { isValidAddress } from "./addressValidator";
-import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "./fees";
 import { SwapType } from "./layerSwapApiClient";
 
 export default function MainStepValidation(settings: LayerSwapSettings): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {

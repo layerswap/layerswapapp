@@ -6,7 +6,7 @@ type Props = {
     isCopiable?: boolean;
     isQRable?: boolean;
     toCopy?: string | number;
-    header?: string;
+    header?: JSX.Element | JSX.Element[] | string;
     highlited?: boolean,
     children: JSX.Element | JSX.Element[];
 }
