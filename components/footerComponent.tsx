@@ -5,11 +5,11 @@ import GitHubLogo from "./icons/GitHubLogo"
 import SubstackLogo from "./icons/SubstackLogo"
 import TwitterLogo from "./icons/TwitterLogo"
 import Modal from "./modalComponent"
+import SendFeedback from "./sendFeedback"
 
 const navigation = {
   main: [
     { name: 'For Partners', href: '/forpartners', target: '_self' },
-    { name: 'User Docs', href: 'https://docs.layerswap.io/', target: '_blank' }
   ],
   iframe: [
     { name: 'Privacy Policy', href: 'https://docs.layerswap.io/user-docs/information/privacy-policy' },
@@ -43,7 +43,7 @@ const navigation = {
 
 export default function FooterComponent() {
   const [modalUrl, setModalUrl] = useState<string>(null);
-
+  const [openFeedbackModal, setOpenFeedbackModal] = useState(false)
   return (
     <footer>
       <div className="max-w-xl mt-6 mx-auto space-y-6">
@@ -53,17 +53,19 @@ export default function FooterComponent() {
               {item.name}
             </a>
           ))}
-          {navigation.iframe.map((item) => {
-            return (
-              <div key={item.name}>
-                <button onClick={() => setModalUrl(item.href)} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 transition-all duration-200">
-                  {item.name}
-                </button>
-              </div>
-            )
-          })}
-          <Modal className="bg-[#181c1f] sm:!pb-6 !pb-0" showModal={modalUrl != null} setShowModal={()=> setModalUrl(null)} >
-            <DocIframe URl={modalUrl} className='md:min-h-[calc(100vh-170px)]'/>
+          <button onClick={() => setOpenFeedbackModal(true)} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 transition-all duration-200">
+            Send Feedback
+          </button>
+          {navigation.iframe.map((item) => (
+            <button key={item.name} onClick={() => setModalUrl(item.href)} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 transition-all duration-200">
+              {item.name}
+            </button>
+          ))}
+          <Modal className="bg-[#181c1f] sm:!pb-6 !pb-0" showModal={modalUrl != null} setShowModal={() => setModalUrl(null)} >
+            <DocIframe URl={modalUrl} className='md:min-h-[calc(100vh-170px)]' />
+          </Modal>
+          <Modal title='Send Feedback' showModal={openFeedbackModal} setShowModal={setOpenFeedbackModal}>
+            <SendFeedback onSend={() => setOpenFeedbackModal(false)} />
           </Modal>
         </nav>
         <div className="flex space-x-6">

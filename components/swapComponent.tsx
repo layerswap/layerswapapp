@@ -30,11 +30,11 @@ const Swap: FC = () => {
             </UserExchangeProvider>
           </SwapDataProvider >
         </MenuProvider>
+        {
+          !embadded &&
+          <IntroCard />
+        }
       </AuthProvider>
-      {
-        !embadded &&
-        <IntroCard />
-      }
     </div >
   )
 };
