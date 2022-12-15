@@ -23,7 +23,7 @@ const ExchangesField = forwardRef((props: any, ref: any) => {
             id: e.internal_name,
             name: e.display_name,
             order: 0, // TODO implement in settings
-            imgSrc: `${resource_storage_url}/layerswap/exchanges/${e.internal_name.toLowerCase()}.png`,
+            imgSrc: `${resource_storage_url}/layerswap/networks/${e.internal_name.toLowerCase()}.png`,
             isAvailable: true,
             isDefault: false
         })).sort(SortingByOrder);
