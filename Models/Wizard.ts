@@ -23,6 +23,7 @@ export enum SwapCreateStep {
     MainForm = "MainForm",
     Email = "Email",
     Code = "Code",
+    PendingSwaps = "PendingSwaps",
     OAuth = "OAuth",
     OffRampOAuth = "OffRampOAuth",
     ApiKey = "ApiKey",
@@ -33,10 +34,7 @@ export enum SwapCreateStep {
 }
 
 export enum SwapWithdrawalStep {
-    ExternalPayment = "ExternalPayment",
     Withdrawal = "Withdrawal",
-    OffRampWithdrawal = "OffRampWithdrawal",
-    WalletConnect = "WalletConnect",
     Processing = "Processing",
     ProcessingWalletTransaction = "ProcessingWalletTransaction",
     Success = "Success",

@@ -24,8 +24,8 @@ function IntroCard(props) {
                     </a>
                 </div>
                 <FooterComponent />
-                <Modal showModal={openModal} setShowModal={setOpenModal}>
-                    <DocIframe URl={'https://docs.layerswap.io/user-docs/'} onConfirm={handleCloseModal} />
+                <Modal className="bg-[#181c1f] sm:!pb-6 !pb-0" showModal={openModal} setShowModal={setOpenModal}>
+                    <DocIframe URl={'https://docs.layerswap.io/user-docs/'} onConfirm={handleCloseModal} className='md:min-h-[calc(100vh-170px)]' />
                 </Modal>
             </div>
         </CardContainer>

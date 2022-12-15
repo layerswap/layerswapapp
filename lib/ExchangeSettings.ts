@@ -10,7 +10,7 @@ export default class ExchangeSettings {
     AuthorizationNote?: string;
     WithdrawalWarningMessage?: string;
     KeyphraseDisplayName?: string;
-    FeeIsRefundable?: boolean;
+    EstimatedTransferTime?: number;
 
     public static KnownSettings: { [key: string]: ExchangeSettings } = {};
 
@@ -27,8 +27,6 @@ export default class ExchangeSettings {
             ExchangeApiKeyPageUrl: "https://www.binance.com/en/my/settings/api-management",
             ExchangeWithdrawalPageUrl: "https://www.binance.com/en/my/wallet/account/main/withdrawal/crypto",
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/binance",
-            FeeIsRefundable: true,
-            WithdrawalWarningMessage: "Please note that using the PayId method (Binance Pay) is not supported and won't be detected."
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Bitfinex] = {
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/bitfinex",
@@ -85,7 +83,6 @@ export default class ExchangeSettings {
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/kucoin",
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Okex] = {
-            WithdrawalWarningMessage: "Please select the 'internal' withdrawal method.",
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/okx",
             KeyphraseDisplayName: "Passphrase",
             ExchangeApiKeyPageUrl: "https://www.okx.com/account/my-api",

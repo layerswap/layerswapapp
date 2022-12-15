@@ -4,18 +4,16 @@ import { FC } from "react";
 import Image from 'next/image';
 import SwapButton from "../../../buttons/swapButton";
 import React from "react";
-import AmountAndFeeDetails from "../../../DisclosureComponents/amountAndFeeDetailsComponent";
 import AddressInput from "../../../Input/AddressInput";
 import { classNames } from "../../../utils/classNames";
-import SwapOptionsToggle from "../../../SwapOptionsToggle";
 import { ConnectedFocusError } from "../../../../lib/external/ConnectedFocusError";
 import ExchangesField from "../../../Select/Exchange";
 import NetworkField from "../../../Select/Network";
-import AmountField from "../../../Input/Amount";
 import { SwapType } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { Partner } from "../../../../Models/Partner";
 import Widget from "../../Widget";
+import Currencies from "../../../Select/Currencies";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -37,14 +35,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
             {values && <ConnectedFocusError />}
             <Widget>
                 <Widget.Content>
-                    <SwapOptionsToggle />
-                    <div className={classNames(values.swapType === SwapType.OffRamp ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
-                        <div className="flex flex-col md:w-80 w-full">
-                            <ExchangesField />
-                        </div>
-                        <div className="flex flex-col md:w-80 w-full">
-                            <NetworkField />
-                        </div>
+                    <div className="flex flex-col w-full">
+                        <ExchangesField />
+                    </div>
+                    <div className="flex flex-col w-full">
+                        <NetworkField />
+                    </div>
+                    <div className="flex flex-col w-full">
+                        <Currencies />
                     </div>
                     {
                         values.swapType === SwapType.OnRamp &&
@@ -69,13 +67,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                             </div>
                         </div>
                     }
-                    <div className="mb-6 leading-4">
-                        <AmountField />
-                    </div>
-
-                    <div className="w-full">
-                        <AmountAndFeeDetails amount={Number(values?.amount)} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} network={values.network?.baseObject} />
-                    </div>
                 </Widget.Content>
                 <Widget.Footer>
                     <SwapButton type='submit' isDisabled={!isValid} isSubmitting={isSubmitting}>
@@ -89,10 +80,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
 
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
     if (swapType == SwapType.OnRamp) {
-        return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
+        return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || "Swap now"
     }
     else {
-        return errors.network?.toString() || errors.exchange?.toString() || errors.amount || "Swap now"
+        return errors.network?.toString() || errors.exchange?.toString() || "Swap now"
     }
 }
 

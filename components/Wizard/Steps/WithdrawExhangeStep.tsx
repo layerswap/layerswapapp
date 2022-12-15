@@ -20,10 +20,14 @@ import toast from 'react-hot-toast';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import GuideLink from '../../guideLink';
+import SimpleTimer from '../../Common/Timer';
+import { GetSourceDestinationData } from '../../../helpers/swapHelper';
+import Image from 'next/image'
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
-    const { exchanges, discovery: { resource_storage_url } } = useSettingsState()
+    const [transferDoneTime, setTransferDoneTime] = useState<number>()
+    const { exchanges, currencies, networks, discovery: { resource_storage_url } } = useSettingsState()
     const { swap } = useSwapDataState()
     const { setInterval, cancelSwap } = useSwapDataUpdate()
     const goHome = useGoHome()
@@ -68,20 +72,19 @@ const WithdrawExchangeStep: FC = () => {
             goToStep(swapStatusStep)
     }, [swapStatusStep])
 
+    const { currency, exchange, network_chain_logo, currency_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+
+
     const handleTransferDone = useCallback(async () => {
         setTransferDone(true)
+        const estimatedTransferTimeInSeconds = 180000
+        setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
     }, [])
-
-    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
-    const currency = exchange?.currencies?.find(c => c.id === swap?.exchange_currency_id)
-    const exchange_name = exchange?.display_name || ' '
-    const exchange_internal_name = exchange?.internal_name
-    const exchange_logo_url = exchange?.logo
 
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
             {(close) => (
-                <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
             )}
         </SlideOver>
         <Widget>
@@ -96,60 +99,65 @@ const WithdrawExchangeStep: FC = () => {
                                 The swap will be completed when your transfer is detected
                             </p>
                         </div>
-                        {
-                            swap?.additonal_data?.note &&
-                            <WarningMessage>
-                                Please fill the "Remarks" field and make sure the "Internal transfer" checkbox is checked, that's required for a successful transfer.
-                            </WarningMessage>
-                        }
                         <div className={`mb-6 grid grid-cols-1 gap-5 `}>
-                            <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.additonal_data?.deposit_address} header={'Address'}>
+                            <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.deposit_address} header={'Address'}>
                                 <p className='break-all'>
-                                    {swap?.additonal_data?.deposit_address}
-                                </p>
-                            </BackgroundField>
-                            <BackgroundField header={'Network'}>
-                                <p>
-                                    {swap?.additonal_data?.chain_display_name}
+                                    {swap?.deposit_address}
                                 </p>
                             </BackgroundField>
                             <div className='flex space-x-4'>
-                                <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
-                                    <p>
-                                        {swap?.requested_amount}
-                                    </p>
-                                </BackgroundField>
-                                <BackgroundField header={'Asset'}>
-                                    <p>
-                                        {currency?.asset}
-                                    </p>
+                                <div>
+                                    <BackgroundField header={'Asset'}>
+                                        <div className="text-white flex items-center">
+                                            <div className="flex-shrink-0 h-5 w-5 relative">
+                                                {
+                                                    <Image
+                                                        src={currency_logo}
+                                                        alt="From Logo"
+                                                        height="60"
+                                                        width="60"
+                                                        layout="responsive"
+                                                        className="rounded-md object-contain"
+                                                    />
+                                                }
+                                            </div>
+                                            <div className="mx-1 hidden lg:block">{currency?.asset}</div>
+                                        </div>
+                                    </BackgroundField>
+                                </div>
+                                <BackgroundField header={'Network'}>
+                                    <div className="text-white flex items-center">
+                                        <div className="flex-shrink-0 h-5 w-5 relative">
+                                            {
+                                                <Image
+                                                    src={network_chain_logo}
+                                                    alt="From Logo"
+                                                    height="60"
+                                                    width="60"
+                                                    layout="responsive"
+                                                    className="rounded-md object-contain"
+                                                />
+                                            }
+                                        </div>
+                                        <div className="mx-1 hidden lg:block">{currency?.chain_display_name}</div>
+                                    </div>
                                 </BackgroundField>
                             </div>
                             {
-                                swap?.additonal_data?.note &&
-                                <>
-                                    <BackgroundField isCopiable={true} toCopy={swap?.additonal_data?.note} header={'Remarks'}>
-                                        <p className='break-all'>
-                                            {swap?.additonal_data?.note}
-                                        </p>
-                                    </BackgroundField>
-                                </>
-                            }
-                            {
-                                ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage &&
+                                ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage &&
                                 <WarningMessage>
                                     <span>
-                                        {ExchangeSettings.KnownSettings[exchange_internal_name]?.WithdrawalWarningMessage}
+                                        {ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage}
                                     </span>
                                 </WarningMessage>
                             }
                             {
-                                ExchangeSettings?.KnownSettings[exchange_internal_name]?.ExchangeWithdrawalGuideUrl &&
+                                ExchangeSettings?.KnownSettings[exchange.internal_name]?.ExchangeWithdrawalGuideUrl &&
                                 <WarningMessage messageType='informing'>
                                     <span className='flex-none'>
                                         Learn how to send from
                                     </span>
-                                    <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange_internal_name].ExchangeWithdrawalGuideUrl} />
+                                    <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
                                 </WarningMessage>
                             }
                         </div>
@@ -157,47 +165,20 @@ const WithdrawExchangeStep: FC = () => {
                 </div>
             </Widget.Content>
             <Widget.Footer>
-                <div className="flex text-center mb-4 space-x-2">
-                    <div className='relative'>
-                        <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                        <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                        <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
-                    </div>
-                    <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to do a withdrawal from the exchange</label>
-                </div>
+
                 {
                     <>
                         {
-                            transferDone ?
-                                <div>
-                                    <div className="flex flex-row text-white text-base space-x-2">
-                                        <div className='basis-1/3'>
-                                            <SubmitButton text_align='left' onClick={() => {
-                                                boot();
-                                                show();
-                                                updateWithProps()
-                                            }} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<ChatIcon className="h-5 w-5" aria-hidden="true" />}>
-                                                <DoubleLineText
-                                                    colorStyle='mltln-text-dark'
-                                                    primaryText='Support'
-                                                    secondarytext='Contact'
-                                                />
-                                            </SubmitButton>
-                                        </div>
-                                        <div className='basis-2/3'>
-                                            <GoHomeButton>
-                                                <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
-                                                    <DoubleLineText
-                                                        colorStyle='mltln-text-dark'
-                                                        primaryText='Swap'
-                                                        secondarytext='Do another'
-                                                    />
-                                                </SubmitButton>
-                                            </GoHomeButton>
-                                        </div>
+                            !transferDone &&
+                            <>
+                                <div className="flex text-center mb-4 space-x-2">
+                                    <div className='relative'>
+                                        <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                        <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                        <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
                                     </div>
+                                    <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to do a withdrawal from the exchange</label>
                                 </div>
-                                :
                                 <div className="flex flex-row text-white text-base space-x-2">
                                     <div className='basis-1/3'>
                                         <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<XIcon className='h-5 w-5' />}>
@@ -220,36 +201,60 @@ const WithdrawExchangeStep: FC = () => {
                                         </SubmitButton>
                                     </div>
                                 </div>
+                            </>
+
+                        }
+                        {
+                            transferDone &&
+                            <SimpleTimer time={transferDoneTime} text={
+                                (remainingSeconds) => <>
+                                    {`The swap will get completed in ~${remainingSeconds > 60 ? `${(Math.ceil((remainingSeconds / 60) % 60))} minutes` : '1 minute'}  after you send from ${exchange?.display_name}`}
+                                </>}
+                            >
+                                <div className="flex text-center mb-4 space-x-2">
+                                    <div className='relative'>
+                                        <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                        <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                        <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
+                                    </div>
+                                    <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Did a withdrawal but the swap is not completed yet?&nbsp;
+                                        <span onClick={() => {
+                                            boot();
+                                            show();
+                                            updateWithProps()
+                                        }} className="underline hover:no-underline cursor-pointer text-primary">Contact support</span></label>
+                                </div>
+                            </SimpleTimer>
                         }
                     </>
                 }
             </Widget.Footer>
         </Widget>
         <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
-                <div className='text-primary-text mb-4'></div>
-                <div className="flex flex-row text-white text-base space-x-2">
-                    <div className='basis-1/2'>
-                        <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                            <DoubleLineText
-                                colorStyle='mltln-text-dark'
-                                primaryText='Cancel the swap'
-                                secondarytext='and go to home'
-                                reversed={true}
-                            />
-                        </SubmitButton>
-                    </div>
-                    <div className='basis-1/2'>
-                        <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                            <DoubleLineText
-                                colorStyle='mltln-text-light'
-                                primaryText="Don't"
-                                secondarytext='cancel'
-                                reversed={true}
-                            />
-                        </SubmitButton>
-                    </div>
+            <div className='text-primary-text mb-4'></div>
+            <div className="flex flex-row text-white text-base space-x-2">
+                <div className='basis-1/2'>
+                    <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
+                        <DoubleLineText
+                            colorStyle='mltln-text-dark'
+                            primaryText='Cancel the swap'
+                            secondarytext='and go to home'
+                            reversed={true}
+                        />
+                    </SubmitButton>
                 </div>
-            </Modal>
+                <div className='basis-1/2'>
+                    <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
+                        <DoubleLineText
+                            colorStyle='mltln-text-light'
+                            primaryText="Don't"
+                            secondarytext='cancel'
+                            reversed={true}
+                        />
+                    </SubmitButton>
+                </div>
+            </div>
+        </Modal>
     </>
     )
 }

@@ -8,8 +8,11 @@ import { useTimerState } from '../context/timerContext';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
+import { DocIframe } from './docInIframe';
 import NumericInput from './Input/NumericInput';
-import Timer from './TimerComponent';
+import Modal from './modalComponent';
+import SlideOver from './SlideOver';
+import TimerWithContext from './TimerComponent';
 import Widget from './Wizard/Widget';
 interface VerifyEmailCodeProps {
     onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
@@ -26,6 +29,8 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     const { start: startTimer, started } = useTimerState()
     const { tempEmail } = useAuthState();
     const { updateAuthData } = useAuthDataUpdate()
+    const [modalUrl, setModalUrl] = useState<string>(null);
+    const [openDocSlideover, setOpenDocSlideover] = useState(false)
 
     const handleResendCode = useCallback(async () => {
         try {
@@ -44,7 +49,19 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         }
     }, [tempEmail])
 
-    return (
+    const openDoc = (url: string) => {
+        setModalUrl(url)
+        setOpenDocSlideover(true)
+    }
+    const handleOpenTerms = ()=>openDoc('https://docs.layerswap.io/user-docs/information/terms-of-services')
+    const handleOpenPrivacyPolicy = ()=>openDoc('https://docs.layerswap.io/user-docs/information/privacy-policy')
+
+    return (<>
+        <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
+            {(close) => (
+                <DocIframe onConfirm={() => close()} URl={modalUrl} />
+            )}
+        </SlideOver>
         <Formik
             initialValues={initialValues}
             validateOnMount={true}
@@ -97,29 +114,31 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-700  w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                                 <span className="flex text-sm leading-6 items-center mt-1.5">
-                                    <Timer isStarted={started} seconds={60}
-                                        waitingComponent={(remainingTime) => (
-                                            <span>
-                                                Resend in
-                                                <span className='ml-1'>
-                                                    {remainingTime}
-                                                </span>
+                                    <TimerWithContext isStarted={started} seconds={60} waitingComponent={(remainingTime) => (
+                                        <span>
+                                            Resend in
+                                            <span className='ml-1'>
+                                                {remainingTime}
                                             </span>
-                                        )}>
+                                        </span>
+                                    )}>
                                         <span onClick={handleResendCode} className="decoration underline-offset-1 underline hover:no-underline decoration-primary hover:cursor-pointer">
                                             Resend code
                                         </span>
-                                    </Timer>
+                                    </TimerWithContext>
                                 </span>
                             </div>
                         </Widget.Content>
                         <Widget.Footer>
                             <p className='text-primary-text text-xs sm:text-sm mb-3 md:mb-5'>
-                                By clicking Confirm you agree to Layerswap's <Link
-                                href="/blog/guide/Terms_of_Service"
-                                className='decoration decoration-primary underline-offset-1 underline hover:no-underline'> Terms of Service</Link> and <Link
-                                href="/blog/guide/Privacy_Policy"
-                                className='decoration decoration-primary underline-offset-1 underline hover:no-underline'>Privacy Policy</Link>
+                                By clicking Confirm you agree to Layerswap's <span
+                                    onClick={handleOpenTerms}
+                                    className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'> Terms of Service
+                                </span> and&nbsp;
+                                <span
+                                    onClick={handleOpenPrivacyPolicy}
+                                    className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'>Privacy Policy
+                                </span>
                             </p>
                             <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
                                 Confirm
@@ -129,6 +148,8 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                 </Form >
             )}
         </Formik>
+    </>
+
     );
 }
 

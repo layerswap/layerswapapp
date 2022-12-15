@@ -6,6 +6,7 @@ export default class NetworkSettings {
     UserGuideUrlForMobile?: string;
     WithdrawalWarningMessage?: string;
     ChainId?: number;
+    EstimatedTransferTime?: number;
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
