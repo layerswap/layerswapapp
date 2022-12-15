@@ -111,6 +111,7 @@ const WithdrawExchangeStep: FC = () => {
                                         <div className="text-white flex items-center">
                                             <div className="flex-shrink-0 h-5 w-5 relative">
                                                 {
+                                                    currency_logo &&
                                                     <Image
                                                         src={currency_logo}
                                                         alt="From Logo"
@@ -129,6 +130,7 @@ const WithdrawExchangeStep: FC = () => {
                                     <div className="text-white flex items-center">
                                         <div className="flex-shrink-0 h-5 w-5 relative">
                                             {
+                                                network_chain_logo &&
                                                 <Image
                                                     src={network_chain_logo}
                                                     alt="From Logo"
