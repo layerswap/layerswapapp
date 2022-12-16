@@ -81,7 +81,7 @@ export default function () {
                                                         {
                                                             router.pathname != '/' &&
                                                             <Menu.Item>
-                                                                <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4 text-primary' />}>
+                                                                <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4' />}>
                                                                     Home
                                                                 </Item>
                                                             </Menu.Item>
@@ -109,7 +109,7 @@ export default function () {
                                                     {
                                                         router.pathname != '/' &&
                                                         <Menu.Item>
-                                                            <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4 text-primary' />}>
+                                                            <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4' />}>
                                                                 Home
                                                             </Item>
                                                         </Menu.Item>
