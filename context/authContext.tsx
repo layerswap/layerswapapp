@@ -12,6 +12,7 @@ type AuthState = {
     codeRequested: boolean,
     tempEmail: string,
     userId: string,
+    userLockedOut: boolean,
 }
 
 export type UpdateInterface = {
@@ -19,6 +20,7 @@ export type UpdateInterface = {
     updateAuthData: (data: any) => void,
     getAuthData: () => (AuthData | undefined)
     setCodeRequested(codeSubmitted: boolean): void;
+    setUserLockedOut(value: boolean): void
 }
 
 export function AuthProvider({ children }) {
@@ -28,6 +30,7 @@ export function AuthProvider({ children }) {
     const [authData, setAuthData] = React.useState<AuthData>({})
     const [userId, setUserId] = useState<string>()
     const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
+    const [userLockedOut, setUserLockedOut] = React.useState<boolean>(false)
 
     const updateDataFromLocalStorage = () => {
         const authData = TokenService.getAuthData()
@@ -62,11 +65,13 @@ export function AuthProvider({ children }) {
         getAuthData: useCallback(() => {
             return TokenService.getAuthData()
         }, []),
-        setCodeRequested: useCallback((codeRequested: boolean) => setCodeRequested(codeRequested), [codeRequested])
+        setCodeRequested: useCallback((codeRequested: boolean) => setCodeRequested(codeRequested), [codeRequested]),
+        setUserLockedOut: useCallback((userLockedOut: boolean) => setUserLockedOut(userLockedOut), [userLockedOut]),
+
     };
 
     return (
-        <AuthStateContext.Provider value={{ email, authData, codeRequested, tempEmail, userId }}>
+        <AuthStateContext.Provider value={{ email, authData, codeRequested, tempEmail, userId, userLockedOut }}>
             <AuthDataUpdateContext.Provider value={updateFns}>
                 {children}
             </AuthDataUpdateContext.Provider>
