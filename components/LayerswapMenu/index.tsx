@@ -78,11 +78,14 @@ export default function () {
                                                     </>
                                                     :
                                                     <>
-                                                        <Menu.Item>
-                                                            <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4' />}>
-                                                                Home
-                                                            </Item>
-                                                        </Menu.Item>
+                                                        {
+                                                            router.pathname != '/' &&
+                                                            <Menu.Item>
+                                                                <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4 text-primary' />}>
+                                                                    Home
+                                                                </Item>
+                                                            </Menu.Item>
+                                                        }
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname='/auth' icon={<LoginIcon className='h-4 w-4' />}>
                                                                 Login
@@ -103,11 +106,14 @@ export default function () {
                                             {
                                                 authData?.access_token &&
                                                 <>
-                                                    <Menu.Item>
-                                                        <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4' />}>
-                                                            Home
-                                                        </Item>
-                                                    </Menu.Item>
+                                                    {
+                                                        router.pathname != '/' &&
+                                                        <Menu.Item>
+                                                            <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4 text-primary' />}>
+                                                                Home
+                                                            </Item>
+                                                        </Menu.Item>
+                                                    }
                                                     <Menu.Item>
                                                         <Item type={ItemType.link} pathname={"/transactions"} icon={<TableIcon className='h-4 w-4' />}>
                                                             Swap History
