@@ -4,6 +4,5 @@ import { Currency } from "../Models/Currency";
 import { Exchange } from "../Models/Exchange";
 
 export function getCurrencyDetails(currency?: Currency, exchange?: Exchange, network?: CryptoNetwork, swapType?: SwapType) {
-    return swapType === SwapType.OnRamp ? exchange?.currencies?.find(ec => ec.asset === currency?.asset)
-        : network?.currencies?.find(ec => ec.asset === currency?.asset)
+    return network?.currencies?.find(ec => ec.asset === currency?.asset)
 }

@@ -51,11 +51,8 @@ const CurrenciesField: FC = () => {
     }, [network, exchange, currencies, exchanges, currency])
 
     return (<>
-        <label htmlFor={name} className="block font-normal text-primary-text text-sm">
-            Send
-        </label>
         <div tabIndex={0} className="mt-1.5">
-            <Field disabled={!currencyMenuItems?.length} placeholder="Crypto" label="Asset" name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} />
+            <Field disabled={!currencyMenuItems?.length}  label="Asset" name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} />
         </div>
     </>)
 };

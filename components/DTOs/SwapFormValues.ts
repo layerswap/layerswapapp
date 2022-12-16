@@ -7,6 +7,7 @@ import { SelectMenuItem } from "../Select/selectMenuItem";
 
 export interface SwapFormValues {
   swapType: SwapType;
+  amount: string;
   destination_address: string;
   network?: SelectMenuItem<CryptoNetwork>;
   currency?: SelectMenuItem<Currency>;

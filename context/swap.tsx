@@ -69,6 +69,7 @@ export function SwapDataProvider({ children }) {
             throw new Error("Form data is missing")
 
         const data: CreateSwapParams = {
+            amount: formData.amount,
             source_exchange: exchange?.id,
             source_network: null, //TODo implement offramp shmofframp
             destination_network: network.id,
