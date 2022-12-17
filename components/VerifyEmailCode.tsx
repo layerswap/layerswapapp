@@ -10,7 +10,6 @@ import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
 import { DocIframe } from './docInIframe';
 import NumericInput from './Input/NumericInput';
-import Modal from './modalComponent';
 import SlideOver from './SlideOver';
 import TimerWithContext from './TimerComponent';
 import Widget from './Wizard/Widget';
@@ -21,8 +20,6 @@ interface VerifyEmailCodeProps {
 interface CodeFormValues {
     Code: string
 }
-
-const TIMER_SECONDS = 60
 
 const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     const initialValues: CodeFormValues = { Code: '' }
@@ -36,7 +33,10 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         try {
             const apiClient = new LayerSwapAuthApiClient();
             const res = await apiClient.getCodeAsync(tempEmail)
-            startTimer(TIMER_SECONDS)
+            const next = new Date(res?.data?.next)
+            const now = new Date()
+            const miliseconds = next.getTime() - now.getTime()
+            startTimer(Math.round(miliseconds / 1000))
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
