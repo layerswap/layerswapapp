@@ -5,9 +5,7 @@ import { Currency } from '../../Models/Currency';
 import { Exchange } from '../../Models/Exchange';
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
 import { CryptoNetwork } from '../../Models/CryptoNetwork';
-import { getCurrencyDetails } from '../../helpers/currencyHelper';
 import { SwapType } from '../../lib/layerSwapApiClient';
-import ExchangeSettings from '../../lib/ExchangeSettings';
 import KnownInternalNames from '../../lib/knownIds';
 
 type Props = {
@@ -22,7 +20,6 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
     let exchangeFee = GetExchangeFee(currency, exchange);
     let fee = CalculateFee(amount, currency, exchange, network, swapType);
     let receive_amount = CalculateReceiveAmount(amount, currency, exchange, network, swapType);
-    const currencyDetails = getCurrencyDetails(currency, exchange, network, swapType)
 
     return (
         <>
@@ -38,10 +35,10 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                             receive_amount ?
                                                 <span className="font-semibold md:font-bold text-right leading-4">
                                                     <p>
-                                                        {receive_amount.toFixed(currencyDetails?.precision)}
+                                                        {receive_amount.toFixed(currency?.precision)}
                                                         <span>
                                                             {
-                                                                ` ${currencyDetails?.asset || ""}`
+                                                                ` ${currency?.asset || ""}`
                                                             }
                                                         </span>
                                                     </p>
@@ -68,8 +65,8 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                             Layerswap Fee
                                         </label>
                                         <span className="text-right">
-                                            {fee.toFixed(currencyDetails?.precision)}
-                                            <span>  {currencyDetails?.asset} </span>
+                                            {fee.toFixed(currency?.precision)}
+                                            <span>  {currency?.asset} </span>
                                         </span>
                                     </div>
                                     {
@@ -80,7 +77,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                                 <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36' />
                                             </label>
                                             <span className="text-right">
-                                                {parseFloat(exchangeFee.toFixed(currencyDetails?.precision))} {currencyDetails?.asset}
+                                                {parseFloat(exchangeFee.toFixed(currency?.precision))} {currency?.asset}
                                             </span>
                                         </div>
                                     }

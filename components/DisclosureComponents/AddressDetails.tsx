@@ -12,10 +12,10 @@ export class AddressDetailsProps {
     onClickEditAddress?: MouseEventHandler<HTMLButtonElement> | undefined;
     canEditAddress: boolean;
 }
-
-function constructExplorerUrl(account_explorer_template: string, address: string): string {
-    return account_explorer_template.replace("{0}", address.startsWith('zksync:') ? address.replace('zksync:', '') : address);
-}
+//TODO implent explorer url in settings
+// function constructExplorerUrl(account_explorer_template: string, address: string): string {
+//     return account_explorer_template.replace("{0}", address.startsWith('zksync:') ? address.replace('zksync:', '') : address);
+// }
 
 const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, canEditAddress }) => {
     const { swapFormData } = useSwapDataState()
@@ -128,10 +128,10 @@ const OnRampAddress = ({ imgSrc, address, account_explorer_template, onClick }: 
                             <Disclosure.Panel className="text-sm text-primary-text">
                                 <>
                                     <div className="flex items-center flex-wrap">
-                                        <a className='m-1.5 flex cursor-pointer items-center hover:text-white' href={constructExplorerUrl(account_explorer_template, address)} target='_blank'  >
+                                        {/* <a className='m-1.5 flex cursor-pointer items-center hover:text-white' href={constructExplorerUrl(account_explorer_template, address)} target='_blank'  >
                                             <ExternalLinkIcon className='h-4 w-4 mr-2' />
                                             <p className=''>View In Explorer</p>
-                                        </a>
+                                        </a> */}
                                         <button disabled={!onClick} onClick={onClick} className="text-sm font-normal m-1.5 flex cursor-pointer items-center hover:text-white">
                                             <PencilAltIcon className='inline-block h-4 w-4 mr-2' />
                                             Edit Address

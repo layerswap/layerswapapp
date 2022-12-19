@@ -1,23 +1,23 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useRef, useState } from "react";
-import { getCurrencyDetails } from "../../helpers/currencyHelper";
+import { forwardRef, useRef } from "react";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import CurrenciesField from "../Select/Currencies";
 import NumericInput from "./NumericInput";
 
-const AmountField = forwardRef((props: any, ref: any) => {
+const AmountField = forwardRef((_, ref: any) => {
 
     const { values: { currency, swapType, exchange, network, amount }, setFieldValue } = useFormikContext<SwapFormValues>();
     const name = "amount"
+    
 
     const minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType);
     const maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType);
 
-    const currencyDetails = getCurrencyDetails(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType)
+    const networkCurrency = network?.baseObject?.currencies?.find(c => c.asset === currency?.baseObject?.asset)
 
     const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
-    const step = 1 / Math.pow(10, currencyDetails?.precision)
+    const step = 1 / Math.pow(10, currency?.baseObject?.precision)
     const amountRef = useRef(ref)
 
     const amountLabel = (
@@ -40,7 +40,7 @@ const AmountField = forwardRef((props: any, ref: any) => {
             step={isNaN(step) ? 0.01 : step}
             name={name}
             ref={amountRef}
-            precision={currencyDetails?.precision}
+            precision={currency?.baseObject?.precision}
             className="rounded-r-none"
         >
             {exchange && network && currency && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">

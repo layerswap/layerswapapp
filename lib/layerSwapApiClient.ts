@@ -115,40 +115,46 @@ export type NetworkAccount = {
 }
 
 export type CreateSwapParams = {
-    amount: number,
-    network: string,
-    exchange: string,
+    amount: string,
+    source_network: string | null,
+    source_exchange: string | null,
+    destination_network: string | null,
+    destination_exchange: string | null,
     asset: string,
     destination_address: string,
     partner?: string,
-    type: number,
     external_id?: string,
 }
 
 export type SwapItem = {
     id: string,
-    requested_amount: number,
-    received_amount: number,
     created_date: string,
     fee: number,
     status: SwapStatus,
-    type: SwapType,
     destination_address: string,
+    deposit_address: string,
     message: string,
-    transaction_id: string,
-    partner_id: string,
-    network_currency_id: string,
-    exchange_currency_id: string,
-    additonal_data: {
-        deposit_address: string,
-        chain_display_name: string,
-        current_withdrawal_fee: number,
-        withdrawal_amount: number,
-        note: string,
-        memo?: string,
-        payment_url: string,
-    }
+    external_id: string,
+    partner: string,
+    source_network_asset: string,
+    source_network: string,
+    source_exchange: string,
+    destination_network_asset: string,
+    destination_network: string,
+    destination_exchange: string,
+    input_transaction?: Transaction,
+    output_transaction?: Transaction
 }
+
+type Transaction = {
+    amount: number,
+    confirmations: number,
+    created_date: string,
+    max_confirmations: number,
+    transaction_id: string,
+    usd_value: number
+}
+
 
 export enum SwapType {
     OnRamp = "cex_to_network",

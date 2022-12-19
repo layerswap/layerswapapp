@@ -35,7 +35,7 @@ const ProccessingStep: FC = () => {
                 </div>
                 <div className="flex flex-col text-center place-content-center mt-1 text-lg font-lighter text-primary-text">
                     <p>
-                        {swap?.type == SwapType.OnRamp ? 'Exchange' : 'Network'} transaction completed.
+                        {swap?.source_exchange ? 'Exchange' : 'Network'} transaction completed.
                     </p>
                     <p>
                         Your assets are on their way.

@@ -15,20 +15,22 @@ import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapCreateStep } from '../../../Models/Wizard';
 import useCreateSwap from '../../../hooks/useCreateSwap';
 import { useRouter } from 'next/router';
+import { GetSourceDestinationData } from '../../../helpers/swapHelper';
+import { SwapStatus } from '../../../Models/SwapStatus';
 
 const OnRampSwapConfirmationStep: FC = () => {
     const { swapFormData } = useSwapDataState()
     const { exchange, network } = swapFormData || {}
     const { cancelSwap } = useSwapDataUpdate()
-    const { exchanges, networks, discovery: { resource_storage_url } } = useSettingsState()
+    const { exchanges, networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { MainForm } = useCreateSwap()
     const router = useRouter();
 
     const layerswapApiClient = new LayerSwapApiClient()
     const pending_swaps_endpoint = `/swaps?status=1`
     const { data: allPendingSwaps, mutate, isValidating } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher, { refreshInterval: 2000 })
-    const pendingSwapsToCancel = swapFormData.swapType === SwapType.OnRamp ? allPendingSwaps?.data?.filter(s => s.type == SwapType.OnRamp && exchange.baseObject.currencies.some(ec => ec.id === s.exchange_currency_id))
-        : allPendingSwaps?.data?.filter(s => s.type == SwapType.OffRamp && network.baseObject.currencies.some(ec => ec.id === s.network_currency_id))
+    const pendingSwapsToCancel = swapFormData.swapType === SwapType.OnRamp ? allPendingSwaps?.data?.filter(s => s.status === SwapStatus.UserTransferPending && s.source_exchange && exchange?.baseObject?.internal_name === s.source_exchange)
+        : allPendingSwaps?.data?.filter(s => s.status === SwapStatus.UserTransferPending && s.source_network && network.baseObject.internal_name === s.source_network)
 
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
@@ -82,16 +84,15 @@ const OnRampSwapConfirmationStep: FC = () => {
                         <div className="overflow-hidden mb-4">
                             <div className='flex flex-col space-y-2'>
                                 {pendingSwapsToCancel?.map((swap) => {
-                                    const destination = swapFormData.swapType === SwapType.OnRamp ? networks?.find(n => n.currencies.some(nc => nc.id === swap?.network_currency_id))
-                                        : exchanges?.find(n => n.currencies.some(nc => nc.id === swap?.exchange_currency_id))
-                                    const currencyDetails = swapFormData.swapType === SwapType.OnRamp ? destination?.currencies?.find(x => x.id == swap?.network_currency_id) : destination?.currencies?.find(x => x.id == swap?.exchange_currency_id)
+                                    const { currency, destination, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+
                                     return (
                                         <div key={swap.id}>
                                             <div className='w-full rounded-md px-3 py-3 shadow-sm border border-darkblue-500  bg-darkblue-700'>
                                                 <div className="flex items-center justify-between w-full space-x-1">
                                                     <div className="flex-shrink-0 h-12 w-12 relative block">
                                                         <Image
-                                                            src={`${resource_storage_url}${destination?.logo}`}
+                                                            src={destination_logo}
                                                             alt="Exchange Logo"
                                                             height="60"
                                                             width="60"
@@ -101,7 +102,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                                                     </div>
                                                     <div className="min-w-0 flex-1 px-4 md:grid md:gap-4">
                                                         <div>
-                                                            <p className="truncate text-lg font-medium text-primary-text">{destination?.display_name} <span className='text-gray-500'>{swap.requested_amount} {currencyDetails?.asset}</span></p>
+                                                            <p className="truncate text-lg font-medium text-primary-text">{destination?.display_name} <span className='text-gray-500'>{currency?.asset}</span></p>
                                                             <p className="mt-2 flex items-center text-md text-gray-500">
                                                                 {shortenAddress(swap.destination_address)}
                                                             </p>

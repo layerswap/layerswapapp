@@ -4,7 +4,6 @@ import { FC } from "react";
 import Image from 'next/image';
 import SwapButton from "../../../buttons/swapButton";
 import React from "react";
-import AmountAndFeeDetails from "../../../DisclosureComponents/amountAndFeeDetailsComponent";
 import AddressInput from "../../../Input/AddressInput";
 import { classNames } from "../../../utils/classNames";
 import SwapOptionsToggle from "../../../SwapOptionsToggle";
@@ -16,6 +15,7 @@ import { SwapType } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { Partner } from "../../../../Models/Partner";
 import Widget from "../../Widget";
+import AmountAndFeeDetails from "../../../DisclosureComponents/amountAndFeeDetailsComponent";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -69,6 +69,24 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                             </div>
                         </div>
                     }
+                     {
+                        values.swapType === SwapType.OffRamp &&
+                        <div className="w-full mb-3.5 leading-4">
+                            <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
+                                {`To ${values?.exchange?.name || ''} address`}
+                                {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({partner?.display_name})</span>}
+                            </label>
+                            <div className="relative rounded-md shadow-sm mt-1.5">
+                                <div>
+                                    <AddressInput
+                                        disabled={lockAddress || (!values.network || !values.exchange)}
+                                        name={"destination_address"}
+                                        className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    }
                     <div className="mb-6 leading-4">
                         <AmountField />
                     </div>
@@ -88,13 +106,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
 }
 
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
-    if (swapType == SwapType.OnRamp) {
-        return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
-    }
-    else {
-        return errors.network?.toString() || errors.exchange?.toString() || errors.amount || "Swap now"
-    }
+    return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
 }
-
 
 export default SwapForm

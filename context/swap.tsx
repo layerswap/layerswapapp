@@ -18,7 +18,6 @@ type UpdateInterface = {
     createAndProcessSwap: (TwoFACode?: string) => Promise<string>,
     //TODO this is stupid need to clean data in confirm step or even do not store it
     clearSwap: () => void,
-    processPayment: (swapId: string, twoFactorCode?: string) => Promise<void>,
     setCodeRequested(codeSubmitted: boolean): void;
     cancelSwap: (swapId: string) => Promise<void>;
     setAddressConfirmed: (value: boolean) => void;
@@ -70,14 +69,25 @@ export function SwapDataProvider({ children }) {
             throw new Error("Form data is missing")
 
         const data: CreateSwapParams = {
-            amount: Number(formData.amount),
-            exchange: exchange?.id,
-            network: network.id,
+            amount: formData.amount,
+            source_exchange: null,
+            source_network: null,
+            destination_network: null,
+            destination_exchange: null,
             asset: currency.baseObject.asset,
             destination_address: formData.destination_address,
-            type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
+            // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
             partner: settings.partners.find(p => p.is_enabled && p.internal_name?.toLocaleLowerCase() === query.addressSource?.toLocaleLowerCase())?.internal_name,
             external_id: query.externalId
+        }
+
+        if (formData.swapType === SwapType.OnRamp) {
+            data.source_exchange = exchange?.id;
+            data.destination_network = network?.id;
+        }
+        else {
+            data.source_network = network?.id;
+            data.destination_exchange = exchange?.id;
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
@@ -93,14 +103,10 @@ export function SwapDataProvider({ children }) {
         await layerswapApiClient.CancelSwapAsync(swapId)
     }, [router, swapFormData])
 
-    const processPayment = useCallback(async (swapId: string, twoFactorCode?: string) => {
-        await layerswapApiClient.ProcessPayment(swapId, twoFactorCode)
-    }, [getAuthData])
 
     const createAndProcessSwap = useCallback(async (TwoFACode?: string) => {
         const newSwapId = await createSwap(swapFormData, query, settings)
         setSwapId(newSwapId)
-        await processPayment(newSwapId, TwoFACode)
         return newSwapId
     }, [swapResponse?.data, swapFormData, query, settings])
 
@@ -108,7 +114,6 @@ export function SwapDataProvider({ children }) {
         clearSwap: () => { setSwapId(undefined) },
         updateSwapFormData: setSwapFormData,
         createAndProcessSwap: createAndProcessSwap,
-        processPayment: processPayment,
         setCodeRequested: setCodeRequested,
         cancelSwap: cancelSwap,
         setAddressConfirmed: setAddressConfirmed,
