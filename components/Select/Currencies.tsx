@@ -51,9 +51,7 @@ const CurrenciesField: FC = () => {
     }, [network, exchange, currencies, exchanges, currency])
 
     return (<>
-        <div tabIndex={0} className="mt-1.5">
-            <Field disabled={!currencyMenuItems?.length}  label="Asset" name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} />
-        </div>
+        <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />
     </>)
 };
 export default CurrenciesField

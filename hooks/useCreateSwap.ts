@@ -12,6 +12,8 @@ import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { SwapCreateStep, WizardStep } from "../Models/Wizard";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { useRouter } from "next/router";
+import LayerswapApiClient, { SwapType } from '../lib/layerSwapApiClient';
+import { SwapStatus } from "../Models/SwapStatus";
 
 const useCreateSwap = () => {
     const { goToStep } = useFormWizardaUpdate()
@@ -31,6 +33,16 @@ const useCreateSwap = () => {
             if (!accessToken)
                 return goToStep(SwapCreateStep.Email);
             else {
+                const layerswapApiClient = new LayerswapApiClient(router);
+                const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
+                const hasSourcePendingSwaps = values.swapType == SwapType.OnRamp ?
+                    allPendingSwaps?.data?.some(s => s.status === SwapStatus.UserTransferPending && s?.source_exchange?.toUpperCase() === values.exchange?.baseObject?.internal_name?.toUpperCase())
+                    : allPendingSwaps?.data?.some(s => s.status === SwapStatus.UserTransferPending && s?.source_network?.toUpperCase() === values.network?.baseObject?.internal_name?.toUpperCase())
+
+                if (hasSourcePendingSwaps) {
+                    return goToStep(SwapCreateStep.PendingSwaps)
+                }
+
                 return goToStep(SwapCreateStep.Confirm)
             }
         }, []),

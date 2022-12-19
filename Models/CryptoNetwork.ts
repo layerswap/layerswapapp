@@ -10,7 +10,6 @@ export class CryptoNetwork {
 
 export class NetworkCurrency {
     asset: string;
-    precision: number;
     status: "active" | string;
     is_deposit_enabled: boolean;
     is_withdrawal_enabled: boolean;

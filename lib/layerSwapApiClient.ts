@@ -116,10 +116,10 @@ export type NetworkAccount = {
 
 export type CreateSwapParams = {
     amount: string,
-    source_network: string,
-    source_exchange: string,
-    destination_network: string,
-    destination_exchange: string,
+    source_network: string | null,
+    source_exchange: string | null,
+    destination_network: string | null,
+    destination_exchange: string | null,
     asset: string,
     destination_address: string,
     partner?: string,
