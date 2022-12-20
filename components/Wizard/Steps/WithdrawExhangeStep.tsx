@@ -80,7 +80,7 @@ const WithdrawExchangeStep: FC = () => {
         const estimatedTransferTimeInSeconds = 180000
         setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
     }, [])
-
+    console.log(currency.asset)
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
             {(close) => (
@@ -122,7 +122,7 @@ const WithdrawExchangeStep: FC = () => {
                                                     />
                                                 }
                                             </div>
-                                            <div className="mx-1 hidden lg:block">{currency?.asset}</div>
+                                            <div className="mx-1 block">{currency?.asset}</div>
                                         </div>
                                     </BackgroundField>
                                 </div>
@@ -141,7 +141,7 @@ const WithdrawExchangeStep: FC = () => {
                                                 />
                                             }
                                         </div>
-                                        <div className="mx-1 hidden lg:block">{currency?.chain_display_name}</div>
+                                        <div className="mx-1 block">{currency?.chain_display_name}</div>
                                     </div>
                                 </BackgroundField>
                             </div>
