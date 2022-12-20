@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { SwapItem, SwapType } from "../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
 import SpinIcon from "./icons/spinIcon"
 import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
 import SwapDetails from "./swapDetailsComponent"
@@ -16,14 +16,11 @@ import { SwapHistoryComponentSceleton } from "./Sceletons"
 import GoHomeButton from "./utils/GoHome"
 import StatusIcon from "./StatusIcons"
 import Modal from "./modalComponent"
-import HoverTooltip from "./Tooltips/HoverTooltip"
 import toast from "react-hot-toast"
 import { ArrowLeftIcon } from "@heroicons/react/solid"
 import { useSwapDataUpdate } from "../context/swap"
 import { SwapStatus } from "../Models/SwapStatus"
-import { Exchange } from "../Models/Exchange";
 import FormattedDate from "./Common/FormattedDate";
-import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { GetSourceDestinationData } from "../helpers/swapHelper";
 
 function TransactionsHistory() {
@@ -96,7 +93,7 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className={`bg-darkblue px-8 md:px-12 md:mb-12 shadow-card rounded-lg w-full overflow-hidden relative`}>
+    <div className={`bg-darkblue px-8 md:px-12 md:mb-12 shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative`}>
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="flex ">
           <button onClick={handleGoBack} className="self-start md:mt-2">
@@ -121,7 +118,7 @@ function TransactionsHistory() {
           : <>
             {
               swaps?.length > 0 ?
-                <>
+              <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">
                   <div className="mb-2">
                     <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
                       <table className="w-full divide-y divide-darkblue-500">
@@ -407,7 +404,7 @@ function TransactionsHistory() {
                       }
                     </div>
                   </Modal>
-                </>
+                </div>
                 : <div className="sm:my-24 sm:mx-60 m-16 pb-20 text-center sm:pb-10">
                   There are no transactions for this account
                 </div>
