@@ -55,12 +55,10 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         setOpenDocSlideover(true)
     }
 
-    useEffect(() => {
-        if (!started) setUserLockedOut(false)
-    }, [started])
-
     const handleOpenTerms = () => openDoc('https://docs.layerswap.io/user-docs/information/terms-of-services')
     const handleOpenPrivacyPolicy = () => openDoc('https://docs.layerswap.io/user-docs/information/privacy-policy')
+
+    const timerCountdown = userLockedOut ? 600 : 60
 
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
@@ -125,8 +123,8 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-700  w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                                 <span className="flex text-sm leading-6 items-center mt-1.5">
-                                    <TimerWithContext isStarted={started} seconds={60} waitingComponent={(remainingTime) => (
-                                        <span className={classNames(userLockedOut && 'text-xl leading-4')}>
+                                    <TimerWithContext isStarted={started} seconds={timerCountdown} waitingComponent={(remainingTime) => (
+                                        <span className={classNames(userLockedOut && 'text-xl leading-6')}>
                                             Resend in
                                             <span className='ml-1'>
                                                 {remainingTime}
@@ -151,9 +149,15 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'>Privacy Policy
                                 </span>
                             </p>
-                            <SubmitButton type="submit" isDisabled={!isValid || userLockedOut} isSubmitting={isSubmitting}>
-                                Confirm
-                            </SubmitButton>
+                            <TimerWithContext isStarted={started} seconds={timerCountdown} waitingComponent={() => (
+                                <SubmitButton type="submit" isDisabled={!isValid || userLockedOut} isSubmitting={isSubmitting}>
+                                    {userLockedOut ? 'User is locked out' : 'Confirm'}
+                                </SubmitButton>
+                            )}>
+                                <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
+                                    Confirm
+                                </SubmitButton>
+                            </TimerWithContext>
                         </Widget.Footer>
                     </Widget>
                 </Form >
