@@ -34,7 +34,7 @@ export const GetSourceDestinationData = ({ swap, exchanges, networks, currencies
 
     const exchange = (swap?.source_exchange ? source : destination) as Exchange
 
-    const exchange_currency = exchange?.currencies?.find(c => c.network?.toUpperCase() === swap?.source_network?.toUpperCase())
+    const exchange_currency = exchange?.currencies?.find(c => c.network?.toUpperCase() === swap?.source_network?.toUpperCase() && swap?.source_network_asset?.toUpperCase() === c?.asset?.toUpperCase())
 
     const currency = currencies?.find(c => exchange_currency?.asset === c.asset)
     const currency_logo = `${resource_storage_url}/layerswap/currencies/${currency?.asset?.toLocaleLowerCase()}.png`
