@@ -1,8 +1,8 @@
 import { Menu } from "@headlessui/react";
-import { MenuIcon } from "@heroicons/react/outline";
+import { BookOpenIcon, ExternalLinkIcon, MenuIcon } from "@heroicons/react/outline";
 import { HomeIcon, LightBulbIcon, LinkIcon, LoginIcon, LogoutIcon, PaperAirplaneIcon, SupportIcon, TableIcon, UserIcon } from "@heroicons/react/solid";
 import { useRouter } from "next/router";
-import { forwardRef, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../../context/authContext";
 import { useMenuState } from "../../context/menu";
@@ -11,6 +11,9 @@ import SendFeedback from '../sendFeedback'
 import SlideOver from "../SlideOver";
 import { AnimatePresence, motion } from "framer-motion";
 import Item, { ItemType } from "./MenuItem";
+import { shortenEmail } from "../utils/ShortenAddress";
+import Modal from "../modalComponent";
+import { DocIframe } from "../docInIframe";
 
 export default function () {
     const { email, authData, userId } = useAuthState()
@@ -19,7 +22,8 @@ export default function () {
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, userId: userId })
 
-    const [feedbackDrawerIsOpen, setFeedbackDrawerIsOpen] = useState(false);
+    const [modalUrl, setModalUrl] = useState<string>(null);
+    const handleSetUrl = (url: string) => setModalUrl(url)
 
     const handleLogout = useCallback(() => {
         TokenService.removeAuthData()
@@ -28,13 +32,16 @@ export default function () {
         }, '/signedout', { shallow: true })
     }, [router.query])
 
+    const UserEmail = ({ email }: { email: string }) => {
+        return (
+            email.length >= 22 ? <>{shortenEmail(email)}</> : <>{email}</>
+        )
+    }
+
     return <>
-        {
-            authData?.access_token &&
-            <SlideOver imperativeOpener={[feedbackDrawerIsOpen, setFeedbackDrawerIsOpen]} place='inMenu' header="Send Feedback">
-                {(close) => <SendFeedback onSend={() => close()} />}
-            </SlideOver>
-        }
+        <Modal className="bg-[#181c1f] sm:!pb-6 !pb-0" showModal={modalUrl != null} setShowModal={() => setModalUrl(null)} >
+            <DocIframe URl={modalUrl} className='md:min-h-[calc(100vh-170px)]' />
+        </Modal>
         <span className="text-primary-text cursor-pointer relative">
             {
                 <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
@@ -58,24 +65,27 @@ export default function () {
                                     }}
                                     className="relative z-10 py-1">
                                     <Menu.Items
-                                        className="font-bold text-sm text-left border border-darkblue-200 origin-top-right absolute -right-7 mt-2 w-56 rounded-md shadow-lg bg-darkblue ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                        className="font-bold text-sm text-left border border-darkblue-200 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-darkblue ring-1 ring-black ring-opacity-5 focus:outline-none">
                                         <div className="relative z-30 py-1">
                                             {
                                                 authData?.access_token ?
                                                     <>
                                                         <div className='font-light w-full text-left px-4 py-2 text-sm cursor-default flex items-center space-x-2'>
                                                             <UserIcon className="h-4 w-4" />
-                                                            <span>{email}</span>
+                                                            <span><UserEmail email={email} /></span>
                                                         </div>
                                                         <hr className="horizontal-gradient" />
                                                     </>
                                                     :
                                                     <>
-                                                        <Menu.Item>
-                                                            <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4 text-primary' />}>
-                                                                Home
-                                                            </Item>
-                                                        </Menu.Item>
+                                                        {
+                                                            router.pathname != '/' &&
+                                                            <Menu.Item>
+                                                                <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4' />}>
+                                                                    Home
+                                                                </Item>
+                                                            </Menu.Item>
+                                                        }
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname='/auth' icon={<LoginIcon className='h-4 w-4' />}>
                                                                 Login
@@ -96,11 +106,14 @@ export default function () {
                                             {
                                                 authData?.access_token &&
                                                 <>
-                                                    <Menu.Item>
-                                                        <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4' />}>
-                                                            Home
-                                                        </Item>
-                                                    </Menu.Item>
+                                                    {
+                                                        router.pathname != '/' &&
+                                                        <Menu.Item>
+                                                            <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4' />}>
+                                                                Home
+                                                            </Item>
+                                                        </Menu.Item>
+                                                    }
                                                     <Menu.Item>
                                                         <Item type={ItemType.link} pathname={"/transactions"} icon={<TableIcon className='h-4 w-4' />}>
                                                             Swap History
@@ -113,11 +126,6 @@ export default function () {
                                                     </Menu.Item>
                                                     <hr className="horizontal-gradient" />
                                                     <Menu.Item>
-                                                        <Item type={ItemType.button} onClick={() => setFeedbackDrawerIsOpen(true)} icon={<PaperAirplaneIcon className='h-4 w-4' />}>
-                                                            Send Feedback
-                                                        </Item>
-                                                    </Menu.Item>
-                                                    <Menu.Item>
                                                         <Item type={ItemType.button} icon={<LightBulbIcon className='h-4 w-4' />}
                                                             onClick={() => {
                                                                 boot();
@@ -125,6 +133,16 @@ export default function () {
                                                                 updateWithProps()
                                                             }} >
                                                             Get Help
+                                                        </Item>
+                                                    </Menu.Item>
+                                                    <Menu.Item>
+                                                        <Item type={ItemType.button} onClick={() => handleSetUrl("https://docs.layerswap.io/")} icon={<BookOpenIcon className='h-4 w-4' />}>
+                                                            User Docs
+                                                        </Item>
+                                                    </Menu.Item>
+                                                    <Menu.Item>
+                                                        <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLinkIcon className='h-4 w-4' />}>
+                                                            Roadmap
                                                         </Item>
                                                     </Menu.Item>
                                                     <hr className="horizontal-gradient" />
