@@ -23,7 +23,7 @@ import { useSettingsState } from '../../../../context/settings';
 const OffRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const { createAndProcessSwap, processPayment, updateSwapFormData } = useSwapDataUpdate()
+    const { createAndProcessSwap, updateSwapFormData } = useSwapDataUpdate()
     const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
     const { network } = swapFormData || {}
     const router = useRouter();
@@ -57,7 +57,7 @@ const OffRampSwapConfirmationStep: FC = () => {
             }
             else {
                 const swapId = swap.id
-                await processPayment(swapId)
+                // await processPayment(swapId)
                 await router.push(`/${swapId}`)
             }
         }

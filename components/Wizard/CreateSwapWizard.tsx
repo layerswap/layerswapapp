@@ -3,7 +3,6 @@ import { useFormWizardaUpdate, useFormWizardState } from "../../context/formWiza
 import { TimerProvider } from "../../context/timerContext";
 import useCreateSwap from "../../hooks/useCreateSwap";
 import { SwapCreateStep } from "../../Models/Wizard";
-import AccountConnectStep from "./Steps/CoinbaseAccountConnectStep";
 import ActiveSwapLimit from "./Steps/ActiveSwapLimitStep";
 import APIKeyStep from "./Steps/APIKeyStep";
 import CodeStep from "./Steps/CodeStep";
@@ -11,14 +10,12 @@ import SwapConfirmationStep from "./Steps/ConfirmStep";
 import EmailStep from "./Steps/EmailStep";
 import ErrorStep from "./Steps/ErrorStep";
 import MainStep from "./Steps/MainStep/index";
-import OfframpAccountConnectStep from "./Steps/OfframpAccountConnectStep";
-import TwoFactorStep from "./Steps/TwoFactorStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 import PendingSwapsStep from "./Steps/PendingSwapsStep";
 
 const CreateSwap: FC = () => {
-    const { MainForm, Email, Code, OAuth, OffRampOAuth, ApiKey, Confirm } = useCreateSwap()
+    const { MainForm, Email, Code, Confirm } = useCreateSwap()
     const { error } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
 
@@ -42,20 +39,8 @@ const CreateSwap: FC = () => {
                 <WizardItem StepName={SwapCreateStep.PendingSwaps} GoBack={GoBackToMainStep} PositionPercent={MainForm.positionPercent} key={SwapCreateStep.PendingSwaps}>
                     <PendingSwapsStep />
                 </WizardItem>
-                <WizardItem StepName={SwapCreateStep.OAuth} GoBack={GoBackToMainStep} PositionPercent={OAuth.positionPercent} key={SwapCreateStep.OAuth}>
-                    <AccountConnectStep />
-                </WizardItem>
-                <WizardItem StepName={SwapCreateStep.OffRampOAuth} GoBack={GoBackToMainStep} PositionPercent={OffRampOAuth.positionPercent} key={SwapCreateStep.OffRampOAuth}>
-                    <OfframpAccountConnectStep />
-                </WizardItem>
-                <WizardItem StepName={SwapCreateStep.ApiKey} GoBack={GoBackToMainStep} PositionPercent={ApiKey.positionPercent} key={SwapCreateStep.ApiKey}>
-                    <APIKeyStep onSuccess={ApiKey.onNext} />
-                </WizardItem>
                 <WizardItem StepName={SwapCreateStep.Confirm} GoBack={GoBackToMainStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.Confirm}>
                     <SwapConfirmationStep />
-                </WizardItem>
-                <WizardItem StepName={SwapCreateStep.TwoFactor} GoBack={GoBackToConfirmStep} PositionPercent={Confirm.positionPercent + 10} key={SwapCreateStep.TwoFactor}>
-                    <TwoFactorStep />
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.ActiveSwapLimit} GoBack={GoBackToConfirmStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.ActiveSwapLimit}>
                     <ActiveSwapLimit />

@@ -21,13 +21,15 @@ import toast from "react-hot-toast"
 import { ArrowLeftIcon } from "@heroicons/react/solid"
 import { useSwapDataUpdate } from "../context/swap"
 import { SwapStatus } from "../Models/SwapStatus"
-import { DepositFlow } from "../Models/Exchange";
+import { Exchange } from "../Models/Exchange";
 import FormattedDate from "./Common/FormattedDate";
+import { CryptoNetwork } from "../Models/CryptoNetwork";
+import { GetSourceDestinationData } from "../helpers/swapHelper";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const settings = useSettingsState()
-  const { exchanges, networks, discovery: { resource_storage_url } } = settings
+  const { currencies, exchanges, networks, discovery: { resource_storage_url } } = settings
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapItem[]>()
   const [loading, setLoading] = useState(false)
@@ -36,7 +38,7 @@ function TransactionsHistory() {
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const { email } = useAuthState()
   const { cancelSwap } = useSwapDataUpdate()
-  const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending && !(selectedSwap?.type == SwapType.OnRamp && exchanges?.find(e => e.currencies.some(ec => ec.id === selectedSwap?.exchange_currency_id)).deposit_flow == DepositFlow.Automatic)
+  const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending
 
   const handleGoBack = useCallback(() => {
     router.back()
@@ -177,14 +179,11 @@ function TransactionsHistory() {
                         </thead>
                         <tbody>
                           {swaps?.map((swap, index) => {
-                            const swapExchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
-                            const swapNetwork = networks?.find(n => n.currencies.some(nc => nc.id === swap?.network_currency_id))
-                            const currency = swapExchange.currencies.find(x => x.id == swap?.exchange_currency_id)
 
-                            const { transaction_explorer_template } = swapNetwork
+                            const { currency, destination, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
-                            const source = swap.type == SwapType.OnRamp ? swapExchange : swapNetwork;
-                            const destination = swap.type == SwapType.OnRamp ? swapNetwork : swapExchange;
+                            //TODO implement transaction_explorer_template in exchange & network settings
+                            // const { transaction_explorer_template } = swapNetwork
 
                             return <tr key={swap.id}>
                               <td
@@ -208,9 +207,8 @@ function TransactionsHistory() {
                                 <div className="text-white flex items-center">
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     {
-                                      source?.logo &&
                                       <Image
-                                        src={`${resource_storage_url}${source?.logo}`}
+                                        src={source_logo}
                                         alt="From Logo"
                                         height="60"
                                         width="60"
@@ -219,13 +217,12 @@ function TransactionsHistory() {
                                       />
                                     }
                                   </div>
-                                  <div className="mx-1 hidden lg:block">{source?.display_name}</div>
+                                  <div className="mx-1 hidden lg:block">{source.display_name}</div>
                                   <ArrowRightIcon className="h-4 w-4 lg:hidden mx-2" />
                                   <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
                                     {
-                                      destination?.logo &&
                                       <Image
-                                        src={`${resource_storage_url}${destination?.logo}`}
+                                        src={destination_logo}
                                         alt="To Logo"
                                         height="60"
                                         width="60"
@@ -254,9 +251,8 @@ function TransactionsHistory() {
                                 <div className="flex items-center">
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     {
-                                      destination?.logo &&
                                       <Image
-                                        src={`${resource_storage_url}${destination?.logo}`}
+                                        src={destination_logo}
                                         alt="To Logo"
                                         height="60"
                                         width="60"
@@ -265,7 +261,7 @@ function TransactionsHistory() {
                                       />
                                     }
                                   </div>
-                                  <div className="ml-1">{destination?.display_name}</div>
+                                  <div className="ml-1">{destination.display_name}</div>
                                 </div>
 
                               </td>
@@ -277,19 +273,20 @@ function TransactionsHistory() {
                               >
                                 <div className="md:flex">
                                   {
-                                    swap?.status == 'completed' && swap.received_amount != swap.requested_amount ?
-                                      <div className="flex flex-col md:flex-row text-left">
-                                        <span className="ml-1 md:ml-0">{swap.received_amount} /</span>
-                                        <HoverTooltip text='Amount You Requested' moreClassNames="w-40 text-center">
-                                          <span className="underline decoration-dotted hover:no-underline">
-                                            {swap.requested_amount}
-                                          </span>
-                                        </HoverTooltip>
-                                      </div>
-                                      :
-                                      <span>
-                                        {swap.requested_amount}
-                                      </span>
+                                    //TODO get from input/output
+                                    // swap?.status == 'completed' && swap. != swap.requested_amount ?
+                                    //   <div className="flex flex-col md:flex-row text-left">
+                                    //     <span className="ml-1 md:ml-0">{swap.received_amount} /</span>
+                                    //     <HoverTooltip text='Amount You Requested' moreClassNames="w-40 text-center">
+                                    //       <span className="underline decoration-dotted hover:no-underline">
+                                    //         {swap.requested_amount}
+                                    //       </span>
+                                    //     </HoverTooltip>
+                                    //   </div>
+                                    //   :
+                                    //   <span>
+                                    //     {swap.requested_amount}
+                                    //   </span>
                                   }
                                   <span className="ml-1">{currency.asset}</span>
                                 </div>
@@ -300,14 +297,14 @@ function TransactionsHistory() {
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
-                                {swap.transaction_id && swap.type == SwapType.OnRamp ?
+                                {/* {swap.transaction_id && swap.type == SwapType.OnRamp ?
                                   <>
                                     <div className="underline hover:no-underline">
                                       <a target={"_blank"} href={transaction_explorer_template.replace("{0}", swap.transaction_id)}>{shortenAddress(swap.transaction_id)}</a>
                                     </div>
                                   </>
                                   : <div>-</div>
-                                }
+                                } */}
                               </td>
                               <td
                                 className={classNames(
@@ -371,15 +368,15 @@ function TransactionsHistory() {
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {
-                        settings.networks && selectedSwap?.transaction_id && selectedSwap.type == SwapType.OnRamp && selectedSwap?.status == SwapStatus.Completed &&
-                        <div className="text-white text-sm mt-6">
-                          <a href={networks?.find(n => n.currencies.some(nc => nc.id === selectedSwap?.network_currency_id)).transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
-                            target="_blank"
-                            className="shadowed-button cursor-pointer group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                            View in Explorer
-                            <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                          </a>
-                        </div>
+                        // settings.networks && selectedSwap?.transaction_id && selectedSwap.type == SwapType.OnRamp && selectedSwap?.status == SwapStatus.Completed &&
+                        // <div className="text-white text-sm mt-6">
+                        //   <a href={networks?.find(n => n.currencies.some(nc => nc.id === selectedSwap?.network_currency_id)).transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
+                        //     target="_blank"
+                        //     className="shadowed-button cursor-pointer group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                        //     View in Explorer
+                        //     <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                        //   </a>
+                        // </div>
                       }
                       {
                         canCompleteCancelSwap &&

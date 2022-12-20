@@ -19,9 +19,11 @@ const NetworkField = forwardRef((props: any, ref: any) => {
     const { lockNetwork, destNetwork } = useQueryState()
     const { discovery: { resource_storage_url }, networks } = useSettingsState();
 
+    console.log("exchange", exchange)
+
     const networkIsAvailable = (n: CryptoNetwork) => (swapType === SwapType.OffRamp ?
-        (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.offramp && nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled))))
-        : (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.onramp && nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled)))))
+        (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.offramp && nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset))))
+        : (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.onramp && nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset)))))
 
     const destNetworkIsAvailable = networks.some(n => n.internal_name === destNetwork && n.status === "active" && networkIsAvailable(n))
 
@@ -31,10 +33,10 @@ const NetworkField = forwardRef((props: any, ref: any) => {
             baseObject: n,
             id: n.internal_name,
             name: n.display_name,
-            order: n.order,
-            imgSrc: n.logo ? `${resource_storage_url}${n.logo}` : null,
+            order: 0, // TODO implement in settings
+            imgSrc: `${resource_storage_url}/layerswap/networks/${n.internal_name.toLowerCase()}.png`,
             isAvailable: n.status === "active" && (swapType === SwapType.OffRamp ? !destNetworkIsAvailable : !lockNetwork),
-            isDefault: n.is_default
+            isDefault: false
         })).sort(SortingByOrder);
 
     return (<>

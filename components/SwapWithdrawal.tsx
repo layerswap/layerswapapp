@@ -5,8 +5,6 @@ import { useQueryState } from "../context/query";
 import { useSettingsState } from "../context/settings";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import { SwapType } from "../lib/layerSwapApiClient";
-import { DepositFlow } from "../Models/Exchange";
-import { SwapStatus } from "../Models/SwapStatus";
 import { SwapWithdrawalStep } from "../Models/Wizard";
 import { GetSwapStatusStep } from "./utils/SwapStatus";
 import SwapWithdrawalWizard from "./Wizard/SwapWithdrawalWizard";
@@ -27,25 +25,8 @@ const SwapWithdrawal: FC = () => {
 
         </div>
 
-    const exchange = exchanges.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
-    const network = networks.find(n => n.currencies.some(ec => ec.id === swap?.network_currency_id))
     let initialStep: SwapWithdrawalStep = GetSwapStatusStep(swap);
 
-    if (!initialStep) {
-        if (swap?.type === SwapType.OffRamp) {
-            if (network.deposit_method === "address")
-                initialStep = (query.signature && query.addressSource === "imxMarketplace") ? SwapWithdrawalStep.ProcessingWalletTransaction : SwapWithdrawalStep.WalletConnect
-            else {
-                initialStep = SwapWithdrawalStep.OffRampWithdrawal
-            }
-        }
-        else if (exchange?.deposit_flow === DepositFlow.Manual)
-            initialStep = SwapWithdrawalStep.Withdrawal
-        else if (exchange?.deposit_flow === DepositFlow.External)
-            initialStep = SwapWithdrawalStep.ExternalPayment
-        else
-            initialStep = SwapWithdrawalStep.Processing
-    }
     const key = Object.keys(query).join("")
 
     return (

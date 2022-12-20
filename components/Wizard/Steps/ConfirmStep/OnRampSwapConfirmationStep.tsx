@@ -20,20 +20,18 @@ import { useTimerState } from '../../../../context/timerContext';
 import Widget from '../../Widget';
 import WarningMessage from '../../../WarningMessage';
 import SwapSettings from '../../../../lib/SwapSettings';
-import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 
-const TIMER_SECONDS = 120
 
 const OnRampSwapConfirmationStep: FC = () => {
     const [loading, setLoading] = useState(false)
     const { swapFormData, swap, codeRequested, addressConfirmed } = useSwapDataState()
-    const { exchange, amount, currency, destination_address, network } = swapFormData || {}
+    const { exchange, currency, destination_address, network } = swapFormData || {}
     const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
     const currentValues = formikRef?.current?.values;
 
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
-    const { updateSwapFormData, createAndProcessSwap, processPayment, setCodeRequested, cancelSwap, setAddressConfirmed } = useSwapDataUpdate()
+    const { updateSwapFormData, createAndProcessSwap, setAddressConfirmed } = useSwapDataUpdate()
     const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState(destination_address)
@@ -51,8 +49,6 @@ const OnRampSwapConfirmationStep: FC = () => {
             setAddressInputError(`Enter a valid ${network.name} address`)
     }, [network])
 
-    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.baseObject?.usd_price, Number(amount))
-    const transferAmount = `${amount} ${currency?.name}`
     const handleSubmit = useCallback(async (e: any) => {
         setLoading(true)
         let nextStep: SwapCreateStep;
@@ -66,7 +62,7 @@ const OnRampSwapConfirmationStep: FC = () => {
             }
             else {
                 const swapId = swap.id
-                await processPayment(swapId)
+                // await processPayment(swapId)
                 return await router.push(`/${swapId}`)
             }
         }
@@ -76,19 +72,10 @@ const OnRampSwapConfirmationStep: FC = () => {
                 toast.error(error.message)
                 return
             }
-            //TODO create reusable error handler
-            if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
-                nextStep = SwapCreateStep.OAuth
-                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authorize at least ${minimalAuthorizeAmount}$`)
-            }
-            else if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
-                startTimer(TIMER_SECONDS)
-                setCodeRequested(true)
-                nextStep = SwapCreateStep.TwoFactor
-            }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 setError({ Code: data.code, Step: SwapCreateStep.Confirm })
                 goToStep(SwapCreateStep.Error)
+                setError({ Code: data.code, Step: SwapCreateStep.Confirm })
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
                 nextStep = SwapCreateStep.OAuth
@@ -103,7 +90,7 @@ const OnRampSwapConfirmationStep: FC = () => {
         setLoading(false)
         if (nextStep)
             goToStep(nextStep)
-    }, [exchange, swap, transferAmount, createAndProcessSwap])
+    }, [exchange, swap, createAndProcessSwap])
 
     const handleClose = () => {
         setEditingAddress(false)

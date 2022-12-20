@@ -17,14 +17,14 @@ const ExchangesField = forwardRef((props: any, ref: any) => {
     const { discovery: { resource_storage_url }, exchanges } = useSettingsState();
 
     const exchangeMenuItems: SelectMenuItem<Exchange>[] = exchanges
-        .filter(e => (swapType === SwapType.OffRamp ? e.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : e.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)))
+        .filter(e => e.currencies.length > 0)
         .map(e => ({
             baseObject: e,
             id: e.internal_name,
             name: e.display_name,
-            order: e.order,
-            imgSrc: e.logo ? `${resource_storage_url}${e.logo}` : null,
-            isAvailable: e.status === "active",
+            order: 0, // TODO implement in settings
+            imgSrc: `${resource_storage_url}/layerswap/networks/${e.internal_name.toLowerCase()}.png`,
+            isAvailable: true,
             isDefault: false
         })).sort(SortingByOrder);
 

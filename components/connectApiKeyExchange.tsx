@@ -61,7 +61,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
         }
     }, [key, secret, keyphrase, exchange])
 
-    const dataIsValid = secret && key && (exchange?.has_keyphrase ? keyphrase : true)
+    const dataIsValid = secret && key
     const userGuideURL = ExchangeSettings.KnownSettings[exchange?.internal_name]?.UserApiKeyGuideUrl
 
     return (
@@ -112,27 +112,6 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
                                 />
                             </div>
                         </div>
-                        {
-                            exchange?.has_keyphrase &&
-                            <div>
-                                <label htmlFor="apiKey" className="block font-normal text-sm">
-                                    {ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}
-                                </label>
-                                <div className="relative rounded-md shadow-sm mt-1">
-                                    <input
-                                        autoComplete="off"
-                                        placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}`}
-                                        autoCorrect="off"
-                                        type="text"
-                                        name="apiKey"
-                                        onChange={handleKeyphraseChange}
-                                        id="apiKey"
-                                        className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
-                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
-                                    />
-                                </div>
-                            </div>
-                        }
                         {
                             ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&
                             <WarningMessage>

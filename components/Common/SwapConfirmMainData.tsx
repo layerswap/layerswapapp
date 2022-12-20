@@ -3,9 +3,8 @@ import { useSwapDataState } from "../../context/swap"
 import { classNames } from "../utils/classNames"
 import Image from 'next/image'
 import { ArrowRightIcon } from "@heroicons/react/outline"
-import { CalculateReceiveAmount } from "../../lib/fees"
-import { getCurrencyDetails } from "../../helpers/currencyHelper"
 import { SwapType } from "../../lib/layerSwapApiClient"
+import { CalculateReceiveAmount } from "../../lib/fees"
 
 type Props = {
     children?: JSX.Element | JSX.Element[];
@@ -15,7 +14,7 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
     const { swapFormData } = useSwapDataState()
     const { amount, swapType, currency, exchange, network } = swapFormData || {}
     const receive_amount = CalculateReceiveAmount(Number(amount), currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType)
-    const currencyDetails = getCurrencyDetails(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType)
+    const networkCurrency = network?.baseObject?.currencies?.find(c => c.asset === currency?.baseObject?.asset)
 
     return <div>
         <h3 className='mb-7 pt-2 sm:text-lg font-roboto text-white font-semibold'>
@@ -71,7 +70,7 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
                     </div>
                     <div className="flex justify-between bg-darkblue-700 rounded-md px-4 py-3 items-baseline">
                         <span className="text-left">Fee</span>
-                        <span className="text-white">{(Number(amount) - receive_amount).toFixed(currencyDetails.precision)} {currency?.name}</span>
+                        <span className="text-white">{(Number(amount) - receive_amount).toFixed(currency?.baseObject?.precision)} {currency?.name}</span>
                     </div>
                     <div className="flex justify-between px-4 py-3  items-baseline">
                         <span className="text-left">You will receive</span>
