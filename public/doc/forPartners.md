@@ -2,7 +2,7 @@
 
 To integrate Layerswap in your wallet or app, direct users to Layerswap and customize the initial values by using query parameters.
 
-Example: [Loopring & FTX.COM](https://www.layerswap.io/?destNetwork=LOOPRING_MAINNET&sourceExchangeName=ftxcom).
+Example: [Loopring & Coinbase](https://www.layerswap.io/?destNetwork=LOOPRING_MAINNET&sourceExchangeName=coinbase).
 
 - *sourceExchangeName* - Pre-select the source exchange. Available values are at the <a href='#bottom2'>bottom of the page</a>.
 
