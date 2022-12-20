@@ -90,7 +90,7 @@ export default class LayerSwapApiClient {
                         query: { redirect: this._redirect }
                     }));
 
-                    return Promise.resolve(new EmptyApiResponse({ message: "Login required", code: "" }));
+                    return Promise.resolve(new EmptyApiResponse());
                 }
                 else {
                     return Promise.reject(reason);
