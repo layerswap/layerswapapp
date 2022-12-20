@@ -13,6 +13,11 @@ const securityHeaders = [
 const DOCS_URL = 'https://docs.layerswap.io/user-docs'
 const redirects = async () => [
   {
+    source: '/userguide',
+    destination: DOCS_URL,
+    permanent: true
+  },
+  {
     source: '/blog/guide/Privacy_Policy',
     destination: `${DOCS_URL}/information/privacy-policy`,
     permanent: true,
