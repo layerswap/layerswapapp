@@ -30,7 +30,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
         errors, isValid, isSubmitting
     } = useFormikContext<SwapFormValues>();
 
-    const partnerImage = resource_storage_url + partner?.logo
+    const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name?.toLowerCase()}.png` : null
 
     return <>
         <Form className="h-full" >
@@ -56,7 +56,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                             <div className="relative rounded-md shadow-sm mt-1.5">
                                 {isPartnerWallet &&
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
+                                        {
+                                            partnerImage &&
+                                            <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
+                                        }
                                     </div>
                                 }
                                 <div>
@@ -69,19 +72,18 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                             </div>
                         </div>
                     }
-                     {
+                    {
                         values.swapType === SwapType.OffRamp &&
                         <div className="w-full mb-3.5 leading-4">
                             <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
                                 {`To ${values?.exchange?.name || ''} address`}
-                                {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({partner?.display_name})</span>}
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1.5">
                                 <div>
                                     <AddressInput
-                                        disabled={lockAddress || (!values.network || !values.exchange)}
+                                        disabled={(!values.network || !values.exchange)}
                                         name={"destination_address"}
-                                        className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
+                                        className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
                                     />
                                 </div>
                             </div>

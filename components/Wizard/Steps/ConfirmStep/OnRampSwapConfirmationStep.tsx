@@ -1,5 +1,4 @@
-import { PencilAltIcon } from '@heroicons/react/outline';
-import { ExclamationIcon } from '@heroicons/react/outline';
+import { PencilAltIcon, ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';

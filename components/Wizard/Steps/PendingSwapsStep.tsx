@@ -27,10 +27,9 @@ const OnRampSwapConfirmationStep: FC = () => {
     const router = useRouter();
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const pending_swaps_endpoint = `/swaps?status=1`
+    const pending_swaps_endpoint = `/swaps?status=0`
     const { data: allPendingSwaps, mutate, isValidating } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher, { refreshInterval: 2000 })
-    const pendingSwapsToCancel = swapFormData.swapType === SwapType.OnRamp ? allPendingSwaps?.data?.filter(s => s.status === SwapStatus.UserTransferPending && s.source_exchange && exchange?.baseObject?.internal_name === s.source_exchange)
-        : allPendingSwaps?.data?.filter(s => s.status === SwapStatus.UserTransferPending && s.source_network && network.baseObject.internal_name === s.source_network)
+    const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLocaleLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
 
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)

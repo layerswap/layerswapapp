@@ -7,13 +7,14 @@ import axios, { AxiosInstance, Method } from "axios";
 import { NextRouter } from "next/router";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
+import LayerSwapAuthApiClient from "./userAuthApiClient";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
 
     _authInterceptor: AxiosInstance;
     constructor(private readonly _router?: NextRouter, private readonly _redirect?: string) {
-        this._authInterceptor = InitializeInstance(LayerSwapApiClient.apiBaseEndpoint);
+        this._authInterceptor = InitializeInstance(LayerSwapAuthApiClient.identityBaseEndpoint);
     }
 
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
@@ -32,7 +33,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetPendingSwapsAsync(): Promise<ApiResponse<SwapItem[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=1`);
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=0`);
     }
 
     async CancelSwapAsync(swapid: string): Promise<ApiResponse<void>> {
@@ -61,16 +62,12 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`);
     }
 
-    async GetNetworkAccount(networkName: string, address: string): Promise<ApiResponse<NetworkAccount>> {
-        return await this.AuthenticatedRequest<ApiResponse<NetworkAccount>>("GET", `/network_accounts/${networkName}/${address}`);
+    async GetWhitelistedAddress(networkName: string, address: string): Promise<ApiResponse<NetworkAccount>> {
+        return await this.AuthenticatedRequest<ApiResponse<NetworkAccount>>("GET", `/whitelisted_addresses/${networkName}/${address}`,);
     }
 
-    async GetNetworkAccounts(networkName: string): Promise<ApiResponse<NetworkAccount[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<NetworkAccount[]>>("GET", `/network_accounts/${networkName}`);
-    }
-
-    async CreateNetworkAccount(params: NetworkAccountParams): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/network_accounts`, params);
+    async CreateWhitelistedAddress(params: NetworkAccountParams): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/whitelisted_addresses`, params);
     }
 
     async ApplyNetworkInput(swapId: string, transactionId: string): Promise<ApiResponse<void>> {
@@ -99,10 +96,16 @@ export default class LayerSwapApiClient {
     }
 }
 
+
+type WhitelistedAddressesParams = {
+    address: string,
+    network: string,
+    user_id: string
+}
+
 type NetworkAccountParams = {
     address: string,
     network: string,
-    note: string,
     signature: string
 }
 
@@ -133,6 +136,7 @@ export type SwapItem = {
     status: SwapStatus,
     destination_address: string,
     deposit_address: string,
+    requested_amount: number,
     message: string,
     external_id: string,
     partner: string,

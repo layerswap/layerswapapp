@@ -14,6 +14,7 @@ type Result = {
     exchange: Exchange;
     source: Exchange | CryptoNetwork;
     destination: Exchange | CryptoNetwork;
+    network: CryptoNetwork;
     source_logo: string;
     destination_logo: string;
     currency_logo: string;
@@ -34,6 +35,8 @@ export const GetSourceDestinationData = ({ swap, exchanges, networks, currencies
 
     const exchange = (swap?.source_exchange ? source : destination) as Exchange
 
+    const network = (swap?.source_network ? source : destination) as CryptoNetwork
+
     const exchange_currency = exchange?.currencies?.find(c => c.network?.toUpperCase() === swap?.source_network?.toUpperCase() && swap?.source_network_asset?.toUpperCase() === c?.asset?.toUpperCase())
 
     const currency = currencies?.find(c => exchange_currency?.asset === c.asset)
@@ -44,6 +47,7 @@ export const GetSourceDestinationData = ({ swap, exchanges, networks, currencies
         destination,
         destination_logo,
         exchange,
+        network,
         source,
         source_logo,
         currency_logo,
