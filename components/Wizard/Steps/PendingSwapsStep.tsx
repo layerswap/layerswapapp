@@ -88,25 +88,29 @@ const OnRampSwapConfirmationStep: FC = () => {
                                     return (
                                         <div key={swap.id}>
                                             <div className='w-full rounded-md px-3 py-3 shadow-sm border border-darkblue-500  bg-darkblue-700'>
-                                                <div className="flex items-center justify-between w-full space-x-1">
-                                                    <div className="flex-shrink-0 h-12 w-12 relative block">
-                                                        <Image
-                                                            src={`${resource_storage_url}${destination?.logo}`}
-                                                            alt="Exchange Logo"
-                                                            height="60"
-                                                            width="60"
-                                                            layout="responsive"
-                                                            className="rounded-md object-contain"
-                                                        />
-                                                    </div>
-                                                    <div className="min-w-0 flex-1 px-4 md:grid md:gap-4">
-                                                        <div>
-                                                            <p className="truncate text-lg font-medium text-primary-text">{destination?.display_name} <span className='text-gray-500'>{swap.requested_amount} {currencyDetails?.asset}</span></p>
-                                                            <p className="mt-2 flex items-center text-md text-gray-500">
-                                                                {shortenAddress(swap.destination_address)}
-                                                            </p>
+                                                <div className="md:flex items-center justify-between w-full space-y-2 md:space-x-1">
+                                                    <div className='flex'>
+                                                        <div className="flex-shrink-0 h-12 w-12 relative block">
+                                                            <Image
+                                                                src={`${resource_storage_url}${destination?.logo}`}
+                                                                alt="Exchange Logo"
+                                                                height="60"
+                                                                width="60"
+                                                                layout="responsive"
+                                                                className="rounded-md object-contain"
+                                                            />
                                                         </div>
+                                                        <div className="min-w-0 flex-1 px-4 md:grid md:gap-4">
+                                                            <div>
+                                                                <p className="truncate text-lg font-medium text-primary-text">{destination?.display_name} <span className='text-gray-500'>{swap.requested_amount} {currencyDetails?.asset}</span></p>
+                                                                <p className="mt-2 flex items-center text-md text-gray-500">
+                                                                    {shortenAddress(swap.destination_address)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
                                                     </div>
+
                                                     <div className="text-white text-sm">
                                                         <div className="flex flex-row text-white text-base space-x-2">
                                                             <div className='basis-1/2'>
