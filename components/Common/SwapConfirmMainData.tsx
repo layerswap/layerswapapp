@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { ArrowRightIcon } from "@heroicons/react/outline"
 import { SwapType } from "../../lib/layerSwapApiClient"
 import { CalculateReceiveAmount } from "../../lib/fees"
+import { useSettingsState } from "../../context/settings"
 
 type Props = {
     children?: JSX.Element | JSX.Element[];
@@ -12,8 +13,9 @@ type Props = {
 
 const SwapConfirmMainData: FC<Props> = ({ children }) => {
     const { swapFormData } = useSwapDataState()
+    const { networks } = useSettingsState()
     const { amount, swapType, currency, exchange, network } = swapFormData || {}
-    const receive_amount = CalculateReceiveAmount(Number(amount), currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType)
+    const receive_amount = CalculateReceiveAmount(swapFormData, networks)
     const networkCurrency = network?.baseObject?.currencies?.find(c => c.asset === currency?.baseObject?.asset)
 
     return <div>

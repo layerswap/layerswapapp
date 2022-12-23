@@ -72,7 +72,7 @@ const WithdrawExchangeStep: FC = () => {
             goToStep(swapStatusStep)
     }, [swapStatusStep])
 
-    const { currency, exchange, network_chain_logo, currency_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+    const { currency, exchange_currency, exchange, network_chain_logo, currency_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
 
     const handleTransferDone = useCallback(async () => {
@@ -106,33 +106,18 @@ const WithdrawExchangeStep: FC = () => {
                                 </p>
                             </BackgroundField>
                             <div className='flex space-x-4'>
-                                <div>
-                                    <BackgroundField header={'Asset'}>
-                                        <div className="text-white flex items-center">
-                                            <div className="flex-shrink-0 h-5 w-5 relative">
-                                                {
-                                                    currency_logo &&
-                                                    <Image
-                                                        src={currency_logo}
-                                                        alt="From Logo"
-                                                        height="60"
-                                                        width="60"
-                                                        layout="responsive"
-                                                        className="rounded-md object-contain"
-                                                    />
-                                                }
-                                            </div>
-                                            <div className="mx-1 block">{currency?.asset}</div>
-                                        </div>
-                                    </BackgroundField>
-                                </div>
-                                <BackgroundField header={'Network'}>
+                                <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
+                                    <p>
+                                        {swap?.requested_amount}
+                                    </p>
+                                </BackgroundField>
+                                <BackgroundField header={'Asset'}>
                                     <div className="text-white flex items-center">
                                         <div className="flex-shrink-0 h-5 w-5 relative">
                                             {
-                                                network_chain_logo &&
+                                                currency_logo &&
                                                 <Image
-                                                    src={network_chain_logo}
+                                                    src={currency_logo}
                                                     alt="From Logo"
                                                     height="60"
                                                     width="60"
@@ -141,10 +126,28 @@ const WithdrawExchangeStep: FC = () => {
                                                 />
                                             }
                                         </div>
-                                        <div className="mx-1 block">{currency?.chain_display_name}</div>
+                                        <div className="mx-1 block">{currency?.asset}</div>
                                     </div>
                                 </BackgroundField>
                             </div>
+                            <BackgroundField header={'Network'}>
+                                <div className="text-white flex items-center">
+                                    <div className="flex-shrink-0 h-5 w-5 relative">
+                                        {
+                                            network_chain_logo &&
+                                            <Image
+                                                src={network_chain_logo}
+                                                alt="From Logo"
+                                                height="60"
+                                                width="60"
+                                                layout="responsive"
+                                                className="rounded-md object-contain"
+                                            />
+                                        }
+                                    </div>
+                                    <div className="mx-1 block">{exchange_currency?.chain_display_name}</div>
+                                </div>
+                            </BackgroundField>
                             {
                                 ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage &&
                                 <WarningMessage>

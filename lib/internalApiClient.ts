@@ -1,10 +1,9 @@
-import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import { SwapStatus } from "../Models/SwapStatus";
-import AppSettings from "./AppSettings";
+
 import { InitializeInstance } from "./axiosInterceptor"
-import { v4 as uuidv4 } from 'uuid';
 import { AxiosInstance } from "axios";
 import { ApiResponse } from "../Models/ApiResponse";
+import LayerSwapAuthApiClient from "./userAuthApiClient";
+import TokenService from "./TokenService";
 
 export default class InternalApiClient {
     authInterceptor: AxiosInstance;
@@ -14,6 +13,7 @@ export default class InternalApiClient {
     }
 
     async VerifyWallet(queryParams: string): Promise<ApiResponse<void>> {
-        return await this.authInterceptor(`/api/network_account${queryParams}`, { method: "GET", headers: { 'Access-Control-Allow-Origin': '*', } });
+        let token = TokenService.getAuthData()?.access_token;
+        return await this.authInterceptor(`/api/network_account${queryParams}`, { method: "GET", headers: { 'Access-Control-Allow-Origin': '*', "Authorization": `Bearer ${token}` } });
     }
 }

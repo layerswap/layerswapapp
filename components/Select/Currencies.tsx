@@ -15,9 +15,13 @@ const CurrenciesField: FC = () => {
     } = useFormikContext<SwapFormValues>();
 
     const name = "currency"
-    const { discovery: { resource_storage_url }, currencies, exchanges } = useSettingsState();
+    const { discovery: { resource_storage_url }, currencies, exchanges, networks } = useSettingsState();
 
-    const currencyIsAvilable = useCallback((c: Currency) => exchange && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === SwapType.OffRamp ?
+    const exchangeCurrency = exchange?.baseObject?.currencies?.find(c=>c.asset?.toLowerCase()=== currency?.baseObject?.asset?.toLowerCase())
+    const destinationNetwork = networks.find(n=>n.internal_name?.toLowerCase() === exchangeCurrency?.network?.toLowerCase())
+    const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
+
+    const currencyIsAvilable = useCallback((c: Currency) => destinationNetwork && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === SwapType.OffRamp ?
         nc.is_deposit_enabled : nc.is_withdrawal_enabled)), [exchange, network, swapType])
 
     const mapCurranceToMenuItem = (c: Currency): SelectMenuItem<Currency> => ({

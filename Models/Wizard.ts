@@ -40,7 +40,8 @@ export enum SwapWithdrawalStep {
     Success = "Success",
     Failed = "Failed",
     Error = "Error",
-    Delay = "Delay"
+    Delay = "Delay",
+    WalletConnect = "WalletConnect"
 }
 
 export enum AuthStep {

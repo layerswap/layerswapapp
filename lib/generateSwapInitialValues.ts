@@ -55,5 +55,5 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     let initialCurrency =
         amount && availableCurrencies.find(c => c.baseObject.asset == asset)
 
-    return {amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: initialSwapType == SwapType.OnRamp && initialAddress, swapType: initialSwapType, network: initialNetwork, exchange: initialExchange }
+    return { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: initialSwapType == SwapType.OnRamp && initialAddress, swapType: initialSwapType, network: initialNetwork, exchange: initialExchange }
 }
