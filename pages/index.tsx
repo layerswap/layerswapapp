@@ -9,7 +9,7 @@ import MaintananceContent from '../components/maintanance/maintanance'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { enc, HmacSHA256 } from 'crypto-js';
 import { validateSignature } from '../helpers/validateSignature'
-import { mapNetworkCurrencies } from '../helpers/settingshelper'
+import { mapNetworkCurrencies } from '../helpers/settingsHelper'
 
 type IndexProps = {
   settings?: LayerSwapSettings,
