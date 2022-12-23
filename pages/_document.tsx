@@ -24,10 +24,9 @@ export default class extends Document {
     return (
       <Html>
         <Head>
-          {console.log('url', process.env.NEXT_PUBLIC_VERCEL_URL)}
-          {process.env.NEXT_PUBLIC_VERCEL_URL == 'https://layerswapapp-git-dev-addcustomeventstracking-layerswap.vercel.app/' && <script
+          {process.env.NEXT_PUBLIC_VERCEL_ENV && <script
             defer
-            data-domain={"testnet.layerswap.io"}
+            data-domain={process.env.NEXT_PUBLIC_VERCEL_ENV == 'production' ? 'layerswap.io' : "testnet.layerswap.io"}
             src="https://plausible.io/js/script.tagged-events.js"
           />}
           <script
