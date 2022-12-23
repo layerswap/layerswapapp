@@ -26,7 +26,7 @@ export default class extends Document {
         <Head>
           <script
             defer
-            data-domain="layerswap.io"
+            data-domain="testnet.layerswap.io"
             src="https://plausible.io/js/script.tagged-events.js"
           />
           <script
