@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
 import QueryProvider from "../context/query";
@@ -20,6 +20,20 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
     ...(router.query.lockNetwork === 'true' ? { lockNetwork: true } : {}),
   };
 
+  useEffect(() => {
+    function prepareUrl(params) {
+      const url = new URL(location.href)
+      const queryParams = new URLSearchParams(location.search)
+      let customUrl = url.protocol + "//" + url.hostname + url.pathname.replace(/\/$/, '')
+      for (const paramName of params) {
+        const paramValue = queryParams.get(paramName)
+        if (paramValue) customUrl = customUrl + '/' + paramValue
+      }
+      return customUrl
+    }
+    plausible('pageview', { u: prepareUrl(['destNetwork', 'destAddress', 'lockNetwork']) })
+  }, [])
+  
   return (<>
     <Head>
       <title>Layerswap</title>
