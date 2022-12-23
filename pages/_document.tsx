@@ -24,11 +24,12 @@ export default class extends Document {
     return (
       <Html>
         <Head>
-          <script
+          {console.log('url', process.env.NEXT_PUBLIC_VERCEL_URL)}
+          {process.env.NEXT_PUBLIC_VERCEL_URL == 'https://layerswapapp-git-dev-addcustomeventstracking-layerswap.vercel.app/' && <script
             defer
-            data-domain={process.env.NEXT_PUBLIC_VERCEL_URL == 'https://layerswapapp-git-dev-addcustomeventstracking-layerswap.vercel.app/' && "testnet.layerswap.io"}
+            data-domain={"testnet.layerswap.io"}
             src="https://plausible.io/js/script.tagged-events.js"
-          />
+          />}
           <script
             dangerouslySetInnerHTML={{
               __html:
