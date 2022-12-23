@@ -19,7 +19,9 @@ type Result = {
     destination_logo: string;
     currency_logo: string;
     network_chain_logo: string;
-    currency: Currency & ExchangeCurrency
+    currency: Currency,
+    exchange_currency: ExchangeCurrency
+
 }
 export const GetSourceDestinationData = ({ swap, exchanges, networks, currencies, resource_storage_url }: Args): Result => {
     let source = swap?.source_exchange ? exchanges?.find(e => e?.internal_name?.toUpperCase() === swap?.source_exchange?.toUpperCase())
@@ -37,7 +39,7 @@ export const GetSourceDestinationData = ({ swap, exchanges, networks, currencies
 
     const network = (swap?.source_network ? source : destination) as CryptoNetwork
 
-    const exchange_currency = exchange?.currencies?.find(c => c.network?.toUpperCase() === swap?.source_network?.toUpperCase() && swap?.source_network_asset?.toUpperCase() === c?.asset?.toUpperCase())
+    const exchange_currency = exchange?.currencies?.find(c => swap?.source_network_asset?.toUpperCase() === c?.asset?.toUpperCase())
 
     const currency = currencies?.find(c => exchange_currency?.asset === c.asset)
     const currency_logo = `${resource_storage_url}/layerswap/currencies/${currency?.asset?.toLocaleLowerCase()}.png`
@@ -52,6 +54,7 @@ export const GetSourceDestinationData = ({ swap, exchanges, networks, currencies
         source_logo,
         currency_logo,
         network_chain_logo,
-        currency: { ...exchange_currency, ...currency }
+        currency,
+        exchange_currency
     }
 }

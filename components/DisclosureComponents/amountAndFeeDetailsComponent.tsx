@@ -1,25 +1,21 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
 import HoverTooltip from '../Tooltips/HoverTooltip';
-import { Currency } from '../../Models/Currency';
-import { Exchange } from '../../Models/Exchange';
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
-import { CryptoNetwork } from '../../Models/CryptoNetwork';
 import { SwapType } from '../../lib/layerSwapApiClient';
 import KnownInternalNames from '../../lib/knownIds';
+import { useSettingsState } from '../../context/settings';
+import { SwapFormValues } from '../DTOs/SwapFormValues';
 
-type Props = {
-    amount: number,
-    currency: Currency,
-    exchange: Exchange,
-    swapType: SwapType,
-    network: CryptoNetwork,
-}
 
-export default function AmountAndFeeDetails({ amount, currency, exchange, network, swapType }: Props) {
-    let exchangeFee = GetExchangeFee(currency, exchange);
-    let fee = CalculateFee(amount, currency, exchange, network, swapType);
-    let receive_amount = CalculateReceiveAmount(amount, currency, exchange, network, swapType);
+export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
+    const { networks } = useSettingsState()
+
+    const { currency, exchange, network, swapType } = values || {}
+
+    let exchangeFee = GetExchangeFee(currency?.baseObject?.asset, exchange?.baseObject);
+    let fee = CalculateFee(values, networks);
+    let receive_amount = CalculateReceiveAmount(values, networks);
 
     return (
         <>
@@ -35,15 +31,15 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                             receive_amount ?
                                                 <span className="font-semibold md:font-bold text-right leading-4">
                                                     <p>
-                                                        {receive_amount.toFixed(currency?.precision)}
+                                                        {receive_amount.toFixed(currency?.baseObject?.precision)}
                                                         <span>
                                                             {
-                                                                ` ${currency?.asset || ""}`
+                                                                ` ${currency?.baseObject?.asset || ""}`
                                                             }
                                                         </span>
                                                     </p>
                                                     {
-                                                        KnownInternalNames.Networks.BNBChainMainnet == network?.internal_name &&
+                                                        KnownInternalNames.Networks.BNBChainMainnet == network?.baseObject?.internal_name &&
                                                         <p className='text-[12px] text-slate-300'>
                                                             + 0.0015 BNB
                                                         </p>
@@ -65,8 +61,8 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                             Layerswap Fee
                                         </label>
                                         <span className="text-right">
-                                            {fee.toFixed(currency?.precision)}
-                                            <span>  {currency?.asset} </span>
+                                            {fee.toFixed(currency?.baseObject?.precision)}
+                                            <span>  {currency?.baseObject?.asset} </span>
                                         </span>
                                     </div>
                                     {
@@ -77,7 +73,7 @@ export default function AmountAndFeeDetails({ amount, currency, exchange, networ
                                                 <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36' />
                                             </label>
                                             <span className="text-right">
-                                                {parseFloat(exchangeFee.toFixed(currency?.precision))} {currency?.asset}
+                                                {parseFloat(exchangeFee.toFixed(currency?.baseObject?.precision))} {currency?.baseObject?.asset}
                                             </span>
                                         </div>
                                     }

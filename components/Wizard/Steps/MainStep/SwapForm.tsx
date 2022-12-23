@@ -92,9 +92,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                     <div className="mb-6 leading-4">
                         <AmountField />
                     </div>
-
                     <div className="w-full">
-                        <AmountAndFeeDetails amount={Number(values?.amount)} swapType={values.swapType} currency={values.currency?.baseObject} exchange={values.exchange?.baseObject} network={values.network?.baseObject} />
+                        <AmountAndFeeDetails values={values} />
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
