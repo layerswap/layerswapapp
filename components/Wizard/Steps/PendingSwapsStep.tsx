@@ -1,5 +1,5 @@
 import { ExternalLinkIcon, XIcon } from '@heroicons/react/outline';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { Dispatch, FC, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import toast from 'react-hot-toast';
@@ -11,8 +11,6 @@ import useSWR from 'swr';
 import { ApiResponse } from '../../../Models/ApiResponse';
 import { useSettingsState } from '../../../context/settings';
 import shortenAddress from '../../utils/ShortenAddress';
-import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
-import { SwapCreateStep } from '../../../Models/Wizard';
 import useCreateSwap from '../../../hooks/useCreateSwap';
 import { useRouter } from 'next/router';
 import { GetSourceDestinationData } from '../../../helpers/swapHelper';
@@ -21,7 +19,6 @@ import { SwapStatus } from '../../../Models/SwapStatus';
 const OnRampSwapConfirmationStep: FC = () => {
     const { swapFormData } = useSwapDataState()
     const { exchange, network } = swapFormData || {}
-    const { cancelSwap } = useSwapDataUpdate()
     const { exchanges, networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { MainForm } = useCreateSwap()
     const router = useRouter();
@@ -33,7 +30,6 @@ const OnRampSwapConfirmationStep: FC = () => {
         : allPendingSwaps?.data?.filter(s => s.status === SwapStatus.UserTransferPending && s.source_network && network.baseObject.internal_name === s.source_network)
 
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
-    const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
     const [swapToCancel, setSwapToCancel] = useState<SwapItem>()
 
     useEffect(() => {
@@ -41,9 +37,6 @@ const OnRampSwapConfirmationStep: FC = () => {
             MainForm.onNext(swapFormData)
     }, [pendingSwapsToCancel, exchange, swapFormData, allPendingSwaps, isValidating])
 
-    const handleClose = () => {
-        setOpenCancelConfirmModal(false)
-    }
     const handleCancelSwap = (swap: SwapItem) => {
         setSwapToCancel(swap)
         setOpenCancelConfirmModal(true)
@@ -51,20 +44,6 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleCompleteSwap = (swap: SwapItem) => {
         router.push(`/${swap.id}`)
     }
-    const handleCancelConfirmed = useCallback(async () => {
-        setLoadingSwapCancel(true)
-        try {
-            await cancelSwap(swapToCancel.id)
-            await mutate()
-            setSwapToCancel(null)
-            setOpenCancelConfirmModal(false)
-            setLoadingSwapCancel(false)
-        }
-        catch (e) {
-            setLoadingSwapCancel(false)
-            toast(e.message)
-        }
-    }, [swapToCancel])
 
     const sourceName = swapFormData.swapType === SwapType.OnRamp ? swapFormData?.exchange?.baseObject?.display_name : swapFormData?.network?.baseObject?.display_name
 
@@ -143,32 +122,65 @@ const OnRampSwapConfirmationStep: FC = () => {
                     }
                 </div>
             </Widget.Content>
-            <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
-                <div className='text-primary-text mb-4'></div>
-                <div className="flex flex-row text-white text-base space-x-2">
-                    <div className='basis-1/2'>
-                        <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                            <DoubleLineText
-                                colorStyle='mltln-text-dark'
-                                primaryText='Cancel the swap'
-                                secondarytext='and go to home'
-                                reversed={true}
-                            />
-                        </SubmitButton>
-                    </div>
-                    <div className='basis-1/2'>
-                        <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                            <DoubleLineText
-                                colorStyle='mltln-text-light'
-                                primaryText="Don't"
-                                secondarytext='cancel'
-                                reversed={true}
-                            />
-                        </SubmitButton>
-                    </div>
-                </div>
-            </Modal>
+            <SwapCancelModal swapToCancel={swapToCancel} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
         </Widget>
+    )
+}
+
+type SwapCancelModalProps = {
+    swapToCancel: SwapItem;
+    openCancelConfirmModal: boolean;
+    setOpenCancelConfirmModal: Dispatch<SetStateAction<boolean>>
+}
+
+export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCancelConfirmModal, setOpenCancelConfirmModal }) => {
+
+    const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
+    const { cancelSwap } = useSwapDataUpdate()
+
+    const handleClose = () => {
+        setOpenCancelConfirmModal(false)
+    }
+    const handleCancelConfirmed = useCallback(async () => {
+        setLoadingSwapCancel(true)
+        try {
+            await cancelSwap(swapToCancel.id)
+            // await mutate()
+            setOpenCancelConfirmModal(false)
+            setLoadingSwapCancel(false)
+        }
+        catch (e) {
+            setLoadingSwapCancel(false)
+            toast(e.message)
+        }
+    }, [swapToCancel])
+
+    return (
+        <Modal showModal={openCancelConfirmModal} setShowModal={setOpenCancelConfirmModal} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
+            <div className='text-primary-text mb-4'></div>
+            <div className="flex flex-row text-white text-base space-x-2">
+                <div className='basis-1/2'>
+                    <SubmitButton className='plausible-event-name=Cancel+the+swap' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
+                        <DoubleLineText
+                            colorStyle='mltln-text-dark'
+                            primaryText='Cancel the swap'
+                            secondarytext='and go to home'
+                            reversed={true}
+                        />
+                    </SubmitButton>
+                </div>
+                <div className='basis-1/2'>
+                    <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
+                        <DoubleLineText
+                            colorStyle='mltln-text-light'
+                            primaryText="Don't"
+                            secondarytext='cancel'
+                            reversed={true}
+                        />
+                    </SubmitButton>
+                </div>
+            </div>
+        </Modal>
     )
 }
 

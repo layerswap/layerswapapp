@@ -3,6 +3,7 @@ import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { SwapType } from '../../../lib/layerSwapApiClient';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
+import { TrackEvent } from '../../../pages/_document';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
 const ProccessingWalletTransactionStep: FC = () => {
@@ -18,8 +19,10 @@ const ProccessingWalletTransactionStep: FC = () => {
     const swapStatusStep = GetSwapStatusStep(swap)
 
     useEffect(() => {
-        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Processing)
+        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Processing) {
+            if (swapStatusStep == SwapWithdrawalStep.Failed) { plausible(TrackEvent.SwapFailed) }
             goToStep(swapStatusStep)
+        }
     }, [swapStatusStep])
 
     return (

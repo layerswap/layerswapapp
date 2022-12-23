@@ -15,7 +15,8 @@ export class SubmitButtonProps {
     buttonStyle?: buttonStyle = 'filled';
     size?: buttonSize = 'medium';
     text_align?: text_align = 'center'
-    button_align?: button_align = 'left'
+    button_align?: button_align = 'left';
+    className?: string
 }
 
 function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {
@@ -37,13 +38,13 @@ function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {
     return defaultStyle;
 }
 
-const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, children, type, onClick, buttonStyle = 'filled', size = 'medium', text_align = 'center', button_align = 'left' }) => {
+const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, children, type, onClick, buttonStyle = 'filled', size = 'medium', text_align = 'center', button_align = 'left', className }) => {
     return (
         <button
             disabled={isDisabled || isSubmitting}
             type={type}
             onClick={onClick}
-            className={constructClassNames(size, buttonStyle)}
+            className={`${constructClassNames(size, buttonStyle)} ${className}`}
         >
             <span className={`${button_align === "right" ? 'order-last' : 'order-first'} ${text_align === 'center' ? "absolute left-0 inset-y-0 flex items-center pl-3" : "relative"}`}>
                 {(!isDisabled && !isSubmitting) && icon}

@@ -11,43 +11,25 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import GoHomeButton from '../../utils/GoHome';
-import { CheckIcon, HomeIcon, ChatIcon, XIcon } from '@heroicons/react/solid';
+import { CheckIcon, XIcon } from '@heroicons/react/solid';
 import Widget from '../Widget';
-import Modal from '../../modalComponent';
-import { useGoHome } from '../../../hooks/useGoHome';
-import toast from 'react-hot-toast';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
 import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 import Image from 'next/image'
+import { SwapCancelModal } from './PendingSwapsStep';
+import { TrackEvent } from '../../../pages/_document';
 
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
     const { exchanges, currencies, networks, discovery: { resource_storage_url } } = useSettingsState()
     const { swap } = useSwapDataState()
-    const { setInterval, cancelSwap } = useSwapDataUpdate()
-    const goHome = useGoHome()
+    const { setInterval } = useSwapDataUpdate()
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
-    const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
-    const handleClose = () => {
-        setOpenCancelConfirmModal(false)
-    }
-    const handleCancelConfirmed = useCallback(async () => {
-        setLoadingSwapCancel(true)
-        try {
-            await cancelSwap(swap.id)
-            setLoadingSwapCancel(false)
-            await goHome()
-        }
-        catch (e) {
-            setLoadingSwapCancel(false)
-            toast(e.message)
-        }
-    }, [swap])
+
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
     }
@@ -68,8 +50,10 @@ const WithdrawExchangeStep: FC = () => {
     const swapStatusStep = GetSwapStatusStep(swap)
 
     useEffect(() => {
-        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal)
+        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal){
+            if (swapStatusStep == SwapWithdrawalStep.Failed) { plausible(TrackEvent.SwapFailed) }
             goToStep(swapStatusStep)
+        }
     }, [swapStatusStep])
 
     const { currency, exchange, network_chain_logo, currency_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
@@ -80,7 +64,7 @@ const WithdrawExchangeStep: FC = () => {
         const estimatedTransferTimeInSeconds = 180000
         setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
     }, [])
-    console.log(currency.asset)
+
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
             {(close) => (
@@ -193,7 +177,7 @@ const WithdrawExchangeStep: FC = () => {
                                         </SubmitButton>
                                     </div>
                                     <div className='basis-2/3'>
-                                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<CheckIcon className="h-5 w-5" aria-hidden="true" />} >
+                                        <SubmitButton className='plausible-event-name=I+did+the+transfer' button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<CheckIcon className="h-5 w-5" aria-hidden="true" />} >
                                             <DoubleLineText
                                                 colorStyle='mltln-text-light'
                                                 primaryText='I did'
@@ -232,31 +216,7 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget>
-        <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
-            <div className='text-primary-text mb-4'></div>
-            <div className="flex flex-row text-white text-base space-x-2">
-                <div className='basis-1/2'>
-                    <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                        <DoubleLineText
-                            colorStyle='mltln-text-dark'
-                            primaryText='Cancel the swap'
-                            secondarytext='and go to home'
-                            reversed={true}
-                        />
-                    </SubmitButton>
-                </div>
-                <div className='basis-1/2'>
-                    <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                        <DoubleLineText
-                            colorStyle='mltln-text-light'
-                            primaryText="Don't"
-                            secondarytext='cancel'
-                            reversed={true}
-                        />
-                    </SubmitButton>
-                </div>
-            </div>
-        </Modal>
+        <SwapCancelModal swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
     </>
     )
 }

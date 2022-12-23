@@ -45,7 +45,6 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       <meta name="twitter:title" content="Layerswap - Accelerating L2 migration" />
       <meta name="twitter:description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
       <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpeg" />
-      <script defer data-domain="layerswap.io" src="https://plausible.io/js/plausible.js"></script>
     </Head>
     <ErrorBoundary >
       <QueryProvider query={query}>
