@@ -19,17 +19,6 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
     ...(router.query.lockAddress === 'true' ? { lockAddress: true } : {}),
     ...(router.query.lockNetwork === 'true' ? { lockNetwork: true } : {}),
   };
-  function prepareUrl(params) {
-    const url = new URL(location.href)
-    const queryParams = new URLSearchParams(location.search)
-    let customUrl = url.protocol + "//" + url.hostname + url.pathname.replace(/\/$/, '')
-    for (const paramName of params) {
-      const paramValue = queryParams.get(paramName)
-      if (paramValue) customUrl = customUrl + '/' + paramValue
-    }
-    return customUrl
-  }
-  plausible('pageview', { u: prepareUrl(['destNetwork', 'destAddress', 'lockNetwork']) })
 
   return (<>
     <Head>

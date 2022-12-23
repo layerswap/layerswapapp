@@ -51,7 +51,7 @@ const WithdrawExchangeStep: FC = () => {
 
     useEffect(() => {
         if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal){
-            if (swapStatusStep == SwapWithdrawalStep.Failed) { plausible(TrackEvent.SwapFailed) }
+            if (swapStatusStep == SwapWithdrawalStep.Failed) { window.plausible(TrackEvent.SwapFailed) }
             goToStep(swapStatusStep)
         }
     }, [swapStatusStep])
