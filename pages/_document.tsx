@@ -26,7 +26,7 @@ export default class extends Document {
         <Head>
           <script
             defer
-            data-domain="testnet.layerswap.io"
+            data-domain={process.env.NEXT_PUBLIC_VERCEL_URL == 'https://layerswapapp-qgdd8zcts-layerswap.vercel.app/' && "testnet.layerswap.io"}
             src="https://plausible.io/js/script.tagged-events.js"
           />
           <script
