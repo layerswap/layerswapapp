@@ -35,8 +35,9 @@ const Item = ({ type, children, pathname, onClick, icon, target = '_self', class
                 }}
                 passHref
                 legacyBehavior
+                className={className}
             >
-                <MenuLink className={className} target={target}>
+                <MenuLink target={target}>
                     {icon}
                     <span>{children}</span>
                 </MenuLink>
@@ -44,7 +45,7 @@ const Item = ({ type, children, pathname, onClick, icon, target = '_self', class
             :
             <button
                 onClick={onClick}
-                className='px-4 py-2 hover:bg-darkblue-300 text-left whitespace-nowrap w-full flex items-center space-x-2'
+                className={`px-4 py-2 hover:bg-darkblue-300 text-left whitespace-nowrap w-full flex items-center space-x-2 ${className}`}
             >
                 {icon}
                 <span>{children}</span>

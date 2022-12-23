@@ -31,7 +31,7 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       }
       return customUrl
     }
-    plausible('pageview', { u: prepareUrl(['destNetwork', 'destAddress', 'lockNetwork']) })
+    plausible('pageview', { u: prepareUrl(['destNetwork', 'destAddress', 'lockNetwork', 'sourceExchangeName', 'lockAddress', 'addressSource', 'products']) })
   }, [])
   
   return (<>
