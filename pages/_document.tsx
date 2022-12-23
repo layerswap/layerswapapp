@@ -3,10 +3,10 @@ import Document, { Head, Html, Main, NextScript } from 'next/document'
 
 export enum TrackEvent {
   SignedIn = 'Successfully signed in',
-  SwapFailed = ' Got to Swap failed page'
+  SwapFailed = 'Got to Swap failed page'
 }
 
-type PlausibleArgs = [TrackEvent, () => void] | [TrackEvent]
+type PlausibleArgs = [TrackEvent, () => void] | [TrackEvent] | any
 
 declare global {
   const plausible: {
