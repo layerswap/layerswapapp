@@ -58,12 +58,12 @@ const OnRampSwapConfirmationStep: FC = () => {
         try {
             if (!swap) {
                 const swapId = await createAndProcessSwap();
-                return await router.push(`/${swapId}`)
+                return await router.push(`/swap/${swapId}`)
             }
             else {
                 const swapId = swap.id
                 // await processPayment(swapId)
-                return await router.push(`/${swapId}`)
+                return await router.push(`/swap/${swapId}`)
             }
         }
         catch (error) {

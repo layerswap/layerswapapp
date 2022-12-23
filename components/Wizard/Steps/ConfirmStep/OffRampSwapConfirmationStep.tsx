@@ -53,12 +53,12 @@ const OffRampSwapConfirmationStep: FC = () => {
                     }
                 }
                 const swapId = await createAndProcessSwap();
-                await router.push(`/${swapId}`)
+                await router.push(`/swap/${swapId}`)
             }
             else {
                 const swapId = swap.id
                 // await processPayment(swapId)
-                await router.push(`/${swapId}`)
+                await router.push(`/swap/${swapId}`)
             }
         }
         catch (error) {

@@ -42,7 +42,7 @@ const OnRampSwapConfirmationStep: FC = () => {
         setOpenCancelConfirmModal(true)
     }
     const handleCompleteSwap = (swap: SwapItem) => {
-        router.push(`/${swap.id}`)
+        router.push(`/swap/${swap.id}`)
     }
 
     const sourceName = swapFormData.swapType === SwapType.OnRamp ? swapFormData?.exchange?.baseObject?.display_name : swapFormData?.network?.baseObject?.display_name
