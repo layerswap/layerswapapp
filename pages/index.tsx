@@ -9,6 +9,7 @@ import MaintananceContent from '../components/maintanance/maintanance'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { enc, HmacSHA256 } from 'crypto-js';
 import { validateSignature } from '../helpers/validateSignature'
+import { mapNetworkCurrencies } from '../helpers/settingshelper'
 
 type IndexProps = {
   settings?: LayerSwapSettings,
@@ -50,9 +51,7 @@ export async function getServerSideProps(context) {
   const { data: settings } = await apiClient.GetSettingsAsync()
 
   settings.networks = settings.networks.filter(n => n.status !== "inactive");
-  settings.exchanges = settings.exchanges
-
-  
+  settings.exchanges = mapNetworkCurrencies(settings.exchanges, settings.networks)
 
 
   const resource_storage_url = settings.discovery.resource_storage_url
