@@ -27,7 +27,7 @@ export default class extends Document {
           {process.env.NEXT_PUBLIC_VERCEL_ENV && <script
             defer
             data-domain={process.env.NEXT_PUBLIC_VERCEL_ENV == 'production' ? 'layerswap.io' : "testnet.layerswap.io"}
-            src="https://plausible.io/js/script.tagged-events.js"
+            src="https://plausible.io/js/script.manual.js"
           />}
           <script
             dangerouslySetInnerHTML={{
