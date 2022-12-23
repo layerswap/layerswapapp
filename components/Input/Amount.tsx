@@ -1,5 +1,6 @@
 import { useFormikContext } from "formik";
 import { forwardRef, useRef } from "react";
+import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import CurrenciesField from "../Select/Currencies";
@@ -7,14 +8,13 @@ import NumericInput from "./NumericInput";
 
 const AmountField = forwardRef((_, ref: any) => {
 
-    const { values: { currency, swapType, exchange, network, amount }, setFieldValue } = useFormikContext<SwapFormValues>();
+    const { values, setFieldValue } = useFormikContext<SwapFormValues>();
+    const { networks } = useSettingsState()
+    const { currency, swapType, exchange, network, amount } = values
     const name = "amount"
-    
 
-    const minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType);
-    const maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType);
-
-    const networkCurrency = network?.baseObject?.currencies?.find(c => c.asset === currency?.baseObject?.asset)
+    const minAllowedAmount = CalculateMinAllowedAmount(values, networks);
+    const maxAllowedAmount = CalculateMaxAllowedAmount(values, networks);
 
     const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.baseObject?.precision)

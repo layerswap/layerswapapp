@@ -21,7 +21,6 @@ const ProccessingStep: FC = () => {
 
     useEffect(() => {
         if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Processing) {
-            if (swapStatusStep == SwapWithdrawalStep.Failed) { plausible(TrackEvent.SwapFailed) }
             goToStep(swapStatusStep)
         }
     }, [swapStatusStep])

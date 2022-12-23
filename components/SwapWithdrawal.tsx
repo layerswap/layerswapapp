@@ -4,7 +4,8 @@ import { FormWizardProvider } from "../context/formWizardProvider";
 import { useQueryState } from "../context/query";
 import { useSettingsState } from "../context/settings";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
-import { SwapType } from "../lib/layerSwapApiClient";
+import KnownInternalNames from "../lib/knownIds";
+import { SwapStatus } from "../Models/SwapStatus";
 import { SwapWithdrawalStep } from "../Models/Wizard";
 import { GetSwapStatusStep } from "./utils/SwapStatus";
 import SwapWithdrawalWizard from "./Wizard/SwapWithdrawalWizard";
@@ -25,7 +26,15 @@ const SwapWithdrawal: FC = () => {
 
         </div>
 
-    let initialStep: SwapWithdrawalStep = GetSwapStatusStep(swap);
+    let initialStep: SwapWithdrawalStep;
+    const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableX?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+    if (sourceIsImmutableX && swap.status === SwapStatus.UserTransferPending) {
+        const isImtblMarketplace = (query.signature && query.addressSource === "imxMarketplace")
+        initialStep = isImtblMarketplace ? SwapWithdrawalStep.ProcessingWalletTransaction : SwapWithdrawalStep.WalletConnect
+    }
+    else {
+        initialStep = GetSwapStatusStep(swap);
+    }
 
     const key = Object.keys(query).join("")
 

@@ -9,8 +9,9 @@ import { QueryParams } from '../../Models/QueryParams';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const query: QueryParams = req.query;
     const user_token = req.headers["authorization"]?.toString()?.split(" ")?.[1]
-    if (!user_token)
-        return res.status(401)
+    if (!user_token) {
+        return res.status(401).json({ error: { message: "User not authenticated" } })
+    }
     const signatureIsValid = validateSignature(query)
     if (!signatureIsValid) {
         res.status(500).json({ error: { message: "Not valid signature" } })
@@ -25,8 +26,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return
         }
         catch (e) {
-            if(e?.response?.data?.error)
-            res.status(500).json({ error: e?.response?.data?.error })
+            if (e?.response?.data?.error)
+                res.status(500).json({ error: e?.response?.data?.error })
             return
         }
     }
@@ -54,6 +55,6 @@ const verifyWallet = async (query: QueryParams, user_id: string, access_token: s
         "network": query.destNetwork,
         "user_id": user_id
     }
-    const res = axios.post<AuthConnectResponse>(`${LayerSwapApiClient.apiBaseEndpoint}/api/network_accounts/internal`, data, { headers: { "Content-Type": "application/json", "Authorization": 'Bearer ' + access_token } })
+    const res = axios.post<AuthConnectResponse>(`${LayerSwapApiClient.apiBaseEndpoint}/api/internal/whitelisted_addresses`, data, { headers: { "Content-Type": "application/json", "Authorization": 'Bearer ' + access_token } })
     return (await res).data;
 }

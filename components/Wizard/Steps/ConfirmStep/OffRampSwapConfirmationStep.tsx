@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
@@ -19,17 +19,26 @@ import GuideLink from '../../../guideLink';
 import { useQueryState } from '../../../../context/query';
 import InternalApiClient from '../../../../lib/internalApiClient';
 import { useSettingsState } from '../../../../context/settings';
+import { PencilAltIcon, ExclamationIcon } from '@heroicons/react/outline';
+import ToggleButton from '../../../buttons/toggleButton';
+import { nameOf } from '../../../../lib/external/nameof';
+import { FormikProps } from 'formik';
+import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormValues';
+
 
 const OffRampSwapConfirmationStep: FC = () => {
-    const { swapFormData, swap } = useSwapDataState()
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const { createAndProcessSwap, updateSwapFormData } = useSwapDataUpdate()
+    const { swapFormData, swap, addressConfirmed } = useSwapDataState()
+    const [loading, setLoading] = useState(false)
+    const { createAndProcessSwap, updateSwapFormData, setAddressConfirmed } = useSwapDataUpdate()
     const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
-    const { network } = swapFormData || {}
     const router = useRouter();
-    const { exchange, destination_address, currency } = swapFormData || {}
+    const { exchange, destination_address, currency, network } = swapFormData || {}
     const query = useQueryState();
     const settings = useSettingsState();
+
+    const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
+    const currentValues = formikRef?.current?.values;
+    const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
     const layerswapApiClient = new LayerSwapApiClient()
     const depositad_address_endpoint = `/exchange_accounts/${exchange?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
@@ -40,14 +49,26 @@ const OffRampSwapConfirmationStep: FC = () => {
             updateSwapFormData((old) => ({ ...old, destination_address: deposite_address.data }))
     }, [deposite_address])
 
+
+    const currentNetwork = swapFormData?.network?.baseObject;
+    const currentExchange = swapFormData?.exchange?.baseObject;
+    const currentCurrency = swapFormData?.currency?.baseObject;
+
+    const handleToggleChange = (value: boolean) => {
+        setAddressConfirmed(value)
+    }
+
     const handleSubmit = useCallback(async () => {
-        setIsSubmitting(true)
+        setLoading(true)
         let nextStep: SwapCreateStep;
         try {
             if (!swap) {
                 if (query.addressSource === "imxMarketplace" && settings.validSignatureisPresent) {
-                    const accounts = await layerswapApiClient.GetNetworkAccounts(swapFormData.network.baseObject.internal_name)
-                    if (!accounts?.data?.some(a => a.address?.toLowerCase() === query?.destAddress?.toLowerCase())) {
+                    try {
+                        const account = await layerswapApiClient.GetWhitelistedAddress(swapFormData.network.baseObject.internal_name, query.destAddress)
+                    }
+                    catch (e) {
+                        //TODO handle account not found
                         const internalApiClient = new InternalApiClient()
                         await internalApiClient.VerifyWallet(window.location.search);
                     }
@@ -77,10 +98,10 @@ const OffRampSwapConfirmationStep: FC = () => {
             else
                 toast.error(error)
         }
-        setIsSubmitting(false)
+        setLoading(false)
         if (nextStep)
             goToStep(nextStep)
-    }, [network, swap, createAndProcessSwap, settings, query])
+    }, [network, swap, createAndProcessSwap, settings, query, destination_address])
 
     return (
         <Widget>
@@ -96,13 +117,26 @@ const OffRampSwapConfirmationStep: FC = () => {
                             }
                         </WarningMessage>
                     }
-                    <AddressDetails canEditAddress={false} />
+                    <AddressDetails canEditAddress={true} />
                 </SwapConfirmMainData>
             </Widget.Content>
             <Widget.Footer>
-                <SubmitButton type='submit' isDisabled={false} isSubmitting={isSubmitting} onClick={handleSubmit}>
-                    Confirm
-                </SubmitButton>
+                <div className="text-white text-sm">
+                    <div className="mx-auto w-full rounded-lg font-normal">
+                        <div className='flex justify-between mb-4 md:mb-8'>
+                            <div className='flex items-center text-xs md:text-sm font-medium'>
+                                <ExclamationIcon className='h-6 w-6 mr-2' />
+                                I am the owner of this address
+                            </div>
+                            <div className='flex items-center space-x-4'>
+                                <ToggleButton name={nameOfRightWallet} onChange={handleToggleChange} value={addressConfirmed} />
+                            </div>
+                        </div>
+                    </div>
+                    <SubmitButton type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
+                        Confirm
+                    </SubmitButton>
+                </div>
             </Widget.Footer>
         </Widget>
     )
