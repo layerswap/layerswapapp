@@ -39,7 +39,7 @@ export default function ({ hideNavbar, children }: Props) {
             }
             return customUrl
         }
-        window.plausible('pageview', { u: prepareUrl(['destNetwork', 'destAddress', 'lockNetwork']) })
+        plausible('pageview', { u: prepareUrl(['destNetwork', 'destAddress', 'lockNetwork']) })
     }, [])
 
     const { addressSource } = useQueryState()

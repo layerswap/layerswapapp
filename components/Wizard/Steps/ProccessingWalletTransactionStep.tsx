@@ -20,7 +20,7 @@ const ProccessingWalletTransactionStep: FC = () => {
 
     useEffect(() => {
         if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Processing) {
-            if (swapStatusStep == SwapWithdrawalStep.Failed) { window.plausible(TrackEvent.SwapFailed) }
+            if (swapStatusStep == SwapWithdrawalStep.Failed) { plausible(TrackEvent.SwapFailed) }
             goToStep(swapStatusStep)
         }
     }, [swapStatusStep])
