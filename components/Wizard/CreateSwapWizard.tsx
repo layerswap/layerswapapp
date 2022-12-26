@@ -36,7 +36,7 @@ const CreateSwap: FC = () => {
                 <WizardItem StepName={SwapCreateStep.Code} GoBack={GoBackToEmailStep} PositionPercent={Code.positionPercent} key={SwapCreateStep.Code}>
                     <CodeStep OnNext={Code.onNext} />
                 </WizardItem>
-                <WizardItem StepName={SwapCreateStep.PendingSwaps} GoBack={GoBackToMainStep} PositionPercent={MainForm.positionPercent} key={SwapCreateStep.PendingSwaps}>
+                <WizardItem StepName={SwapCreateStep.PendingSwaps} GoBack={GoBackToMainStep} PositionPercent={MainForm.positionPercent + 10} key={SwapCreateStep.PendingSwaps}>
                     <PendingSwapsStep />
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.Confirm} GoBack={GoBackToMainStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.Confirm}>

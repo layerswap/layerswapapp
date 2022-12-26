@@ -19,8 +19,6 @@ const NetworkField = forwardRef((props: any, ref: any) => {
     const { lockNetwork, destNetwork } = useQueryState()
     const { discovery: { resource_storage_url }, networks } = useSettingsState();
 
-    console.log("exchange", exchange)
-
     const networkIsAvailable = (n: CryptoNetwork) => (swapType === SwapType.OffRamp ?
         (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.offramp && nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset))))
         : (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.onramp && nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset)))))
