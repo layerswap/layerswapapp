@@ -17,11 +17,8 @@ import { SwapStatus } from "../Models/SwapStatus";
 
 const useCreateSwap = () => {
     const { goToStep } = useFormWizardaUpdate()
-    const { updateSwapFormData } = useSwapDataUpdate()
-    const { getUserExchanges } = useUserExchangeDataUpdate()
     const { swapFormData } = useSwapDataState()
     const router = useRouter();
-    const { swapType, exchange, currency } = swapFormData || {}
 
 
     const MainForm: WizardStep<SwapCreateStep> = {
@@ -57,7 +54,7 @@ const useCreateSwap = () => {
         Content: CodeStep,
         Name: SwapCreateStep.Code,
         onNext: useCallback(async (res: AuthConnectResponse) => {
-            return goToStep(SwapCreateStep.Confirm)
+            MainForm.onNext(swapFormData)
         }, [swapFormData]),
         positionPercent: 35,
         onBack: useCallback(() => goToStep(SwapCreateStep.Email, "back"), []),
