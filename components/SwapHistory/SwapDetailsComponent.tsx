@@ -1,14 +1,14 @@
 import { useRouter } from 'next/router';
 import { FC, useEffect, useState } from 'react'
-import { useSettingsState } from '../context/settings';
-import LayerSwapApiClient, { SwapItem } from '../lib/layerSwapApiClient';
+import { useSettingsState } from '../../context/settings';
+import LayerSwapApiClient, { SwapItem } from '../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
-import shortenAddress from './utils/ShortenAddress';
-import CopyButton from './buttons/copyButton';
-import { SwapDetailsComponentSceleton } from './Sceletons';
+import shortenAddress from '../utils/ShortenAddress';
+import CopyButton from '../buttons/copyButton';
+import { SwapDetailsComponentSceleton } from '../Sceletons';
 import StatusIcon from './StatusIcons';
-import { GetSourceDestinationData } from '../helpers/swapHelper';
+import { GetSourceDestinationData } from '../../helpers/swapHelper';
 
 type Props = {
     id: string

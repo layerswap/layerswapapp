@@ -1,27 +1,28 @@
 import { useRouter } from "next/router"
-import { useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
-import SpinIcon from "./icons/spinIcon"
-import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, RefreshIcon, XIcon } from '@heroicons/react/outline';
-import SwapDetails from "./swapDetailsComponent"
-import LayerswapMenu from "./LayerswapMenu"
-import { useSettingsState } from "../context/settings"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import LayerSwapApiClient, { SwapItem } from "../../lib/layerSwapApiClient"
+import SpinIcon from "../icons/spinIcon"
+import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, RefreshIcon, SelectorIcon, XIcon } from '@heroicons/react/outline';
+import SwapDetails from "./SwapDetailsComponent"
+import LayerswapMenu from "../LayerswapMenu"
+import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
-import { useAuthState } from "../context/authContext"
-import shortenAddress from "./utils/ShortenAddress"
-import { classNames } from "./utils/classNames"
-import SubmitButton, { DoubleLineText } from "./buttons/submitButton"
-import CopyButton from "./buttons/copyButton"
-import { SwapHistoryComponentSceleton } from "./Sceletons"
-import GoHomeButton from "./utils/GoHome"
-import StatusIcon from "./StatusIcons"
-import Modal from "./modalComponent"
+import { useAuthState } from "../../context/authContext"
+import shortenAddress from "../utils/ShortenAddress"
+import { classNames } from "../utils/classNames"
+import SubmitButton, { DoubleLineText } from "../buttons/submitButton"
+import CopyButton from "../buttons/copyButton"
+import { SwapHistoryComponentSceleton } from "../Sceletons"
+import GoHomeButton from "../utils/GoHome"
+import StatusIcon, { GreenIcon, GreyIcon } from "./StatusIcons"
+import Modal from "../modalComponent"
 import toast from "react-hot-toast"
 import { ArrowLeftIcon } from "@heroicons/react/solid"
-import { useSwapDataUpdate } from "../context/swap"
-import { SwapStatus } from "../Models/SwapStatus"
-import FormattedDate from "./Common/FormattedDate";
-import { GetSourceDestinationData } from "../helpers/swapHelper";
+import { useSwapDataUpdate } from "../../context/swap"
+import { SwapStatus } from "../../Models/SwapStatus"
+import FormattedDate from "../Common/FormattedDate";
+import { GetSourceDestinationData } from "../../helpers/swapHelper";
+import useSortableData from "../../hooks/useSortableData";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -88,6 +89,14 @@ function TransactionsHistory() {
     setOpenSwapDetailsModal(true)
   }
 
+  const { items, requestSort, sortConfig } = useSortableData(swaps);
+  const getStatusIcon = (name) => {
+    if (!sortConfig) {
+      return <SelectorIcon className="h-3"/>;
+    }
+    return sortConfig.key === name ? (sortConfig.direction == 'ascending' ? <GreyIcon /> : <GreenIcon />) : undefined;
+  };
+
   return (
     <div className='bg-darkblue px-8 md:px-12 md:mb-12 md:shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative h-full '>
       <div className="mt-3 flex items-center justify-between z-20" >
@@ -114,7 +123,7 @@ function TransactionsHistory() {
           : <>
             {
               swaps?.length > 0 ?
-              <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">
+                <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">
                   <div className="mb-2">
                     <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
                       <table className="w-full divide-y divide-darkblue-500">
@@ -156,9 +165,14 @@ function TransactionsHistory() {
                               scope="col"
                               className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
-                              Status
+                              <button
+                                onClick={() => requestSort('status')}
+                                className='flex items-center gap-1'
+                              >
+                                <span>Status</span>
+                                <span>{getStatusIcon('status')}</span>
+                              </button>
                             </th>
-
                             <th
                               scope="col"
                               className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
@@ -171,7 +185,7 @@ function TransactionsHistory() {
                           </tr>
                         </thead>
                         <tbody>
-                          {swaps?.map((swap, index) => {
+                          {items?.map((swap, index) => {
 
                             const { currency, destination, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
@@ -337,14 +351,14 @@ function TransactionsHistory() {
                       </table>
                     </div>
                   </div>
-                  <div className="text-white text-sm mt-auto mb-4 flex justify-center">
+                  <div className="text-white text-sm mt-auto flex justify-center">
                     {
                       !isLastPage &&
                       <button
                         disabled={isLastPage || loading}
                         type="button"
                         onClick={handleLoadMore}
-                        className="group disabled:text-primary-800 text-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                        className="group disabled:text-primary-800 mb-2 text-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
                       >
                         <span className="flex items-center mr-2">
                           {(!isLastPage && !loading) &&
