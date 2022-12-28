@@ -47,7 +47,9 @@ export default class LayerSwapApiClient {
     async GetExchangeAccounts(): Promise<ApiResponse<UserExchangesData[]>> {
         return await this.AuthenticatedRequest<ApiResponse<UserExchangesData[]>>("GET", '/exchange_accounts');
     }
-
+    async GetExchangeAccount(exchange: string): Promise<ApiResponse<UserExchangesData[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<UserExchangesData[]>>("GET", `/exchange_accounts/${exchange}`);
+    }
     async GetExchangeDepositAddress(exchange: string, currency: string): Promise<ApiResponse<string>> {
         return await this.AuthenticatedRequest<ApiResponse<string>>("GET", `/exchange_accounts/${exchange}/deposit_address/${currency}`);
     }
@@ -173,8 +175,9 @@ export type ConnectParams = {
 }
 
 export type UserExchangesData = {
-    exchange_id: string,
-    note: string
+    id: string;
+    exchange: string;
+    note: string;
 }
 
 export type CreateSwapData = {
