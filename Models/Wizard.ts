@@ -41,6 +41,7 @@ export enum SwapWithdrawalStep {
     Failed = "Failed",
     Error = "Error",
     Delay = "Delay",
+    OffRampWithdrawal = "OffRampWithdrawal",
     WalletConnect = "WalletConnect"
 }
 

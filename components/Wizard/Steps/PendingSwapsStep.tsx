@@ -14,6 +14,7 @@ import shortenAddress from '../../utils/ShortenAddress';
 import useCreateSwap from '../../../hooks/useCreateSwap';
 import { useRouter } from 'next/router';
 import { GetSourceDestinationData } from '../../../helpers/swapHelper';
+import SpinIcon from '../../icons/spinIcon';
 
 const OnRampSwapConfirmationStep: FC = () => {
     const { swapFormData } = useSwapDataState()
@@ -43,6 +44,7 @@ const OnRampSwapConfirmationStep: FC = () => {
         router.push(`/swap/${swap.id}`)
     }
 
+    const PendingIcon = <SpinIcon className="animate-spin h-5 w-5" />;
     const asset = swapFormData?.currency?.baseObject?.asset
     return (
         <Widget>
@@ -61,64 +63,87 @@ const OnRampSwapConfirmationStep: FC = () => {
                             <div className='flex flex-col space-y-2'>
                                 {pendingSwapsToCancel?.map((swap) => {
                                     const { currency, destination, currency_logo, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
-                                    console.log("currency", currency)
                                     return (
                                         <div key={swap.id}>
-                                            <div className='w-full rounded-md px-3 py-3 shadow-sm border border-darkblue-500  bg-darkblue-700'>
+                                            <div className='w-full mb-2 rounded-md px-3 py-3 shadow-sm border border-darkblue-500  bg-darkblue-700'>
                                                 <div className="items-center justify-between w-full space-y-2">
-                                                    <div className='flex flex-col justify-between space-y-2 items-left'>
-                                                        <div className='flex w-full rounded-md items-center text-xs space-x-2 md:space-x-6'>
-                                                            <div className='flex space-x-2 items-center'>
-                                                                <div className="h-12 w-12 relative">
-                                                                    {
-                                                                        <Image src={source_logo} alt="Source Logo" height="60" width="60"
-                                                                            layout="responsive" className="rounded-md object-contain" />
-                                                                    }
+                                                    <div className="items-center flex w-full md:space-x-3 py-1.5 text-left text-base font-medium">
+                                                        <div className='space-y-1.5 md:space-y-1 grow'>
+                                                            <div className='text-md  items-center space-x-3'>
+                                                                <div className='flex justify-between text-white'>
+                                                                    <p className='text-sm md:text-base flex items-center'>Waiting for {source?.display_name} withdrawal</p>
+                                                                    <div className='md:flex hidden space-x-1 items-center'>
+                                                                        <p className='flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{asset}</span></p>
+                                                                        <div className="h-5 w-5 relative">
+                                                                            <Image
+                                                                                src={currency_logo}
+                                                                                alt="Source Logo"
+                                                                                height="60"
+                                                                                width="60"
+                                                                                layout="responsive"
+                                                                                className="rounded-md object-contain"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                                <p className='font-normal text-lg md:font-medium'>{source?.display_name}</p>
                                                             </div>
-                                                            <ArrowRightIcon className='h-5 w-5 text-primary-text' />
-                                                            <div className='flex space-x-2 items-center'>
-                                                                <div className="h-12 w-12 relative">
-                                                                    {
-                                                                        <Image src={destination_logo} alt="Source Logo" height="60" width="60"
-                                                                            layout="responsive" className="rounded-md object-contain" />
-                                                                    }
-                                                                </div>
-                                                                <p className='font-normal text-lg md:font-medium'>{destination?.display_name}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className='flex w-full rounded-md items-center text-xs space-x-2 md:space-x-6'>
-                                                            <div className='text-lg text-right p-2 rounded-lg'>
-                                                                <p className='flex font-normal space-x-2'>
-                                                                    <span>{swap?.requested_amount}</span>
-                                                                    <span className="flex items-center">
-                                                                        <span className="flex-shrink-0 h-5 w-5 relative">
+                                                            <div className='flex justify-between space-x-4 items-center'>
+                                                                <div className='flex rounded-md items-center text-xs space-x-2'>
+                                                                    <div className='flex space-x-1 items-center'>
+                                                                        <div className="h-5 w-5 relative">
                                                                             {
-                                                                                currency_logo &&
                                                                                 <Image
-                                                                                    src={currency_logo}
-                                                                                    alt="From Logo"
+                                                                                    src={source_logo}
+                                                                                    alt="Source Logo"
                                                                                     height="60"
                                                                                     width="60"
                                                                                     layout="responsive"
-                                                                                    className="rounded-md object-contain opacity-50"
+                                                                                    className="rounded-md object-contain"
                                                                                 />
                                                                             }
-                                                                        </span>
-                                                                        <span className="mx-1 block">{currency?.asset}</span>
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                            <div className='text-lg text-right'>
-                                                                {shortenAddress(swap?.destination_address)}
+                                                                        </div>
+                                                                        <p className='font-normal md:font-medium'>{source?.display_name}</p>
+                                                                    </div>
+                                                                    <ArrowRightIcon className='h-3 w-3 text-primary-text' />
+                                                                    <div className='flex space-x-1 items-center'>
+                                                                        <div className="h-5 w-5 relative">
+                                                                            {
+                                                                                <Image
+                                                                                    src={destination_logo}
+                                                                                    alt="Source Logo"
+                                                                                    height="60"
+                                                                                    width="60"
+                                                                                    layout="responsive"
+                                                                                    className="rounded-md object-contain"
+                                                                                />
+                                                                            }
+                                                                        </div>
+                                                                        <p className='font-normal md:font-medium'>{destination?.display_name}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className='text-xs text-right'>
+                                                                    <span className='hidden md:block'>{shortenAddress(swap?.destination_address)}</span>
+                                                                    <div className='flex md:hidden space-x-1 items-center'>
+                                                                        <p className='md:hidden flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{asset}</span></p>
+                                                                        <div className="h-5 w-5 relative">
+                                                                            <Image
+                                                                                src={currency_logo}
+                                                                                alt="Source Logo"
+                                                                                height="60"
+                                                                                width="60"
+                                                                                layout="responsive"
+                                                                                className="rounded-md object-contain"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="text-white text-sm">
-                                                        <div className="flex flex-row text-white text-base space-x-2">
+                                                    <div className="text-white text-sm md:text-base">
+                                                        <div className="flex flex-row text-white space-x-2">
                                                             <div className='basis-1/3'>
-                                                                <SubmitButton text_align="left" size="medium" buttonStyle="outline" onClick={() => { handleCancelSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<XIcon className='h-5 w-5' />}>
+                                                                <SubmitButton text_align="left" size="medium" buttonStyle="outline" onClick={() => { handleCancelSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<XIcon className='md:h-5 h-3' />}>
                                                                     <DoubleLineText
                                                                         colorStyle='mltln-text-dark'
                                                                         primaryText='Cancel'
@@ -128,7 +153,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                                                                 </SubmitButton>
                                                             </div>
                                                             <div className='basis-2/3'>
-                                                                <SubmitButton button_align='right' size="medium" text_align="left" onClick={() => { handleCompleteSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='h-5 w-5' />}>
+                                                                <SubmitButton button_align='right' size="medium" text_align="left" onClick={() => { handleCompleteSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='md:h-5 h-3' />}>
                                                                     <DoubleLineText
                                                                         colorStyle='mltln-text-light'
                                                                         primaryText="Complete"

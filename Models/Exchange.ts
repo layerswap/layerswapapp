@@ -1,8 +1,9 @@
+import { NetworkCurrency } from "./CryptoNetwork";
 
 export class Exchange {
     display_name: string;
     internal_name: string;
-    currencies: ExchangeCurrency[];
+    currencies: (ExchangeCurrency & NetworkCurrency)[];
 }
 
 export class ExchangeCurrency {

@@ -1,7 +1,6 @@
 import { MailOpenIcon } from '@heroicons/react/outline';
 import { Form, Formik, FormikErrors } from 'formik';
-import Link from 'next/link';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import { useTimerState } from '../context/timerContext';
@@ -37,7 +36,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
             const next = new Date(res?.data?.next)
             const now = new Date()
             const miliseconds = next.getTime() - now.getTime()
-            startTimer(Math.round(miliseconds / 1000))
+            startTimer(Math.round((res?.data?.already_sent ? 60000 : miliseconds) / 1000))
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {

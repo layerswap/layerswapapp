@@ -17,7 +17,11 @@ const ExchangesField = forwardRef((props: any, ref: any) => {
     const { discovery: { resource_storage_url }, exchanges, networks } = useSettingsState();
 
     const exchangeMenuItems: SelectMenuItem<Exchange>[] = exchanges
-        .filter(e => e.currencies.some(ec => (network && network.baseObject.internal_name.toLowerCase() === ec.network.toLowerCase()) || networks.some(n => n.internal_name?.toLowerCase() === ec.network?.toLowerCase())))
+        .filter(e => (
+            (swapType === SwapType.OffRamp ?
+                e.currencies.some(ec => ec.status === "active" && ec.is_withdrawal_enabled && (!network || network.baseObject.currencies.some(nc => nc.asset === ec.asset && nc.status === "active" && nc.is_deposit_enabled && ec.network != network.baseObject.internal_name)))
+                : e.currencies.some(ec => ec.status === "active" && ec.is_deposit_enabled &&  (!network || network.baseObject.currencies.some(nc => nc.asset === ec.asset && nc.status === "active" && nc.is_withdrawal_enabled && ec.network != network.baseObject.internal_name))))
+        ))
         .map(e => ({
             baseObject: e,
             id: e.internal_name,
