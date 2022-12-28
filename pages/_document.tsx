@@ -2,8 +2,8 @@ import React from 'react'
 import Document, { Head, Html, Main, NextScript } from 'next/document'
 
 export enum TrackEvent {
-  SignedIn = 'Successfully signed in',
-  SwapFailed = 'Got to Swap failed page'
+  SignedIn = 'Signed in',
+  SwapFailed = 'Swap failed',
 }
 
 type PlausibleArgs = [TrackEvent, () => void] | [TrackEvent] | any

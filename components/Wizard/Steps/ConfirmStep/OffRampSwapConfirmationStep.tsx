@@ -12,14 +12,14 @@ import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import KnownInternalNames from '../../../../lib/knownIds';
 import Widget from '../../Widget';
-import LayerSwapApiClient, { SwapType } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
 import GuideLink from '../../../guideLink';
 import { useQueryState } from '../../../../context/query';
 import InternalApiClient from '../../../../lib/internalApiClient';
 import { useSettingsState } from '../../../../context/settings';
-import { PencilAltIcon, ExclamationIcon } from '@heroicons/react/outline';
+import { ExclamationIcon } from '@heroicons/react/outline';
 import ToggleButton from '../../../buttons/toggleButton';
 import { nameOf } from '../../../../lib/external/nameof';
 import { FormikProps } from 'formik';
@@ -133,7 +133,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                             </div>
                         </div>
                     </div>
-                    <SubmitButton type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
+                    <SubmitButton className='plausible-event-name=Swap+details+confirmed' type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
                 </div>
