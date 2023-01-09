@@ -23,6 +23,7 @@ import { SwapStatus } from "../../Models/SwapStatus"
 import FormattedDate from "../Common/FormattedDate";
 import { GetSourceDestinationData } from "../../helpers/swapHelper";
 import useSortableData from "../../hooks/useSortableData";
+import useWindowDimensions from "../../hooks/useWindowDimensions";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -37,6 +38,7 @@ function TransactionsHistory() {
   const { email } = useAuthState()
   const { cancelSwap } = useSwapDataUpdate()
   const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending
+  const { width } = useWindowDimensions()
 
   const handleGoBack = useCallback(() => {
     router.back()
@@ -89,10 +91,17 @@ function TransactionsHistory() {
     setOpenSwapDetailsModal(true)
   }
 
+  const handleOpenSwapDetailsInMobile = (swap: SwapItem) => {
+    if (width < 1024) {
+      setSelectedSwap(swap)
+      setOpenSwapDetailsModal(true)
+    }
+  }
+
   const { items, requestSort, sortConfig } = useSortableData(swaps);
   const getStatusIcon = (name) => {
     if (!sortConfig) {
-      return <SelectorIcon className="h-3"/>;
+      return <SelectorIcon className="h-3" />;
     }
     return sortConfig.key === name ? (sortConfig.direction == 'ascending' ? <GreyIcon /> : <GreenIcon />) : undefined;
   };
@@ -179,7 +188,7 @@ function TransactionsHistory() {
                             >
                               Date
                             </th>
-                            <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                            <th scope="col" className="hidden lg:table-cell relative py-3.5 pl-3 pr-4 sm:pr-6">
                               <span className="sr-only">More</span>
                             </th>
                           </tr>
@@ -192,7 +201,7 @@ function TransactionsHistory() {
                             //TODO implement transaction_explorer_template in exchange & network settings
                             // const { transaction_explorer_template } = swapNetwork
 
-                            return <tr key={swap.id}>
+                            return <tr onClick={() => handleOpenSwapDetailsInMobile(swap)} key={swap.id}>
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
@@ -333,7 +342,7 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-transparent',
-                                  'relative py-3.5 pl-3 pr-4 sm:pr-6 text-right text-sm font-medium'
+                                  'hidden lg:table-cell relative py-3.5 pl-3 pr-4 sm:pr-6 text-right text-sm font-medium'
                                 )}
                               >
                                 <button
