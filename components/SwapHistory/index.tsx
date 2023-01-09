@@ -1,5 +1,5 @@
 import { useRouter } from "next/router"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
 import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, RefreshIcon, SelectorIcon, XIcon } from '@heroicons/react/outline';
@@ -24,6 +24,7 @@ import FormattedDate from "../Common/FormattedDate";
 import { GetSourceDestinationData } from "../../helpers/swapHelper";
 import useSortableData from "../../hooks/useSortableData";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
+import HoverTooltip from "../Tooltips/HoverTooltip";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -287,24 +288,21 @@ function TransactionsHistory() {
                                   'px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
-                                <div className="md:flex">
-                                  {
-                                    //TODO get from input/output
-                                    // swap?.status == 'completed' && swap. != swap.requested_amount ?
-                                    //   <div className="flex flex-col md:flex-row text-left">
-                                    //     <span className="ml-1 md:ml-0">{swap.received_amount} /</span>
-                                    //     <HoverTooltip text='Amount You Requested' moreClassNames="w-40 text-center">
-                                    //       <span className="underline decoration-dotted hover:no-underline">
-                                    //         {swap.requested_amount}
-                                    //       </span>
-                                    //     </HoverTooltip>
-                                    //   </div>
-                                    //   :
-                                    //   <span>
-                                    //     {swap.requested_amount}
-                                    //   </span>
-                                  }
-                                  <span className="ml-1">{currency.asset}</span>
+                                <div className="flex justify-between items-center">
+                                  <div className="">
+                                    {
+                                      swap?.status == 'completed' ?
+                                        <span className="ml-1 md:ml-0">
+                                          {swap.output_transaction.amount}
+                                        </span>
+                                        :
+                                        <span>
+                                          {swap.requested_amount}
+                                        </span>
+                                    }
+                                    <span className="ml-1">{currency.asset}</span>
+                                  </div>
+                                  <ChevronRightIcon className="h-5 w-5 lg:hidden" />
                                 </div>
                               </td>
                               <td
