@@ -27,6 +27,7 @@ export default function ({ hideNavbar, children }: Props) {
             router.events.off('routeChangeError', handleComplete)
         }
     })
+
     const { addressSource } = useQueryState()
     return <div className={` ${addressSource} styled-scroll`}>
         <div className="invisible imxMarketplace"></div>

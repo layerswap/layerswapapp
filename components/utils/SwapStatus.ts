@@ -5,7 +5,7 @@ import { SwapWithdrawalStep } from "../../Models/Wizard";
 export const GetSwapStatusStep = (swap: SwapItem): SwapWithdrawalStep => {
     const swapStatus = swap?.status;
     if (swapStatus == SwapStatus.UserTransferPending)
-        return SwapWithdrawalStep.Withdrawal
+        return swap.source_exchange ? SwapWithdrawalStep.Withdrawal : SwapWithdrawalStep.OffRampWithdrawal
     else if (swapStatus == SwapStatus.Completed)
         return SwapWithdrawalStep.Success
     else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)

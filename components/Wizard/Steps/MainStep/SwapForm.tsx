@@ -98,7 +98,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
-                    <SwapButton type='submit' isDisabled={!isValid} isSubmitting={isSubmitting}>
+                    <SwapButton className="plausible-event-name=Swap+initiated" type='submit' isDisabled={!isValid} isSubmitting={isSubmitting}>
                         {displayErrorsOrSubmit(errors, values.swapType)}
                     </SwapButton>
                 </Widget.Footer>

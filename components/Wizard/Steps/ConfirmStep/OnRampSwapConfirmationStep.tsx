@@ -1,6 +1,6 @@
 import { PencilAltIcon, ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useRef, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
@@ -57,12 +57,12 @@ const OnRampSwapConfirmationStep: FC = () => {
         try {
             if (!swap) {
                 const swapId = await createAndProcessSwap();
-                return await router.push(`/${swapId}`)
+                return await router.push(`/swap/${swapId}`)
             }
             else {
                 const swapId = swap.id
                 // await processPayment(swapId)
-                return await router.push(`/${swapId}`)
+                return await router.push(`/swap/${swapId}`)
             }
         }
         catch (error) {
@@ -136,7 +136,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                             </div>
                         </div>
                     </div>
-                    <SubmitButton type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
+                    <SubmitButton className='plausible-event-name=Swap+details+confirmed' type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
                 </div>

@@ -46,7 +46,7 @@ const AmountField = forwardRef((_, ref: any) => {
             {exchange && network && currency && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
                 <button
                     type="button"
-                    className="p-1.5  bg-darkblue-400 hover:bg-darkblue-300 rounded-md hidden md:block border border-darkblue-400 hover:border-darkblue-100"
+                    className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md hidden md:block border border-darkblue-400 hover:border-darkblue-100"
                     onClick={() => setFieldValue(name, minAllowedAmount)}
 
                 >
@@ -55,7 +55,7 @@ const AmountField = forwardRef((_, ref: any) => {
                 <button
                     type="button"
                     onClick={() => setFieldValue(name, maxAllowedAmount)}
-                    className="p-1.5  bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100">
+                    className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100">
                     MAX
                 </button>
             </div>}
