@@ -173,8 +173,9 @@ export type ConnectParams = {
 }
 
 export type UserExchangesData = {
-    exchange_id: string,
-    note: string
+    exchange: string,
+    note: string,
+    id: string
 }
 
 export type CreateSwapData = {

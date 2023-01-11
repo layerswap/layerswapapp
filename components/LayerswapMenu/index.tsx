@@ -117,11 +117,11 @@ export default function () {
                                                             Swap History
                                                         </Item>
                                                     </Menu.Item>
-                                                    {/* <Menu.Item>
+                                                    <Menu.Item>
                                                         <Item type={ItemType.link} pathname={"/exchanges"} icon={<LinkIcon className='h-4 w-4' />}>
                                                             Exchange Accounts
                                                         </Item>
-                                                    </Menu.Item> */}
+                                                    </Menu.Item>
                                                     <hr className="horizontal-gradient" />
                                                     <Menu.Item>
                                                         <Item type={ItemType.button} icon={<LightBulbIcon className='h-4 w-4' />} className="plausible-event-name=Get+help"
