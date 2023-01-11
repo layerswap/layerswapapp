@@ -9,6 +9,7 @@ import CopyButton from '../buttons/copyButton';
 import { SwapDetailsComponentSceleton } from '../Sceletons';
 import StatusIcon from './StatusIcons';
 import { GetSourceDestinationData } from '../../helpers/swapHelper';
+import { ExternalLinkIcon } from '@heroicons/react/outline';
 
 type Props = {
     id: string
@@ -20,7 +21,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const [loading, setLoading] = useState(false)
     const router = useRouter();
 
-    const { currency, destination, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+    const { currency, destination, destination_network, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
     useEffect(() => {
         (async () => {
@@ -125,6 +126,22 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 </div>
                             </span>
                         </div>
+                        {swap?.output_transaction?.transaction_id &&
+                            <>
+                                <hr className='horizontal-gradient' />
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-left">Transaction </span>
+                                    <span className="text-white">
+                                        <div className='inline-flex items-center'>
+                                            <div className="underline hover:no-underline flex items-center space-x-1">
+                                                <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                                                <ExternalLinkIcon className='h-4' />
+                                            </div>
+                                        </div>
+                                    </span>
+                                </div>
+                            </>
+                        }
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Requested amount</span>

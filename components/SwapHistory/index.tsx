@@ -24,7 +24,6 @@ import FormattedDate from "../Common/FormattedDate";
 import { GetSourceDestinationData } from "../../helpers/swapHelper";
 import useSortableData from "../../hooks/useSortableData";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
-import HoverTooltip from "../Tooltips/HoverTooltip";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -197,7 +196,7 @@ function TransactionsHistory() {
                         <tbody>
                           {items?.map((swap, index) => {
 
-                            const { currency, destination, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+                            const { currency, destination,destination_network, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
                             //TODO implement transaction_explorer_template in exchange & network settings
                             // const { transaction_explorer_template } = swapNetwork
@@ -311,14 +310,14 @@ function TransactionsHistory() {
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
-                                {/* {swap.transaction_id && swap.type == SwapType.OnRamp ?
+                                {swap?.output_transaction?.transaction_id ?
                                   <>
                                     <div className="underline hover:no-underline">
-                                      <a target={"_blank"} href={transaction_explorer_template.replace("{0}", swap.transaction_id)}>{shortenAddress(swap.transaction_id)}</a>
+                                      <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
                                     </div>
                                   </>
                                   : <div>-</div>
-                                } */}
+                                }
                               </td>
                               <td
                                 className={classNames(
