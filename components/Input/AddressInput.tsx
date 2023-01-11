@@ -1,5 +1,8 @@
 import { Field } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
+import KnownInternalNames from "../../lib/knownIds";
+import NetworkSettings from "../../lib/NetworkSettings";
+import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
@@ -9,11 +12,13 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     className?: string;
     children?: JSX.Element | JSX.Element[];
     ref?: any;
-    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+    values?: SwapFormValues
 }
 
 const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ label, disabled, name, className, onChange }, ref) => {
+    ({ label, disabled, name, className, values }, ref) => {
+
+        const placeholder = NetworkSettings.KnownSettings[values?.network?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
 
         return (<>
             {label &&
@@ -28,7 +33,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             {...field}
                             value={field.value || ""}
                             ref={ref}
-                            placeholder={"0x123...ab56c"}
+                            placeholder={placeholder}
                             autoCorrect="off"
                             type={"text"}
                             name={name}

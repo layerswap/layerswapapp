@@ -1,12 +1,12 @@
 import Layout from '../components/layout'
 import { AuthProvider } from '../context/authContext'
-import TransactionsHistory from '../components/swapHistoryComponent'
 import { MenuProvider } from '../context/menu'
 import { SettingsProvider } from '../context/settings'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { SwapDataProvider } from '../context/swap'
+import TransactionsHistory from '../components/SwapHistory'
 
 export default function Transactions({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url

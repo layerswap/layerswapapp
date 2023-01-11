@@ -1,14 +1,14 @@
 import { useRouter } from 'next/router';
 import { FC, useEffect, useState } from 'react'
-import { useSettingsState } from '../context/settings';
-import LayerSwapApiClient, { SwapItem } from '../lib/layerSwapApiClient';
+import { useSettingsState } from '../../context/settings';
+import LayerSwapApiClient, { SwapItem } from '../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
-import shortenAddress from './utils/ShortenAddress';
-import CopyButton from './buttons/copyButton';
-import { SwapDetailsComponentSceleton } from './Sceletons';
+import shortenAddress from '../utils/ShortenAddress';
+import CopyButton from '../buttons/copyButton';
+import { SwapDetailsComponentSceleton } from '../Sceletons';
 import StatusIcon from './StatusIcons';
-import { GetSourceDestinationData } from '../helpers/swapHelper';
+import { GetSourceDestinationData } from '../../helpers/swapHelper';
 
 type Props = {
     id: string
@@ -127,30 +127,40 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">Transfered amount</span>
+                            <span className="text-left">Requested amount</span>
                             <span className='text-white font-normal flex'>
-                                {swap?.input_transaction?.amount} {currency?.asset}
+                                {swap?.requested_amount} {currency?.asset}
                             </span>
                         </div>
+                        {
+                            swap?.input_transaction &&
+                            <>
+                                <hr className='horizontal-gradient' />
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-left">Transfered amount</span>
+                                    <span className='text-white font-normal flex'>
+                                        {swap?.input_transaction?.amount} {currency?.asset}
+                                    </span>
+                                </div>
+                            </>
+                        }
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Layerswap Fee </span>
                             <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currency.precision))} {currency?.asset}</span>
                         </div>
-                        <hr className='horizontal-gradient' />
                         {
-                            swap?.status == 'completed' &&
+                            swap?.output_transaction &&
                             <>
+                                <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
                                     <span className="text-left">Amount You Received</span>
                                     <span className='text-white font-normal flex'>
                                         {swap?.output_transaction?.amount} {currency?.asset}
                                     </span>
                                 </div>
-                                <hr className='horizontal-gradient' />
                             </>
                         }
-
                     </div>
                 </div>
             </div>
