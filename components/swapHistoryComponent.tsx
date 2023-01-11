@@ -22,6 +22,7 @@ import { useSwapDataUpdate } from "../context/swap"
 import { SwapStatus } from "../Models/SwapStatus"
 import FormattedDate from "./Common/FormattedDate";
 import { GetSourceDestinationData } from "../helpers/swapHelper";
+import { SwapCancelModal } from "./Wizard/Steps/PendingSwapsStep";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -34,8 +35,13 @@ function TransactionsHistory() {
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const { email } = useAuthState()
-  const { cancelSwap } = useSwapDataUpdate()
+  const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
   const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending
+
+  const handleOpenCancelConfirmModal = () => {
+    setOpenSwapDetailsModal(false)
+    setOpenCancelConfirmModal(true)
+  }
 
   const handleGoBack = useCallback(() => {
     router.back()
@@ -114,7 +120,7 @@ function TransactionsHistory() {
           : <>
             {
               swaps?.length > 0 ?
-              <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">
+                <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">
                   <div className="mb-2">
                     <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
                       <table className="w-full divide-y divide-darkblue-500">
@@ -376,7 +382,7 @@ function TransactionsHistory() {
                         <div className="text-white text-sm mt-6 space-y-3">
                           <div className="flex flex-row text-white text-base space-x-2">
                             <div className='basis-1/3'>
-                              <SubmitButton text_align="left" buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false} icon={<XIcon className='h-5 w-5' />}>
+                              <SubmitButton text_align="left" buttonStyle="outline" onClick={handleOpenCancelConfirmModal} isDisabled={false} isSubmitting={false} icon={<XIcon className='h-5 w-5' />}>
                                 <DoubleLineText
                                   colorStyle='mltln-text-dark'
                                   primaryText='Cancel'
@@ -386,7 +392,7 @@ function TransactionsHistory() {
                               </SubmitButton>
                             </div>
                             <div className='basis-2/3'>
-                              <SubmitButton button_align='right' text_align="left" onClick={() => router.push(`/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='h-5 w-5' />}>
+                              <SubmitButton button_align='right' text_align="left" onClick={() => router.push(`/swap/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='h-5 w-5' />}>
                                 <DoubleLineText
                                   colorStyle='mltln-text-light'
                                   primaryText="Complete"
@@ -400,6 +406,7 @@ function TransactionsHistory() {
                       }
                     </div>
                   </Modal>
+                  <SwapCancelModal swapToCancel={selectedSwap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
                 </div>
                 : <div className="absolute top-1/2 right-0 text-center w-full">
                   There are no transactions for this account

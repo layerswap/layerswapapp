@@ -5,6 +5,7 @@ import { useQueryState } from '../context/query';
 import { useRouter } from 'next/router';
 import { forwardRef } from 'react';
 import { Root, Portal, Overlay, Content, Title, Close, } from '@radix-ui/react-dialog';
+import inIframe from './utils/inIframe';
 
 type modalSize = 'small' | 'medium' | 'large';
 
@@ -171,7 +172,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className='px-5 grid grid-cols-6 items-center py-3 rounded-t-2xl bg-darkblue styled-scroll'>
+                <div className='px-5 grid grid-cols-6 items-center py-3 rounded-t-2xl bg-darkblue'>
                     <button className='text-base text-gray-600 col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
                         Close
                     </button>
@@ -187,7 +188,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                             </div>
                     }
                 </div>
-                <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto`}>
+                <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto ${inIframe() && 'styled-scroll'}`}>
                     {children}
                 </div>
             </motion.div>

@@ -10,6 +10,7 @@ import ProccessingWalletTransactionStep from "./Steps/ProccessingWalletTransacti
 import SuccessfulStep from "./Steps/SuccessfulStep";
 import ConnectWalletStep from "./Steps/Wallet/ConnectWalletStep";
 import WithdrawExchangeStep from "./Steps/WithdrawExhangeStep";
+import WithdrawNetworkStep from "./Steps/WithdrawNetworkStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 
@@ -27,6 +28,9 @@ const SwapWithdrawalWizard: FC = () => {
         <Wizard>
             <WizardItem StepName={SwapWithdrawalStep.Withdrawal} PositionPercent={90} GoBack={handleGoBack}>
                 <WithdrawExchangeStep />
+            </WizardItem>
+            <WizardItem StepName={SwapWithdrawalStep.OffRampWithdrawal} PositionPercent={90} GoBack={handleGoBack}>
+                <WithdrawNetworkStep/>
             </WizardItem>
             <WizardItem StepName={SwapWithdrawalStep.WalletConnect} GoBack={handleGoBack} PositionPercent={90} >
                 <ConnectWalletStep />

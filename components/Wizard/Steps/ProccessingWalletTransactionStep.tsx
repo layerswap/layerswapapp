@@ -4,6 +4,7 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { SwapType } from '../../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
+import { TrackEvent } from '../../../pages/_document';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 
 const ProccessingWalletTransactionStep: FC = () => {
