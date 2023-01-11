@@ -7,6 +7,7 @@ export default class NetworkSettings {
     WithdrawalWarningMessage?: string;
     ChainId?: number;
     EstimatedTransferTime?: number;
+    AddressPlaceholder?: string
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
@@ -85,6 +86,9 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.RoninMainnet] = {
             ChainId: 2020,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.Osmosis] = {
+            AddressPlaceholder: 'osmo123...ab56c'
         };
         
         NetworkSettings.ImmutableXSettings = {

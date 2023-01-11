@@ -1,4 +1,4 @@
-import { SwapStatus } from "../Models/SwapStatus"
+import { SwapStatus } from "../../Models/SwapStatus"
 
 export default function StatusIcon({ status }: { status: SwapStatus }) {
   switch (status) {
