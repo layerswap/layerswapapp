@@ -69,7 +69,7 @@ const SuccessfulStep: FC = () => {
                                 :
                                 <div className='grow'>
                                     <GoHomeButton>
-                                        <SubmitButton text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                        <SubmitButton className='plausible-event-name=Swap+more' text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
                                             Swap more
                                         </SubmitButton>
                                     </GoHomeButton>

@@ -1,18 +1,18 @@
-import LayerSwapApiClient from '../lib/layerSwapApiClient';
-import Layout from '../components/layout';
+import LayerSwapApiClient from '../../lib/layerSwapApiClient';
+import Layout from '../../components/layout';
 import fs from 'fs';
 import path from 'path';
-import { LayerSwapSettings } from '../Models/LayerSwapSettings';
+import { LayerSwapSettings } from '../../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
-import { AuthProvider } from '../context/authContext';
-import { SwapDataProvider } from '../context/swap';
-import { UserExchangeProvider } from '../context/userExchange';
-import { MenuProvider } from '../context/menu';
-import { SettingsProvider } from '../context/settings';
-import SwapWithdrawal from '../components/SwapWithdrawal';
-import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
-import { validateSignature } from '../helpers/validateSignature';
+import { AuthProvider } from '../../context/authContext';
+import { SwapDataProvider } from '../../context/swap';
+import { UserExchangeProvider } from '../../context/userExchange';
+import { MenuProvider } from '../../context/menu';
+import { SettingsProvider } from '../../context/settings';
+import SwapWithdrawal from '../../components/SwapWithdrawal';
+import LayerSwapAuthApiClient from '../../lib/userAuthApiClient';
+import { validateSignature } from '../../helpers/validateSignature';
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url

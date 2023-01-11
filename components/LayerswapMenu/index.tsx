@@ -1,14 +1,12 @@
 import { Menu } from "@headlessui/react";
 import { BookOpenIcon, ExternalLinkIcon, MenuIcon } from "@heroicons/react/outline";
-import { HomeIcon, LightBulbIcon, LinkIcon, LoginIcon, LogoutIcon, PaperAirplaneIcon, SupportIcon, TableIcon, UserIcon } from "@heroicons/react/solid";
+import { HomeIcon, LightBulbIcon, LoginIcon, LogoutIcon, TableIcon, UserIcon } from "@heroicons/react/solid";
 import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../../context/authContext";
 import { useMenuState } from "../../context/menu";
 import TokenService from "../../lib/TokenService";
-import SendFeedback from '../sendFeedback'
-import SlideOver from "../SlideOver";
 import { AnimatePresence, motion } from "framer-motion";
 import Item, { ItemType } from "./MenuItem";
 import { shortenEmail } from "../utils/ShortenAddress";
@@ -92,7 +90,7 @@ export default function () {
                                                             </Item>
                                                         </Menu.Item>
                                                         <Menu.Item>
-                                                            <Item type={ItemType.button} icon={<LightBulbIcon className='h-4 w-4' />}
+                                                            <Item type={ItemType.button} icon={<LightBulbIcon className='h-4 w-4' />} className="plausible-event-name=Get+help"
                                                                 onClick={() => {
                                                                     boot();
                                                                     show();
@@ -126,7 +124,7 @@ export default function () {
                                                     </Menu.Item> */}
                                                     <hr className="horizontal-gradient" />
                                                     <Menu.Item>
-                                                        <Item type={ItemType.button} icon={<LightBulbIcon className='h-4 w-4' />}
+                                                        <Item type={ItemType.button} icon={<LightBulbIcon className='h-4 w-4' />} className="plausible-event-name=Get+help"
                                                             onClick={() => {
                                                                 boot();
                                                                 show();
@@ -136,7 +134,7 @@ export default function () {
                                                         </Item>
                                                     </Menu.Item>
                                                     <Menu.Item>
-                                                        <Item type={ItemType.button} onClick={() => handleSetUrl("https://docs.layerswap.io/")} icon={<BookOpenIcon className='h-4 w-4' />}>
+                                                        <Item type={ItemType.button} onClick={() => handleSetUrl("https://docs.layerswap.io/")} icon={<BookOpenIcon className='h-4 w-4' />} className="plausible-event-name=User+Docs">
                                                             User Docs
                                                         </Item>
                                                     </Menu.Item>
