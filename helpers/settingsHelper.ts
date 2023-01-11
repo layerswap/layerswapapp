@@ -13,4 +13,3 @@ export function mapNetworkCurrencies(exchanges: Exchange[], networks: CryptoNetw
     })
 
 }
-

@@ -3,7 +3,9 @@ import toast from 'react-hot-toast';
 import useSWR from 'swr';
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useQueryState } from '../../../../context/query';
+import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState } from '../../../../context/swap';
+import { GetSourceDestinationData } from '../../../../helpers/swapHelper';
 import { useInterval } from '../../../../hooks/useInterval';
 import { usePersistedState } from '../../../../hooks/usePersistedState';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
@@ -12,17 +14,15 @@ import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwap
 import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
 import { ApiResponse } from '../../../../Models/ApiResponse';
-import { SwapCreateStep } from '../../../../Models/Wizard';
+import { SwapCreateStep, SwapWithdrawalStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
-import ToggleButton from '../../../buttons/toggleButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
 import Widget from '../../Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectScreens';
 
 const AccountConnectStep: FC = () => {
-    const { swapFormData } = useSwapDataState()
-    const { exchange, amount, currency } = swapFormData || {}
-    const { oauth_authorize_url } = exchange?.baseObject || {}
+    const { swap } = useSwapDataState()
+    const { networks, exchanges, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate()
 
     const localStorageItemKey = "alreadyFamiliarWithCoinbaseConnect";
@@ -34,11 +34,13 @@ const AccountConnectStep: FC = () => {
 
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
+    const { network, exchange, currency } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+    const { oauth_authorize_url } = exchange || {}
 
-    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.baseObject?.usd_price, Number(amount))
+    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount))
     const layerswapApiClient = new LayerSwapApiClient()
     const exchange_accounts_endpoint = `/exchange_accounts`
-    const { data: exchanges } = useSWR<ApiResponse<UserExchangesData[]>>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
+    const { data: exchange_accounts } = useSWR<ApiResponse<UserExchangesData[]>>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
 
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref = ""
@@ -48,7 +50,6 @@ const AccountConnectStep: FC = () => {
         catch (e) {
             //throws error when accessing href TODO research safe way
         }
-
         if (authWindowHref && authWindowHref?.indexOf(window.location.origin) !== -1) {
             const authWindowURL = new URL(authWindowHref)
             const authorizedAmount = authWindowURL.searchParams.get("send_limit_amount")
@@ -63,17 +64,17 @@ const AccountConnectStep: FC = () => {
     )
 
     useEffect(() => {
-        if (exchanges && authorizedAmount) {
-            const exchangeIsEnabled = exchanges?.data?.some(e => e.exchange === exchange?.baseObject.internal_name)
+        if (exchange_accounts && authorizedAmount) {
+            const exchangeIsEnabled = exchange_accounts?.data?.some(e => e.exchange === exchange?.internal_name)
             if (exchangeIsEnabled) {
                 if (Number(authorizedAmount) < minimalAuthorizeAmount)
                     toast.error("You did not authorize enough")
                 else {
-                    goToStep(SwapCreateStep.Confirm)
+                    goToStep(SwapWithdrawalStep.WithdrawFromCoinbase)
                 }
             }
         }
-    }, [exchanges, authorizedAmount, minimalAuthorizeAmount])
+    }, [exchange_accounts, authorizedAmount, minimalAuthorizeAmount])
 
     const handleConnect = useCallback(() => {
         try {
@@ -86,16 +87,15 @@ const AccountConnectStep: FC = () => {
                 goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, swap_data: swapFormData, query })
+            const authWindow = OpenLink({ link: oauth_authorize_url + encoded })
             setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-
     }, [oauth_authorize_url, carouselRef, carouselFinished, query])
 
-    const exchange_name = exchange?.name
+    const exchange_name = exchange?.display_name
 
     const onCarouselLast = (value) => {
         setCarouselFinished(value)
@@ -119,7 +119,7 @@ const AccountConnectStep: FC = () => {
                         </div>
                         :
                         <div className="w-full space-y-3">
-                            {swapFormData && <Carousel onLast={onCarouselLast} ref={carouselRef}>
+                            {swap && <Carousel onLast={onCarouselLast} ref={carouselRef}>
                                 <CarouselItem width={100} >
                                     <FirstScreen exchange_name={exchange_name} />
                                 </CarouselItem>

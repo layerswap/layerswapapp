@@ -34,16 +34,6 @@ const useCreateSwap = () => {
                 if (hasSourcePendingSwaps) {
                     return goToStep(SwapCreateStep.PendingSwaps)
                 }
-
-                if(values.exchange?.baseObject?.authorization_flow == "o_auth2"){
-                    try{
-                        const res = await layerswapApiClient.GetExchangeAccount(values.exchange?.baseObject?.internal_name)
-                    }
-                    catch(e){
-                        console.log(e)
-                    }
-                }
-
                 return goToStep(SwapCreateStep.Confirm)
             }
         }, []),

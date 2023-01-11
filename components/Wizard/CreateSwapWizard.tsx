@@ -13,7 +13,6 @@ import MainStep from "./Steps/MainStep/index";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 import PendingSwapsStep from "./Steps/PendingSwapsStep";
-import AccountConnectStep from "./Steps/CoinbaseAccountConnectStep";
 
 const CreateSwap: FC = () => {
     const { MainForm, Email, Code, Confirm, OAuth } = useCreateSwap()
@@ -39,9 +38,6 @@ const CreateSwap: FC = () => {
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.PendingSwaps} GoBack={GoBackToMainStep} PositionPercent={MainForm.positionPercent + 10} key={SwapCreateStep.PendingSwaps}>
                     <PendingSwapsStep />
-                </WizardItem>
-                <WizardItem StepName={SwapCreateStep.OAuth} GoBack={GoBackToMainStep} PositionPercent={OAuth.positionPercent} key={SwapCreateStep.OAuth}>
-                    <AccountConnectStep />
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.Confirm} GoBack={GoBackToMainStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.Confirm}>
                     <SwapConfirmationStep />

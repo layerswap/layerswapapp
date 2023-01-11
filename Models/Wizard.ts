@@ -42,7 +42,8 @@ export enum SwapWithdrawalStep {
     Error = "Error",
     Delay = "Delay",
     OffRampWithdrawal = "OffRampWithdrawal",
-    WalletConnect = "WalletConnect"
+    WithdrawFromImtblx = "WithdrawFromImtblx",
+    WithdrawFromCoinbase = "WithdrawFromCoinbase"
 }
 
 export enum AuthStep {

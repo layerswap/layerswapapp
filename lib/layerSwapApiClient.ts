@@ -76,6 +76,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/apply_network_input`, { transaction_id: transactionId });
     }
 
+    async WithdrawFromExchange(swapId: string, exchange: string, twoFactorCode?: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/exchange/${exchange}/withdraw${twoFactorCode ? `?twoFactorCode=${twoFactorCode}` : ''}`);
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })

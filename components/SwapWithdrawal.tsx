@@ -30,7 +30,7 @@ const SwapWithdrawal: FC = () => {
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableX?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     if (sourceIsImmutableX && swap.status === SwapStatus.UserTransferPending) {
         const isImtblMarketplace = (query.signature && query.addressSource === "imxMarketplace")
-        initialStep = isImtblMarketplace ? SwapWithdrawalStep.ProcessingWalletTransaction : SwapWithdrawalStep.WalletConnect
+        initialStep = isImtblMarketplace ? SwapWithdrawalStep.ProcessingWalletTransaction : SwapWithdrawalStep.WithdrawFromImtblx
     }
     else {
         initialStep = GetSwapStatusStep(swap);

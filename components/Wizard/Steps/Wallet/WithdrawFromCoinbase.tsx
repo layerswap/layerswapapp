@@ -3,68 +3,34 @@ import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
-import ImtblClient from '../../../../lib/imtbl';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import { classNames } from '../../../utils/classNames';
-import { useInterval } from '../../../../hooks/useInterval';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import shortenAddress from "../../../utils/ShortenAddress"
-import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import { GetSourceDestinationData } from '../../../../helpers/swapHelper';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { parseJwt } from '../../../../lib/jwtParser';
 import TokenService from '../../../../lib/TokenService';
+import useSWR from 'swr';
+import { ApiResponse } from '../../../../Models/ApiResponse';
+import { OpenLink } from '../../../../lib/openLink';
 
 
-const ConnectWalletStep: FC = () => {
+const WithdrawFromCoinbase: FC = () => {
     const [loading, setLoading] = useState(false)
-    const [verified, setVerified] = useState<boolean>()
-    const [txidApplied, setTxidApplied] = useState(false)
-    const [applyCount, setApplyCount] = useState(0)
-    const [transactionId, setTransactionId] = useState<string>()
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { walletAddress, swap } = useSwapDataState()
-    const { setWalletAddress } = useSwapDataUpdate()
-    const { setInterval } = useSwapDataUpdate()
+    const { swap } = useSwapDataState()
     const { networks, exchanges, currencies, discovery: { resource_storage_url } } = useSettingsState()
-    const { goToStep, setError } = useFormWizardaUpdate<SwapWithdrawalStep>()
+    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
 
-    const { network } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+    const { network, exchange } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
-    const steps = [
-        { name: walletAddress ? `Connected to ${shortenAddress(walletAddress)}` : 'Connect wallet', description: 'Connect your ImmutableX wallet', href: '#', status: walletAddress ? 'complete' : 'current' },
-        {
-            name: verified ? 'Wallet is verified ' : 'Verify Wallet',
-            description: "Verify that you are the owner of the connected wallet",
-            href: '#',
-            status: walletAddress ? (verified ? 'complete' : 'current') : 'upcoming',
-        },
-        { name: 'Transfer', description: "Initiate a transfer from your wallet to our address", href: '#', status: verified ? 'current' : 'upcoming' },
-    ]
-
-    const applyNetworkInput = useCallback(async () => {
-        try {
-            setApplyCount(old => old + 1)
-            const layerSwapApiClient = new LayerSwapApiClient()
-            await layerSwapApiClient.ApplyNetworkInput(swap.id, transactionId)
-            setTxidApplied(true)
-        }
-        catch (e) {
-            //TODO handle
-        }
-    }, [transactionId])
-
-    useInterval(
-        applyNetworkInput,
-        transactionId && !txidApplied && applyCount < 10 ? 8000 : null,
-    )
-
-    useEffect(() => {
-        return () => setInterval(0)
-    }, [])
+    const layerswapApiClient = new LayerSwapApiClient()
+    const exchange_account_endpoint = `/exchange_accounts/${swap.source_exchange}?type=1`
+    const { data: exchange_account } = useSWR<ApiResponse<UserExchangesData>>(swap?.source_exchange ? exchange_account_endpoint : null, layerswapApiClient.fetcher)
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
@@ -73,75 +39,19 @@ const ConnectWalletStep: FC = () => {
             goToStep(swapStatusStep)
     }, [swapStatusStep, swap])
 
-    const handleConnect = useCallback(async () => {
-        setLoading(true)
-        try {
-            let address: string = walletAddress
-            if (!address) {
-                const imtblClient = new ImtblClient(network.internal_name)
-                const res = await imtblClient.ConnectWallet()
-                setWalletAddress(res.address)
-                address = res.address
-            }
-            const layerSwapApiClient = new LayerSwapApiClient()
-            try {
-                const account = await layerSwapApiClient.GetWhitelistedAddress(network.internal_name, address)
-                if (account)
-                    setVerified(true)
-            }
-            catch (e) {
-                //TODO handle account not found
-            }
-        }
-        catch (e) {
-            toast(e.message)
-        }
-        setLoading(false)
-    }, [network])
-
-    const handleVerify = useCallback(async () => {
-        setLoading(true)
-        try {
-            const imtblClient = new ImtblClient(network.internal_name)
-            const res = await imtblClient.Sign()
-            const layerSwapApiClient = new LayerSwapApiClient()
-            layerSwapApiClient.CreateWhitelistedAddress({ signature: res.result, address: walletAddress, network: network.internal_name })
-            setVerified(true)
-        }
-        catch (e) {
-            const data: ApiError = e?.response?.data?.error
-            if (data.code == KnownwErrorCode.NETWORK_ACCOUNT_ALREADY_EXISTS) {
-                goToStep(SwapWithdrawalStep.Error)
-                setError({ Code: data.code, Step: SwapWithdrawalStep.WithdrawFromImtblx })
-            }
-            toast(e.message)
-        }
-        setLoading(false)
-    }, [walletAddress, network])
-
     const handleTransfer = useCallback(async () => {
         setLoading(true)
         try {
-            const imtblClient = new ImtblClient(network.internal_name)
-            const res = await imtblClient.Transfer(swap.requested_amount.toString(), swap.deposit_address)
-            const transactionRes = res?.result?.[0]
-            if (!transactionRes)
-                toast('Transfer failed or terminated')
-            else if (transactionRes.status == "error") {
-                toast(transactionRes.message)
-            }
-            else if (transactionRes.status == "success") {
-                setTransactionId(transactionRes.txId.toString())
-                setTransferDone(true)
-                setInterval(2000)
-            }
+            const layerswapApiClient = new LayerSwapApiClient()
+            await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange)
+            setTransferDone(true)
         }
         catch (e) {
             if (e?.message)
                 toast(e.message)
         }
         setLoading(false)
-    }, [walletAddress, swap, network])
+    }, [swap, network])
 
     return (
         <>
@@ -153,29 +63,15 @@ const ConnectWalletStep: FC = () => {
                         </h3>
                     </div>
                     <p className='leading-5'>
-                        We’ll help you to send crypto from your ImmutableX wallet
+                        We’ll help you to send crypto from your Coinbase account
                     </p>
                 </div>
-                <WalletSteps steps={steps} />
                 {
-                    !walletAddress &&
-                    <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<LinkIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                        Connect
-                    </SubmitButton>
-                }
-                {
-                    walletAddress && !verified &&
-                    <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleVerify} icon={<CheckIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                        Verify wallet
-                    </SubmitButton>
-                }
-                {
-                    verified &&
+                    exchange_account &&
                     <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
                         Transfer
                     </SubmitButton>
                 }
-
             </div>
         </>
     )
@@ -246,4 +142,4 @@ function WalletSteps({ steps }) {
     )
 }
 
-export default ConnectWalletStep;
+export default WithdrawFromCoinbase;
