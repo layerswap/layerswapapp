@@ -1,5 +1,5 @@
 import { Menu } from "@headlessui/react";
-import { BookOpenIcon, ExternalLinkIcon, MenuIcon } from "@heroicons/react/outline";
+import { BookOpenIcon, ExternalLinkIcon, LinkIcon, MenuIcon } from "@heroicons/react/outline";
 import { HomeIcon, LoginIcon, LogoutIcon, TableIcon, UserIcon } from "@heroicons/react/solid";
 import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
