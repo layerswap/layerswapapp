@@ -30,8 +30,6 @@ type Props = {
 
 const MainStep: FC<Props> = ({ OnSumbit }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
-    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
-
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
     const [connectRhinoifiIsOpen, setConnectRhinofiIsOpen] = useState(false);
     const { swapFormData } = useSwapDataState()
@@ -43,7 +41,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const settings = useSettingsState();
     const { discovery: { resource_storage_url } } = settings || {}
     const query = useQueryState();
-    const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
+    const { updateSwapFormData, clearSwap, setDepositeAddressIsfromAccount } = useSwapDataUpdate()
 
     useEffect(() => {
         if (query.coinbase_redirect) {
@@ -58,6 +56,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                         const formValues = { ...temp_data.swap_data, destination_address: deposit_address?.data }
                         formikRef.current.setValues(formValues)
                         updateSwapFormData(formValues)
+                        setDepositeAddressIsfromAccount(true)
                     }
                     catch (e) {
                         toast(e?.response?.data?.error?.message || e.message)

@@ -1,14 +1,17 @@
-import { Field, useFormikContext } from "formik";
+import { Field, useField, useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import KnownInternalNames from "../../lib/knownIds";
-import { SwapType } from "../../lib/layerSwapApiClient";
+import { SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import Image from 'next/image'
 import { toast } from "react-hot-toast";
 import SpinIcon from "../icons/spinIcon";
+import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
+import { LinkIcon, XIcon } from "@heroicons/react/outline";
+import { motion } from "framer-motion";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     label?: string
@@ -18,31 +21,47 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     children?: JSX.Element | JSX.Element[];
     ref?: any;
     loading: boolean;
-    onSetCoinbaseDepoisteAddress?: () => Promise<void>
+    onSetExchangeDepoisteAddress?: () => Promise<void>;
+    exchangeAccount?: UserExchangesData;
 }
 
 const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ label, disabled, name, className, onSetCoinbaseDepoisteAddress, loading }, ref) => {
+    ({ exchangeAccount, label, disabled, name, className, onSetExchangeDepoisteAddress, loading }, ref) => {
 
         const {
-            values
+            values,
+            setFieldValue
         } = useFormikContext<SwapFormValues>();
 
+        const [field, meta, helpers] = useField(name)
+
+        const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
+        const { depositeAddressIsfromAccount } = useSwapDataState()
 
         const placeholder = NetworkSettings.KnownSettings[values?.network?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const { discovery: { resource_storage_url }, exchanges, networks } = useSettingsState();
 
-        const isCoinbaseOfframp = values?.swapType === SwapType.OffRamp && values?.exchange?.baseObject?.internal_name === KnownInternalNames.Exchanges.Coinbase
-
-        const coinbaseLogoURL = `${resource_storage_url}/layerswap/networks/${KnownInternalNames.Exchanges.Coinbase.toLowerCase()}.png`
-
-        const handleUseCoinbase = async () => {
+        const exchangeLogoURL = `${resource_storage_url}/layerswap/networks/${values?.exchange?.baseObject?.internal_name?.toLowerCase()}.png`
+        const [inpuFocused, setInputFocused] = useState(false)
+        const handleUseDepositeAddress = async () => {
             try {
-                await onSetCoinbaseDepoisteAddress()
+                await onSetExchangeDepoisteAddress()
             }
             catch (e) {
                 toast(e.message)
             }
+        }
+
+        const handleRemoveDepositeAddress = async () => {
+            setFieldValue("destination_address", '')
+            setDepositeAddressIsfromAccount(false)
+        }
+
+        const handleInputFocus = () => {
+            setInputFocused(true)
+        }
+        const handleInputBlur = () => {
+            setInputFocused(false)
         }
 
         return (<>
@@ -53,8 +72,8 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
             }
             <Field name={name}>
                 {({ field }) => (
-                    <div className="flex rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border ">
-                        <input
+                    <motion.div initial="rest" animate={inpuFocused ? "inputFocused" : "rest"} className="flex rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border">
+                        <motion.input
                             {...field}
                             value={field.value || ""}
                             ref={ref}
@@ -64,45 +83,88 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             name={name}
                             id={name}
                             disabled={disabled}
-                            className={classNames('disabled:cursor-not-allowed h-12 border-none leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-gray-400 truncate focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none',
+                            onFocus={handleInputFocus}
+                            onBlur={handleInputBlur}
+                            className={classNames('disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-gray-400 truncate focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none',
                                 className
                             )}
+                            transition={{
+                                width: { ease: 'linear', }
+                            }}
+                            variants={
+                                {
+                                    rest: { width: '100%' },
+                                    inputFocused: {
+                                        width: '100%',
+                                        transition: {
+                                            when: "afterChildren",
+                                        },
+                                    }
+                                }
+                            }
                         />
                         {
-                            isCoinbaseOfframp &&
-                            <span className="inline-flex items-center mr-2">
-                                <div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
-                                    <button
+                            values?.swapType === SwapType.OffRamp && values.exchange && !depositeAddressIsfromAccount &&
+                            <motion.span className="inline-flex items-center mr-2 shrink"
+                                transition={{
+                                    width: { ease: 'linear' }
+                                }}>
+                                <motion.div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
+                                    <motion.button
                                         type="button"
                                         className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100"
-                                        onClick={handleUseCoinbase}
+                                        onClick={handleUseDepositeAddress}
+
+                                    >
+                                        <motion.div className="flex items-center" >
+                                            <div className="flex-shrink-0 h-6 w-6 relative">
+                                                {
+                                                    loading ? <SpinIcon className="animate-spin h-6 w-6" />
+                                                        : <LinkIcon className="h-6 w-6" />
+                                                }
+
+                                            </div>
+
+                                            <motion.span className="ml-3 block truncate"
+                                                variants={
+                                                    {
+                                                        inputFocused: {
+                                                            width: '0',
+                                                        }
+                                                    }
+                                                }>
+                                                Connect from {values.exchange.baseObject.display_name}
+                                            </motion.span>
+                                        </motion.div>
+                                    </motion.button>
+                                </motion.div>
+                            </motion.span>
+                        }
+                        {
+                            depositeAddressIsfromAccount &&
+                            <span className="inline-flex items-center mr-2">
+                                <div className="text-xs flex items-center space-x-2 ml-3 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
+                                    <span className="inline-flex items-center mr-2">
+                                        <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
+                                            {exchangeAccount?.note}
+                                        </div>
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="p-1.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
+                                        onClick={handleRemoveDepositeAddress}
 
                                     >
                                         <div className="flex items-center" >
                                             <div className="flex-shrink-0 h-6 w-6 relative">
-                                                {
-                                                    loading ? <SpinIcon className="animate-spin h-6 w-6" />
-                                                        : <Image
-                                                            src={coinbaseLogoURL}
-                                                            alt="Coinbase Logo"
-                                                            height="40"
-                                                            width="40"
-                                                            loading="eager"
-                                                            priority
-                                                            layout="responsive"
-                                                            className="rounded-md object-contain"
-                                                        />
-                                                }
-
+                                                <XIcon className="h-6 w-6" />
                                             </div>
-                                            <span className="ml-3 block truncate">Set from coinbase</span>
                                         </div>
                                     </button>
                                 </div>
                             </span>
                         }
-
-                    </div>
+                    </motion.div>
                 )}
             </Field>
         </>)

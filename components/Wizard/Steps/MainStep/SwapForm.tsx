@@ -1,5 +1,5 @@
-import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useState } from "react";
+import { Form, FormikErrors, useField, useFormikContext } from "formik";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import Image from 'next/image';
 import SwapButton from "../../../buttons/swapButton";
@@ -11,7 +11,7 @@ import { ConnectedFocusError } from "../../../../lib/external/ConnectedFocusErro
 import ExchangesField from "../../../Select/Exchange";
 import NetworkField from "../../../Select/Network";
 import AmountField from "../../../Input/Amount";
-import LayerSwapApiClient, { SwapType } from "../../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { SwapType, UserExchangesData } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { Partner } from "../../../../Models/Partner";
 import Widget from "../../Widget";
@@ -22,6 +22,8 @@ import KnownInternalNames from "../../../../lib/knownIds";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
 import { KnownwErrorCode } from "../../../../Models/ApiError";
+import { useSwapDataState, useSwapDataUpdate } from "../../../../context/swap";
+import ConnectApiKeyExchange from "../../../connectApiKeyExchange";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -35,49 +37,84 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
         values,
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
-    const [openCoinbaseConnect, setOpenCoinbaseConnect] = useState(false)
+
+
+    const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
+    const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
     const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name?.toLowerCase()}.png` : null
     const router = useRouter();
-    const [loadingCoinbaseAddress, setLoadingCoinbaseAddress] = useState(false)
+    const [loadingDepositAddress, setLoadingDepositAddress] = useState(false)
+    const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
+    const { depositeAddressIsfromAccount } = useSwapDataState()
 
-    const handleSetCoinbaseDepositAddress = useCallback(async () => {
-        setLoadingCoinbaseAddress(true)
+    const closeExchangeConnect = (open) => {
+        setLoadingDepositAddress(open)
+        setOpenExchangeConnect(open)
+    }
+
+    const handleSetExchangeDepositAddress = useCallback(async () => {
+        setLoadingDepositAddress(true)
         const layerswapApiClient = new LayerSwapApiClient(router)
         try {
-            const exchange_account = await layerswapApiClient.GetExchangeAccount(KnownInternalNames.Exchanges.Coinbase, 0)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, values?.currency?.baseObject?.asset)
+            const exchange_account = await layerswapApiClient.GetExchangeAccount(values.exchange.baseObject.internal_name, 0)
+            setExchangeAccount(exchange_account.data)
+            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.exchange.baseObject.internal_name, values?.currency?.baseObject?.asset)
             setFieldValue("destination_address", deposit_address.data)
-            setLoadingCoinbaseAddress(false)
+            setDepositeAddressIsfromAccount(true)
+            setLoadingDepositAddress(false)
         }
         catch (e) {
             if (e?.response?.data?.error?.code === KnownwErrorCode.NOT_FOUND || e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS)
-                setOpenCoinbaseConnect(true)
+                setOpenExchangeConnect(true)
             else {
                 toast(e?.response?.data?.error?.message || e.message)
-                setLoadingCoinbaseAddress(false)
+                setLoadingDepositAddress(false)
             }
         }
     }, [values])
 
+    const depositeAddressIsfromAccountRef = useRef(depositeAddressIsfromAccount);
 
-    const handleCoinbaseConnected = useCallback(async () => {
+    useEffect(() => {
+        depositeAddressIsfromAccountRef.current = depositeAddressIsfromAccount
+    }, [depositeAddressIsfromAccount])
+
+    const handleExchangeConnected = useCallback(async () => {
+        setLoadingDepositAddress(true)
         const layerswapApiClient = new LayerSwapApiClient(router)
         try {
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, values?.currency?.baseObject?.asset)
+            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.exchange.baseObject.internal_name, values?.currency?.baseObject?.asset)
             setFieldValue("destination_address", deposit_address.data)
+            setDepositeAddressIsfromAccount(true)
         }
         catch (e) {
             toast(e?.response?.data?.error?.message || e.message)
         }
-        setLoadingCoinbaseAddress(false)
+        setLoadingDepositAddress(false)
     }, [values])
 
-    return <>
+    useEffect(() => {
+        if (depositeAddressIsfromAccountRef.current)
+            handleExchangeConnected()
+    }, [values.currency])
 
+    const exchangeRef = useRef(values.exchange?.id);
+
+    useEffect(() => {
+        if (exchangeRef.current && exchangeRef.current !== values?.exchange?.id) {
+            setFieldValue("destination_address", '')
+            setDepositeAddressIsfromAccount(false)
+        }
+        exchangeRef.current = values?.exchange?.id
+    }, [values.exchange])
+
+    return <>
         <Form className="h-full" >
-            <SlideOver imperativeOpener={[openCoinbaseConnect, setOpenCoinbaseConnect]} place='inStep'>
+            <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
                 {(close) => (
-                    <OfframpAccountConnectStep OnSuccess={() => { handleCoinbaseConnected(); close() }} />
+                    values?.exchange?.baseObject?.authorization_flow === "o_auth2" ?
+                        <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />
+                        : <ConnectApiKeyExchange exchange={values?.exchange?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
                 )}
             </SlideOver>
             {values && <ConnectedFocusError />}
@@ -110,9 +147,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                 }
                                 <div>
                                     <AddressInput
-                                        onSetCoinbaseDepoisteAddress={handleSetCoinbaseDepositAddress}
-                                        loading={loadingCoinbaseAddress}
-                                        disabled={lockAddress || (!values.network || !values.exchange)}
+                                        exchangeAccount={exchangeAccount}
+                                        onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
+                                        loading={loadingDepositAddress}
+                                        disabled={lockAddress || (!values.network || !values.exchange) || loadingDepositAddress}
                                         name={"destination_address"}
                                         className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
                                     />
@@ -129,9 +167,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                             <div className="relative rounded-md shadow-sm mt-1.5">
                                 <div>
                                     <AddressInput
-                                        onSetCoinbaseDepoisteAddress={handleSetCoinbaseDepositAddress}
-                                        loading={loadingCoinbaseAddress}
-                                        disabled={(!values.network || !values.exchange)}
+                                        exchangeAccount={exchangeAccount}
+                                        onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
+                                        loading={loadingDepositAddress}
+                                        disabled={(!values.network || !values.exchange) || loadingDepositAddress || depositeAddressIsfromAccount}
                                         name={"destination_address"}
                                         className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-gray-400 truncate')}
                                     />

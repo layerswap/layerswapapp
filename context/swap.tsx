@@ -10,7 +10,7 @@ import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 
-const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "" });
+const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
@@ -24,6 +24,7 @@ type UpdateInterface = {
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapItem>>
     setWalletAddress: (value: string) => void,
+    setDepositeAddressIsfromAccount: (value: boolean) => void
 }
 
 type SwapData = {
@@ -31,6 +32,7 @@ type SwapData = {
     swapFormData?: SwapFormValues,
     swap?: SwapItem,
     addressConfirmed: boolean,
+    depositeAddressIsfromAccount: boolean,
     walletAddress: string
 }
 
@@ -39,6 +41,7 @@ export function SwapDataProvider({ children }) {
     const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const [walletAddress, setWalletAddress] = useState<string>()
+    const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
     const [swapId, setSwapId] = useState(router.query.swapId?.toString())
 
@@ -119,11 +122,12 @@ export function SwapDataProvider({ children }) {
         setAddressConfirmed: setAddressConfirmed,
         setInterval: setInterval,
         mutateSwap: mutate,
+        setDepositeAddressIsfromAccount,
         setWalletAddress
     };
 
     return (
-        <SwapDataStateContext.Provider value={{ swapFormData, swap: swapResponse?.data, codeRequested, addressConfirmed, walletAddress }}>
+        <SwapDataStateContext.Provider value={{ swapFormData, depositeAddressIsfromAccount, swap: swapResponse?.data, codeRequested, addressConfirmed, walletAddress }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>

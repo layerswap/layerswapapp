@@ -54,7 +54,19 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<string>>("GET", `/exchange_accounts/${exchange}/deposit_address/${currency}`);
     }
     async DeleteExchange(exchange: string): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/exchange_accounts/${exchange}`);
+        try {
+            await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/exchange_accounts/${exchange}?type=0`);
+        }
+        catch (e) {
+            //TODO handle types in backend
+        }
+        try {
+            await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/exchange_accounts/${exchange}?type=1`);
+        }
+        catch (e) {
+            //TODO handle types in backend
+        }
+        return
     }
     async ConnectExchangeApiKeys(params: ConnectParams): Promise<ApiResponse<void>> {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", '/exchange_accounts', params);

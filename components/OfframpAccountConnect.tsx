@@ -19,32 +19,27 @@ import { SwapFormValues } from './DTOs/SwapFormValues';
 import { useFormikContext } from 'formik';
 
 type Props = {
-    OnSuccess: () => void,
+    OnSuccess: () => Promise<void>,
 }
 
 const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
     const {
         values,
-        setFieldValue
     } = useFormikContext<SwapFormValues>();
 
     const { exchange, currency } = values || {}
     const { oauth_connect_url } = exchange?.baseObject || {}
     const [authWindow, setAuthWindow] = useState<Window>()
     const [salon, setSalon] = useState(false)
-    const { updateSwapFormData } = useSwapDataUpdate()
+    const [loading, setLoading] = useState(false)
 
-    const authWindowRef = useRef<Window | null>(null);
     const query = useQueryState()
 
-    const layerswapApiClient = new LayerSwapApiClient()
-    const exchange_accounts_endpoint = `/exchange_accounts`
-    const depositad_address_endpoint = `/exchange_accounts/${exchange?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
-
-    const { data: exchange_accouts } = useSWR<ApiResponse<UserExchangesData[]>>(salon ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
-    const { data: deposit_address } = useSWR<ApiResponse<string>>((exchange_accouts && salon) ? depositad_address_endpoint : null, layerswapApiClient.fetcher)
-
-    const checkShouldStartPolling = useCallback(() => {
+    const checkShouldStartPolling = useCallback(async () => {
+        if (authWindow.closed) {
+            setLoading(false)
+            return
+        }
         let authWindowHref = ""
         try {
             authWindowHref = authWindow?.location?.href
@@ -55,7 +50,8 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
         if (authWindowHref && authWindowHref?.indexOf(window.location.origin) !== -1) {
             setSalon(true)
             authWindow?.close()
-            OnSuccess()
+            await OnSuccess()
+            setLoading(false)
         }
     }, [authWindow])
 
@@ -64,17 +60,8 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
         authWindow && !authWindow.closed ? 1000 : null,
     )
 
-    useEffect(() => {
-        if (exchange_accouts && salon && deposit_address) {
-            const exchangeIsEnabled = exchange_accouts?.data?.some(e => e.exchange?.toLocaleLowerCase() === exchange.baseObject?.internal_name?.toLowerCase() && e.type === 'connect')
-            if (exchangeIsEnabled) {
-                OnSuccess()
-                authWindowRef.current?.close()
-            }
-        }
-    }, [exchange_accouts, salon, deposit_address])
-
     const handleConnect = useCallback(() => {
+        setLoading(true)
         try {
             const access_token = TokenService.getAuthData()?.access_token
             // if (!access_token)
@@ -148,14 +135,13 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
                             </div>
                         </div>
                     </div>
-
                     <div className='mb-4'>
                         <a className='mb-2 flex text-sm items-center text-left underline hover:text-primary' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
                             Read more about Coinbase's OAuth API here
                             <ExternalLinkIcon className='ml-1 h-4 w-4'>
                             </ExternalLinkIcon>
                         </a>
-                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+                        <SubmitButton  isDisabled={loading} isSubmitting={loading} onClick={handleConnect}>
                             Connect
                         </SubmitButton>
                     </div>
