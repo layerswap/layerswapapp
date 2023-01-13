@@ -35,6 +35,7 @@ export enum SwapCreateStep {
 
 export enum SwapWithdrawalStep {
     Withdrawal = "Withdrawal",
+    CoinbaseManualWithdrawal = "CoinbaseManualWithdrawal",
     Processing = "Processing",
     ProcessingWalletTransaction = "ProcessingWalletTransaction",
     Success = "Success",
@@ -43,7 +44,9 @@ export enum SwapWithdrawalStep {
     Delay = "Delay",
     OffRampWithdrawal = "OffRampWithdrawal",
     WithdrawFromImtblx = "WithdrawFromImtblx",
-    WithdrawFromCoinbase = "WithdrawFromCoinbase"
+    SelectWithdrawalType = "SelectWithdrawalType",
+    CoinbaseInternalWithdrawal = "CoinbaseInternalWithdrawal",
+    AuthorizeCoinbaseWithdrawal = "AuthorizeCoinbaseWithdrawal"
 }
 
 export enum AuthStep {

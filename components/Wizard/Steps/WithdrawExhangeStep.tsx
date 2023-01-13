@@ -11,7 +11,7 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import { CheckIcon, XIcon } from '@heroicons/react/solid';
+import { CheckIcon, SwitchHorizontalIcon, XIcon } from '@heroicons/react/solid';
 import Widget from '../Widget';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
@@ -21,14 +21,27 @@ import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 import Image from 'next/image'
 import { SwapCancelModal } from './PendingSwapsStep';
 import { TrackEvent } from '../../../pages/_document';
-
+import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
+import toast from 'react-hot-toast';
+import { CryptoNetwork } from '../../../Models/CryptoNetwork';
+import AccountConnectStep from './CoinbaseAccountConnectStep';
+import KnownInternalNames from '../../../lib/knownIds';
+import { KnownwErrorCode } from '../../../Models/ApiError';
+import Coinbase2FA from '../../Coinbase2FA';
+import { useTimerState } from '../../../context/timerContext';
+const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
     const { exchanges, currencies, networks, discovery: { resource_storage_url } } = useSettingsState()
-    const { swap } = useSwapDataState()
-    const { setInterval } = useSwapDataUpdate()
+    const { swap, codeRequested } = useSwapDataState()
+    const { setInterval, setCodeRequested } = useSwapDataUpdate()
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
+    const [openCoinbaseConnectSlideover, setOpenCoinbaseConnectSlideover] = useState(false)
+    const [openCoinbase2FA, setOpenCoinbase2FA] = useState(false)
+    const { start: startTimer } = useTimerState()
+    const [authorized, steAuthorized] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
@@ -49,14 +62,38 @@ const WithdrawExchangeStep: FC = () => {
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
+    const sourceIsCoinbase = swap.source_exchange?.toLocaleLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLocaleLowerCase()
+
     useEffect(() => {
-        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal){
+        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal) {
             goToStep(swapStatusStep)
         }
     }, [swapStatusStep])
 
-    const { currency, exchange_currency, exchange, network_chain_logo, currency_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+    useEffect(() => {
+        if (sourceIsCoinbase) {
+            (async () => {
+                const layerswapApiClient = new LayerSwapApiClient(router)
+                try {
+                    const res = await layerswapApiClient.GetExchangeAccount(swap?.source_exchange, 1)
+                    if (res.data) {
+                        steAuthorized(true)
+                    }
+                    else {
+                        steAuthorized(false)
+                    }
+                }
+                catch (e) {
+                    if (e?.response?.data?.error?.code === KnownwErrorCode.NOT_FOUND)
+                        steAuthorized(false)
+                    else
+                        toast(e?.response?.data?.error?.message || e.message)
+                }
+            })()
+        }
+    }, [sourceIsCoinbase])
 
+    const { source, currency, exchange_currency, exchange, network, network_chain_logo, currency_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
     const handleTransferDone = useCallback(async () => {
         setTransferDone(true)
@@ -64,19 +101,58 @@ const WithdrawExchangeStep: FC = () => {
         setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
     }, [])
 
+    const handleTransfer = useCallback(async () => {
+        if (codeRequested)
+            setOpenCoinbase2FA(true)
+        else {
+            setLoading(true)
+            try {
+                const layerswapApiClient = new LayerSwapApiClient()
+                await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange)
+            }
+            catch (e) {
+                if (e?.response?.data?.error?.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
+                    startTimer(TIMER_SECONDS)
+                    setCodeRequested(true)
+                    setOpenCoinbase2FA(true)
+                }
+                else if (e?.response?.data?.error?.message) {
+                    toast(e?.response?.data?.error?.message)
+                }
+                else if (e?.message)
+                    toast(e.message)
+            }
+            setLoading(false)
+        }
+    }, [swap, network, codeRequested])
+
+    const openConnect = () => {
+        setOpenCoinbaseConnectSlideover(true)
+    }
+
     return (<>
-        <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
+        <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inModal'>
             {(close) => (
                 <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
             )}
         </SlideOver>
+        <SlideOver imperativeOpener={[openCoinbaseConnectSlideover, setOpenCoinbaseConnectSlideover]} place='inStep'>
+            {(close) => (
+                <AccountConnectStep onAuthorized={() => { steAuthorized(true); close(); }} />
+            )}
+        </SlideOver>
+        <SlideOver imperativeOpener={[openCoinbase2FA, setOpenCoinbase2FA]} place='inStep' noPadding={true}>
+            {(close) => (
+                <Coinbase2FA onSuccess={() => close()} />
+            )}
+        </SlideOver>
         <Widget>
             <Widget.Content>
-                <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text">
+                <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text min-h-[420px]">
                     <div className='space-y-4'>
                         <div className="text-left">
                             <p className="block sm:text-lg font-medium text-white">
-                                Send {currency?.asset} to the provided address
+                                Send {currency?.asset} to the provided address from
                             </p>
                             <p className='text-sm sm:text-base'>
                                 The swap will be completed when your transfer is detected
@@ -153,12 +229,24 @@ const WithdrawExchangeStep: FC = () => {
                 </div>
             </Widget.Content>
             <Widget.Footer>
-
                 {
                     <>
                         {
                             !transferDone &&
                             <>
+                                {
+                                    sourceIsCoinbase &&
+                                    <div className='mb-4'>
+                                        {
+                                            authorized ? <SubmitButton className='bg-coinbase-primary border-coinbase-primary disabled:bg-coinbase-diabled disabled:border-coinbase-diabled' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2 text-[#0A0B0D]" aria-hidden="true" />} >
+                                                <span className='text-[#0A0B0D]'>Transfer using Coinbase</span>
+                                            </SubmitButton> :
+                                                <SubmitButton className='bg-coinbase-primary border-coinbase-primary disabled:bg-coinbase-diabled disabled:border-coinbase-diabled' isDisabled={loading} isSubmitting={loading} onClick={openConnect} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2 text-[#0A0B0D]" aria-hidden="true" />} >
+                                                    <span className='text-[#0A0B0D]'>Transfer using Coinbase</span>
+                                                </SubmitButton>
+                                        }
+                                    </div>
+                                }
                                 <div className="flex text-center mb-4 space-x-2">
                                     <div className='relative'>
                                         <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
@@ -190,7 +278,6 @@ const WithdrawExchangeStep: FC = () => {
                                     </div>
                                 </div>
                             </>
-
                         }
                         {
                             transferDone &&
@@ -222,5 +309,6 @@ const WithdrawExchangeStep: FC = () => {
     </>
     )
 }
+
 
 export default WithdrawExchangeStep;

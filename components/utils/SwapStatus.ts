@@ -6,9 +6,6 @@ import { SwapWithdrawalStep } from "../../Models/Wizard";
 export const GetSwapStatusStep = (swap: SwapItem): SwapWithdrawalStep => {
     const swapStatus = swap?.status;
     if (swapStatus == SwapStatus.UserTransferPending){
-        if(swap.source_exchange?.toLocaleLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLocaleLowerCase()){
-            return SwapWithdrawalStep.WithdrawFromCoinbase
-        }
         return swap.source_exchange ? SwapWithdrawalStep.Withdrawal : SwapWithdrawalStep.OffRampWithdrawal
     }
     else if (swapStatus == SwapStatus.Completed)

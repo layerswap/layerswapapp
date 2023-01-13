@@ -1,5 +1,5 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC } from "react";
+import { FC, useCallback, useState } from "react";
 
 import Image from 'next/image';
 import SwapButton from "../../../buttons/swapButton";
@@ -11,11 +11,17 @@ import { ConnectedFocusError } from "../../../../lib/external/ConnectedFocusErro
 import ExchangesField from "../../../Select/Exchange";
 import NetworkField from "../../../Select/Network";
 import AmountField from "../../../Input/Amount";
-import { SwapType } from "../../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { SwapType } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { Partner } from "../../../../Models/Partner";
 import Widget from "../../Widget";
 import AmountAndFeeDetails from "../../../DisclosureComponents/amountAndFeeDetailsComponent";
+import SlideOver from "../../../SlideOver";
+import OfframpAccountConnectStep from "../../../OfframpAccountConnect";
+import KnownInternalNames from "../../../../lib/knownIds";
+import toast from "react-hot-toast";
+import { useRouter } from "next/router";
+import { KnownwErrorCode } from "../../../../Models/ApiError";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -27,13 +33,53 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
 
     const {
         values,
-        errors, isValid, isSubmitting
+        errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
-
+    const [openCoinbaseConnect, setOpenCoinbaseConnect] = useState(false)
     const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name?.toLowerCase()}.png` : null
+    const router = useRouter();
+    const [loadingCoinbaseAddress, setLoadingCoinbaseAddress] = useState(false)
+
+    const handleSetCoinbaseDepositAddress = useCallback(async () => {
+        setLoadingCoinbaseAddress(true)
+        const layerswapApiClient = new LayerSwapApiClient(router)
+        try {
+            const exchange_account = await layerswapApiClient.GetExchangeAccount(KnownInternalNames.Exchanges.Coinbase, 0)
+            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, values?.currency?.baseObject?.asset)
+            setFieldValue("destination_address", deposit_address.data)
+            setLoadingCoinbaseAddress(false)
+        }
+        catch (e) {
+            if (e?.response?.data?.error?.code === KnownwErrorCode.NOT_FOUND || e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS)
+                setOpenCoinbaseConnect(true)
+            else {
+                toast(e?.response?.data?.error?.message || e.message)
+                setLoadingCoinbaseAddress(false)
+            }
+        }
+    }, [values])
+
+
+    const handleCoinbaseConnected = useCallback(async () => {
+        const layerswapApiClient = new LayerSwapApiClient(router)
+        try {
+            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, values?.currency?.baseObject?.asset)
+            setFieldValue("destination_address", deposit_address.data)
+        }
+        catch (e) {
+            toast(e?.response?.data?.error?.message || e.message)
+        }
+        setLoadingCoinbaseAddress(false)
+    }, [values])
 
     return <>
+
         <Form className="h-full" >
+            <SlideOver imperativeOpener={[openCoinbaseConnect, setOpenCoinbaseConnect]} place='inStep'>
+                {(close) => (
+                    <OfframpAccountConnectStep OnSuccess={() => { handleCoinbaseConnected(); close() }} />
+                )}
+            </SlideOver>
             {values && <ConnectedFocusError />}
             <Widget>
                 <Widget.Content>
@@ -64,7 +110,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                 }
                                 <div>
                                     <AddressInput
-                                        values={values}
+                                        onSetCoinbaseDepoisteAddress={handleSetCoinbaseDepositAddress}
+                                        loading={loadingCoinbaseAddress}
                                         disabled={lockAddress || (!values.network || !values.exchange)}
                                         name={"destination_address"}
                                         className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
@@ -82,9 +129,11 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                             <div className="relative rounded-md shadow-sm mt-1.5">
                                 <div>
                                     <AddressInput
+                                        onSetCoinbaseDepoisteAddress={handleSetCoinbaseDepositAddress}
+                                        loading={loadingCoinbaseAddress}
                                         disabled={(!values.network || !values.exchange)}
                                         name={"destination_address"}
-                                        className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
+                                        className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-gray-400 truncate')}
                                     />
                                 </div>
                             </div>

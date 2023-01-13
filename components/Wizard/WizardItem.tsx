@@ -11,7 +11,7 @@ type Props = {
 }
 
 const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent }: Props) => {
-    const { currentStepName, wrapperWidth, moving, wrapperHeight } = useFormWizardState()
+    const { currentStepName, wrapperWidth, moving } = useFormWizardState()
     const { setGoBack, setPositionPercent } = useFormWizardaUpdate()
 
     useEffect(() => {

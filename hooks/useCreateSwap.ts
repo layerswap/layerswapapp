@@ -12,7 +12,6 @@ import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { useRouter } from "next/router";
 import LayerswapApiClient, { SwapType } from '../lib/layerSwapApiClient';
 import AccountConnectStep from "../components/Wizard/Steps/CoinbaseAccountConnectStep";
-import { useUserExchangeDataUpdate } from "../context/userExchange";
 
 const useCreateSwap = () => {
     const { goToStep } = useFormWizardaUpdate()

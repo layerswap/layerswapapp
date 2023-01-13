@@ -1,8 +1,6 @@
-import { useRouter } from "next/router";
 import { FC, useEffect } from "react";
 import { FormWizardProvider } from "../context/formWizardProvider";
 import { useQueryState } from "../context/query";
-import { useSettingsState } from "../context/settings";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import KnownInternalNames from "../lib/knownIds";
 import { SwapStatus } from "../Models/SwapStatus";
@@ -11,12 +9,10 @@ import { GetSwapStatusStep } from "./utils/SwapStatus";
 import SwapWithdrawalWizard from "./Wizard/SwapWithdrawalWizard";
 
 const SwapWithdrawal: FC = () => {
-    const settings = useSettingsState()
-    const { exchanges, networks } = settings
     const { swap } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
     const query = useQueryState()
-    const router = useRouter()
+
     useEffect(() => {
         mutateSwap()
     }, [])

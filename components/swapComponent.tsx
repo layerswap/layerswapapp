@@ -24,7 +24,7 @@ const Swap: FC = () => {
         <MenuProvider>
           <SwapDataProvider >
             <UserExchangeProvider>
-              <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={true}>
+              <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={false}>
                 <CreateSwap />
               </FormWizardProvider>
             </UserExchangeProvider>

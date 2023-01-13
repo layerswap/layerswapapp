@@ -7,6 +7,7 @@ export class Exchange {
     oauth_authorize_url: string;
     authorization_flow: "o_auth2" | "api_credentials"
     currencies: (ExchangeCurrency & NetworkCurrency)[];
+    status: "active" | "inactive"
 }
 
 export class ExchangeCurrency {
