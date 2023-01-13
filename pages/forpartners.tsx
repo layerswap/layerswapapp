@@ -14,6 +14,7 @@ import { useRouter } from 'next/router'
 import { AuthProvider } from '../context/authContext'
 import { MenuProvider } from '../context/menu'
 import HeaderWithMenu from '../components/HeaderWithMenu'
+import Link from 'next/link'
 
 export default function ForPartners(props) {
     const router = useRouter();
@@ -104,6 +105,7 @@ export default function ForPartners(props) {
                                 </div>
                             </div>
                         </div>
+                        <p className='text-primary-text text-lg md:text-xl font-bold mt-10'>If you have partnership offers or questions related to collaboration with Layerswap, please fill in <a href={'https://t507xw0ywxn.typeform.com/to/hecTNbte#name=xxxxx'} target='_blank' className='text-primary hover:text-primary-400'>this form</a>.</p>
                     </div>
                 </main>
             </div>
