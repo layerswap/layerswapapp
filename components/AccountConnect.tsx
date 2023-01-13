@@ -30,7 +30,6 @@ function UserExchanges() {
     const [userExchanges, setUserExchanges] = useState<UserExchange[]>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
-    const [query, setQuery] = useState('')
     const [exchangeToConnect, setExchangeToConnect] = useState<Exchange>()
     const [exchangeLoading, setExchangeLoading] = useState<Exchange>()
     const { email } = useAuthState()
@@ -80,13 +79,6 @@ function UserExchanges() {
         }
 
     }, [settings.exchanges])
-
-    const filteredItems =
-        query === ''
-            ? userExchanges
-            : userExchanges.filter((item) => {
-                return item.display_name.toLowerCase().includes(query.toLowerCase())
-            })
 
     const handleConnectExchange = (exchange: Exchange) => {
         setExchangeToConnect(exchange)
@@ -165,15 +157,14 @@ function UserExchanges() {
                         <Combobox
                             as="div"
                             className="transform transition-all"
-                            value={query}
                         >
                             <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2">
                                 {
                                     loading ? <ExchangesComponentSceleton />
                                         :
                                         <>
-                                            {filteredItems?.length > 0 && (
-                                                filteredItems.map((item) => (
+                                            {userExchanges?.length > 0 && (
+                                                userExchanges.map((item) => (
                                                     <Combobox.Option
                                                         key={item.internal_name}
                                                         value={item}
@@ -225,7 +216,7 @@ function UserExchanges() {
                                 }
                             </Combobox.Options>
 
-                            {query !== '' && filteredItems?.length === 0 && (
+                            {userExchanges?.length === 0 && (
                                 <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
                                     <ExclamationCircleIcon
                                         type="outline"
@@ -233,7 +224,7 @@ function UserExchanges() {
                                         className="mx-auto h-16 w-16 text-primary"
                                     />
                                     <p className="mt-4 font-semibold">No 'items' found.</p>
-                                    <p className="mt-2">Please try a different search term.</p>
+                                    <p className="mt-2">Please try later.</p>
                                 </div>
                             )}
                         </Combobox>
