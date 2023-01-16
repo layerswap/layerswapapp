@@ -1,4 +1,10 @@
-## Layerswap Integration Guide
+### Partnership Inquiries
+
+If you have partnership offers or questions related to collaboration with Layerswap, please fill in <a href='https://t507xw0ywxn.typeform.com/to/hecTNbte#name=xxxxx' target='_blank'>this form</a> and we’ll be happy to talk to you.
+
+---
+
+### Layerswap Integration Guide
 
 To integrate Layerswap in your wallet or app, direct users to Layerswap and customize the initial values by using query parameters.
 

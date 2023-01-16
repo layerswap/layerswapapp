@@ -38,10 +38,6 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
             else if (!isValidAddress(values.destination_address, values.exchange.baseObject)) {
                 errors.destination_address = `Enter a valid ${values.exchange.name} address`;
             }
-            // else if (isBlacklistedAddress(settings.blacklisted_addresses, values.network.baseObject, values.destination_address))
-            // {
-            //     errors.destination_address = `You can not transfer to this address`;
-            // }
         }
         if (!amount) {
             errors.amount = 'Enter an amount';
@@ -69,8 +65,6 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         return Object.assign(errorsOrder, errors);
     };
 }
-//TODO match blacklisted addresses
 function isBlacklistedAddress(blacklisted_addresses: BlacklistedAddress[], network: CryptoNetwork, address: string) {
-    return false ///blacklisted_addresses?.some(ba => (!ba.network_id || ba.network_id === network?.id) && ba.address?.toLowerCase() === address?.toLowerCase());
+    return blacklisted_addresses?.some(ba => (!ba.network || ba.network === network?.internal_name) && ba.address?.toLowerCase() === address?.toLowerCase());
 }
-
