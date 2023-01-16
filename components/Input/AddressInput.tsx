@@ -1,12 +1,10 @@
 import { Field, useField, useFormikContext } from "formik";
-import { ChangeEvent, FC, forwardRef, useState } from "react";
+import { FC, forwardRef, useState } from "react";
 import { useSettingsState } from "../../context/settings";
-import KnownInternalNames from "../../lib/knownIds";
 import { SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
-import Image from 'next/image'
 import { toast } from "react-hot-toast";
 import SpinIcon from "../icons/spinIcon";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
@@ -33,15 +31,12 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue
         } = useFormikContext<SwapFormValues>();
 
-        const [field, meta, helpers] = useField(name)
-
         const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount } = useSwapDataState()
 
         const placeholder = NetworkSettings.KnownSettings[values?.network?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const { discovery: { resource_storage_url }, exchanges, networks } = useSettingsState();
 
-        const exchangeLogoURL = `${resource_storage_url}/layerswap/networks/${values?.exchange?.baseObject?.internal_name?.toLowerCase()}.png`
         const [inpuFocused, setInputFocused] = useState(false)
         const handleUseDepositeAddress = async () => {
             try {
@@ -98,7 +93,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         width: '100%',
                                         transition: {
                                             when: "afterChildren",
-                                        },
+                                        }
                                     }
                                 }
                             }

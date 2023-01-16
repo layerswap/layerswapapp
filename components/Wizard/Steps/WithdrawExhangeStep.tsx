@@ -20,10 +20,8 @@ import SimpleTimer from '../../Common/Timer';
 import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 import Image from 'next/image'
 import { SwapCancelModal } from './PendingSwapsStep';
-import { TrackEvent } from '../../../pages/_document';
 import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
 import toast from 'react-hot-toast';
-import { CryptoNetwork } from '../../../Models/CryptoNetwork';
 import AccountConnectStep from './CoinbaseAccountConnectStep';
 import KnownInternalNames from '../../../lib/knownIds';
 import { KnownwErrorCode } from '../../../Models/ApiError';
@@ -138,12 +136,12 @@ const WithdrawExchangeStep: FC = () => {
         </SlideOver>
         <SlideOver imperativeOpener={[openCoinbaseConnectSlideover, setOpenCoinbaseConnectSlideover]} place='inStep'>
             {(close) => (
-                <AccountConnectStep onAuthorized={() => { steAuthorized(true); close(); }} />
+                <AccountConnectStep onDoNotConnect={() => close()} onAuthorized={() => { steAuthorized(true); close(); }} stickyFooter={false} />
             )}
         </SlideOver>
         <SlideOver imperativeOpener={[openCoinbase2FA, setOpenCoinbase2FA]} place='inStep' noPadding={true}>
             {(close) => (
-                <Coinbase2FA onSuccess={() => close()} />
+                <Coinbase2FA onSuccess={async () => close()} />
             )}
         </SlideOver>
         <Widget>

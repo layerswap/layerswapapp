@@ -25,7 +25,7 @@ interface CodeFormValues {
 }
 
 type Props = {
-    onSuccess: () => void
+    onSuccess: (swapId: string) => Promise<void>
 }
 
 //TODO email code is almost identical create reusable component for email and two factor code verification
@@ -40,10 +40,11 @@ const Coinbase2FA: FC<Props> = ({ onSuccess }) => {
     const formikRef = useRef<FormikProps<CodeFormValues>>(null);
 
     const handleSubmit = useCallback(async (values: CodeFormValues) => {
+        setLoading(true)
         try {
             const layerswapApiClient = new LayerSwapApiClient()
             await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange, values.Code)
-            onSuccess()
+            await onSuccess(swap.id)
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
@@ -59,6 +60,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess }) => {
                 toast.error(data.message)
             }
         }
+        setLoading(false)
     }, [swap])
 
     const handleResendTwoFACode = useCallback(async () => {
@@ -183,7 +185,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess }) => {
                                         <li>text messages of the phone number associated with your Coinbase account</li>
                                     </ul>
                                 </div>
-                                <SubmitButton type="submit" isDisabled={!isValid || loading} isSubmitting={isSubmitting}>
+                                <SubmitButton type="submit" isDisabled={!isValid || loading} isSubmitting={isSubmitting || loading}>
                                     Confirm
                                 </SubmitButton>
                             </div>
