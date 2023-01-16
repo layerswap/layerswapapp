@@ -85,7 +85,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             disabled={disabled}
                             onFocus={handleInputFocus}
                             onBlur={handleInputBlur}
-                            className={classNames('disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-gray-400 truncate focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none',
+                            className={classNames('disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none',
                                 className
                             )}
                             transition={{
@@ -117,15 +117,11 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
                                     >
                                         <motion.div className="flex items-center" >
-                                            <div className="flex-shrink-0 h-6 w-6 relative">
-                                                {
-                                                    loading ? <SpinIcon className="animate-spin h-6 w-6" />
-                                                        : <LinkIcon className="h-6 w-6" />
-                                                }
-
-                                            </div>
-
-                                            <motion.span className="ml-3 block truncate"
+                                            {
+                                                loading ? <SpinIcon className="animate-spin h-4 w-4" />
+                                                    : <LinkIcon className="h-4 w-4" />
+                                            }
+                                            <motion.span className={classNames(inpuFocused ? '' : 'ml-3', "block truncate text-clip")}
                                                 variants={
                                                     {
                                                         inputFocused: {
