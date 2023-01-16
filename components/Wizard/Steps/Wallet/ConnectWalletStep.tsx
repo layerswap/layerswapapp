@@ -112,7 +112,7 @@ const ConnectWalletStep: FC = () => {
             const data: ApiError = e?.response?.data?.error
             if (data.code == KnownwErrorCode.NETWORK_ACCOUNT_ALREADY_EXISTS) {
                 goToStep(SwapWithdrawalStep.Error)
-                setError({ Code: data.code, Step: SwapWithdrawalStep.WalletConnect })
+                setError({ Code: data.code, Step: SwapWithdrawalStep.WithdrawFromImtblx })
             }
             toast(e.message)
         }

@@ -4,10 +4,8 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { SettingsProvider } from '../context/settings'
 import { LayerSwapSettings } from '../Models/LayerSwapSettings'
-import { QueryParams } from '../Models/QueryParams'
 import MaintananceContent from '../components/maintanance/maintanance'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
-import { enc, HmacSHA256 } from 'crypto-js';
 import { validateSignature } from '../helpers/validateSignature'
 import { mapNetworkCurrencies } from '../helpers/settingsHelper'
 
@@ -24,7 +22,7 @@ export default function Home({ settings, inMaintanance }: InferGetServerSideProp
       {
         inMaintanance
           ?
-          <MaintananceContent />
+          <MaintananceContent/>
           :
           <SettingsProvider data={settings}>
             <Swap />
@@ -51,7 +49,7 @@ export async function getServerSideProps(context) {
   const { data: settings } = await apiClient.GetSettingsAsync()
 
   settings.networks = settings.networks.filter(n => n.status !== "inactive");
-  settings.exchanges = mapNetworkCurrencies(settings.exchanges, settings.networks)
+  settings.exchanges = mapNetworkCurrencies(settings.exchanges.filter(e=>e.status==='active'), settings.networks)
 
 
   const resource_storage_url = settings.discovery.resource_storage_url

@@ -15,7 +15,7 @@ import WizardItem from "./WizardItem";
 import PendingSwapsStep from "./Steps/PendingSwapsStep";
 
 const CreateSwap: FC = () => {
-    const { MainForm, Email, Code, Confirm } = useCreateSwap()
+    const { MainForm, Email, Code, Confirm, OAuth } = useCreateSwap()
     const { error } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
 

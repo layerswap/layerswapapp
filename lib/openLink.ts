@@ -7,15 +7,15 @@ const tabletRE = /android|ipad|playbook|silk/i
 
 export const TEMP_DATA_ITEM_NAME = "link_temp_data"
 
-export const getTempData = ():LinkTempData => JSON.parse(sessionStorage.getItem(TEMP_DATA_ITEM_NAME))
+export const getTempData = (): LinkTempData => JSON.parse(sessionStorage.getItem(TEMP_DATA_ITEM_NAME))
 const setTempData = (data: LinkTempData) => sessionStorage.setItem(TEMP_DATA_ITEM_NAME, JSON.stringify(data))
 export const clearTempData = () => sessionStorage.setItem(TEMP_DATA_ITEM_NAME, null)
 
 type OpenLinkArgs = {
   addressSource?: string;
   link: string;
-  swap_data: SwapFormValues;
-  query: any;
+  swap_data?: SwapFormValues;
+  query?: any;
 }
 
 export type LinkTempData = {
@@ -27,7 +27,8 @@ export type LinkTempData = {
 export function OpenLink({ addressSource, link, swap_data, query }: OpenLinkArgs): (Window | null) {
   if (isMobile()) {
     const link_temp_data: LinkTempData = { swap_data, query, date: new Date() }
-    setTempData(link_temp_data)
+    if (swap_data)
+      setTempData(link_temp_data)
     window.location.href = link;
     return null
   }

@@ -53,7 +53,6 @@ const OnRampSwapConfirmationStep: FC = () => {
         let nextStep: SwapCreateStep;
         if (swap && codeRequested)
             return goToStep(SwapCreateStep.TwoFactor)
-
         try {
             if (!swap) {
                 const swapId = await createAndProcessSwap();
@@ -61,7 +60,6 @@ const OnRampSwapConfirmationStep: FC = () => {
             }
             else {
                 const swapId = swap.id
-                // await processPayment(swapId)
                 return await router.push(`/swap/${swapId}`)
             }
         }

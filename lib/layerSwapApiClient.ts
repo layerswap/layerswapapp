@@ -47,12 +47,26 @@ export default class LayerSwapApiClient {
     async GetExchangeAccounts(): Promise<ApiResponse<UserExchangesData[]>> {
         return await this.AuthenticatedRequest<ApiResponse<UserExchangesData[]>>("GET", '/exchange_accounts');
     }
-
+    async GetExchangeAccount(exchange: string, type?: number): Promise<ApiResponse<UserExchangesData>> {
+        return await this.AuthenticatedRequest<ApiResponse<UserExchangesData>>("GET", `/exchange_accounts/${exchange}?type=${type || 0}`);
+    }
     async GetExchangeDepositAddress(exchange: string, currency: string): Promise<ApiResponse<string>> {
         return await this.AuthenticatedRequest<ApiResponse<string>>("GET", `/exchange_accounts/${exchange}/deposit_address/${currency}`);
     }
     async DeleteExchange(exchange: string): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/exchange_accounts/${exchange}`);
+        try {
+            await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/exchange_accounts/${exchange}?type=0`);
+        }
+        catch (e) {
+            //TODO handle types in backend
+        }
+        try {
+            await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/exchange_accounts/${exchange}?type=1`);
+        }
+        catch (e) {
+            //TODO handle types in backend
+        }
+        return
     }
     async ConnectExchangeApiKeys(params: ConnectParams): Promise<ApiResponse<void>> {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", '/exchange_accounts', params);
@@ -72,6 +86,10 @@ export default class LayerSwapApiClient {
 
     async ApplyNetworkInput(swapId: string, transactionId: string): Promise<ApiResponse<void>> {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/apply_network_input`, { transaction_id: transactionId });
+    }
+
+    async WithdrawFromExchange(swapId: string, exchange: string, twoFactorCode?: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/exchange/${exchange}/withdraw${twoFactorCode ? `?twoFactorCode=${twoFactorCode}` : ''}`);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
@@ -173,9 +191,10 @@ export type ConnectParams = {
 }
 
 export type UserExchangesData = {
-    exchange: string,
-    note: string,
-    id: string
+    id: string;
+    exchange: string;
+    note: string;
+    type: "connect" | "authorize"
 }
 
 export type CreateSwapData = {

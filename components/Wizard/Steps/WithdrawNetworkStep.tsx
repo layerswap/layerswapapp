@@ -47,7 +47,7 @@ const WithdrawNetworkStep: FC = () => {
             goToStep(swapStatusStep)
     }, [swapStatusStep])
 
-    const { currency, destination, source} = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+    const { currency, destination, source } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
     const estimatedTransferTime = NetworkSettings.KnownSettings[source.internal_name]?.EstimatedTransferTime
 
@@ -88,7 +88,7 @@ const WithdrawNetworkStep: FC = () => {
                         <div className='space-y-4'>
                             <div className="text-left">
                                 <p className="block text-md sm:text-lg font-medium text-white">
-                                    Send crypto to the provided address
+                                    Send crypto to the provided address from {source.display_name}
                                 </p>
                                 <p className='text-sm sm:text-base'>
                                     The swap will be completed after the transfer is detected
@@ -111,13 +111,16 @@ const WithdrawNetworkStep: FC = () => {
                                         {swap?.deposit_address}
                                     </p>
                                 </BackgroundField>
-                                <div className='flex space-x-4'>
-                                    <BackgroundField header={'Address Type'}>
-                                        <p>
-                                            EOA Wallet
-                                        </p>
-                                    </BackgroundField>
-                                </div>
+                                {
+                                    source.internal_name === KnownInternalNames.Networks.LoopringGoerli || source.internal_name === KnownInternalNames.Networks.LoopringMainnet && 
+                                    <div className='flex space-x-4'>
+                                        <BackgroundField header={'Address Type'}>
+                                            <p>
+                                                EOA Wallet
+                                            </p>
+                                        </BackgroundField>
+                                    </div>
+                                }
                                 <div className='flex space-x-4'>
                                     <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
                                         <p>

@@ -13,11 +13,12 @@ type Props = {
     opener?: (open: () => void) => JSX.Element | JSX.Element[],
     children?: (close: () => void) => JSX.Element | JSX.Element[];
     moreClassNames?: string;
-    place: slideOverPlace | string
+    place: slideOverPlace;
+    noPadding?: boolean;
     imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
 
-const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassNames, place, children }) => {
+const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassNames, place, noPadding, children }) => {
     const [open, setOpen] = useState(false)
     const mobileModalRef = useRef(null)
     const { width } = useWindowDimensions()
@@ -30,7 +31,7 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
         imperativeOpener?.[1](true);
     }
 
-    let heightControl =''
+    let heightControl = ''
 
     switch (place) {
         case 'inStep':
@@ -69,8 +70,8 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
                             transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
                         }}
                         className={`absolute inset-0 z-40 w-full ${heightControl} hidden sm:block`}>
-                        <div className={`relative z-40 overflow-hidden flex flex-col rounded-t-2xl md:rounded-none bg-darkblue px-6 sm:px-8 h-full space-y-3 py-4`}>
-                            <div className="flex items-center justify-between text-primary-text cursor-pointer">
+                        <div className={`relative z-40 overflow-hidden flex flex-col rounded-t-2xl md:rounded-none bg-darkblue h-full space-y-3 py-4 ${!noPadding ? 'px-6 sm:px-8' : ''}`}>
+                            <div className={`flex items-center justify-between text-primary-text cursor-pointer ${noPadding ? 'px-6 sm:px-8' : ''}`}>
                                 <p className="text-xl text-white font-semibold">
                                     {header}
                                 </p>

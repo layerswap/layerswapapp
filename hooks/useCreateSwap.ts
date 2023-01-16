@@ -1,25 +1,22 @@
 import { useCallback } from "react";
-import APIKeyStep from "../components/Wizard/Steps/APIKeyStep";
 import CodeStep from "../components/Wizard/Steps/CodeStep";
 import EmailStep from "../components/Wizard/Steps/EmailStep";
 import MainStep from "../components/Wizard/Steps/MainStep/index";
 import SwapConfirmationStep from "../components/Wizard/Steps/ConfirmStep/OnRampSwapConfirmationStep";
 import { useFormWizardaUpdate } from "../context/formWizardProvider";
-import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
-import { useUserExchangeDataUpdate } from "../context/userExchange";
+import { useSwapDataState } from "../context/swap";
 import TokenService from "../lib/TokenService";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { SwapCreateStep, WizardStep } from "../Models/Wizard";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { useRouter } from "next/router";
 import LayerswapApiClient, { SwapType } from '../lib/layerSwapApiClient';
-import { SwapStatus } from "../Models/SwapStatus";
+import AccountConnectStep from "../components/Wizard/Steps/CoinbaseAccountConnectStep";
 
 const useCreateSwap = () => {
     const { goToStep } = useFormWizardaUpdate()
     const { swapFormData } = useSwapDataState()
     const router = useRouter();
-
 
     const MainForm: WizardStep<SwapCreateStep> = {
         Content: MainStep,
@@ -36,7 +33,6 @@ const useCreateSwap = () => {
                 if (hasSourcePendingSwaps) {
                     return goToStep(SwapCreateStep.PendingSwaps)
                 }
-
                 return goToStep(SwapCreateStep.Confirm)
             }
         }, []),
@@ -59,6 +55,12 @@ const useCreateSwap = () => {
         positionPercent: 35,
         onBack: useCallback(() => goToStep(SwapCreateStep.Email, "back"), []),
     }
+    const OAuth: WizardStep<SwapCreateStep> = {
+        Content: AccountConnectStep,
+        Name: SwapCreateStep.OAuth,
+        positionPercent: 60,
+        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), []),
+    }
     const Confirm: WizardStep<SwapCreateStep> = {
         Content: SwapConfirmationStep,
         Name: SwapCreateStep.Confirm,
@@ -66,7 +68,7 @@ const useCreateSwap = () => {
         onBack: useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), []),
     }
 
-    return { MainForm, Email, Code, Confirm }
+    return { MainForm, Email, Code, Confirm, OAuth }
 }
 
 export default useCreateSwap;
