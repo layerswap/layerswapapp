@@ -21,10 +21,11 @@ import Widget from '../../Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectScreens';
 
 type Props = {
-    onAuthorized?: () => void
+    onAuthorized?: () => void;
+    inSlideOver?: boolean
 }
 
-const AccountConnectStep: FC<Props> = ({ onAuthorized }) => {
+const AccountConnectStep: FC<Props> = ({ onAuthorized, inSlideOver }) => {
     const { swap } = useSwapDataState()
     const { networks, exchanges, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate()
@@ -111,10 +112,10 @@ const AccountConnectStep: FC<Props> = ({ onAuthorized }) => {
     }
 
     return (
-        <div className='flex flex-col'>
-            <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
+        <div className='flex flex-col justify-between h-full'>
+            {!inSlideOver && <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
                 Please connect your {exchange_name} account
-            </h3>
+            </h3>}
             {
                 alreadyFamiliar ?
                     <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkblue to-darkblue-700 h-100%`} style={{ width: '100%' }}>
@@ -141,34 +142,36 @@ const AccountConnectStep: FC<Props> = ({ onAuthorized }) => {
                         </Carousel>}
                     </div>
             }
-            <div className="flex font-normal text-sm text-primary-text">
-                <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
-            </div>
-            {
-                alreadyFamiliar && carouselFinished ?
-                    <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100 w-full mb-3">
-                        Show me full guide
-                    </button>
-                    :
-                    <div className="flex items-center mb-3">
-                        <input
-                            name="alreadyFamiliar"
-                            id='alreadyFamiliar'
-                            type="checkbox"
-                            className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
-                            onChange={() => handleToggleChange(true)}
-                            checked={alreadyFamiliar}
-                        />
-                        <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
-                            I'm already familiar with the process.
-                        </label>
-                    </div>
-            }
-            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+            <div>
+                <div className="flex font-normal text-sm text-primary-text">
+                    <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
+                </div>
                 {
-                    carouselFinished ? "Connect" : "Next"
+                    alreadyFamiliar && carouselFinished ?
+                        <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100 w-full mb-3">
+                            Show me full guide
+                        </button>
+                        :
+                        <div className="flex items-center mb-3">
+                            <input
+                                name="alreadyFamiliar"
+                                id='alreadyFamiliar'
+                                type="checkbox"
+                                className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
+                                onChange={() => handleToggleChange(true)}
+                                checked={alreadyFamiliar}
+                            />
+                            <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
+                                I'm already familiar with the process.
+                            </label>
+                        </div>
                 }
-            </SubmitButton>
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+                    {
+                        carouselFinished ? "Connect" : "Next"
+                    }
+                </SubmitButton>
+            </div>
         </div>
     )
 }

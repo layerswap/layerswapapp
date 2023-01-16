@@ -1,23 +1,15 @@
-import { CheckIcon, LinkIcon, SwitchHorizontalIcon, XIcon } from '@heroicons/react/solid';
+import { CheckIcon, XIcon } from '@heroicons/react/solid';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
 import SubmitButton, { DoubleLineText } from '../../../buttons/submitButton';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
-import { classNames } from '../../../utils/classNames';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
-import shortenAddress from "../../../utils/ShortenAddress"
 import { GetSourceDestinationData } from '../../../../helpers/swapHelper';
 import { SwapStatus } from '../../../../Models/SwapStatus';
-import { parseJwt } from '../../../../lib/jwtParser';
-import TokenService from '../../../../lib/TokenService';
-import useSWR from 'swr';
-import { ApiResponse } from '../../../../Models/ApiResponse';
-import { OpenLink } from '../../../../lib/openLink';
-import AccountConnectStep from '../CoinbaseAccountConnectStep';
 import { useRouter } from 'next/router';
 import { KnownwErrorCode } from '../../../../Models/ApiError';
 
