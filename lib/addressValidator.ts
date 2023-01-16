@@ -1,5 +1,4 @@
 import { keccak256 } from "js-sha3";
-import { BlacklistedAddress } from "../Models/BlacklistedAddress";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { Exchange } from "../Models/Exchange";
 import KnownInternalNames from "./knownIds";
