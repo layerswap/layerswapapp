@@ -64,7 +64,7 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
     <ErrorBoundary >
       <QueryProvider query={query}>
         <ThemeWrapper hideNavbar={hideNavbar}>
-          {process.env.NEXT_PUBLIC_IN_MAINTANANCE ? <MaintananceContent /> : children}
+          {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ? <MaintananceContent /> : children}
         </ThemeWrapper>
       </QueryProvider>
     </ErrorBoundary>
