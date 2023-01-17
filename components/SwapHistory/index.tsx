@@ -106,6 +106,14 @@ function TransactionsHistory() {
     return sortConfig.key === name ? (sortConfig.direction == 'ascending' ? <GreyIcon /> : <GreenIcon />) : undefined;
   };
 
+  function isGuid(stringToTest: string) {
+    if (stringToTest[0] === "{") {
+      stringToTest = stringToTest.substring(1, stringToTest.length - 1);
+    }
+    var regexGuid = /^(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}$/gi;
+    return regexGuid.test(stringToTest);
+  }
+
   return (
     <div className='bg-darkblue px-8 md:px-12 md:mb-12 md:shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative h-full '>
       <div className="mt-3 flex items-center justify-between z-20" >
@@ -310,7 +318,7 @@ function TransactionsHistory() {
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
-                                {swap?.output_transaction?.transaction_id ?
+                                {(swap?.output_transaction?.transaction_id && !isGuid(swap?.output_transaction?.transaction_id)) ?
                                   <>
                                     <div className="underline hover:no-underline">
                                       <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
