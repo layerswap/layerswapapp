@@ -15,4 +15,5 @@ export class ExchangeCurrency {
     withdrawal_fee: number;
     chain_display_name: string;
     network: string;
+    is_default: boolean;
 }

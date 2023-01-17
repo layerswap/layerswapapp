@@ -136,6 +136,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                 <NetworkField />
                             </div>
                         </div>
+                        <div className="mb-6 leading-4">
+                            <AmountField />
+                        </div>
                         {
                             values.swapType === SwapType.OnRamp &&
                             <div className="w-full mb-3.5 leading-4">
@@ -168,12 +171,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                         {
                             values.swapType === SwapType.OffRamp &&
                             <div className="w-full mb-3.5 leading-4">
-                                <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
-                                    {`To ${values?.exchange?.name || ''} address`}
-                                </label>
                                 <div className="relative rounded-md shadow-sm mt-1.5">
                                     <div>
                                         <AddressInput
+                                            label={`To ${values?.exchange?.name || ''} address`}
                                             exchangeAccount={exchangeAccount}
                                             onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
                                             loading={loadingDepositAddress}
@@ -185,9 +186,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                 </div>
                             </div>
                         }
-                        <div className="mb-6 leading-4">
-                            <AmountField />
-                        </div>
                         <div className="w-full">
                             <AmountAndFeeDetails values={values} />
                         </div>
