@@ -1,5 +1,5 @@
 import { Field, useField, useFormikContext } from "formik";
-import { FC, forwardRef, useState } from "react";
+import { FC, forwardRef, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
@@ -10,6 +10,9 @@ import SpinIcon from "../icons/spinIcon";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import { LinkIcon, XIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
+import KnownInternalNames from "../../lib/knownIds";
+import TokenService from "../../lib/TokenService";
+import { useAuthState } from "../../context/authContext";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     label?: string
@@ -31,16 +34,17 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue
         } = useFormikContext<SwapFormValues>();
 
-        const [field, meta, helpers] = useField(name)
-
         const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount } = useSwapDataState()
 
         const placeholder = NetworkSettings.KnownSettings[values?.network?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const { discovery: { resource_storage_url }, exchanges, networks } = useSettingsState();
 
-        const exchangeLogoURL = `${resource_storage_url}/layerswap/networks/${values?.exchange?.baseObject?.internal_name?.toLowerCase()}.png`
         const [inpuFocused, setInputFocused] = useState(false)
+
+        const { authData } = useAuthState()
+
+
         const handleUseDepositeAddress = async () => {
             try {
                 await onSetExchangeDepoisteAddress()
@@ -96,13 +100,13 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         width: '100%',
                                         transition: {
                                             when: "afterChildren",
-                                        },
+                                        }
                                     }
                                 }
                             }
                         />
                         {
-                            values?.swapType === SwapType.OffRamp && values.exchange && !depositeAddressIsfromAccount &&
+                            values?.swapType === SwapType.OffRamp && authData?.access_token && values.exchange && !depositeAddressIsfromAccount &&
                             <motion.span className="inline-flex items-center mr-2 shrink"
                                 transition={{
                                     width: { ease: 'linear' }
@@ -127,7 +131,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                         }
                                                     }
                                                 }>
-                                                Connect from {values.exchange.baseObject.display_name}
+                                                Connect from {values?.exchange?.baseObject?.display_name}
                                             </motion.span>
                                         </motion.div>
                                     </motion.button>
@@ -138,11 +142,14 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             depositeAddressIsfromAccount &&
                             <span className="inline-flex items-center mr-2">
                                 <div className="text-xs flex items-center space-x-2 ml-3 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
-                                    <span className="inline-flex items-center mr-2">
-                                        <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
-                                            {exchangeAccount?.note}
-                                        </div>
-                                    </span>
+                                    {
+                                        values?.exchange?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
+                                        <span className="inline-flex items-center mr-2">
+                                            <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
+                                                {exchangeAccount?.note}
+                                            </div>
+                                        </span>
+                                    }
                                     <button
                                         type="button"
                                         className="p-1.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"

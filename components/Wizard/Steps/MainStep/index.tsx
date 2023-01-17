@@ -35,6 +35,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const { swapFormData } = useSwapDataState()
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
 
     let formValues = formikRef.current?.values;
 
@@ -49,14 +50,20 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             const five_minutes_before = new Date(new Date().setMinutes(-5))
             if (new Date(temp_data?.date) >= five_minutes_before) {
                 (async () => {
-                    const layerswapApiClient = new LayerSwapApiClient(router)
                     try {
-                        const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, temp_data.swap_data?.currency?.baseObject?.asset)
+                        let formValues = { ...temp_data.swap_data }
+                        if (temp_data?.swap_data?.swapType === SwapType.OffRamp) {
+                            const layerswapApiClient = new LayerSwapApiClient(router)
+                            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, temp_data.swap_data?.currency?.baseObject?.asset)
+                            formValues.destination_address = deposit_address?.data
+                            setDepositeAddressIsfromAccount(true)
+                        }
                         clearTempData()
-                        const formValues = { ...temp_data.swap_data, destination_address: deposit_address?.data }
                         formikRef.current.setValues(formValues)
                         updateSwapFormData(formValues)
-                        setDepositeAddressIsfromAccount(true)
+                        if (formValues.swapType === SwapType.OnRamp) {
+                            goToStep(SwapCreateStep.Confirm)
+                        }
                     }
                     catch (e) {
                         toast(e?.response?.data?.error?.message || e.message)
@@ -133,10 +140,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            {
-                !loading ? <SwapForm resource_storage_url={resource_storage_url} isPartnerWallet={isPartnerWallet} lockAddress={lockAddress} partner={partner} />
-                    : <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
-            }
+            <SwapForm loading={loading} resource_storage_url={resource_storage_url} isPartnerWallet={isPartnerWallet} lockAddress={lockAddress} partner={partner} />
         </Formik >
     </>
 }

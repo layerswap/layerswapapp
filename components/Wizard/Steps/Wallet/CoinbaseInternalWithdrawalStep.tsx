@@ -1,23 +1,15 @@
-import { CheckIcon, LinkIcon, SwitchHorizontalIcon } from '@heroicons/react/solid';
+import { SwitchHorizontalIcon } from '@heroicons/react/solid';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
-import { classNames } from '../../../utils/classNames';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
-import shortenAddress from "../../../utils/ShortenAddress"
 import { GetSourceDestinationData } from '../../../../helpers/swapHelper';
 import { SwapStatus } from '../../../../Models/SwapStatus';
-import { parseJwt } from '../../../../lib/jwtParser';
-import TokenService from '../../../../lib/TokenService';
-import useSWR from 'swr';
-import { ApiResponse } from '../../../../Models/ApiResponse';
-import { OpenLink } from '../../../../lib/openLink';
-import AccountConnectStep from '../CoinbaseAccountConnectStep';
 
 
 const CoinbaseInternalWithdrawal: FC = () => {
@@ -26,9 +18,7 @@ const CoinbaseInternalWithdrawal: FC = () => {
     const { swap } = useSwapDataState()
     const { networks, exchanges, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
-
-    const { network, exchange } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
-
+    const { network } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
     const swapStatusStep = GetSwapStatusStep(swap)
 

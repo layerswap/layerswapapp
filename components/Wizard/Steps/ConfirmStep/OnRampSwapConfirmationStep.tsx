@@ -19,22 +19,29 @@ import { useTimerState } from '../../../../context/timerContext';
 import Widget from '../../Widget';
 import WarningMessage from '../../../WarningMessage';
 import SwapSettings from '../../../../lib/SwapSettings';
+import KnownInternalNames from '../../../../lib/knownIds';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
+import Image from 'next/image'
+import { useSettingsState } from '../../../../context/settings';
 
+const TIMER_SECONDS = 120
 
 const OnRampSwapConfirmationStep: FC = () => {
     const [loading, setLoading] = useState(false)
-    const { swapFormData, swap, codeRequested, addressConfirmed } = useSwapDataState()
+    const { swapFormData, swap, codeRequested, addressConfirmed, withdrawManually } = useSwapDataState()
     const { exchange, currency, destination_address, network } = swapFormData || {}
     const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
     const currentValues = formikRef?.current?.values;
+    const { discovery: { resource_storage_url } } = useSettingsState();
 
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
-    const { updateSwapFormData, createAndProcessSwap, setAddressConfirmed } = useSwapDataUpdate()
+    const { updateSwapFormData, createAndProcessSwap, setAddressConfirmed, setCodeRequested } = useSwapDataUpdate()
     const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState(destination_address)
     const [addressInputError, setAddressInputError] = useState("")
+    const [withdrawalType, setWithdrawalType] = useState(false)
 
     const { start: startTimer } = useTimerState()
     const router = useRouter();
@@ -56,10 +63,20 @@ const OnRampSwapConfirmationStep: FC = () => {
         try {
             if (!swap) {
                 const swapId = await createAndProcessSwap();
+                if (exchange?.baseObject?.internal_name?.toLocaleLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLocaleLowerCase()) {
+                    if (!withdrawManually) {
+                        const layerswapApiClient = new LayerSwapApiClient()
+                        await layerswapApiClient.WithdrawFromExchange(swapId, exchange?.baseObject.internal_name)
+                    }
+                }
                 return await router.push(`/swap/${swapId}`)
             }
             else {
                 const swapId = swap.id
+                if (!withdrawManually) {
+                    const layerswapApiClient = new LayerSwapApiClient()
+                    await layerswapApiClient.WithdrawFromExchange(swapId, exchange?.baseObject.internal_name)
+                }
                 return await router.push(`/swap/${swapId}`)
             }
         }
@@ -69,13 +86,18 @@ const OnRampSwapConfirmationStep: FC = () => {
                 toast.error(error.message)
                 return
             }
+            else if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
+                startTimer(TIMER_SECONDS)
+                setCodeRequested(true)
+                nextStep = SwapCreateStep.TwoFactor
+            }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 setError({ Code: data.code, Step: SwapCreateStep.Confirm })
                 goToStep(SwapCreateStep.Error)
                 setError({ Code: data.code, Step: SwapCreateStep.Confirm })
             }
             else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
-                nextStep = SwapCreateStep.OAuth
+                nextStep = SwapCreateStep.AuthorizeCoinbaseWithdrawal
             }
             else if (data.code === KnownwErrorCode.ACTIVE_SWAP_LIMIT_EXCEEDED) {
                 goToStep(SwapCreateStep.ActiveSwapLimit)
@@ -87,26 +109,30 @@ const OnRampSwapConfirmationStep: FC = () => {
         setLoading(false)
         if (nextStep)
             goToStep(nextStep)
-    }, [exchange, swap, createAndProcessSwap])
+    }, [exchange, swap, createAndProcessSwap, withdrawalType])
 
     const handleClose = () => {
         setEditingAddress(false)
     }
     const handleSaveAddress = useCallback(() => {
         setAddressInputError("")
-        if (!isValidAddress(addressInputValue, network.baseObject)) {
+        if (!isValidAddress(addressInputValue, network?.baseObject)) {
             setAddressInputError(`Enter a valid ${network.name} address`)
             return;
         }
         updateSwapFormData({ ...swapFormData, destination_address: addressInputValue })
         setEditingAddress(false)
     }, [addressInputValue, network, swapFormData])
-    const handleToggleChange = (value: boolean) => {
+    const handleConfirmToggleChange = (value: boolean) => {
         setAddressConfirmed(value)
+    }
+    const handleWithdrawalTypeToggleChange = (value: boolean) => {
+        setWithdrawalType(value)
     }
     const currentNetwork = swapFormData?.network?.baseObject;
     const currentExchange = swapFormData?.exchange?.baseObject;
     const currentCurrency = swapFormData?.currency?.baseObject;
+    const coinbaseLogoURL = `${resource_storage_url}/layerswap/networks/${KnownInternalNames.Exchanges.Coinbase.toLowerCase()}.png`
 
     return (<>
         <Widget>
@@ -130,7 +156,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                                 I am the owner of this address
                             </div>
                             <div className='flex items-center space-x-4'>
-                                <ToggleButton name={nameOfRightWallet} onChange={handleToggleChange} value={addressConfirmed} />
+                                <ToggleButton name={nameOfRightWallet} onChange={handleConfirmToggleChange} value={addressConfirmed} />
                             </div>
                         </div>
                     </div>
