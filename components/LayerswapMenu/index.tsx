@@ -13,7 +13,7 @@ import Modal from "../modalComponent";
 import { DocIframe } from "../docInIframe";
 
 export default function () {
-    const { email, authData } = useAuthState()
+    const { email, isUserAuthenticated } = useAuthState()
     const router = useRouter();
     const { menuVisible } = useMenuState()
 
@@ -63,7 +63,7 @@ export default function () {
                                         className="font-bold text-sm text-left border border-darkblue-200 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-darkblue ring-1 ring-black ring-opacity-5 focus:outline-none">
                                         <div className="relative z-30 py-1">
                                             {
-                                                authData?.access_token ?
+                                                isUserAuthenticated ?
                                                     <>
                                                         <div className='font-light w-full text-left px-4 py-2 text-sm cursor-default flex items-center space-x-2'>
                                                             <UserIcon className="h-4 w-4" />
@@ -89,7 +89,7 @@ export default function () {
                                                     </>
                                             }
                                             {
-                                                authData?.access_token &&
+                                                isUserAuthenticated &&
                                                 <>
                                                     {
                                                         router.pathname != '/' &&

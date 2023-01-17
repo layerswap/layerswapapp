@@ -12,6 +12,7 @@ type AuthState = {
     tempEmail: string,
     userId: string,
     userLockedOut: boolean,
+    isUserAuthenticated: boolean
 }
 
 export type UpdateInterface = {
@@ -19,7 +20,8 @@ export type UpdateInterface = {
     updateAuthData: (data: any) => void,
     getAuthData: () => (AuthData | undefined)
     setCodeRequested(codeSubmitted: boolean): void;
-    setUserLockedOut(value: boolean): void
+    setUserLockedOut(value: boolean): void;
+    setIsUserAuthenticated(value: boolean): void
 }
 
 export function AuthProvider({ children }) {
@@ -30,12 +32,15 @@ export function AuthProvider({ children }) {
     const [userId, setUserId] = useState<string>()
     const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
     const [userLockedOut, setUserLockedOut] = React.useState<boolean>(false)
+    const [isUserAuthenticated, setIsUserAuthenticated] = React.useState<boolean>(false)
 
     const updateDataFromLocalStorage = () => {
         const authData = TokenService.getAuthData()
         if (!authData || !authData.access_token)
             return
         const { email, sub } = parseJwt(authData.access_token)
+        if (authData && email)
+            setIsUserAuthenticated(true)
         setAuthData(authData)
         setEmail(email)
         setUserId(sub)
@@ -66,11 +71,11 @@ export function AuthProvider({ children }) {
         }, []),
         setCodeRequested: useCallback((codeRequested: boolean) => setCodeRequested(codeRequested), [codeRequested]),
         setUserLockedOut: useCallback((userLockedOut: boolean) => setUserLockedOut(userLockedOut), [userLockedOut]),
-
+        setIsUserAuthenticated: useCallback((isUserAuthenticated: boolean) => setIsUserAuthenticated(isUserAuthenticated), [isUserAuthenticated]),
     };
 
     return (
-        <AuthStateContext.Provider value={{ email, authData, codeRequested, tempEmail, userId, userLockedOut }}>
+        <AuthStateContext.Provider value={{ email, authData, codeRequested, tempEmail, userId, userLockedOut, isUserAuthenticated }}>
             <AuthDataUpdateContext.Provider value={updateFns}>
                 {children}
             </AuthDataUpdateContext.Provider>
