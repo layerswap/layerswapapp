@@ -15,9 +15,6 @@ import shortenAddress from "../../../utils/ShortenAddress"
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import { GetSourceDestinationData } from '../../../../helpers/swapHelper';
 import { SwapStatus } from '../../../../Models/SwapStatus';
-import { parseJwt } from '../../../../lib/jwtParser';
-import TokenService from '../../../../lib/TokenService';
-
 
 const ConnectWalletStep: FC = () => {
     const [loading, setLoading] = useState(false)
