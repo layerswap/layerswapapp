@@ -157,6 +157,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                     }
                                     <div>
                                         <AddressInput
+                                            hideLabel={true}
                                             exchangeAccount={exchangeAccount}
                                             onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
                                             loading={loadingDepositAddress}
@@ -174,7 +175,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                 <div className="relative rounded-md shadow-sm mt-1.5">
                                     <div>
                                         <AddressInput
-                                            label={`To ${values?.exchange?.name || ''} address`}
                                             exchangeAccount={exchangeAccount}
                                             onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
                                             loading={loadingDepositAddress}
@@ -191,7 +191,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                         </div>
                     </Widget.Content>
                 }
-
                 <Widget.Footer>
                     <SwapButton className="plausible-event-name=Swap+initiated" type='submit' isDisabled={!isValid || loading} isSubmitting={isSubmitting || loading}>
                         {displayErrorsOrSubmit(errors, values.swapType)}
@@ -203,7 +202,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
 }
 
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
-    return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
+    return errors.exchange?.toString() || errors.network?.toString() || errors.amount || errors.destination_address || "Swap now"
 }
 
 export default SwapForm
