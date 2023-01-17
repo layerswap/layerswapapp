@@ -29,6 +29,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess }) => {
     const { swap } = useSwapDataState()
     const [loading, setLoading] = useState(false)
     const [openInsufficientFundsSlideover, setOpenInsufficientFundsSlideover] = useState(false)
+    const [openFundsOnHoldSlideover, setOpenFundsOnHoldSlideover] = useState(false)
 
     const { start: startTimer } = useTimerState()
 
@@ -50,6 +51,9 @@ const Coinbase2FA: FC<Props> = ({ onSuccess }) => {
             }
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 setOpenInsufficientFundsSlideover(true)
+            }
+            else if (data.code === KnownwErrorCode.FUNDS_ON_HOLD) {
+                setOpenFundsOnHoldSlideover(true)
             }
             else {
                 toast.error(data.message)
@@ -100,6 +104,27 @@ const Coinbase2FA: FC<Props> = ({ onSuccess }) => {
                             window.open("https://www.coinbase.com/", "_blank")
                         }}>
                             Check Coinbase
+                        </SubmitButton>
+                    </MessageComponent.Buttons>
+                </MessageComponent>
+            )}
+        </SlideOver>
+        <SlideOver imperativeOpener={[openFundsOnHoldSlideover, setOpenFundsOnHoldSlideover]} place='inStep'>
+            {(close) => (
+                <MessageComponent>
+                    <MessageComponent.Content icon='red'>
+                        <MessageComponent.Header>
+                            Transfer failed
+                        </MessageComponent.Header>
+                        <MessageComponent.Description>
+                            This transfer can't be processed because your funds might be on hold on Coinbase. This usually happens when you want to cash out immediately after completeing a purchare or adding cash.
+                        </MessageComponent.Description>
+                    </MessageComponent.Content>
+                    <MessageComponent.Buttons>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => {
+                            window.open("https://help.coinbase.com/en/coinbase/trading-and-funding/sending-or-receiving-cryptocurrency/available-balance-faq", "_blank")
+                        }}>
+                            Learn More
                         </SubmitButton>
                     </MessageComponent.Buttons>
                 </MessageComponent>
