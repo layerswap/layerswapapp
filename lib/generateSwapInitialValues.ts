@@ -28,22 +28,22 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     const networkIsAvailable = (n: CryptoNetwork) => {
         return initialSwapType === SwapType.OffRamp ?
             n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (exchanges.some(e => {
-                return e.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled)
+                return e.currencies.some(ec => ec.asset === nc.asset)
             })))
-            : n.currencies.some(nc => nc.status === "active" && nc.is_withdrawal_enabled && (exchanges.some(e => e.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled))))
+            : n.currencies.some(nc => nc.status === "active" && nc.is_withdrawal_enabled && (exchanges.some(e => e.currencies.some(ec => ec.asset === nc.asset))))
     }
 
     const availableNetworks = networks.filter(networkIsAvailable)
-        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
+        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.internal_name, c.display_name, 0, `${resource_storage_url}/layerswap/networks/${c.internal_name.toLowerCase()}.png`, c.status === "active", false))
 
     let availableExchanges = exchanges
-        .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, c.order, `${resource_storage_url}${c.logo}`, c.status === "active", c.is_default))
+        .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, 0, `${resource_storage_url}/layerswap/networks/${c.internal_name.toLowerCase()}.png`, true, false))
 
     let initialExchange =
-        availableExchanges.find(x => x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() && (initialSwapType === SwapType.OffRamp ? x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_withdrawal_enabled) : x.baseObject.currencies.some(ce => ce.status === "active" && ce.is_deposit_enabled)));
+        availableExchanges.find(x => x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() && x.baseObject.currencies);
 
     const availableCurrencies = currencies
-        .map(c => new SelectMenuItem<Currency>(c, c.id, c.asset, initialExchange?.baseObject?.currencies?.find(ec => ec.asset === c.asset)?.order || 0, `${resource_storage_url}${c.logo}`))
+        .map(c => new SelectMenuItem<Currency>(c, c.asset, c.asset, 0, `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`))
 
     const initialNetwork =
         availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable && (initialSwapType === SwapType.OffRamp ? !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp : !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp))

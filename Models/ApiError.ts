@@ -4,6 +4,7 @@ export type ApiError = {
 }
 
 export enum KnownwErrorCode {
+    NOT_FOUND = "NOT_FOUND",
     INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
     INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS",
     FUNDS_ON_HOLD = "FUNDS_ON_HOLD_ERROR",

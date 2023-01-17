@@ -20,11 +20,12 @@ import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
+import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks, discovery: { resource_storage_url } } = useSettingsState()
+    const { networks, currencies, exchanges, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
@@ -46,10 +47,9 @@ const WithdrawNetworkStep: FC = () => {
             goToStep(swapStatusStep)
     }, [swapStatusStep])
 
-    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.network_currency_id))
-    const currency = network?.currencies.find(n => n.id === swap?.network_currency_id)
-    const network_internal_name = network?.internal_name
-    const estimatedTransferTime = NetworkSettings.KnownSettings[network_internal_name]?.EstimatedTransferTime
+    const { currency, destination, source } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+
+    const estimatedTransferTime = NetworkSettings.KnownSettings[source.internal_name]?.EstimatedTransferTime
 
     const handleTransferDone = useCallback(async () => {
         setTransferDone(true)
@@ -78,11 +78,7 @@ const WithdrawNetworkStep: FC = () => {
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
     }
-
-    if (!swap?.additonal_data) {
-        return null;
-    }
-    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[network?.internal_name]?.UserGuideUrlForDesktop
+    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[source?.internal_name]?.UserGuideUrlForDesktop
 
     return (
         <>
@@ -92,21 +88,15 @@ const WithdrawNetworkStep: FC = () => {
                         <div className='space-y-4'>
                             <div className="text-left">
                                 <p className="block text-md sm:text-lg font-medium text-white">
-                                    Send crypto to the provided address
+                                    Send crypto to the provided address from {source.display_name}
                                 </p>
                                 <p className='text-sm sm:text-base'>
                                     The swap will be completed after the transfer is detected
                                 </p>
                             </div>
-                            {
-                                swap?.additonal_data?.memo &&
-                                <WarningMessage>
-                                    Please include the "Memo" field, it is required for a successful transfer.
-                                </WarningMessage>
-                            }
                             <div className='mb-6 grid grid-cols-1 gap-4'>
                                 {
-                                    network_internal_name === KnownInternalNames.Networks.LoopringMainnet &&
+                                    source.internal_name === KnownInternalNames.Networks.LoopringMainnet &&
                                     <BackgroundField header={'Send type'}>
                                         <div className='flex items-center space-x-2'>
                                             <SwitchHorizontalIcon className='h-4 w-4' />
@@ -116,29 +106,21 @@ const WithdrawNetworkStep: FC = () => {
                                         </div>
                                     </BackgroundField>
                                 }
-                                <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.additonal_data?.deposit_address} header={'Recipient'}>
+                                <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.deposit_address} header={'Recipient'}>
                                     <p className='break-all'>
-                                        {swap?.additonal_data?.deposit_address}
+                                        {swap?.deposit_address}
                                     </p>
                                 </BackgroundField>
-
-                                <div className='flex space-x-4'>
-                                    <BackgroundField header={'Address Type'}>
-                                        <p>
-                                            EOA Wallet
-                                        </p>
-                                    </BackgroundField>
-                                    {
-                                        swap?.additonal_data?.memo &&
-                                        <>
-                                            <BackgroundField isCopiable={true} toCopy={swap?.additonal_data?.memo} header={'Memo'}>
-                                                <p className='break-all'>
-                                                    {swap?.additonal_data?.memo}
-                                                </p>
-                                            </BackgroundField>
-                                        </>
-                                    }
-                                </div>
+                                {
+                                    source.internal_name === KnownInternalNames.Networks.LoopringGoerli || source.internal_name === KnownInternalNames.Networks.LoopringMainnet && 
+                                    <div className='flex space-x-4'>
+                                        <BackgroundField header={'Address Type'}>
+                                            <p>
+                                                EOA Wallet
+                                            </p>
+                                        </BackgroundField>
+                                    </div>
+                                }
                                 <div className='flex space-x-4'>
                                     <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
                                         <p>
@@ -205,7 +187,7 @@ const WithdrawNetworkStep: FC = () => {
                         transferDone &&
                         <SimpleTimer time={transferDoneTime} text={
                             (remainingSeconds) => <>
-                                {`The swap will get completed in ~${remainingSeconds > 60 ? `${(Math.ceil((remainingSeconds / 60) % 60))} minutes` : '1 minute'}  after you send from ${network?.display_name}`}
+                                {`The swap will get completed in ~${remainingSeconds > 60 ? `${(Math.ceil((remainingSeconds / 60) % 60))} minutes` : '1 minute'}  after you send from ${source?.display_name}`}
                             </>}
                         >
                             <div className="flex text-center mb-4 space-x-2">

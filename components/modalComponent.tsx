@@ -5,6 +5,7 @@ import { useQueryState } from '../context/query';
 import { useRouter } from 'next/router';
 import { forwardRef } from 'react';
 import { Root, Portal, Overlay, Content, Title, Close, } from '@radix-ui/react-dialog';
+import inIframe from './utils/inIframe';
 
 type modalSize = 'small' | 'medium' | 'large';
 
@@ -63,7 +64,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                 >
                     <Portal>
                         <Overlay />
-                        <Content>
+                        <Content className={query?.addressSource}>
                             <MobileModalContent className={className} showModal={showModal} setShowModal={setShowModal} title={title}>
                                 {children}
                             </MobileModalContent>
@@ -187,7 +188,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                             </div>
                     }
                 </div>
-                <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto`}>
+                <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto ${inIframe() && 'styled-scroll'}`}>
                     {children}
                 </div>
             </motion.div>

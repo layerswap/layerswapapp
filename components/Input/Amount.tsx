@@ -1,23 +1,23 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useRef, useState } from "react";
-import { getCurrencyDetails } from "../../helpers/currencyHelper";
+import { forwardRef, useRef } from "react";
+import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import CurrenciesField from "../Select/Currencies";
 import NumericInput from "./NumericInput";
 
-const AmountField = forwardRef((props: any, ref: any) => {
+const AmountField = forwardRef((_, ref: any) => {
 
-    const { values: { currency, swapType, exchange, network, amount }, setFieldValue } = useFormikContext<SwapFormValues>();
+    const { values, setFieldValue } = useFormikContext<SwapFormValues>();
+    const { networks } = useSettingsState()
+    const { currency, swapType, exchange, network, amount } = values
     const name = "amount"
 
-    const minAllowedAmount = CalculateMinAllowedAmount(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType);
-    const maxAllowedAmount = CalculateMaxAllowedAmount(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType);
-
-    const currencyDetails = getCurrencyDetails(currency?.baseObject, exchange?.baseObject, network?.baseObject, swapType)
+    const minAllowedAmount = CalculateMinAllowedAmount(values, networks);
+    const maxAllowedAmount = CalculateMaxAllowedAmount(values, networks);
 
     const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
-    const step = 1 / Math.pow(10, currencyDetails?.precision)
+    const step = 1 / Math.pow(10, currency?.baseObject?.precision)
     const amountRef = useRef(ref)
 
     const amountLabel = (
@@ -40,13 +40,13 @@ const AmountField = forwardRef((props: any, ref: any) => {
             step={isNaN(step) ? 0.01 : step}
             name={name}
             ref={amountRef}
-            precision={currencyDetails?.precision}
+            precision={currency?.baseObject?.precision}
             className="rounded-r-none"
         >
             {exchange && network && currency && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
                 <button
                     type="button"
-                    className="p-1.5  bg-darkblue-400 hover:bg-darkblue-300 rounded-md hidden md:block border border-darkblue-400 hover:border-darkblue-100"
+                    className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md hidden md:block border border-darkblue-400 hover:border-darkblue-100"
                     onClick={() => setFieldValue(name, minAllowedAmount)}
 
                 >
@@ -55,7 +55,7 @@ const AmountField = forwardRef((props: any, ref: any) => {
                 <button
                     type="button"
                     onClick={() => setFieldValue(name, maxAllowedAmount)}
-                    className="p-1.5  bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100">
+                    className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100">
                     MAX
                 </button>
             </div>}

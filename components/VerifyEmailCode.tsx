@@ -1,7 +1,6 @@
 import { MailOpenIcon } from '@heroicons/react/outline';
 import { Form, Formik, FormikErrors } from 'formik';
-import Link from 'next/link';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import { useTimerState } from '../context/timerContext';
@@ -10,9 +9,9 @@ import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
 import { DocIframe } from './docInIframe';
 import NumericInput from './Input/NumericInput';
-import Modal from './modalComponent';
 import SlideOver from './SlideOver';
 import TimerWithContext from './TimerComponent';
+import { classNames } from './utils/classNames';
 import Widget from './Wizard/Widget';
 interface VerifyEmailCodeProps {
     onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
@@ -22,13 +21,11 @@ interface CodeFormValues {
     Code: string
 }
 
-const TIMER_SECONDS = 60
-
 const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     const initialValues: CodeFormValues = { Code: '' }
     const { start: startTimer, started } = useTimerState()
-    const { tempEmail } = useAuthState();
-    const { updateAuthData } = useAuthDataUpdate()
+    const { tempEmail, userLockedOut } = useAuthState();
+    const { updateAuthData, setUserLockedOut } = useAuthDataUpdate()
     const [modalUrl, setModalUrl] = useState<string>(null);
     const [openDocSlideover, setOpenDocSlideover] = useState(false)
 
@@ -36,7 +33,10 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         try {
             const apiClient = new LayerSwapAuthApiClient();
             const res = await apiClient.getCodeAsync(tempEmail)
-            startTimer(TIMER_SECONDS)
+            const next = new Date(res?.data?.next)
+            const now = new Date()
+            const miliseconds = next.getTime() - now.getTime()
+            startTimer(Math.round((res?.data?.already_sent ? 60000 : miliseconds) / 1000))
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
@@ -53,8 +53,11 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
         setModalUrl(url)
         setOpenDocSlideover(true)
     }
-    const handleOpenTerms = ()=>openDoc('https://docs.layerswap.io/user-docs/information/terms-of-services')
-    const handleOpenPrivacyPolicy = ()=>openDoc('https://docs.layerswap.io/user-docs/information/privacy-policy')
+
+    const handleOpenTerms = () => openDoc('https://docs.layerswap.io/user-docs/information/terms-of-services')
+    const handleOpenPrivacyPolicy = () => openDoc('https://docs.layerswap.io/user-docs/information/privacy-policy')
+
+    const timerCountdown = userLockedOut ? 600 : 60
 
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
@@ -83,8 +86,13 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                     await onSuccessfullVerify(res);
                 }
                 catch (error) {
-                    if (error.response?.data?.error_description) {
-                        const message = error.response.data.error_description
+                    const message = error.response.data.error_description
+                    if (error.response?.data?.error === 'USER_LOCKED_OUT_ERROR') {
+                        toast.error(message)
+                        setUserLockedOut(true)
+                        startTimer(600)
+                    }
+                    else if (error.response?.data?.error_description) {
                         toast.error(message)
                     }
                     else {
@@ -114,8 +122,8 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-700  w-full font-semibold rounded-md placeholder-gray-400"
                                 />
                                 <span className="flex text-sm leading-6 items-center mt-1.5">
-                                    <TimerWithContext isStarted={started} seconds={60} waitingComponent={(remainingTime) => (
-                                        <span>
+                                    <TimerWithContext isStarted={started} seconds={timerCountdown} waitingComponent={(remainingTime) => (
+                                        <span className={classNames(userLockedOut && 'text-xl leading-6')}>
                                             Resend in
                                             <span className='ml-1'>
                                                 {remainingTime}
@@ -140,9 +148,15 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
                                     className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'>Privacy Policy
                                 </span>
                             </p>
-                            <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
-                                Confirm
-                            </SubmitButton>
+                            <TimerWithContext isStarted={started} seconds={timerCountdown} waitingComponent={() => (
+                                <SubmitButton type="submit" isDisabled={!isValid || userLockedOut} isSubmitting={isSubmitting}>
+                                    {userLockedOut ? 'User is locked out' : 'Confirm'}
+                                </SubmitButton>
+                            )}>
+                                <SubmitButton type="submit" isDisabled={!isValid} isSubmitting={isSubmitting}>
+                                    Confirm
+                                </SubmitButton>
+                            </TimerWithContext>
                         </Widget.Footer>
                     </Widget>
                 </Form >

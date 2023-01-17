@@ -16,8 +16,6 @@ type EmailFormValues = {
 type Props = {
     onSend: (email: string) => void
 }
-const TIMER_SECONDS = 60
-
 const SendEmail: FC<Props> = ({ onSend }) => {
     const { codeRequested, tempEmail } = useAuthState()
     const { setCodeRequested, updateTempEmail } = useAuthDataUpdate();
@@ -34,7 +32,10 @@ const SendEmail: FC<Props> = ({ onSend }) => {
                 TokenService.setCodeNextTime(res?.data?.next)
                 setCodeRequested(true);
                 updateTempEmail(inputEmail)
-                startTimer(TIMER_SECONDS)
+                const next = new Date(res?.data?.next)
+                const now = new Date()
+                const miliseconds = next.getTime() - now.getTime()
+                startTimer(Math.round((res?.data?.already_sent ? 60000 : miliseconds) / 1000))
             }
             onSend(inputEmail)
         }

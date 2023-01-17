@@ -1,14 +1,15 @@
 import { useRouter } from 'next/router';
 import { FC, useEffect, useState } from 'react'
-import { useSettingsState } from '../context/settings';
-import LayerSwapApiClient, { SwapItem, SwapType } from '../lib/layerSwapApiClient';
+import { useSettingsState } from '../../context/settings';
+import LayerSwapApiClient, { SwapItem } from '../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
-import shortenAddress from './utils/ShortenAddress';
-import CopyButton from './buttons/copyButton';
-import { SwapDetailsComponentSceleton } from './Sceletons';
+import shortenAddress from '../utils/ShortenAddress';
+import CopyButton from '../buttons/copyButton';
+import { SwapDetailsComponentSceleton } from '../Sceletons';
 import StatusIcon from './StatusIcons';
-import { GetExchangeFee } from '../lib/fees';
+import { GetSourceDestinationData } from '../../helpers/swapHelper';
+import { ExternalLinkIcon } from '@heroicons/react/outline';
 
 type Props = {
     id: string
@@ -20,13 +21,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const [loading, setLoading] = useState(false)
     const router = useRouter();
 
-    const exchange = exchanges?.find(e => e.currencies.some(ec => ec.id === swap?.exchange_currency_id))
-    const currency = currencies.find(x => x.id == swap?.exchange_currency_id)
-    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.network_currency_id))
-    const source = swap?.type == SwapType.OnRamp ? exchange : network;
-    const destination = swap?.type == SwapType.OnRamp ? network : exchange;
-    const currencyDetails = exchange?.currencies?.find(x => x.id == swap?.exchange_currency_id)
-    let exchangeFee = GetExchangeFee(currency, exchange);
+    const { currency, destination, destination_network, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
     useEffect(() => {
         (async () => {
@@ -79,14 +74,13 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">From {swap?.type === SwapType.OnRamp ? 'Exchange' : "Network"} </span>
+                            <span className="text-left">From  </span>
                             {
                                 source && <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
-                                            source.logo &&
                                             <Image
-                                                src={`${resource_storage_url}${source?.logo}`}
+                                                src={source_logo}
                                                 alt="Exchange Logo"
                                                 height="60"
                                                 width="60"
@@ -102,14 +96,13 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">To {swap?.type === SwapType.OnRamp ? 'Network' : "Exchange"} </span>
+                            <span className="text-left">To </span>
                             {
                                 destination && <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
-                                            destination.logo &&
                                             <Image
-                                                src={`${resource_storage_url}${destination?.logo}`}
+                                                src={destination_logo}
                                                 alt="Exchange Logo"
                                                 height="60"
                                                 width="60"
@@ -133,37 +126,55 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 </div>
                             </span>
                         </div>
-                        <hr className='horizontal-gradient' />
-                        <div className="flex justify-between items-baseline">
-                            <span className="text-left">{swap?.received_amount && swap?.received_amount != swap?.requested_amount ? 'Amount You Requested' : "Amount"} </span>
-                            <span className='text-white font-normal flex'>
-                                {swap?.requested_amount} {currencyDetails?.asset}
-                            </span>
-                        </div>
-                        <hr className='horizontal-gradient' />
-                        {
-                            swap?.status == 'completed' && swap?.requested_amount != swap?.received_amount &&
+                        {swap?.output_transaction?.transaction_id &&
                             <>
+                                <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
-                                    <span className="text-left">Amount You Sent </span>
-                                    <span className='text-white font-normal flex'>
-                                        {swap?.received_amount} {currencyDetails?.asset}
+                                    <span className="text-left">Transaction </span>
+                                    <span className="text-white">
+                                        <div className='inline-flex items-center'>
+                                            <div className="underline hover:no-underline flex items-center space-x-1">
+                                                <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                                                <ExternalLinkIcon className='h-4' />
+                                            </div>
+                                        </div>
                                     </span>
                                 </div>
-                                <hr className='horizontal-gradient' />
                             </>
                         }
+                        <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left">Layerswap Fee </span>
-                            <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currencyDetails?.precision))} {currencyDetails?.asset}</span>
+                            <span className="text-left">Requested amount</span>
+                            <span className='text-white font-normal flex'>
+                                {swap?.requested_amount} {currency?.asset}
+                            </span>
                         </div>
                         {
-                            swap?.type === SwapType.OnRamp && exchangeFee != 0 &&
+                            swap?.input_transaction &&
                             <>
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
-                                    <span className="text-left">Exchange Fee </span>
-                                    <span className='text-white font-normal'>{parseFloat(exchangeFee.toLocaleString())} {currencyDetails?.asset}</span>
+                                    <span className="text-left">Transfered amount</span>
+                                    <span className='text-white font-normal flex'>
+                                        {swap?.input_transaction?.amount} {currency?.asset}
+                                    </span>
+                                </div>
+                            </>
+                        }
+                        <hr className='horizontal-gradient' />
+                        <div className="flex justify-between items-baseline">
+                            <span className="text-left">Layerswap Fee </span>
+                            <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currency.precision))} {currency?.asset}</span>
+                        </div>
+                        {
+                            swap?.output_transaction &&
+                            <>
+                                <hr className='horizontal-gradient' />
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-left">Amount You Received</span>
+                                    <span className='text-white font-normal flex'>
+                                        {swap?.output_transaction?.amount} {currency?.asset}
+                                    </span>
                                 </div>
                             </>
                         }

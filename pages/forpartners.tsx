@@ -123,7 +123,7 @@ export async function getStaticProps() {
     var networks: CryptoNetwork[] = [];
     var exchanges: Exchange[] = [];
     networks = settings.networks.filter(n => n.status !== "inactive");
-    exchanges = settings.exchanges.filter(e => e.status !== "inactive")
+    exchanges = settings.exchanges
 
     return {
         props: {

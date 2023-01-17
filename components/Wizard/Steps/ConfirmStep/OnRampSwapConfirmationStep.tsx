@@ -1,7 +1,6 @@
-import { PencilAltIcon } from '@heroicons/react/outline';
-import { ExclamationIcon } from '@heroicons/react/outline';
+import { PencilAltIcon, ExclamationIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useRef, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
@@ -20,24 +19,29 @@ import { useTimerState } from '../../../../context/timerContext';
 import Widget from '../../Widget';
 import WarningMessage from '../../../WarningMessage';
 import SwapSettings from '../../../../lib/SwapSettings';
-import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
+import KnownInternalNames from '../../../../lib/knownIds';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
+import Image from 'next/image'
+import { useSettingsState } from '../../../../context/settings';
 
 const TIMER_SECONDS = 120
 
 const OnRampSwapConfirmationStep: FC = () => {
     const [loading, setLoading] = useState(false)
-    const { swapFormData, swap, codeRequested, addressConfirmed } = useSwapDataState()
-    const { exchange, amount, currency, destination_address, network } = swapFormData || {}
+    const { swapFormData, swap, codeRequested, addressConfirmed, withdrawManually } = useSwapDataState()
+    const { exchange, currency, destination_address, network } = swapFormData || {}
     const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
     const currentValues = formikRef?.current?.values;
+    const { discovery: { resource_storage_url } } = useSettingsState();
 
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
-    const { updateSwapFormData, createAndProcessSwap, processPayment, setCodeRequested, cancelSwap, setAddressConfirmed } = useSwapDataUpdate()
+    const { updateSwapFormData, createAndProcessSwap, setAddressConfirmed, setCodeRequested } = useSwapDataUpdate()
     const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState(destination_address)
     const [addressInputError, setAddressInputError] = useState("")
+    const [withdrawalType, setWithdrawalType] = useState(false)
 
     const { start: startTimer } = useTimerState()
     const router = useRouter();
@@ -51,23 +55,29 @@ const OnRampSwapConfirmationStep: FC = () => {
             setAddressInputError(`Enter a valid ${network.name} address`)
     }, [network])
 
-    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.baseObject?.usd_price, Number(amount))
-    const transferAmount = `${amount} ${currency?.name}`
     const handleSubmit = useCallback(async (e: any) => {
         setLoading(true)
         let nextStep: SwapCreateStep;
         if (swap && codeRequested)
             return goToStep(SwapCreateStep.TwoFactor)
-
         try {
             if (!swap) {
                 const swapId = await createAndProcessSwap();
-                return await router.push(`/${swapId}`)
+                if (exchange?.baseObject?.internal_name?.toLocaleLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLocaleLowerCase()) {
+                    if (!withdrawManually) {
+                        const layerswapApiClient = new LayerSwapApiClient()
+                        await layerswapApiClient.WithdrawFromExchange(swapId, exchange?.baseObject.internal_name)
+                    }
+                }
+                return await router.push(`/swap/${swapId}`)
             }
             else {
                 const swapId = swap.id
-                await processPayment(swapId)
-                return await router.push(`/${swapId}`)
+                if (!withdrawManually) {
+                    const layerswapApiClient = new LayerSwapApiClient()
+                    await layerswapApiClient.WithdrawFromExchange(swapId, exchange?.baseObject.internal_name)
+                }
+                return await router.push(`/swap/${swapId}`)
             }
         }
         catch (error) {
@@ -75,11 +85,6 @@ const OnRampSwapConfirmationStep: FC = () => {
             if (!data) {
                 toast.error(error.message)
                 return
-            }
-            //TODO create reusable error handler
-            if (data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
-                nextStep = SwapCreateStep.OAuth
-                toast.error(`You have not authorized minimum amount, for transfering ${transferAmount} please authorize at least ${minimalAuthorizeAmount}$`)
             }
             else if (data.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
                 startTimer(TIMER_SECONDS)
@@ -89,9 +94,10 @@ const OnRampSwapConfirmationStep: FC = () => {
             else if (data.code === KnownwErrorCode.INSUFFICIENT_FUNDS) {
                 setError({ Code: data.code, Step: SwapCreateStep.Confirm })
                 goToStep(SwapCreateStep.Error)
+                setError({ Code: data.code, Step: SwapCreateStep.Confirm })
             }
-            else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
-                nextStep = SwapCreateStep.OAuth
+            else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS || data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
+                nextStep = SwapCreateStep.AuthorizeCoinbaseWithdrawal
             }
             else if (data.code === KnownwErrorCode.ACTIVE_SWAP_LIMIT_EXCEEDED) {
                 goToStep(SwapCreateStep.ActiveSwapLimit)
@@ -103,26 +109,30 @@ const OnRampSwapConfirmationStep: FC = () => {
         setLoading(false)
         if (nextStep)
             goToStep(nextStep)
-    }, [exchange, swap, transferAmount, createAndProcessSwap])
+    }, [exchange, swap, createAndProcessSwap, withdrawalType])
 
     const handleClose = () => {
         setEditingAddress(false)
     }
     const handleSaveAddress = useCallback(() => {
         setAddressInputError("")
-        if (!isValidAddress(addressInputValue, network.baseObject)) {
+        if (!isValidAddress(addressInputValue, network?.baseObject)) {
             setAddressInputError(`Enter a valid ${network.name} address`)
             return;
         }
         updateSwapFormData({ ...swapFormData, destination_address: addressInputValue })
         setEditingAddress(false)
     }, [addressInputValue, network, swapFormData])
-    const handleToggleChange = (value: boolean) => {
+    const handleConfirmToggleChange = (value: boolean) => {
         setAddressConfirmed(value)
+    }
+    const handleWithdrawalTypeToggleChange = (value: boolean) => {
+        setWithdrawalType(value)
     }
     const currentNetwork = swapFormData?.network?.baseObject;
     const currentExchange = swapFormData?.exchange?.baseObject;
     const currentCurrency = swapFormData?.currency?.baseObject;
+    const coinbaseLogoURL = `${resource_storage_url}/layerswap/networks/${KnownInternalNames.Exchanges.Coinbase.toLowerCase()}.png`
 
     return (<>
         <Widget>
@@ -146,11 +156,11 @@ const OnRampSwapConfirmationStep: FC = () => {
                                 I am the owner of this address
                             </div>
                             <div className='flex items-center space-x-4'>
-                                <ToggleButton name={nameOfRightWallet} onChange={handleToggleChange} value={addressConfirmed} />
+                                <ToggleButton name={nameOfRightWallet} onChange={handleConfirmToggleChange} value={addressConfirmed} />
                             </div>
                         </div>
                     </div>
-                    <SubmitButton type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
+                    <SubmitButton className='plausible-event-name=Swap+details+confirmed' type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
                 </div>

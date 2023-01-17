@@ -61,15 +61,15 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
         }
     }, [key, secret, keyphrase, exchange])
 
-    const dataIsValid = secret && key && (exchange?.has_keyphrase ? keyphrase : true)
+    const dataIsValid = secret && key
     const userGuideURL = ExchangeSettings.KnownSettings[exchange?.internal_name]?.UserApiKeyGuideUrl
 
     return (
-        <Widget>
-            <Widget.Content>
-                <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">
+        <div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text text-left'>
+            <div className='flex flex-col self-center grow w-full'>
+                <div className='flex flex-col self-center grow w-full'>
                     <div className="flex items-center">
-                        <h3 className="block sm:text-lg font-medium leading-6 text-white">
+                        <h3 className="block sm:text-lg font-medium leading-6 text-white mb-2">
                             Please enter
                             {ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange.internal_name]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.display_name}</a> : <span className='mx-1'>{exchange?.display_name}</span>}
                             API keys
@@ -113,27 +113,6 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
                             </div>
                         </div>
                         {
-                            exchange?.has_keyphrase &&
-                            <div>
-                                <label htmlFor="apiKey" className="block font-normal text-sm">
-                                    {ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}
-                                </label>
-                                <div className="relative rounded-md shadow-sm mt-1">
-                                    <input
-                                        autoComplete="off"
-                                        placeholder={`Your ${ExchangeSettings.KnownSettings[exchange?.internal_name]?.KeyphraseDisplayName}`}
-                                        autoCorrect="off"
-                                        type="text"
-                                        name="apiKey"
-                                        onChange={handleKeyphraseChange}
-                                        id="apiKey"
-                                        className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
-                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
-                                    />
-                                </div>
-                            </div>
-                        }
-                        {
                             ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote &&
                             <WarningMessage>
                                 {ExchangeSettings.KnownSettings[exchange?.internal_name]?.AuthorizationNote}
@@ -150,8 +129,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
                         }
                     </div>
                 </div>
-            </Widget.Content>
-            <Widget.Footer sticky={stickyFooter}>
+            </div>
+            <div className='mb-4'>
                 <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500 mb-5'>
                     <div className="flex items-center">
                         <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
@@ -165,8 +144,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
                 <SubmitButton isDisabled={!dataIsValid || loading} isSubmitting={loading} onClick={connect}>
                     Connect
                 </SubmitButton>
-            </Widget.Footer>
-        </Widget>
+            </div>
+        </div>
     )
 }
 

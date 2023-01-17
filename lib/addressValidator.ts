@@ -1,10 +1,10 @@
 import { keccak256 } from "js-sha3";
-import { BlacklistedAddress } from "../Models/BlacklistedAddress";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
+import { Exchange } from "../Models/Exchange";
 import KnownInternalNames from "./knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 
-export function isValidAddress(address: string, network: CryptoNetwork): boolean {
+export function isValidAddress(address: string, network: CryptoNetwork | Exchange): boolean {
     if (network.internal_name === KnownInternalNames.Networks.RoninMainnet) {
         if (address.startsWith("ronin:")) {
             return isValidEtherAddress(address.replace("ronin:", "0x"));

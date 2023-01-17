@@ -16,11 +16,13 @@ import { clearTempData, getTempData } from "../../../../lib/openLink";
 import KnownInternalNames from "../../../../lib/knownIds";
 import MainStepValidation from "../../../../lib/mainStepValidator";
 import { generateSwapInitialValues } from "../../../../lib/generateSwapInitialValues";
-import { SwapType } from "../../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { SwapType } from "../../../../lib/layerSwapApiClient";
 import SlideOver from "../../../SlideOver";
 import SwapForm from "./SwapForm";
 import { isValidAddress } from "../../../../lib/addressValidator";
 import NetworkSettings from "../../../../lib/NetworkSettings";
+import { useRouter } from "next/router";
+import SpinIcon from "../../../icons/spinIcon";
 
 type Props = {
     OnSumbit: (values: SwapFormValues) => Promise<void>
@@ -28,33 +30,54 @@ type Props = {
 
 const MainStep: FC<Props> = ({ OnSumbit }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
-    const { setLoading: setLoadingWizard, goToStep } = useFormWizardaUpdate<SwapCreateStep>()
-
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
     const [connectRhinoifiIsOpen, setConnectRhinofiIsOpen] = useState(false);
     const { swapFormData } = useSwapDataState()
+    const router = useRouter();
+    const [loading, setLoading] = useState(true);
+    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
 
     let formValues = formikRef.current?.values;
 
     const settings = useSettingsState();
     const { discovery: { resource_storage_url } } = settings || {}
     const query = useQueryState();
-    const { updateSwapFormData, clearSwap } = useSwapDataUpdate()
+    const { updateSwapFormData, clearSwap, setDepositeAddressIsfromAccount } = useSwapDataUpdate()
 
     useEffect(() => {
         if (query.coinbase_redirect) {
             const temp_data = getTempData()
             const five_minutes_before = new Date(new Date().setMinutes(-5))
             if (new Date(temp_data?.date) >= five_minutes_before) {
-                clearTempData()
-                formikRef.current.setValues(temp_data.swap_data)
-                updateSwapFormData(temp_data.swap_data)
-                goToStep(SwapCreateStep.Confirm)
+                (async () => {
+                    try {
+                        let formValues = { ...temp_data.swap_data }
+                        if (temp_data?.swap_data?.swapType === SwapType.OffRamp) {
+                            const layerswapApiClient = new LayerSwapApiClient(router)
+                            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, temp_data.swap_data?.currency?.baseObject?.asset)
+                            formValues.destination_address = deposit_address?.data
+                            setDepositeAddressIsfromAccount(true)
+                        }
+                        clearTempData()
+                        formikRef.current.setValues(formValues)
+                        updateSwapFormData(formValues)
+                        if (formValues.swapType === SwapType.OnRamp) {
+                            goToStep(SwapCreateStep.Confirm)
+                        }
+                    }
+                    catch (e) {
+                        toast(e?.response?.data?.error?.message || e.message)
+                    }
+                    setLoading(false)
+                })()
+            }
+            else {
+                setLoading(false)
             }
         }
-        setTimeout(() => {
-            setLoadingWizard(false)
-        }, 500);
+        else {
+            setLoading(false)
+        }
     }, [query])
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
@@ -98,7 +121,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
     const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType, settings, query)
-    const lockAddress = 
+    const lockAddress =
         (initialValues.destination_address && initialValues.network)
         && isValidAddress(initialValues.destination_address, initialValues.network?.baseObject)
         && ((query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
@@ -117,7 +140,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            <SwapForm resource_storage_url={resource_storage_url} isPartnerWallet={isPartnerWallet} lockAddress={lockAddress} partner={partner} />
+            <SwapForm loading={loading} resource_storage_url={resource_storage_url} isPartnerWallet={isPartnerWallet} lockAddress={lockAddress} partner={partner} />
         </Formik >
     </>
 }

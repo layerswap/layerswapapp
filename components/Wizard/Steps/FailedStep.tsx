@@ -1,4 +1,4 @@
-import { FC, useCallback } from 'react'
+import { FC, useCallback, useEffect } from 'react'
 import { useSwapDataState } from '../../../context/swap';
 import { useIntercom } from 'react-use-intercom';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
@@ -8,12 +8,17 @@ import { SwapStatus } from '../../../Models/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
 import { SwapItem } from '../../../lib/layerSwapApiClient';
 import { ChatIcon, HomeIcon } from '@heroicons/react/solid';
+import { TrackEvent } from '../../../pages/_document';
 
 const FailedStep: FC = () => {
     const { swap } = useSwapDataState()
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
+
+    useEffect(() => {
+        plausible(TrackEvent.SwapFailed)
+    }, [])
 
     const startIntercom = useCallback(() => {
         boot();

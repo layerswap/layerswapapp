@@ -3,7 +3,7 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { SettingsProvider } from '../context/settings'
 import { AuthProvider } from '../context/authContext'
-import UserExchanges from '../components/exchangesComponent'
+import UserExchanges from '../components/AccountConnect'
 import { MenuProvider } from '../context/menu'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 
@@ -36,7 +36,6 @@ export async function getServerSideProps(context) {
     settings.networks = settings.networks.filter((element) =>
         element.status !== "inactive")
 
-    settings.exchanges = settings.exchanges.filter((element) => element.status !== "inactive");
 
     const resource_storage_url = settings.discovery.resource_storage_url
     if (resource_storage_url[resource_storage_url.length - 1] === "/")

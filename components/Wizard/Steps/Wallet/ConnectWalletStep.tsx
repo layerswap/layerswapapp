@@ -13,6 +13,10 @@ import { useInterval } from '../../../../hooks/useInterval';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import shortenAddress from "../../../utils/ShortenAddress"
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
+import { GetSourceDestinationData } from '../../../../helpers/swapHelper';
+import { SwapStatus } from '../../../../Models/SwapStatus';
+import { parseJwt } from '../../../../lib/jwtParser';
+import TokenService from '../../../../lib/TokenService';
 
 
 const ConnectWalletStep: FC = () => {
@@ -25,11 +29,10 @@ const ConnectWalletStep: FC = () => {
     const { walletAddress, swap } = useSwapDataState()
     const { setWalletAddress } = useSwapDataUpdate()
     const { setInterval } = useSwapDataUpdate()
-    const { networks, exchanges } = useSettingsState()
+    const { networks, exchanges, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep, setError } = useFormWizardaUpdate<SwapWithdrawalStep>()
-    const network = swap && networks?.find(n => n.currencies.some(nc => nc.id === swap.network_currency_id))
-    const exchange = swap && exchanges?.find(e => e.currencies.some(ec => ec.id === swap.exchange_currency_id))
-    const asset = network && network.currencies.find(c => c.id === swap.network_currency_id)?.asset
+
+    const { network } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
     const steps = [
         { name: walletAddress ? `Connected to ${shortenAddress(walletAddress)}` : 'Connect wallet', description: 'Connect your ImmutableX wallet', href: '#', status: walletAddress ? 'complete' : 'current' },
@@ -66,9 +69,9 @@ const ConnectWalletStep: FC = () => {
     const swapStatusStep = GetSwapStatusStep(swap)
 
     useEffect(() => {
-        if (swapStatusStep)
+        if (swapStatusStep && swap.status != SwapStatus.UserTransferPending)
             goToStep(swapStatusStep)
-    }, [swapStatusStep])
+    }, [swapStatusStep, swap])
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -81,9 +84,14 @@ const ConnectWalletStep: FC = () => {
                 address = res.address
             }
             const layerSwapApiClient = new LayerSwapApiClient()
-            const accounts = await layerSwapApiClient.GetNetworkAccounts(network.internal_name)
-            if (accounts?.data?.some(a => a.address === address))
-                setVerified(true)
+            try {
+                const account = await layerSwapApiClient.GetWhitelistedAddress(network.internal_name, address)
+                if (account)
+                    setVerified(true)
+            }
+            catch (e) {
+                //TODO handle account not found
+            }
         }
         catch (e) {
             toast(e.message)
@@ -97,14 +105,14 @@ const ConnectWalletStep: FC = () => {
             const imtblClient = new ImtblClient(network.internal_name)
             const res = await imtblClient.Sign()
             const layerSwapApiClient = new LayerSwapApiClient()
-            layerSwapApiClient.CreateNetworkAccount({ signature: res.result, address: walletAddress, network: network.internal_name, note: "" })
+            layerSwapApiClient.CreateWhitelistedAddress({ signature: res.result, address: walletAddress, network: network.internal_name })
             setVerified(true)
         }
         catch (e) {
             const data: ApiError = e?.response?.data?.error
-            if(data.code == KnownwErrorCode.NETWORK_ACCOUNT_ALREADY_EXISTS) {
+            if (data.code == KnownwErrorCode.NETWORK_ACCOUNT_ALREADY_EXISTS) {
                 goToStep(SwapWithdrawalStep.Error)
-                setError({ Code: data.code, Step: SwapWithdrawalStep.WalletConnect })
+                setError({ Code: data.code, Step: SwapWithdrawalStep.WithdrawFromImtblx })
             }
             toast(e.message)
         }
@@ -115,7 +123,7 @@ const ConnectWalletStep: FC = () => {
         setLoading(true)
         try {
             const imtblClient = new ImtblClient(network.internal_name)
-            const res = await imtblClient.Transfer(swap.requested_amount.toString(), swap.additonal_data.deposit_address)
+            const res = await imtblClient.Transfer(swap.requested_amount.toString(), swap.deposit_address)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
                 toast('Transfer failed or terminated')

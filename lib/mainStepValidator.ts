@@ -11,8 +11,8 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
     return (values: SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
-        let minAllowedAmount = CalculateMinAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.network?.baseObject, values?.swapType);
-        let maxAllowedAmount = CalculateMaxAllowedAmount(values?.currency?.baseObject, values?.exchange?.baseObject, values?.network?.baseObject, values?.swapType);
+        let minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks);
+        let maxAllowedAmount = CalculateMaxAllowedAmount(values, settings.networks);
 
         if (!values.exchange) {
             (errors.exchange as any) = 'Select an exchange';
@@ -20,19 +20,23 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         if (!values.network) {
             (errors.network as any) = 'Select a network';
         }
-        if (values.swapType === SwapType.OnRamp && values.network)
-        {
-            if (!values.destination_address)
-            {
+        if (values.swapType === SwapType.OnRamp && values.network) {
+            if (!values.destination_address) {
                 errors.destination_address = `Enter ${values.network.name} address`;
             }
-            else if (!isValidAddress(values.destination_address, values.network.baseObject))
-            {
+            else if (!isValidAddress(values.destination_address, values.network.baseObject)) {
                 errors.destination_address = `Enter a valid ${values.network.name} address`;
             }
-            else if (isBlacklistedAddress(settings.blacklisted_addresses, values.network.baseObject, values.destination_address))
-            {
+            else if (isBlacklistedAddress(settings.blacklisted_addresses, values.network.baseObject, values.destination_address)) {
                 errors.destination_address = `You can not transfer to this address`;
+            }
+        }
+        else if (values.swapType === SwapType.OffRamp && values.exchange) {
+            if (!values.destination_address) {
+                errors.destination_address = `Enter ${values.exchange.name} address`;
+            }
+            else if (!isValidAddress(values.destination_address, values.exchange?.baseObject)) {
+                errors.destination_address = `Enter a valid ${values.exchange.name} address`;
             }
         }
         if (!amount) {
@@ -50,7 +54,7 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         if (minAllowedAmount != undefined && amount < minAllowedAmount) {
             errors.amount = `Min amount is ${minAllowedAmount}`;
         }
-        
+
         if (Object.keys(errors).length === 0) return errors
 
         if (Object.keys(errors).length === 0) return errors
@@ -62,6 +66,5 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
     };
 }
 function isBlacklistedAddress(blacklisted_addresses: BlacklistedAddress[], network: CryptoNetwork, address: string) {
-    return blacklisted_addresses?.some(ba => (!ba.network_id || ba.network_id === network?.id) && ba.address?.toLowerCase() === address?.toLowerCase());
+    return blacklisted_addresses?.some(ba => (!ba.network || ba.network === network?.internal_name) && ba.address?.toLowerCase() === address?.toLowerCase());
 }
-

@@ -1,16 +1,17 @@
 import { useRouter } from 'next/router';
 import React from 'react'
 import LayerSwapApiClient, { UserExchangesData } from '../lib/layerSwapApiClient';
+import { ApiResponse } from '../Models/ApiResponse';
 
-const UserExchangeStateContext = React.createContext<any>(null);
-const UserExchangeDataUpdateContext = React.createContext<any>(null);
+const UserExchangeStateContext = React.createContext<ApiResponse<UserExchangesData[]>>(null);
+const UserExchangeDataUpdateContext = React.createContext<UpdateFns>(null);
 
 type UpdateFns = {
     getUserExchanges: () => Promise<UserExchangesData[]>
 }
 
 export function UserExchangeProvider({ children }) {
-    const [exchangeData, setUserExchangeData] = React.useState({});
+    const [exchangeData, setUserExchangeData] = React.useState<ApiResponse<UserExchangesData[]>>();
     const router = useRouter();
 
     const updateFns: UpdateFns = {
@@ -20,8 +21,7 @@ export function UserExchangeProvider({ children }) {
             if (res.error) {
                 throw res.error;
             }
-            
-            setUserExchangeData(res.data)
+            setUserExchangeData(res)
             return res.data;
         }
     };
@@ -36,7 +36,7 @@ export function UserExchangeProvider({ children }) {
 }
 
 export function useUserExchangeState() {
-    const data = React.useContext<UserExchangesData[]>(UserExchangeStateContext);
+    const data = React.useContext<ApiResponse<UserExchangesData[]>>(UserExchangeStateContext);
 
     if (data === undefined) {
         throw new Error('useUserExchangeState must be used within a UserExchangeStateProvider');

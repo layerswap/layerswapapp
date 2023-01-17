@@ -4,6 +4,7 @@ import { FC, useCallback } from 'react'
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
 import { SwapType } from '../../../lib/layerSwapApiClient';
+import { CryptoNetwork } from '../../../Models/CryptoNetwork';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
@@ -12,14 +13,16 @@ const SuccessfulStep: FC = () => {
     const { networks } = useSettingsState()
     const { swap } = useSwapDataState()
 
-    const network = networks?.find(n => n.currencies.some(nc => nc.id === swap?.network_currency_id))
+    let destination = swap?.destination_exchange ? networks?.find(e => e?.internal_name?.toUpperCase() === swap?.destination_exchange?.toUpperCase())
+        : networks?.find(e => e?.internal_name?.toUpperCase() === swap?.destination_network?.toUpperCase())
+
+    const transaction_explorer_template = (destination as CryptoNetwork)?.transaction_explorer_template
 
     const handleViewInExplorer = useCallback(() => {
-        if (!network)
+        if (!transaction_explorer_template)
             return
-        const { transaction_explorer_template } = network
-        window.open(transaction_explorer_template.replace("{0}", swap?.transaction_id), '_blank')
-    }, [network])
+        window.open(transaction_explorer_template.replace("{0}", swap?.output_transaction?.transaction_id), '_blank')
+    }, [transaction_explorer_template])
 
     return (
         <>
@@ -30,7 +33,7 @@ const SuccessfulStep: FC = () => {
                     </MessageComponent.Header>
                     <MessageComponent.Description>
                         {
-                            swap?.type === SwapType.OnRamp ?
+                            swap?.destination_network ?
                                 <span>Your swap was successfully completed. Go ahead, swap more!</span>
                                 :
                                 <span>Your swap was successfully completed. Your assets are on their way to your exchange account.</span>
@@ -40,7 +43,7 @@ const SuccessfulStep: FC = () => {
                 <MessageComponent.Buttons>
                     <div className="flex flex-row text-white text-base space-x-2">
                         {
-                            (networks && swap?.type === SwapType.OnRamp && swap?.transaction_id) ?
+                            (transaction_explorer_template && swap?.output_transaction?.transaction_id) ?
                                 <>
                                     <div className='basis-1/3'>
                                         <SubmitButton text_align='left' buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer} icon={<ExternalLinkIcon className='h-5 w-5' />}>
@@ -66,13 +69,12 @@ const SuccessfulStep: FC = () => {
                                 :
                                 <div className='grow'>
                                     <GoHomeButton>
-                                        <SubmitButton text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                        <SubmitButton className='plausible-event-name=Swap+more' text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
                                             Swap more
                                         </SubmitButton>
                                     </GoHomeButton>
                                 </div>
                         }
-
                     </div>
                 </MessageComponent.Buttons>
             </MessageComponent>

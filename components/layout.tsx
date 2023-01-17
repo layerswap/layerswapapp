@@ -1,10 +1,11 @@
-import React from "react"
+import React, { useEffect } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
 import QueryProvider from "../context/query";
 import ThemeWrapper from "./themeWrapper";
 import ErrorBoundary from "./ErrorBoundary";
 import { QueryParams } from "../Models/QueryParams";
+import MaintananceContent from "./maintanance/maintanance";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -20,6 +21,20 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
     ...(router.query.lockNetwork === 'true' ? { lockNetwork: true } : {}),
   };
 
+  useEffect(() => {
+    function prepareUrl(params) {
+      const url = new URL(location.href)
+      const queryParams = new URLSearchParams(location.search)
+      let customUrl = url.protocol + "//" + url.hostname + url.pathname.replace(/\/$/, '')
+      for (const paramName of params) {
+        const paramValue = queryParams.get(paramName)
+        if (paramValue) customUrl = customUrl + '/' + paramValue
+      }
+      return customUrl
+    }
+    plausible('pageview', { u: prepareUrl(['destNetwork', 'sourceExchangeName', 'addressSource', 'asset', 'amount']) })
+  }, [])
+  
   return (<>
     <Head>
       <title>Layerswap</title>
@@ -45,12 +60,11 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       <meta name="twitter:title" content="Layerswap - Accelerating L2 migration" />
       <meta name="twitter:description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
       <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpeg" />
-      <script defer data-domain="layerswap.io" src="https://plausible.io/js/plausible.js"></script>
     </Head>
     <ErrorBoundary >
       <QueryProvider query={query}>
         <ThemeWrapper hideNavbar={hideNavbar}>
-          {children}
+          {process.env.NEXT_PUBLIC_IN_MAINTANANCE ? <MaintananceContent /> : children}
         </ThemeWrapper>
       </QueryProvider>
     </ErrorBoundary>
