@@ -1,6 +1,7 @@
 import { Field, useFormikContext } from "formik";
 import { forwardRef } from "react";
 import { useSettingsState } from "../../context/settings";
+import ExchangeSettings from "../../lib/ExchangeSettings";
 import { SwapType } from "../../lib/layerSwapApiClient";
 import { SortingByOrder } from "../../lib/sorting";
 import { Exchange } from "../../Models/Exchange";
@@ -26,7 +27,7 @@ const ExchangesField = forwardRef((props: any, ref: any) => {
             baseObject: e,
             id: e.internal_name,
             name: e.display_name,
-            order: 0, // TODO implement in settings
+            order: ExchangeSettings.KnownSettings[e.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${e.internal_name.toLowerCase()}.png`,
             isAvailable: true,
             isDefault: false
