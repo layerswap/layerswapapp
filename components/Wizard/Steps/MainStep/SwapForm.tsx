@@ -157,6 +157,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                     }
                                     <div>
                                         <AddressInput
+                                            hideLabel={true}
                                             exchangeAccount={exchangeAccount}
                                             onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
                                             loading={loadingDepositAddress}
@@ -174,7 +175,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                 <div className="relative rounded-md shadow-sm mt-1.5">
                                     <div>
                                         <AddressInput
-                                            label={`To ${values?.exchange?.name || ''} address`}
                                             exchangeAccount={exchangeAccount}
                                             onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
                                             loading={loadingDepositAddress}
