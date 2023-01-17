@@ -24,6 +24,7 @@ import FormattedDate from "../Common/FormattedDate";
 import { GetSourceDestinationData } from "../../helpers/swapHelper";
 import useSortableData from "../../hooks/useSortableData";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
+import isGuid from "../utils/isGuid";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -105,14 +106,6 @@ function TransactionsHistory() {
     }
     return sortConfig.key === name ? (sortConfig.direction == 'ascending' ? <GreyIcon /> : <GreenIcon />) : undefined;
   };
-
-  function isGuid(stringToTest: string) {
-    if (stringToTest[0] === "{") {
-      stringToTest = stringToTest.substring(1, stringToTest.length - 1);
-    }
-    var regexGuid = /^(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}$/gi;
-    return regexGuid.test(stringToTest);
-  }
 
   return (
     <div className='bg-darkblue px-8 md:px-12 md:mb-12 md:shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative h-full '>
