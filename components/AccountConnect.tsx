@@ -53,7 +53,6 @@ function UserExchanges() {
             }
         })()
     }, [router.query])
-
     const getAndMapExchanges = useCallback(async () => {
         try {
             const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
@@ -64,7 +63,7 @@ function UserExchanges() {
                 return;
             }
 
-            const mappedExchanges = settings.exchanges.map(e => {
+            const mappedExchanges = settings.exchanges.sort((x, y) => ExchangeSettings.KnownSettings[x.internal_name]?.Order - ExchangeSettings.KnownSettings[y.internal_name]?.Order).map(e => {
                 return {
                     ...e,
                     is_connected: userExchanges?.some(ue => ue.exchange === e.internal_name),
