@@ -242,9 +242,14 @@ const WithdrawExchangeStep: FC = () => {
                                 {
                                     sourceIsCoinbase &&
                                     <div className='mb-4'>
-                                        <SubmitButton buttonStyle='outline' isDisabled={submitting} isSubmitting={submitting} onClick={authorized ? handleTransfer : openConnect} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                                            Transfer using Coinbase
-                                        </SubmitButton>
+                                        {
+                                            authorized ? <SubmitButton className='bg-coinbase-primary border-coinbase-primary disabled:bg-coinbase-diabled disabled:border-coinbase-diabled' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2 text-[#0A0B0D]" aria-hidden="true" />} >
+                                                <span className='text-[#0A0B0D]'>Transfer using Coinbase</span>
+                                            </SubmitButton> :
+                                                <SubmitButton className='bg-coinbase-primary border-coinbase-primary disabled:bg-coinbase-diabled disabled:border-coinbase-diabled' isDisabled={loading} isSubmitting={loading} onClick={openConnect} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2 text-[#0A0B0D]" aria-hidden="true" />} >
+                                                    <span className='text-[#0A0B0D]'>Connect Coinbase</span>
+                                                </SubmitButton>
+                                        }
                                     </div>
                                 }
                                 <div className="flex text-center mb-4 space-x-2">
