@@ -62,7 +62,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                         <div className="overflow-hidden mb-4">
                             <div className='flex flex-col space-y-2'>
                                 {pendingSwapsToCancel?.map((swap) => {
-                                    const { currency, destination, currency_logo, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+                                    const { destination, currency_logo, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
                                     return (
                                         <div key={swap.id}>
                                             <div className='w-full mb-2 rounded-md px-3 py-3 shadow-sm border border-darkblue-500  bg-darkblue-700'>
