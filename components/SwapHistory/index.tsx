@@ -59,7 +59,7 @@ function TransactionsHistory() {
 
       setSwaps(data)
       setPage(1)
-      if (data.length < 5)
+      if (data?.length < 5)
         setIsLastPage(true)
 
       setLoading(false)
@@ -196,7 +196,7 @@ function TransactionsHistory() {
                         <tbody>
                           {items?.map((swap, index) => {
 
-                            const { currency, destination,destination_network, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+                            const { destination, destination_network, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
                             //TODO implement transaction_explorer_template in exchange & network settings
                             // const { transaction_explorer_template } = swapNetwork
@@ -299,7 +299,7 @@ function TransactionsHistory() {
                                           {swap.requested_amount}
                                         </span>
                                     }
-                                    <span className="ml-1">{currency.asset}</span>
+                                    <span className="ml-1">{swap.destination_network_asset}</span>
                                   </div>
                                   <ChevronRightIcon className="h-5 w-5 lg:hidden" />
                                 </div>
