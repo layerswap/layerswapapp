@@ -5,6 +5,7 @@ import QueryProvider from "../context/query";
 import ThemeWrapper from "./themeWrapper";
 import ErrorBoundary from "./ErrorBoundary";
 import { QueryParams } from "../Models/QueryParams";
+import MaintananceContent from "./maintanance/maintanance";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -63,7 +64,7 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
     <ErrorBoundary >
       <QueryProvider query={query}>
         <ThemeWrapper hideNavbar={hideNavbar}>
-          {children}
+          {process.env.NEXT_PUBLIC_IN_MAINTANANCE ? <MaintananceContent /> : children}
         </ThemeWrapper>
       </QueryProvider>
     </ErrorBoundary>
