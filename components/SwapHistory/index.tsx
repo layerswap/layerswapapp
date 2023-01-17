@@ -59,7 +59,7 @@ function TransactionsHistory() {
 
       setSwaps(data)
       setPage(1)
-      if (data.length < 5)
+      if (data?.length < 5)
         setIsLastPage(true)
 
       setLoading(false)

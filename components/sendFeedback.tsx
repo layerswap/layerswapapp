@@ -18,12 +18,13 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
     const { email, userId } = useAuthState()
     const initialValues: SendFeedbackFormValues = { Feedback: '' }
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, userId: userId })
+    let userEmail = email ?? 'non-authenticated user'
+    const updateWithProps = () => update({ email: userEmail, userId: userId })
 
     const handleSendFeedback = useCallback(async (values: SendFeedbackFormValues) => {
         try {
             if (values.Feedback.length !== 0) {
-                const res = await SendFeedbackMessage(email, values.Feedback)
+                const res = await SendFeedbackMessage(userEmail, values.Feedback)
                 if (!res.ok) {
                     throw new Error(res.description || "Could not send feedback, something went wrong")
                 } else {
