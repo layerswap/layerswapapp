@@ -46,7 +46,6 @@ export enum SwapWithdrawalStep {
     WithdrawFromImtblx = "WithdrawFromImtblx",
     SelectWithdrawalType = "SelectWithdrawalType",
     CoinbaseInternalWithdrawal = "CoinbaseInternalWithdrawal",
-    AuthorizeCoinbaseWithdrawal = "AuthorizeCoinbaseWithdrawal"
 }
 
 export enum AuthStep {
