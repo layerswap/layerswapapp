@@ -163,14 +163,12 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     }
                                     <button
                                         type="button"
-                                        className="p-1.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
+                                        className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
                                         onClick={handleRemoveDepositeAddress}
 
                                     >
                                         <div className="flex items-center" >
-                                            <div className="flex-shrink-0 h-6 w-6 relative">
-                                                <XIcon className="h-6 w-6" />
-                                            </div>
+                                            <XIcon className="h-5 w-5" />
                                         </div>
                                     </button>
                                 </div>
