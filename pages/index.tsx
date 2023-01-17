@@ -58,7 +58,7 @@ export async function getServerSideProps(context) {
 
   result.settings = settings;
   result.settings.validSignatureisPresent = validSignatureIsPresent;
-  if (!result.settings.networks.some(x => x.status === "active") || process.env.IS_IN_MAINTANANCE == 'true') {
+  if (!result.settings.networks.some(x => x.status === "active") || process.env.IN_MAINTANANCE == 'true') {
     result.inMaintanance = true;
   }
 
