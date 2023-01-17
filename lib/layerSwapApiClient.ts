@@ -165,7 +165,8 @@ export type SwapItem = {
     destination_network: string,
     destination_exchange: string,
     input_transaction?: Transaction,
-    output_transaction?: Transaction
+    output_transaction?: Transaction,
+    has_pending_deposit: boolean,
 }
 
 type Transaction = {

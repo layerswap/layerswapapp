@@ -24,7 +24,7 @@ export enum SwapCreateStep {
     Email = "Email",
     Code = "Code",
     PendingSwaps = "PendingSwaps",
-    OAuth = "OAuth",
+    AuthorizeCoinbaseWithdrawal = "AuthorizeCoinbaseWithdrawal",
     OffRampOAuth = "OffRampOAuth",
     ApiKey = "ApiKey",
     Confirm = "Confirm",
@@ -46,7 +46,6 @@ export enum SwapWithdrawalStep {
     WithdrawFromImtblx = "WithdrawFromImtblx",
     SelectWithdrawalType = "SelectWithdrawalType",
     CoinbaseInternalWithdrawal = "CoinbaseInternalWithdrawal",
-    AuthorizeCoinbaseWithdrawal = "AuthorizeCoinbaseWithdrawal"
 }
 
 export enum AuthStep {
@@ -58,7 +57,7 @@ export type Steps = AuthStep | SwapWithdrawalStep | SwapCreateStep
 
 export const ExchangeAuthorizationSteps: { [key: string]: SwapCreateStep } = {
     "api_credentials": SwapCreateStep.ApiKey,
-    "o_auth2": SwapCreateStep.OAuth
+    "o_auth2": SwapCreateStep.AuthorizeCoinbaseWithdrawal
 }
 
 export const OfframpExchangeAuthorizationSteps: { [key: string]: SwapCreateStep } = {

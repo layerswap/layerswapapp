@@ -20,8 +20,8 @@ const NetworkField = forwardRef((props: any, ref: any) => {
     const { discovery: { resource_storage_url }, networks } = useSettingsState();
 
     const networkIsAvailable = (n: CryptoNetwork) => ((swapType === SwapType.OffRamp ?
-        (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.offramp && nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled && ec.network != n.internal_name))))
-        : (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.onramp && nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled && ec.network != n.internal_name)))))
+        (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.offramp && nc.status === "active" && nc.is_deposit_enabled && (!exchange || exchange?.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled && ec.network != n.internal_name))))
+        : (n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.onramp && nc.status === "active" && nc.is_withdrawal_enabled && (!exchange || exchange?.baseObject.currencies.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled && ec.network != n.internal_name)))))
     )
 
     const destNetworkIsAvailable = networks.some(n => n.internal_name === destNetwork && n.status === "active" && networkIsAvailable(n))
@@ -32,7 +32,7 @@ const NetworkField = forwardRef((props: any, ref: any) => {
             baseObject: n,
             id: n.internal_name,
             name: n.display_name,
-            order: 0, // TODO implement in settings
+            order: NetworkSettings.KnownSettings[n.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${n.internal_name.toLowerCase()}.png`,
             isAvailable: n.status === "active" && (swapType === SwapType.OffRamp ? !destNetworkIsAvailable : !lockNetwork),
             isDefault: false

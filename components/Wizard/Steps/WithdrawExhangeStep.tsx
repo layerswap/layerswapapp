@@ -20,15 +20,16 @@ import SimpleTimer from '../../Common/Timer';
 import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 import Image from 'next/image'
 import { SwapCancelModal } from './PendingSwapsStep';
-import { TrackEvent } from '../../../pages/_document';
 import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
 import toast from 'react-hot-toast';
-import { CryptoNetwork } from '../../../Models/CryptoNetwork';
 import AccountConnectStep from './CoinbaseAccountConnectStep';
 import KnownInternalNames from '../../../lib/knownIds';
 import { KnownwErrorCode } from '../../../Models/ApiError';
 import Coinbase2FA from '../../Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
+import SpinIcon from '../../icons/spinIcon';
+import Modal from '../../modalComponent';
+import { LinkIcon } from '@heroicons/react/outline';
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -41,6 +42,7 @@ const WithdrawExchangeStep: FC = () => {
     const [openCoinbase2FA, setOpenCoinbase2FA] = useState(false)
     const { start: startTimer } = useTimerState()
     const [authorized, steAuthorized] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
     const [loading, setLoading] = useState(false)
 
     const handleOpenModal = () => {
@@ -73,8 +75,8 @@ const WithdrawExchangeStep: FC = () => {
     useEffect(() => {
         if (sourceIsCoinbase) {
             (async () => {
-                const layerswapApiClient = new LayerSwapApiClient(router)
                 try {
+                    const layerswapApiClient = new LayerSwapApiClient(router)
                     const res = await layerswapApiClient.GetExchangeAccount(swap?.source_exchange, 1)
                     if (res.data) {
                         steAuthorized(true)
@@ -93,7 +95,7 @@ const WithdrawExchangeStep: FC = () => {
         }
     }, [sourceIsCoinbase])
 
-    const { source, currency, exchange_currency, exchange, network, network_chain_logo, currency_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+    const { currency, exchange_currency, exchange, network, network_chain_logo, currency_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
     const handleTransferDone = useCallback(async () => {
         setTransferDone(true)
@@ -105,7 +107,7 @@ const WithdrawExchangeStep: FC = () => {
         if (codeRequested)
             setOpenCoinbase2FA(true)
         else {
-            setLoading(true)
+            setSubmitting(true)
             try {
                 const layerswapApiClient = new LayerSwapApiClient()
                 await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange)
@@ -116,13 +118,18 @@ const WithdrawExchangeStep: FC = () => {
                     setCodeRequested(true)
                     setOpenCoinbase2FA(true)
                 }
+                else if (e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS || e?.response?.data?.error?.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
+                    steAuthorized(false)
+                    setCodeRequested(false)
+                    setOpenCoinbaseConnectSlideover(true)
+                }
                 else if (e?.response?.data?.error?.message) {
                     toast(e?.response?.data?.error?.message)
                 }
                 else if (e?.message)
                     toast(e.message)
             }
-            setLoading(false)
+            setSubmitting(false)
         }
     }, [swap, network, codeRequested])
 
@@ -136,100 +143,101 @@ const WithdrawExchangeStep: FC = () => {
                 <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
             )}
         </SlideOver>
-        <SlideOver imperativeOpener={[openCoinbaseConnectSlideover, setOpenCoinbaseConnectSlideover]} place='inStep'>
-            {(close) => (
-                <AccountConnectStep onAuthorized={() => { steAuthorized(true); close(); }} />
-            )}
-        </SlideOver>
-        <SlideOver imperativeOpener={[openCoinbase2FA, setOpenCoinbase2FA]} place='inStep' noPadding={true}>
-            {(close) => (
-                <Coinbase2FA onSuccess={() => close()} />
-            )}
-        </SlideOver>
+        <Modal title={`Please connect your ${exchange?.display_name} account`} showModal={openCoinbaseConnectSlideover} setShowModal={setOpenCoinbaseConnectSlideover} >
+            <AccountConnectStep hideHeader onDoNotConnect={() => setOpenCoinbaseConnectSlideover(false)} onAuthorized={() => { steAuthorized(true); setOpenCoinbaseConnectSlideover(false); }} stickyFooter={false} />
+        </Modal>
+        <Modal showModal={openCoinbase2FA} setShowModal={setOpenCoinbase2FA}>
+            <Coinbase2FA onSuccess={async () => setOpenCoinbase2FA(false)} />
+        </Modal>
         <Widget>
-            <Widget.Content>
-                <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text min-h-[420px]">
-                    <div className='space-y-4'>
-                        <div className="text-left">
-                            <p className="block sm:text-lg font-medium text-white">
-                                Send {currency?.asset} to the provided address from
-                            </p>
-                            <p className='text-sm sm:text-base'>
-                                The swap will be completed when your transfer is detected
-                            </p>
-                        </div>
-                        <div className={`mb-6 grid grid-cols-1 gap-5 `}>
-                            <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.deposit_address} header={'Address'}>
-                                <p className='break-all'>
-                                    {swap?.deposit_address}
-                                </p>
-                            </BackgroundField>
-                            <div className='flex space-x-4'>
-                                <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
-                                    <p>
-                                        {swap?.requested_amount}
+            {
+                loading ?
+                    <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
+                    :
+                    <Widget.Content>
+                        <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text min-h-[420px]">
+                            <div className='space-y-4'>
+                                <div className="text-left">
+                                    <p className="block sm:text-lg font-medium text-white">
+                                        Send {currency?.asset} to the provided address from
                                     </p>
-                                </BackgroundField>
-                                <BackgroundField header={'Asset'}>
-                                    <div className="text-white flex items-center">
-                                        <div className="flex-shrink-0 h-5 w-5 relative">
-                                            {
-                                                currency_logo &&
-                                                <Image
-                                                    src={currency_logo}
-                                                    alt="From Logo"
-                                                    height="60"
-                                                    width="60"
-                                                    layout="responsive"
-                                                    className="rounded-md object-contain"
-                                                />
-                                            }
-                                        </div>
-                                        <div className="mx-1 block">{currency?.asset}</div>
-                                    </div>
-                                </BackgroundField>
-                            </div>
-                            <BackgroundField header={'Network'}>
-                                <div className="text-white flex items-center">
-                                    <div className="flex-shrink-0 h-5 w-5 relative">
-                                        {
-                                            network_chain_logo &&
-                                            <Image
-                                                src={network_chain_logo}
-                                                alt="From Logo"
-                                                height="60"
-                                                width="60"
-                                                layout="responsive"
-                                                className="rounded-md object-contain"
-                                            />
-                                        }
-                                    </div>
-                                    <div className="mx-1 block">{exchange_currency?.chain_display_name}</div>
+                                    <p className='text-sm sm:text-base'>
+                                        The swap will be completed when your transfer is detected
+                                    </p>
                                 </div>
-                            </BackgroundField>
-                            {
-                                ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage &&
-                                <WarningMessage>
-                                    <span>
-                                        {ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage}
-                                    </span>
-                                </WarningMessage>
-                            }
-                            {
-                                ExchangeSettings?.KnownSettings[exchange.internal_name]?.ExchangeWithdrawalGuideUrl &&
-                                <WarningMessage messageType='informing'>
-                                    <span className='flex-none'>
-                                        Learn how to send from
-                                    </span>
-                                    <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
-                                </WarningMessage>
-                            }
+                                <div className={`mb-6 grid grid-cols-1 gap-5 `}>
+                                    <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.deposit_address} header={'Address'}>
+                                        <p className='break-all'>
+                                            {swap?.deposit_address}
+                                        </p>
+                                    </BackgroundField>
+                                    <div className='flex space-x-4'>
+                                        <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
+                                            <p>
+                                                {swap?.requested_amount}
+                                            </p>
+                                        </BackgroundField>
+                                        <BackgroundField header={'Asset'}>
+                                            <div className="flex items-center">
+                                                <div className="flex-shrink-0 h-5 w-5 relative">
+                                                    {
+                                                        currency_logo &&
+                                                        <Image
+                                                            src={currency_logo}
+                                                            alt="From Logo"
+                                                            height="60"
+                                                            width="60"
+                                                            layout="responsive"
+                                                            className="rounded-md object-contain"
+                                                        />
+                                                    }
+                                                </div>
+                                                <div className="mx-1 block">{currency?.asset}</div>
+                                            </div>
+                                        </BackgroundField>
+                                    </div>
+                                    <BackgroundField header={'Network'}>
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 h-5 w-5 relative">
+                                                {
+                                                    network_chain_logo &&
+                                                    <Image
+                                                        src={network_chain_logo}
+                                                        alt="From Logo"
+                                                        height="60"
+                                                        width="60"
+                                                        layout="responsive"
+                                                        className="rounded-md object-contain"
+                                                    />
+                                                }
+                                            </div>
+                                            <div className="mx-1 block">{exchange_currency?.chain_display_name}</div>
+                                        </div>
+                                    </BackgroundField>
+                                    {
+                                        ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage &&
+                                        <WarningMessage>
+                                            <span>
+                                                {ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage}
+                                            </span>
+                                        </WarningMessage>
+                                    }
+                                    {
+                                        ExchangeSettings?.KnownSettings[exchange.internal_name]?.ExchangeWithdrawalGuideUrl &&
+                                        <WarningMessage messageType='informing'>
+                                            <span className='flex-none'>
+                                                Learn how to send from
+                                            </span>
+                                            <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
+                                        </WarningMessage>
+                                    }
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </Widget.Content>
+                    </Widget.Content>
+            }
             <Widget.Footer>
-                {
+                {!loading &&
                     <>
                         {
                             !transferDone &&
@@ -238,11 +246,11 @@ const WithdrawExchangeStep: FC = () => {
                                     sourceIsCoinbase &&
                                     <div className='mb-4'>
                                         {
-                                            authorized ? <SubmitButton className='bg-coinbase-primary border-coinbase-primary disabled:bg-coinbase-diabled disabled:border-coinbase-diabled' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2 text-[#0A0B0D]" aria-hidden="true" />} >
-                                                <span className='text-[#0A0B0D]'>Transfer using Coinbase</span>
+                                            authorized ? <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                                Transfer using Coinbase
                                             </SubmitButton> :
-                                                <SubmitButton className='bg-coinbase-primary border-coinbase-primary disabled:bg-coinbase-diabled disabled:border-coinbase-diabled' isDisabled={loading} isSubmitting={loading} onClick={openConnect} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2 text-[#0A0B0D]" aria-hidden="true" />} >
-                                                    <span className='text-[#0A0B0D]'>Transfer using Coinbase</span>
+                                                <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={openConnect} icon={<LinkIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                                    Connect Coinbase
                                                 </SubmitButton>
                                         }
                                     </div>

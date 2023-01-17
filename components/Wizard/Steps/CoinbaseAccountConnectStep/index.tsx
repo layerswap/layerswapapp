@@ -4,8 +4,7 @@ import useSWR from 'swr';
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useQueryState } from '../../../../context/query';
 import { useSettingsState } from '../../../../context/settings';
-import { useSwapDataState } from '../../../../context/swap';
-import { GetSourceDestinationData } from '../../../../helpers/swapHelper';
+import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { useInterval } from '../../../../hooks/useInterval';
 import { usePersistedState } from '../../../../hooks/usePersistedState';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
@@ -14,21 +13,24 @@ import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwap
 import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
 import { ApiResponse } from '../../../../Models/ApiResponse';
-import { SwapCreateStep, SwapWithdrawalStep } from '../../../../Models/Wizard';
+import { SwapCreateStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
 import Widget from '../../Widget';
-import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectScreens';
+import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectGuideScreens';
 
 type Props = {
-    onAuthorized?: () => void
+    onAuthorized: () => void,
+    onDoNotConnect: () => void,
+    stickyFooter: boolean,
+    hideHeader?: boolean,
 }
 
-const AccountConnectStep: FC<Props> = ({ onAuthorized }) => {
-    const { swap } = useSwapDataState()
+const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
+    const { swap, swapFormData } = useSwapDataState()
+    const { setWithdrawManually } = useSwapDataUpdate()
     const { networks, exchanges, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate()
-
     const localStorageItemKey = "alreadyFamiliarWithCoinbaseConnect";
     let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<boolean>(false, localStorageItemKey)
 
@@ -38,13 +40,24 @@ const AccountConnectStep: FC<Props> = ({ onAuthorized }) => {
 
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
-    const { network, exchange, currency } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+    const exchange_internal_name = swap?.source_exchange || swapFormData?.exchange?.baseObject?.internal_name
+    const asset_name = swap?.source_network_asset || swapFormData?.currency?.baseObject.asset
+
+    const exchange = exchanges.find(e => e.internal_name?.toLocaleLowerCase() === exchange_internal_name?.toLocaleLowerCase())
+    const currency = currencies?.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
+
     const { oauth_authorize_url } = exchange || {}
 
-    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount))
+    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount || swapFormData?.amount))
+
     const layerswapApiClient = new LayerSwapApiClient()
     const exchange_accounts_endpoint = `/exchange_accounts`
     const { data: exchange_accounts } = useSWR<ApiResponse<UserExchangesData[]>>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
+
+    const handleTransferMannually = useCallback(() => {
+        setWithdrawManually(true)
+        onDoNotConnect()
+    }, [])
 
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref = ""
@@ -91,13 +104,13 @@ const AccountConnectStep: FC<Props> = ({ onAuthorized }) => {
                 goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ Type: 1, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded })
+            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, swap_data: swapFormData, swapId: swap?.id, query: query })
             setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_authorize_url, carouselRef, carouselFinished, query])
+    }, [oauth_authorize_url, carouselRef, carouselFinished, query, swap])
 
     const exchange_name = exchange?.display_name
 
@@ -111,66 +124,74 @@ const AccountConnectStep: FC<Props> = ({ onAuthorized }) => {
     }
 
     return (
-        <div className='flex flex-col'>
-            <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
-                Please connect your {exchange_name} account
-            </h3>
-            {
-                alreadyFamiliar ?
-                    <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkblue to-darkblue-700 h-100%`} style={{ width: '100%' }}>
-                        <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                    </div>
-                    :
-                    <div className="w-full space-y-3">
-                        {swap && <Carousel onLast={onCarouselLast} ref={carouselRef}>
-                            <CarouselItem width={100} >
-                                <FirstScreen exchange_name={exchange_name} />
-                            </CarouselItem>
-                            <CarouselItem width={100}>
-                                <SecondScreen />
-                            </CarouselItem>
-                            <CarouselItem width={100}>
-                                <ThirdScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                            </CarouselItem>
-                            <CarouselItem width={100}>
-                                <FourthScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                            </CarouselItem>
-                            <CarouselItem width={100}>
-                                <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                            </CarouselItem>
-                        </Carousel>}
-                    </div>
-            }
-            <div className="flex font-normal text-sm text-primary-text">
-                <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
-            </div>
-            {
-                alreadyFamiliar && carouselFinished ?
-                    <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100 w-full mb-3">
-                        Show me full guide
-                    </button>
-                    :
-                    <div className="flex items-center mb-3">
-                        <input
-                            name="alreadyFamiliar"
-                            id='alreadyFamiliar'
-                            type="checkbox"
-                            className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
-                            onChange={() => handleToggleChange(true)}
-                            checked={alreadyFamiliar}
-                        />
-                        <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
-                            I'm already familiar with the process.
-                        </label>
-                    </div>
-            }
-            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+        <Widget>
+            <Widget.Content>
                 {
-                    carouselFinished ? "Connect" : "Next"
+                    !hideHeader &&
+                    <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
+                        Please connect your {exchange_name} account
+                    </h3>
                 }
-            </SubmitButton>
-        </div>
+                {
+                    alreadyFamiliar ?
+                        <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkblue to-darkblue-700 h-100%`} style={{ width: '100%' }}>
+                            <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                        </div>
+                        :
+                        <div className="w-full space-y-3">
+                            {(swap || swapFormData) && <Carousel onLast={onCarouselLast} ref={carouselRef}>
+                                <CarouselItem width={100} >
+                                    <FirstScreen exchange_name={exchange_name} />
+                                </CarouselItem>
+                                <CarouselItem width={100}>
+                                    <SecondScreen />
+                                </CarouselItem>
+                                <CarouselItem width={100}>
+                                    <ThirdScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                                </CarouselItem>
+                                <CarouselItem width={100}>
+                                    <FourthScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                                </CarouselItem>
+                                <CarouselItem width={100}>
+                                    <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                                </CarouselItem>
+                            </Carousel>}
+                        </div>
+                }
+                <div className="flex font-normal text-sm text-primary-text">
+                    <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
+                </div>
+            </Widget.Content>
+            <Widget.Footer sticky={stickyFooter}>
+                {
+                    alreadyFamiliar && carouselFinished ?
+                        <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100 w-full mb-3">
+                            Show me full guide
+                        </button>
+                        :
+                        <div className="flex items-center mb-3">
+                            <input
+                                name="alreadyFamiliar"
+                                id='alreadyFamiliar'
+                                type="checkbox"
+                                className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
+                                onChange={() => handleToggleChange(true)}
+                                checked={alreadyFamiliar}
+                            />
+                            <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
+                                I'm already familiar with the process.
+                            </label>
+                        </div>
+                }
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+                    {
+                        carouselFinished ? "Connect" : "Next"
+                    }
+                </SubmitButton>
+                <p className='text-sm mt-2 font-lighter text-primary-text'>Dont want to connect Coinbase account? <span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
+            </Widget.Footer>
+        </Widget>
     )
 }
 
-export default AccountConnectStep;
+export default Authorize;

@@ -13,11 +13,15 @@ import MainStep from "./Steps/MainStep/index";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 import PendingSwapsStep from "./Steps/PendingSwapsStep";
+import CoinbaseAccountConnectStep from "./Steps/CoinbaseAccountConnectStep";
+import Coinbase2FA from "../Coinbase2FA";
+import { useRouter } from "next/router";
 
 const CreateSwap: FC = () => {
-    const { MainForm, Email, Code, Confirm, OAuth } = useCreateSwap()
+    const { MainForm, Email, Code, Confirm, CoinbaseAuthorize } = useCreateSwap()
     const { error } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
+    const router = useRouter();
 
     const GoBackToMainStep = useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), [])
     const GoBackToConfirmStep = useCallback(() => goToStep(SwapCreateStep.Confirm, "back"), [])
@@ -39,8 +43,14 @@ const CreateSwap: FC = () => {
                 <WizardItem StepName={SwapCreateStep.PendingSwaps} GoBack={GoBackToMainStep} PositionPercent={MainForm.positionPercent + 10} key={SwapCreateStep.PendingSwaps}>
                     <PendingSwapsStep />
                 </WizardItem>
+                <WizardItem StepName={SwapCreateStep.AuthorizeCoinbaseWithdrawal} GoBack={GoBackToMainStep} PositionPercent={MainForm.positionPercent + 10} key={SwapCreateStep.AuthorizeCoinbaseWithdrawal}>
+                    <CoinbaseAccountConnectStep stickyFooter={true} onAuthorized={CoinbaseAuthorize.onNext} onDoNotConnect={CoinbaseAuthorize.onNext} />
+                </WizardItem>
                 <WizardItem StepName={SwapCreateStep.Confirm} GoBack={GoBackToMainStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.Confirm}>
                     <SwapConfirmationStep />
+                </WizardItem>
+                <WizardItem StepName={SwapCreateStep.TwoFactor} GoBack={GoBackToConfirmStep} PositionPercent={Confirm.positionPercent + 10} key={SwapCreateStep.TwoFactor}>
+                    <Coinbase2FA onSuccess={async (swapId) => { await router.push(`/swap/${swapId}`) }} />
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.ActiveSwapLimit} GoBack={GoBackToConfirmStep} PositionPercent={Confirm.positionPercent} key={SwapCreateStep.ActiveSwapLimit}>
                     <ActiveSwapLimit />

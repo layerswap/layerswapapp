@@ -10,7 +10,7 @@ import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 
-const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false });
+const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawManually: false });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
@@ -24,7 +24,8 @@ type UpdateInterface = {
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapItem>>
     setWalletAddress: (value: string) => void,
-    setDepositeAddressIsfromAccount: (value: boolean) => void
+    setDepositeAddressIsfromAccount: (value: boolean) => void,
+    setWithdrawManually: (value: boolean) => void
 }
 
 type SwapData = {
@@ -33,13 +34,15 @@ type SwapData = {
     swap?: SwapItem,
     addressConfirmed: boolean,
     depositeAddressIsfromAccount: boolean,
-    walletAddress: string
+    walletAddress: string,
+    withdrawManually: boolean
 }
 
 export function SwapDataProvider({ children }) {
     const [swapFormData, setSwapFormData] = useState<SwapFormValues>();
     const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
+    const [withdrawManually, setWithdrawManually] = useState<boolean>(false)
     const [walletAddress, setWalletAddress] = useState<string>()
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
@@ -50,7 +53,6 @@ export function SwapDataProvider({ children }) {
     const [interval, setInterval] = useState(0)
     const { data: swapResponse, mutate } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
-    const { getAuthData } = useAuthDataUpdate();
     const query = useQueryState();
     const settings = useSettingsState();
 
@@ -123,11 +125,12 @@ export function SwapDataProvider({ children }) {
         setInterval: setInterval,
         mutateSwap: mutate,
         setDepositeAddressIsfromAccount,
-        setWalletAddress
+        setWalletAddress,
+        setWithdrawManually
     };
 
     return (
-        <SwapDataStateContext.Provider value={{ swapFormData, depositeAddressIsfromAccount, swap: swapResponse?.data, codeRequested, addressConfirmed, walletAddress }}>
+        <SwapDataStateContext.Provider value={{ swapFormData, withdrawManually, depositeAddressIsfromAccount, swap: swapResponse?.data, codeRequested, addressConfirmed, walletAddress }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>
