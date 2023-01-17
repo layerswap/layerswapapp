@@ -85,6 +85,10 @@ export default class KnownInternalNames {
 
         public static readonly RhinoFiMainnet: string = "RHINO_FI_MAINNET";
 
+        public static readonly DydxMainnet: string = "DYDX_MAINNET";
+
+        public static readonly DydxGoerli: string = "DYDX_GOERLI";
+
         public static readonly BNBChainMainnet: string = "BSC_MAINNET";
     }
 
