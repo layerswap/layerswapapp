@@ -10,6 +10,7 @@ import { SwapDetailsComponentSceleton } from '../Sceletons';
 import StatusIcon from './StatusIcons';
 import { GetSourceDestinationData } from '../../helpers/swapHelper';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
+import isGuid from '../utils/isGuid';
 
 type Props = {
     id: string
@@ -126,7 +127,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 </div>
                             </span>
                         </div>
-                        {swap?.output_transaction?.transaction_id &&
+                        {(swap?.output_transaction?.transaction_id && !isGuid(swap?.output_transaction?.transaction_id)) &&
                             <>
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
