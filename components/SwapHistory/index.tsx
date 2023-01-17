@@ -292,7 +292,7 @@ function TransactionsHistory() {
                                     {
                                       swap?.status == 'completed' ?
                                         <span className="ml-1 md:ml-0">
-                                          {swap.output_transaction.amount}
+                                          {swap.output_transaction?.amount}
                                         </span>
                                         :
                                         <span>
