@@ -28,6 +28,7 @@ import { KnownwErrorCode } from '../../../Models/ApiError';
 import Coinbase2FA from '../../Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
+import Modal from '../../modalComponent';
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -116,6 +117,11 @@ const WithdrawExchangeStep: FC = () => {
                     setCodeRequested(true)
                     setOpenCoinbase2FA(true)
                 }
+                else if (e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS || e?.response?.data?.error?.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
+                    steAuthorized(false)
+                    setCodeRequested(false)
+                    setOpenCoinbaseConnectSlideover(true)
+                }
                 else if (e?.response?.data?.error?.message) {
                     toast(e?.response?.data?.error?.message)
                 }
@@ -136,16 +142,12 @@ const WithdrawExchangeStep: FC = () => {
                 <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
             )}
         </SlideOver>
-        <SlideOver imperativeOpener={[openCoinbaseConnectSlideover, setOpenCoinbaseConnectSlideover]} place='inStep'>
-            {(close) => (
-                <AccountConnectStep onDoNotConnect={() => close()} onAuthorized={() => { steAuthorized(true); close(); }} stickyFooter={false} />
-            )}
-        </SlideOver>
-        <SlideOver imperativeOpener={[openCoinbase2FA, setOpenCoinbase2FA]} place='inStep' noPadding={true}>
-            {(close) => (
-                <Coinbase2FA onSuccess={async () => close()} />
-            )}
-        </SlideOver>
+        <Modal title={`Please connect your ${exchange?.display_name} account`} showModal={openCoinbaseConnectSlideover} setShowModal={setOpenCoinbaseConnectSlideover} >
+            <AccountConnectStep hideHeader onDoNotConnect={() => setOpenCoinbaseConnectSlideover(false)} onAuthorized={() => { steAuthorized(true); setOpenCoinbaseConnectSlideover(false); }} stickyFooter={false} />
+        </Modal>
+        <Modal showModal={openCoinbase2FA} setShowModal={setOpenCoinbase2FA}>
+            <Coinbase2FA onSuccess={async () => setOpenCoinbase2FA(false)} />
+        </Modal>
         <Widget>
             {
                 loading ?
@@ -175,7 +177,7 @@ const WithdrawExchangeStep: FC = () => {
                                             </p>
                                         </BackgroundField>
                                         <BackgroundField header={'Asset'}>
-                                            <div className="text-white flex items-center">
+                                            <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-5 w-5 relative">
                                                     {
                                                         currency_logo &&
@@ -194,7 +196,7 @@ const WithdrawExchangeStep: FC = () => {
                                         </BackgroundField>
                                     </div>
                                     <BackgroundField header={'Network'}>
-                                        <div className="text-white flex items-center">
+                                        <div className="flex items-center">
                                             <div className="flex-shrink-0 h-5 w-5 relative">
                                                 {
                                                     network_chain_logo &&
@@ -243,11 +245,11 @@ const WithdrawExchangeStep: FC = () => {
                                     sourceIsCoinbase &&
                                     <div className='mb-4'>
                                         {
-                                            authorized ? <SubmitButton className='bg-coinbase-primary border-coinbase-primary disabled:bg-coinbase-diabled disabled:border-coinbase-diabled' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2 text-[#0A0B0D]" aria-hidden="true" />} >
-                                                <span className='text-[#0A0B0D]'>Transfer using Coinbase</span>
+                                            authorized ? <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                                Transfer using Coinbase
                                             </SubmitButton> :
-                                                <SubmitButton className='bg-coinbase-primary border-coinbase-primary disabled:bg-coinbase-diabled disabled:border-coinbase-diabled' isDisabled={loading} isSubmitting={loading} onClick={openConnect} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2 text-[#0A0B0D]" aria-hidden="true" />} >
-                                                    <span className='text-[#0A0B0D]'>Connect Coinbase</span>
+                                                <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={openConnect} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                                    Connect Coinbase
                                                 </SubmitButton>
                                         }
                                     </div>

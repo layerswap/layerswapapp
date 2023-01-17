@@ -23,9 +23,10 @@ type Props = {
     onAuthorized: () => void,
     onDoNotConnect: () => void,
     stickyFooter: boolean,
+    hideHeader?: boolean,
 }
 
-const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect }) => {
+const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap, swapFormData } = useSwapDataState()
     const { setWithdrawManually } = useSwapDataUpdate()
     const { networks, exchanges, currencies, discovery: { resource_storage_url } } = useSettingsState()
@@ -125,9 +126,12 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect }) =>
     return (
         <Widget>
             <Widget.Content>
-                <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
-                    Please connect your {exchange_name} account
-                </h3>
+                {
+                    !hideHeader &&
+                    <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
+                        Please connect your {exchange_name} account
+                    </h3>
+                }
                 {
                     alreadyFamiliar ?
                         <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkblue to-darkblue-700 h-100%`} style={{ width: '100%' }}>

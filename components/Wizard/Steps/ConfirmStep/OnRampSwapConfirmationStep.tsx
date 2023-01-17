@@ -96,7 +96,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 goToStep(SwapCreateStep.Error)
                 setError({ Code: data.code, Step: SwapCreateStep.Confirm })
             }
-            else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS) {
+            else if (data.code === KnownwErrorCode.INVALID_CREDENTIALS || data.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
                 nextStep = SwapCreateStep.AuthorizeCoinbaseWithdrawal
             }
             else if (data.code === KnownwErrorCode.ACTIVE_SWAP_LIMIT_EXCEEDED) {
