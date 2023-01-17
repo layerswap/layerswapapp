@@ -159,7 +159,7 @@ const WithdrawExchangeStep: FC = () => {
                             <div className='space-y-4'>
                                 <div className="text-left">
                                     <p className="block sm:text-lg font-medium text-white">
-                                        Send {currency?.asset} to the provided address from
+                                        Send {currency?.asset} to the provided address from {exchange?.display_name}
                                     </p>
                                     <p className='text-sm sm:text-base'>
                                         The swap will be completed when your transfer is detected
