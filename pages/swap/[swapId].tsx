@@ -5,7 +5,6 @@ import path from 'path';
 import { LayerSwapSettings } from '../../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
-import { AuthProvider } from '../../context/authContext';
 import { SwapDataProvider } from '../../context/swap';
 import { UserExchangeProvider } from '../../context/userExchange';
 import { MenuProvider } from '../../context/menu';
@@ -19,17 +18,15 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
 
   return (
     <Layout>
-      <AuthProvider>
-        <SettingsProvider data={settings}>
-          <MenuProvider>
-            <SwapDataProvider >
-              <UserExchangeProvider>
-                <SwapWithdrawal />
-              </UserExchangeProvider>
-            </SwapDataProvider >
-          </MenuProvider>
-        </SettingsProvider>
-      </AuthProvider>
+      <SettingsProvider data={settings}>
+        <MenuProvider>
+          <SwapDataProvider >
+            <UserExchangeProvider>
+              <SwapWithdrawal />
+            </UserExchangeProvider>
+          </SwapDataProvider >
+        </MenuProvider>
+      </SettingsProvider>
     </Layout>
   )
 }

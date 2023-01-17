@@ -2,7 +2,6 @@ import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { SettingsProvider } from '../context/settings'
-import { AuthProvider } from '../context/authContext'
 import UserExchanges from '../components/AccountConnect'
 import { MenuProvider } from '../context/menu'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
@@ -13,11 +12,9 @@ export default function Home({ settings }: InferGetServerSidePropsType<typeof ge
         <div className='wide-page'>
             <Layout>
                 <SettingsProvider data={settings}>
-                    <AuthProvider>
-                        <MenuProvider>
-                            <UserExchanges />
-                        </MenuProvider>
-                    </AuthProvider>
+                    <MenuProvider>
+                        <UserExchanges />
+                    </MenuProvider>
                 </SettingsProvider>
             </Layout>
         </div>

@@ -11,7 +11,6 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
 import { useRouter } from 'next/router'
-import { AuthProvider } from '../context/authContext'
 import { MenuProvider } from '../context/menu'
 import HeaderWithMenu from '../components/HeaderWithMenu'
 
@@ -29,11 +28,9 @@ export default function ForPartners(props) {
                     <title>Layerswap Partners</title>
                 </Head>
                 <main>
-                    <AuthProvider>
-                        <MenuProvider>
-                            <HeaderWithMenu goBack={handleGoBack} />
-                        </MenuProvider>
-                    </AuthProvider>
+                    <MenuProvider>
+                        <HeaderWithMenu goBack={handleGoBack} />
+                    </MenuProvider>
                     <div className="flex-col justify-center py-4 px-8 md:px-0 sm:px-6 lg:px-8">
                         <div className="prose md:prose-xl text-primary-text">
                             <MDXRemote {...props.mdxSource} />
