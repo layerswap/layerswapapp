@@ -32,7 +32,7 @@ const NetworkField = forwardRef((props: any, ref: any) => {
             baseObject: n,
             id: n.internal_name,
             name: n.display_name,
-            order: 0, // TODO implement in settings
+            order: NetworkSettings.KnownSettings[n.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${n.internal_name.toLowerCase()}.png`,
             isAvailable: n.status === "active" && (swapType === SwapType.OffRamp ? !destNetworkIsAvailable : !lockNetwork),
             isDefault: false

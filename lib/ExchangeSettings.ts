@@ -11,6 +11,7 @@ export default class ExchangeSettings {
     WithdrawalWarningMessage?: string;
     KeyphraseDisplayName?: string;
     EstimatedTransferTime?: number;
+    Order?: number;
 
     public static KnownSettings: { [key: string]: ExchangeSettings } = {};
 
@@ -27,18 +28,21 @@ export default class ExchangeSettings {
             ExchangeApiKeyPageUrl: "https://www.binance.com/en/my/settings/api-management",
             ExchangeWithdrawalPageUrl: "https://www.binance.com/en/my/wallet/account/main/withdrawal/crypto",
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/binance",
+            Order: 1,
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Bitfinex] = {
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/bitfinex",
             ExchangeApiKeyPageUrl: "https://setting.bitfinex.com/api",
             ExchangeWithdrawalPageUrl: "https://movement.bitfinex.com/withdraw",
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/bitfinex",
+            Order: 8,
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Bittrex] = {
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/bittrex-global",
             ExchangeApiKeyPageUrl: "https://global.bittrex.com/Manage?view=api",
             ExchangeWithdrawalPageUrl: "https://global.bittrex.com/balance",
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/bittrex-global",
+            Order: 7,
 
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Blocktane] = {
@@ -46,12 +50,14 @@ export default class ExchangeSettings {
             ExchangeWithdrawalPageUrl: "https://trade.blocktane.io/account/wallets",
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Coinbase] = {
+            Order: 0,
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.CryptoCom] = {
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/crypto.com",
             ExchangeApiKeyPageUrl: "https://crypto.com/exchange/user/settings/api-management",
             ExchangeWithdrawalPageUrl: "https://crypto.com/exchange/",
-            WithdrawalWarningMessage: "Only use Crypto.com 'Exchange' to do the transfer. Transfers done from the Crypto.com *App* will not be credited."
+            WithdrawalWarningMessage: "Only use Crypto.com 'Exchange' to do the transfer. Transfers done from the Crypto.com *App* will not be credited.",
+            Order: 4,
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.FtxCom] = {
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/ftx.com",
@@ -66,6 +72,7 @@ export default class ExchangeSettings {
             ExchangeWithdrawalPageUrl: "https://www.huobi.com/en-us/finance/withdraw",
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/huobi-global",
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/huobi-global",
+            Order: 6,
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Kraken] = {
             AuthorizationNote: "When generating the API keys, make sure that the 'Query Ledger Entries' key permission is checked.",
@@ -73,6 +80,7 @@ export default class ExchangeSettings {
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/kraken",
             ExchangeApiKeyPageUrl: "https://www.kraken.com/u/security/api",
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/kraken",
+            Order: 3,
 
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Kucoin] = {
@@ -81,6 +89,7 @@ export default class ExchangeSettings {
             KeyphraseDisplayName: "Passphrase",
             CustomAuthorizationFlow: "api_credentials",
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/kucoin",
+            Order: 2,
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Okex] = {
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/okx",
@@ -88,6 +97,7 @@ export default class ExchangeSettings {
             ExchangeApiKeyPageUrl: "https://www.okx.com/account/my-api",
             ExchangeWithdrawalPageUrl: "https://www.okx.com/balance/withdrawal",
             ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/okx",
+            Order: 5,
         };
     }
 }
