@@ -84,8 +84,8 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/whitelisted_addresses`, params);
     }
 
-    async ApplyNetworkInput(swapId: string, transactionId: string): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/apply_network_input`, { transaction_id: transactionId });
+    async ApplyNetworkInput(swapId: string, deposit_id: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/pending_deposit`, { deposit_id });
     }
 
     async WithdrawFromExchange(swapId: string, exchange: string, twoFactorCode?: string): Promise<ApiResponse<void>> {
