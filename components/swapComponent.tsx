@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FC } from 'react'
 import { SwapDataProvider } from '../context/swap';
-import { AuthProvider } from '../context/authContext';
 import { UserExchangeProvider } from '../context/userExchange';
 import { MenuProvider } from '../context/menu';
 import IntroCard from './introCard';
@@ -20,21 +19,19 @@ const Swap: FC = () => {
 
   return (
     <div className="text-white">
-      <AuthProvider>
-        <MenuProvider>
-          <SwapDataProvider >
-            <UserExchangeProvider>
-              <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={false}>
-                <CreateSwap />
-              </FormWizardProvider>
-            </UserExchangeProvider>
-          </SwapDataProvider >
-        </MenuProvider>
-        {
-          !embadded &&
-          <IntroCard />
-        }
-      </AuthProvider>
+      <MenuProvider>
+        <SwapDataProvider >
+          <UserExchangeProvider>
+            <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={false}>
+              <CreateSwap />
+            </FormWizardProvider>
+          </UserExchangeProvider>
+        </SwapDataProvider >
+      </MenuProvider>
+      {
+        !embadded &&
+        <IntroCard />
+      }
     </div >
   )
 };

@@ -9,7 +9,6 @@ export default function Salon() {
     useEffect(() => {
         const temp_data = getTempData()
         const five_minutes_before = new Date(new Date().setMinutes(-5))
-        debugger
         if (new Date(temp_data?.date) >= five_minutes_before) {
             if (temp_data.swap_id) {
                 clearTempData()

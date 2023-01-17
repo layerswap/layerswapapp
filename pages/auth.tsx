@@ -1,5 +1,4 @@
 import Layout from '../components/layout'
-import { AuthProvider } from '../context/authContext'
 import { MenuProvider } from '../context/menu'
 import { FormWizardProvider } from '../context/formWizardProvider'
 import { AuthStep } from '../Models/Wizard'
@@ -19,17 +18,15 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
   useEffect(() => {
     setEmbadded(inIframe())
   }, [])
-  
+
   return (
     <Layout>
       <SettingsProvider data={settings}>
-        <AuthProvider>
-          <MenuProvider>
-            <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
-              <AuthWizard />
-            </FormWizardProvider >
-          </MenuProvider>
-        </AuthProvider>
+        <MenuProvider>
+          <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
+            <AuthWizard />
+          </FormWizardProvider >
+        </MenuProvider>
       </SettingsProvider>
       {
         !embadded &&

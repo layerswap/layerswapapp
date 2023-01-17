@@ -9,9 +9,7 @@ import { MDXRemote } from 'next-mdx-remote'
 import Layout from '../../../components/layout';
 import matter from 'gray-matter';
 import { useRouter } from 'next/router';
-import { ArrowLeftIcon } from '@heroicons/react/solid';
 import HeaderWithMenu from '../../../components/HeaderWithMenu';
-import { AuthProvider } from '../../../context/authContext';
 import { MenuProvider } from '../../../context/menu';
 
 const componentOverrides = {
@@ -38,11 +36,9 @@ export default function UserGuide({
                     <title>{title}</title>
                 </Head>
                 <main>
-                    <AuthProvider>
-                        <MenuProvider>
-                            <HeaderWithMenu goBack={handleGoBack} />
-                        </MenuProvider>
-                    </AuthProvider>
+                    <MenuProvider>
+                        <HeaderWithMenu goBack={handleGoBack} />
+                    </MenuProvider>
                     <div className="flex-col justify-center py-4 px-8 md:px-0 sm:px-6 lg:px-8">
                         <div className="py-4 px-8 md:px-0 prose md:prose-xl text-primary-text">
                             <MDXRemote {...mdxSource} components={componentOverrides} />
