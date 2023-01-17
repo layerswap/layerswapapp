@@ -40,7 +40,7 @@ const useCreateSwap = () => {
                 else if (values?.exchange?.baseObject?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
                     const layerswapApiClient = new LayerSwapApiClient(router)
                     try {
-                        const res = await layerswapApiClient.GetExchangeAccount(swap?.source_exchange, 1)
+                        const res = await layerswapApiClient.GetExchangeAccount(values?.exchange?.baseObject.internal_name, 1)
                         if (!res?.data) {
                             return goToStep(SwapCreateStep.AuthorizeCoinbaseWithdrawal)
                         }
@@ -69,7 +69,7 @@ const useCreateSwap = () => {
         Content: CodeStep,
         Name: SwapCreateStep.Code,
         onNext: useCallback(async (res: AuthConnectResponse) => {
-            MainForm.onNext(swapFormData)
+            await MainForm.onNext(swapFormData)
         }, [swapFormData]),
         positionPercent: 35,
         onBack: useCallback(() => goToStep(SwapCreateStep.Email, "back"), []),

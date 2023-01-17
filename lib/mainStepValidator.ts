@@ -35,7 +35,7 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
             if (!values.destination_address) {
                 errors.destination_address = `Enter ${values.exchange.name} address`;
             }
-            else if (!isValidAddress(values.destination_address, values.exchange.baseObject)) {
+            else if (!isValidAddress(values.destination_address, values.exchange?.baseObject)) {
                 errors.destination_address = `Enter a valid ${values.exchange.name} address`;
             }
         }

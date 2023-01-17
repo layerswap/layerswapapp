@@ -58,9 +58,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
         setLoadingDepositAddress(true)
         const layerswapApiClient = new LayerSwapApiClient(router)
         try {
-            const exchange_account = await layerswapApiClient.GetExchangeAccount(values.exchange.baseObject.internal_name, 0)
+            const exchange_account = await layerswapApiClient.GetExchangeAccount(values.exchange?.baseObject.internal_name, 0)
             setExchangeAccount(exchange_account.data)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.exchange.baseObject.internal_name, values?.currency?.baseObject?.asset)
+            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.exchange?.baseObject.internal_name, values?.currency?.baseObject?.asset)
             setFieldValue("destination_address", deposit_address.data)
             setDepositeAddressIsfromAccount(true)
             setLoadingDepositAddress(false)
@@ -79,13 +79,16 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
 
     useEffect(() => {
         depositeAddressIsfromAccountRef.current = depositeAddressIsfromAccount
+        return () => depositeAddressIsfromAccountRef.current = null
     }, [depositeAddressIsfromAccount])
 
     const handleExchangeConnected = useCallback(async () => {
+        if (!values.exchange || !values.currency)
+            return
         setLoadingDepositAddress(true)
-        const layerswapApiClient = new LayerSwapApiClient(router)
         try {
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.exchange.baseObject.internal_name, values?.currency?.baseObject?.asset)
+            const layerswapApiClient = new LayerSwapApiClient(router)
+            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.exchange?.baseObject?.internal_name, values?.currency?.baseObject?.asset)
             setFieldValue("destination_address", deposit_address.data)
             setDepositeAddressIsfromAccount(true)
         }

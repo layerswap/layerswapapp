@@ -82,7 +82,7 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
 
     if (swapType == SwapType.OnRamp) {
         final_min_amount = Math.max(minAmount + fee, double_fee)
-        final_min_amount += GetExchangeFee(currency.baseObject?.asset, exchange.baseObject)
+        final_min_amount += GetExchangeFee(currency.baseObject?.asset, exchange?.baseObject)
     }
     else
         final_min_amount = (minAmount + double_fee)

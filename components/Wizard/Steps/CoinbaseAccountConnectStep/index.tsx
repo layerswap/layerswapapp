@@ -5,7 +5,6 @@ import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useQueryState } from '../../../../context/query';
 import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import { GetSourceDestinationData } from '../../../../helpers/swapHelper';
 import { useInterval } from '../../../../hooks/useInterval';
 import { usePersistedState } from '../../../../hooks/usePersistedState';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
@@ -14,7 +13,7 @@ import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwap
 import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
 import { ApiResponse } from '../../../../Models/ApiResponse';
-import { SwapCreateStep, SwapWithdrawalStep } from '../../../../Models/Wizard';
+import { SwapCreateStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
 import Widget from '../../Widget';
@@ -104,13 +103,13 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect }) =>
                 goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ Type: 1, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, swap_data: swapFormData, query: query })
+            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, swap_data: swapFormData, swapId: swap?.id, query: query })
             setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_authorize_url, carouselRef, carouselFinished, query])
+    }, [oauth_authorize_url, carouselRef, carouselFinished, query, swap])
 
     const exchange_name = exchange?.display_name
 

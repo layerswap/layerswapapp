@@ -1,22 +1,18 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import useSWR from 'swr';
 import { useQueryState } from '../context/query';
-import { useSwapDataState, useSwapDataUpdate } from '../context/swap';
 import { useInterval } from '../hooks/useInterval';
 import { parseJwt } from '../lib/jwtParser';
-import LayerSwapApiClient, { UserExchangesData } from '../lib/layerSwapApiClient';
 import { OpenLink } from '../lib/openLink';
 import TokenService from '../lib/TokenService';
-import { ApiResponse } from '../Models/ApiResponse';
-import Widget from './Wizard/Widget';
 import Image from 'next/image'
 import SwitchIcon from './icons/switchIcon';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import SubmitButton from './buttons/submitButton';
-import { Exchange } from '../Models/Exchange';
 import { SwapFormValues } from './DTOs/SwapFormValues';
 import { useFormikContext } from 'formik';
+import { SwapCreateStep } from '../Models/Wizard';
+import { useFormWizardaUpdate } from '../context/formWizardProvider';
 
 type Props = {
     OnSuccess: () => Promise<void>,
@@ -32,6 +28,7 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
     const [authWindow, setAuthWindow] = useState<Window>()
     const [salon, setSalon] = useState(false)
     const [loading, setLoading] = useState(false)
+    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
 
     const query = useQueryState()
 
@@ -64,8 +61,8 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
         setLoading(true)
         try {
             const access_token = TokenService.getAuthData()?.access_token
-            // if (!access_token)
-            //     goToStep(SwapCreateStep.Email)
+            if (!access_token)
+                goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ Type: 0, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
             const authWindow = OpenLink({ link: oauth_connect_url + encoded, swap_data: values, query })

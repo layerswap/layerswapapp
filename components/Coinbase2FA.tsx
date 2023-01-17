@@ -1,12 +1,9 @@
 import { InformationCircleIcon, LockClosedIcon } from '@heroicons/react/outline';
 import { Form, Formik, FormikErrors, FormikProps } from 'formik';
-import { useRouter } from 'next/router';
 import { FC, useCallback, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useFormWizardaUpdate } from '../context/formWizardProvider';
-import { useSwapDataState, useSwapDataUpdate } from '../context/swap';
+import { useSwapDataState } from '../context/swap';
 import { useTimerState } from '../context/timerContext';
-import { CalculateMinimalAuthorizeAmount } from '../lib/fees';
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import { ApiError, KnownwErrorCode } from '../Models/ApiError';
 import SubmitButton from './buttons/submitButton';
@@ -15,8 +12,6 @@ import NumericInput from './Input/NumericInput';
 import MessageComponent from './MessageComponent';
 import SlideOver from './SlideOver';
 import TimerWithContext from './TimerComponent';
-import Widget from './Wizard/Widget';
-
 
 const TIMER_SECONDS = 120
 
@@ -94,7 +89,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess }) => {
                 <MessageComponent>
                     <MessageComponent.Content icon='red'>
                         <MessageComponent.Header>
-                            Swap failed
+                            Transfer failed
                         </MessageComponent.Header>
                         <MessageComponent.Description>
                             This transfer can't be processed because you don't have enough available funds on Coinbase.

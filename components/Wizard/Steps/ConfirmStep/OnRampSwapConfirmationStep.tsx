@@ -63,10 +63,10 @@ const OnRampSwapConfirmationStep: FC = () => {
         try {
             if (!swap) {
                 const swapId = await createAndProcessSwap();
-                if (exchange.baseObject.internal_name.toLocaleLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLocaleLowerCase()) {
+                if (exchange?.baseObject?.internal_name?.toLocaleLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLocaleLowerCase()) {
                     if (!withdrawManually) {
                         const layerswapApiClient = new LayerSwapApiClient()
-                        await layerswapApiClient.WithdrawFromExchange(swapId, exchange.baseObject.internal_name)
+                        await layerswapApiClient.WithdrawFromExchange(swapId, exchange?.baseObject.internal_name)
                     }
                 }
                 return await router.push(`/swap/${swapId}`)
@@ -75,7 +75,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 const swapId = swap.id
                 if (!withdrawManually) {
                     const layerswapApiClient = new LayerSwapApiClient()
-                    await layerswapApiClient.WithdrawFromExchange(swapId, exchange.baseObject.internal_name)
+                    await layerswapApiClient.WithdrawFromExchange(swapId, exchange?.baseObject.internal_name)
                 }
                 return await router.push(`/swap/${swapId}`)
             }
@@ -116,7 +116,7 @@ const OnRampSwapConfirmationStep: FC = () => {
     }
     const handleSaveAddress = useCallback(() => {
         setAddressInputError("")
-        if (!isValidAddress(addressInputValue, network.baseObject)) {
+        if (!isValidAddress(addressInputValue, network?.baseObject)) {
             setAddressInputError(`Enter a valid ${network.name} address`)
             return;
         }

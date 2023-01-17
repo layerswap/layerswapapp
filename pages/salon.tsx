@@ -1,7 +1,7 @@
 import Layout from '../components/layout'
 import React, { useEffect } from 'react'
 import { useRouter } from 'next/router';
-import { getTempData } from '../lib/openLink';
+import { clearTempData, getTempData } from '../lib/openLink';
 
 export default function Salon() {
     const router = useRouter();
@@ -9,11 +9,21 @@ export default function Salon() {
     useEffect(() => {
         const temp_data = getTempData()
         const five_minutes_before = new Date(new Date().setMinutes(-5))
+        debugger
         if (new Date(temp_data?.date) >= five_minutes_before) {
-            router.push({
-                pathname: "/",
-                query: { ...(temp_data?.query || {}), coinbase_redirect: true }
-            })
+            if (temp_data.swap_id) {
+                clearTempData()
+                router.push({
+                    pathname: `/swap/${temp_data.swap_id}`,
+                    query: { ...(temp_data?.query || {}), coinbase_redirect: true }
+                })
+            }
+            else {
+                router.push({
+                    pathname: "/",
+                    query: { ...(temp_data?.query || {}), coinbase_redirect: true }
+                })
+            }
         }
     }, [])
 
