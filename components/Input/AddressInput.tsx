@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import TokenService from "../../lib/TokenService";
 import { useAuthState } from "../../context/authContext";
+import ExchangeSettings from "../../lib/ExchangeSettings";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     label?: string
@@ -106,7 +107,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             }
                         />
                         {
-                            values?.swapType === SwapType.OffRamp && authData?.access_token && values.exchange && !depositeAddressIsfromAccount &&
+                            values?.swapType === SwapType.OffRamp && authData?.access_token && values.exchange && ExchangeSettings.KnownSettings[values.exchange.baseObject.internal_name]?.EnableDepositAddressConnect && !depositeAddressIsfromAccount &&
                             <motion.span className="inline-flex items-center mr-2 shrink"
                                 transition={{
                                     width: { ease: 'linear' }

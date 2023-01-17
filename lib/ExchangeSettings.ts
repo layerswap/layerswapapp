@@ -12,6 +12,7 @@ export default class ExchangeSettings {
     KeyphraseDisplayName?: string;
     EstimatedTransferTime?: number;
     Order?: number;
+    EnableDepositAddressConnect?: boolean;
 
     public static KnownSettings: { [key: string]: ExchangeSettings } = {};
 
@@ -24,6 +25,7 @@ export default class ExchangeSettings {
         ExchangeSettings._isInitialized = true;
 
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Binance] = {
+            EnableDepositAddressConnect: true,
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/binance",
             ExchangeApiKeyPageUrl: "https://www.binance.com/en/my/settings/api-management",
             ExchangeWithdrawalPageUrl: "https://www.binance.com/en/my/wallet/account/main/withdrawal/crypto",
@@ -50,6 +52,7 @@ export default class ExchangeSettings {
             ExchangeWithdrawalPageUrl: "https://trade.blocktane.io/account/wallets",
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Coinbase] = {
+            EnableDepositAddressConnect: true,
             Order: 0,
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.CryptoCom] = {
