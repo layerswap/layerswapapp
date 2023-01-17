@@ -8,12 +8,14 @@ import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import SpinIcon from "../icons/spinIcon";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { LinkIcon, XIcon } from "@heroicons/react/outline";
+import { InformationCircleIcon, LinkIcon, QuestionMarkCircleIcon, XIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import TokenService from "../../lib/TokenService";
 import { useAuthState } from "../../context/authContext";
 import ExchangeSettings from "../../lib/ExchangeSettings";
+import ClickTooltip from "../Tooltips/ClickTooltip";
+import HoverTooltip from "../Tooltips/HoverTooltip";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     label?: string
@@ -45,7 +47,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const { authData } = useAuthState()
 
-
+        const exchangeCurrency = values.exchange?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
         const handleUseDepositeAddress = async () => {
             try {
                 await onSetExchangeDepoisteAddress()
@@ -69,8 +71,16 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         return (<>
             {label &&
-                <label htmlFor={name} className="block font-normal text-primary-text text-sm">
-                    {label}
+                <label htmlFor={name} className="block font-normal text-primary-text text-sm mb-2">
+                    {label} {exchangeCurrency && values.swapType === SwapType.OffRamp &&
+                        <span className="inline-block">
+                            <HoverTooltip text={`The deposit address of ${values.currency.name} in ${exchangeCurrency.chain_display_name} network/chain at ${values.exchange?.baseObject?.display_name}`} moreClassNames="w-48 left-4 bottom-1 text-sm" positionClassnames="right-40">
+                                <span className="inline-flex items-center rounded-md border-darkblue-400 bg-darkblue-600 px-3 cursor-pointer py-0.5 text-sm font-medium group">
+                                    {exchangeCurrency.chain_display_name}
+                                    <InformationCircleIcon className="ml-1 w-4 group-hover:text-primary-500" />
+                                </span>
+                            </HoverTooltip>
+                        </span>}
                 </label>
             }
             <Field name={name}>
