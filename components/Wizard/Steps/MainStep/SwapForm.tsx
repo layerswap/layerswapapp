@@ -122,7 +122,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                         : <ConnectApiKeyExchange exchange={values?.exchange?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
                 )}
             </SlideOver>
-            {values && <ConnectedFocusError />}
             <Widget>
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
