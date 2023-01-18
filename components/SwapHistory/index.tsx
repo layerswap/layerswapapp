@@ -24,6 +24,7 @@ import FormattedDate from "../Common/FormattedDate";
 import { GetSourceDestinationData } from "../../helpers/swapHelper";
 import useSortableData from "../../hooks/useSortableData";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
+import isGuid from "../utils/isGuid";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -196,7 +197,7 @@ function TransactionsHistory() {
                         <tbody>
                           {items?.map((swap, index) => {
 
-                            const { currency, destination,destination_network, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+                            const { destination, destination_network, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
                             //TODO implement transaction_explorer_template in exchange & network settings
                             // const { transaction_explorer_template } = swapNetwork
@@ -292,14 +293,14 @@ function TransactionsHistory() {
                                     {
                                       swap?.status == 'completed' ?
                                         <span className="ml-1 md:ml-0">
-                                          {swap.output_transaction.amount}
+                                          {swap.output_transaction?.amount}
                                         </span>
                                         :
                                         <span>
                                           {swap.requested_amount}
                                         </span>
                                     }
-                                    <span className="ml-1">{currency.asset}</span>
+                                    <span className="ml-1">{swap.destination_network_asset}</span>
                                   </div>
                                   <ChevronRightIcon className="h-5 w-5 lg:hidden" />
                                 </div>
@@ -310,7 +311,7 @@ function TransactionsHistory() {
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
-                                {swap?.output_transaction?.transaction_id ?
+                                {(swap?.output_transaction?.transaction_id && !isGuid(swap?.output_transaction?.transaction_id)) ?
                                   <>
                                     <div className="underline hover:no-underline">
                                       <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>

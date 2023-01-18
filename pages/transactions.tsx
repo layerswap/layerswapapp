@@ -1,5 +1,4 @@
 import Layout from '../components/layout'
-import { AuthProvider } from '../context/authContext'
 import { MenuProvider } from '../context/menu'
 import { SettingsProvider } from '../context/settings'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
@@ -14,13 +13,11 @@ export default function Transactions({ settings }: InferGetServerSidePropsType<t
     <div className='wide-page'>
       <Layout>
         <SettingsProvider data={settings}>
-          <AuthProvider>
-            <MenuProvider>
-              <SwapDataProvider >
-                <TransactionsHistory />
-              </SwapDataProvider >
-            </MenuProvider>
-          </AuthProvider>
+          <MenuProvider>
+            <SwapDataProvider >
+              <TransactionsHistory />
+            </SwapDataProvider >
+          </MenuProvider>
         </SettingsProvider>
       </Layout>
     </div>

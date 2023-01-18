@@ -1,18 +1,16 @@
 import { FC } from 'react'
-import Swap from './swapComponent';
 import { AuthProvider } from '../context/authContext';
+import Swap from './swapComponent';
 
 const App: FC = () => {
 
-    return <>
-        <AuthProvider>
-            <div className={`bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative`}>
-                <div>
-                    <Swap />
-                </div>
+    return <AuthProvider>
+        <div className={`bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative`}>
+            <div>
+                <Swap />
             </div>
-        </AuthProvider>
-    </>
+        </div>
+    </AuthProvider>
 }
 
 export default App;

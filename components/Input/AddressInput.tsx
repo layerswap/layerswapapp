@@ -8,14 +8,17 @@ import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import SpinIcon from "../icons/spinIcon";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { LinkIcon, XIcon } from "@heroicons/react/outline";
+import { InformationCircleIcon, LinkIcon, QuestionMarkCircleIcon, XIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import TokenService from "../../lib/TokenService";
 import { useAuthState } from "../../context/authContext";
+import ExchangeSettings from "../../lib/ExchangeSettings";
+import ClickTooltip from "../Tooltips/ClickTooltip";
+import HoverTooltip from "../Tooltips/HoverTooltip";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
-    label?: string
+    hideLabel?: boolean;
     disabled: boolean;
     name: string;
     className?: string;
@@ -27,7 +30,7 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
 }
 
 const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ exchangeAccount, label, disabled, name, className, onSetExchangeDepoisteAddress, loading }, ref) => {
+    ({ exchangeAccount, hideLabel, disabled, name, className, onSetExchangeDepoisteAddress, loading }, ref) => {
 
         const {
             values,
@@ -44,7 +47,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const { authData } = useAuthState()
 
-
+        const exchangeCurrency = values.exchange?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
         const handleUseDepositeAddress = async () => {
             try {
                 await onSetExchangeDepoisteAddress()
@@ -67,9 +70,18 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }
 
         return (<>
-            {label &&
-                <label htmlFor={name} className="block font-normal text-primary-text text-sm">
-                    {label}
+            {
+                !hideLabel &&
+                <label htmlFor={name} className="flex font-normal text-primary-text text-sm mb-2">
+                    To {values?.exchange?.name || ''}{exchangeCurrency && values.swapType === SwapType.OffRamp && <span className="font-semibold">&ensp;{exchangeCurrency.chain_display_name}&ensp;</span>}address
+                    {exchangeCurrency && values.swapType === SwapType.OffRamp &&
+                        <span className="inline-block ml-1">
+                            <HoverTooltip text={`The deposit address of ${values.currency.name} in ${exchangeCurrency.chain_display_name} network/chain at ${values.exchange?.baseObject?.display_name}`} moreClassNames="w-48 left-4 bottom-1 text-sm" positionClassnames="right-40">
+                                <span className="inline-flex items-center rounded-md border-darkblue-400 bg-darkblue-600 p-1 cursor-pointer text-sm font-medium group">
+                                    <InformationCircleIcon className="w-4 group-hover:text-primary-500" />
+                                </span>
+                            </HoverTooltip>
+                        </span>}
                 </label>
             }
             <Field name={name}>
@@ -106,7 +118,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             }
                         />
                         {
-                            values?.swapType === SwapType.OffRamp && authData?.access_token && values.exchange && !depositeAddressIsfromAccount &&
+                            values?.swapType === SwapType.OffRamp && authData?.access_token && values.exchange && ExchangeSettings.KnownSettings[values.exchange.baseObject.internal_name]?.EnableDepositAddressConnect && !depositeAddressIsfromAccount &&
                             <motion.span className="inline-flex items-center mr-2 shrink"
                                 transition={{
                                     width: { ease: 'linear' }
@@ -131,7 +143,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                         }
                                                     }
                                                 }>
-                                                Connect from {values?.exchange?.baseObject?.display_name}
+                                                Autofill from {values?.exchange?.baseObject?.display_name}
                                             </motion.span>
                                         </motion.div>
                                     </motion.button>
@@ -152,14 +164,12 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     }
                                     <button
                                         type="button"
-                                        className="p-1.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
+                                        className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
                                         onClick={handleRemoveDepositeAddress}
 
                                     >
                                         <div className="flex items-center" >
-                                            <div className="flex-shrink-0 h-6 w-6 relative">
-                                                <XIcon className="h-6 w-6" />
-                                            </div>
+                                            <XIcon className="h-5 w-5" />
                                         </div>
                                     </button>
                                 </div>

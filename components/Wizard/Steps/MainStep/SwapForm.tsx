@@ -122,7 +122,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                         : <ConnectApiKeyExchange exchange={values?.exchange?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
                 )}
             </SlideOver>
-            {values && <ConnectedFocusError />}
             <Widget>
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
@@ -135,6 +134,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                             <div className="flex flex-col md:w-80 w-full">
                                 <NetworkField />
                             </div>
+                        </div>
+                        <div className="mb-6 leading-4">
+                            <AmountField />
                         </div>
                         {
                             values.swapType === SwapType.OnRamp &&
@@ -154,6 +156,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                     }
                                     <div>
                                         <AddressInput
+                                            hideLabel={true}
                                             exchangeAccount={exchangeAccount}
                                             onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
                                             loading={loadingDepositAddress}
@@ -168,9 +171,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                         {
                             values.swapType === SwapType.OffRamp &&
                             <div className="w-full mb-3.5 leading-4">
-                                <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
-                                    {`To ${values?.exchange?.name || ''} address`}
-                                </label>
                                 <div className="relative rounded-md shadow-sm mt-1.5">
                                     <div>
                                         <AddressInput
@@ -185,15 +185,11 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                 </div>
                             </div>
                         }
-                        <div className="mb-6 leading-4">
-                            <AmountField />
-                        </div>
                         <div className="w-full">
                             <AmountAndFeeDetails values={values} />
                         </div>
                     </Widget.Content>
                 }
-
                 <Widget.Footer>
                     <SwapButton className="plausible-event-name=Swap+initiated" type='submit' isDisabled={!isValid || loading} isSubmitting={isSubmitting || loading}>
                         {displayErrorsOrSubmit(errors, values.swapType)}
@@ -205,7 +201,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
 }
 
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
-    return errors.exchange?.toString() || errors.network?.toString() || errors.destination_address || errors.amount || "Swap now"
+    return errors.exchange?.toString() || errors.network?.toString() || errors.amount || errors.destination_address || "Swap now"
 }
 
 export default SwapForm

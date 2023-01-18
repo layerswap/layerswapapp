@@ -51,7 +51,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                     value={item}
                                     disabled={!item.isAvailable}
                                     className={`flex text-left ${item.id === value?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
-                                    onClick={() => handleSelect(item)}
+                                    onClick={item.id === value?.id ? () => setFieldValue(name, null) : () => handleSelect(item)}
                                 >
                                     {({ active, disabled }) => (
                                         <>
@@ -73,9 +73,13 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                     {item.name}
                                                 </p>
                                             </div>
-                                            {item.id === value?.id && <div className="justify-self-end">
-                                                <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                                            </div>}
+                                            {item.id === value?.id &&
+                                                <div className='flex items-center'>
+                                                    <div className="bg-darkblue-700 hover:bg-darkblue-600 rounded-md border border-darkblue-600 hover:border-darkblue-100 duration-200 transition p-0.5">
+                                                        <XIcon className='h-4 w-4' />
+                                                    </div>
+                                                </div>
+                                            }
                                         </>
                                     )}
                                 </Combobox.Option>

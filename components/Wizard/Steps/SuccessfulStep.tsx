@@ -3,6 +3,7 @@ import { HomeIcon } from '@heroicons/react/solid';
 import { FC, useCallback } from 'react'
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
+import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 import { SwapType } from '../../../lib/layerSwapApiClient';
 import { CryptoNetwork } from '../../../Models/CryptoNetwork';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
@@ -10,13 +11,13 @@ import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
 
 const SuccessfulStep: FC = () => {
-    const { networks } = useSettingsState()
+    const { networks, currencies, exchanges, discovery: { resource_storage_url } } = useSettingsState()
     const { swap } = useSwapDataState()
 
-    let destination = swap?.destination_exchange ? networks?.find(e => e?.internal_name?.toUpperCase() === swap?.destination_exchange?.toUpperCase())
-        : networks?.find(e => e?.internal_name?.toUpperCase() === swap?.destination_network?.toUpperCase())
+    const { destination_network  } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
-    const transaction_explorer_template = (destination as CryptoNetwork)?.transaction_explorer_template
+
+    const transaction_explorer_template = destination_network?.transaction_explorer_template
 
     const handleViewInExplorer = useCallback(() => {
         if (!transaction_explorer_template)
