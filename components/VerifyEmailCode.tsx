@@ -4,6 +4,7 @@ import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import { useTimerState } from '../context/timerContext';
+import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
@@ -24,7 +25,7 @@ interface CodeFormValues {
 const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
     const initialValues: CodeFormValues = { Code: '' }
     const { start: startTimer, started } = useTimerState()
-    const { tempEmail, userLockedOut } = useAuthState();
+    const { tempEmail, userLockedOut, guestAuthData } = useAuthState();
     const { updateAuthData, setUserLockedOut } = useAuthDataUpdate()
     const [modalUrl, setModalUrl] = useState<string>(null);
     const [openDocSlideover, setOpenDocSlideover] = useState(false)
@@ -80,10 +81,12 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify }) => {
             }}
             onSubmit={async (values: CodeFormValues) => {
                 try {
-                    var apiClient = new LayerSwapAuthApiClient();
-                    const res = await apiClient.connectAsync(tempEmail, values.Code)
+                    var apiAuthClient = new LayerSwapAuthApiClient();
+                    var apiClient = new LayerSwapApiClient()
+                    const res = await apiAuthClient.connectAsync(tempEmail, values.Code)
                     updateAuthData(res)
                     await onSuccessfullVerify(res);
+                    if (guestAuthData) await apiClient.SwapsMigration(guestAuthData.access_token)
                 }
                 catch (error) {
                     const message = error.response.data.error_description

@@ -1,5 +1,6 @@
-import { ArrowRightIcon, ExternalLinkIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, ExternalLinkIcon, LoginIcon } from '@heroicons/react/outline';
 import { HomeIcon } from '@heroicons/react/solid';
+import { useRouter } from 'next/router';
 import { FC, useCallback } from 'react'
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
@@ -13,8 +14,8 @@ import GoHomeButton from '../../utils/GoHome';
 const SuccessfulStep: FC = () => {
     const { networks, currencies, exchanges, discovery: { resource_storage_url } } = useSettingsState()
     const { swap } = useSwapDataState()
-
-    const { destination_network  } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+    const router = useRouter()
+    const { destination_network } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
 
     const transaction_explorer_template = destination_network?.transaction_explorer_template
@@ -42,6 +43,12 @@ const SuccessfulStep: FC = () => {
                     </MessageComponent.Description>
                 </MessageComponent.Content>
                 <MessageComponent.Buttons>
+                    <div>
+                        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dolore, molestias minus. Obcaecati inventore totam </p>
+                    <SubmitButton onClick={() => router.push('/auth')} text_align='center' isDisabled={false} isSubmitting={false} icon={<LoginIcon className="h-5 w-5" aria-hidden="true" />}>
+                        Log in
+                    </SubmitButton>
+                    </div>
                     <div className="flex flex-row text-white text-base space-x-2">
                         {
                             (transaction_explorer_template && swap?.output_transaction?.transaction_id) ?

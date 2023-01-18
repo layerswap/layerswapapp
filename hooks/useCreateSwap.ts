@@ -10,17 +10,20 @@ import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { SwapCreateStep, WizardStep } from "../Models/Wizard";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { useRouter } from "next/router";
-import LayerswapApiClient, { SwapType } from '../lib/layerSwapApiClient';
+import LayerswapApiClient from '../lib/layerSwapApiClient';
 import AccountConnectStep from "../components/Wizard/Steps/CoinbaseAccountConnectStep";
 import KnownInternalNames from "../lib/knownIds";
 import LayerSwapApiClient from "../lib/layerSwapApiClient";
 import toast from "react-hot-toast";
 import { KnownwErrorCode } from "../Models/ApiError";
+import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
+import { useAuthDataUpdate, UserType } from "../context/authContext";
 
 const useCreateSwap = () => {
     const { goToStep } = useFormWizardaUpdate()
     const { swapFormData, swap } = useSwapDataState()
     const router = useRouter();
+    const { updateAuthData, setUserType } = useAuthDataUpdate()
 
     const MainForm: WizardStep<SwapCreateStep> = {
         Content: MainStep,
@@ -29,7 +32,22 @@ const useCreateSwap = () => {
         onNext: useCallback(async (values: SwapFormValues) => {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken)
-                return goToStep(SwapCreateStep.Email);
+                try {
+                    var apiClient = new LayerSwapAuthApiClient();
+                    const res = await apiClient.guestConnectAsync()
+                    updateAuthData(res)
+                    setUserType(UserType.GuestUser)
+                    goToStep(SwapCreateStep.Confirm)
+                }
+                catch (error) {
+                    if (error.response?.data?.errors?.length > 0) {
+                        const message = error.response.data.errors.map(e => e.message).join(", ")
+                        toast.error(message)
+                    }
+                    else {
+                        toast.error(error.message)
+                    }
+                }
             else {
                 const layerswapApiClient = new LayerswapApiClient(router);
                 const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()

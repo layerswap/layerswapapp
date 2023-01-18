@@ -8,20 +8,21 @@ const AuthDataUpdateContext = React.createContext<UpdateInterface>(null);
 type AuthState = {
     email: string,
     authData: AuthData,
+    guestAuthData: AuthData,
     codeRequested: boolean,
     tempEmail: string,
     userId: string,
     userLockedOut: boolean,
-    isUserAuthenticated: boolean
+    userType: UserType
 }
 
 export type UpdateInterface = {
     updateTempEmail: (email: string) => void,
     updateAuthData: (data: any) => void,
-    getAuthData: () => (AuthData | undefined)
+    getAuthData: () => (AuthData | undefined),
     setCodeRequested(codeSubmitted: boolean): void;
     setUserLockedOut(value: boolean): void;
-    setIsUserAuthenticated(value: boolean): void
+    setUserType(value: UserType): void
 }
 
 export function AuthProvider({ children }) {
@@ -29,18 +30,23 @@ export function AuthProvider({ children }) {
     const [email, setEmail] = React.useState<string | undefined>()
     const [tempEmail, setTempEmail] = React.useState<string | undefined>()
     const [authData, setAuthData] = React.useState<AuthData>({})
+    const [guestAuthData, setGuestAuthData] = React.useState<AuthData>({})
     const [userId, setUserId] = useState<string>()
     const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
     const [userLockedOut, setUserLockedOut] = React.useState<boolean>(false)
-    const [isUserAuthenticated, setIsUserAuthenticated] = React.useState<boolean>(false)
+    const [userType, setUserType] = React.useState<UserType>(UserType.NotAuthenticatedUser)
 
     const updateDataFromLocalStorage = () => {
         const authData = TokenService.getAuthData()
         if (!authData || !authData.access_token)
             return
-        const { email, sub } = parseJwt(authData.access_token)
-        if (authData && email)
-            setIsUserAuthenticated(true)
+        const { email, sub, utype } = parseJwt(authData.access_token)
+        if (authData && utype == UserType.AuthenticatedUser) {
+            setUserType(UserType.AuthenticatedUser)
+        } else if (authData && utype == UserType.GuestUser) {
+            setGuestAuthData(authData)
+            setUserType(UserType.GuestUser)
+        }
         setAuthData(authData)
         setEmail(email)
         setUserId(sub)
@@ -71,11 +77,11 @@ export function AuthProvider({ children }) {
         }, []),
         setCodeRequested: useCallback((codeRequested: boolean) => setCodeRequested(codeRequested), [codeRequested]),
         setUserLockedOut: useCallback((userLockedOut: boolean) => setUserLockedOut(userLockedOut), [userLockedOut]),
-        setIsUserAuthenticated: useCallback((isUserAuthenticated: boolean) => setIsUserAuthenticated(isUserAuthenticated), [isUserAuthenticated]),
+        setUserType: useCallback((userType: UserType) => setUserType(userType), [userType]),
     };
 
     return (
-        <AuthStateContext.Provider value={{ email, authData, codeRequested, tempEmail, userId, userLockedOut, isUserAuthenticated }}>
+        <AuthStateContext.Provider value={{ email, authData, guestAuthData, codeRequested, tempEmail, userId, userLockedOut, userType }}>
             <AuthDataUpdateContext.Provider value={updateFns}>
                 {children}
             </AuthDataUpdateContext.Provider>
@@ -110,4 +116,10 @@ export type AuthData = {
     refresh_token?: string,
     scope?: string,
     token_type?: string,
+}
+
+export enum UserType {
+    NotAuthenticatedUser = 'NotAunthenticatedUser',
+    GuestUser = 'guest',
+    AuthenticatedUser = 'main'
 }
