@@ -1,6 +1,5 @@
-import { Field, useField, useFormikContext } from "formik";
-import { FC, forwardRef, useEffect, useState } from "react";
-import { useSettingsState } from "../../context/settings";
+import { Field, useFormikContext } from "formik";
+import { FC, forwardRef, useState } from "react";
 import { SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -8,14 +7,12 @@ import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import SpinIcon from "../icons/spinIcon";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { InformationCircleIcon, LinkIcon, QuestionMarkCircleIcon, XIcon } from "@heroicons/react/outline";
+import { LinkIcon, XIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
-import TokenService from "../../lib/TokenService";
 import { useAuthState } from "../../context/authContext";
 import ExchangeSettings from "../../lib/ExchangeSettings";
 import ClickTooltip from "../Tooltips/ClickTooltip";
-import HoverTooltip from "../Tooltips/HoverTooltip";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -39,12 +36,8 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount } = useSwapDataState()
-
         const placeholder = NetworkSettings.KnownSettings[values?.network?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
-        const { discovery: { resource_storage_url }, exchanges, networks } = useSettingsState();
-
         const [inpuFocused, setInputFocused] = useState(false)
-
         const { authData } = useAuthState()
 
         const exchangeCurrency = values.exchange?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
@@ -72,15 +65,11 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
         return (<>
             {
                 !hideLabel &&
-                <label htmlFor={name} className="flex font-normal text-primary-text text-sm mb-2">
+                <label htmlFor={name} className="flex font-normal text-primary-text text-sm">
                     To {values?.exchange?.name || ''}{exchangeCurrency && values.swapType === SwapType.OffRamp && <span className="font-semibold">&ensp;{exchangeCurrency.chain_display_name}&ensp;</span>}address
                     {exchangeCurrency && values.swapType === SwapType.OffRamp &&
-                        <span className="inline-block ml-1">
-                            <HoverTooltip text={`The deposit address of ${values.currency.name} in ${exchangeCurrency.chain_display_name} network/chain at ${values.exchange?.baseObject?.display_name}`} moreClassNames="w-48 left-4 bottom-1 text-sm" positionClassnames="right-40">
-                                <span className="inline-flex items-center rounded-md border-darkblue-400 bg-darkblue-600 p-1 cursor-pointer text-sm font-medium group">
-                                    <InformationCircleIcon className="w-4 group-hover:text-primary-500" />
-                                </span>
-                            </HoverTooltip>
+                        <span className="inline-block ">
+                            <ClickTooltip text={`The deposit address of ${values.currency.name} in ${exchangeCurrency.chain_display_name} network/chain at ${values.exchange?.baseObject?.display_name}`}/>
                         </span>}
                 </label>
             }
