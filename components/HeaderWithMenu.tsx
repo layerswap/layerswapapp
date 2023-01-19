@@ -1,3 +1,4 @@
+import { QuestionMarkCircleIcon } from "@heroicons/react/outline"
 import { ArrowLeftIcon, LightBulbIcon } from "@heroicons/react/solid"
 import { useIntercom } from "react-use-intercom"
 import { useAuthState } from "../context/authContext"
@@ -29,7 +30,7 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
                }}
                className='flex items-center gap-1 text-xs text-primary-text py-1 p-1 md:px-2 bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100 duration-200 transition'
             >
-               <LightBulbIcon className="h-4" />
+               <QuestionMarkCircleIcon className="h-4" />
                <span className="hidden md:block">Help</span>
             </button>
             <LayerswapMenu />

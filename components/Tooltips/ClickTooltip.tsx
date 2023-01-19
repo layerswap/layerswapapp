@@ -1,32 +1,32 @@
-import { Popover } from "@headlessui/react";
+import { InformationCircleIcon } from '@heroicons/react/outline';
+import * as Popover from '@radix-ui/react-popover';
 import { FC } from "react";
 
 type Props = {
-    children: JSX.Element | JSX.Element[],
+    children?: JSX.Element | JSX.Element[],
     text: string;
-    moreClassNames?: string;
+    moreClassNames?: string
 }
 
 const ClickTooltip: FC<Props> = (({ children, text, moreClassNames }) => {
     return (
-        <>
-            <Popover>
-                <Popover.Button>
-                    {children}
-                </Popover.Button>
-                <Popover.Panel>
-                    <div className="ml-1 text-white">
-                        <div className="relative">
-                            <div className={`w-fit absolute flex flex-col mb-3 ${moreClassNames}`}>
-                                <span className="leading-4 min z-10 p-2 text-xs text-center text-white whitespace-no-wrap bg-darkblue-300 shadow-lg rounded-md">
-                                    {text}
-                                </span>
-                            </div>
-                        </div>
+        <Popover.Root>
+            <Popover.Trigger>
+                {
+                    children ??
+                    <div className='opacity-50 ml-1 hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-0.5 rounded'>
+                        <InformationCircleIcon className="h-4" aria-hidden="true" />
                     </div>
-                </Popover.Panel>
-            </Popover>
-        </>
+                }
+            </Popover.Trigger>
+            <Popover.Portal>
+                <Popover.Content className='bg-darkblue-300 shadow-lg rounded-md p-2 w-fit max-w-[192px] leading-4 text-xs mt-1'>
+                    <span className={`text-primary-text whitespace-no-wrap word-break ${moreClassNames}`}>
+                        {text}
+                    </span>
+                </Popover.Content>
+            </Popover.Portal>
+        </Popover.Root>
     )
 })
 

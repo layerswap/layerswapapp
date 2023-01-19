@@ -12,12 +12,12 @@ import SubmitButton from "./buttons/submitButton";
 import { useAuthState } from "../context/authContext";
 import toast from "react-hot-toast";
 import shortenAddress, { shortenEmail } from "./utils/ShortenAddress";
-import HoverTooltip from "./Tooltips/HoverTooltip";
 import { ExchangesComponentSceleton } from "./Sceletons";
 import Modal from "./modalComponent";
 import ExchangeSettings from "../lib/ExchangeSettings";
 import KnownInternalNames from "../lib/knownIds";
 import GoHomeButton from "./utils/GoHome";
+import ClickTooltip from "./Tooltips/ClickTooltip";
 
 interface UserExchange extends Exchange {
     note?: string,
@@ -190,7 +190,7 @@ function UserExchanges() {
                                                                                 <p className="text-xs font-normal">
                                                                                     {shortenUniversalAddress(item.note)}
                                                                                 </p>
-                                                                                <HoverTooltip moreClassNames="w-40 break-words -left-1.5" positionClassnames="left-4" text={item.note} />
+                                                                                <ClickTooltip text={item.note} moreClassNames='break-all'/>
                                                                             </div>
                                                                         }
                                                                     </div>
