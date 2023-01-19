@@ -21,6 +21,8 @@ export type WizardProvider<T> = {
     wrapperHeight: string,
     goBack: () => void,
     positionPercent: number,
+    noToolBar: boolean,
+    hideMenu: boolean
 }
 
 type UpdateInterface<T> = {
@@ -36,7 +38,9 @@ type UpdateInterface<T> = {
 type Props<T> = {
     children?: JSX.Element | JSX.Element[];
     initialStep: T,
-    initialLoading?: boolean
+    initialLoading?: boolean,
+    noToolBar?: boolean,
+    hideMenu?: boolean
 }
 
 export const FormWizardProvider = <T extends Steps>(props: Props<T>) => {
@@ -59,7 +63,7 @@ export const FormWizardProvider = <T extends Steps>(props: Props<T>) => {
     }, [])
 
     return (
-        <FormWizardStateContext.Provider value={{ currentStepName, moving, loading, error, wrapperWidth, wrapperHeight, goBack: goBack?.callback, positionPercent }}>
+        <FormWizardStateContext.Provider value={{ currentStepName, moving, loading, error, wrapperWidth, wrapperHeight, goBack: goBack?.callback, positionPercent, noToolBar: props.noToolBar, hideMenu: props.hideMenu }}>
             <FormWizardStateUpdateContext.Provider value={{ goToStep, setLoading, setError, setWrapperWidth, setWrapperHeight, setGoBack: handleSetCallback, setPositionPercent }}>
                 {children}
             </FormWizardStateUpdateContext.Provider>

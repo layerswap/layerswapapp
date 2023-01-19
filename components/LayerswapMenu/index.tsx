@@ -3,7 +3,7 @@ import { BookOpenIcon, ExternalLinkIcon, LinkIcon, MenuIcon } from "@heroicons/r
 import { HomeIcon, LoginIcon, LogoutIcon, TableIcon, UserIcon } from "@heroicons/react/solid";
 import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
-import { useAuthState, UserType } from "../../context/authContext";
+import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
 import { useMenuState } from "../../context/menu";
 import TokenService from "../../lib/TokenService";
 import { AnimatePresence, motion } from "framer-motion";
@@ -13,7 +13,8 @@ import Modal from "../modalComponent";
 import { DocIframe } from "../docInIframe";
 
 export default function () {
-    const { email, userType: userStatus } = useAuthState()
+    const { email, userType } = useAuthState()
+    const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
     const { menuVisible } = useMenuState()
 
@@ -25,6 +26,7 @@ export default function () {
         router.push({
             pathname: "/"
         }, '/signedout', { shallow: true })
+        setUserType(UserType.NotAuthenticatedUser)
     }, [router.query])
 
     const UserEmail = ({ email }: { email: string }) => {
@@ -63,7 +65,7 @@ export default function () {
                                         className="font-bold text-sm text-left border border-darkblue-200 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-darkblue ring-1 ring-black ring-opacity-5 focus:outline-none">
                                         <div className="relative z-30 py-1">
                                             {
-                                                userStatus == UserType.AuthenticatedUser ?
+                                                userType == UserType.AuthenticatedUser ?
                                                     <>
                                                         <div className='font-light w-full text-left px-4 py-2 text-sm cursor-default flex items-center space-x-2'>
                                                             <UserIcon className="h-4 w-4" />
@@ -86,11 +88,21 @@ export default function () {
                                                                 Login
                                                             </Item>
                                                         </Menu.Item>
+                                                        <hr className="horizontal-gradient" />
+                                                        <Menu.Item>
+                                                            <Item type={ItemType.button} onClick={() => handleSetUrl("https://docs.layerswap.io/")} icon={<BookOpenIcon className='h-4 w-4' />} className="plausible-event-name=User+Docs">
+                                                                User Docs
+                                                            </Item>
+                                                        </Menu.Item>
+                                                        <Menu.Item>
+                                                            <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLinkIcon className='h-4 w-4' />}>
+                                                                Roadmap
+                                                            </Item>
+                                                        </Menu.Item>
                                                     </>
-
                                             }
                                             {
-                                                userStatus == UserType.AuthenticatedUser &&
+                                                userType == UserType.AuthenticatedUser &&
                                                 <>
                                                     {
                                                         router.pathname != '/' &&
@@ -122,15 +134,11 @@ export default function () {
                                                         </Item>
                                                     </Menu.Item>
                                                     <hr className="horizontal-gradient" />
-                                                    {
-                                                        email &&
-                                                        <Menu.Item>
-                                                            <Item type={ItemType.button} onClick={handleLogout} icon={<LogoutIcon className='h-4 w-4' />}>
-                                                                Sign Out
-                                                            </Item>
-                                                        </Menu.Item>
-                                                    }
-
+                                                    <Menu.Item>
+                                                        <Item type={ItemType.button} onClick={handleLogout} icon={<LogoutIcon className='h-4 w-4' />}>
+                                                            Sign Out
+                                                        </Item>
+                                                    </Menu.Item>
                                                 </>
                                             }
                                         </div>

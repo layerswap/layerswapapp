@@ -12,7 +12,7 @@ const Wizard: FC<Props> = ({ children }) => {
    const wrapper = useRef(null);
 
    const { setWrapperWidth } = useFormWizardaUpdate()
-   const { wrapperWidth, positionPercent, moving, goBack } = useFormWizardState()
+   const { wrapperWidth, positionPercent, moving, goBack, noToolBar, hideMenu } = useFormWizardState()
 
    useEffect(() => {
       function handleResize() {
@@ -28,17 +28,17 @@ const Wizard: FC<Props> = ({ children }) => {
 
    const width = positionPercent || 0
    return <>
-      <div className={`bg-darkblue md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
+      <div className={noToolBar ? `` : `bg-darkblue md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
          <div className="relative">
-            <div className="overflow-hidden h-1 flex rounded-t-lg bg-darkblue-500">
+            {!noToolBar && <div className="overflow-hidden h-1 flex rounded-t-lg bg-darkblue-500">
                <div style={{ width: `${width}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
-            </div>
+            </div>}
          </div>
-         <HeaderWithMenu goBack={goBack} />
+         {!hideMenu && <HeaderWithMenu goBack={goBack} />}
          <div className='text-center text-xl text-darkblue-50'>
 
          </div>
-         <div className="relative px-6 md:px-8">
+         <div className={noToolBar ? 'relative' : `relative px-6 md:px-8`}>
             <div className="flex items-start"
                ref={wrapper}>
                <AnimatePresence initial={false} custom={{ direction: moving === "forward" ? 1 : -1, width: wrapperWidth }}>

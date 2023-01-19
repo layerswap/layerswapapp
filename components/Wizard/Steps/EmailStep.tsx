@@ -2,12 +2,13 @@ import { FC } from 'react'
 import SendEmail from '../../SendEmail';
 
 type Props = {
-    OnNext: () => void
+    OnNext: () => void;
+    disclosureLogin?: boolean
 }
 
-const EmailStep: FC<Props> = ({ OnNext }) => {
+const EmailStep: FC<Props> = ({ OnNext, disclosureLogin }) => {
     return (
-        <SendEmail onSend={OnNext} />
+        <SendEmail disclosureLogin={disclosureLogin} onSend={OnNext} />
     )
 }
 
