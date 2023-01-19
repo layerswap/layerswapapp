@@ -9,6 +9,7 @@ export default class NetworkSettings {
     EstimatedTransferTime?: number;
     AddressPlaceholder?: string;
     Order?: number;
+    AccountExplorerTemplate?: string;
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
@@ -40,6 +41,7 @@ export default class NetworkSettings {
             UserGuideUrlForDesktop: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/loopring",
             ConfirmationWarningMessage: "If you're using the GameStop wallet, please navigate to Loopring.io and use it to transfer funds instead of the GameStop wallet itself",
             Order: 0,
+            AccountExplorerTemplate: 'https://explorer.loopring.io/account/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumRinkeby] = {
             ChainId: 421611,
@@ -47,12 +49,15 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncMainnet] = {
             ChainId: 25,
             Order: 1,
+            AccountExplorerTemplate: 'https://zkscan.io/explorer/accounts/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZkspaceMainnet] = {
             Order: 8,
+            AccountExplorerTemplate: 'https://zkspace.info/account/{0}'
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumGoerli] = {
             ChainId: 5,
+            AccountExplorerTemplate: 'https://goerli.etherscan.io/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.MoonbeamMainnet] = {
             ChainId: 1284,
@@ -63,11 +68,13 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumMainnet] = {
             ChainId: 42161,
             Order: 6,
+            AccountExplorerTemplate: 'https://arbiscan.io/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumNova] = {
             ChainId: 42170,
             Order: 9,
-        };
+            AccountExplorerTemplate: 'https://nova.arbiscan.io/address/{0}'
+,        };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismKovan] = {
             ChainId: 69,
         };
@@ -83,16 +90,19 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismMainnet] = {
             ChainId: 10,
             Order: 5,
+            AccountExplorerTemplate: 'https://optimistic.etherscan.io/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AstarMainnet] = {
             ChainId: 592,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumMainnet] = {
             ChainId: 1,
+            AccountExplorerTemplate: 'https://etherscan.io/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BobaMainnet] = {
             ChainId: 288,
             Order: 7,
+            AccountExplorerTemplate: 'https://blockexplorer.boba.network/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.RoninMainnet] = {
             ChainId: 2020,
@@ -102,13 +112,28 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ImmutableX] = {
             Order: 2,
+            AccountExplorerTemplate: 'https://immutascan.io/address/{0}',
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ImmutableXGoerli] = {
+            AccountExplorerTemplate: 'https://immutascan.io/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BNBChainMainnet] = {
             Order: 3,
+            AccountExplorerTemplate: 'https://bscscan.com/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
             Order: 4,
+            AccountExplorerTemplate: 'https://voyager.online/contract/{0}',
         };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
+            AccountExplorerTemplate: 'https://goerli.voyager.online/contract/{0}'
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.Cronos] = {
+            AccountExplorerTemplate: 'https://cronoscan.com/address/{0}'
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.RhinoFiMainnet] = {
+            AccountExplorerTemplate: 'https://app.rhino.fi/account/{0}'
+        }
 
         NetworkSettings.ImmutableXSettings = {
             [KnownInternalNames.Networks.ImmutableX]: {

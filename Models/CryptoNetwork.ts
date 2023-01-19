@@ -3,7 +3,6 @@ export class CryptoNetwork {
     display_name: string;
     internal_name: string;
     transaction_explorer_template: string;
-    account_explorer_template: string;
     status: "active" | "inactive" | string;
     currencies: NetworkCurrency[];
 }
