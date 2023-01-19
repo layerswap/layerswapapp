@@ -111,11 +111,10 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                         disclosureLogin ?
                             <div className='mt-2'>
                                 <div className="w-full text-left text-base font-light">
-                                    <div className='flex items-center justify-between'>
+                                    <div className='flex items-center justify-start'>
                                         <p className='text-xl text-white'>
                                             Sign in with email
                                         </p>
-                                        <MailOpenIcon className='h-6' />
                                     </div>
                                     <p className='mt-2 text-left'>
                                         Please enter the 6 digit code sent to <span className='font-medium text-white'>{tempEmail}</span>
