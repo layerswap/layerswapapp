@@ -18,11 +18,9 @@ type EmailFormValues = {
 type Props = {
     onSend: (email: string) => void;
     disclosureLogin?: boolean;
-    customHeader?: string;
-    customDescription?: string;
 }
 
-const SendEmail: FC<Props> = ({ onSend, disclosureLogin, customDescription, customHeader }) => {
+const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
     const { codeRequested, tempEmail } = useAuthState()
     const { setCodeRequested, updateTempEmail } = useAuthDataUpdate();
     const initialValues: EmailFormValues = { email: tempEmail ?? "" };

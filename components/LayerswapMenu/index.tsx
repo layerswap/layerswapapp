@@ -23,9 +23,11 @@ export default function () {
 
     const handleLogout = useCallback(() => {
         TokenService.removeAuthData()
-        router.push({
-            pathname: "/"
-        }, '/signedout', { shallow: true })
+        if (router.pathname != '/') {
+            router.push('/')
+        } else {
+            router.reload()
+        }
         setUserType(UserType.NotAuthenticatedUser)
     }, [router.query])
 

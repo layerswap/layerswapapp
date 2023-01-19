@@ -50,7 +50,7 @@ export enum SwapWithdrawalStep {
 
 export enum AuthStep {
     Email = "Email",
-    Code = "CodeInner"
+    Code = "Code"
 }
 
 export type Steps = AuthStep | SwapWithdrawalStep | SwapCreateStep
