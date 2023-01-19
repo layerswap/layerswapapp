@@ -10,7 +10,7 @@ import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
 import { SwapCreateStep } from "../../../../Models/Wizard";
 import axios from "axios";
 import ConnectImmutableX from "../ConnectImmutableX";
-import ConnectRhinofi from "../../../ConnectRhinofi";
+import ConnectNetwork from "../../../ConnectNetwork";
 import toast from "react-hot-toast";
 import { clearTempData, getTempData } from "../../../../lib/openLink";
 import KnownInternalNames from "../../../../lib/knownIds";
@@ -22,16 +22,19 @@ import SwapForm from "./SwapForm";
 import { isValidAddress } from "../../../../lib/addressValidator";
 import NetworkSettings from "../../../../lib/NetworkSettings";
 import { useRouter } from "next/router";
-import SpinIcon from "../../../icons/spinIcon";
 
 type Props = {
     OnSumbit: (values: SwapFormValues) => Promise<void>
 }
-
+type NetworkToConnect = {
+    DisplayName: string;
+    AppURL: string;
+}
 const MainStep: FC<Props> = ({ OnSumbit }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
-    const [connectRhinoifiIsOpen, setConnectRhinofiIsOpen] = useState(false);
+    const [connectNetworkiIsOpen, setConnectNetworkIsOpen] = useState(false);
+    const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const { swapFormData } = useSwapDataState()
     const router = useRouter();
     const [loading, setLoading] = useState(true);
@@ -95,7 +98,16 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                     const client = await axios.get(`${NetworkSettings.RhinoFiSettings[internalName].apiUri}/${values.destination_address}`)
                     const isRegistered = await client.data?.isRegisteredOnDeversifi
                     if (!isRegistered) {
-                        setConnectRhinofiIsOpen(true);
+                        setNetworkToConnect({ DisplayName: values.network.baseObject.display_name, AppURL: NetworkSettings.RhinoFiSettings[internalName].appUri })
+                        setConnectNetworkIsOpen(true);
+                        return
+                    }
+                } else if (internalName == KnownInternalNames.Networks.DydxMainnet || internalName == KnownInternalNames.Networks.DydxGoerli) {
+                    const client = await axios.get(`${NetworkSettings.DydxSettings[internalName].apiUri}${values.destination_address}`)
+                    const isRegistered = await client.data?.exists
+                    if (!isRegistered) {
+                        setNetworkToConnect({ DisplayName: values.network.baseObject.display_name, AppURL: NetworkSettings.DydxSettings[internalName].appUri })
+                        setConnectNetworkIsOpen(true);
                         return
                     }
                 }
@@ -130,8 +142,8 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
             {(close) => <ConnectImmutableX network={formValues?.network?.baseObject} onClose={close} />}
         </SlideOver>
-        <SlideOver imperativeOpener={[connectRhinoifiIsOpen, setConnectRhinofiIsOpen]} place='inStep'>
-            {() => <ConnectRhinofi />}
+        <SlideOver imperativeOpener={[connectNetworkiIsOpen, setConnectNetworkIsOpen]} place='inStep'>
+            {() => <ConnectNetwork NetworkDisplayName={networkToConnect.DisplayName} AppURL={networkToConnect.AppURL} />}
         </SlideOver>
         <Formik
             innerRef={formikRef}

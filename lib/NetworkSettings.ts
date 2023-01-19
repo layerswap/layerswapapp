@@ -1,5 +1,13 @@
 import KnownInternalNames from "./knownIds";
 
+
+type NetworkItemSettings = {
+    [network: string]: {
+        apiUri: string,
+        appUri?: string,
+        linkUri?: string
+    }
+}
 export default class NetworkSettings {
     ConfirmationWarningMessage?: string;
     UserGuideUrlForDesktop?: string;
@@ -13,19 +21,11 @@ export default class NetworkSettings {
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
 
-    public static ImmutableXSettings: {
-        [network: string]: {
-            linkUri: string,
-            apiUri: string
-        }
-    }
+    public static ImmutableXSettings: NetworkItemSettings
 
-    public static RhinoFiSettings: {
-        [network: string]: {
-            apiUri: string,
-            appUri: string
-        }
-    }
+    public static RhinoFiSettings: NetworkItemSettings
+
+    public static DydxSettings: NetworkItemSettings
 
     private static _isInitialized = false;
     public static Initialize() {
@@ -124,6 +124,17 @@ export default class NetworkSettings {
             [KnownInternalNames.Networks.RhinoFiMainnet]: {
                 apiUri: "https://api.deversifi.com/v1/trading/registrations/",
                 appUri: "https://app.rhinofi.com/",
+            }
+        }
+
+        NetworkSettings.DydxSettings = {
+            [KnownInternalNames.Networks.DydxMainnet]: {
+                apiUri: "https://api.dydx.exchange/v3/users/exists?ethereumAddress=",
+                appUri: "https://trade.dydx.exchange/",
+            },
+            [KnownInternalNames.Networks.DydxGoerli]: {
+                apiUri: "https://api.stage.dydx.exchange/v3/users/exists?ethereumAddress=",
+                appUri: "https://trade.stage.dydx.exchange/",
             }
         }
     }
