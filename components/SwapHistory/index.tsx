@@ -25,6 +25,7 @@ import { GetSourceDestinationData } from "../../helpers/swapHelper";
 import useSortableData from "../../hooks/useSortableData";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import isGuid from "../utils/isGuid";
+import NetworkSettings from "../../lib/NetworkSettings";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -199,9 +200,6 @@ function TransactionsHistory() {
 
                             const { destination, destination_network, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
-                            //TODO implement transaction_explorer_template in exchange & network settings
-                            // const { transaction_explorer_template } = swapNetwork
-
                             return <tr onClick={() => handleOpenSwapDetailsInMobile(swap)} key={swap.id}>
                               <td
                                 className={classNames(
@@ -314,7 +312,7 @@ function TransactionsHistory() {
                                 {(swap?.output_transaction?.transaction_id && !isGuid(swap?.output_transaction?.transaction_id)) ?
                                   <>
                                     <div className="underline hover:no-underline">
-                                      <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                                      <a target={"_blank"} href={NetworkSettings.KnownSettings[destination_network.internal_name].TransactionExplorerTemplate?.replace("{0}", swap.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
                                     </div>
                                   </>
                                   : <div>-</div>
@@ -381,17 +379,6 @@ function TransactionsHistory() {
                   <Modal showModal={openSwapDetailsModal} setShowModal={setOpenSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} modalSize='medium'>
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
-                      {
-                        // settings.networks && selectedSwap?.transaction_id && selectedSwap.type == SwapType.OnRamp && selectedSwap?.status == SwapStatus.Completed &&
-                        // <div className="text-white text-sm mt-6">
-                        //   <a href={networks?.find(n => n.currencies.some(nc => nc.id === selectedSwap?.network_currency_id)).transaction_explorer_template.replace("{0}", selectedSwap?.transaction_id)}
-                        //     target="_blank"
-                        //     className="shadowed-button cursor-pointer group text-white disabled:text-white-alpha-100 disabled:bg-primary-800 disabled:cursor-not-allowed bg-primary relative w-full flex justify-center py-3 px-4 border-0 font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
-                        //     View in Explorer
-                        //     <ExternalLinkIcon className='ml-2 h-5 w-5' />
-                        //   </a>
-                        // </div>
-                      }
                       {
                         canCompleteCancelSwap &&
                         <div className="text-white text-sm mt-6 space-y-3">

@@ -1,11 +1,10 @@
-import { ArrowRightIcon, ExternalLinkIcon } from '@heroicons/react/outline';
+import { ExternalLinkIcon } from '@heroicons/react/outline';
 import { HomeIcon } from '@heroicons/react/solid';
 import { FC, useCallback } from 'react'
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
 import { GetSourceDestinationData } from '../../../helpers/swapHelper';
-import { SwapType } from '../../../lib/layerSwapApiClient';
-import { CryptoNetwork } from '../../../Models/CryptoNetwork';
+import NetworkSettings from '../../../lib/NetworkSettings';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
@@ -13,11 +12,8 @@ import GoHomeButton from '../../utils/GoHome';
 const SuccessfulStep: FC = () => {
     const { networks, currencies, exchanges, discovery: { resource_storage_url } } = useSettingsState()
     const { swap } = useSwapDataState()
-
     const { destination_network  } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
-
-
-    const transaction_explorer_template = destination_network?.transaction_explorer_template
+    const transaction_explorer_template = NetworkSettings.KnownSettings[destination_network.internal_name].TransactionExplorerTemplate
 
     const handleViewInExplorer = useCallback(() => {
         if (!transaction_explorer_template)

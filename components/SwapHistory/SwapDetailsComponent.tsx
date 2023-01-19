@@ -11,6 +11,7 @@ import StatusIcon from './StatusIcons';
 import { GetSourceDestinationData } from '../../helpers/swapHelper';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import isGuid from '../utils/isGuid';
+import NetworkSettings from '../../lib/NetworkSettings';
 
 type Props = {
     id: string
@@ -135,7 +136,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <span className="text-white">
                                         <div className='inline-flex items-center'>
                                             <div className="underline hover:no-underline flex items-center space-x-1">
-                                                <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                                                <a target={"_blank"} href={NetworkSettings.KnownSettings[destination_network.internal_name].TransactionExplorerTemplate?.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
                                                 <ExternalLinkIcon className='h-4' />
                                             </div>
                                         </div>
