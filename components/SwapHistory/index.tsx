@@ -108,7 +108,7 @@ function TransactionsHistory() {
   };
 
   return (
-    <div className='bg-darkblue px-8 md:px-12 md:mb-12 md:shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative h-full '>
+    <div className='bg-darkblue px-8 md:px-12 md:shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative h-full '>
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="flex ">
           <button onClick={handleGoBack} className="self-start md:mt-2">

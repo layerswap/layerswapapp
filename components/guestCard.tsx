@@ -31,8 +31,9 @@ function GuestCard() {
                 <WizardItem StepName={AuthStep.Code} GoBack={GoBackToEmailStep} fitHeight>
                     <div className={noToolBar ? `p-6 border border-darkblue-400 rounded-md` : "pt-6"}>
                         {goBack &&
-                            <button onClick={goBack} className="justify-self-start" style={{ visibility: false ? 'hidden' : 'visible' }}>
-                                <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+                            <button onClick={goBack} className="justify-self-start text-xs text-primary-text flex items-center hover:text-primary-text/70 cursor-pointer space-x-1" style={{ visibility: false ? 'hidden' : 'visible' }}>
+                                <ArrowLeftIcon className='h-3' /> 
+                                <span>Edit email</span>
                             </button>
                         }
                         <CodeStep OnNext={CodeOnNext} disclosureLogin />

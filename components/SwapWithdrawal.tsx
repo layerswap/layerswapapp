@@ -5,8 +5,8 @@ import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import KnownInternalNames from "../lib/knownIds";
 import { SwapStatus } from "../Models/SwapStatus";
 import { SwapWithdrawalStep } from "../Models/Wizard";
+import SwapWithdrawalWrapper from "./SwapWithdrawalWrapper";
 import { GetSwapStatusStep } from "./utils/SwapStatus";
-import SwapWithdrawalWizard from "./Wizard/SwapWithdrawalWizard";
 
 const SwapWithdrawal: FC = () => {
     const { swap } = useSwapDataState()
@@ -36,7 +36,7 @@ const SwapWithdrawal: FC = () => {
 
     return (
         <FormWizardProvider initialStep={initialStep} initialLoading={true} key={key}>
-            <SwapWithdrawalWizard />
+            <SwapWithdrawalWrapper />
         </FormWizardProvider>
     )
 };

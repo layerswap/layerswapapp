@@ -6,6 +6,7 @@ import { InferGetServerSidePropsType } from 'next'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { SwapDataProvider } from '../context/swap'
 import TransactionsHistory from '../components/SwapHistory'
+import TransfersWrapper from '../components/SwapHistory/TransfersWrapper'
 
 export default function Transactions({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
@@ -15,7 +16,7 @@ export default function Transactions({ settings }: InferGetServerSidePropsType<t
         <SettingsProvider data={settings}>
           <MenuProvider>
             <SwapDataProvider >
-              <TransactionsHistory />
+              <TransfersWrapper />
             </SwapDataProvider >
           </MenuProvider>
         </SettingsProvider>
