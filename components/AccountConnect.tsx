@@ -18,6 +18,7 @@ import ExchangeSettings from "../lib/ExchangeSettings";
 import KnownInternalNames from "../lib/knownIds";
 import GoHomeButton from "./utils/GoHome";
 import ClickTooltip from "./Tooltips/ClickTooltip";
+import ConnectOauthExchange from "./connectOauthExchange";
 
 interface UserExchange extends Exchange {
     note?: string,
@@ -230,7 +231,11 @@ function UserExchanges() {
                     </div>
                 </div>
             </div>
-            <Modal showModal={openExchangeToConnectModal} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
+            {/* authorization_flow issue */}
+            <Modal showModal={openExchangeToConnectModal && exchangeToConnect?.internal_name === KnownInternalNames.Exchanges.Coinbase} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
+                <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
+            </Modal>
+            <Modal showModal={openExchangeToConnectModal && exchangeToConnect?.internal_name != KnownInternalNames.Exchanges.Coinbase} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
                 <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' stickyFooter={false} />
             </Modal>
             <Modal showModal={openExchangeToDisconnectModal} setShowModal={setOpenExchangeToDisconnectModal} title={'Are you sure?'} modalSize='small'>
