@@ -1,6 +1,7 @@
 import { ArrowLeftIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/router';
 import { useCallback } from 'react';
+import { toast } from 'react-hot-toast';
 import { useFormWizardaUpdate, useFormWizardState } from '../context/formWizardProvider';
 import { AuthStep } from '../Models/Wizard';
 import CodeStep from './Wizard/Steps/CodeStep';
@@ -15,7 +16,7 @@ function GuestCard() {
     const { redirect } = router.query;
 
     const CodeOnNext = useCallback(async () => {
-        await router.push(redirect?.toString() || '/')
+        toast.success("You are successfully logged in.")
     }, [redirect]);
     const GoBackToEmailStep = useCallback(() => goToStep(AuthStep.Email, "back"), [])
     const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
@@ -32,7 +33,7 @@ function GuestCard() {
                     <div className={noToolBar ? `p-6 border border-darkblue-400 rounded-md` : "pt-6"}>
                         {goBack &&
                             <button onClick={goBack} className="justify-self-start text-xs text-primary-text flex items-center hover:text-primary-text/70 cursor-pointer space-x-1" style={{ visibility: false ? 'hidden' : 'visible' }}>
-                                <ArrowLeftIcon className='h-3' /> 
+                                <ArrowLeftIcon className='h-3' />
                                 <span>Edit email</span>
                             </button>
                         }
