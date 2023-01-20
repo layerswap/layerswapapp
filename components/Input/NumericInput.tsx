@@ -29,11 +29,11 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         return <>
             {label &&
-                <label htmlFor={name} className="block font-normal text-primary-text text-sm">
+                <label htmlFor={name} className="block font-normal text-primary-text text-sm mb-1.5">
                     {label}
                 </label>
             }
-            <div className="flex rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border ">
+            <div className="flex rounded-lg shadow-sm bg-darkblue-700 border-darkblue-500 border ">
                 <input
                     {...field}
                     pattern={pattern ? pattern : "^[0-9]*[.,]?[0-9]*$"}
