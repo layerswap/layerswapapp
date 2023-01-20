@@ -40,6 +40,7 @@ const useCreateSwap = () => {
                 }
                 catch (error) {
                     toast.error(error.response?.data?.error || error.message)
+                    return;
                 }
             }
             const layerswapApiClient = new LayerswapApiClient(router);
