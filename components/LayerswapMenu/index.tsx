@@ -94,7 +94,7 @@ export default function () {
                                                             userType == UserType.GuestUser &&
                                                             <Menu.Item>
                                                                 <Item type={ItemType.link} pathname={"/transactions"} icon={<TableIcon className='h-4 w-4' />}>
-                                                                    Swap History
+                                                                    Transfers
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
@@ -124,7 +124,7 @@ export default function () {
                                                     }
                                                     <Menu.Item>
                                                         <Item type={ItemType.link} pathname={"/transactions"} icon={<TableIcon className='h-4 w-4' />}>
-                                                            Swap History
+                                                            Transfers
                                                         </Item>
                                                     </Menu.Item>
                                                     <Menu.Item>
