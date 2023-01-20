@@ -30,7 +30,7 @@ const Swap: FC = () => {
                 <CreateSwap />
               </FormWizardProvider>
               {
-                userType != UserType.AuthenticatedUser &&
+                userType && userType != UserType.AuthenticatedUser &&
                 <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu>
                   <GuestCard />
                 </FormWizardProvider>

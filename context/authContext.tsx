@@ -34,12 +34,15 @@ export function AuthProvider({ children }) {
     const [userId, setUserId] = useState<string>()
     const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
     const [userLockedOut, setUserLockedOut] = React.useState<boolean>(false)
-    const [userType, setUserType] = React.useState<UserType>(UserType.NotAuthenticatedUser)
+
+    const [userType, setUserType] = React.useState<UserType>()
 
     const updateDataFromLocalStorage = () => {
         const authData = TokenService.getAuthData()
-        if (!authData || !authData.access_token)
+        if (!authData || !authData.access_token){
+            setUserType(UserType.NotAuthenticatedUser)
             return
+        }
         const { email, sub, utype } = parseJwt(authData.access_token)
         if (authData && (utype == UserType.AuthenticatedUser || !utype)) {
             setUserType(UserType.AuthenticatedUser)

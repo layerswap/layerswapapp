@@ -14,7 +14,7 @@ const SwapWithdrawalWrapper: FC = () => {
         <>
             <SwapWithdrawalWizard />
             {
-                currentStepName != SwapWithdrawalStep.Success && userType != UserType.AuthenticatedUser &&
+                currentStepName != SwapWithdrawalStep.Success && userType && userType != UserType.AuthenticatedUser &&
                 <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu>
                     <TimerProvider>
                         <GuestCard />
