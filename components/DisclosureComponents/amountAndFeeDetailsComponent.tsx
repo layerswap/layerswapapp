@@ -1,11 +1,11 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
-import HoverTooltip from '../Tooltips/HoverTooltip';
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
 import { SwapType } from '../../lib/layerSwapApiClient';
 import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
+import ClickTooltip from '../Tooltips/ClickTooltip';
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
@@ -70,7 +70,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         <div className="mt-2 flex flex-row justify-between">
                                             <label className="flex items-center text-left grow">
                                                 Exchange Fee
-                                                <HoverTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." moreClassNames='w-36' />
+                                                <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                             </label>
                                             <span className="text-right">
                                                 {parseFloat(exchangeFee.toFixed(currency?.baseObject?.precision))} {currency?.baseObject?.asset}
