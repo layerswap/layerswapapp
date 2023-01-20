@@ -11,6 +11,7 @@ import StatusIcon from './StatusIcons';
 import { GetSourceDestinationData } from '../../helpers/swapHelper';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import isGuid from '../utils/isGuid';
+import KnownInternalNames from '../../lib/knownIds';
 
 type Props = {
     id: string
@@ -127,7 +128,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 </div>
                             </span>
                         </div>
-                        {(swap?.output_transaction?.transaction_id && !isGuid(swap?.output_transaction?.transaction_id)) &&
+                        {(swap?.output_transaction?.transaction_id && (!isGuid(swap?.output_transaction?.transaction_id)) && swap?.destination_exchange != KnownInternalNames.Exchanges.Coinbase) &&
                             <>
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
