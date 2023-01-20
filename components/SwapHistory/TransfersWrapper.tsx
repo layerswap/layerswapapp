@@ -13,7 +13,7 @@ const TransfersWrapper: FC = () => {
         <div className="md:mb-12">
             <TransactionsHistory />
             {
-                userType != UserType.AuthenticatedUser &&
+                userType && userType != UserType.AuthenticatedUser &&
                 <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu>
                     <TimerProvider>
                         <GuestCard />

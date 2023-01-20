@@ -44,7 +44,7 @@ const SuccessfulStep: FC = () => {
                         }
                     </MessageComponent.Description>
                     {
-                        userType != UserType.AuthenticatedUser &&
+                        userType && userType != UserType.AuthenticatedUser &&
                         <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} noToolBar hideMenu>
                             <GuestCard />
                         </FormWizardProvider>

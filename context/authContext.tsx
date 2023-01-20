@@ -29,17 +29,20 @@ export function AuthProvider({ children }) {
 
     const [email, setEmail] = React.useState<string | undefined>()
     const [tempEmail, setTempEmail] = React.useState<string | undefined>()
-    const [authData, setAuthData] = React.useState<AuthData>({})
+    const [authData, setAuthData] = React.useState<AuthData>(TokenService.getAuthData())
     const [guestAuthData, setGuestAuthData] = React.useState<AuthData>({})
     const [userId, setUserId] = useState<string>()
     const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
     const [userLockedOut, setUserLockedOut] = React.useState<boolean>(false)
-    const [userType, setUserType] = React.useState<UserType>(UserType.NotAuthenticatedUser)
+
+    const [userType, setUserType] = React.useState<UserType>()
 
     const updateDataFromLocalStorage = () => {
         const authData = TokenService.getAuthData()
-        if (!authData || !authData.access_token)
+        if (!authData || !authData.access_token){
+            setUserType(UserType.NotAuthenticatedUser)
             return
+        }
         const { email, sub, utype } = parseJwt(authData.access_token)
         if (authData && (utype == UserType.AuthenticatedUser || !utype)) {
             setUserType(UserType.AuthenticatedUser)
