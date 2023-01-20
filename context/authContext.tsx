@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
 
     const [email, setEmail] = React.useState<string | undefined>()
     const [tempEmail, setTempEmail] = React.useState<string | undefined>()
-    const [authData, setAuthData] = React.useState<AuthData>(TokenService.getAuthData())
+    const [authData, setAuthData] = React.useState<AuthData>({})
     const [guestAuthData, setGuestAuthData] = React.useState<AuthData>({})
     const [userId, setUserId] = useState<string>()
     const [codeRequested, setCodeRequested] = React.useState<boolean>(false)
