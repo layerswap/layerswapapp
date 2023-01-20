@@ -1,21 +1,24 @@
-import { ArrowRightIcon, ExternalLinkIcon } from '@heroicons/react/outline';
+import { ExternalLinkIcon } from '@heroicons/react/outline';
 import { HomeIcon } from '@heroicons/react/solid';
 import { FC, useCallback } from 'react'
+import { useAuthState, UserType } from '../../../context/authContext';
+import { FormWizardProvider, useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
 import { GetSourceDestinationData } from '../../../helpers/swapHelper';
-import { SwapType } from '../../../lib/layerSwapApiClient';
-import { CryptoNetwork } from '../../../Models/CryptoNetwork';
+import { AuthStep } from '../../../Models/Wizard';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
+import GuestCard from '../../guestCard';
 import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
 
 const SuccessfulStep: FC = () => {
     const { networks, currencies, exchanges, discovery: { resource_storage_url } } = useSettingsState()
     const { swap } = useSwapDataState()
-
-    const { destination_network  } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
-
+    const { destination_network } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+    const { userType } = useAuthState()
+    const { goToStep } = useFormWizardaUpdate()
+    const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
 
     const transaction_explorer_template = destination_network?.transaction_explorer_template
 
@@ -40,6 +43,12 @@ const SuccessfulStep: FC = () => {
                                 <span>Your swap was successfully completed. Your assets are on their way to your exchange account.</span>
                         }
                     </MessageComponent.Description>
+                    {
+                        userType != UserType.AuthenticatedUser &&
+                        <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} noToolBar hideMenu>
+                            <GuestCard />
+                        </FormWizardProvider>
+                    }
                 </MessageComponent.Content>
                 <MessageComponent.Buttons>
                     <div className="flex flex-row text-white text-base space-x-2">

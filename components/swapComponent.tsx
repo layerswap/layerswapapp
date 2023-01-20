@@ -5,14 +5,17 @@ import { UserExchangeProvider } from '../context/userExchange';
 import { MenuProvider } from '../context/menu';
 import IntroCard from './introCard';
 import CreateSwap from './Wizard/CreateSwapWizard';
-import { SwapCreateStep } from '../Models/Wizard';
+import { AuthStep, SwapCreateStep } from '../Models/Wizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
 import inIframe from './utils/inIframe';
+import { useAuthState, UserType } from '../context/authContext';
+import GuestCard from './guestCard';
+import { TimerProvider } from '../context/timerContext';
 
 
 const Swap: FC = () => {
   const [embadded, setEmbadded] = useState<boolean>()
-
+  const { userType } = useAuthState()
   useEffect(() => {
     setEmbadded(inIframe())
   }, [])
@@ -22,9 +25,17 @@ const Swap: FC = () => {
       <MenuProvider>
         <SwapDataProvider >
           <UserExchangeProvider>
-            <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={false}>
-              <CreateSwap />
-            </FormWizardProvider>
+            <TimerProvider>
+              <FormWizardProvider initialStep={SwapCreateStep.MainForm} initialLoading={false}>
+                <CreateSwap />
+              </FormWizardProvider>
+              {
+                userType != UserType.AuthenticatedUser &&
+                <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu>
+                  <GuestCard />
+                </FormWizardProvider>
+              }
+            </TimerProvider>
           </UserExchangeProvider>
         </SwapDataProvider >
       </MenuProvider>

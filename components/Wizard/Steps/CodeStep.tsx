@@ -4,16 +4,17 @@ import VerifyEmailCode from '../../VerifyEmailCode';
 
 type Props = {
     OnNext: (res: AuthConnectResponse) => Promise<void>
+    disclosureLogin?: boolean
 }
 
-const CodeStep: FC<Props> = ({ OnNext }) => {
+const CodeStep: FC<Props> = ({ OnNext, disclosureLogin }) => {
 
     const onSuccessfullVerifyHandler = useCallback(async (res: AuthConnectResponse) => {
         await OnNext(res)
     }, [OnNext]);
 
     return (
-        <VerifyEmailCode onSuccessfullVerify={onSuccessfullVerifyHandler} />
+        <VerifyEmailCode onSuccessfullVerify={onSuccessfullVerifyHandler} disclosureLogin={disclosureLogin} />
     )
 }
 

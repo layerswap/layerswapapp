@@ -7,7 +7,7 @@ import SwapDetails from "./SwapDetailsComponent"
 import LayerswapMenu from "../LayerswapMenu"
 import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
-import { useAuthState } from "../../context/authContext"
+import { useAuthState, UserType } from "../../context/authContext"
 import shortenAddress from "../utils/ShortenAddress"
 import { classNames } from "../utils/classNames"
 import SubmitButton, { DoubleLineText } from "../buttons/submitButton"
@@ -36,7 +36,7 @@ function TransactionsHistory() {
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
-  const { email } = useAuthState()
+  const { email, userType } = useAuthState()
   const { cancelSwap } = useSwapDataUpdate()
   const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending
   const { width } = useWindowDimensions()
@@ -108,16 +108,17 @@ function TransactionsHistory() {
   };
 
   return (
-    <div className='bg-darkblue px-8 md:px-12 md:mb-12 md:shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative h-full '>
+    <div className='bg-darkblue px-8 md:px-12 md:shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative h-full '>
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="flex ">
           <button onClick={handleGoBack} className="self-start md:mt-2">
             <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
           </button>
-          <div className="hidden md:block ml-4">
-            <p className="text-2xl font-bold relative">Account</p>
-            <span className="text-primary-text font-medium absolute">{email}</span>
-          </div>
+          {userType == UserType.AuthenticatedUser &&
+            <div className="hidden md:block ml-4">
+              <p className="text-2xl font-bold relative">Account</p>
+              <span className="text-primary-text font-medium absolute">{email}</span>
+            </div>}
         </div>
 
         <div className='mx-auto px-4 overflow-hidden md:hidden'>

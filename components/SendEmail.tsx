@@ -1,3 +1,5 @@
+import { Disclosure } from '@headlessui/react';
+import { ChevronDownIcon } from '@heroicons/react/outline';
 import { UserIcon } from '@heroicons/react/solid';
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback } from 'react'
@@ -14,9 +16,11 @@ type EmailFormValues = {
 }
 
 type Props = {
-    onSend: (email: string) => void
+    onSend: (email: string) => void;
+    disclosureLogin?: boolean;
 }
-const SendEmail: FC<Props> = ({ onSend }) => {
+
+const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
     const { codeRequested, tempEmail } = useAuthState()
     const { setCodeRequested, updateTempEmail } = useAuthDataUpdate();
     const initialValues: EmailFormValues = { email: tempEmail ?? "" };
@@ -70,39 +74,91 @@ const SendEmail: FC<Props> = ({ onSend }) => {
             >
                 {({ isValid, isSubmitting }) => (
                     <Form autoComplete='true' className='w-full h-full'>
-                        <Widget>
-                            <Widget.Content center={true}>
-                                <UserIcon className='w-16 h-16 text-primary self-center mt-auto' />
+                        {
+                            disclosureLogin ?
                                 <div>
-                                    <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
-                                        What's your email?
-                                    </p>
-                                    <p className='text-center text-base mb-6 px-2 text-primary-text'>
-                                        With your email, your exchange credentials will stay linked to your account and you can access your entire transfer history.
-                                    </p>
-                                </div>
-                                <div className="relative rounded-md shadow-sm">
-                                    <Field name="email">
-                                        {({ field }) => (
-                                            <input
-                                                {...field}
-                                                id='email'
-                                                placeholder="john@example.com"
-                                                autoComplete="email"
-                                                type="email"
-                                                className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-500 pr-42 block
+                                    <Disclosure>
+                                        {({ open }) => (
+                                            <>
+                                                <Disclosure.Button className="w-full text-left text-base font-light">
+                                                    <div className='flex items-center justify-between'>
+                                                        <p className='text-xl text-white'>
+                                                            Sign in with email
+                                                        </p>
+                                                        <div className='bg-darkblue-500 hover:bg-darkblue-400 p-0.5 rounded-md duration-200 transition'>
+                                                            <ChevronDownIcon
+                                                                className={`${open ? 'rotate-180 transform' : ''
+                                                                    } h-5 text-primary-text`}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <p className='mt-2 text-left text-primary-text'>
+                                                        Securely store your exchange accounts, access your full transfer history and more.
+                                                    </p>
+                                                </Disclosure.Button>
+                                                <Disclosure.Panel className="text-sm text-primary-text font-normal mt-4">
+                                                    <div className='grid gap-4 grid-cols-5  items-center'>
+                                                        <div className="relative rounded-md shadow-sm col-span-3">
+                                                            <Field name="email">
+                                                                {({ field }) => (
+                                                                    <input
+                                                                        {...field}
+                                                                        id='email'
+                                                                        placeholder="john@example.com"
+                                                                        autoComplete="email"
+                                                                        type="email"
+                                                                        className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-500 pr-42 block
                                                    placeholder:text-primary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md"
-                                            />
+                                                                    />
+                                                                )}
+                                                            </Field>
+                                                        </div>
+                                                        <div className='col-start-4 col-span-2'>
+                                                            <SubmitButton isDisabled={!isValid} isSubmitting={isSubmitting} >
+                                                                Continue
+                                                            </SubmitButton>
+                                                        </div>
+                                                    </div>
+                                                </Disclosure.Panel>
+                                            </>
                                         )}
-                                    </Field>
+                                    </Disclosure>
                                 </div>
-                            </Widget.Content>
-                            <Widget.Footer>
-                                <SubmitButton isDisabled={!isValid} isSubmitting={isSubmitting} >
-                                    Continue
-                                </SubmitButton>
-                            </Widget.Footer>
-                        </Widget>
+                                :
+                                <Widget>
+                                    <Widget.Content center={true}>
+                                        <UserIcon className='w-16 h-16 text-primary self-center mt-auto' />
+                                        <div>
+                                            <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
+                                                What's your email?
+                                            </p>
+                                            <p className='text-center text-base mb-6 px-2 text-primary-text'>
+                                                With your email, your exchange credentials will stay linked to your account and you can access your entire transfer history.
+                                            </p>
+                                        </div>
+                                        <div className="relative rounded-md shadow-sm">
+                                            <Field name="email">
+                                                {({ field }) => (
+                                                    <input
+                                                        {...field}
+                                                        id='email'
+                                                        placeholder="john@example.com"
+                                                        autoComplete="email"
+                                                        type="email"
+                                                        className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-500 pr-42 block
+                                                   placeholder:text-primary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md"
+                                                    />
+                                                )}
+                                            </Field>
+                                        </div>
+                                    </Widget.Content>
+                                    <Widget.Footer>
+                                        <SubmitButton isDisabled={!isValid} isSubmitting={isSubmitting} >
+                                            Continue
+                                        </SubmitButton>
+                                    </Widget.Footer>
+                                </Widget>
+                        }
                     </Form>
                 )}
             </Formik >
