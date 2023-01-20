@@ -10,10 +10,8 @@ import SendFeedback from "./sendFeedback"
 const navigation = {
   main: [
     { name: 'For Partners', href: '/forpartners', target: '_self' },
-  ],
-  iframe: [
-    { name: 'Privacy Policy', href: 'https://docs.layerswap.io/user-docs/information/privacy-policy' },
-    { name: 'Terms of Service', href: 'https://docs.layerswap.io/user-docs/information/terms-of-services' },
+    { name: 'Privacy Policy', href: 'https://docs.layerswap.io/user-docs/information/privacy-policy', target: '_blank' },
+    { name: 'Terms of Service', href: 'https://docs.layerswap.io/user-docs/information/terms-of-services' , target: '_blank'},
   ],
   social: [
     {
@@ -60,11 +58,6 @@ export default function FooterComponent() {
           <button onClick={() => setOpenFeedbackModal(true)} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 transition-all duration-200">
             Send Feedback
           </button>
-          {navigation.iframe.map((item) => (
-            <button key={item.name} onClick={() => setModalUrl(item.href)} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 transition-all duration-200">
-              {item.name}
-            </button>
-          ))}
           <Modal className="bg-[#181c1f] sm:!pb-6 !pb-0" showModal={modalUrl != null} setShowModal={() => setModalUrl(null)} >
             <DocIframe URl={modalUrl} className='md:min-h-[calc(100vh-170px)]' />
           </Modal>
