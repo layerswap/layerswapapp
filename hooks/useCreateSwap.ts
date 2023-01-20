@@ -31,47 +31,40 @@ const useCreateSwap = () => {
         positionPercent: 0,
         onNext: useCallback(async (values: SwapFormValues) => {
             const accessToken = TokenService.getAuthData()?.access_token
-            if (!accessToken)
+            if (!accessToken) {
                 try {
                     var apiClient = new LayerSwapAuthApiClient();
                     const res = await apiClient.guestConnectAsync()
                     updateAuthData(res)
                     setUserType(UserType.GuestUser)
-                    goToStep(SwapCreateStep.Confirm)
                 }
                 catch (error) {
-                    if (error.response?.data?.errors?.length > 0) {
-                        const message = error.response.data.errors.map(e => e.message).join(", ")
-                        toast.error(message)
-                    }
-                    else {
-                        toast.error(error.message)
-                    }
+                    toast.error(error.response?.data?.error || error.message)
+                    return;
                 }
-            else {
-                const layerswapApiClient = new LayerswapApiClient(router);
-                const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
-                const hasSourcePendingSwaps = allPendingSwaps?.data?.some(s => s.source_network_asset?.toLocaleLowerCase() === values.currency?.baseObject?.asset?.toLowerCase() && swap?.id !== s.id)
-                if (hasSourcePendingSwaps) {
-                    return goToStep(SwapCreateStep.PendingSwaps)
-                }
-                else if (values.swapType === SwapType.OnRamp && values?.exchange?.baseObject?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
-                    const layerswapApiClient = new LayerSwapApiClient(router)
-                    try {
-                        const res = await layerswapApiClient.GetExchangeAccount(values?.exchange?.baseObject.internal_name, 1)
-                        if (!res?.data) {
-                            return goToStep(SwapCreateStep.AuthorizeCoinbaseWithdrawal)
-                        }
-                    }
-                    catch (e) {
-                        if (e?.response?.data?.error?.code === KnownwErrorCode.NOT_FOUND)
-                            return goToStep(SwapCreateStep.AuthorizeCoinbaseWithdrawal)
-                        else
-                            toast(e?.response?.data?.error?.message || e.message)
-                    }
-                }
-                return goToStep(SwapCreateStep.Confirm)
             }
+            const layerswapApiClient = new LayerswapApiClient(router);
+            const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
+            const hasSourcePendingSwaps = allPendingSwaps?.data?.some(s => s.source_network_asset?.toLocaleLowerCase() === values.currency?.baseObject?.asset?.toLowerCase() && swap?.id !== s.id)
+            if (hasSourcePendingSwaps) {
+                return goToStep(SwapCreateStep.PendingSwaps)
+            }
+            else if (values.swapType === SwapType.OnRamp && values?.exchange?.baseObject?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
+                const layerswapApiClient = new LayerSwapApiClient(router)
+                try {
+                    const res = await layerswapApiClient.GetExchangeAccount(values?.exchange?.baseObject.internal_name, 1)
+                    if (!res?.data) {
+                        return goToStep(SwapCreateStep.AuthorizeCoinbaseWithdrawal)
+                    }
+                }
+                catch (e) {
+                    if (e?.response?.data?.error?.code === KnownwErrorCode.NOT_FOUND)
+                        return goToStep(SwapCreateStep.AuthorizeCoinbaseWithdrawal)
+                    else
+                        toast(e?.response?.data?.error?.message || e.message)
+                }
+            }
+            return goToStep(SwapCreateStep.Confirm)
         }, [swap]),
     }
 
