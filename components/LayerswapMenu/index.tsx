@@ -90,6 +90,14 @@ export default function () {
                                                                 Login
                                                             </Item>
                                                         </Menu.Item>
+                                                        {
+                                                            userType == UserType.GuestUser &&
+                                                            <Menu.Item>
+                                                                <Item type={ItemType.link} pathname={"/transactions"} icon={<TableIcon className='h-4 w-4' />}>
+                                                                    Swap History
+                                                                </Item>
+                                                            </Menu.Item>
+                                                        }
                                                         <hr className="horizontal-gradient" />
                                                         <Menu.Item>
                                                             <Item type={ItemType.button} onClick={() => handleSetUrl("https://docs.layerswap.io/")} icon={<BookOpenIcon className='h-4 w-4' />} className="plausible-event-name=User+Docs">
