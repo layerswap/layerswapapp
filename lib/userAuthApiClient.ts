@@ -11,7 +11,7 @@ export default class LayerSwapAuthApiClient {
             .then(res => res.data);
     }
 
-    async connectAsync(email?: string, code?: string, grant_type?: string): Promise<AuthConnectResponse> {
+    async connectAsync(email: string, code: string): Promise<AuthConnectResponse> {
         const params = new URLSearchParams();
         params.append('client_id', 'layerswap_bridge_ui');
         params.append('grant_type', 'passwordless');
