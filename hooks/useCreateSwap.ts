@@ -10,7 +10,7 @@ import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { SwapCreateStep, WizardStep } from "../Models/Wizard";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { useRouter } from "next/router";
-import LayerswapApiClient from '../lib/layerSwapApiClient';
+import LayerswapApiClient, { SwapType } from '../lib/layerSwapApiClient';
 import AccountConnectStep from "../components/Wizard/Steps/CoinbaseAccountConnectStep";
 import KnownInternalNames from "../lib/knownIds";
 import LayerSwapApiClient from "../lib/layerSwapApiClient";
@@ -55,7 +55,7 @@ const useCreateSwap = () => {
                 if (hasSourcePendingSwaps) {
                     return goToStep(SwapCreateStep.PendingSwaps)
                 }
-                else if (values?.exchange?.baseObject?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
+                else if (values.swapType === SwapType.OnRamp && values?.exchange?.baseObject?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
                     const layerswapApiClient = new LayerSwapApiClient(router)
                     try {
                         const res = await layerswapApiClient.GetExchangeAccount(values?.exchange?.baseObject.internal_name, 1)
