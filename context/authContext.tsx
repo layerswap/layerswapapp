@@ -41,7 +41,7 @@ export function AuthProvider({ children }) {
         if (!authData || !authData.access_token)
             return
         const { email, sub, utype } = parseJwt(authData.access_token)
-        if (authData && utype == UserType.AuthenticatedUser) {
+        if (authData && (utype == UserType.AuthenticatedUser || !utype)) {
             setUserType(UserType.AuthenticatedUser)
         } else if (authData && utype == UserType.GuestUser) {
             setGuestAuthData(authData)
