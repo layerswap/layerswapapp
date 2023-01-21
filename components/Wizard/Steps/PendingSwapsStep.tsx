@@ -17,7 +17,7 @@ import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 import SpinIcon from '../../icons/spinIcon';
 
 const OnRampSwapConfirmationStep: FC = () => {
-    const { swapFormData } = useSwapDataState()
+    const { swapFormData, swap } = useSwapDataState()
     const { exchange, network } = swapFormData || {}
     const { exchanges, networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { MainForm } = useCreateSwap()
@@ -33,8 +33,8 @@ const OnRampSwapConfirmationStep: FC = () => {
 
     useEffect(() => {
         if (exchange && pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
-            MainForm.onNext(swapFormData)
-    }, [pendingSwapsToCancel, exchange, swapFormData, allPendingSwaps, isValidating])
+            MainForm.onNext({ values: swapFormData, seapId: swap?.id })
+    }, [pendingSwapsToCancel, exchange, swapFormData, allPendingSwaps, isValidating, swap])
 
     const handleCancelSwap = (swap: SwapItem) => {
         setSwapToCancel(swap)
