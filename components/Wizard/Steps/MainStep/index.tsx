@@ -24,7 +24,7 @@ import NetworkSettings from "../../../../lib/NetworkSettings";
 import { useRouter } from "next/router";
 
 type Props = {
-    OnSumbit: (values: SwapFormValues) => Promise<void>
+    OnSumbit: ({ values, swapId }: { values: SwapFormValues, swapId?: string }) => Promise<void>
 }
 type NetworkToConnect = {
     DisplayName: string;
@@ -35,7 +35,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
     const [connectNetworkiIsOpen, setConnectNetworkIsOpen] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
-    const { swapFormData } = useSwapDataState()
+    const { swapFormData, swap } = useSwapDataState()
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
@@ -112,15 +112,16 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                     }
                 }
             }
-            if (formikRef.current?.dirty)
+            if (formikRef.current?.dirty) {
                 clearSwap()
+            }
             updateSwapFormData(values)
-            await OnSumbit(values)
+            await OnSumbit({ values, swapId: formikRef.current?.dirty ? null : swap?.id })
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [updateSwapFormData])
+    }, [updateSwapFormData, swap])
 
     const destAddress: string = query.destAddress;
 

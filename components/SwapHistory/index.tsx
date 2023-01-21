@@ -82,7 +82,7 @@ function TransactionsHistory() {
 
     setSwaps(old => [...(old ? old : []), ...(data ? data : [])])
     setPage(nextPage)
-    if (data.length < 5)
+    if (data.length < 20)
       setIsLastPage(true)
 
     setLoading(false)
