@@ -11,7 +11,8 @@ import OptionToggle, { NavRadioOption } from "./OptionToggle"
 
 const swapOptions: NavRadioOption[] = [
     { value: SwapType.OnRamp, isEnabled: true, isHighlighted: false },
-    { value: SwapType.OffRamp, isEnabled: true, isHighlighted: true }
+    { value: SwapType.OffRamp, isEnabled: true, isHighlighted: true },
+    { value: SwapType.CrossChain, isEnabled: true, isHighlighted: true }
 ];
 
 const SwapOptionsToggle = forwardRef((_, ref: any) => {
@@ -32,7 +33,7 @@ const SwapOptionsToggle = forwardRef((_, ref: any) => {
     }, [settings])
 
     return (
-        query?.products?.toLowerCase() != SwapType.OffRamp && query?.products?.toLowerCase() != SwapType.OnRamp &&
+        query?.products?.toLowerCase() != SwapType.OffRamp && query?.products?.toLowerCase() != SwapType.OnRamp && query?.products?.toLowerCase() != SwapType.CrossChain &&
         <div ref={ref} tabIndex={0} >
             <Field name={name} value={swapType} items={swapOptions} as={OptionToggle} setSelected={handleFieldChange} />
         </div>
