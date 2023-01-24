@@ -13,7 +13,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
 
     const { currency, exchange, network, swapType } = values || {}
 
-    let exchangeFee = GetExchangeFee(currency?.baseObject?.asset, exchange?.baseObject);
+    let exchangeFee = parseFloat(GetExchangeFee(currency?.baseObject?.asset, exchange?.baseObject).toFixed(currency?.baseObject?.precision))
     let fee = CalculateFee(values, networks);
     let receive_amount = CalculateReceiveAmount(values, networks);
 
@@ -73,7 +73,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                 <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                             </label>
                                             <span className="text-right">
-                                                {parseFloat(exchangeFee.toFixed(currency?.baseObject?.precision))} {currency?.baseObject?.asset}
+                                                {exchangeFee === 0 ? 'unknown' : <>{exchangeFee} {currency?.baseObject?.asset}</>} 
                                             </span>
                                         </div>
                                     }
