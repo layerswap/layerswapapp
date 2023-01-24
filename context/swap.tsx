@@ -58,17 +58,17 @@ export function SwapDataProvider({ children }) {
 
     useEffect(() => {
         setAddressConfirmed(false)
-    }, [swapFormData?.destination_address, swapFormData?.exchange])
+    }, [swapFormData?.destination_address, swapFormData?.from])
 
     useEffect(() => {
         setCodeRequested(false)
-    }, [swapFormData?.exchange])
+    }, [swapFormData?.from])
 
     const createSwap = useCallback(async (formData: SwapFormValues, query: QueryParams, settings: LayerSwapSettings) => {
         if (!formData)
             throw new Error("No swap data")
 
-        const { network, currency, exchange } = formData
+        const { to: network, currency, from: exchange } = formData
 
         if (!network || !currency || !exchange)
             throw new Error("Form data is missing")

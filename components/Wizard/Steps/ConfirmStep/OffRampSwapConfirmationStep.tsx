@@ -32,7 +32,7 @@ const OffRampSwapConfirmationStep: FC = () => {
     const { createAndProcessSwap, updateSwapFormData, setAddressConfirmed } = useSwapDataUpdate()
     const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
     const router = useRouter();
-    const { exchange, destination_address, currency, network } = swapFormData || {}
+    const { from: exchange, destination_address, currency, to: network } = swapFormData || {}
     const query = useQueryState();
     const settings = useSettingsState();
 
@@ -50,8 +50,8 @@ const OffRampSwapConfirmationStep: FC = () => {
     }, [deposite_address])
 
 
-    const currentNetwork = swapFormData?.network?.baseObject;
-    const currentExchange = swapFormData?.exchange?.baseObject;
+    const currentNetwork = swapFormData?.to?.baseObject;
+    const currentExchange = swapFormData?.from?.baseObject;
     const currentCurrency = swapFormData?.currency?.baseObject;
 
     const handleToggleChange = (value: boolean) => {
@@ -65,7 +65,7 @@ const OffRampSwapConfirmationStep: FC = () => {
             if (!swap) {
                 if (query.addressSource === "imxMarketplace" && settings.validSignatureisPresent) {
                     try {
-                        const account = await layerswapApiClient.GetWhitelistedAddress(swapFormData.network.baseObject.internal_name, query.destAddress)
+                        const account = await layerswapApiClient.GetWhitelistedAddress(swapFormData.to.baseObject.internal_name, query.destAddress)
                     }
                     catch (e) {
                         //TODO handle account not found

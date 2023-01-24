@@ -12,7 +12,7 @@ export function CalculateMinimalAuthorizeAmount(usd_price: number, amount: numbe
     return Math.ceil((usd_price * amount) + (usd_price * amount * 0.02))
 }
 export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]): number {
-    const { currency, exchange, network, swapType } = swapFormData|| {}
+    const { currency, from: exchange, to: network, swapType } = swapFormData|| {}
 
     if (!currency || !exchange || !network)
         return 0;
@@ -38,7 +38,7 @@ export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks
         let fee = CalculateFee(swapFormData, allNetworks);
         var result = amount - fee;
         if (swapFormData.swapType == SwapType.OnRamp) {
-            let exchangeFee = GetExchangeFee(swapFormData.currency?.baseObject?.asset, swapFormData.exchange?.baseObject);
+            let exchangeFee = GetExchangeFee(swapFormData.currency?.baseObject?.asset, swapFormData.from?.baseObject);
             result -= exchangeFee;
         }
         return Number(result.toFixed(swapFormData.currency?.baseObject?.precision));
@@ -48,7 +48,7 @@ export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks
 }
 
 export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]) {
-    const { currency, exchange, network, swapType } = swapFormData|| {}
+    const { currency, from: exchange, to: network, swapType } = swapFormData|| {}
 
     if (!currency || !exchange || !network) return 0
 
@@ -63,7 +63,7 @@ export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, allNetwo
 
 export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]) {
 
-    const { currency, exchange, network, swapType } = swapFormData|| {}
+    const { currency, from: exchange, to: network, swapType } = swapFormData|| {}
     if (!currency || !exchange || !network) return 0
 
     const exchangeCurrency = exchange?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset)

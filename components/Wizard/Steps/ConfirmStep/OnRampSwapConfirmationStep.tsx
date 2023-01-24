@@ -29,7 +29,7 @@ const TIMER_SECONDS = 120
 const OnRampSwapConfirmationStep: FC = () => {
     const [loading, setLoading] = useState(false)
     const { swapFormData, swap, codeRequested, addressConfirmed, withdrawManually } = useSwapDataState()
-    const { exchange, currency, destination_address, network } = swapFormData || {}
+    const { from: exchange, currency, destination_address, to: network } = swapFormData || {}
     const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
     const currentValues = formikRef?.current?.values;
     const { discovery: { resource_storage_url } } = useSettingsState();
@@ -129,8 +129,8 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleWithdrawalTypeToggleChange = (value: boolean) => {
         setWithdrawalType(value)
     }
-    const currentNetwork = swapFormData?.network?.baseObject;
-    const currentExchange = swapFormData?.exchange?.baseObject;
+    const currentNetwork = swapFormData?.to?.baseObject;
+    const currentExchange = swapFormData?.from?.baseObject;
     const currentCurrency = swapFormData?.currency?.baseObject;
     const coinbaseLogoURL = `${resource_storage_url}/layerswap/networks/${KnownInternalNames.Exchanges.Coinbase.toLowerCase()}.png`
 
@@ -171,7 +171,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 title={
                     <h4 className='text-lg text-white'>
                         <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
-                        Editing your {swapFormData?.network?.name} wallet address</h4>
+                        Editing your {swapFormData?.to?.name} wallet address</h4>
                 }
             >
                 <div className='grid grid-flow-row text-primary-text'>

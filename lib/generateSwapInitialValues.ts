@@ -42,18 +42,45 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     let initialExchange =
         availableExchanges.find(x => x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() && x.baseObject.currencies);
 
-    const availableCurrencies = currencies
-        .map(c => new SelectMenuItem<Currency>(c, c.asset, c.asset, 0, `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`))
-
     const initialNetwork =
         availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable && (initialSwapType === SwapType.OffRamp ? !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp : !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp))
 
+    const availableCurrencies = currencies
+        .map(c => new SelectMenuItem<Currency>(c, c.asset, c.asset, 0, `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`))
+
+    const to = swapType === SwapType.OffRamp ?
+        availableExchanges.find(x => x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() && x.baseObject.currencies)
+        : availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable && (initialSwapType === SwapType.OffRamp ? !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp : !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp));
+
     let initialAddress =
-        destAddress && initialNetwork && isValidAddress(destAddress, initialNetwork?.baseObject) ? destAddress : "";
+        destAddress && to && isValidAddress(destAddress, to?.baseObject) ? destAddress : "";
 
 
     let initialCurrency =
         amount && availableCurrencies.find(c => c.baseObject.asset == asset)
 
-    return { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: initialSwapType == SwapType.OnRamp && initialAddress, swapType: initialSwapType, network: initialNetwork, exchange: initialExchange }
+    const result = { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: initialSwapType !== SwapType.OffRamp && initialAddress }
+
+    switch (initialSwapType) {
+        case SwapType.OnRamp:
+            return {
+                ...result,
+                swapType: SwapType.OnRamp,
+                from: initialExchange,
+                to: initialNetwork
+            }
+        case SwapType.OffRamp:
+            return {
+                ...result,
+                swapType: SwapType.OffRamp,
+                from: initialNetwork,
+                to: initialExchange
+            }
+        case SwapType.CrossChain:
+            return {
+                ...result,
+                swapType: SwapType.CrossChain,
+                to: initialNetwork
+            }
+    }
 }

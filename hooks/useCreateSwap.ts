@@ -49,10 +49,10 @@ const useCreateSwap = () => {
             if (hasSourcePendingSwaps) {
                 return goToStep(SwapCreateStep.PendingSwaps)
             }
-            else if (values.swapType === SwapType.OnRamp && values?.exchange?.baseObject?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
+            else if (values.swapType === SwapType.OnRamp && values?.from?.baseObject?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
                 const layerswapApiClient = new LayerSwapApiClient(router)
                 try {
-                    const res = await layerswapApiClient.GetExchangeAccount(values?.exchange?.baseObject.internal_name, 1)
+                    const res = await layerswapApiClient.GetExchangeAccount(values?.from?.baseObject.internal_name, 1)
                     if (!res?.data) {
                         return goToStep(SwapCreateStep.AuthorizeCoinbaseWithdrawal)
                     }

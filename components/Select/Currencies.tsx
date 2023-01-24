@@ -10,7 +10,7 @@ import { SelectMenuItem } from "./selectMenuItem";
 
 const CurrenciesField: FC = () => {
     const {
-        values: { network, currency, exchange, swapType },
+        values: { to: network, currency, from: exchange, swapType },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 

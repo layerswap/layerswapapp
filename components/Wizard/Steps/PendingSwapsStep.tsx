@@ -18,7 +18,7 @@ import SpinIcon from '../../icons/spinIcon';
 
 const OnRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
-    const { exchange, network } = swapFormData || {}
+    const { from: exchange, to: network } = swapFormData || {}
     const { exchanges, networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { MainForm } = useCreateSwap()
     const router = useRouter();

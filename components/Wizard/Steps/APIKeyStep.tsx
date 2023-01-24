@@ -7,7 +7,7 @@ type Props = {
 }
 const APIKeyStep: FC<Props> = ({onSuccess}) => {
     const { swapFormData } = useSwapDataState()
-    const { exchange } = swapFormData || {}
+    const { from: exchange } = swapFormData || {}
     const onConnect = async () => {
         await onSuccess()
     }
@@ -15,7 +15,7 @@ const APIKeyStep: FC<Props> = ({onSuccess}) => {
         return <></>
 
     return (
-        <ConnectApiKeyExchange exchange={swapFormData?.exchange?.baseObject} onSuccess={onConnect} slideOverPlace='inStep' />
+        <ConnectApiKeyExchange exchange={swapFormData?.from?.baseObject} onSuccess={onConnect} slideOverPlace='inStep' />
     )
 }
 

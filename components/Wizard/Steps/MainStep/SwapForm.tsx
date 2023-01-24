@@ -8,8 +8,7 @@ import AddressInput from "../../../Input/AddressInput";
 import { classNames } from "../../../utils/classNames";
 import SwapOptionsToggle from "../../../SwapOptionsToggle";
 import { ConnectedFocusError } from "../../../../lib/external/ConnectedFocusError";
-import ExchangesField from "../../../Select/Exchange";
-import NetworkField from "../../../Select/Network";
+import SelectNetwork from "../../../Select/SelectNetwork";
 import AmountField from "../../../Input/Amount";
 import LayerSwapApiClient, { SwapType, UserExchangesData } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
@@ -58,9 +57,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
         setLoadingDepositAddress(true)
         const layerswapApiClient = new LayerSwapApiClient(router)
         try {
-            const exchange_account = await layerswapApiClient.GetExchangeAccount(values.exchange?.baseObject.internal_name, 0)
+            const exchange_account = await layerswapApiClient.GetExchangeAccount(values.from?.baseObject.internal_name, 0)
             setExchangeAccount(exchange_account.data)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.exchange?.baseObject.internal_name, values?.currency?.baseObject?.asset)
+            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.from?.baseObject.internal_name, values?.currency?.baseObject?.asset)
             setFieldValue("destination_address", deposit_address.data)
             setDepositeAddressIsfromAccount(true)
             setLoadingDepositAddress(false)
@@ -83,12 +82,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
     }, [depositeAddressIsfromAccount])
 
     const handleExchangeConnected = useCallback(async () => {
-        if (!values.exchange || !values.currency)
+        if (!values.from || !values.currency)
             return
         setLoadingDepositAddress(true)
         try {
             const layerswapApiClient = new LayerSwapApiClient(router)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.exchange?.baseObject?.internal_name, values?.currency?.baseObject?.asset)
+            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.from?.baseObject?.internal_name, values?.currency?.baseObject?.asset)
             setFieldValue("destination_address", deposit_address.data)
             setDepositeAddressIsfromAccount(true)
         }
@@ -103,23 +102,23 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
             handleExchangeConnected()
     }, [values.currency])
 
-    const exchangeRef = useRef(values.exchange?.id);
+    const exchangeRef = useRef(values.from?.id);
 
     useEffect(() => {
-        if (exchangeRef.current && exchangeRef.current !== values?.exchange?.id) {
+        if (exchangeRef.current && exchangeRef.current !== values?.from?.id) {
             setFieldValue("destination_address", '')
             setDepositeAddressIsfromAccount(false)
         }
-        exchangeRef.current = values?.exchange?.id
-    }, [values.exchange])
+        exchangeRef.current = values?.from?.id
+    }, [values.from])
 
     return <>
         <Form className="h-full" >
             <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
                 {(close) => (
-                    values?.exchange?.baseObject?.authorization_flow === "o_auth2" ?
+                    (values?.swapType === SwapType.OffRamp && values?.to?.baseObject.authorization_flow) === "o_auth2" ?
                         <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />
-                        : <ConnectApiKeyExchange exchange={values?.exchange?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
+                        : <ConnectApiKeyExchange exchange={values.swapType === SwapType.OnRamp && values?.from?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
                 )}
             </SlideOver>
             <Widget>
@@ -127,12 +126,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
                     : <Widget.Content>
                         <SwapOptionsToggle />
-                        <div className={classNames(values.swapType === SwapType.OffRamp ? 'w-full flex-col-reverse md:flex-row-reverse space-y-reverse md:space-x-reverse' : 'md:flex-row flex-col', 'flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4')}>
+                        <div className='flex-col md:flex-row flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4'>
                             <div className="flex flex-col w-full">
-                                <ExchangesField />
+                                <SelectNetwork direction="from" label="From" placeholder="From"/>
                             </div>
                             <div className="flex flex-col w-full">
-                                <NetworkField />
+                                <SelectNetwork direction="to" label="To" placeholder="To"/>
                             </div>
                         </div>
                         <div className="mb-6 leading-4">
@@ -142,7 +141,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                             values.swapType === SwapType.OnRamp &&
                             <div className="w-full mb-3.5 leading-4">
                                 <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
-                                    {`To ${values?.network?.name || ''} address`}
+                                    {`To ${values?.to?.name || ''} address`}
                                     {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({partner?.display_name})</span>}
                                 </label>
                                 <div className="relative rounded-md shadow-sm mt-1.5">
@@ -160,7 +159,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                             exchangeAccount={exchangeAccount}
                                             onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
                                             loading={loadingDepositAddress}
-                                            disabled={lockAddress || (!values.network || !values.exchange) || loadingDepositAddress}
+                                            disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
                                             name={"destination_address"}
                                             className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
                                         />
@@ -177,7 +176,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                                             exchangeAccount={exchangeAccount}
                                             onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
                                             loading={loadingDepositAddress}
-                                            disabled={(!values.network || !values.exchange) || loadingDepositAddress || depositeAddressIsfromAccount}
+                                            disabled={(!values.to || !values.from) || loadingDepositAddress || depositeAddressIsfromAccount}
                                             name={"destination_address"}
                                             className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-gray-400 truncate')}
                                         />
@@ -201,7 +200,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
 }
 
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
-    return errors.exchange?.toString() || errors.network?.toString() || errors.amount || errors.destination_address || "Swap now"
+    return errors.from?.toString() || errors.to?.toString() || errors.amount || errors.destination_address || "Swap now"
 }
 
 export default SwapForm

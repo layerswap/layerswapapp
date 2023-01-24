@@ -19,7 +19,7 @@ export default class NetworkSettings {
     Order?: number;
     AccountExplorerTemplate?: string;
 
-    public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean } }
+    public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
 
     public static ImmutableXSettings: NetworkItemSettings
@@ -74,7 +74,8 @@ export default class NetworkSettings {
             ChainId: 42170,
             Order: 9,
             AccountExplorerTemplate: 'https://nova.arbiscan.io/address/{0}'
-,        };
+            ,
+        };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismKovan] = {
             ChainId: 69,
         };

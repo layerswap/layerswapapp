@@ -14,11 +14,11 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         let minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks);
         let maxAllowedAmount = CalculateMaxAllowedAmount(values, settings.networks);
 
-        if (!values.exchange) {
-            (errors.exchange as any) = 'Select an exchange';
+        if (!values.from) {
+            (errors.from as any) = 'Select an exchange';
         }
-        if (!values.network) {
-            (errors.network as any) = 'Select a network';
+        if (!values.to) {
+            (errors.to as any) = 'Select a network';
         }
         if (!amount) {
             errors.amount = 'Enter an amount';
@@ -35,23 +35,23 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         if (minAllowedAmount != undefined && amount < minAllowedAmount) {
             errors.amount = `Min amount is ${minAllowedAmount}`;
         }
-        if (values.swapType === SwapType.OnRamp && values.network) {
+        if (values.swapType === SwapType.OnRamp && values.to) {
             if (!values.destination_address) {
-                errors.destination_address = `Enter ${values.network.name} address`;
+                errors.destination_address = `Enter ${values.to.name} address`;
             }
-            else if (!isValidAddress(values.destination_address, values.network.baseObject)) {
-                errors.destination_address = `Enter a valid ${values.network.name} address`;
+            else if (!isValidAddress(values.destination_address, values.to.baseObject)) {
+                errors.destination_address = `Enter a valid ${values.to.name} address`;
             }
-            else if (isBlacklistedAddress(settings.blacklisted_addresses, values.network.baseObject, values.destination_address)) {
+            else if (isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, values.destination_address)) {
                 errors.destination_address = `You can not transfer to this address`;
             }
         }
-        else if (values.swapType === SwapType.OffRamp && values.exchange) {
+        else if (values.swapType === SwapType.OffRamp && values.from) {
             if (!values.destination_address) {
-                errors.destination_address = `Enter ${values.exchange.name} address`;
+                errors.destination_address = `Enter ${values.from.name} address`;
             }
-            else if (!isValidAddress(values.destination_address, values.exchange?.baseObject)) {
-                errors.destination_address = `Enter a valid ${values.exchange.name} address`;
+            else if (!isValidAddress(values.destination_address, values.from?.baseObject)) {
+                errors.destination_address = `Enter a valid ${values.from.name} address`;
             }
         }
         
