@@ -73,7 +73,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                 <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                             </label>
                                             <span className="text-right">
-                                                {exchangeFee === 0 ? 'unknown' : <>{exchangeFee} {currency?.baseObject?.asset}</>} 
+                                                {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.baseObject?.asset}</>} 
                                             </span>
                                         </div>
                                     }
