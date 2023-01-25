@@ -10,20 +10,14 @@ import { SelectMenuItem } from "./selectMenuItem";
 
 const CurrenciesField: FC = () => {
     const {
-        values: { to: network, currency, from: exchange, swapType },
+        values: { to, currency, from, swapType },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
     const name = "currency"
-    const { discovery: { resource_storage_url }, currencies, exchanges, networks } = useSettingsState();
+    const { discovery: { resource_storage_url }, currencies, exchanges } = useSettingsState();
 
-    const exchangeCurrency = exchange?.baseObject?.currencies?.find(c => c.asset?.toLowerCase() === currency?.baseObject?.asset?.toLowerCase())
-    const destinationNetwork = networks.find(n => n.internal_name?.toLowerCase() === exchangeCurrency?.network?.toLowerCase())
-    const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
-
-    const currencyIsAvilable = useCallback((c: Currency) => exchange && network && exchange.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType === SwapType.OffRamp ?
-        ec.is_withdrawal_enabled : ec.is_deposit_enabled)) && network.baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === SwapType.OffRamp ?
-            nc.is_deposit_enabled : nc.is_withdrawal_enabled)), [exchange, network, swapType])
+    const currencyIsAvilable = useCallback((c: Currency) => from && to && from?.baseObject.currencies.some(fc => fc.asset === c.asset && fc.status === "active" && fc.is_deposit_enabled) && to.baseObject.currencies.some(tc => tc.asset === c.asset && tc.status === "active" && tc.is_withdrawal_enabled), [from, to, swapType])
 
     const mapCurranceToMenuItem = (c: Currency): SelectMenuItem<Currency> => ({
         baseObject: c,
@@ -35,13 +29,13 @@ const CurrenciesField: FC = () => {
         isDefault: false,
     })
 
-    const currencyMenuItems: SelectMenuItem<Currency>[] = network ? currencies
+    const currencyMenuItems: SelectMenuItem<Currency>[] = (from && to) ? currencies
         .filter(currencyIsAvilable)
         .map(mapCurranceToMenuItem).sort(SortingByOrder)
         : []
 
     useEffect(() => {
-        if (!network || !exchange) return;
+        if (!from || !to) return;
         if (currency && currencyIsAvilable(currency.baseObject)) return
 
         const default_currency = currencies.filter(currencyIsAvilable)?.map(mapCurranceToMenuItem)?.sort(SortingByOrder)?.[0]
@@ -53,7 +47,7 @@ const CurrenciesField: FC = () => {
             setFieldValue(name, null)
         }
 
-    }, [network, exchange, currencies, exchanges, currency])
+    }, [from, to, currencies, exchanges, currency])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />

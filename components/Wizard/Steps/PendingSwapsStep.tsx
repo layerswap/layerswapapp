@@ -5,7 +5,7 @@ import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import Modal from '../../modalComponent';
 import Widget from '../Widget';
-import LayerSwapApiClient, { SwapItem, SwapType } from '../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem } from '../../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import useSWR from 'swr';
 import { ApiResponse } from '../../../Models/ApiResponse';
@@ -13,12 +13,10 @@ import { useSettingsState } from '../../../context/settings';
 import shortenAddress from '../../utils/ShortenAddress';
 import useCreateSwap from '../../../hooks/useCreateSwap';
 import { useRouter } from 'next/router';
-import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 import SpinIcon from '../../icons/spinIcon';
 
 const OnRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
-    const { from: exchange, to: network } = swapFormData || {}
     const { exchanges, networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { MainForm } = useCreateSwap()
     const router = useRouter();
@@ -32,9 +30,9 @@ const OnRampSwapConfirmationStep: FC = () => {
     const [swapToCancel, setSwapToCancel] = useState<SwapItem>()
 
     useEffect(() => {
-        if (exchange && pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
+        if (pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
             MainForm.onNext({ values: swapFormData, swapId: swap?.id })
-    }, [pendingSwapsToCancel, exchange, swapFormData, allPendingSwaps, isValidating, swap])
+    }, [pendingSwapsToCancel, swapFormData, allPendingSwaps, isValidating, swap])
 
     const handleCancelSwap = (swap: SwapItem) => {
         setSwapToCancel(swap)
@@ -62,7 +60,18 @@ const OnRampSwapConfirmationStep: FC = () => {
                         <div className="overflow-hidden mb-4">
                             <div className='flex flex-col space-y-2'>
                                 {pendingSwapsToCancel?.map((swap) => {
-                                    const { destination, currency_logo, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+
+                                    const { source_exchange: source_exchange_internal_name,
+                                        destination_network: destination_network_internal_name,
+                                        source_network: source_network_internal_name,
+                                        destination_exchange: destination_exchange_internal_name,
+                                        destination_network_asset
+                                    } = swap
+
+                                    const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
+                                    const destination = destination_exchange_internal_name ? exchanges.find(e => e.internal_name === destination_exchange_internal_name) : networks.find(n => n.internal_name === destination_network_internal_name)
+
+
                                     return (
                                         <div key={swap.id}>
                                             <div className='w-full mb-2 rounded-md px-3 py-3 shadow-sm border border-darkblue-500  bg-darkblue-700'>
@@ -76,11 +85,10 @@ const OnRampSwapConfirmationStep: FC = () => {
                                                                         <p className='flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{asset}</span></p>
                                                                         <div className="h-5 w-5 relative">
                                                                             <Image
-                                                                                src={currency_logo}
+                                                                                src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
                                                                                 alt="Source Logo"
                                                                                 height="60"
                                                                                 width="60"
-                                                                                layout="responsive"
                                                                                 className="rounded-md object-contain"
                                                                             />
                                                                         </div>
@@ -93,11 +101,10 @@ const OnRampSwapConfirmationStep: FC = () => {
                                                                         <div className="h-5 w-5 relative">
                                                                             {
                                                                                 <Image
-                                                                                    src={source_logo}
+                                                                                    src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`}
                                                                                     alt="Source Logo"
                                                                                     height="60"
                                                                                     width="60"
-                                                                                    layout="responsive"
                                                                                     className="rounded-md object-contain"
                                                                                 />
                                                                             }
@@ -109,11 +116,10 @@ const OnRampSwapConfirmationStep: FC = () => {
                                                                         <div className="h-5 w-5 relative">
                                                                             {
                                                                                 <Image
-                                                                                    src={destination_logo}
+                                                                                    src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
                                                                                     alt="Source Logo"
                                                                                     height="60"
                                                                                     width="60"
-                                                                                    layout="responsive"
                                                                                     className="rounded-md object-contain"
                                                                                 />
                                                                             }
@@ -127,11 +133,10 @@ const OnRampSwapConfirmationStep: FC = () => {
                                                                         <p className='md:hidden flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{asset}</span></p>
                                                                         <div className="h-5 w-5 relative">
                                                                             <Image
-                                                                                src={currency_logo}
+                                                                                src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
                                                                                 alt="Source Logo"
                                                                                 height="60"
                                                                                 width="60"
-                                                                                layout="responsive"
                                                                                 className="rounded-md object-contain"
                                                                             />
                                                                         </div>

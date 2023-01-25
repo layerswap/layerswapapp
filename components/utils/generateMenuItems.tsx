@@ -20,11 +20,11 @@ type NetworkeMenuItemsParams = {
 export const generateNetworkMenuItems = ({ values, networks, resource_storage_url, destNetwork, lockNetwork, direction }: NetworkeMenuItemsParams): SelectMenuItem<CryptoNetwork>[] => {
     const  { swapType, from, to } = values
 
-    const currencyWithdrawalIsAvailable = ((currency: NetworkCurrency, network: CryptoNetwork) => currency.is_withdrawal_enabled && (!network || network.currencies.some(nc => nc.asset === currency.asset && nc.status === "active" && nc.is_deposit_enabled)))
-    const currencyDepositIsAvailable = ((currency: NetworkCurrency, network: CryptoNetwork) => currency.is_deposit_enabled && (!network || network.currencies.some(nc => nc.asset === currency.asset && nc.status === "active" && nc.is_withdrawal_enabled)))
+    const currencyWithdrawalIsAvailable = ((currency: NetworkCurrency, network: CryptoNetwork) => currency.is_withdrawal_enabled && (network ? network.currencies.some(nc => nc.asset === currency.asset && nc.status === "active" && nc.is_deposit_enabled) : networks.some(network=>network.currencies.some(nc => nc.asset === currency.asset && nc.status === "active" && nc.is_deposit_enabled) )))
+    const currencyDepositIsAvailable = ((currency: NetworkCurrency, network: CryptoNetwork) => currency.is_deposit_enabled && (network ? network.currencies.some(nc => nc.asset === currency.asset && nc.status === "active" && nc.is_withdrawal_enabled): networks.some(network=>network.currencies.some(nc => nc.asset === currency.asset && nc.status === "active" && nc.is_withdrawal_enabled))))
     const networkIsAvailableInOfframp = (n: CryptoNetwork) => n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.offramp && nc.status === "active" && nc.is_deposit_enabled && (!to || to?.baseObject?.currencies?.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_withdrawal_enabled)))
     const networkIsAbailableInOnramp = (n: CryptoNetwork) => n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.onramp && nc.status === "active" && nc.is_withdrawal_enabled && (!from || from?.baseObject?.currencies?.some(ec => ec.asset === nc.asset && ec.status === "active" && ec.is_deposit_enabled)))
-    const networkIsAvailableInCrossChain = (n: CryptoNetwork) => n.currencies.some(nc => swapType === SwapType.CrossChain && !NetworkSettings?.ForceDisable?.[n?.internal_name]?.crossChain && nc.status === "active" && (direction === "from" ? (currencyWithdrawalIsAvailable(nc, to?.baseObject)) : currencyDepositIsAvailable(nc, from?.baseObject)))
+    const networkIsAvailableInCrossChain = (n: CryptoNetwork) => n.currencies.some(nc => swapType === SwapType.CrossChain && !NetworkSettings?.ForceDisable?.[n?.internal_name]?.crossChain && nc.status === "active" && (direction === "from" ? (currencyDepositIsAvailable(nc, to?.baseObject)) : currencyWithdrawalIsAvailable(nc, from?.baseObject)))
 
     let networkIsAvailable;
     switch (swapType) {

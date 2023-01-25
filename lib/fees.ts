@@ -12,13 +12,13 @@ export function CalculateMinimalAuthorizeAmount(usd_price: number, amount: numbe
     return Math.ceil((usd_price * amount) + (usd_price * amount * 0.02))
 }
 export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]): number {
-    const { currency, from: exchange, to: network, swapType } = swapFormData|| {}
+    const { currency, from, to, swapType } = swapFormData || {}
 
-    if (!currency || !exchange || !network)
+    if (!currency || !from || !to)
         return 0;
 
-    const exchangeCurrency = exchange?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset)
-    const destinationNetwork = swapType === SwapType.OnRamp ? network.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
+    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
+    const destinationNetwork = swapType === SwapType.OnRamp ? to?.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
     const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
 
     if (!destinationNetworkCurrency)
@@ -48,12 +48,12 @@ export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks
 }
 
 export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]) {
-    const { currency, from: exchange, to: network, swapType } = swapFormData|| {}
+    const { currency, from, to, swapType } = swapFormData || {}
 
-    if (!currency || !exchange || !network) return 0
+    if (!currency || !from || !to) return 0
 
-    const exchangeCurrency = exchange?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset)
-    const destinationNetwork = swapType === SwapType.OnRamp ? network.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
+    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
+    const destinationNetwork = swapType !== SwapType.OffRamp ? to.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
     const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
 
     const maxAmount = destinationNetworkCurrency?.max_withdrawal_amount || 0
@@ -63,14 +63,14 @@ export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, allNetwo
 
 export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]) {
 
-    const { currency, from: exchange, to: network, swapType } = swapFormData|| {}
-    if (!currency || !exchange || !network) return 0
+    const { currency, from, to, swapType } = swapFormData || {}
+    if (!currency || !from || !to) return 0
 
-    const exchangeCurrency = exchange?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset)
-    const destinationNetwork = swapType === SwapType.OnRamp ? network.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
+    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
+    const destinationNetwork = swapType !== SwapType.OffRamp ? to.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
     const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
 
-    if (!destinationNetworkCurrency || !exchangeCurrency) return 0
+    if (!destinationNetworkCurrency) return 0
 
     const minAmount = destinationNetworkCurrency?.min_withdrawal_amount || 0
 
@@ -80,9 +80,9 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
 
     let final_min_amount: number;
 
-    if (swapType == SwapType.OnRamp) {
+    if (swapType === SwapType.OnRamp) {
         final_min_amount = Math.max(minAmount + fee, double_fee)
-        final_min_amount += GetExchangeFee(currency.baseObject?.asset, exchange?.baseObject)
+        final_min_amount += GetExchangeFee(currency.baseObject?.asset, from?.baseObject)
     }
     else
         final_min_amount = (minAmount + double_fee)

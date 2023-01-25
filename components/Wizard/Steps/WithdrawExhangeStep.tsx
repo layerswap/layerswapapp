@@ -17,7 +17,6 @@ import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
-import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 import Image from 'next/image'
 import { SwapCancelModal } from './PendingSwapsStep';
 import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
@@ -44,6 +43,11 @@ const WithdrawExchangeStep: FC = () => {
     const [authorized, steAuthorized] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [loading, setLoading] = useState(false)
+    const { source_exchange: source_exchange_internal_name, destination_network: destination_network_internal_name,source_network_asset:source_network_asset, destination_network_asset } = swap
+
+    const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
+    const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
+    const source_network_currency = source_exchange?.currencies?.find(c => source_network_asset?.toUpperCase() === c?.asset?.toUpperCase() && c?.is_default)
 
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
@@ -95,7 +99,6 @@ const WithdrawExchangeStep: FC = () => {
         }
     }, [sourceIsCoinbase])
 
-    const { currency, exchange_currency, exchange, network, network_chain_logo, currency_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
     const handleTransferDone = useCallback(async () => {
         setTransferDone(true)
@@ -131,19 +134,21 @@ const WithdrawExchangeStep: FC = () => {
             }
             setSubmitting(false)
         }
-    }, [swap, network, codeRequested])
+    }, [swap, destination_network, codeRequested])
 
     const openConnect = () => {
         setOpenCoinbaseConnectSlideover(true)
     }
 
+    const source_exchange_settings = ExchangeSettings.KnownSettings[source_exchange_internal_name]
+
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inModal'>
             {(close) => (
-                <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
+                <DocIframe onConfirm={() => close()} URl={source_exchange_settings.ExchangeWithdrawalGuideUrl} />
             )}
         </SlideOver>
-        <Modal title={`Please connect your ${exchange?.display_name} account`} showModal={openCoinbaseConnectSlideover} setShowModal={setOpenCoinbaseConnectSlideover} >
+        <Modal title={`Please connect your ${source_exchange?.display_name} account`} showModal={openCoinbaseConnectSlideover} setShowModal={setOpenCoinbaseConnectSlideover} >
             <AccountConnectStep hideHeader onDoNotConnect={() => setOpenCoinbaseConnectSlideover(false)} onAuthorized={() => { steAuthorized(true); setOpenCoinbaseConnectSlideover(false); }} stickyFooter={false} />
         </Modal>
         <Modal showModal={openCoinbase2FA} setShowModal={setOpenCoinbase2FA}>
@@ -159,7 +164,7 @@ const WithdrawExchangeStep: FC = () => {
                             <div className='space-y-4'>
                                 <div className="text-left">
                                     <p className="block sm:text-lg font-medium text-white">
-                                        Send {currency?.asset} to the provided address from {exchange?.display_name}
+                                        Send {destination_network_asset} to the provided address from {source_exchange?.display_name}
                                     </p>
                                     <p className='text-sm sm:text-base'>
                                         The swap will be completed when your transfer is detected
@@ -181,18 +186,17 @@ const WithdrawExchangeStep: FC = () => {
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-5 w-5 relative">
                                                     {
-                                                        currency_logo &&
+                                                        destination_network_asset &&
                                                         <Image
-                                                            src={currency_logo}
+                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
                                                             alt="From Logo"
                                                             height="60"
                                                             width="60"
-                                                            layout="responsive"
                                                             className="rounded-md object-contain"
                                                         />
                                                     }
                                                 </div>
-                                                <div className="mx-1 block">{currency?.asset}</div>
+                                                <div className="mx-1 block">{destination_network_asset}</div>
                                             </div>
                                         </BackgroundField>
                                     </div>
@@ -200,9 +204,9 @@ const WithdrawExchangeStep: FC = () => {
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0 h-5 w-5 relative">
                                                 {
-                                                    network_chain_logo &&
+                                                    source_network_currency &&
                                                     <Image
-                                                        src={network_chain_logo}
+                                                        src={`${resource_storage_url}/layerswap/networks/${source_network_currency?.network?.toLocaleLowerCase()}.png`}
                                                         alt="From Logo"
                                                         height="60"
                                                         width="60"
@@ -211,24 +215,24 @@ const WithdrawExchangeStep: FC = () => {
                                                     />
                                                 }
                                             </div>
-                                            <div className="mx-1 block">{exchange_currency?.chain_display_name}</div>
+                                            <div className="mx-1 block">{source_network_currency?.chain_display_name}</div>
                                         </div>
                                     </BackgroundField>
                                     {
-                                        ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage &&
+                                        source_exchange_settings?.WithdrawalWarningMessage &&
                                         <WarningMessage>
                                             <span>
-                                                {ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage}
+                                                {source_exchange_settings.WithdrawalWarningMessage}
                                             </span>
                                         </WarningMessage>
                                     }
                                     {
-                                        ExchangeSettings?.KnownSettings[exchange.internal_name]?.ExchangeWithdrawalGuideUrl &&
+                                        source_exchange_settings?.ExchangeWithdrawalGuideUrl &&
                                         <WarningMessage messageType='informing'>
                                             <span className='flex-none'>
                                                 Learn how to send from
                                             </span>
-                                            <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
+                                            <GuideLink text={source_exchange?.display_name} userGuideUrl={source_exchange_settings.ExchangeWithdrawalGuideUrl} />
                                         </WarningMessage>
                                     }
                                 </div>
@@ -291,7 +295,7 @@ const WithdrawExchangeStep: FC = () => {
                             transferDone &&
                             <SimpleTimer time={transferDoneTime} text={
                                 (remainingSeconds) => <>
-                                    {`The swap will get completed in ~${remainingSeconds > 60 ? `${(Math.ceil((remainingSeconds / 60) % 60))} minutes` : '1 minute'}  after you send from ${exchange?.display_name}`}
+                                    {`The swap will get completed in ~${remainingSeconds > 60 ? `${(Math.ceil((remainingSeconds / 60) % 60))} minutes` : '1 minute'}  after you send from ${source_exchange?.display_name}`}
                                 </>}
                             >
                                 <div className="flex text-center mb-4 space-x-2">
