@@ -15,11 +15,9 @@ import useCreateSwap from '../../../hooks/useCreateSwap';
 import { useRouter } from 'next/router';
 import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 import SpinIcon from '../../icons/spinIcon';
-import returnBySwapType from '../../utils/returnBySwapType';
 
 const OnRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
-    const { from, to, swapType } = swapFormData || {}
     const { exchanges, networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { MainForm } = useCreateSwap()
     const router = useRouter();
@@ -33,9 +31,9 @@ const OnRampSwapConfirmationStep: FC = () => {
     const [swapToCancel, setSwapToCancel] = useState<SwapItem>()
 
     useEffect(() => {
-        if (returnBySwapType(swapType, from, to) && pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
+        if (pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
             MainForm.onNext({ values: swapFormData, swapId: swap?.id })
-    }, [pendingSwapsToCancel, returnBySwapType(swapType, from, to), swapFormData, allPendingSwaps, isValidating, swap])
+    }, [pendingSwapsToCancel, swapFormData, allPendingSwaps, isValidating, swap])
 
     const handleCancelSwap = (swap: SwapItem) => {
         setSwapToCancel(swap)
@@ -114,7 +112,6 @@ const OnRampSwapConfirmationStep: FC = () => {
                                                                                     alt="Source Logo"
                                                                                     height="60"
                                                                                     width="60"
-                                                                                    layout="responsive"
                                                                                     className="rounded-md object-contain"
                                                                                 />
                                                                             }
@@ -132,7 +129,6 @@ const OnRampSwapConfirmationStep: FC = () => {
                                                                                 alt="Source Logo"
                                                                                 height="60"
                                                                                 width="60"
-                                                                                layout="responsive"
                                                                                 className="rounded-md object-contain"
                                                                             />
                                                                         </div>

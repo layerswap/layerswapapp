@@ -15,10 +15,10 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         let maxAllowedAmount = CalculateMaxAllowedAmount(values, settings.networks);
 
         if (!values.from) {
-            (errors.from as any) = 'Select an exchange';
+            (errors.from as any) = 'Select source';
         }
         if (!values.to) {
-            (errors.to as any) = 'Select a network';
+            (errors.to as any) = 'Select destination';
         }
         if (!amount) {
             errors.amount = 'Enter an amount';
@@ -35,23 +35,15 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         if (minAllowedAmount != undefined && amount < minAllowedAmount) {
             errors.amount = `Min amount is ${minAllowedAmount}`;
         }
-        if (values.swapType === SwapType.OnRamp && values.to) {
+        if(values.to){
             if (!values.destination_address) {
                 errors.destination_address = `Enter ${values.to.name} address`;
             }
             else if (!isValidAddress(values.destination_address, values.to.baseObject)) {
                 errors.destination_address = `Enter a valid ${values.to.name} address`;
             }
-            else if (isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, values.destination_address)) {
+            else if (values.swapType !== SwapType.OffRamp && isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, values.destination_address)) {
                 errors.destination_address = `You can not transfer to this address`;
-            }
-        }
-        else if (values.swapType === SwapType.OffRamp && values.from) {
-            if (!values.destination_address) {
-                errors.destination_address = `Enter ${values.from.name} address`;
-            }
-            else if (!isValidAddress(values.destination_address, values.from?.baseObject)) {
-                errors.destination_address = `Enter a valid ${values.from.name} address`;
             }
         }
         

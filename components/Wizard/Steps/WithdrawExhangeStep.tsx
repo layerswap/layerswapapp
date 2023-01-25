@@ -44,6 +44,10 @@ const WithdrawExchangeStep: FC = () => {
     const [authorized, steAuthorized] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [loading, setLoading] = useState(false)
+    const { source_exchange: source_exchange_internal_name, destination_network: destination_network_internal_name, destination_network_asset } = swap
+
+    const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
+    const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
 
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
@@ -95,7 +99,6 @@ const WithdrawExchangeStep: FC = () => {
         }
     }, [sourceIsCoinbase])
 
-    const { currency, exchange_currency, exchange, network, network_chain_logo, currency_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
     const handleTransferDone = useCallback(async () => {
         setTransferDone(true)
@@ -131,7 +134,7 @@ const WithdrawExchangeStep: FC = () => {
             }
             setSubmitting(false)
         }
-    }, [swap, network, codeRequested])
+    }, [swap, destination_network, codeRequested])
 
     const openConnect = () => {
         setOpenCoinbaseConnectSlideover(true)
@@ -140,10 +143,10 @@ const WithdrawExchangeStep: FC = () => {
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inModal'>
             {(close) => (
-                <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
+                <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[source_exchange_internal_name].ExchangeWithdrawalGuideUrl} />
             )}
         </SlideOver>
-        <Modal title={`Please connect your ${exchange?.display_name} account`} showModal={openCoinbaseConnectSlideover} setShowModal={setOpenCoinbaseConnectSlideover} >
+        <Modal title={`Please connect your ${source_exchange?.display_name} account`} showModal={openCoinbaseConnectSlideover} setShowModal={setOpenCoinbaseConnectSlideover} >
             <AccountConnectStep hideHeader onDoNotConnect={() => setOpenCoinbaseConnectSlideover(false)} onAuthorized={() => { steAuthorized(true); setOpenCoinbaseConnectSlideover(false); }} stickyFooter={false} />
         </Modal>
         <Modal showModal={openCoinbase2FA} setShowModal={setOpenCoinbase2FA}>
@@ -159,7 +162,7 @@ const WithdrawExchangeStep: FC = () => {
                             <div className='space-y-4'>
                                 <div className="text-left">
                                     <p className="block sm:text-lg font-medium text-white">
-                                        Send {currency?.asset} to the provided address from {exchange?.display_name}
+                                        Send {destination_network_asset} to the provided address from {source_exchange?.display_name}
                                     </p>
                                     <p className='text-sm sm:text-base'>
                                         The swap will be completed when your transfer is detected
@@ -181,18 +184,17 @@ const WithdrawExchangeStep: FC = () => {
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-5 w-5 relative">
                                                     {
-                                                        currency_logo &&
+                                                        destination_network_asset &&
                                                         <Image
-                                                            src={currency_logo}
+                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
                                                             alt="From Logo"
                                                             height="60"
                                                             width="60"
-                                                            layout="responsive"
                                                             className="rounded-md object-contain"
                                                         />
                                                     }
                                                 </div>
-                                                <div className="mx-1 block">{currency?.asset}</div>
+                                                <div className="mx-1 block">{destination_network_asset}</div>
                                             </div>
                                         </BackgroundField>
                                     </div>

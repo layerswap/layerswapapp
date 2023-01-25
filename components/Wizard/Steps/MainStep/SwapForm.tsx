@@ -7,7 +7,6 @@ import React from "react";
 import AddressInput from "../../../Input/AddressInput";
 import { classNames } from "../../../utils/classNames";
 import SwapOptionsToggle from "../../../SwapOptionsToggle";
-import { ConnectedFocusError } from "../../../../lib/external/ConnectedFocusError";
 import SelectNetwork from "../../../Select/SelectNetwork";
 import AmountField from "../../../Input/Amount";
 import LayerSwapApiClient, { SwapType, UserExchangesData } from "../../../../lib/layerSwapApiClient";
@@ -17,7 +16,6 @@ import Widget from "../../Widget";
 import AmountAndFeeDetails from "../../../DisclosureComponents/amountAndFeeDetailsComponent";
 import SlideOver from "../../../SlideOver";
 import OfframpAccountConnectStep from "../../../OfframpAccountConnect";
-import KnownInternalNames from "../../../../lib/knownIds";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
 import { KnownwErrorCode } from "../../../../Models/ApiError";
@@ -38,7 +36,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
         values,
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
-
+    const { swapType, from, to } = values
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
@@ -57,9 +55,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
         setLoadingDepositAddress(true)
         const layerswapApiClient = new LayerSwapApiClient(router)
         try {
-            const exchange_account = await layerswapApiClient.GetExchangeAccount(values.from?.baseObject.internal_name, 0)
+            const exchange_account = await layerswapApiClient.GetExchangeAccount(to?.baseObject.internal_name, 0)
             setExchangeAccount(exchange_account.data)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.from?.baseObject.internal_name, values?.currency?.baseObject?.asset)
+            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(to?.baseObject.internal_name, values?.currency?.baseObject?.asset)
             setFieldValue("destination_address", deposit_address.data)
             setDepositeAddressIsfromAccount(true)
             setLoadingDepositAddress(false)
@@ -82,12 +80,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
     }, [depositeAddressIsfromAccount])
 
     const handleExchangeConnected = useCallback(async () => {
-        if (!values.from || !values.currency)
+        if (!to || !values.currency)
             return
         setLoadingDepositAddress(true)
         try {
             const layerswapApiClient = new LayerSwapApiClient(router)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(values.from?.baseObject?.internal_name, values?.currency?.baseObject?.asset)
+            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(to?.baseObject?.internal_name, values?.currency?.baseObject?.asset)
             setFieldValue("destination_address", deposit_address.data)
             setDepositeAddressIsfromAccount(true)
         }
@@ -102,25 +100,26 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
             handleExchangeConnected()
     }, [values.currency])
 
-    const exchangeRef = useRef(values.from?.id);
+    const exchangeRef = useRef(to?.id);
 
     useEffect(() => {
-        if (exchangeRef.current && exchangeRef.current !== values?.from?.id) {
+        if (swapType === SwapType.OffRamp && exchangeRef.current && exchangeRef.current !== to?.id) {
             setFieldValue("destination_address", '')
             setDepositeAddressIsfromAccount(false)
         }
-        exchangeRef.current = values?.from?.id
-    }, [values.from])
+        exchangeRef.current = to?.id
+    }, [to])
 
     return <>
         <Form className="h-full" >
-            <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
-                {(close) => (
-                    (values?.swapType === SwapType.OffRamp && values?.to?.baseObject.authorization_flow) === "o_auth2" ?
-                        <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />
-                        : <ConnectApiKeyExchange exchange={values.swapType === SwapType.OnRamp && values?.from?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
-                )}
-            </SlideOver>
+            {swapType === SwapType.OffRamp &&
+                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
+                    {(close) => (
+                        (values?.to?.baseObject.authorization_flow) === "o_auth2" ?
+                            <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />
+                            : <ConnectApiKeyExchange exchange={to?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
+                    )}
+                </SlideOver>}
             <Widget>
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
@@ -128,61 +127,58 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                         <SwapOptionsToggle />
                         <div className='flex-col md:flex-row flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4'>
                             <div className="flex flex-col w-full">
-                                <SelectNetwork direction="from" label="From" placeholder="From"/>
+                                <SelectNetwork direction="from" label="From" placeholder="From" />
                             </div>
                             <div className="flex flex-col w-full">
-                                <SelectNetwork direction="to" label="To" placeholder="To"/>
+                                <SelectNetwork direction="to" label="To" placeholder="To" />
                             </div>
                         </div>
                         <div className="mb-6 leading-4">
                             <AmountField />
                         </div>
                         {
-                            values.swapType === SwapType.OnRamp &&
-                            <div className="w-full mb-3.5 leading-4">
-                                <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
-                                    {`To ${values?.to?.name || ''} address`}
-                                    {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({partner?.display_name})</span>}
-                                </label>
-                                <div className="relative rounded-md shadow-sm mt-1.5">
-                                    {isPartnerWallet &&
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            {
-                                                partnerImage &&
-                                                <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
-                                            }
+                            values.swapType === SwapType.OffRamp ?
+                                <div className="w-full mb-3.5 leading-4">
+                                    <div className="relative rounded-md shadow-sm mt-1.5">
+                                        <div>
+                                            <AddressInput
+                                                exchangeAccount={exchangeAccount}
+                                                onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
+                                                loading={loadingDepositAddress}
+                                                disabled={(!values.to || !values.from) || loadingDepositAddress || depositeAddressIsfromAccount}
+                                                name={"destination_address"}
+                                                className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-gray-400 truncate')}
+                                            />
                                         </div>
-                                    }
-                                    <div>
-                                        <AddressInput
-                                            hideLabel={true}
-                                            exchangeAccount={exchangeAccount}
-                                            onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
-                                            loading={loadingDepositAddress}
-                                            disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
-                                            name={"destination_address"}
-                                            className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
-                                        />
                                     </div>
                                 </div>
-                            </div>
-                        }
-                        {
-                            values.swapType === SwapType.OffRamp &&
-                            <div className="w-full mb-3.5 leading-4">
-                                <div className="relative rounded-md shadow-sm mt-1.5">
-                                    <div>
-                                        <AddressInput
-                                            exchangeAccount={exchangeAccount}
-                                            onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
-                                            loading={loadingDepositAddress}
-                                            disabled={(!values.to || !values.from) || loadingDepositAddress || depositeAddressIsfromAccount}
-                                            name={"destination_address"}
-                                            className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-gray-400 truncate')}
-                                        />
+                                :
+                                <div className="w-full mb-3.5 leading-4">
+                                    <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
+                                        {`To ${values?.to?.name || ''} address`}
+                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({partner?.display_name})</span>}
+                                    </label>
+                                    <div className="relative rounded-md shadow-sm mt-1.5">
+                                        {isPartnerWallet &&
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                {
+                                                    partnerImage &&
+                                                    <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
+                                                }
+                                            </div>
+                                        }
+                                        <div>
+                                            <AddressInput
+                                                hideLabel={true}
+                                                exchangeAccount={exchangeAccount}
+                                                loading={loadingDepositAddress}
+                                                disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
+                                                name={"destination_address"}
+                                                className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                         }
                         <div className="w-full">
                             <AmountAndFeeDetails values={values} />

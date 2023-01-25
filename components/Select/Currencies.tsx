@@ -5,7 +5,6 @@ import { SwapType } from "../../lib/layerSwapApiClient";
 import { SortingByOrder } from "../../lib/sorting";
 import { Currency } from "../../Models/Currency";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import returnBySwapType from "../utils/returnBySwapType";
 import Select from "./Select";
 import { SelectMenuItem } from "./selectMenuItem";
 
@@ -18,9 +17,7 @@ const CurrenciesField: FC = () => {
     const name = "currency"
     const { discovery: { resource_storage_url }, currencies, exchanges } = useSettingsState();
 
-    const currencyIsAvilable = useCallback((c: Currency) => from && to && returnBySwapType(swapType, from, to)?.baseObject.currencies.some(ec => ec.asset === c.asset && ec.status === "active" && (swapType === SwapType.OffRamp ?
-        ec.is_withdrawal_enabled : ec.is_deposit_enabled)) && returnBySwapType(swapType, to, from).baseObject.currencies.some(nc => nc.asset === c.asset && nc.status === "active" && (swapType === SwapType.OffRamp ?
-            nc.is_deposit_enabled : nc.is_withdrawal_enabled)), [from, to, swapType])
+    const currencyIsAvilable = useCallback((c: Currency) => from && to && from?.baseObject.currencies.some(fc => fc.asset === c.asset && fc.status === "active" && fc.is_withdrawal_enabled) && to.baseObject.currencies.some(tc => tc.asset === c.asset && tc.status === "active" && tc.is_deposit_enabled), [from, to, swapType])
 
     const mapCurranceToMenuItem = (c: Currency): SelectMenuItem<Currency> => ({
         baseObject: c,
@@ -32,7 +29,7 @@ const CurrenciesField: FC = () => {
         isDefault: false,
     })
 
-    const currencyMenuItems: SelectMenuItem<Currency>[] = returnBySwapType(swapType, to, from) ? currencies
+    const currencyMenuItems: SelectMenuItem<Currency>[] = (from && to) ? currencies
         .filter(currencyIsAvilable)
         .map(mapCurranceToMenuItem).sort(SortingByOrder)
         : []
