@@ -149,6 +149,7 @@ export type CreateSwapParams = {
     destination_address: string,
     partner?: string,
     external_id?: string,
+    refuel: boolean
 }
 
 export type SwapItem = {
