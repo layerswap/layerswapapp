@@ -141,7 +141,8 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
-            {(close) => <ConnectImmutableX network={formValues?.to?.baseObject} onClose={close} />}
+            {/* refactor this */}
+            {(close) => <ConnectImmutableX network={(formValues?.swapType === SwapType.OnRamp && formValues?.to || formValues?.swapType === SwapType.OffRamp && formValues?.from || formValues?.swapType === SwapType.CrossChain && (formValues?.to || formValues?.from))?.baseObject} onClose={close} />}
         </SlideOver>
         <SlideOver imperativeOpener={[connectNetworkiIsOpen, setConnectNetworkIsOpen]} place='inStep'>
             {() => <ConnectNetwork NetworkDisplayName={networkToConnect.DisplayName} AppURL={networkToConnect.AppURL} />}
