@@ -1,7 +1,6 @@
 import { HomeIcon } from "@heroicons/react/outline"
 import { useEffect } from "react"
 import SubmitButton from "../components/buttons/submitButton"
-import ContactSupport from "../components/ContactSupport"
 import MessageComponent from "../components/MessageComponent"
 import Navbar from "../components/navbar"
 import GoHomeButton from "../components/utils/GoHome"

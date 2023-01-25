@@ -62,14 +62,14 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       <meta name="twitter:description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
       <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpeg" />
     </Head>
-    <ErrorBoundary >
-      <QueryProvider query={query}>
-        <AuthProvider>
+    <AuthProvider>
+      <ErrorBoundary >
+        <QueryProvider query={query}>
           <ThemeWrapper hideNavbar={hideNavbar}>
             {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ? <MaintananceContent /> : children}
           </ThemeWrapper>
-        </AuthProvider>
-      </QueryProvider>
-    </ErrorBoundary>
+        </QueryProvider>
+      </ErrorBoundary>
+    </AuthProvider>
   </>)
 }
