@@ -21,7 +21,6 @@ import { ArrowLeftIcon } from "@heroicons/react/solid"
 import { useSwapDataUpdate } from "../../context/swap"
 import { SwapStatus } from "../../Models/SwapStatus"
 import FormattedDate from "../Common/FormattedDate";
-import { GetSourceDestinationData } from "../../helpers/swapHelper";
 import useSortableData from "../../hooks/useSortableData";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import isGuid from "../utils/isGuid";
@@ -199,10 +198,20 @@ function TransactionsHistory() {
                         <tbody>
                           {items?.map((swap, index) => {
 
-                            const { destination, destination_network, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+                            const { source_exchange: source_exchange_internal_name,
+                              destination_network: destination_network_internal_name,
+                              source_network: source_network_internal_name,
+                              destination_exchange: destination_exchange_internal_name,
+                              source_network_asset: source_network_asset
+                            } = swap
 
-                            //TODO implement transaction_explorer_template in exchange & network settings
-                            // const { transaction_explorer_template } = swapNetwork
+                            const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
+                            const destination_exchange = destination_exchange_internal_name && exchanges.find(e => e.internal_name === destination_exchange_internal_name)
+                            const exchange_currency = destination_exchange_internal_name && destination_exchange.currencies?.find(c => swap?.source_network_asset?.toUpperCase() === c?.asset?.toUpperCase() && c?.is_default)
+
+                            const destination_network = destination_network_internal_name ? networks.find(n => n.internal_name === destination_network_internal_name) : networks?.find(e => e?.internal_name?.toUpperCase() === exchange_currency?.network?.toUpperCase())
+
+                            const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
 
                             return <tr onClick={() => handleOpenSwapDetailsInMobile(swap)} key={swap.id}>
                               <td
@@ -227,11 +236,10 @@ function TransactionsHistory() {
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     {
                                       <Image
-                                        src={source_logo}
+                                        src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`}
                                         alt="From Logo"
                                         height="60"
                                         width="60"
-                                        layout="responsive"
                                         className="rounded-md object-contain"
                                       />
                                     }
@@ -241,11 +249,10 @@ function TransactionsHistory() {
                                   <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
                                     {
                                       <Image
-                                        src={destination_logo}
+                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
                                         alt="To Logo"
                                         height="60"
                                         width="60"
-                                        layout="responsive"
                                         className="rounded-md object-contain"
                                       />
                                     }
@@ -271,7 +278,7 @@ function TransactionsHistory() {
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     {
                                       <Image
-                                        src={destination_logo}
+                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
                                         alt="To Logo"
                                         height="60"
                                         width="60"

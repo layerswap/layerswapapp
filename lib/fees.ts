@@ -17,7 +17,7 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
     if (!currency || !from || !to)
         return 0;
 
-    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && (!from || from.baseObject?.internal_name === c.network))
+    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
     const destinationNetwork = swapType === SwapType.OnRamp ? to?.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
     const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
 
@@ -52,7 +52,7 @@ export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, allNetwo
 
     if (!currency || !from || !to) return 0
 
-    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && (!from || from.baseObject?.internal_name === c.network))
+    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
     const destinationNetwork = swapType !== SwapType.OffRamp ? to.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
     const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
 
@@ -66,7 +66,7 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
     const { currency, from, to, swapType } = swapFormData || {}
     if (!currency || !from || !to) return 0
 
-    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && (!from || from.baseObject?.internal_name === c.network))
+    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
     const destinationNetwork = swapType !== SwapType.OffRamp ? to.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
     const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
 
