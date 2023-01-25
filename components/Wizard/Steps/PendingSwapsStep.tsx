@@ -15,10 +15,11 @@ import useCreateSwap from '../../../hooks/useCreateSwap';
 import { useRouter } from 'next/router';
 import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 import SpinIcon from '../../icons/spinIcon';
+import returnBySwapType from '../../utils/returnBySwapType';
 
 const OnRampSwapConfirmationStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
-    const { from: exchange, to: network } = swapFormData || {}
+    const { from, to, swapType } = swapFormData || {}
     const { exchanges, networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { MainForm } = useCreateSwap()
     const router = useRouter();
@@ -32,9 +33,9 @@ const OnRampSwapConfirmationStep: FC = () => {
     const [swapToCancel, setSwapToCancel] = useState<SwapItem>()
 
     useEffect(() => {
-        if (exchange && pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
+        if (returnBySwapType(swapType, from, to) && pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
             MainForm.onNext({ values: swapFormData, swapId: swap?.id })
-    }, [pendingSwapsToCancel, exchange, swapFormData, allPendingSwaps, isValidating, swap])
+    }, [pendingSwapsToCancel, returnBySwapType(swapType, from, to), swapFormData, allPendingSwaps, isValidating, swap])
 
     const handleCancelSwap = (swap: SwapItem) => {
         setSwapToCancel(swap)

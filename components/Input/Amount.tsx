@@ -10,7 +10,7 @@ const AmountField = forwardRef((_, ref: any) => {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { networks } = useSettingsState()
-    const { currency, from: exchange, to: network, amount } = values
+    const { currency, from, to, amount } = values
     const name = "amount"
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks);
@@ -23,7 +23,7 @@ const AmountField = forwardRef((_, ref: any) => {
     const amountLabel = (
         <div className="flex items-center space-x-2">
             <p>Amount</p>
-            {exchange && network && amount &&
+            {from && to && amount &&
                 <div className="text-xs text-primary-text flex items-center space-x-1">
                     (Min: {minAllowedAmount} - Max: {maxAllowedAmount})
                 </div>}
@@ -43,7 +43,7 @@ const AmountField = forwardRef((_, ref: any) => {
             precision={currency?.baseObject?.precision}
             className="rounded-r-none text-white"
         >
-            {exchange && network && currency && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
+            {from && to && currency && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
                 <button
                     type="button"
                     className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md hidden md:block border border-darkblue-400 hover:border-darkblue-100"

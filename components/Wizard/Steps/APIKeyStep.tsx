@@ -1,21 +1,22 @@
 import { FC } from 'react'
 import { useSwapDataState } from '../../../context/swap';
 import ConnectApiKeyExchange from '../../connectApiKeyExchange';
+import returnBySwapType from '../../utils/returnBySwapType';
 
 type Props = {
     onSuccess: () => Promise<void>,
 }
 const APIKeyStep: FC<Props> = ({onSuccess}) => {
     const { swapFormData } = useSwapDataState()
-    const { from: exchange } = swapFormData || {}
+    const { from, to, swapType } = swapFormData || {}
     const onConnect = async () => {
         await onSuccess()
     }
-    if (!exchange)
+    if (!from)
         return <></>
 
     return (
-        <ConnectApiKeyExchange exchange={swapFormData?.from?.baseObject} onSuccess={onConnect} slideOverPlace='inStep' />
+        <ConnectApiKeyExchange exchange={returnBySwapType(swapType, from, to)?.baseObject} onSuccess={onConnect} slideOverPlace='inStep' />
     )
 }
 
