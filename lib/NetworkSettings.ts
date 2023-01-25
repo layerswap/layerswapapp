@@ -135,6 +135,12 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.RhinoFiMainnet] = {
             AccountExplorerTemplate: 'https://app.rhino.fi/account/{0}'
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.SolanaMainnet] = {
+            AddressPlaceholder: 'A1b2...69Ckfg'
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.SolanaTestnet] = {
+            AddressPlaceholder: 'A1b2...69Ckfg'
         }
 
         NetworkSettings.ImmutableXSettings = {

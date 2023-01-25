@@ -140,7 +140,7 @@ const WithdrawExchangeStep: FC = () => {
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inModal'>
             {(close) => (
-                <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
+                <DocIframe onConfirm={() => close()} URl={ExchangeSettings.KnownSettings[exchange?.internal_name].ExchangeWithdrawalGuideUrl} />
             )}
         </SlideOver>
         <Modal title={`Please connect your ${exchange?.display_name} account`} showModal={openCoinbaseConnectSlideover} setShowModal={setOpenCoinbaseConnectSlideover} >
@@ -215,20 +215,20 @@ const WithdrawExchangeStep: FC = () => {
                                         </div>
                                     </BackgroundField>
                                     {
-                                        ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage &&
+                                        ExchangeSettings.KnownSettings[exchange?.internal_name]?.WithdrawalWarningMessage &&
                                         <WarningMessage>
                                             <span>
-                                                {ExchangeSettings.KnownSettings[exchange.internal_name]?.WithdrawalWarningMessage}
+                                                {ExchangeSettings.KnownSettings[exchange?.internal_name]?.WithdrawalWarningMessage}
                                             </span>
                                         </WarningMessage>
                                     }
                                     {
-                                        ExchangeSettings?.KnownSettings[exchange.internal_name]?.ExchangeWithdrawalGuideUrl &&
+                                        ExchangeSettings?.KnownSettings[exchange?.internal_name]?.ExchangeWithdrawalGuideUrl &&
                                         <WarningMessage messageType='informing'>
                                             <span className='flex-none'>
                                                 Learn how to send from
                                             </span>
-                                            <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange.internal_name].ExchangeWithdrawalGuideUrl} />
+                                            <GuideLink text={exchange?.display_name} userGuideUrl={ExchangeSettings.KnownSettings[exchange?.internal_name].ExchangeWithdrawalGuideUrl} />
                                         </WarningMessage>
                                     }
                                 </div>
