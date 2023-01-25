@@ -91,6 +91,11 @@ export default class KnownInternalNames {
         public static readonly DydxGoerli: string = "DYDX_GOERLI";
 
         public static readonly BNBChainMainnet: string = "BSC_MAINNET";
+
+        public static readonly SolanaMainnet: string = "SOLANA_MAINNET";
+
+        public static readonly SolanaTestnet: string = "SOLANA_TESTNET";
+
     }
 
     static Currencies = class{

@@ -18,6 +18,7 @@ export default class NetworkSettings {
     AddressPlaceholder?: string;
     Order?: number;
     AccountExplorerTemplate?: string;
+    Refuel?: boolean = false
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
@@ -121,6 +122,7 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BNBChainMainnet] = {
             Order: 3,
             AccountExplorerTemplate: 'https://bscscan.com/address/{0}',
+            Refuel: true
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
             Order: 4,
@@ -134,6 +136,12 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.RhinoFiMainnet] = {
             AccountExplorerTemplate: 'https://app.rhino.fi/account/{0}'
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.SolanaMainnet] = {
+            AddressPlaceholder: 'A1b2...69Ckfg'
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.SolanaTestnet] = {
+            AddressPlaceholder: 'A1b2...69Ckfg'
         }
 
         NetworkSettings.ImmutableXSettings = {

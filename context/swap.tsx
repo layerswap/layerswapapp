@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem } from '../lib/layerSwapApiClient';
-import { useAuthDataUpdate } from './authContext';
 import { useRouter } from 'next/router';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';
@@ -9,6 +8,7 @@ import { QueryParams } from '../Models/QueryParams';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
+import NetworkSettings from '../lib/NetworkSettings';
 
 const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawManually: false });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
@@ -83,7 +83,8 @@ export function SwapDataProvider({ children }) {
             destination_address: formData.destination_address,
             // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
             partner: settings.partners.find(p => p.is_enabled && p.internal_name?.toLocaleLowerCase() === query.addressSource?.toLocaleLowerCase())?.internal_name,
-            external_id: query.externalId
+            external_id: query.externalId,
+            refuel: formData?.swapType === SwapType.OnRamp && NetworkSettings.KnownSettings[formData?.network.baseObject?.internal_name]?.Refuel
         }
 
         if (formData.swapType === SwapType.OnRamp) {
