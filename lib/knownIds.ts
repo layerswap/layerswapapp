@@ -26,6 +26,8 @@ export default class KnownInternalNames {
 
         public static readonly CryptoCom: string = "CRYPTOCOM";
 
+        public static readonly CryptoComApp: string = "CRYPTOCOMAPP";
+
         public static readonly BinanceUS: string = "BINANCEUS";
 
         public static readonly Blocktane: string = "BLOCKTANE";
