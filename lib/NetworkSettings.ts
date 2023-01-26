@@ -146,6 +146,7 @@ export default class NetworkSettings {
             Order: 4,
         }
 
+        
         NetworkSettings.ImmutableXSettings = {
             [KnownInternalNames.Networks.ImmutableX]: {
                 apiUri: "https://api.x.immutable.com/v1",
