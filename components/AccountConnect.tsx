@@ -69,7 +69,7 @@ function UserExchanges() {
                     ...e,
                     is_connected: userExchanges?.some(ue => ue.exchange === e.internal_name),
                     note: userExchanges?.find(ue => ue.exchange === e.internal_name)?.note,
-                    authorization_flow: ExchangeSettings.KnownSettings[e?.internal_name]?.CustomAuthorizationFlow || e.authorization_flow
+                    authorization_flow: e?.authorization_flow
                 }
             })
             setUserExchanges(mappedExchanges)
@@ -165,6 +165,9 @@ function UserExchanges() {
                                         <>
                                             {userExchanges?.length > 0 && (
                                                 userExchanges.map((item) => (
+
+                                                    item.authorization_flow !== 'none' &&
+                                                    
                                                     <Combobox.Option
                                                         key={item.internal_name}
                                                         value={item}
@@ -197,18 +200,13 @@ function UserExchanges() {
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-xs">
-                                                                    {
-                                                                        item?.authorization_flow === 'none' ?
-                                                                            <></>
-                                                                            :
-                                                                            <>
-                                                                                {
-                                                                                    item.is_connected ?
-                                                                                        <SubmitButton onClick={() => { setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true) }} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.internal_name === item.internal_name}>Disconnect</SubmitButton>
-                                                                                        : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.internal_name === item.internal_name}>Connect</SubmitButton>
-                                                                                }
-                                                                            </>
-                                                                    }
+                                                                    <>
+                                                                        {
+                                                                            item.is_connected ?
+                                                                                <SubmitButton onClick={() => { setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true) }} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.internal_name === item.internal_name}>Disconnect</SubmitButton>
+                                                                                : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.internal_name === item.internal_name}>Connect</SubmitButton>
+                                                                        }
+                                                                    </>
                                                                 </div>
                                                             </div>
                                                         )}
