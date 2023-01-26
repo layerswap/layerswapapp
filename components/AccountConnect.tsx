@@ -18,6 +18,7 @@ import ExchangeSettings from "../lib/ExchangeSettings";
 import KnownInternalNames from "../lib/knownIds";
 import GoHomeButton from "./utils/GoHome";
 import ClickTooltip from "./Tooltips/ClickTooltip";
+import ConnectOauthExchange from "./connectOauthExchange";
 
 interface UserExchange extends Exchange {
     note?: string,
@@ -68,7 +69,7 @@ function UserExchanges() {
                     ...e,
                     is_connected: userExchanges?.some(ue => ue.exchange === e.internal_name),
                     note: userExchanges?.find(ue => ue.exchange === e.internal_name)?.note,
-                    authorization_flow: ExchangeSettings.KnownSettings[e?.internal_name]?.CustomAuthorizationFlow
+                    authorization_flow: e?.authorization_flow
                 }
             })
             setUserExchanges(mappedExchanges)
@@ -164,6 +165,9 @@ function UserExchanges() {
                                         <>
                                             {userExchanges?.length > 0 && (
                                                 userExchanges.map((item) => (
+
+                                                    item.authorization_flow !== 'none' &&
+                                                    
                                                     <Combobox.Option
                                                         key={item.internal_name}
                                                         value={item}
@@ -190,21 +194,19 @@ function UserExchanges() {
                                                                                 <p className="text-xs font-normal">
                                                                                     {shortenUniversalAddress(item.note)}
                                                                                 </p>
-                                                                                <ClickTooltip text={item.note} moreClassNames='break-all'/>
+                                                                                <ClickTooltip text={item.note} moreClassNames='break-all' />
                                                                             </div>
                                                                         }
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-xs">
-                                                                    {
-                                                                        <>
-                                                                            {
-                                                                                item.is_connected ?
-                                                                                    <SubmitButton onClick={() => { setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true) }} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.internal_name === item.internal_name}>Disconnect</SubmitButton>
-                                                                                    : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.internal_name === item.internal_name}>Connect</SubmitButton>
-                                                                            }
-                                                                        </>
-                                                                    }
+                                                                    <>
+                                                                        {
+                                                                            item.is_connected ?
+                                                                                <SubmitButton onClick={() => { setExchangeToDisconnect(item); setOpenExchangeToDisconnectModal(true) }} buttonStyle="outline" isDisabled={false} isSubmitting={exchangeLoading?.internal_name === item.internal_name}>Disconnect</SubmitButton>
+                                                                                : <SubmitButton onClick={() => handleConnectExchange(item)} buttonStyle="filled" isDisabled={false} isSubmitting={exchangeLoading?.internal_name === item.internal_name}>Connect</SubmitButton>
+                                                                        }
+                                                                    </>
                                                                 </div>
                                                             </div>
                                                         )}
@@ -230,7 +232,10 @@ function UserExchanges() {
                     </div>
                 </div>
             </div>
-            <Modal showModal={openExchangeToConnectModal} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
+            <Modal showModal={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
+                <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
+            </Modal>
+            <Modal showModal={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
                 <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' stickyFooter={false} />
             </Modal>
             <Modal showModal={openExchangeToDisconnectModal} setShowModal={setOpenExchangeToDisconnectModal} title={'Are you sure?'} modalSize='small'>

@@ -18,9 +18,6 @@ export default function () {
     const router = useRouter();
     const { menuVisible } = useMenuState()
 
-    const [modalUrl, setModalUrl] = useState<string>(null);
-    const handleSetUrl = (url: string) => setModalUrl(url)
-
     const handleLogout = useCallback(() => {
         TokenService.removeAuthData()
         if (router.pathname != '/') {
@@ -38,9 +35,6 @@ export default function () {
     }
 
     return <>
-        <Modal className="bg-[#181c1f] sm:!pb-6 !pb-0" showModal={modalUrl != null} setShowModal={() => setModalUrl(null)} >
-            <DocIframe URl={modalUrl} className='md:min-h-[calc(100vh-170px)]' />
-        </Modal>
         <span className="text-primary-text cursor-pointer relative">
             {
                 <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
@@ -100,7 +94,7 @@ export default function () {
                                                         }
                                                         <hr className="horizontal-gradient" />
                                                         <Menu.Item>
-                                                            <Item type={ItemType.button} onClick={() => handleSetUrl("https://docs.layerswap.io/")} icon={<BookOpenIcon className='h-4 w-4' />} className="plausible-event-name=User+Docs">
+                                                            <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpenIcon className='h-4 w-4' />} className="plausible-event-name=User+Docs">
                                                                 User Docs
                                                             </Item>
                                                         </Menu.Item>
@@ -134,7 +128,7 @@ export default function () {
                                                     </Menu.Item>
                                                     <hr className="horizontal-gradient" />
                                                     <Menu.Item>
-                                                        <Item type={ItemType.button} onClick={() => handleSetUrl("https://docs.layerswap.io/")} icon={<BookOpenIcon className='h-4 w-4' />} className="plausible-event-name=User+Docs">
+                                                        <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpenIcon className='h-4 w-4' />} className="plausible-event-name=User+Docs">
                                                             User Docs
                                                         </Item>
                                                     </Menu.Item>
