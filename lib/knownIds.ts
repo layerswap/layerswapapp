@@ -26,6 +26,8 @@ export default class KnownInternalNames {
 
         public static readonly CryptoCom: string = "CRYPTOCOM";
 
+        public static readonly CryptoComApp: string = "CRYPTOCOMAPP";
+
         public static readonly BinanceUS: string = "BINANCEUS";
 
         public static readonly Blocktane: string = "BLOCKTANE";
@@ -91,6 +93,11 @@ export default class KnownInternalNames {
         public static readonly DydxGoerli: string = "DYDX_GOERLI";
 
         public static readonly BNBChainMainnet: string = "BSC_MAINNET";
+
+        public static readonly SolanaMainnet: string = "SOLANA_MAINNET";
+
+        public static readonly SolanaTestnet: string = "SOLANA_TESTNET";
+
     }
 
     static Currencies = class{

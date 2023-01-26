@@ -3,6 +3,7 @@ import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { Exchange } from "../Models/Exchange";
 import KnownInternalNames from "./knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
+import { PublicKey } from '@solana/web3.js'
 
 export function isValidAddress(address: string, network: CryptoNetwork | Exchange): boolean {
     if (network.internal_name === KnownInternalNames.Networks.RoninMainnet) {
@@ -25,6 +26,15 @@ export function isValidAddress(address: string, network: CryptoNetwork | Exchang
             return true
         }
         return false
+    }
+    else if (network.internal_name === KnownInternalNames.Networks.SolanaMainnet || network.internal_name === KnownInternalNames.Networks.SolanaTestnet) {
+        try {
+            let pubkey = new PublicKey(address)
+            let isSolana = PublicKey.isOnCurve(pubkey.toBuffer())
+            return isSolana
+        } catch (error) {
+            return false
+        }
     }
     else {
         return isValidEtherAddress(address);

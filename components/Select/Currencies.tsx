@@ -1,6 +1,7 @@
 import { Field, useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
 import { useSettingsState } from "../../context/settings";
+import KnownInternalNames from "../../lib/knownIds";
 import { SwapType } from "../../lib/layerSwapApiClient";
 import { SortingByOrder } from "../../lib/sorting";
 import { Currency } from "../../Models/Currency";
@@ -29,7 +30,7 @@ const CurrenciesField: FC = () => {
         baseObject: c,
         id: c.asset,
         name: c.asset,
-        order: 0, // TODO implement in settings
+        order: c.asset === KnownInternalNames.Currencies.LRC && network?.baseObject?.internal_name === KnownInternalNames.Networks.LoopringMainnet ? 0 : 1,
         imgSrc: `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`,
         isAvailable: true,
         isDefault: false,

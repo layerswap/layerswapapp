@@ -21,7 +21,7 @@ export default function GlobalTable(props) {
                     <title>Global Table</title>
                 </Head>
                 <main>
-                    <div className="flex-col justify-center py-4 ">
+                    <div className="flex-col justify-center py-4">
                         <div className="mt-3 flex items-center justify-between z-20" >
                             <div className="flex ">
                                 <button onClick={handleGoBack} className="self-start md:mt-2">
@@ -31,10 +31,10 @@ export default function GlobalTable(props) {
                         </div>
                         <div>
                             <div className="flex flex-col max-w-sm md:max-w-6xl">
-                                <div className="overflow-x-auto ">
+                                <div className="overflow-x-auto styled-scroll">
                                     <div className="inline-block min-w-full py-2 align-middle">
                                         <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                                            <table className="min-w-full divide-y divide-darkblue-500">
+                                            <table className="min-w-full divide-y divide-darkblue-500 ">
                                                 <thead className="bg-darkblue-50">
                                                     <tr className="divide-x divide-darkblue-500">
                                                         <th scope="col" className="py-3.5 pl-4 pr-4 text-left text-sm font-semibold sm:pl-6">
@@ -57,7 +57,7 @@ export default function GlobalTable(props) {
                                                                 {e.display_name}
                                                             </td>
                                                             {props?.networks?.map((n) => (
-                                                                <td className="whitespace-nowrap p-4 text-sm text-white">{e?.currencies.map((currency) => currency.asset).filter(e => n?.currencies.map((c) => c.asset).includes(e)).join(', ')}</td>
+                                                                <td className="whitespace-nowrap p-4 text-sm text-white">{e?.currencies.map((currency) => currency.asset).filter(e => n?.currencies.map((c) => c.asset).includes(e)).filter((v, i, a) => a.indexOf(v) === i).join(', ')}</td>
                                                             ))}
                                                         </tr>
                                                     ))}
