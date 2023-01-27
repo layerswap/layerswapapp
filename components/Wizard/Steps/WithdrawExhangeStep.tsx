@@ -51,7 +51,7 @@ const WithdrawExchangeStep: FC = () => {
     const [openDocSlideover, setOpenDocSlideover] = useState(false)
 
     useEffect(() => {
-        setInterval(2000)
+        setInterval(15000)
         return () => setInterval(0)
     }, [])
 

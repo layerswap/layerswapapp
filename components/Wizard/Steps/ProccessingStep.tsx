@@ -13,7 +13,7 @@ const ProccessingStep: FC = () => {
     const { setInterval } = useSwapDataUpdate()
 
     useEffect(() => {
-        setInterval(2000)
+        setInterval(10000)
         return () => setInterval(0)
     }, [])
 
