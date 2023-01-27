@@ -173,7 +173,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             </>
                         }
                         {
-                            swap?.output_transaction != 0 &&
+                            swap?.output_transaction &&
                             <>
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
