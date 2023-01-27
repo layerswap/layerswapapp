@@ -172,11 +172,16 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 </div>
                             </>
                         }
-                        <hr className='horizontal-gradient' />
-                        <div className="flex justify-between items-baseline">
-                            <span className="text-left">Layerswap Fee </span>
-                            <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currency?.precision))} {currency?.asset}</span>
-                        </div>
+                        {
+                            swap?.output_transaction &&
+                            <>
+                                <hr className='horizontal-gradient' />
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-left">Layerswap Fee </span>
+                                    <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currency?.precision))} {currency?.asset}</span>
+                                </div>
+                            </>
+                        }
                         {
                             swap?.output_transaction &&
                             <>
