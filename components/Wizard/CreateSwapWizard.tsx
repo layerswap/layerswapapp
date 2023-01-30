@@ -38,7 +38,7 @@ const CreateSwap: FC = () => {
                 <CodeStep OnNext={Code.onNext} />
             </WizardItem>
             <WizardItem StepName={SwapCreateStep.PendingSwaps} GoBack={GoBackToMainStep} PositionPercent={MainForm.positionPercent + 10} key={SwapCreateStep.PendingSwaps}>
-                <PendingSwapsStep />
+                <PendingSwapsStep onNext={async ({ values, swapId }) => { await MainForm.onNext({ values: values, swapId: swapId }) }} />
             </WizardItem>
             <WizardItem StepName={SwapCreateStep.AuthorizeCoinbaseWithdrawal} GoBack={GoBackToMainStep} PositionPercent={MainForm.positionPercent + 10} key={SwapCreateStep.AuthorizeCoinbaseWithdrawal}>
                 <CoinbaseAccountConnectStep stickyFooter={true} onAuthorized={CoinbaseAuthorize.onNext} onDoNotConnect={CoinbaseAuthorize.onNext} />

@@ -11,23 +11,28 @@ import useSWR from 'swr';
 import { ApiResponse } from '../../../Models/ApiResponse';
 import { useSettingsState } from '../../../context/settings';
 import shortenAddress from '../../utils/ShortenAddress';
-import useCreateSwap from '../../../hooks/useCreateSwap';
 import { useRouter } from 'next/router';
 import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 
-const PendingSwapStep: FC = () => {
+type PendingSwapProps = {
+    allSwaps?: boolean
+    onNext: (data?: any) => Promise<void>
+}
+
+const PendingSwapStep: FC<PendingSwapProps> = ({ allSwaps, onNext }) => {
     const { swapFormData, swap } = useSwapDataState()
     const { exchange, } = swapFormData || {}
-    const { MainForm } = useCreateSwap()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const pending_swaps_endpoint = `/swaps?status=0`
     const { data: allPendingSwaps, mutate, isValidating } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher, { refreshInterval: 2000 })
-    const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLocaleLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
+    const pendingSwapsToCancel = allSwaps ? allPendingSwaps?.data : allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLocaleLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
 
     useEffect(() => {
         if (exchange && pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
-            MainForm.onNext({ values: swapFormData, swapId: swap?.id })
+            onNext({ values: swapFormData, swapId: swap?.id })
+        else if (allSwaps && pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
+            onNext()
     }, [pendingSwapsToCancel, exchange, swapFormData, allPendingSwaps, isValidating, swap])
 
     return (
@@ -54,15 +59,15 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
         setSwapToCancel(swap)
         setOpenCancelConfirmModal(true)
     }
-    
+
     const handleCompleteSwap = (swap: SwapItem) => {
         router.push(`/swap/${swap.id}`)
     }
 
     return (
-        <div className="w-full flex-col space-y-5 flex h-full mt-4 text-primary-text">
-            <div className='text-center mt-5'>
-                <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
+        <div className="w-full flex-col space-y-4 flex h-full text-primary-text mt-6">
+            <div className='text-center'>
+                <p className='mb-6 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
                     {header}
                 </p>
                 <p className='text-center text-base'>

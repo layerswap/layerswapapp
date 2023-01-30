@@ -6,6 +6,7 @@ import { useFormWizardaUpdate, useFormWizardState } from '../context/formWizardP
 import { AuthStep } from '../Models/Wizard';
 import CodeStep from './Wizard/Steps/CodeStep';
 import EmailStep from './Wizard/Steps/EmailStep';
+import PendingSwapStep from './Wizard/Steps/PendingSwapsStep';
 import Wizard from './Wizard/Wizard';
 import WizardItem from './Wizard/WizardItem';
 
@@ -20,6 +21,8 @@ function GuestCard() {
     }, [redirect]);
     const GoBackToEmailStep = useCallback(() => goToStep(AuthStep.Email, "back"), [])
     const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
+
+    const EmailOnNext = useCallback(async () => goToStep(AuthStep.Email), []);
 
     return (
         <div className='mt-10'>
@@ -39,6 +42,9 @@ function GuestCard() {
                         }
                         <CodeStep OnNext={CodeOnNext} disclosureLogin />
                     </div>
+                </WizardItem>
+                <WizardItem StepName={AuthStep.PendingSwaps} fitHeight>
+                    <PendingSwapStep onNext={EmailOnNext} allSwaps />
                 </WizardItem>
             </Wizard>
         </div>

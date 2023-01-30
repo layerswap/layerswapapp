@@ -6,6 +6,7 @@ import { AuthStep, SwapCreateStep } from "../../Models/Wizard";
 import { TrackEvent } from "../../pages/_document";
 import CodeStep from "./Steps/CodeStep";
 import EmailStep from "./Steps/EmailStep";
+import PendingSwapStep from "./Steps/PendingSwapsStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 
@@ -21,10 +22,11 @@ const AuthWizard: FC = () => {
     }, [redirect]);
     const GoBackToEmailStep = useCallback(() => goToStep(AuthStep.Email, "back"), [])
     const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
+    const GoToEmailStep = useCallback(async () => goToStep(AuthStep.Email), [])
 
     const handleGoBack = useCallback(() => {
         router.back()
-      }, [router])
+    }, [router])
 
     return (
         <TimerProvider>
@@ -34,6 +36,9 @@ const AuthWizard: FC = () => {
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.Code} GoBack={GoBackToEmailStep}>
                     <CodeStep OnNext={CodeOnNext} />
+                </WizardItem>
+                <WizardItem StepName={SwapCreateStep.PendingSwaps}>
+                    <PendingSwapStep onNext={GoToEmailStep} allSwaps />
                 </WizardItem>
             </Wizard>
         </TimerProvider>

@@ -11,9 +11,8 @@ import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
 import Widget from './Wizard/Widget';
-import SlideOver from './SlideOver';
-import PendingSwapStep, { PendingSwapsComponent } from './Wizard/Steps/PendingSwapsStep';
-import Modal from './modalComponent';
+import { useFormWizardaUpdate } from '../context/formWizardProvider';
+import { SwapCreateStep } from '../Models/Wizard';
 
 type EmailFormValues = {
     email: string;
@@ -27,10 +26,9 @@ type Props = {
 const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
     const { codeRequested, tempEmail, userType } = useAuthState()
     const { setCodeRequested, updateTempEmail } = useAuthDataUpdate();
+    const { goToStep } = useFormWizardaUpdate()
     const initialValues: EmailFormValues = { email: tempEmail ?? "" };
     const { start: startTimer } = useTimerState()
-    const [pendingSwaps, setPendingSwaps] = useState<SwapItem[]>()
-    const [openCancelSwaps, setOpenCancelSwaps] = useState(false)
 
     const sendEmail = useCallback(async (values: EmailFormValues) => {
         try {
@@ -38,8 +36,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
             const layerswapApiClient = new LayerswapApiClient();
             const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
             if (userType === UserType.GuestUser && allPendingSwaps?.data?.length > 0) {
-                setPendingSwaps(allPendingSwaps?.data)
-                setOpenCancelSwaps(true)
+                goToStep(SwapCreateStep.PendingSwaps)
             } else {
                 if (inputEmail != tempEmail || !codeRequested) {
 
@@ -177,9 +174,6 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                     </Form>
                 )}
             </Formik >
-            <Modal title='Pending swaps' showModal={openCancelSwaps} setShowModal={setOpenCancelSwaps}>
-                <PendingSwapsComponent header='You have pending swaps' description='Please either complete them or cancel before creating a new one.' pendingSwapsToCancel={pendingSwaps} />
-            </Modal>
         </>
     )
 }
