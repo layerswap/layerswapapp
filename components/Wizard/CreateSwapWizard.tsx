@@ -10,7 +10,7 @@ import ErrorStep from "./Steps/ErrorStep";
 import MainStep from "./Steps/MainStep/index";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
-import PendingSwapsStep from "./Steps/PendingSwapsStep";
+import { CurrencyPendingSwapStep } from "./Steps/PendingSwapsStep";
 import CoinbaseAccountConnectStep from "./Steps/CoinbaseAccountConnectStep";
 import Coinbase2FA from "../Coinbase2FA";
 import { useRouter } from "next/router";
@@ -38,7 +38,7 @@ const CreateSwap: FC = () => {
                 <CodeStep OnNext={Code.onNext} />
             </WizardItem>
             <WizardItem StepName={SwapCreateStep.PendingSwaps} GoBack={GoBackToMainStep} PositionPercent={MainForm.positionPercent + 10} key={SwapCreateStep.PendingSwaps}>
-                <PendingSwapsStep onNext={async ({ values, swapId }) => { await MainForm.onNext({ values: values, swapId: swapId }) }} />
+                <CurrencyPendingSwapStep  />
             </WizardItem>
             <WizardItem StepName={SwapCreateStep.AuthorizeCoinbaseWithdrawal} GoBack={GoBackToMainStep} PositionPercent={MainForm.positionPercent + 10} key={SwapCreateStep.AuthorizeCoinbaseWithdrawal}>
                 <CoinbaseAccountConnectStep stickyFooter={true} onAuthorized={CoinbaseAuthorize.onNext} onDoNotConnect={CoinbaseAuthorize.onNext} />

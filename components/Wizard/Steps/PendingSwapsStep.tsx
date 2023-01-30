@@ -5,7 +5,7 @@ import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import Modal from '../../modalComponent';
 import Widget from '../Widget';
-import LayerSwapApiClient, { SwapItem, SwapType } from '../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem } from '../../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import useSWR from 'swr';
 import { ApiResponse } from '../../../Models/ApiResponse';
@@ -13,32 +13,70 @@ import { useSettingsState } from '../../../context/settings';
 import shortenAddress from '../../utils/ShortenAddress';
 import { useRouter } from 'next/router';
 import { GetSourceDestinationData } from '../../../helpers/swapHelper';
+import useCreateSwap from '../../../hooks/useCreateSwap';
+import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
+import { AuthStep } from '../../../Models/Wizard';
 
-type PendingSwapProps = {
-    allSwaps?: boolean
-    onNext: (data?: any) => Promise<void>
-}
 
-const PendingSwapStep: FC<PendingSwapProps> = ({ allSwaps, onNext }) => {
+export const CurrencyPendingSwapStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
     const { exchange, } = swapFormData || {}
+    const { MainForm } = useCreateSwap()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const pending_swaps_endpoint = `/swaps?status=0`
-    const { data: allPendingSwaps, mutate, isValidating } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher, { refreshInterval: 2000 })
-    const pendingSwapsToCancel = allSwaps ? allPendingSwaps?.data : allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLocaleLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
+    const { data: allPendingSwaps, isValidating, mutate } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher)
+    const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLocaleLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
 
     useEffect(() => {
         if (exchange && pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
-            onNext({ values: swapFormData, swapId: swap?.id })
-        else if (allSwaps && pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
-            onNext()
+            MainForm.onNext({ values: swapFormData, seapId: swap?.id })
     }, [pendingSwapsToCancel, exchange, swapFormData, allPendingSwaps, isValidating, swap])
+
+    useEffect(() => {
+        mutate()
+    }, [])
+
+    const handleCancel = useCallback(() => {
+        mutate()
+    }, [mutate])
 
     return (
         <Widget>
             <Widget.Content>
-                <PendingSwapsComponent pendingSwapsToCancel={pendingSwapsToCancel} header='You have pending swaps' description='Please either complete them or cancel before creating a new one.' />
+                <PendingSwapsComponent loading={isValidating} onCancel={handleCancel} pendingSwapsToCancel={pendingSwapsToCancel} header='You have pending swaps' description='Please either complete them or cancel before creating a new one.' />
+            </Widget.Content>
+        </Widget>
+    )
+}
+
+export const AllPendingSwapStep: FC = () => {
+    const { swap } = useSwapDataState()
+    const { goToStep } = useFormWizardaUpdate()
+    const layerswapApiClient = new LayerSwapApiClient()
+    const pending_swaps_endpoint = `/swaps?status=0`
+    const { data: allPendingSwaps, mutate, isValidating } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher)
+    const pendingSwapsToCancel = allPendingSwaps?.data
+
+    useEffect(() => {
+        mutate()
+    }, [])
+
+    useEffect(() => {
+        if (pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
+            goToStep(AuthStep.Email)
+    }, [pendingSwapsToCancel, isValidating, swap])
+
+    const handleCancel = useCallback(() => {
+        mutate()
+    }, [mutate])
+
+    return (
+        <Widget>
+            <Widget.Content>
+                {
+                    <PendingSwapsComponent loading={isValidating} onCancel={handleCancel} pendingSwapsToCancel={pendingSwapsToCancel} header='Your pending swaps will be lost' description='If you’ve already done a transfer for these swaps, wait till the completion.' />
+                }
             </Widget.Content>
         </Widget>
     )
@@ -48,8 +86,11 @@ type PendingSwapsComponentProps = {
     pendingSwapsToCancel: SwapItem[];
     header: string;
     description: string;
+    onCancel: () => void;
+    loading: boolean;
 }
-export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingSwapsToCancel, header, description }) => {
+
+export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingSwapsToCancel, header, description, onCancel, loading }) => {
     const { exchanges, networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
     const [swapToCancel, setSwapToCancel] = useState<SwapItem>()
@@ -76,7 +117,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
             </div>
             {
                 <div className="overflow-hidden mb-4">
-                    <div className='flex flex-col space-y-2'>
+                    <div className={`flex flex-col space-y-2 ${loading && 'animate-pulse'}`}>
                         {pendingSwapsToCancel?.map((swap) => {
                             const { destination, currency_logo, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
                             return (
@@ -184,7 +225,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                     </div>
                 </div>
             }
-            <SwapCancelModal swapToCancel={swapToCancel} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
+            <SwapCancelModal onCancel={onCancel} swapToCancel={swapToCancel} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
         </div>
     )
 }
@@ -192,9 +233,11 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
 type SwapCancelModalProps = {
     swapToCancel: SwapItem;
     openCancelConfirmModal: boolean;
-    setOpenCancelConfirmModal: Dispatch<SetStateAction<boolean>>
+    setOpenCancelConfirmModal: Dispatch<SetStateAction<boolean>>;
+    onCancel?: () => void;
 }
-export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCancelConfirmModal, setOpenCancelConfirmModal }) => {
+
+export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCancelConfirmModal, setOpenCancelConfirmModal, onCancel }) => {
 
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
     const { cancelSwap } = useSwapDataUpdate()
@@ -206,9 +249,9 @@ export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCa
         setLoadingSwapCancel(true)
         try {
             await cancelSwap(swapToCancel.id)
-            // await mutate()
             setOpenCancelConfirmModal(false)
             setLoadingSwapCancel(false)
+            onCancel()
         }
         catch (e) {
             setLoadingSwapCancel(false)
@@ -244,5 +287,3 @@ export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCa
         </Modal>
     )
 }
-
-export default PendingSwapStep;
