@@ -87,7 +87,7 @@ const WithdrawNetworkStep: FC = () => {
                         <div className='space-y-4'>
                             <div className="text-left">
                                 <p className="block text-md sm:text-lg font-medium text-white">
-                                    Send crypto to the provided address from {source_network.display_name}
+                                    Send crypto to the provided address from {source_network?.display_name}
                                 </p>
                                 <p className='text-sm sm:text-base'>
                                     The swap will be completed after the transfer is detected

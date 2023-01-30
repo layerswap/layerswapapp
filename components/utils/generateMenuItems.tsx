@@ -18,6 +18,7 @@ type NetworkeMenuItemsParams = {
 }
 
 const networkCurrencyIsAvailableForExchange = (nc: NetworkCurrency, exchange: Exchange, network: CryptoNetwork, swapType: SwapType) => {
+
     return nc.status === "active"
         && (swapType === SwapType.OnRamp ? nc.is_withdrawal_enabled : nc.is_deposit_enabled)
         && exchange.currencies?.some(ec =>
@@ -76,6 +77,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
     const destNetworkIsAvailable = networks.some(n => n.internal_name === destNetwork && n.status === "active" && networkIsAvailable(n))
 
     const menuItems: SelectMenuItem<CryptoNetwork>[] = networks
+        .filter(networkIsAvailable)
         .map(n => ({
             baseObject: n,
             id: n.internal_name,

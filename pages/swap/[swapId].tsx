@@ -47,13 +47,7 @@ export const getServerSideProps = async (ctx) => {
   const validSignatureIsPresent = validateSignature(ctx.query)
 
   let settings: LayerSwapSettings;
-  try {
-    settings = JSON.parse(
-      fs.readFileSync(path.join(__dirname, CACHE_PATH), 'utf8')
-    )
-  } catch (error) {
-    console.log('Cache not initialized')
-  }
+
 
   if (!settings) {
     var apiClient = new LayerSwapApiClient();
@@ -63,17 +57,6 @@ export const getServerSideProps = async (ctx) => {
     if (resource_storage_url[resource_storage_url.length - 1] === "/")
       data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
-    try {
-      fs.writeFileSync(
-        path.join(__dirname, CACHE_PATH),
-        JSON.stringify(data),
-        'utf8'
-      )
-      console.log('Wrote to settings cache')
-    } catch (error) {
-      console.log('ERROR WRITING SETTINGS CACHE TO FILE')
-      console.log(error)
-    }
     settings = data
   }
 
