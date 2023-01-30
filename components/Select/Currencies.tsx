@@ -24,7 +24,7 @@ const CurrenciesField: FC = () => {
         baseObject: c,
         id: c.asset,
         name: c.asset,
-        order: c.asset === KnownInternalNames.Currencies.LRC && network?.baseObject?.internal_name === KnownInternalNames.Networks.LoopringMainnet ? 0 : 1,
+        order: c.asset === KnownInternalNames.Currencies.LRC && (from?.baseObject?.internal_name === KnownInternalNames.Networks.LoopringMainnet || to?.baseObject?.internal_name === KnownInternalNames.Networks.LoopringMainnet) ? 0 : 1,
         imgSrc: `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`,
         isAvailable: true,
         isDefault: false,

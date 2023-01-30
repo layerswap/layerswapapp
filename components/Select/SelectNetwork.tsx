@@ -26,13 +26,13 @@ const SelectNetwork = forwardRef(({ direction, placeholder, label }: Props, ref:
     const { discovery: { resource_storage_url }, exchanges, networks } = useSettingsState();
 
     let menuItems: SelectMenuItem<CryptoNetwork | Exchange>[]
-    if(direction === "from" ? (swapType === SwapType.OnRamp) : (swapType === SwapType.OffRamp)){
+    if (direction === "from" ? (swapType === SwapType.OnRamp) : (swapType === SwapType.OffRamp)) {
         menuItems = generateExchangeMenuItems({ exchanges, values, resource_storage_url });
     }
-    else{
-        menuItems = generateNetworkMenuItems({ values, networks, resource_storage_url, destNetwork, lockNetwork, direction })
+    else {
+        menuItems = generateNetworkMenuItems({ values, networks, resource_storage_url, destNetwork, lockNetwork, direction, exchanges })
     }
-    
+
     const value = direction === "from" ? from : to;
     return (<>
         <label htmlFor={name} className="block font-normal text-primary-text text-sm">
