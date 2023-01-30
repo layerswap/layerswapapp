@@ -31,7 +31,7 @@ export default function ForPartners(props) {
                     <MenuProvider>
                         <HeaderWithMenu goBack={handleGoBack} />
                     </MenuProvider>
-                    <div className="flex-col justify-center py-4 px-8 md:px-0 sm:px-6 lg:px-8">
+                    <div className="flex-col justify-center py-4 px-8 sm:px-6">
                         <div className="prose md:prose-xl text-primary-text">
                             <MDXRemote {...props.mdxSource} />
                         </div>

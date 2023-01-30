@@ -36,6 +36,12 @@ export function isValidAddress(address: string, network: CryptoNetwork | Exchang
             return false
         }
     }
+    else if (network.internal_name === KnownInternalNames.Networks.SorareStage) {
+        if (/^(0x)?[0-9a-f]{64}$/.test(address) || /^(0x)?[0-9A-F]{64}$/.test(address) || /^(0x)?[0-9a-f]{66}$/.test(address) || /^(0x)?[0-9A-F]{66}$/.test(address)) {
+            return true;
+        }
+        return false
+    }
     else {
         return isValidEtherAddress(address);
     }

@@ -35,9 +35,10 @@ export default class KnownInternalNames {
 
     static Networks = class {
         public static readonly Cronos: string = "CRONOS_MAINNET";
+      
         public static readonly Deversifi: string = "DEVERSIFI_MAINNET";
+      
         public static readonly Osmosis: string = "OSMOSIS_MAINNET";
-
 
         public static readonly ArbitrumMainnet: string = "ARBITRUM_MAINNET";
 
@@ -97,6 +98,8 @@ export default class KnownInternalNames {
         public static readonly SolanaMainnet: string = "SOLANA_MAINNET";
 
         public static readonly SolanaTestnet: string = "SOLANA_TESTNET";
+
+        public static readonly SorareStage: string = "SORARE_MAINNET";
 
     }
 

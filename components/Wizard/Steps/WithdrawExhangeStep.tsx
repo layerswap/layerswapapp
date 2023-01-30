@@ -29,6 +29,7 @@ import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 import Modal from '../../modalComponent';
 import { LinkIcon } from '@heroicons/react/outline';
+
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
