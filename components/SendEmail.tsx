@@ -2,14 +2,17 @@ import { Disclosure } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/outline';
 import { UserIcon } from '@heroicons/react/solid';
 import { Field, Form, Formik, FormikErrors } from 'formik';
-import { FC, useCallback } from 'react'
+import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useAuthDataUpdate, useAuthState } from '../context/authContext';
+import LayerswapApiClient, { SwapItem, SwapType } from '../lib/layerSwapApiClient';
+import { useAuthDataUpdate, useAuthState, UserType } from '../context/authContext';
 import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
 import Widget from './Wizard/Widget';
+import { useFormWizardaUpdate } from '../context/formWizardProvider';
+import { SwapCreateStep } from '../Models/Wizard';
 
 type EmailFormValues = {
     email: string;
@@ -21,27 +24,36 @@ type Props = {
 }
 
 const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
-    const { codeRequested, tempEmail } = useAuthState()
+    const { codeRequested, tempEmail, userType } = useAuthState()
     const { setCodeRequested, updateTempEmail } = useAuthDataUpdate();
+    const { goToStep } = useFormWizardaUpdate()
     const initialValues: EmailFormValues = { email: tempEmail ?? "" };
     const { start: startTimer } = useTimerState()
+
     const sendEmail = useCallback(async (values: EmailFormValues) => {
         try {
             const inputEmail = values.email;
-            if (inputEmail != tempEmail || !codeRequested) {
-                const apiClient = new LayerSwapAuthApiClient();
-                const res = await apiClient.getCodeAsync(inputEmail)
-                if (res.error)
-                    throw new Error(res.error)
-                TokenService.setCodeNextTime(res?.data?.next)
-                setCodeRequested(true);
-                updateTempEmail(inputEmail)
-                const next = new Date(res?.data?.next)
-                const now = new Date()
-                const miliseconds = next.getTime() - now.getTime()
-                startTimer(Math.round((res?.data?.already_sent ? 60000 : miliseconds) / 1000))
+            const layerswapApiClient = new LayerswapApiClient();
+            const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
+            if (userType === UserType.GuestUser && allPendingSwaps?.data?.length > 0) {
+                goToStep(SwapCreateStep.PendingSwaps)
+            } else {
+                if (inputEmail != tempEmail || !codeRequested) {
+
+                    const apiClient = new LayerSwapAuthApiClient();
+                    const res = await apiClient.getCodeAsync(inputEmail)
+                    if (res.error)
+                        throw new Error(res.error)
+                    TokenService.setCodeNextTime(res?.data?.next)
+                    setCodeRequested(true);
+                    updateTempEmail(inputEmail)
+                    const next = new Date(res?.data?.next)
+                    const now = new Date()
+                    const miliseconds = next.getTime() - now.getTime()
+                    startTimer(Math.round((res?.data?.already_sent ? 60000 : miliseconds) / 1000))
+                }
+                onSend(inputEmail)
             }
-            onSend(inputEmail)
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {

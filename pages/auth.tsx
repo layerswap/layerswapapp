@@ -10,6 +10,7 @@ import { SettingsProvider } from '../context/settings'
 import { useEffect, useState } from 'react'
 import inIframe from '../components/utils/inIframe'
 import IntroCard from '../components/introCard'
+import { SwapDataProvider } from '../context/swap'
 
 export default function AuthPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
@@ -22,11 +23,13 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
   return (
     <Layout>
       <SettingsProvider data={settings}>
-        <MenuProvider>
-          <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
-            <AuthWizard />
-          </FormWizardProvider >
-        </MenuProvider>
+        <SwapDataProvider>
+          <MenuProvider>
+            <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
+              <AuthWizard />
+            </FormWizardProvider >
+          </MenuProvider>
+        </SwapDataProvider>
       </SettingsProvider>
       {
         !embadded &&
@@ -44,6 +47,10 @@ export async function getServerSideProps(context) {
 
   var apiClient = new LayerSwapApiClient();
   const { data: settings } = await apiClient.GetSettingsAsync()
+
+  const resource_storage_url = settings.discovery.resource_storage_url
+  if (resource_storage_url[resource_storage_url.length - 1] === "/")
+    settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
 
