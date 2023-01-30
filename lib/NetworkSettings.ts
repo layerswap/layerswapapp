@@ -53,7 +53,7 @@ export default class NetworkSettings {
             AccountExplorerTemplate: 'https://zkscan.io/explorer/accounts/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZkspaceMainnet] = {
-            Order: 8,
+            Order: 9,
             AccountExplorerTemplate: 'https://zkspace.info/account/{0}'
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumGoerli] = {
@@ -68,12 +68,12 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumMainnet] = {
             ChainId: 42161,
-            Order: 6,
+            Order: 7,
             AccountExplorerTemplate: 'https://arbiscan.io/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumNova] = {
             ChainId: 42170,
-            Order: 9,
+            Order: 10,
             AccountExplorerTemplate: 'https://nova.arbiscan.io/address/{0}'
             ,
         };
@@ -91,7 +91,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismMainnet] = {
             ChainId: 10,
-            Order: 5,
+            Order: 6,
             AccountExplorerTemplate: 'https://optimistic.etherscan.io/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AstarMainnet] = {
@@ -103,7 +103,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BobaMainnet] = {
             ChainId: 288,
-            Order: 7,
+            Order: 8,
             AccountExplorerTemplate: 'https://blockexplorer.boba.network/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.RoninMainnet] = {
@@ -125,7 +125,7 @@ export default class NetworkSettings {
             Refuel: true
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
-            Order: 4,
+            Order: 5,
             AccountExplorerTemplate: 'https://voyager.online/contract/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
@@ -142,8 +142,12 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.SolanaTestnet] = {
             AddressPlaceholder: 'A1b2...69Ckfg'
+        },
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.DydxMainnet] = {
+            Order: 4,
         }
 
+        
         NetworkSettings.ImmutableXSettings = {
             [KnownInternalNames.Networks.ImmutableX]: {
                 apiUri: "https://api.x.immutable.com/v1",

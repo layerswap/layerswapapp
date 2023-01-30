@@ -37,7 +37,7 @@ const WithdrawNetworkStep: FC = () => {
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
 
     useEffect(() => {
-        setInterval(2000)
+        setInterval(15000)
         return () => setInterval(0)
     }, [])
 

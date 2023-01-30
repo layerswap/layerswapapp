@@ -320,13 +320,18 @@ function TransactionsHistory() {
                                   'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
                                 )}
                               >
-                                {(swap?.output_transaction?.transaction_id && (!isGuid(swap?.output_transaction?.transaction_id)) && swap?.destination_exchange != KnownInternalNames.Exchanges.Coinbase) ?
-                                  <>
-                                    <div className="underline hover:no-underline">
-                                      <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
-                                    </div>
-                                  </>
-                                  : <div>-</div>
+                                {
+                                  swap?.output_transaction?.transaction_id ?
+                                    <>
+                                      {(swap?.output_transaction?.transaction_id && swap?.destination_exchange === KnownInternalNames.Exchanges.Coinbase && (isGuid(swap?.output_transaction?.transaction_id))) ?
+                                        <span><CopyButton toCopy={swap.output_transaction.transaction_id}>{shortenAddress(swap.output_transaction.transaction_id)}</CopyButton></span>
+                                        :
+                                        <div className="underline hover:no-underline">
+                                          <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap.output_transaction.transaction_id)}><CopyButton toCopy={swap.output_transaction.transaction_id}>{shortenAddress(swap.output_transaction.transaction_id)}</CopyButton></a>
+                                        </div>
+                                      }
+                                    </>
+                                    : <>-</>
                                 }
                               </td>
                               <td

@@ -5,7 +5,7 @@ export class Exchange {
     internal_name: string;
     oauth_connect_url: string;
     oauth_authorize_url: string;
-    authorization_flow: "o_auth2" | "api_credentials"
+    authorization_flow: "o_auth2" | "api_credentials" | 'none'
     currencies: (ExchangeCurrency & NetworkCurrency)[];
     status: "active" | "inactive"
 }
