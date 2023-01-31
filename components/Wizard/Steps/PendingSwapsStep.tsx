@@ -23,7 +23,7 @@ export const CurrencyPendingSwapStep: FC = () => {
     const { MainForm } = useCreateSwap()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const pending_swaps_endpoint = `/swaps?status=0`
+    const pending_swaps_endpoint = `/swaps?statuses=0`
     const { data: allPendingSwaps, isValidating, mutate } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher)
     const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLocaleLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
 
@@ -53,7 +53,7 @@ export const AllPendingSwapStep: FC = () => {
     const { swap } = useSwapDataState()
     const { goToStep } = useFormWizardaUpdate()
     const layerswapApiClient = new LayerSwapApiClient()
-    const pending_swaps_endpoint = `/swaps?status=0`
+    const pending_swaps_endpoint = `/swaps?statuses=0`
     const { data: allPendingSwaps, mutate, isValidating } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher)
     const pendingSwapsToCancel = allPendingSwaps?.data
 
@@ -275,22 +275,12 @@ export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCa
             <div className="flex flex-row text-white text-base space-x-2">
                 <div className='basis-1/2'>
                     <SubmitButton className='plausible-event-name=Swap+canceled' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                        <DoubleLineText
-                            colorStyle='mltln-text-dark'
-                            primaryText='Cancel the swap'
-                            secondarytext='and go to home'
-                            reversed={true}
-                        />
+                        Cancel the swap
                     </SubmitButton>
                 </div>
                 <div className='basis-1/2'>
                     <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                        <DoubleLineText
-                            colorStyle='mltln-text-light'
-                            primaryText="Don't"
-                            secondarytext='cancel'
-                            reversed={true}
-                        />
+                        Don't cancel
                     </SubmitButton>
                 </div>
             </div>
