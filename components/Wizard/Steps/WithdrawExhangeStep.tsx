@@ -37,7 +37,7 @@ const WithdrawExchangeStep: FC = () => {
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
     const { exchanges, currencies, networks, discovery: { resource_storage_url } } = useSettingsState()
     const { swap, codeRequested } = useSwapDataState()
-    const { setInterval, setCodeRequested } = useSwapDataUpdate()
+    const { setInterval, setCodeRequested, mutateSwap } = useSwapDataUpdate()
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
     const [openCoinbaseConnectSlideover, setOpenCoinbaseConnectSlideover] = useState(false)
     const [openCoinbase2FA, setOpenCoinbase2FA] = useState(false)
@@ -66,6 +66,10 @@ const WithdrawExchangeStep: FC = () => {
     const swapStatusStep = GetSwapStatusStep(swap)
 
     const sourceIsCoinbase = swap.source_exchange?.toLocaleLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLocaleLowerCase()
+
+    const handleCancelSwap = useCallback(()=>{
+        mutateSwap()
+    },[mutateSwap])
 
     useEffect(() => {
         if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal) {
@@ -314,7 +318,7 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget>
-        <SwapCancelModal swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
+        <SwapCancelModal onCancel={handleCancelSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
     </>
     )
 }
