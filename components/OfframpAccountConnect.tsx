@@ -13,6 +13,7 @@ import { SwapFormValues } from './DTOs/SwapFormValues';
 import { useFormikContext } from 'formik';
 import { SwapCreateStep } from '../Models/Wizard';
 import { useFormWizardaUpdate } from '../context/formWizardProvider';
+import { SwapType } from '../lib/layerSwapApiClient';
 
 type Props = {
     OnSuccess: () => Promise<void>,
@@ -23,8 +24,8 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
         values,
     } = useFormikContext<SwapFormValues>();
 
-    const { exchange, currency } = values || {}
-    const { oauth_connect_url } = exchange?.baseObject || {}
+    const { to, swapType } = values || {}
+    const { oauth_connect_url } = (swapType === SwapType.OffRamp && to?.baseObject) || {}
     const [authWindow, setAuthWindow] = useState<Window>()
     const [salon, setSalon] = useState(false)
     const [loading, setLoading] = useState(false)

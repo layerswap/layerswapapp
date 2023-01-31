@@ -32,7 +32,7 @@ const OffRampSwapConfirmationStep: FC = () => {
     const { createAndProcessSwap, updateSwapFormData, setAddressConfirmed } = useSwapDataUpdate()
     const { goToStep, setError } = useFormWizardaUpdate<SwapCreateStep>()
     const router = useRouter();
-    const { exchange, destination_address, currency, network } = swapFormData || {}
+    const { from, destination_address, currency, to } = swapFormData || {}
     const query = useQueryState();
     const settings = useSettingsState();
 
@@ -41,18 +41,14 @@ const OffRampSwapConfirmationStep: FC = () => {
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const depositad_address_endpoint = `/exchange_accounts/${exchange?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
-    const { data: deposite_address } = useSWR<ApiResponse<string>>((exchange && !destination_address) ? depositad_address_endpoint : null, layerswapApiClient.fetcher)
+    const depositad_address_endpoint = `/exchange_accounts/${to?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
+    const { data: deposite_address } = useSWR<ApiResponse<string>>((to && !destination_address) ? depositad_address_endpoint : null, layerswapApiClient.fetcher)
 
     useEffect(() => {
         if (deposite_address?.data)
             updateSwapFormData((old) => ({ ...old, destination_address: deposite_address.data }))
     }, [deposite_address])
 
-
-    const currentNetwork = swapFormData?.network?.baseObject;
-    const currentExchange = swapFormData?.exchange?.baseObject;
-    const currentCurrency = swapFormData?.currency?.baseObject;
 
     const handleToggleChange = (value: boolean) => {
         setAddressConfirmed(value)
@@ -65,7 +61,7 @@ const OffRampSwapConfirmationStep: FC = () => {
             if (!swap) {
                 if (query.addressSource === "imxMarketplace" && settings.validSignatureisPresent) {
                     try {
-                        const account = await layerswapApiClient.GetWhitelistedAddress(swapFormData.network.baseObject.internal_name, query.destAddress)
+                        const account = await layerswapApiClient.GetWhitelistedAddress(swapFormData.to.baseObject.internal_name, query.destAddress)
                     }
                     catch (e) {
                         //TODO handle account not found
@@ -101,18 +97,18 @@ const OffRampSwapConfirmationStep: FC = () => {
         setLoading(false)
         if (nextStep)
             goToStep(nextStep)
-    }, [network, swap, createAndProcessSwap, settings, query, destination_address])
+    }, [from, swap, createAndProcessSwap, settings, query, destination_address])
 
     return (
         <Widget>
             <Widget.Content>
                 <SwapConfirmMainData>
                     {
-                        NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
+                        NetworkSettings.KnownSettings[from?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
                         <WarningMessage className='mb-4'>
-                            <span>{NetworkSettings.KnownSettings[network?.baseObject?.internal_name]?.ConfirmationWarningMessage}.</span>
+                            <span>{NetworkSettings.KnownSettings[from?.baseObject?.internal_name]?.ConfirmationWarningMessage}.</span>
                             {
-                                network?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
+                                from?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
                                 <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how' place='inStep' />
                             }
                         </WarningMessage>

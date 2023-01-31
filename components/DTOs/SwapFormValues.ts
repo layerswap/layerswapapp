@@ -5,11 +5,23 @@ import { Exchange } from "../../Models/Exchange";
 import { SelectMenuItem } from "../Select/selectMenuItem";
 
 
-export interface SwapFormValues {
-  swapType: SwapType;
+export type SwapFormValues =  {
   amount: string;
   destination_address: string;
-  network?: SelectMenuItem<CryptoNetwork>;
   currency?: SelectMenuItem<Currency>;
-  exchange?: SelectMenuItem<Exchange>;
+} & SwapFormProductsData
+
+
+export type SwapFormProductsData = {
+  swapType: SwapType.OffRamp;
+  from?: SelectMenuItem<CryptoNetwork>;
+  to?: SelectMenuItem<Exchange>;
+} | {
+  swapType: SwapType.OnRamp;
+  from?: SelectMenuItem<Exchange>;
+  to?: SelectMenuItem<CryptoNetwork>;
+} | {
+  swapType: SwapType.CrossChain;
+  from?: SelectMenuItem<CryptoNetwork>;
+  to?: SelectMenuItem<CryptoNetwork>;
 }

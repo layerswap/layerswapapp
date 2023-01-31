@@ -19,7 +19,7 @@ function constructExplorerUrl(account_explorer_template: string, address: string
 
 const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, canEditAddress }) => {
     const { swapFormData } = useSwapDataState()
-    const { destination_address, network, exchange } = swapFormData
+    const { destination_address, to } = swapFormData
 
     if (!destination_address)
         return <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
@@ -29,15 +29,15 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, 
         </div>
 
     return swapFormData?.swapType === SwapType.OffRamp ?
-        <OffRampAddress address={destination_address} imgSrc={exchange?.imgSrc} />
-        : <OnRampAddress address={destination_address}
-            imgSrc={network?.imgSrc}
-            account_explorer_template={NetworkSettings.KnownSettings[network?.baseObject.internal_name]?.AccountExplorerTemplate}
+        <ExchangeAddress address={destination_address} imgSrc={to?.imgSrc} />
+        : <NetworkAddress address={destination_address}
+            imgSrc={to?.imgSrc}
+            account_explorer_template={NetworkSettings.KnownSettings[to?.baseObject.internal_name]?.AccountExplorerTemplate}
             onClick={canEditAddress && onClick}
         />
 }
 
-const OffRampAddress = ({ imgSrc, address }: { imgSrc: string, address: string }) => {
+const ExchangeAddress = ({ imgSrc, address }: { imgSrc: string, address: string }) => {
     return <>
         <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
             <div className="flex items-center min-w-0 flex-1">
@@ -49,7 +49,6 @@ const OffRampAddress = ({ imgSrc, address }: { imgSrc: string, address: string }
                             alt="Exchange Logo"
                             height="60"
                             width="60"
-                            layout="responsive"
                             className="rounded-md object-contain"
                         />
                     </div>
@@ -66,7 +65,7 @@ const OffRampAddress = ({ imgSrc, address }: { imgSrc: string, address: string }
     </>
 }
 
-const OnRampAddress = ({ imgSrc, address, account_explorer_template, onClick }: { imgSrc: string, address: string, account_explorer_template: string, onClick?: MouseEventHandler<HTMLButtonElement> | undefined; }) => {
+const NetworkAddress = ({ imgSrc, address, account_explorer_template, onClick }: { imgSrc: string, address: string, account_explorer_template: string, onClick?: MouseEventHandler<HTMLButtonElement> | undefined; }) => {
     return <>
         <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
             <Disclosure>
@@ -101,10 +100,9 @@ const OnRampAddress = ({ imgSrc, address, account_explorer_template, onClick }: 
                                         <div className="flex-shrink-0 h-5 w-5 mr-1 relative">
                                             <Image
                                                 src={imgSrc}
-                                                alt="Exchange Logo"
+                                                alt="Network Logo"
                                                 height="60"
                                                 width="60"
-                                                layout="responsive"
                                                 className="rounded-md object-contain"
                                             />
                                         </div>

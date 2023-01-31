@@ -6,9 +6,7 @@ import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
-import { useSettingsState } from '../../../../context/settings';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
-import { GetSourceDestinationData } from '../../../../helpers/swapHelper';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 
 
@@ -16,9 +14,7 @@ const CoinbaseInternalWithdrawal: FC = () => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const { swap } = useSwapDataState()
-    const { networks, exchanges, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
-    const { network } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
@@ -39,7 +35,7 @@ const CoinbaseInternalWithdrawal: FC = () => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [swap, network])
+    }, [swap])
 
     return (
         <>

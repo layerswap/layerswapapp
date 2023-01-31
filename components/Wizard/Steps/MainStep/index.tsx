@@ -86,7 +86,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             if (values.swapType === SwapType.OnRamp) {
-                const internalName = values.network.baseObject.internal_name
+                const internalName = values.to.baseObject.internal_name
                 if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
                     const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[internalName].apiUri })
                     const isRegistered = await client.isRegistered({ user: values.destination_address })
@@ -98,7 +98,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                     const client = await axios.get(`${NetworkSettings.RhinoFiSettings[internalName].apiUri}/${values.destination_address}`)
                     const isRegistered = await client.data?.isRegisteredOnDeversifi
                     if (!isRegistered) {
-                        setNetworkToConnect({ DisplayName: values.network.baseObject.display_name, AppURL: NetworkSettings.RhinoFiSettings[internalName].appUri })
+                        setNetworkToConnect({ DisplayName: values.to.baseObject.display_name, AppURL: NetworkSettings.RhinoFiSettings[internalName].appUri })
                         setConnectNetworkIsOpen(true);
                         return
                     }
@@ -106,7 +106,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                     const client = await axios.get(`${NetworkSettings.DydxSettings[internalName].apiUri}${values.destination_address}`)
                     const isRegistered = await client.data?.exists
                     if (!isRegistered) {
-                        setNetworkToConnect({ DisplayName: values.network.baseObject.display_name, AppURL: NetworkSettings.DydxSettings[internalName].appUri })
+                        setNetworkToConnect({ DisplayName: values.to.baseObject.display_name, AppURL: NetworkSettings.DydxSettings[internalName].appUri })
                         setConnectNetworkIsOpen(true);
                         return
                     }
@@ -135,13 +135,14 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType, settings, query)
     const lockAddress =
-        (initialValues.destination_address && initialValues.network)
-        && isValidAddress(initialValues.destination_address, initialValues.network?.baseObject)
+        (initialValues.destination_address && initialValues.to)
+        && isValidAddress(initialValues.destination_address, initialValues.to?.baseObject)
         && ((query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
 
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
-            {(close) => <ConnectImmutableX network={formValues?.network?.baseObject} onClose={close} />}
+            {/* refactor this */}
+            {(close) => <ConnectImmutableX network={(formValues?.swapType === SwapType.OnRamp && formValues?.to || formValues?.swapType === SwapType.OffRamp && formValues?.from || formValues?.swapType === SwapType.CrossChain && (formValues?.to || formValues?.from))?.baseObject} onClose={close} />}
         </SlideOver>
         <SlideOver imperativeOpener={[connectNetworkiIsOpen, setConnectNetworkIsOpen]} place='inStep'>
             {() => <ConnectNetwork NetworkDisplayName={networkToConnect.DisplayName} AppURL={networkToConnect.AppURL} />}

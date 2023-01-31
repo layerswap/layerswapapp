@@ -5,7 +5,6 @@ import { useAuthState, UserType } from '../../../context/authContext';
 import { FormWizardProvider, useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
-import { GetSourceDestinationData } from '../../../helpers/swapHelper';
 import { AuthStep } from '../../../Models/Wizard';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import GuestCard from '../../guestCard';
@@ -13,12 +12,12 @@ import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
 
 const SuccessfulStep: FC = () => {
-    const { networks, currencies, exchanges, discovery: { resource_storage_url } } = useSettingsState()
+    const { networks } = useSettingsState()
     const { swap } = useSwapDataState()
-    const { destination_network } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
     const { userType } = useAuthState()
-    const { goToStep } = useFormWizardaUpdate()
-    const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
+
+    const { destination_network: destination_network_internal_name } = swap
+    const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
 
     const transaction_explorer_template = destination_network?.transaction_explorer_template
 

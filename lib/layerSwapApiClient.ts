@@ -187,6 +187,7 @@ type Transaction = {
 export enum SwapType {
     OnRamp = "cex_to_network",
     OffRamp = "network_to_cex",
+    CrossChain = "network_to_network"
 }
 
 export type ConnectParams = {
