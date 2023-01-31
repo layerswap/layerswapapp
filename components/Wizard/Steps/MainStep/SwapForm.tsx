@@ -22,21 +22,23 @@ import { KnownwErrorCode } from "../../../../Models/ApiError";
 import { useSwapDataState, useSwapDataUpdate } from "../../../../context/swap";
 import ConnectApiKeyExchange from "../../../connectApiKeyExchange";
 import SpinIcon from "../../../icons/spinIcon";
+import { useQueryState } from "../../../../context/query";
+import { useSettingsState } from "../../../../context/settings";
+import { isValidAddress } from "../../../../lib/addressValidator";
 
 type Props = {
     isPartnerWallet: boolean,
     partner?: Partner,
-    lockAddress: boolean,
     resource_storage_url: string,
     loading: boolean
 }
-const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_storage_url, loading }) => {
+const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, loading }) => {
 
     const {
         values,
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
-    const { swapType, from, to } = values
+    const { swapType, to } = values
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
@@ -45,6 +47,13 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
     const [loadingDepositAddress, setLoadingDepositAddress] = useState(false)
     const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
+    const query = useQueryState();
+    const settings = useSettingsState();
+
+    const lockAddress =
+        (values.destination_address && values.to)
+        && isValidAddress(values.destination_address, values.to?.baseObject)
+        && ((query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
 
     const closeExchangeConnect = (open) => {
         setLoadingDepositAddress(open)
@@ -127,10 +136,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, lockAddress, resource_s
                         <SwapOptionsToggle />
                         <div className='flex-col md:flex-row flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4'>
                             <div className="flex flex-col w-full">
-                                <SelectNetwork direction="from" label="From" placeholder="From" />
+                                <SelectNetwork direction="from" label="From" />
                             </div>
                             <div className="flex flex-col w-full">
-                                <SelectNetwork direction="to" label="To" placeholder="To" />
+                                <SelectNetwork direction="to" label="To" />
                             </div>
                         </div>
                         <div className="mb-6 leading-4">

@@ -36,7 +36,10 @@ const CurrenciesField: FC = () => {
         : []
 
     useEffect(() => {
-        if (!from || !to) return;
+        if (!from || !to) {
+            setFieldValue(name, null)
+            return;
+        }
         if (currency && currencyIsAvilable(currency.baseObject)) return
 
         const default_currency = currencies.filter(currencyIsAvilable)?.map(mapCurranceToMenuItem)?.sort(SortingByOrder)?.[0]
