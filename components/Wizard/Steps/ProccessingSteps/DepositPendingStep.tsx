@@ -44,7 +44,7 @@ const DepositPendingStep: FC = () => {
                         Transfer from {source_display_name} is in progress
                     </p>
                     <p className='text-sm'>
-                        Estimated time: <span className='text-white'>less than 10 minutes</span>
+                        Estimated time: <span className='text-white'>less than {swap?.source_exchange ? '10' : '3'} minutes</span>
                     </p>
                 </div>
             </div>

@@ -45,7 +45,7 @@ const TransferConfirmationStep: FC = () => {
                     </p>
                     <div className='text-sm'>
                         <p>Waiting for the transfer to get confirmed</p>
-                        <p>Confirmations: <span className='text-white'>{swap?.input_transaction?.confirmations ?? 0}</span>/5</p>
+                        <p>Confirmations: <span className='text-white'>{swap?.input_transaction?.confirmations ?? 0}</span>/{swap?.input_transaction?.max_confirmations}</p>
                     </div>
                 </div>
             </div>
