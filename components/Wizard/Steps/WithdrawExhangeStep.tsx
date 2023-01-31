@@ -44,7 +44,7 @@ const WithdrawExchangeStep: FC = () => {
     const [authorized, steAuthorized] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [loading, setLoading] = useState(false)
-    const { source_exchange: source_exchange_internal_name, destination_network: destination_network_internal_name,source_network_asset:source_network_asset, destination_network_asset } = swap
+    const { source_exchange: source_exchange_internal_name, destination_network: destination_network_internal_name, source_network_asset: source_network_asset, destination_network_asset } = swap
 
     const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
@@ -71,9 +71,9 @@ const WithdrawExchangeStep: FC = () => {
 
     const sourceIsCoinbase = swap.source_exchange?.toLocaleLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLocaleLowerCase()
 
-    const handleCancelSwap = useCallback(()=>{
+    const handleCancelSwap = useCallback(() => {
         mutateSwap()
-    },[mutateSwap])
+    }, [mutateSwap])
 
     useEffect(() => {
         if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Withdrawal) {
@@ -107,7 +107,7 @@ const WithdrawExchangeStep: FC = () => {
 
     const handleTransferDone = useCallback(async () => {
         setTransferDone(true)
-        const estimatedTransferTimeInSeconds = 180000
+        const estimatedTransferTimeInSeconds = 600000
         setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
     }, [])
 
@@ -270,7 +270,7 @@ const WithdrawExchangeStep: FC = () => {
                                         <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
                                         <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
                                     </div>
-                                    <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to do a withdrawal from the exchange</label>
+                                    <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to send {destination_network_asset} from the exchange</label>
                                 </div>
                                 <div className="flex flex-row text-white text-base space-x-2">
                                     <div className='basis-1/3'>
@@ -300,7 +300,7 @@ const WithdrawExchangeStep: FC = () => {
                             transferDone &&
                             <SimpleTimer time={transferDoneTime} text={
                                 (remainingSeconds) => <>
-                                    {`The swap will get completed in ~${remainingSeconds > 60 ? `${(Math.ceil((remainingSeconds / 60) % 60))} minutes` : '1 minute'}  after you send from ${source_exchange?.display_name}`}
+                                    {`Transfers from ${source_exchange?.display_name} usually take less than 10 minutes`}
                                 </>}
                             >
                                 <div className="flex text-center mb-4 space-x-2">
@@ -309,7 +309,7 @@ const WithdrawExchangeStep: FC = () => {
                                         <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
                                         <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
                                     </div>
-                                    <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Did a withdrawal but the swap is not completed yet?&nbsp;
+                                    <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Did the transfer but the swap is not completed yet?&nbsp;
                                         <span onClick={() => {
                                             boot();
                                             show();
