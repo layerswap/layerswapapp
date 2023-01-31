@@ -38,7 +38,7 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
                                 checked
                                     ? 'bg-darkblue-500 border-transparent text-white'
                                     : 'bg-transparent border-transparent text-gray-400 hover:text-gray-200',
-                                `border rounded-md p-1 flex items-center justify-center text-sm font-medium sm:flex-1`
+                                `border rounded-md p-1 flex items-center justify-center text-sm font-medium sm:flex-1 relative`
                             )
                         }
                         disabled={!option.isEnabled}>
@@ -56,9 +56,14 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
                         }
                         {
                             option.value === SwapType.CrossChain &&
-                            <div className="flex items-center space-x-1 md:p-0 p-1.5 text-xs md:text-base">
-                                Cross-Chain
+                            <div className="inline-flex items-center ">
+                                <span className="flex items-center space-x-1 md:p-0 p-1.5 text-xs md:text-base">
+                                    Cross-Chain
+                                </span>
+                                <span className="absolute ml-1 -top-1 -right-2 shadow-sm rounded bg-primary px-2 text-[10px] leading-4 font-semibold text-white"> New </span>
+                                {/* <span className="absolute ml-1 -top-4 -right-8 ml-1 rounded border border-primary text-primary px-2 text-[10px] leading-5 font-semibold "> New </span> */}
                             </div>
+
                         }
                     </RadioGroup.Option>
                 ))}

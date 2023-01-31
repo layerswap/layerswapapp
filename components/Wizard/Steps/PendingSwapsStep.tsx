@@ -275,22 +275,12 @@ export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCa
             <div className="flex flex-row text-white text-base space-x-2">
                 <div className='basis-1/2'>
                     <SubmitButton className='plausible-event-name=Swap+canceled' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                        <DoubleLineText
-                            colorStyle='mltln-text-dark'
-                            primaryText='Cancel the swap'
-                            secondarytext='and go to home'
-                            reversed={true}
-                        />
+                        Cancel the swap
                     </SubmitButton>
                 </div>
                 <div className='basis-1/2'>
                     <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                        <DoubleLineText
-                            colorStyle='mltln-text-light'
-                            primaryText="Don't"
-                            secondarytext='cancel'
-                            reversed={true}
-                        />
+                        Don't cancel
                     </SubmitButton>
                 </div>
             </div>
