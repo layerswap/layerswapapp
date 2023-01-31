@@ -61,7 +61,6 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
                                     Cross-Chain
                                 </span>
                                 <span className="absolute ml-1 -top-1 -right-2 shadow-sm rounded bg-primary px-2 text-[10px] leading-4 font-semibold text-white"> New </span>
-                                {/* <span className="absolute ml-1 -top-4 -right-8 ml-1 rounded border border-primary text-primary px-2 text-[10px] leading-5 font-semibold "> New </span> */}
                             </div>
 
                         }
