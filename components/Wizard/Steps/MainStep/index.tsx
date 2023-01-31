@@ -85,33 +85,32 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
-            if (values.swapType === SwapType.OnRamp) {
-                const internalName = values.to.baseObject.internal_name
-                if (internalName == KnownInternalNames.Networks.ImmutableX || internalName == KnownInternalNames.Networks.ImmutableXGoerli) {
-                    const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[internalName].apiUri })
-                    const isRegistered = await client.isRegistered({ user: values.destination_address })
-                    if (!isRegistered) {
-                        setConnectImmutableIsOpen(true)
-                        return
-                    }
-                } else if (internalName == KnownInternalNames.Networks.RhinoFiMainnet) {
-                    const client = await axios.get(`${NetworkSettings.RhinoFiSettings[internalName].apiUri}/${values.destination_address}`)
-                    const isRegistered = await client.data?.isRegisteredOnDeversifi
-                    if (!isRegistered) {
-                        setNetworkToConnect({ DisplayName: values.to.baseObject.display_name, AppURL: NetworkSettings.RhinoFiSettings[internalName].appUri })
-                        setConnectNetworkIsOpen(true);
-                        return
-                    }
-                } else if (internalName == KnownInternalNames.Networks.DydxMainnet || internalName == KnownInternalNames.Networks.DydxGoerli) {
-                    const client = await axios.get(`${NetworkSettings.DydxSettings[internalName].apiUri}${values.destination_address}`)
-                    const isRegistered = await client.data?.exists
-                    if (!isRegistered) {
-                        setNetworkToConnect({ DisplayName: values.to.baseObject.display_name, AppURL: NetworkSettings.DydxSettings[internalName].appUri })
-                        setConnectNetworkIsOpen(true);
-                        return
-                    }
+            const destination_internal_name = values.to.baseObject.internal_name
+            if (destination_internal_name == KnownInternalNames.Networks.ImmutableX || destination_internal_name == KnownInternalNames.Networks.ImmutableXGoerli) {
+                const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[destination_internal_name].apiUri })
+                const isRegistered = await client.isRegistered({ user: values.destination_address })
+                if (!isRegistered) {
+                    setConnectImmutableIsOpen(true)
+                    return
+                }
+            } else if (destination_internal_name == KnownInternalNames.Networks.RhinoFiMainnet) {
+                const client = await axios.get(`${NetworkSettings.RhinoFiSettings[destination_internal_name].apiUri}/${values.destination_address}`)
+                const isRegistered = await client.data?.isRegisteredOnDeversifi
+                if (!isRegistered) {
+                    setNetworkToConnect({ DisplayName: values.to.baseObject.display_name, AppURL: NetworkSettings.RhinoFiSettings[destination_internal_name].appUri })
+                    setConnectNetworkIsOpen(true);
+                    return
+                }
+            } else if (destination_internal_name == KnownInternalNames.Networks.DydxMainnet || destination_internal_name == KnownInternalNames.Networks.DydxGoerli) {
+                const client = await axios.get(`${NetworkSettings.DydxSettings[destination_internal_name].apiUri}${values.destination_address}`)
+                const isRegistered = await client.data?.exists
+                if (!isRegistered) {
+                    setNetworkToConnect({ DisplayName: values.to.baseObject.display_name, AppURL: NetworkSettings.DydxSettings[destination_internal_name].appUri })
+                    setConnectNetworkIsOpen(true);
+                    return
                 }
             }
+
             if (formikRef.current?.dirty) {
                 clearSwap()
             }
