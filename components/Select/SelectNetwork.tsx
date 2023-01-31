@@ -12,10 +12,9 @@ import { SelectMenuItem } from "./selectMenuItem";
 
 type Props = {
     direction: "from" | "to",
-    placeholder: string,
     label: string,
 }
-const SelectNetwork = forwardRef(({ direction, placeholder, label }: Props, ref: any) => {
+const SelectNetwork = forwardRef(({ direction, label }: Props, ref: any) => {
     const {
         values,
         setFieldValue,
@@ -26,11 +25,14 @@ const SelectNetwork = forwardRef(({ direction, placeholder, label }: Props, ref:
     const { discovery: { resource_storage_url }, exchanges, networks } = useSettingsState();
 
     let menuItems: SelectMenuItem<CryptoNetwork | Exchange>[]
+    let placeholder = "";
     if (direction === "from" ? (swapType === SwapType.OnRamp) : (swapType === SwapType.OffRamp)) {
         menuItems = generateExchangeMenuItems({ exchanges, values, networks, resource_storage_url });
+        placeholder = "Exchange";
     }
     else {
         menuItems = generateNetworkMenuItems({ values, networks, resource_storage_url, destNetwork, lockNetwork, direction, exchanges })
+        placeholder = "Network";
     }
 
     const value = direction === "from" ? from : to;
