@@ -1,16 +1,20 @@
 import { FC, useEffect } from 'react'
-import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
-import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import { SwapType } from '../../../lib/layerSwapApiClient';
-import { SwapWithdrawalStep } from '../../../Models/Wizard';
-import { TrackEvent } from '../../../pages/_document';
-import { GetSwapStatusStep } from '../../utils/SwapStatus';
+import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
+import { useSettingsState } from '../../../../context/settings';
+import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import { SwapType } from '../../../../lib/layerSwapApiClient';
+import { SwapWithdrawalStep } from '../../../../Models/Wizard';
+import { TrackEvent } from '../../../../pages/_document';
+import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 
-const ProccessingStep: FC = () => {
+const DepositPendingStep: FC = () => {
 
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
+    const settings = useSettingsState()
+
+    const source_display_name = settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.display_name
 
     useEffect(() => {
         setInterval(10000)
@@ -20,7 +24,7 @@ const ProccessingStep: FC = () => {
     const swapStatusStep = GetSwapStatusStep(swap)
 
     useEffect(() => {
-        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.Processing) {
+        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.DepositPending) {
             goToStep(swapStatusStep)
         }
     }, [swapStatusStep])
@@ -36,11 +40,11 @@ const ProccessingStep: FC = () => {
                     </div>
                 </div>
                 <div className="flex flex-col text-center place-content-center mt-1 text-lg font-lighter text-primary-text">
-                    <p>
-                        {swap?.source_exchange ? 'Exchange' : 'Network'} transaction completed.
+                    <p className='text-white'>
+                        Transfer from {source_display_name} is in progress
                     </p>
-                    <p>
-                        Your assets are on their way.
+                    <p className='text-sm'>
+                        Estimated time: <span className='text-white'>less than 10 minutes</span>
                     </p>
                 </div>
             </div>
@@ -48,4 +52,4 @@ const ProccessingStep: FC = () => {
     )
 }
 
-export default ProccessingStep;
+export default DepositPendingStep;
