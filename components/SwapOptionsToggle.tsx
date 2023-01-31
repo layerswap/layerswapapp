@@ -1,5 +1,3 @@
-import { Web3Provider } from "@ethersproject/providers";
-import { useWeb3React } from "@web3-react/core";
 import { Field, useFormikContext } from "formik";
 import { forwardRef, useCallback } from "react";
 import { useQueryState } from "../context/query";
@@ -30,7 +28,7 @@ const SwapOptionsToggle = forwardRef((_, ref: any) => {
         const initialValues = generateSwapInitialValues(value, settings, query)
         resetForm({ values: initialValues })
         validateForm(initialValues)
-    }, [settings])
+    }, [settings, query])
 
     return (
         query?.products?.toLowerCase() != SwapType.OffRamp && query?.products?.toLowerCase() != SwapType.OnRamp && query?.products?.toLowerCase() != SwapType.CrossChain &&
