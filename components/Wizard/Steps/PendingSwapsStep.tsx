@@ -251,7 +251,7 @@ export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCa
             await cancelSwap(swapToCancel.id)
             setOpenCancelConfirmModal(false)
             setLoadingSwapCancel(false)
-            onCancel()
+            onCancel && onCancel()
         }
         catch (e) {
             setLoadingSwapCancel(false)
