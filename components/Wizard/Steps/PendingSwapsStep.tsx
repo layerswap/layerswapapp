@@ -23,7 +23,7 @@ export const CurrencyPendingSwapStep: FC = () => {
     const { MainForm } = useCreateSwap()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const pending_swaps_endpoint = `/swaps?statuses=0`
+    const pending_swaps_endpoint = `/swaps?status=0`
     const { data: allPendingSwaps, isValidating, mutate } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher)
     const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLocaleLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
 
@@ -53,7 +53,7 @@ export const AllPendingSwapStep: FC = () => {
     const { swap } = useSwapDataState()
     const { goToStep } = useFormWizardaUpdate()
     const layerswapApiClient = new LayerSwapApiClient()
-    const pending_swaps_endpoint = `/swaps?statuses=0`
+    const pending_swaps_endpoint = `/swaps?status=0`
     const { data: allPendingSwaps, mutate, isValidating } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher)
     const pendingSwapsToCancel = allPendingSwaps?.data
 
