@@ -38,7 +38,10 @@ const SwapDetails: FC<Props> = ({ id }) => {
 
     const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
 
-    const currency = currencies.find(c=>c.asset === source_network_asset)
+    const currency = currencies.find(c => c.asset === source_network_asset)
+
+    const source_network = networks?.find(e => e.internal_name === source_network_internal_name)
+    const input_tx_id = source_network?.transaction_explorer_template
 
     useEffect(() => {
         (async () => {
@@ -97,8 +100,8 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
                                             <Image
-                                            src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`}
-                                            alt="Exchange Logo"
+                                                src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`}
+                                                alt="Exchange Logo"
                                                 height="60"
                                                 width="60"
                                                 layout="responsive"
@@ -119,8 +122,8 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
                                             <Image
-                                            src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
-                                            alt="Exchange Logo"
+                                                src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
+                                                alt="Exchange Logo"
                                                 height="60"
                                                 width="60"
                                                 layout="responsive"
@@ -143,31 +146,44 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 </div>
                             </span>
                         </div>
+                        {swap?.input_transaction?.transaction_id &&
+                            <>
+                                <hr className='horizontal-gradient' />
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-left">Source Tx </span>
+                                    <span className="text-white">
+                                        <div className='inline-flex items-center'>
+                                            <div className='underline hover:no-underline flex items-center space-x-1'>
+                                                <a target={"_blank"} href={input_tx_id.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
+                                                <ExternalLinkIcon className='h-4' />
+                                            </div>
+                                        </div>
+                                    </span>
+                                </div>
+                            </>
+                        }
                         {swap?.output_transaction?.transaction_id &&
                             <>
-                                {swap?.output_transaction?.transaction_id &&
-                                    <>
-                                        <hr className='horizontal-gradient' />
-                                        <div className="flex justify-between items-baseline">
-                                            <span className="text-left">Transaction </span>
-                                            <span className="text-white">
-                                                <div className='inline-flex items-center'>
-                                                    <div className="">
-                                                        {(swap?.output_transaction?.transaction_id && swap?.destination_exchange === KnownInternalNames.Exchanges.Coinbase && (isGuid(swap?.output_transaction?.transaction_id))) ?
-                                                            <span><CopyButton toCopy={swap.output_transaction.transaction_id} iconClassName="text-gray-500">{shortenAddress(swap.output_transaction.transaction_id)}</CopyButton></span>
-                                                            :
-                                                            <div className='underline hover:no-underline flex items-center space-x-1'>
-                                                                <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
-                                                                <ExternalLinkIcon className='h-4' />
-                                                            </div>
-                                                        }
+                                <hr className='horizontal-gradient' />
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-left">Destination Tx </span>
+                                    <span className="text-white">
+                                        <div className='inline-flex items-center'>
+                                            <div className="">
+                                                {(swap?.output_transaction?.transaction_id && swap?.destination_exchange === KnownInternalNames.Exchanges.Coinbase && (isGuid(swap?.output_transaction?.transaction_id))) ?
+                                                    <span><CopyButton toCopy={swap.output_transaction.transaction_id} iconClassName="text-gray-500">{shortenAddress(swap.output_transaction.transaction_id)}</CopyButton></span>
+                                                    :
+                                                    <div className='underline hover:no-underline flex items-center space-x-1'>
+                                                        <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                                                        <ExternalLinkIcon className='h-4' />
                                                     </div>
-                                                </div>
-                                            </span>
+                                                }
+                                            </div>
                                         </div>
-                                    </>
-                                }
-                            </>}
+                                    </span>
+                                </div>
+                            </>
+                        }
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Requested amount</span>
