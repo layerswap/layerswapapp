@@ -74,5 +74,18 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
 
     const minAmount = destinationNetworkCurrency?.min_withdrawal_amount || 0
 
-    return roundDecimals(minAmount, currency.baseObject?.usd_price?.toFixed()?.length) || 0
+    const fee = CalculateFee(swapFormData, allNetworks)
+
+    const double_fee = fee * 2
+
+    let final_min_amount: number;
+
+    if (swapType === SwapType.OnRamp) {
+        final_min_amount = Math.max(minAmount + fee, double_fee)
+        final_min_amount += GetExchangeFee(currency.baseObject?.asset, from?.baseObject)
+    }
+    else
+        final_min_amount = (minAmount + double_fee)
+
+    return roundDecimals(final_min_amount, currency.baseObject?.usd_price?.toFixed()?.length) || 0
 }
