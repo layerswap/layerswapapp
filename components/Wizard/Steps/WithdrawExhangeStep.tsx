@@ -50,6 +50,8 @@ const WithdrawExchangeStep: FC = () => {
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
     const source_network_currency = source_exchange?.currencies?.find(c => source_network_asset?.toUpperCase() === c?.asset?.toUpperCase() && c?.is_default)
 
+    const networkDisplayName = networks?.find(n => n.internal_name === source_network_currency?.network)?.display_name
+
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
     }
@@ -220,7 +222,7 @@ const WithdrawExchangeStep: FC = () => {
                                                     />
                                                 }
                                             </div>
-                                            <div className="mx-1 block">{source_network_currency?.chain_display_name}</div>
+                                            <div className="mx-1 block">{networkDisplayName}</div>
                                         </div>
                                     </BackgroundField>
                                     {
