@@ -13,7 +13,6 @@ export class Exchange {
 export class ExchangeCurrency {
     asset: string;
     withdrawal_fee: number;
-    chain_display_name: string;
     network: string;
     is_default: boolean;
 }

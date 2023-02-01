@@ -27,7 +27,7 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
     return (
         <RadioGroup value={items.find(i => i.value === value)} disabled={disabled} onChange={onchange} className="mt-2 w-full my-4">
             <RadioGroup.Label className="font-normal text-primary-text text-sm">{label}</RadioGroup.Label>
-            <div className="grid grid-cols-2 gap-1 md:gap-2 p-0.5 md:p-2 rounded-lg bg-darkblue-700 border-darkblue-500 border">
+            <div className="grid grid-cols-3 gap-1 md:gap-2 p-0.5 md:p-2 rounded-lg bg-darkblue-700 border-darkblue-500 border">
                 {items.map((option) => (
                     <RadioGroup.Option
                         key={option.value}
@@ -38,34 +38,32 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
                                 checked
                                     ? 'bg-darkblue-500 border-transparent text-white'
                                     : 'bg-transparent border-transparent text-gray-400 hover:text-gray-200',
-                                'border rounded-md p-1 flex items-center justify-center text-sm font-medium sm:flex-1'
+                                `border rounded-md p-1 flex items-center justify-center text-sm font-medium sm:flex-1 relative`
                             )
                         }
                         disabled={!option.isEnabled}>
-                        <div>
-                            {
-                                option.value === SwapType.OnRamp ?
-                                    <div className="flex items-center space-x-1 md:space-x-2 md:p-0 p-1.5 text-sm md:text-base">
-                                        <span>
-                                            Exchange
-                                        </span>
-                                        <ArrowRightIcon className="h-3 w-3" />
-                                        <span >
-                                            Network
-                                        </span>
-                                    </div>
-                                    :
-                                    <div className="flex items-center space-x-1 md:space-x-2 text-sm md:text-base ">
-                                        <span >
-                                            Network
-                                        </span>
-                                        <ArrowRightIcon className="h-3 w-3" />
-                                        <span>
-                                            Exchange
-                                        </span>
-                                    </div>
-                            }
-                        </div>
+                        {
+                            option.value === SwapType.OnRamp &&
+                            <div className="flex items-center md:p-0 p-1.5 text-xs md:text-base">
+                                On-Ramp
+                            </div>
+                        }
+                        {
+                            option.value === SwapType.OffRamp &&
+                            <div className="flex items-center space-x-1 md:p-0 p-1.5 text-xs md:text-base ">
+                                Off-Ramp
+                            </div>
+                        }
+                        {
+                            option.value === SwapType.CrossChain &&
+                            <div className="inline-flex items-center ">
+                                <span className="flex items-center space-x-1 md:p-0 p-1.5 text-xs md:text-base">
+                                    Cross-Chain
+                                </span>
+                                <span className="absolute ml-1 -top-1 -right-2 shadow-sm rounded bg-primary px-2 text-[10px] leading-4 font-semibold text-white"> New </span>
+                            </div>
+
+                        }
                     </RadioGroup.Option>
                 ))}
             </div>

@@ -13,6 +13,7 @@ import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
 import ExchangeSettings from "../../lib/ExchangeSettings";
 import ClickTooltip from "../Tooltips/ClickTooltip";
+import { useSettingsState } from "../../context/settings";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -36,11 +37,14 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount } = useSwapDataState()
-        const placeholder = NetworkSettings.KnownSettings[values?.network?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
+        const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const [inpuFocused, setInputFocused] = useState(false)
         const { authData } = useAuthState()
+        const settings = useSettingsState()
 
-        const exchangeCurrency = values.exchange?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
+        const exchangeCurrency = values?.swapType === SwapType.OffRamp && values.to?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
+        const networkDisplayName = settings?.networks?.find(n => n.internal_name === exchangeCurrency?.network)?.display_name
+
         const handleUseDepositeAddress = async () => {
             try {
                 await onSetExchangeDepoisteAddress()
@@ -66,10 +70,10 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
             {
                 !hideLabel &&
                 <label htmlFor={name} className="flex font-normal text-primary-text text-sm">
-                    To {values?.exchange?.name || ''}{exchangeCurrency && values.swapType === SwapType.OffRamp && <span className="font-semibold">&ensp;{exchangeCurrency.chain_display_name}&ensp;</span>}address
+                    To {values?.from?.name || ''}{exchangeCurrency && values.swapType === SwapType.OffRamp && <span className="font-semibold mx-1">{networkDisplayName}</span>} address
                     {exchangeCurrency && values.swapType === SwapType.OffRamp &&
                         <span className="inline-block ">
-                            <ClickTooltip text={`The deposit address of ${values.currency.name} in ${exchangeCurrency.chain_display_name} network/chain at ${values.exchange?.baseObject?.display_name}`}/>
+                            <ClickTooltip text={`The deposit address of ${values.currency.name} in ${networkDisplayName} network/chain at ${values.from?.baseObject?.display_name}`}/>
                         </span>}
                 </label>
             }
@@ -107,7 +111,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             }
                         />
                         {
-                            values?.swapType === SwapType.OffRamp && authData?.access_token && values.exchange && ExchangeSettings.KnownSettings[values.exchange.baseObject.internal_name]?.EnableDepositAddressConnect && !depositeAddressIsfromAccount &&
+                            values?.swapType === SwapType.OffRamp && authData?.access_token && values.to && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect && !depositeAddressIsfromAccount &&
                             <motion.span className="inline-flex items-center mr-2 shrink"
                                 transition={{
                                     width: { ease: 'linear' }
@@ -132,7 +136,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                         }
                                                     }
                                                 }>
-                                                Autofill from {values?.exchange?.baseObject?.display_name}
+                                                Autofill from {values?.to?.baseObject?.display_name}
                                             </motion.span>
                                         </motion.div>
                                     </motion.button>
@@ -140,11 +144,11 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </motion.span>
                         }
                         {
-                            depositeAddressIsfromAccount &&
+                            values?.swapType === SwapType.OffRamp && depositeAddressIsfromAccount &&
                             <span className="inline-flex items-center mr-2">
                                 <div className="text-xs flex items-center space-x-2 ml-3 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
                                     {
-                                        values?.exchange?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
+                                        values?.to?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
                                         <span className="inline-flex items-center mr-2">
                                             <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
                                                 {exchangeAccount?.note}

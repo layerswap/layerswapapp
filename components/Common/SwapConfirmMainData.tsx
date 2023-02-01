@@ -14,9 +14,8 @@ type Props = {
 const SwapConfirmMainData: FC<Props> = ({ children }) => {
     const { swapFormData } = useSwapDataState()
     const { networks } = useSettingsState()
-    const { amount, swapType, currency, exchange, network } = swapFormData || {}
+    const { amount, currency, from, to } = swapFormData || {}
     const receive_amount = CalculateReceiveAmount(swapFormData, networks)
-    const networkCurrency = network?.baseObject?.currencies?.find(c => c.asset === currency?.baseObject?.asset)
 
     return <div>
         <h3 className='mb-7 pt-2 sm:text-lg font-roboto text-white font-semibold'>
@@ -25,42 +24,40 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
         <div className="w-full">
             <div className="rounded-md w-full mb-3">
                 <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-primary-text">
-                    <div className={classNames(swapType === SwapType.OffRamp ? 'flex-row-reverse  space-x-reverse' : 'flex-row', 'flex justify-between bg-darkblue-700 rounded-md items-center px-4 py-3')}>
-                        <span className="text-left flex"><span className='hidden md:block'>{swapType === SwapType.OnRamp ? "From" : "To"}</span>
+                    <div className='flex-row flex justify-between bg-darkblue-700 rounded-md items-center px-4 py-3'>
+                        <span className="text-left flex"><span className='hidden md:block'>From</span>
                             <div className="flex items-center">
                                 <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
                                     {
-                                        exchange?.imgSrc &&
+                                        from?.imgSrc &&
                                         <Image
-                                            src={exchange?.imgSrc}
-                                            alt="Exchange Logo"
+                                            src={from?.imgSrc}
+                                            alt="From Logo"
                                             height="60"
                                             width="60"
-                                            layout="responsive"
                                             className="rounded-md object-contain"
                                         />
                                     }
                                 </div>
-                                <div className="mx-1 text-white">{exchange?.name.toUpperCase()}</div>
+                                <div className="mx-1 text-white">{from?.name.toUpperCase()}</div>
                             </div>
                         </span>
                         <ArrowRightIcon className='h-5 w-5 block md:hidden' />
-                        <span className="flex"><span className='hidden md:block'>{swapType === SwapType.OnRamp ? "To" : "From"}</span>
+                        <span className="flex"><span className='hidden md:block'>To</span>
                             <div className="flex items-center">
                                 <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
                                     {
-                                        network?.imgSrc &&
+                                        to?.imgSrc &&
                                         <Image
-                                            src={network?.imgSrc}
+                                            src={to?.imgSrc}
                                             alt="Network Logo"
                                             height="60"
                                             width="60"
-                                            layout="responsive"
                                             className="rounded-md object-contain"
                                         />
                                     }
                                 </div>
-                                <div className="ml-1 text-white">{network?.name.toUpperCase()}</div>
+                                <div className="ml-1 text-white">{to?.name.toUpperCase()}</div>
                             </div>
                         </span>
                     </div>

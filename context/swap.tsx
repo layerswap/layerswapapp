@@ -58,19 +58,19 @@ export function SwapDataProvider({ children }) {
 
     useEffect(() => {
         setAddressConfirmed(false)
-    }, [swapFormData?.destination_address, swapFormData?.exchange])
+    }, [swapFormData?.destination_address, swapFormData?.from])
 
     useEffect(() => {
         setCodeRequested(false)
-    }, [swapFormData?.exchange])
+    }, [swapFormData?.from])
 
     const createSwap = useCallback(async (formData: SwapFormValues, query: QueryParams, settings: LayerSwapSettings) => {
         if (!formData)
             throw new Error("No swap data")
 
-        const { network, currency, exchange } = formData
+        const { to, currency, from } = formData
 
-        if (!network || !currency || !exchange)
+        if (!to || !currency || !from)
             throw new Error("Form data is missing")
 
         const data: CreateSwapParams = {
@@ -84,16 +84,19 @@ export function SwapDataProvider({ children }) {
             // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
             partner: settings.partners.find(p => p.is_enabled && p.internal_name?.toLocaleLowerCase() === query.addressSource?.toLocaleLowerCase())?.internal_name,
             external_id: query.externalId,
-            refuel: formData?.swapType === SwapType.OnRamp && NetworkSettings.KnownSettings[formData?.network.baseObject?.internal_name]?.Refuel
+            refuel: formData?.swapType === SwapType.OnRamp && NetworkSettings.KnownSettings[formData?.to.baseObject?.internal_name]?.Refuel
         }
 
         if (formData.swapType === SwapType.OnRamp) {
-            data.source_exchange = exchange?.id;
-            data.destination_network = network?.id;
+            data.source_exchange = from?.id;
+            data.destination_network = to?.id;
         }
-        else {
-            data.source_network = network?.id;
-            data.destination_exchange = exchange?.id;
+        else if (formData.swapType === SwapType.OffRamp) {
+            data.source_network = from?.id;
+            data.destination_exchange = to?.id;
+        } else {
+            data.source_network = from?.id;
+            data.destination_network = to?.id
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)

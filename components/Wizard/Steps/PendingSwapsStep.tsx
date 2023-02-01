@@ -12,15 +12,14 @@ import { ApiResponse } from '../../../Models/ApiResponse';
 import { useSettingsState } from '../../../context/settings';
 import shortenAddress from '../../utils/ShortenAddress';
 import { useRouter } from 'next/router';
-import { GetSourceDestinationData } from '../../../helpers/swapHelper';
+import SpinIcon from '../../icons/spinIcon';
 import useCreateSwap from '../../../hooks/useCreateSwap';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { AuthStep } from '../../../Models/Wizard';
 
-
 export const CurrencyPendingSwapStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
-    const { exchange, } = swapFormData || {}
+    const { exchanges, networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { MainForm } = useCreateSwap()
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -29,9 +28,9 @@ export const CurrencyPendingSwapStep: FC = () => {
     const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLocaleLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
 
     useEffect(() => {
-        if (exchange && pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
+        if (pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
             MainForm.onNext({ values: swapFormData, seapId: swap?.id })
-    }, [pendingSwapsToCancel, exchange, swapFormData, allPendingSwaps, isValidating, swap])
+    }, [pendingSwapsToCancel, swapFormData, allPendingSwaps, isValidating, swap])
 
     useEffect(() => {
         mutate()
@@ -119,7 +118,18 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                 <div className="overflow-hidden mb-4">
                     <div className={`flex flex-col space-y-2 ${loading && 'animate-pulse'}`}>
                         {pendingSwapsToCancel?.map((swap) => {
-                            const { destination, currency_logo, destination_logo, source, source_logo } = GetSourceDestinationData({ swap, currencies, exchanges, networks, resource_storage_url })
+
+                            const { source_exchange: source_exchange_internal_name,
+                                destination_network: destination_network_internal_name,
+                                source_network: source_network_internal_name,
+                                destination_exchange: destination_exchange_internal_name,
+                                destination_network_asset
+                            } = swap
+
+                            const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
+                            const destination = destination_exchange_internal_name ? exchanges.find(e => e.internal_name === destination_exchange_internal_name) : networks.find(n => n.internal_name === destination_network_internal_name)
+
+
                             return (
                                 <div key={swap.id}>
                                     <div className='w-full mb-2 rounded-md px-3 py-3 shadow-sm border border-darkblue-500  bg-darkblue-700'>
@@ -133,7 +143,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <p className='flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{swap?.destination_network_asset}</span></p>
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={currency_logo}
+                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
                                                                         alt="Source Logo"
                                                                         height="60"
                                                                         width="60"
@@ -149,7 +159,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <div className="h-5 w-5 relative">
                                                                     {
                                                                         <Image
-                                                                            src={source_logo}
+                                                                            src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`}
                                                                             alt="Source Logo"
                                                                             height="60"
                                                                             width="60"
@@ -164,7 +174,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <div className="h-5 w-5 relative">
                                                                     {
                                                                         <Image
-                                                                            src={destination_logo}
+                                                                            src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
                                                                             alt="Source Logo"
                                                                             height="60"
                                                                             width="60"
@@ -181,7 +191,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <p className='md:hidden flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{swap?.destination_network_asset}</span></p>
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={currency_logo}
+                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
                                                                         alt="Source Logo"
                                                                         height="60"
                                                                         width="60"
@@ -265,22 +275,12 @@ export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCa
             <div className="flex flex-row text-white text-base space-x-2">
                 <div className='basis-1/2'>
                     <SubmitButton className='plausible-event-name=Swap+canceled' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                        <DoubleLineText
-                            colorStyle='mltln-text-dark'
-                            primaryText='Cancel the swap'
-                            secondarytext='and go to home'
-                            reversed={true}
-                        />
+                        Cancel the swap
                     </SubmitButton>
                 </div>
                 <div className='basis-1/2'>
                     <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                        <DoubleLineText
-                            colorStyle='mltln-text-light'
-                            primaryText="Don't"
-                            secondarytext='cancel'
-                            reversed={true}
-                        />
+                        Don't cancel
                     </SubmitButton>
                 </div>
             </div>

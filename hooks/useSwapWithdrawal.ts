@@ -1,5 +1,5 @@
 import FailedStep from "../components/Wizard/Steps/FailedStep";
-import ProccessingStep from "../components/Wizard/Steps/ProccessingStep";
+import DepositPendingStep from "../components/Wizard/Steps/ProccessingSteps/DepositPendingStep";
 import SuccessfulStep from "../components/Wizard/Steps/SuccessfulStep";
 import WithdrawExchangeStep from "../components/Wizard/Steps/WithdrawExhangeStep";
 import { SwapWithdrawalStep, WizardStep } from "../Models/Wizard";
@@ -12,8 +12,8 @@ const useSwapWithdrawal = () => {
         positionPercent: 90
     }
     const Processing: WizardStep<SwapWithdrawalStep> = {
-        Content: ProccessingStep,
-        Name: SwapWithdrawalStep.Processing,
+        Content: DepositPendingStep,
+        Name: SwapWithdrawalStep.DepositPending,
         positionPercent: 95
     }
     const Success: WizardStep<SwapWithdrawalStep> = {
