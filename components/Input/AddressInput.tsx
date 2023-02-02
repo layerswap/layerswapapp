@@ -70,10 +70,10 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
             {
                 !hideLabel &&
                 <label htmlFor={name} className="flex font-normal text-primary-text text-sm">
-                    To {values?.from?.name || ''}{exchangeCurrency && values.swapType === SwapType.OffRamp && <span className="font-semibold mx-1">{networkDisplayName}</span>} address
+                    To {values?.to?.name || ''}{exchangeCurrency && values.swapType === SwapType.OffRamp && <span className="font-semibold mx-1">{networkDisplayName}</span>} address
                     {exchangeCurrency && values.swapType === SwapType.OffRamp &&
                         <span className="inline-block ">
-                            <ClickTooltip text={`The deposit address of ${values.currency.name} in ${networkDisplayName} network/chain at ${values.from?.baseObject?.display_name}`}/>
+                            <ClickTooltip text={`The deposit address of ${values.currency.name} in ${networkDisplayName} network/chain at ${values.to?.baseObject?.display_name}`}/>
                         </span>}
                 </label>
             }

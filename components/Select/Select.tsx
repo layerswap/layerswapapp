@@ -63,7 +63,6 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                         height="40"
                                                         width="40"
                                                         loading="eager"
-                                                        layout="responsive"
                                                         className="rounded-md object-contain" />}
                                                 </div>
                                             </div>
@@ -94,7 +93,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 name="exclamation-circle"
                                 className="mx-auto h-16 w-16 text-primary" />
                             <p className="mt-4 font-semibold">No 'items' found.</p>
-                            <p className="mt-2">Please try a different search term.</p>
+                            <p className="mt-2">Please try later.</p>
                         </div>
                     )}
                 </Combobox>
@@ -165,7 +164,6 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                             alt="Project Logo"
                                                             height="40"
                                                             width="40"
-                                                            layout="responsive"
                                                             className="rounded-md object-contain "
                                                         />
                                                     }
@@ -213,7 +211,6 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                             width="40"
                                             loading="eager"
                                             priority
-                                            layout="responsive"
                                             className="rounded-md object-contain"
                                         />
                                     }
