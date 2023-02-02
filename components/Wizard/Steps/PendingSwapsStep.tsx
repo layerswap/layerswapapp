@@ -270,8 +270,7 @@ export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCa
     }, [swapToCancel])
 
     return (
-        <Modal showModal={openCancelConfirmModal} setShowModal={setOpenCancelConfirmModal} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
-            <div className='text-primary-text mb-4'></div>
+        <Modal showModal={openCancelConfirmModal} setShowModal={setOpenCancelConfirmModal} title="Do NOT cancel if you have already sent crypto" modalSize='large'>
             <div className="flex flex-row text-white text-base space-x-2">
                 <div className='basis-1/2'>
                     <SubmitButton className='plausible-event-name=Swap+canceled' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >

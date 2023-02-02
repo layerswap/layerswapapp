@@ -3,7 +3,7 @@ import { CheckIcon, HomeIcon, ChatIcon, XIcon } from '@heroicons/react/solid';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
-import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
+import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
 import { useSettingsState } from '../../../context/settings';
 import { useIntercom } from 'react-use-intercom';
@@ -20,21 +20,56 @@ import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
+import { SwapCancelModal } from './PendingSwapsStep';
+import { useRouter } from 'next/router';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks, currencies, exchanges, discovery: { resource_storage_url } } = useSettingsState()
-    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
+    const { networks } = useSettingsState()
+    const { goToStep, setGoBack } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
-    const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
     const { swap } = useSwapDataState()
-    const { setInterval, cancelSwap } = useSwapDataUpdate()
+    const { setInterval, cancelSwap, mutateSwap } = useSwapDataUpdate()
     const goHome = useGoHome()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
+    const router = useRouter()
+    const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
+
+    const GoBack = useCallback(() => {
+        router.back()
+    }, [router])
+
+    const handleCancelConfirmed = useCallback(async () => {
+        try {
+            await cancelSwap(swap.id)
+            await goHome()
+        }
+        catch (e) {
+            toast(e.message)
+        }
+    }, [swap])
+
+    const handleGoBack = async () => {
+        const now = new Date()
+        const swapDate = new Date(swap?.created_date)
+        if ((now.getTime() - swapDate.getTime()) < 30000) {
+            handleCancelConfirmed()
+        } else {
+            GoBack()
+        }
+    }
+    useEffect(() => {
+        setGoBack(() => handleGoBack())
+    }, [])
+
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+
+    const handleMutateSwap = useCallback(() => {
+        mutateSwap()
+    }, [mutateSwap])
 
     useEffect(() => {
         setInterval(15000)
@@ -55,24 +90,6 @@ const WithdrawNetworkStep: FC = () => {
         const estimatedTransferTimeInSeconds = estimatedTransferTime ? (estimatedTransferTime * 60 * 1000) : 180000
         setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
     }, [estimatedTransferTime])
-
-    const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
-    const handleClose = () => {
-        setOpenCancelConfirmModal(false)
-    }
-
-    const handleCancelConfirmed = useCallback(async () => {
-        setLoadingSwapCancel(true)
-        try {
-            await cancelSwap(swap.id)
-            setLoadingSwapCancel(false)
-            await goHome()
-        }
-        catch (e) {
-            setLoadingSwapCancel(false)
-            toast(e.message)
-        }
-    }, [swap])
 
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
@@ -206,31 +223,7 @@ const WithdrawNetworkStep: FC = () => {
                     }
                 </Widget.Footer>
             </Widget>
-            <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
-                <div className='text-primary-text mb-4'></div>
-                <div className="flex flex-row text-white text-base space-x-2">
-                    <div className='basis-1/2'>
-                        <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                            <DoubleLineText
-                                colorStyle='mltln-text-dark'
-                                primaryText='Cancel the swap'
-                                secondarytext='and go to home'
-                                reversed={true}
-                            />
-                        </SubmitButton>
-                    </div>
-                    <div className='basis-1/2'>
-                        <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                            <DoubleLineText
-                                colorStyle='mltln-text-light'
-                                primaryText="Don't"
-                                secondarytext='cancel'
-                                reversed={true}
-                            />
-                        </SubmitButton>
-                    </div>
-                </div>
-            </Modal>
+            <SwapCancelModal onCancel={handleMutateSwap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} swapToCancel={swap} />
         </>
     )
 }

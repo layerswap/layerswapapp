@@ -29,14 +29,15 @@ import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 import Modal from '../../modalComponent';
 import { LinkIcon } from '@heroicons/react/outline';
+import { useGoHome } from '../../../hooks/useGoHome';
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { exchanges, currencies, networks, discovery: { resource_storage_url } } = useSettingsState()
+    const { exchanges, networks, discovery: { resource_storage_url } } = useSettingsState()
     const { swap, codeRequested } = useSwapDataState()
-    const { setInterval, setCodeRequested, mutateSwap } = useSwapDataUpdate()
+    const { setInterval, setCodeRequested, mutateSwap, cancelSwap } = useSwapDataUpdate()
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
     const [openCoinbaseConnectSlideover, setOpenCoinbaseConnectSlideover] = useState(false)
     const [openCoinbase2FA, setOpenCoinbase2FA] = useState(false)
@@ -45,6 +46,36 @@ const WithdrawExchangeStep: FC = () => {
     const [submitting, setSubmitting] = useState(false)
     const [loading, setLoading] = useState(false)
     const { source_exchange: source_exchange_internal_name, destination_network: destination_network_internal_name, source_network_asset: source_network_asset, destination_network_asset } = swap
+    const { setGoBack } = useFormWizardaUpdate()
+    const goHome = useGoHome()
+    const router = useRouter()
+
+    const GoBack = useCallback(() => {
+        router.back()
+    }, [router])
+
+    const handleCancelConfirmed = useCallback(async () => {
+        try {
+            await cancelSwap(swap.id)
+            await goHome()
+        }
+        catch (e) {
+            toast(e.message)
+        }
+    }, [swap])
+
+    const handleGoBack = async () => {
+        const now = new Date()
+        const swapDate = new Date(swap?.created_date)
+        if ((now.getTime() - swapDate.getTime()) < 30000) {
+            handleCancelConfirmed()
+        } else {
+            GoBack()
+        }
+    }
+    useEffect(() => {
+        setGoBack(() => handleGoBack())
+    }, [])
 
     const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
@@ -63,7 +94,6 @@ const WithdrawExchangeStep: FC = () => {
     }, [])
 
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
-    const router = useRouter();
     const { swapId } = router.query;
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
@@ -73,7 +103,7 @@ const WithdrawExchangeStep: FC = () => {
 
     const sourceIsCoinbase = swap.source_exchange?.toLocaleLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLocaleLowerCase()
 
-    const handleCancelSwap = useCallback(() => {
+    const handleMutateSwap = useCallback(() => {
         mutateSwap()
     }, [mutateSwap])
 
@@ -324,7 +354,7 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget>
-        <SwapCancelModal onCancel={handleCancelSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
+        <SwapCancelModal onCancel={handleMutateSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
     </>
     )
 }
