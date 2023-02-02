@@ -12,7 +12,6 @@ export class NetworkCurrency {
     status: "active" | string;
     is_deposit_enabled: boolean;
     is_withdrawal_enabled: boolean;
-    min_withdrawal_amount: number;
     max_withdrawal_amount: number;
     fee: number
 }

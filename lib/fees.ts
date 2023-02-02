@@ -21,10 +21,13 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
     const destinationNetwork = swapType !== SwapType.OffRamp ? to?.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
     const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
 
-    if (!destinationNetworkCurrency)
+    const sourceNetwork = swapType !== SwapType.OffRamp ? from?.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
+    const sourceNetworkCurrency = sourceNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
+
+    if (!destinationNetworkCurrency || !sourceNetworkCurrency)
         return 0
 
-    return destinationNetworkCurrency.fee;
+    return (destinationNetworkCurrency.fee + sourceNetworkCurrency.fee) * 1.5;
 }
 
 export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]) {
@@ -66,26 +69,8 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
     const { currency, from, to, swapType } = swapFormData || {}
     if (!currency || !from || !to) return 0
 
-    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
-    const destinationNetwork = swapType !== SwapType.OffRamp ? to.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
-    const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
-
-    if (!destinationNetworkCurrency) return 0
-
-    const minAmount = destinationNetworkCurrency?.min_withdrawal_amount || 0
-
     const fee = CalculateFee(swapFormData, allNetworks)
+    const minAmount = fee * 1.5
 
-    const double_fee = fee * 2
-
-    let final_min_amount: number;
-
-    if (swapType === SwapType.OnRamp) {
-        final_min_amount = Math.max(minAmount + fee, double_fee)
-        final_min_amount += GetExchangeFee(currency.baseObject?.asset, from?.baseObject)
-    }
-    else
-        final_min_amount = (minAmount + double_fee)
-
-    return roundDecimals(final_min_amount, currency.baseObject?.usd_price?.toFixed()?.length) || 0
+    return roundDecimals(minAmount, currency.baseObject?.usd_price?.toFixed()?.length) || 0
 }
