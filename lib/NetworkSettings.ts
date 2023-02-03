@@ -160,7 +160,7 @@ export default class NetworkSettings {
         }
         NetworkSettings.RhinoFiSettings = {
             [KnownInternalNames.Networks.RhinoFiMainnet]: {
-                apiUri: "https://api.deversifi.com/v1/trading/registrations/",
+                apiUri: "https://api.rhino.fi/v1/trading/registrations",
                 appUri: "https://app.rhinofi.com/",
             }
         }
