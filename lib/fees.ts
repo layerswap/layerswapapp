@@ -3,6 +3,7 @@ import roundDecimals from "../components/utils/RoundDecimals";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
 import { Exchange } from "../Models/Exchange";
+import KnownInternalNames from "./knownIds";
 import { SwapType } from "./layerSwapApiClient";
 
 export function GetExchangeFee(asste?: string, exchange?: Exchange): number {
@@ -17,11 +18,10 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
     if (!currency || !from || !to)
         return 0;
 
-    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
-    const destinationNetwork = swapType !== SwapType.OffRamp ? to?.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
+    const destinationNetwork = swapType !== SwapType.OffRamp ? to?.baseObject : allNetworks.find(n => n.internal_name === to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)?.network)
     const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
 
-    const sourceNetwork = swapType !== SwapType.OffRamp ? from?.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
+    const sourceNetwork = swapType === SwapType.OnRamp ? allNetworks.find(n => n.internal_name === from?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)?.network) : from?.baseObject
     const sourceNetworkCurrency = sourceNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
 
     if (!destinationNetworkCurrency || !sourceNetworkCurrency)
@@ -55,8 +55,7 @@ export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, allNetwo
 
     if (!currency || !from || !to) return 0
 
-    const exchangeCurrency = swapType === SwapType.OffRamp && to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
-    const destinationNetwork = swapType !== SwapType.OffRamp ? to.baseObject : allNetworks.find(n => n.internal_name === exchangeCurrency?.network)
+    const destinationNetwork = swapType === SwapType.OffRamp ? allNetworks.find(n => n.internal_name === to?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)?.network) : to.baseObject
     const destinationNetworkCurrency = destinationNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
 
     const maxAmount = destinationNetworkCurrency?.max_withdrawal_amount || 0
@@ -70,7 +69,11 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
     if (!currency || !from || !to) return 0
 
     const fee = CalculateFee(swapFormData, allNetworks)
-    const minAmount = fee * 1.5
+    let minAmount = fee * 1.5;
+    if (from.baseObject.internal_name === KnownInternalNames.Exchanges.Coinbase && swapType === SwapType.OnRamp) {
+        const exchangeCurrency = from?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
+        minAmount += exchangeCurrency.withdrawal_fee
+    }
 
     return roundDecimals(minAmount, currency.baseObject?.usd_price?.toFixed()?.length) || 0
 }
