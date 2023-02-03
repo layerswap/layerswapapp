@@ -139,8 +139,8 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             {/* refactor this */}
             {(close) => <ConnectImmutableX network={(formValues?.swapType === SwapType.OnRamp && formValues?.to || formValues?.swapType === SwapType.OffRamp && formValues?.from || formValues?.swapType === SwapType.CrossChain && (formValues?.to || formValues?.from))?.baseObject} onClose={close} />}
         </SlideOver>
-        <SlideOver imperativeOpener={[connectNetworkiIsOpen, setConnectNetworkIsOpen]} place='inStep' header={`${networkToConnect.DisplayName} connect`}>
-            {() => <ConnectNetwork NetworkDisplayName={networkToConnect.DisplayName} AppURL={networkToConnect.AppURL} />}
+        <SlideOver imperativeOpener={[connectNetworkiIsOpen, setConnectNetworkIsOpen]} place='inStep' header={`${networkToConnect?.DisplayName} connect`}>
+            {() => <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </SlideOver>
         <Formik
             innerRef={formikRef}
