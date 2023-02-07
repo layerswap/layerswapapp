@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { SwapItem } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
 import { ArrowRightIcon, ChevronRightIcon, ExclamationIcon, ExternalLinkIcon, RefreshIcon, SelectorIcon, XIcon } from '@heroicons/react/outline';
 import SwapDetails from "./SwapDetailsComponent"
@@ -53,11 +53,11 @@ function TransactionsHistory() {
       setLoading(true)
       const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
 
-      const { data } = await layerswapApiClient.GetCancelledSwapsAsync(1)
+      const { data } = await layerswapApiClient.GetSwapsAsync(1, SwapStatusInNumbers.Cancelled)
       if (data?.length > 0) setShowToggleButton(true)
 
       if (showCancelledSwaps) {
-        const { data, error } = await layerswapApiClient.GetAllSwapsAsync(1)
+        const { data, error } = await layerswapApiClient.GetSwapsAsync(1)
 
         if (error) {
           toast.error(error.message);
@@ -73,7 +73,7 @@ function TransactionsHistory() {
 
       } else {
 
-        const { data, error } = await layerswapApiClient.GetSwapsAsync(1)
+        const { data, error } = await layerswapApiClient.GetSwapsAsync(1, SwapStatusInNumbers.SwapsWithoutCancelled)
 
         if (error) {
           toast.error(error.message);

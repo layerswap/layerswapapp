@@ -28,16 +28,8 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<CreateSwapData>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
-    async GetSwapsAsync(page: number): Promise<ApiResponse<SwapItem[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}&status=0&status=1&status=2&status=3&status=4`);
-    }
-
-    async GetAllSwapsAsync(page: number): Promise<ApiResponse<SwapItem[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}&status=0&status=1&status=2&status=3&status=4&status=5`);
-    }
-
-    async GetCancelledSwapsAsync(page: number): Promise<ApiResponse<SwapItem[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}&status=5`);
+    async GetSwapsAsync(page: number, status?: SwapStatusInNumbers): Promise<ApiResponse<SwapItem[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}`);
     }
 
     async GetPendingSwapsAsync(): Promise<ApiResponse<SwapItem[]>> {
@@ -214,4 +206,14 @@ export type UserExchangesData = {
 
 export type CreateSwapData = {
     swap_id: string
+}
+
+export enum SwapStatusInNumbers {
+    Pending = 0,
+    Completed = 1,
+    Failed = 2,
+    Expired = 3,
+    Delayed = 4,
+    Cancelled = 5,
+    SwapsWithoutCancelled = '0&status=1&status=2&status=3&status=4'
 }
