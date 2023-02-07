@@ -4,7 +4,7 @@ import { FC } from "react";
 
 type Props = {
     children?: JSX.Element | JSX.Element[],
-    text: string;
+    text: string | JSX.Element | JSX.Element[];
     moreClassNames?: string
 }
 

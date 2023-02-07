@@ -28,7 +28,10 @@ import Coinbase2FA from '../../Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 import Modal from '../../modalComponent';
-import { LinkIcon } from '@heroicons/react/outline';
+import { ArrowDownIcon, LinkIcon } from '@heroicons/react/outline';
+import AvatarGroup from '../../AvatarGroup';
+import ClickTooltip from '../../Tooltips/ClickTooltip';
+import { motion } from 'framer-motion';
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
@@ -149,6 +152,9 @@ const WithdrawExchangeStep: FC = () => {
 
     const source_exchange_settings = ExchangeSettings.KnownSettings[source_exchange_internal_name]
 
+    const availableNetworks = source_exchange?.currencies?.filter(c => c.asset === swap?.source_network_asset).map(n => n.network)
+    const sourceNetworks = networks.filter(n => availableNetworks.includes(n.internal_name))
+
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inModal'>
             {(close) => (
@@ -179,9 +185,34 @@ const WithdrawExchangeStep: FC = () => {
                                 </div>
                                 <div className={`mb-6 grid grid-cols-1 gap-5 `}>
                                     <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.deposit_address} header={'Address'}>
-                                        <p className='break-all'>
-                                            {swap?.deposit_address}
-                                        </p>
+                                        <div>
+                                            <p className='break-all'>
+                                                {swap?.deposit_address}
+                                            </p>
+                                            <ClickTooltip text={
+                                                <div>
+                                                    <span className='font-semibold text-primary-text text-sm'>
+                                                        Deposits will be detected on any one of these networks
+                                                    </span>
+                                                    <div className='flex flex-col space-y-1 mt-2'>
+                                                        {
+                                                            sourceNetworks.map(x => (
+                                                                <div key={x?.internal_name} className='flex flex-row items-center space-x-2 text-white bg-darkblue-500 rounded py-1 px-2'>
+                                                                    <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full' src={`${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`}></Image>
+                                                                    <span>{networks.find(n => n.internal_name === x?.internal_name).display_name}</span>
+                                                                </div>
+                                                            ))
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }>
+                                                <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
+                                                    <AvatarGroup imageUrls={sourceNetworks?.map(x => `${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`)} />
+                                                    <span className='text-xs grow md:text-sm break-keep'>Available on {sourceNetworks.length} networks</span>
+                                                    <span><ArrowDownIcon className='h-4 md:h-5 bg-darkblue-700 text-primary-text ml-1 md:ml-2 rounded-full p-0.5' /></span>
+                                                </motion.div>
+                                            </ClickTooltip>
+                                        </div>
                                     </BackgroundField>
                                     <div className='flex space-x-4'>
                                         <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
@@ -207,24 +238,6 @@ const WithdrawExchangeStep: FC = () => {
                                             </div>
                                         </BackgroundField>
                                     </div>
-                                    <BackgroundField header={'Network'}>
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-5 w-5 relative">
-                                                {
-                                                    source_network_currency &&
-                                                    <Image
-                                                        src={`${resource_storage_url}/layerswap/networks/${source_network_currency?.network?.toLocaleLowerCase()}.png`}
-                                                        alt="From Logo"
-                                                        height="60"
-                                                        width="60"
-                                                        layout="responsive"
-                                                        className="rounded-md object-contain"
-                                                    />
-                                                }
-                                            </div>
-                                            <div className="mx-1 block">{networkDisplayName}</div>
-                                        </div>
-                                    </BackgroundField>
                                     {
                                         source_exchange_settings?.WithdrawalWarningMessage &&
                                         <WarningMessage>
@@ -323,7 +336,7 @@ const WithdrawExchangeStep: FC = () => {
                     </>
                 }
             </Widget.Footer>
-        </Widget>
+        </Widget >
         <SwapCancelModal onCancel={handleCancelSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
     </>
     )
