@@ -41,6 +41,7 @@ function TransactionsHistory() {
   const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending
   const { width } = useWindowDimensions()
   const [showCancelledSwaps, setShowCancelledSwaps] = useState(false)
+  const [showToggleButton, setShowToggleButton] = useState(false)
 
   const handleGoBack = useCallback(() => {
     router.back()
@@ -51,6 +52,9 @@ function TransactionsHistory() {
       setIsLastPage(false)
       setLoading(true)
       const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
+
+      const { data } = await layerswapApiClient.GetCancelledSwapsAsync(1)
+      if (data?.length > 0) setShowToggleButton(true)
 
       if (showCancelledSwaps) {
         const { data, error } = await layerswapApiClient.GetAllSwapsAsync(1)
@@ -151,14 +155,14 @@ function TransactionsHistory() {
                 <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">
                   <div className="mb-2">
                     <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
-                      <div className="flex justify-end">
+                      {showToggleButton && <div className="flex justify-end">
                         <div className='flex space-x-2'>
                           <p className='flex items-center text-xs md:text-sm font-medium'>
                             Show cancelled swaps
                           </p>
                           <ToggleButton onChange={handleToggleChange} value={showCancelledSwaps} />
                         </div>
-                      </div>
+                      </div>}
                       <table className="w-full divide-y divide-darkblue-500">
                         <thead className="text-primary-text">
                           <tr>

@@ -36,6 +36,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}&status=0&status=1&status=2&status=3&status=4&status=5`);
     }
 
+    async GetCancelledSwapsAsync(page: number): Promise<ApiResponse<SwapItem[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}&status=5`);
+    }
+
     async GetPendingSwapsAsync(): Promise<ApiResponse<SwapItem[]>> {
         return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=0`);
     }
