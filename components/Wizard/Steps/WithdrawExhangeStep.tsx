@@ -154,7 +154,6 @@ const WithdrawExchangeStep: FC = () => {
 
     const availableNetworks = source_exchange?.currencies?.filter(c => c.asset === swap?.source_network_asset).map(n => n.network)
     const sourceNetworks = networks.filter(n => availableNetworks.includes(n.internal_name))
-    console.log(sourceNetworks)
 
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inModal'>
