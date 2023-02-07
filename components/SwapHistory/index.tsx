@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
-import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, RefreshIcon, SelectorIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, ChevronRightIcon, ExclamationIcon, ExternalLinkIcon, RefreshIcon, SelectorIcon, XIcon } from '@heroicons/react/outline';
 import SwapDetails from "./SwapDetailsComponent"
 import LayerswapMenu from "../LayerswapMenu"
 import { useSettingsState } from "../../context/settings"
@@ -21,15 +21,15 @@ import { ArrowLeftIcon } from "@heroicons/react/solid"
 import { useSwapDataUpdate } from "../../context/swap"
 import { SwapStatus } from "../../Models/SwapStatus"
 import FormattedDate from "../Common/FormattedDate";
-import useSortableData from "../../hooks/useSortableData";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import isGuid from "../utils/isGuid";
 import KnownInternalNames from "../../lib/knownIds";
+import ToggleButton from "../buttons/toggleButton";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const settings = useSettingsState()
-  const { currencies, exchanges, networks, discovery: { resource_storage_url } } = settings
+  const { exchanges, networks, discovery: { resource_storage_url } } = settings
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapItem[]>()
   const [loading, setLoading] = useState(false)
@@ -40,6 +40,7 @@ function TransactionsHistory() {
   const { cancelSwap } = useSwapDataUpdate()
   const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending
   const { width } = useWindowDimensions()
+  const [showCancelledSwaps, setShowCancelledSwaps] = useState(false)
 
   const handleGoBack = useCallback(() => {
     router.back()
@@ -49,23 +50,40 @@ function TransactionsHistory() {
     (async () => {
       setIsLastPage(false)
       setLoading(true)
-
       const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
-      const { data, error } = await layerswapApiClient.GetSwapsAsync(1)
 
-      if (error) {
-        toast.error(error.message);
-        return;
+      if (showCancelledSwaps) {
+        const { data, error } = await layerswapApiClient.GetAllSwapsAsync(1)
+
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
+
+        setSwaps(data)
+        setPage(1)
+        if (data?.length < 5)
+          setIsLastPage(true)
+
+        setLoading(false)
+
+      } else {
+
+        const { data, error } = await layerswapApiClient.GetSwapsAsync(1)
+
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
+
+        setSwaps(data)
+        setPage(1)
+        if (data?.length < 5)
+          setIsLastPage(true)
+        setLoading(false)
       }
-
-      setSwaps(data)
-      setPage(1)
-      if (data?.length < 5)
-        setIsLastPage(true)
-
-      setLoading(false)
     })()
-  }, [router.query])
+  }, [router.query, showCancelledSwaps])
 
   const handleLoadMore = useCallback(async () => {
     //TODO refactor page change
@@ -99,13 +117,9 @@ function TransactionsHistory() {
     }
   }
 
-  const { items, requestSort, sortConfig } = useSortableData(swaps);
-  const getStatusIcon = (name) => {
-    if (!sortConfig) {
-      return <SelectorIcon className="h-3" />;
-    }
-    return sortConfig.key === name ? (sortConfig.direction == 'ascending' ? <GreyIcon /> : <GreenIcon />) : undefined;
-  };
+  const handleToggleChange = (value: boolean) => {
+    setShowCancelledSwaps(value)
+  }
 
   return (
     <div className='bg-darkblue px-8 md:px-12 md:shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative h-full '>
@@ -137,6 +151,14 @@ function TransactionsHistory() {
                 <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">
                   <div className="mb-2">
                     <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
+                      <div className="flex justify-end">
+                        <div className='flex space-x-2'>
+                          <p className='flex items-center text-xs md:text-sm font-medium'>
+                            Show cancelled swaps
+                          </p>
+                          <ToggleButton onChange={handleToggleChange} value={showCancelledSwaps} />
+                        </div>
+                      </div>
                       <table className="w-full divide-y divide-darkblue-500">
                         <thead className="text-primary-text">
                           <tr>
@@ -176,13 +198,7 @@ function TransactionsHistory() {
                               scope="col"
                               className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
                             >
-                              <button
-                                onClick={() => requestSort('status')}
-                                className='flex items-center gap-1'
-                              >
-                                <span>Status</span>
-                                <span>{getStatusIcon('status')}</span>
-                              </button>
+                              Status
                             </th>
                             <th
                               scope="col"
@@ -196,7 +212,7 @@ function TransactionsHistory() {
                           </tr>
                         </thead>
                         <tbody>
-                          {items?.map((swap, index) => {
+                          {swaps?.map((swap, index) => {
 
                             const { source_exchange: source_exchange_internal_name,
                               destination_network: destination_network_internal_name,
