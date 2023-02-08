@@ -33,7 +33,7 @@ const SwapWithdrawalWizard: FC = () => {
         <TimerProvider>
             <Wizard>
                 <WizardItem StepName={SwapWithdrawalStep.Withdrawal} PositionPercent={90} GoBack={handleGoBack}>
-                    <WithdrawExchangeStep />
+                <DepositPendingStep />
                 </WizardItem>
                 <WizardItem StepName={SwapWithdrawalStep.CoinbaseManualWithdrawal} PositionPercent={90} GoBack={GoBackToSelectWithdrawalTypeStep}>
                     <WithdrawExchangeStep />
