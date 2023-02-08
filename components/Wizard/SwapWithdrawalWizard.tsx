@@ -6,7 +6,7 @@ import ErrorStep from "./Steps/ErrorStep";
 import ExchangeDelay from "./Steps/ExchangeDelayStep";
 import FailedStep from "./Steps/FailedStep";
 import SuccessfulStep from "./Steps/SuccessfulStep";
-import ConnectWalletStep from "./Steps/Wallet/ConnectWalletStep";
+import ImtblxWalletWithdrawStep from "./Steps/Wallet/ImtblxWalletWithdrawStep";
 import CoinbaseInternalWithdrawalStep from "./Steps/Wallet/CoinbaseInternalWithdrawalStep";
 import WithdrawExchangeStep from "./Steps/WithdrawExhangeStep";
 import WithdrawNetworkStep from "./Steps/WithdrawNetworkStep";
@@ -40,7 +40,7 @@ const SwapWithdrawalWizard: FC = () => {
                     <WithdrawNetworkStep />
                 </WizardItem>
                 <WizardItem StepName={SwapWithdrawalStep.WithdrawFromImtblx} GoBack={handleGoBack} PositionPercent={90} >
-                    <ConnectWalletStep />
+                    <ImtblxWalletWithdrawStep />
                 </WizardItem>
                 <WizardItem StepName={SwapWithdrawalStep.CoinbaseInternalWithdrawal} GoBack={GoBackToSelectWithdrawalTypeStep} PositionPercent={90} >
                     <CoinbaseInternalWithdrawalStep />
