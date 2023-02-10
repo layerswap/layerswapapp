@@ -24,6 +24,7 @@ import ToggleButton from '../../../buttons/toggleButton';
 import { nameOf } from '../../../../lib/external/nameof';
 import { FormikProps } from 'formik';
 import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormValues';
+import { Exchange } from '../../../../Models/Exchange';
 
 
 const OffRampSwapConfirmationStep: FC = () => {
@@ -43,6 +44,10 @@ const OffRampSwapConfirmationStep: FC = () => {
     const layerswapApiClient = new LayerSwapApiClient()
     const depositad_address_endpoint = `/exchange_accounts/${to?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
     const { data: deposite_address } = useSWR<ApiResponse<string>>((to && !destination_address) ? depositad_address_endpoint : null, layerswapApiClient.fetcher)
+
+    const currentNetwork = swapFormData?.from?.baseObject;
+    const currentExchange = swapFormData?.to?.baseObject as Exchange;
+    const currentCurrency = swapFormData?.currency?.baseObject;
 
     useEffect(() => {
         if (deposite_address?.data)
@@ -115,6 +120,12 @@ const OffRampSwapConfirmationStep: FC = () => {
                     }
                     <AddressDetails canEditAddress={true} />
                 </SwapConfirmMainData>
+                {
+                    currentExchange.currencies.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network === currentNetwork.internal_name) &&
+                    <WarningMessage messageType='informing'>
+                        <span>You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly</span>
+                    </WarningMessage>
+                }
             </Widget.Content>
             <Widget.Footer>
                 <div className="text-white text-sm">
