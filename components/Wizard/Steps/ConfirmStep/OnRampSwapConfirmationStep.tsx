@@ -23,6 +23,7 @@ import KnownInternalNames from '../../../../lib/knownIds';
 import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import { useSettingsState } from '../../../../context/settings';
+import { Exchange } from '../../../../Models/Exchange';
 
 const TIMER_SECONDS = 120
 
@@ -129,10 +130,10 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleWithdrawalTypeToggleChange = (value: boolean) => {
         setWithdrawalType(value)
     }
+    
     const currentNetwork = swapFormData?.to?.baseObject;
-    const currentExchange = swapFormData?.from?.baseObject;
+    const currentExchange = swapFormData?.from?.baseObject as Exchange;
     const currentCurrency = swapFormData?.currency?.baseObject;
-    const coinbaseLogoURL = `${resource_storage_url}/layerswap/networks/${KnownInternalNames.Exchanges.Coinbase.toLowerCase()}.png`
 
     return (<>
         <Widget>
@@ -141,7 +142,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
                 {
-                    SwapSettings?.NativeSupportedPaths[currentExchange.internal_name]?.[currentNetwork.internal_name]?.includes(currentCurrency.asset) &&
+                    currentExchange.currencies.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network === currentNetwork.internal_name) &&
                     <WarningMessage messageType='informing'>
                         <span>You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly</span>
                     </WarningMessage>
