@@ -43,6 +43,8 @@ function TransactionsHistory() {
   const [showCancelledSwaps, setShowCancelledSwaps] = useState(false)
   const [showToggleButton, setShowToggleButton] = useState(false)
 
+  const PAGE_SIZE = 20
+
   const handleGoBack = useCallback(() => {
     router.back()
   }, [router])
@@ -71,7 +73,7 @@ function TransactionsHistory() {
 
         setSwaps(data)
         setPage(1)
-        if (data?.length < 5)
+        if (data?.length < PAGE_SIZE)
           setIsLastPage(true)
 
         setLoading(false)
@@ -87,7 +89,7 @@ function TransactionsHistory() {
 
         setSwaps(data)
         setPage(1)
-        if (data?.length < 5)
+        if (data?.length < PAGE_SIZE)
           setIsLastPage(true)
         setLoading(false)
       }
@@ -108,7 +110,7 @@ function TransactionsHistory() {
 
     setSwaps(old => [...(old ? old : []), ...(data ? data : [])])
     setPage(nextPage)
-    if (data.length < 20)
+    if (data.length < PAGE_SIZE)
       setIsLastPage(true)
 
     setLoading(false)
