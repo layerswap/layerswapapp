@@ -1,4 +1,4 @@
-import { SwitchHorizontalIcon } from '@heroicons/react/outline';
+import { InformationCircleIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
 import { CheckIcon, HomeIcon, ChatIcon, XIcon } from '@heroicons/react/solid';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
@@ -95,7 +95,7 @@ const WithdrawNetworkStep: FC = () => {
                             </div>
                             <div className='mb-6 grid grid-cols-1 gap-4'>
                                 {
-                                    source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet &&
+                                    (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
                                     <BackgroundField header={'Send type'}>
                                         <div className='flex items-center space-x-2'>
                                             <SwitchHorizontalIcon className='h-4 w-4' />
@@ -106,12 +106,22 @@ const WithdrawNetworkStep: FC = () => {
                                     </BackgroundField>
                                 }
                                 <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.deposit_address} header={'Recipient'}>
-                                    <p className='break-all'>
-                                        {swap?.deposit_address}
-                                    </p>
+                                    <div>
+                                        <p className='break-all'>
+                                            {swap?.deposit_address}
+                                        </p>
+                                        {
+                                            (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
+                                            <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-darkblue-100 rounded border-dashed'>
+                                                <p>
+                                                    You might get a warning that this is not an activated address. You can ignore it.
+                                                </p>
+                                            </div>
+                                        }
+                                    </div>
                                 </BackgroundField>
                                 {
-                                    source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli || source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet &&
+                                    (source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli || source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet) &&
                                     <div className='flex space-x-4'>
                                         <BackgroundField header={'Address Type'}>
                                             <p>
