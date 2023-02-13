@@ -18,14 +18,15 @@ type NetworkeMenuItemsParams = {
 }
 
 const networkCurrencyIsAvailableForExchange = (nc: NetworkCurrency, exchange: Exchange, network: CryptoNetwork, swapType: SwapType) => {
-
-    return nc.status === "active"
+    return (swapType === SwapType.OnRamp ? nc.status === "active" : (nc.status === "insufficient_liquidity" || nc.status === "active"))
         && (swapType === SwapType.OnRamp ? nc.is_withdrawal_enabled : nc.is_deposit_enabled)
         && exchange.currencies?.some(ec =>
-            ec.asset === nc.asset && ec.status === "active"
-            && (swapType === SwapType.OnRamp ? ec.is_deposit_enabled : ec.is_withdrawal_enabled)
+            ec.asset === nc.asset
+            && (swapType === SwapType.OnRamp ?
+                ((ec.status === "active" || ec.status === "insufficient_liquidity") && ec.is_deposit_enabled)
+                : (ec.status === "active" && ec.is_withdrawal_enabled))
         )
-        && !exchange.currencies?.some(ec => ec.asset === nc.asset && ec.network === network.internal_name)
+        && !exchange.currencies?.some(ec => ec.asset === nc.asset && ec.is_default && ec.network === network.internal_name)
 }
 
 export const generateNetworkMenuItems = ({ values, networks, resource_storage_url, destNetwork, lockNetwork, direction, exchanges }: NetworkeMenuItemsParams): SelectMenuItem<CryptoNetwork>[] => {
@@ -33,11 +34,12 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
 
     const currencyWithdrawalIsAvailable = ((currency: NetworkCurrency, network: CryptoNetwork) => currency.is_withdrawal_enabled
         && (network ?
-            network.currencies.some(nc => nc.asset === currency.asset && nc.status === "active" && nc.is_deposit_enabled)
+            network.currencies.some(nc => nc.asset === currency.asset && (nc.status === "active" || nc.status === "insufficient_liquidity") && nc.is_deposit_enabled)
             : networks.some(network =>
-                network.currencies.some(nc => nc.asset === currency.asset && nc.status === "active" && nc.is_deposit_enabled))))
+                network.currencies.some(nc => nc.asset === currency.asset && (nc.status === "active" || nc.status === "insufficient_liquidity") && nc.is_deposit_enabled))))
 
     const currencyDepositIsAvailable = ((currency: NetworkCurrency, network: CryptoNetwork) => currency.is_deposit_enabled
+        && (currency.status === "active" || currency.status === "insufficient_liquidity")
         && (network ?
             network.currencies.some(nc => nc.asset === currency.asset && nc.status === "active" && nc.is_withdrawal_enabled)
             : networks.some(network =>
@@ -56,7 +58,6 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
 
     const networkIsAvailableInCrossChain = (n: CryptoNetwork) => swapType === SwapType.CrossChain
         && n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.crossChain
-            && nc.status === "active"
             && (direction === "from" ?
                 (n.internal_name !== to?.baseObject?.internal_name && currencyDepositIsAvailable(nc, to?.baseObject))
                 : (n.internal_name !== from?.baseObject?.internal_name && currencyWithdrawalIsAvailable(nc, from?.baseObject))))
@@ -99,10 +100,10 @@ type ExchangeMenuItemsProps = {
 }
 
 const exchangeCurrencyIsAvailableForNetwork = ((ec: ExchangeCurrency & NetworkCurrency, network: CryptoNetwork, exchange: Exchange, swapType: SwapType) => {
-    return (ec.status === "active" &&
-        (swapType === SwapType.OffRamp ? ec.is_withdrawal_enabled : ec.is_deposit_enabled)
-        && network.currencies?.some(nc => nc.asset === ec.asset && nc.status === "active" && (swapType === SwapType.OffRamp ? nc.is_deposit_enabled : nc.is_withdrawal_enabled))
-        && !exchange.currencies.filter(c => c.asset === ec.asset).some(c => c.network === network.internal_name))
+    return (
+        (swapType === SwapType.OffRamp ? (ec.is_withdrawal_enabled && ec.status === "active") : (ec.is_deposit_enabled && (ec.status === "active" || ec.status === "insufficient_liquidity")))
+        && network.currencies?.some(nc => nc.asset === ec.asset && (swapType === SwapType.OffRamp ? (nc.status === "active" || nc.status === "insufficient_liquidity"): nc.status === "active") && (swapType === SwapType.OffRamp ? nc.is_deposit_enabled : nc.is_withdrawal_enabled))
+        && !exchange.currencies.filter(c => c.asset === ec.asset && c.is_default).some(c => c.network === network.internal_name))
 })
 
 export const generateExchangeMenuItems = ({ exchanges, networks, values, resource_storage_url }: ExchangeMenuItemsProps): SelectMenuItem<Exchange>[] => {

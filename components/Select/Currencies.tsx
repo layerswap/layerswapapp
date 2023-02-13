@@ -5,6 +5,7 @@ import KnownInternalNames from "../../lib/knownIds";
 import { SwapType } from "../../lib/layerSwapApiClient";
 import { SortingByOrder } from "../../lib/sorting";
 import { Currency } from "../../Models/Currency";
+import { Exchange } from "../../Models/Exchange";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import Select from "./Select";
 import { SelectMenuItem } from "./selectMenuItem";
@@ -18,7 +19,18 @@ const CurrenciesField: FC = () => {
     const name = "currency"
     const { discovery: { resource_storage_url }, currencies, exchanges } = useSettingsState();
 
-    const currencyIsAvilable = useCallback((c: Currency) => from && to && from?.baseObject.currencies.some(fc => fc.asset === c.asset && fc.status === "active" && fc.is_deposit_enabled) && to.baseObject.currencies.some(tc => tc.asset === c.asset && tc.status === "active" && tc.is_withdrawal_enabled), [from, to, swapType])
+    const currencyIsAvilable = useCallback((c: Currency) => from
+        && to
+        && from?.baseObject.currencies.some(fc =>
+            fc.asset === c.asset
+            && (fc.status === "active" || fc.status === "insufficient_liquidity")
+            && fc.is_deposit_enabled)
+        && to.baseObject.currencies.some(tc =>
+            tc.asset === c.asset && tc.status === "active"
+            && tc.is_withdrawal_enabled)
+        && !(swapType === SwapType.OffRamp && (to as SelectMenuItem<Exchange>).baseObject.currencies.filter(ec => c.asset === ec.asset && ec.is_default).some(tc => tc.network === from.baseObject.internal_name))
+        && !(swapType === SwapType.OnRamp && (from as SelectMenuItem<Exchange>).baseObject.currencies.filter(ec => c.asset === ec.asset && ec.is_default).some(fc => fc.network === to.baseObject.internal_name))
+        , [from, to, swapType])
 
     const mapCurranceToMenuItem = (c: Currency): SelectMenuItem<Currency> => ({
         baseObject: c,
