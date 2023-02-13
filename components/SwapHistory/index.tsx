@@ -49,12 +49,17 @@ function TransactionsHistory() {
 
   useEffect(() => {
     (async () => {
+      const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
+      const { data } = await layerswapApiClient.GetSwapsAsync(1, SwapStatusInNumbers.Cancelled)
+      if (data?.length > 0) setShowToggleButton(true)
+    })()
+  }, [])
+
+  useEffect(() => {
+    (async () => {
       setIsLastPage(false)
       setLoading(true)
       const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
-
-      const { data } = await layerswapApiClient.GetSwapsAsync(1, SwapStatusInNumbers.Cancelled)
-      if (data?.length > 0) setShowToggleButton(true)
 
       if (showCancelledSwaps) {
         const { data, error } = await layerswapApiClient.GetSwapsAsync(1)
