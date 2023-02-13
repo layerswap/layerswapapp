@@ -39,19 +39,19 @@ export function AuthProvider({ children }) {
 
     const updateDataFromLocalStorage = () => {
         const authData = TokenService.getAuthData()
-        if (!authData || !authData.access_token){
+        if (!authData || !authData.access_token) {
             setUserType(UserType.NotAuthenticatedUser)
             return
         }
         const { email, sub, utype } = parseJwt(authData.access_token)
         if (authData && (utype == UserType.AuthenticatedUser || !utype)) {
             setUserType(UserType.AuthenticatedUser)
+            setEmail(email)
         } else if (authData && utype == UserType.GuestUser) {
             setGuestAuthData(authData)
             setUserType(UserType.GuestUser)
         }
         setAuthData(authData)
-        setEmail(email)
         setUserId(sub)
     }
 
