@@ -6,7 +6,7 @@ import { classNames } from '../utils/classNames';
 export class ToggleButtonProps {
     value: boolean;
     onChange: (isChecked: boolean) => void;
-    name: string;
+    name?: string;
 }
 
 const ToggleButton: FC<ToggleButtonProps> = ({ name, onChange, value }) => {
