@@ -2,6 +2,7 @@ import { Field, useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
 import { useSettingsState } from "../../context/settings";
 import CurrencySettings from "../../lib/CurrencySettings";
+import { SwapType } from "../../lib/layerSwapApiClient";
 import { SortingByOrder } from "../../lib/sorting";
 import { Currency } from "../../Models/Currency";
 import { Exchange } from "../../Models/Exchange";
