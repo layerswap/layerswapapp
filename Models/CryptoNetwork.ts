@@ -13,5 +13,7 @@ export class NetworkCurrency {
     is_deposit_enabled: boolean;
     is_withdrawal_enabled: boolean;
     max_withdrawal_amount: number;
-    fee: number
+    fee: number;
+    contract_address: string;
+    decimals: number;
 }
