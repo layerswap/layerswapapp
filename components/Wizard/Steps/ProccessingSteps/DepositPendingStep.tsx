@@ -52,13 +52,12 @@ const DepositPendingStep: FC = () => {
                     </div>
                 </div>
                 <div className="flex flex-col justify-center h-full mt-1 text-lg font-lighter text-primary-text">
-                    {/* <p className='text-white'>
+                    <p className='text-white'>
                         Transfer from {source_display_name} is in progress
                     </p>
                     <p className='text-sm'>
                         Estimated time: <span className='text-white'>less than {swap?.source_exchange ? '10' : '3'} minutes</span>
-                    </p> */}
-                    <Steps steps={steps} />
+                    </p>
                 </div>
             </div>
         </>
