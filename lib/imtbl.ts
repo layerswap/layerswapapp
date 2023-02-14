@@ -51,7 +51,7 @@ export default class ImtblClient {
                         type: ERC20TokenType.ERC20,
                         amount: swap.requested_amount.toString(),
                         toAddress: swap.deposit_address,
-                        tokenAddress: currency.contract_address,
+                        tokenAddress: currency.contract_address?.toLocaleLowerCase(),
                         symbol: swap.source_network_asset
                     }
                 ])
