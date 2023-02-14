@@ -53,7 +53,7 @@ const ProcessingStep: FC = () => {
     ]
 
     const steps: ProcessingSteps[] = [
-        { name: SwapWithdrawalStep.DepositPending, header: `Transfer from ${source_display_name} is in progress`, description: <span>Estimated time: <span className='text-white'>less than {swap?.source_exchange ? '10' : '3'} minutes</span></span>, status: 'active' },
+        { name: SwapWithdrawalStep.DepositPending, header: `Transfer from ${source_display_name} is in progress`, description: <span>Estimated time: <span className='text-white'>less than {swap?.source_exchange ? '10' : '3'} minutes</span></span>, status: swapStatusStep === SwapWithdrawalStep.DepositPending ? 'active' : 'inactive' },
         { name: SwapWithdrawalStep.OutputTransferProccessing, header: `Your assets are on their way`, description: <span>Estimated time: <span className='text-white'>less than 2 minutes</span></span>, status: swapStatusStep === SwapWithdrawalStep.OutputTransferProccessing ? 'active' : 'inactive' },
         { name: SwapWithdrawalStep.TransferConfirmation, header: `Transfer from ${source_display_name} is completed`, description: <div><p>Waiting for the transfer to get confirmed</p><p>Confirmations: <span className='text-white'>{swap?.input_transaction?.confirmations ?? 0}</span>/{swap?.input_transaction?.max_confirmations}</p></div>, status: swapStatusStep === SwapWithdrawalStep.TransferConfirmation ? 'active' : 'inactive' },
     ]
