@@ -25,7 +25,7 @@ const ProcessingStep: FC = () => {
     const swapStatusStep = GetSwapStatusStep(swap)
 
     useEffect(() => {
-        if (swapStatusStep && swapStatusStep !== (SwapWithdrawalStep.DepositPending || SwapWithdrawalStep.OutputTransferProccessing || SwapWithdrawalStep.TransferConfirmation)) {
+        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.DepositPending && swapStatusStep !== SwapWithdrawalStep.OutputTransferProccessing && swapStatusStep !== SwapWithdrawalStep.TransferConfirmation) {
             goToStep(swapStatusStep)
         }
     }, [swapStatusStep])
