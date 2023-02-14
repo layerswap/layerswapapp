@@ -12,7 +12,8 @@ export class NetworkCurrency {
     status: "active" | "insufficient_liquidity";
     is_deposit_enabled: boolean;
     is_withdrawal_enabled: boolean;
-    min_withdrawal_amount: number;
     max_withdrawal_amount: number;
-    fee: number
+    fee: number;
+    contract_address: string;
+    decimals: number;
 }
