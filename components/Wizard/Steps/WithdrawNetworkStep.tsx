@@ -20,6 +20,12 @@ import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
 import WithdrawFromWallet from './Wallet/WithdrawFromWallet';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import RainbowKit from './Wallet/RainbowKit';
+import { mainnet, polygon, optimism, arbitrum, arbitrumGoerli, } from 'wagmi/chains';
+
+
+const CAINS = [mainnet, polygon, optimism, arbitrum, arbitrumGoerli]
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -84,11 +90,12 @@ const WithdrawNetworkStep: FC = () => {
         setOpenWithdrawFromWallet(true)
     }
 
+    const source_chain_id = NetworkSettings.KnownSettings[source_network.internal_name]?.ChainId
+
+    const chain = source_chain_id ? CAINS.find(ch => ch.id === source_chain_id) : null
+
     return (
         <>
-            <Modal title={`Woithdraw from ${source_network?.display_name} account`} showModal={openWithdrawFromWallet} setShowModal={setOpenWithdrawFromWallet} >
-                <WithdrawFromWallet />
-            </Modal>
             <Widget>
                 <Widget.Content>
                     <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
@@ -177,11 +184,10 @@ const WithdrawNetworkStep: FC = () => {
                         !transferDone &&
                         <>
                             <div className='mb-4'>
-                                <SubmitButton buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleOpenWithdrawFromWallet} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                                    Withdraw from wallet
-                                </SubmitButton>
+                                {swap && chain &&
+                                    <RainbowKit />
+                                }
                             </div>
-
                             <div className="flex text-center mb-4 space-x-2">
                                 <div className='relative'>
                                     <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
