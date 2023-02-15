@@ -10,20 +10,18 @@ import { SwapType } from "./layerSwapApiClient";
 import NetworkSettings from "./NetworkSettings";
 
 export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams): SwapFormValues {
-    const { destNetwork, destAddress, sourceExchangeName, products, amount, asset } = queryParams
+    const { destNetwork, destAddress, sourceExchangeName, products, selectedProduct, amount, asset } = queryParams
 
     const { currencies, exchanges, networks, discovery: { resource_storage_url } } = settings || {}
 
-    let initialSwapType = swapType ?? SwapType.OnRamp;
-    if (!swapType && products && products != '') {
-        let lowerCasedProducts = products.toLowerCase();
-        if (lowerCasedProducts == SwapType.OffRamp) {
-            initialSwapType = SwapType.OffRamp;
-        }
-        else if (lowerCasedProducts.includes(SwapType.OnRamp)) {
-            initialSwapType = SwapType.OnRamp
-        }
-    }
+    const swapTypes = Object.values(SwapType);
+
+    const productsArray = products?.split(",")
+    const filteredProducts = products ? swapTypes?.filter(st => productsArray.some(p => st.toLowerCase() === p.toLowerCase())) : swapTypes
+    const productExists = filteredProducts.some(st => st.toLowerCase() === selectedProduct.toLowerCase())
+    const selectedSwapType = (productExists && selectedProduct) && swapTypes.find(st=>st.toLowerCase() === selectedProduct.toLowerCase())
+
+    let initialSwapType = (swapType || selectedSwapType || filteredProducts?.[0]) ?? SwapType.OnRamp;
 
     const networkIsAvailable = (n: CryptoNetwork) => {
         return initialSwapType === SwapType.OffRamp ?
