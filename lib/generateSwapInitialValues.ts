@@ -18,8 +18,8 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
 
     const productsArray = products?.split(",")
     const filteredProducts = products ? swapTypes?.filter(st => productsArray.some(p => st.toLowerCase() === p.toLowerCase())) : swapTypes
-    const productExists = filteredProducts.some(st => st.toLowerCase() === selectedProduct.toLowerCase())
-    const selectedSwapType = (productExists && selectedProduct) && swapTypes.find(st=>st.toLowerCase() === selectedProduct.toLowerCase())
+    const productExists = filteredProducts.some(st => st.toLowerCase() === selectedProduct?.toLowerCase())
+    const selectedSwapType = (productExists && selectedProduct) && swapTypes.find(st=>st.toLowerCase() === selectedProduct?.toLowerCase())
 
     let initialSwapType = (swapType || selectedSwapType || filteredProducts?.[0]) ?? SwapType.OnRamp;
 
