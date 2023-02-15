@@ -22,6 +22,8 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
         }
         else if (lowerCasedProducts.includes(SwapType.OnRamp)) {
             initialSwapType = SwapType.OnRamp
+        } else if(lowerCasedProducts == SwapType.CrossChain) {
+            initialSwapType = SwapType.CrossChain
         }
     }
 
