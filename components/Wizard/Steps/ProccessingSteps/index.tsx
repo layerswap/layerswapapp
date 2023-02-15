@@ -1,5 +1,5 @@
 import { FC, useEffect } from 'react'
-import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
+import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
 import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapStatus } from '../../../../Models/SwapStatus';
@@ -11,11 +11,12 @@ import { ProcessingComponent, ProcessingSteps } from './ProcessingComponent';
 const ProcessingStep: FC = () => {
 
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
+    const { currentStepName } = useFormWizardState()
     const { swap } = useSwapDataState()
     const { setInterval } = useSwapDataUpdate()
     const settings = useSettingsState()
 
-    const source_display_name = settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.display_name
+    const source_display_name = swap?.source_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.display_name : settings?.networks?.find(e => e.internal_name == swap?.source_network)?.display_name
 
     useEffect(() => {
         setInterval(10000)
@@ -25,23 +26,23 @@ const ProcessingStep: FC = () => {
     const swapStatusStep = GetSwapStatusStep(swap)
 
     useEffect(() => {
-        if (swapStatusStep && swapStatusStep !== SwapWithdrawalStep.DepositPending && swapStatusStep !== SwapWithdrawalStep.OutputTransferProccessing && swapStatusStep !== SwapWithdrawalStep.TransferConfirmation) {
+        if (swapStatusStep && swapStatusStep !== currentStepName) {
             goToStep(swapStatusStep)
         }
     }, [swapStatusStep])
 
+    console.log(currentStepName)
+
     let status = 0
-    useEffect(() => {
-        switch (swap.status) {
-            case SwapStatus.UserTransferPending:
-                if (swap.has_pending_deposit && !swap.input_transaction) status = 1
-                else if (swap.input_transaction) status = 2
-                break
-            case SwapStatus.LsTransferPending:
-                status = 3
-                break
-        }
-    }, [swapStatusStep])
+    switch (swap.status) {
+        case SwapStatus.UserTransferPending:
+            if (swap.has_pending_deposit && !swap.input_transaction) status = 1
+            else if (swap.input_transaction) status = 2
+            break
+        case SwapStatus.LsTransferPending:
+            status = 3
+            break
+    }
 
     const progress = [
         { name: 'Source transfer', status: status > 1 ? 'complete' : 'current' },
@@ -59,12 +60,10 @@ const ProcessingStep: FC = () => {
     ]
 
     return (
-        <>
-            <div className="w-full items-center flex flex-col h-full">
-                <ProcessingComponent processingSteps={steps} />
-                <Steps steps={progress} />
-            </div>
-        </>
+        <div className="w-full items-center flex flex-col h-full">
+            <ProcessingComponent processingSteps={steps} />
+            <Steps steps={progress} />
+        </div>
     )
 }
 

@@ -6,7 +6,7 @@ export type ProcessingSteps = {
 }
 
 export const ProcessingComponent = ({ processingSteps }: { processingSteps: ProcessingSteps[] }) => {
-    const step = processingSteps.find(ps => ps.status === 'active')
+    const step = processingSteps?.find(ps => ps.status === 'active')
 
     return (
         <div className="w-full flex flex-col justify-center h-full">
@@ -18,12 +18,12 @@ export const ProcessingComponent = ({ processingSteps }: { processingSteps: Proc
                 </div>
             </div>
             <div className="flex flex-col text-center mt-1 text-lg font-lighter text-primary-text">
-                <p className='text-white'>
-                    {step.header}
-                </p>
-                <p className='text-sm'>
-                    {step.description}
-                </p>
+                <div className='text-white'>
+                    {step?.header}
+                </div>
+                <div className='text-sm'>
+                    {step?.description}
+                </div>
             </div>
         </div>
     )

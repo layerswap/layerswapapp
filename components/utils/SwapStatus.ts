@@ -1,4 +1,3 @@
-import KnownInternalNames from "../../lib/knownIds";
 import { SwapItem } from "../../lib/layerSwapApiClient";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { SwapWithdrawalStep } from "../../Models/Wizard";
