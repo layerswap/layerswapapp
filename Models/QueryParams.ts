@@ -11,6 +11,7 @@ export class QueryParams {
     amount?: string = "";
     externalId?: string = ""
     products?: string = "";
+    selectedProduct?: string = "";
     signature?: string = "";
     timestamp?: string = "";
     apiKey?: string = "";
