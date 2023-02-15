@@ -17,10 +17,11 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     const swapTypes = Object.values(SwapType);
 
     const productsArray = products?.split(",")
-    const filteredProducts = products ? swapTypes?.filter(st=>productsArray.some(p=>st === p)) : swapTypes
-    const productExists = filteredProducts.some(st=>st === selectedProduct)
+    const filteredProducts = products ? swapTypes?.filter(st => productsArray.some(p => st.toLowerCase() === p.toLowerCase())) : swapTypes
+    const productExists = filteredProducts.some(st => st.toLowerCase() === selectedProduct.toLowerCase())
+    const selectedSwapType = (productExists && selectedProduct) && swapTypes.find(st=>st.toLowerCase() === selectedProduct.toLowerCase())
 
-    let initialSwapType = (swapType || (productExists && selectedProduct) || filteredProducts?.[0]) ?? SwapType.OnRamp;    
+    let initialSwapType = (swapType || selectedSwapType || filteredProducts?.[0]) ?? SwapType.OnRamp;
 
     const networkIsAvailable = (n: CryptoNetwork) => {
         return initialSwapType === SwapType.OffRamp ?
