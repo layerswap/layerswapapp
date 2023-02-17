@@ -25,6 +25,8 @@ import SpinIcon from "../../../icons/spinIcon";
 import { useQueryState } from "../../../../context/query";
 import { useSettingsState } from "../../../../context/settings";
 import { isValidAddress } from "../../../../lib/addressValidator";
+import Address from "../../../Input/Address";
+import NetworkSettings from "../../../../lib/NetworkSettings";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -41,6 +43,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const { swapType, to } = values
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
+    const [openAddressModal, setOpenAddressModal] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
     const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name}.png` : null
     const router = useRouter();
@@ -119,6 +122,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         exchangeRef.current = to?.id
     }, [to])
 
+    const handleOpenAddressModal = useCallback(() => {
+        if (!values.to || !values.from)
+            return
+        setOpenAddressModal(true)
+    }, [values])
+
     return <>
         <Form className="h-full" >
             {swapType === SwapType.OffRamp &&
@@ -129,6 +138,16 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             : <ConnectApiKeyExchange exchange={to?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
                     )}
                 </SlideOver>}
+            <SlideOver imperativeOpener={[openAddressModal, setOpenAddressModal]} place='inStep'>
+                {(close) => (<Address
+                    close={close}
+                    exchangeAccount={exchangeAccount}
+                    loading={loadingDepositAddress}
+                    disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
+                    name={"destination_address"}
+                    className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
+                />)}
+            </SlideOver>
             <Widget>
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
@@ -164,8 +183,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                 :
                                 <div className="w-full mb-3.5 leading-4">
                                     <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
-                                        {`To ${values?.to?.name || ''} address`}
-                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({partner?.display_name})</span>}
+                                        {/* {`To ${values?.to?.name || ''} address`}
+                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({partner?.display_name})</span>} */}
+                                        Destination address
                                     </label>
                                     <div className="relative rounded-md shadow-sm mt-1.5">
                                         {isPartnerWallet &&
@@ -176,15 +196,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                                 }
                                             </div>
                                         }
-                                        <div>
-                                            <AddressInput
-                                                hideLabel={true}
-                                                exchangeAccount={exchangeAccount}
-                                                loading={loadingDepositAddress}
-                                                disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
-                                                name={"destination_address"}
-                                                className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
-                                            />
+                                        <div onClick={handleOpenAddressModal} className="flex rounded-lg items-center cursor-pointer shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full placeholder-gray-400 truncate px-3.5 py-3">
+                                            {values.destination_address || (NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c")}
                                         </div>
                                     </div>
                                 </div>
