@@ -86,11 +86,9 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             const destination_internal_name = values.to.baseObject.internal_name
-            debugger
             if (destination_internal_name == KnownInternalNames.Networks.ImmutableX || destination_internal_name == KnownInternalNames.Networks.ImmutableXGoerli) {
                 const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[destination_internal_name].apiUri })
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
-                debugger
                 if (!isRegistered) {
                     setConnectImmutableIsOpen(true)
                     return

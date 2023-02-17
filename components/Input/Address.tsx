@@ -46,7 +46,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue
         } = useFormikContext<SwapFormValues>();
 
-        const valid_addresses = address_book?.data.filter(a => isValidAddress(a.address, values.from.baseObject))
+        const valid_addresses = address_book?.data?.filter(a => isValidAddress(a.address, values.from.baseObject))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount, addressConfirmed } = useSwapDataState()
@@ -91,9 +91,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue("destination_address", inputValue)
             close()
         }, [inputValue])
-
-        console.log("destinationAddressisNew", destinationAddressisNew)
-        console.log("inputValue", inputValue)
+        const handleInputFocus = () => {
+            setInputFocused(true)
+        }
+        const handleInputBlur = () => {
+            setInputFocused(false)
+        }
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>
                 <div className='flex flex-col self-center grow w-full space-y-8'>
@@ -105,6 +108,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     onChange={handleInputChange}
                                     value={inputValue}
                                     placeholder={placeholder}
+                                    onFocus={handleInputFocus}
+                                    onBlur={handleInputBlur}
                                     autoCorrect="off"
                                     type={"text"}
                                     name={name}
@@ -195,7 +200,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </button>
                         </div>
                         {
-                            destinationAddressisNew && values.destination_address &&
+                            destinationAddressisNew &&
                             <div className="mx-auto w-full rounded-lg font-normal mt-5">
                                 <div className='flex justify-end mb-4 md:mb-8 space-x-4'>
                                     <div className='flex items-center text-xs md:text-sm font-medium'>
@@ -209,57 +214,59 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </div>
                         }
                     </div>
-                    <div className="text-left space-y-3">
-                        <label className="mb-10">Your recent addresses</label>
-                        <div>
-                            <RadioGroup value={values.destination_address} onChange={handleSelectAddress}>
-                                <RadioGroup.Label className="sr-only"> Privacy setting </RadioGroup.Label>
-                                <div className="rounded-md space-y-2">
-                                    {valid_addresses?.map((a, index) => (
-                                        <RadioGroup.Option
-                                            key={a.address}
-                                            value={a.address}
-                                            className={({ checked }) =>
-                                                classNames(
-                                                    checked ? ' border-primary z-10' : 'border-darkblue-400',
-                                                    'relative border p-4 flex cursor-pointer focus:outline-none rounded-md rounded-tr-md'
-                                                )
-                                            }
-                                        >
-                                            {({ active, checked }) => {
-                                                const difference_in_days = Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24)))
-                                                return (
-                                                    <>
-                                                        <span className="flex flex-col w-full truncate">
-                                                            <RadioGroup.Label
-                                                                as="span"
-                                                                className={'block text-sm font-medium '}
-                                                            >
-                                                                {a.address}
-                                                            </RadioGroup.Label>
-                                                            <RadioGroup.Description
-                                                                as="span"
-                                                                className='block text-sm text-gray-500'
-                                                            >
-                                                                {
-                                                                    difference_in_days === 0 ?
-                                                                        <>Last used today</>
-                                                                        :
-                                                                        (difference_in_days > 1 ?
-                                                                            <>Last used {difference_in_days} days ago</>
-                                                                            : <>Last used yesterday</>)
-                                                                }
-                                                            </RadioGroup.Description>
-                                                        </span>
-                                                    </>
-                                                )
-                                            }}
-                                        </RadioGroup.Option>
-                                    ))}
-                                </div>
-                            </RadioGroup>
+                    {valid_addresses?.length > 0 &&
+                        <div className="text-left space-y-3">
+                            <label className="mb-10">Your recent addresses</label>
+                            <div>
+                                <RadioGroup value={values.destination_address} onChange={handleSelectAddress}>
+                                    <RadioGroup.Label className="sr-only"> Privacy setting </RadioGroup.Label>
+                                    <div className="rounded-md space-y-2">
+                                        {valid_addresses?.map((a, index) => (
+                                            <RadioGroup.Option
+                                                key={a.address}
+                                                value={a.address}
+                                                className={({ checked }) =>
+                                                    classNames(
+                                                        checked ? ' border-primary z-10' : 'border-darkblue-400',
+                                                        'relative border p-4 flex cursor-pointer focus:outline-none rounded-md rounded-tr-md'
+                                                    )
+                                                }
+                                            >
+                                                {({ active, checked }) => {
+                                                    const difference_in_days = Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24)))
+                                                    return (
+                                                        <>
+                                                            <span className="flex flex-col w-full truncate">
+                                                                <RadioGroup.Label
+                                                                    as="span"
+                                                                    className={'block text-sm font-medium '}
+                                                                >
+                                                                    {a.address}
+                                                                </RadioGroup.Label>
+                                                                <RadioGroup.Description
+                                                                    as="span"
+                                                                    className='block text-sm text-gray-500'
+                                                                >
+                                                                    {
+                                                                        difference_in_days === 0 ?
+                                                                            <>Last used today</>
+                                                                            :
+                                                                            (difference_in_days > 1 ?
+                                                                                <>Last used {difference_in_days} days ago</>
+                                                                                : <>Last used yesterday</>)
+                                                                    }
+                                                                </RadioGroup.Description>
+                                                            </span>
+                                                        </>
+                                                    )
+                                                }}
+                                            </RadioGroup.Option>
+                                        ))}
+                                    </div>
+                                </RadioGroup>
+                            </div>
                         </div>
-                    </div>
+                    }
                 </div>
             </div>
         </div>)

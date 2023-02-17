@@ -167,25 +167,19 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                         {
                             values.swapType === SwapType.OffRamp ?
                                 <div className="w-full mb-3.5 leading-4">
+                                    <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
+                                        {`To ${values?.to?.name || ''} address`}
+                                    </label>
                                     <div className="relative rounded-md shadow-sm mt-1.5">
-                                        <div>
-                                            <AddressInput
-                                                exchangeAccount={exchangeAccount}
-                                                onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
-                                                loading={loadingDepositAddress}
-                                                disabled={(!values.to || !values.from) || loadingDepositAddress || depositeAddressIsfromAccount}
-                                                name={"destination_address"}
-                                                className={classNames('disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-gray-400 truncate')}
-                                            />
+                                        <div onClick={handleOpenAddressModal} className="flex rounded-lg items-center cursor-pointer shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full placeholder-gray-400 truncate px-3.5 py-3">
+                                            {values.destination_address || (NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c")}
                                         </div>
                                     </div>
                                 </div>
                                 :
                                 <div className="w-full mb-3.5 leading-4">
                                     <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
-                                        {/* {`To ${values?.to?.name || ''} address`}
-                                        {isPartnerWallet && <span className='truncate text-sm text-indigo-200'>({partner?.display_name})</span>} */}
-                                        Destination address
+                                        {`To ${values?.to?.name || ''} address`}
                                     </label>
                                     <div className="relative rounded-md shadow-sm mt-1.5">
                                         {isPartnerWallet &&
