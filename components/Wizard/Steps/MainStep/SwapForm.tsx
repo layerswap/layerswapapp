@@ -65,7 +65,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
 
     const handleSetExchangeDepositAddress = useCallback(async () => {
         setLoadingDepositAddress(true)
-        setOpenAddressModal(false)
         const layerswapApiClient = new LayerSwapApiClient(router)
         try {
             const exchange_account = await layerswapApiClient.GetExchangeAccount(to?.baseObject.internal_name, 0)
@@ -74,6 +73,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
             setFieldValue("destination_address", deposit_address.data)
             setDepositeAddressIsfromAccount(true)
             setLoadingDepositAddress(false)
+            setOpenAddressModal(false)
         }
         catch (e) {
             if (e?.response?.data?.error?.code === KnownwErrorCode.NOT_FOUND || e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS)
