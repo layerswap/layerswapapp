@@ -65,6 +65,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
 
     const handleSetExchangeDepositAddress = useCallback(async () => {
         setLoadingDepositAddress(true)
+        setOpenAddressModal(false)
         const layerswapApiClient = new LayerSwapApiClient(router)
         try {
             const exchange_account = await layerswapApiClient.GetExchangeAccount(to?.baseObject.internal_name, 0)
@@ -141,6 +142,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
             <SlideOver imperativeOpener={[openAddressModal, setOpenAddressModal]} place='inStep'>
                 {(close) => (<Address
                     close={close}
+                    onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
                     exchangeAccount={exchangeAccount}
                     loading={loadingDepositAddress}
                     disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
