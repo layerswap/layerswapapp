@@ -23,11 +23,9 @@ const CurrenciesField: FC = () => {
         && to
         && from?.baseObject.currencies.some(fc =>
             fc.asset === c.asset
-            && (fc.status === "active" || fc.status === "insufficient_liquidity")
-            && fc.is_deposit_enabled)
+            && (fc.status === "active" || fc.status === "insufficient_liquidity"))
         && to.baseObject.currencies.some(tc =>
-            tc.asset === c.asset && tc.status === "active"
-            && tc.is_withdrawal_enabled)
+            tc.asset === c.asset && (tc.status === "active" || tc.status === "insufficient_liquidity"))
         && !(swapType === SwapType.OffRamp && (to as SelectMenuItem<Exchange>).baseObject.currencies.filter(ec => c.asset === ec.asset && ec.is_default).some(tc => tc.network === from.baseObject.internal_name))
         && !(swapType === SwapType.OnRamp && (from as SelectMenuItem<Exchange>).baseObject.currencies.filter(ec => c.asset === ec.asset && ec.is_default).some(fc => fc.network === to.baseObject.internal_name))
         , [from, to, swapType])
@@ -38,7 +36,7 @@ const CurrenciesField: FC = () => {
         name: c.asset,
         order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
         imgSrc: `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`,
-        isAvailable: true,
+        isAvailable: from && to && from?.baseObject.currencies.find(fc => fc.asset === c.asset).is_deposit_enabled && to.baseObject.currencies.find(tc => tc.asset === c.asset).is_withdrawal_enabled,
         isDefault: false,
     })
 
@@ -64,7 +62,7 @@ const CurrenciesField: FC = () => {
         }
 
     }, [from, to, currencies, exchanges, currency])
-
+    console.log(currency?.isAvailable)
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />
     </>)

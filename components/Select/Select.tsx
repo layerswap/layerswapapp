@@ -1,11 +1,12 @@
 import { Combobox, Listbox } from '@headlessui/react'
 import { useCallback, useState } from 'react'
 import Image from 'next/image'
-import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon } from '@heroicons/react/outline'
+import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon, InformationCircleIcon } from '@heroicons/react/outline'
 import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
 import SlideOver from '../SlideOver'
+import ClickTooltip from '../Tooltips/ClickTooltip'
 
 export interface SelectProps<T> {
     name: string;
@@ -14,10 +15,11 @@ export interface SelectProps<T> {
     disabled: boolean;
     placeholder: string;
     smallDropdown?: boolean;
-    setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void
+    setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void;
+    lockNetwork: boolean
 }
 
-export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false }: SelectProps<T>) {
+export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false, lockNetwork }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
 
     function onChangeHandler(newValue: string) {
@@ -77,6 +79,11 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                     <div className="bg-darkblue-700 hover:bg-darkblue-600 rounded-md border border-darkblue-600 hover:border-darkblue-100 duration-200 transition p-0.5">
                                                         <XIcon className='h-4 w-4' />
                                                     </div>
+                                                </div>
+                                            }
+                                            {!item.isAvailable && !lockNetwork &&
+                                                <div className='flex items-center'>
+                                                    <ClickTooltip text={'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quia cum iDoloribus minima id neque?'} />
                                                 </div>
                                             }
                                         </>
@@ -246,7 +253,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 function styleOption(active: boolean, disabled: boolean) {
     let classNames = 'cursor-pointer select-none relative py-2 m-1.5 rounded-md px-3 pr-9 group';
     if (disabled) {
-        return 'text-gray-400 bg-gray-600 opacity-20 cursor-not-allowed ' + classNames;
+        return 'text-gray-400 bg-darkblue-100 opacity-20 cursor-not-allowed ' + classNames;
     }
     if (active) {
         return 'text-white bg-darkblue-300 ' + classNames;
