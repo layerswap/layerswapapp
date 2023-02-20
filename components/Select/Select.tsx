@@ -57,7 +57,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                     onClick={item.id === value?.id ? () => setFieldValue(name, null) : () => handleSelect(item)}
                                 >
                                     {({ active, disabled }) => (
-                                        <div onClick={() => disabled && toast('disabled')} className='flex items-center w-full justify-between'>
+                                        <div onClick={() => disabled && toast('Temporarily disabled. Please check back in an hour.')} className='flex items-center w-full justify-between'>
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                                     {item.imgSrc && <Image
@@ -164,7 +164,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 opacity: 0,
                                                 transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
                                             }}
-                                            onClick={() => disabled && toast('disabled')}
+                                            onClick={() => disabled && toast('Temporarily disabled. Please check back in an hour.')}
                                         >
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-6 w-6 relative">
