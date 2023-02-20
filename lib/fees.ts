@@ -40,7 +40,7 @@ export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks
     if (amount >= minAllowedAmount) {
         let fee = CalculateFee(swapFormData, allNetworks);
         var result = amount - fee;
-        if (swapFormData.swapType == SwapType.OnRamp && swapFormData.from.baseObject.authorization_flow == "o_auth2") {
+        if (swapFormData.swapType == SwapType.OnRamp && swapFormData.from?.baseObject?.authorization_flow == "o_auth2") {
             let exchangeFee = GetExchangeFee(swapFormData.currency?.baseObject?.asset, swapFormData.from?.baseObject);
             result -= exchangeFee;
         }
