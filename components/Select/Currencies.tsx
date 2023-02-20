@@ -62,7 +62,7 @@ const CurrenciesField: FC = () => {
         }
 
     }, [from, to, currencies, exchanges, currency])
-    console.log(currency?.isAvailable)
+
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />
     </>)
