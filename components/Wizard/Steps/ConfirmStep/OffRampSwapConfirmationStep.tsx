@@ -25,6 +25,7 @@ import { nameOf } from '../../../../lib/external/nameof';
 import { FormikProps } from 'formik';
 import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormValues';
 import { Exchange } from '../../../../Models/Exchange';
+import logsnag from '../../../utils/LogSnag';
 
 
 const OffRampSwapConfirmationStep: FC = () => {
@@ -75,10 +76,12 @@ const OffRampSwapConfirmationStep: FC = () => {
                     }
                 }
                 const swapId = await createAndProcessSwap();
+                logsnag.publish({ channel: 'all', event: 'Swap details confirmed', description: `Swap Id: ${swapId}` })
                 await router.push(`/swap/${swapId}`)
             }
             else {
                 const swapId = swap.id
+                logsnag.publish({ channel: 'all', event: 'Swap details confirmed', description: `Swap Id: ${swapId}` })
                 // await processPayment(swapId)
                 await router.push(`/swap/${swapId}`)
             }
@@ -140,7 +143,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                             </div>
                         </div>
                     </div>
-                    <SubmitButton className='plausible-event-name=Swap+details+confirmed' type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
+                    <SubmitButton type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
                 </div>

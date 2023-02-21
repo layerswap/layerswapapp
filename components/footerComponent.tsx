@@ -6,37 +6,34 @@ import SubstackLogo from "./icons/SubstackLogo"
 import TwitterLogo from "./icons/TwitterLogo"
 import Modal from "./modalComponent"
 import SendFeedback from "./sendFeedback"
+import logsnag from "./utils/LogSnag"
 
 const navigation = {
   main: [
     { name: 'For Partners', href: '/forpartners', target: '_self' },
     { name: 'Privacy Policy', href: 'https://docs.layerswap.io/user-docs/information/privacy-policy', target: '_blank' },
-    { name: 'Terms of Service', href: 'https://docs.layerswap.io/user-docs/information/terms-of-services' , target: '_blank'},
+    { name: 'Terms of Service', href: 'https://docs.layerswap.io/user-docs/information/terms-of-services', target: '_blank' },
   ],
   social: [
     {
       name: 'Twitter',
       href: 'https://twitter.com/layerswap',
       icon: (props) => TwitterLogo(props),
-      className: 'plausible-event-name=Twitter'
     },
     {
       name: 'GitHub',
       href: 'https://github.com/layerswap/layerswapapp',
       icon: (props) => GitHubLogo(props),
-      className: 'plausible-event-name=GitHub'
     },
     {
       name: 'Discord',
       href: 'https://discord.com/invite/KhwYN35sHy',
       icon: (props) => DiscordLogo(props),
-      className: 'plausible-event-name=Discord'
     },
     {
       name: 'Substack ',
       href: 'https://layerswap.substack.com/',
       icon: (props) => SubstackLogo(props),
-      className: 'plausible-event-name=Substack'
     },
   ],
 }
@@ -67,7 +64,7 @@ export default function FooterComponent() {
         </nav>
         <div className="flex space-x-6">
           {navigation.social.map((item) => (
-            <a key={item.name} target="_blank" href={item.href} className={`text-primary-text hover:text-gray-400 ${item.className}`}>
+            <a key={item.name} target="_blank" href={item.href} onClick={() => logsnag.publish({ channel: 'all', event: `Clicked on ${item.name} link` })} className={`text-primary-text hover:text-gray-400`}>
               <span className="sr-only">{item.name}</span>
               <item.icon className="h-6 w-6" aria-hidden="true" />
             </a>

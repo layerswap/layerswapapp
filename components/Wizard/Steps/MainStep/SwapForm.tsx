@@ -25,6 +25,7 @@ import SpinIcon from "../../../icons/spinIcon";
 import { useQueryState } from "../../../../context/query";
 import { useSettingsState } from "../../../../context/settings";
 import { isValidAddress } from "../../../../lib/addressValidator";
+import logsnag from "../../../utils/LogSnag";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -195,7 +196,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                     </Widget.Content>
                 }
                 <Widget.Footer>
-                    <SwapButton className="plausible-event-name=Swap+initiated" type='submit' isDisabled={!isValid || loading} isSubmitting={isSubmitting || loading}>
+                    <SwapButton onClick={() => logsnag.publish({ channel: 'all', event: 'Swap initiated' })} type='submit' isDisabled={!isValid || loading} isSubmitting={isSubmitting || loading}>
                         {displayErrorsOrSubmit(errors, values.swapType)}
                     </SwapButton>
                 </Widget.Footer>

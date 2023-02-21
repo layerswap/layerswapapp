@@ -32,6 +32,7 @@ import { ArrowDownIcon, LinkIcon } from '@heroicons/react/outline';
 import AvatarGroup from '../../AvatarGroup';
 import ClickTooltip from '../../Tooltips/ClickTooltip';
 import { motion } from 'framer-motion';
+import logsnag from '../../utils/LogSnag';
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
@@ -114,6 +115,7 @@ const WithdrawExchangeStep: FC = () => {
         setTransferDone(true)
         const estimatedTransferTimeInSeconds = 600000
         setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
+        logsnag.publish({ channel: 'all', event: 'Clicked on "I did the transfer"', description: `Swap Id: ${swap?.id}` })
     }, [])
 
     const handleTransfer = useCallback(async () => {
@@ -299,7 +301,7 @@ const WithdrawExchangeStep: FC = () => {
                                         </SubmitButton>
                                     </div>
                                     <div className='basis-2/3'>
-                                        <SubmitButton className='plausible-event-name=I+did+the+transfer' button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<CheckIcon className="h-5 w-5" aria-hidden="true" />} >
+                                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<CheckIcon className="h-5 w-5" aria-hidden="true" />} >
                                             <DoubleLineText
                                                 colorStyle='mltln-text-light'
                                                 primaryText='I did'

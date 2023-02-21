@@ -16,6 +16,7 @@ import SpinIcon from '../../icons/spinIcon';
 import useCreateSwap from '../../../hooks/useCreateSwap';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { AuthStep } from '../../../Models/Wizard';
+import logsnag from '../../utils/LogSnag';
 
 export const CurrencyPendingSwapStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
@@ -262,6 +263,7 @@ export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCa
             setOpenCancelConfirmModal(false)
             setLoadingSwapCancel(false)
             onCancel && onCancel()
+            logsnag.publish({ channel: 'all', event: 'Swap canceled', description: ` Swap Id: ${swapToCancel.id}` })
         }
         catch (e) {
             setLoadingSwapCancel(false)
@@ -274,7 +276,7 @@ export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCa
             <div className='text-primary-text mb-4'></div>
             <div className="flex flex-row text-white text-base space-x-2">
                 <div className='basis-1/2'>
-                    <SubmitButton className='plausible-event-name=Swap+canceled' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
+                    <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
                         Cancel the swap
                     </SubmitButton>
                 </div>

@@ -9,6 +9,7 @@ import GoHomeButton from '../../utils/GoHome';
 import { SwapItem } from '../../../lib/layerSwapApiClient';
 import { ChatIcon, HomeIcon } from '@heroicons/react/solid';
 import { TrackEvent } from '../../../pages/_document';
+import logsnag from '../../utils/LogSnag';
 
 const FailedStep: FC = () => {
     const { swap } = useSwapDataState()
@@ -17,7 +18,7 @@ const FailedStep: FC = () => {
     const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
 
     useEffect(() => {
-        plausible(TrackEvent.SwapFailed)
+        logsnag.publish({ channel: 'all', event: 'Swap Failed', description: swap?.id })
     }, [])
 
     const startIntercom = useCallback(() => {

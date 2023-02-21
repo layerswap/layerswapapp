@@ -24,6 +24,7 @@ import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import { useSettingsState } from '../../../../context/settings';
 import { Exchange } from '../../../../Models/Exchange';
+import logsnag from '../../../utils/LogSnag';
 
 const TIMER_SECONDS = 120
 
@@ -70,6 +71,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                         await layerswapApiClient.WithdrawFromExchange(swapId, from?.baseObject.internal_name)
                     }
                 }
+                logsnag.publish({ channel: 'all', event: 'Swap details confirmed', description: `Swap Id: ${swapId}` })
                 return await router.push(`/swap/${swapId}`)
             }
             else {
@@ -78,6 +80,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                     const layerswapApiClient = new LayerSwapApiClient()
                     await layerswapApiClient.WithdrawFromExchange(swapId, from?.baseObject.internal_name)
                 }
+                logsnag.publish({ channel: 'all', event: 'Swap details confirmed', description: `Swap Id: ${swapId}` })
                 return await router.push(`/swap/${swapId}`)
             }
         }
@@ -161,7 +164,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                             </div>
                         </div>
                     </div>
-                    <SubmitButton className='plausible-event-name=Swap+details+confirmed' type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
+                    <SubmitButton type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
                 </div>

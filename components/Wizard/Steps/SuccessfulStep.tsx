@@ -10,6 +10,7 @@ import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import GuestCard from '../../guestCard';
 import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
+import logsnag from '../../utils/LogSnag';
 
 const SuccessfulStep: FC = () => {
     const { networks } = useSettingsState()
@@ -65,7 +66,7 @@ const SuccessfulStep: FC = () => {
                                     </div>
                                     <div className='basis-2/3 grow '>
                                         <GoHomeButton>
-                                            <SubmitButton button_align='right' text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                            <SubmitButton onClick={() => logsnag.publish({ channel: 'all', event: 'Clicked on "Swap more"' })} button_align='right' text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
                                                 <DoubleLineText
                                                     colorStyle='mltln-text-dark'
                                                     primaryText='Swap'
@@ -78,7 +79,7 @@ const SuccessfulStep: FC = () => {
                                 :
                                 <div className='grow'>
                                     <GoHomeButton>
-                                        <SubmitButton className='plausible-event-name=Swap+more' text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                        <SubmitButton onClick={() => logsnag.publish({ channel: 'all', event: 'Clicked on "Swap more"' })} text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
                                             Swap more
                                         </SubmitButton>
                                     </GoHomeButton>
