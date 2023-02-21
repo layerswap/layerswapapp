@@ -4,11 +4,16 @@ import SubmitButton from "../components/buttons/submitButton"
 import MessageComponent from "../components/MessageComponent"
 import Navbar from "../components/navbar"
 import GoHomeButton from "../components/utils/GoHome"
+import logsnag from "../components/utils/LogSnag"
 
 export default function Custom404() {
 
     useEffect(() => {
-        plausible("404", { props: { path: document.location.pathname } })
+        logsnag.publish({
+            channel: 'all',
+            event: "404",
+            description: document.location.pathname
+        })
     }, [])
 
     return (
