@@ -16,7 +16,7 @@ function MaintananceContent(props) {
                             We're upgrading our systems and infrastructure to give you the best experience yet.
                         </p>
                         <span className="block xl:inline">We'll be back</span>{' '}
-                        <span className="block text-primary xl:inline">in 3 hours.</span>
+                        <span className="block text-primary xl:inline">in 30 minutes.</span>
                     </h1>
                     <SubmitButton onClick={() => window.open('https://twitter.com/layerswap', '_blank')} icon={twitterLogo} isDisabled={false} isSubmitting={false}>Follow for updates</SubmitButton>
                 </div>
