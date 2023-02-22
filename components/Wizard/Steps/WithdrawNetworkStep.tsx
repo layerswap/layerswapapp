@@ -1,5 +1,5 @@
-import { InformationCircleIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
-import { CheckIcon, HomeIcon, ChatIcon, XIcon } from '@heroicons/react/solid';
+import { SwitchHorizontalIcon } from '@heroicons/react/outline';
+import { CheckIcon, XIcon } from '@heroicons/react/solid';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
@@ -13,7 +13,6 @@ import WarningMessage from '../../WarningMessage';
 import NetworkSettings from '../../../lib/NetworkSettings';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import GoHomeButton from '../../utils/GoHome';
 import Widget from '../Widget';
 import Modal from '../../modalComponent';
 import { useGoHome } from '../../../hooks/useGoHome';
@@ -24,7 +23,7 @@ import SimpleTimer from '../../Common/Timer';
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks, currencies, exchanges, discovery: { resource_storage_url } } = useSettingsState()
+    const { networks } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
@@ -148,7 +147,16 @@ const WithdrawNetworkStep: FC = () => {
                                         <span className='flex-none'>
                                             Learn how to send from
                                         </span>
-                                        <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep"></GuideLink>
+                                        <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep"/>
+                                    </WarningMessage>
+                                }
+                                {
+                                    !swap?.destination_exchange &&
+                                    <WarningMessage messageType='informing'>
+                                        <span className='flex-none'>
+                                            Learn how to do
+                                        </span>
+                                        <GuideLink text='Cross-Chain swap' userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/cross-chain' place="inStep"/>
                                     </WarningMessage>
                                 }
                             </div>

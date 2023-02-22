@@ -13,6 +13,9 @@ import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import shortenAddress from "../../../utils/ShortenAddress"
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import Steps from '../StepsComponent';
+import WarningMessage from '../../../WarningMessage';
+import GuideLink from '../../../guideLink';
+import NetworkSettings from '../../../../lib/NetworkSettings';
 
 const ConnectWalletStep: FC = () => {
     const [loading, setLoading] = useState(false)
@@ -80,7 +83,7 @@ const ConnectWalletStep: FC = () => {
         setLoading(false)
     }, [source_network])
 
-    
+
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)
@@ -120,19 +123,26 @@ const ConnectWalletStep: FC = () => {
                     </p>
                 </div>
                 <Steps steps={steps} />
-                {
-                    !walletAddress &&
-                    <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<LinkIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                        Connect
-                    </SubmitButton>
-                }
-                {
-                    walletAddress &&
-                    <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                        Transfer
-                    </SubmitButton>
-                }
-
+                <div className='space-y-4'>
+                    <WarningMessage messageType='informing'>
+                        <span className='flex-none'>
+                            Learn how to send from
+                        </span>
+                        <GuideLink text={source_network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
+                    </WarningMessage>
+                    {
+                        !walletAddress &&
+                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<LinkIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                            Connect
+                        </SubmitButton>
+                    }
+                    {
+                        walletAddress &&
+                        <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                            Transfer
+                        </SubmitButton>
+                    }
+                </div>
             </div>
         </>
     )
