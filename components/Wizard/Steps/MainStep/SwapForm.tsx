@@ -4,7 +4,6 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import Image from 'next/image';
 import SwapButton from "../../../buttons/swapButton";
 import React from "react";
-import AddressInput from "../../../Input/AddressInput";
 import { classNames } from "../../../utils/classNames";
 import SwapOptionsToggle from "../../../SwapOptionsToggle";
 import SelectNetwork from "../../../Select/SelectNetwork";
@@ -183,17 +182,20 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                     <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
                                         {`To ${values?.to?.name || ''} address`}
                                     </label>
-                                    <div className="relative rounded-md shadow-sm mt-1.5">
+                                    <div onClick={handleOpenAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full placeholder-gray-400 px-3.5 py-3">
                                         {isPartnerWallet &&
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <div className="shrink-0 flex items-center pointer-events-none">
                                                 {
                                                     partnerImage &&
                                                     <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
                                                 }
                                             </div>
                                         }
-                                        <div onClick={handleOpenAddressModal} className="flex rounded-lg items-center cursor-pointer shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full placeholder-gray-400 truncate px-3.5 py-3">
-                                            {values.destination_address || (NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c")}
+                                        <div className="truncate">
+                                            {values.destination_address ?
+                                                <TruncatedAdrress address={values.destination_address} />
+                                                :
+                                                (NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c")}
                                         </div>
                                     </div>
                                 </div>
@@ -215,6 +217,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
 
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
     return errors.from?.toString() || errors.to?.toString() || errors.amount || errors.destination_address || "Swap now"
+}
+
+const TruncatedAdrress = ({ address }: { address: string }) => {
+    const splitted = address?.split('0x')
+    const first = `${splitted?.[0]} 0x${splitted?.[1]?.substring(0, 4)}`
+    const last = address.substring(address.length - 4)
+    const result = `${first}...${last}`
+    return <div className="tracking-wider text-white">{result}</div>
 }
 
 export default SwapForm

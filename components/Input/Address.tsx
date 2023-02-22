@@ -35,7 +35,7 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
 }
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ exchangeAccount, hideLabel, disabled, name, className, onSetExchangeDepoisteAddress, loading, close }, ref) => {
+    ({ exchangeAccount, name, className, onSetExchangeDepoisteAddress, loading, close, disabled }, ref) => {
 
         const layerswapApiClient = new LayerSwapApiClient()
         const address_book_endpoint = `/address_book/recent`
@@ -74,10 +74,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setDepositeAddressIsfromAccount(false)
         }
 
-        const handleSelectAddress = (value: string) => {
+        const handleSelectAddress = useCallback((value: string) => {
             setFieldValue("destination_address", value)
             close()
-        }
+        }, [close])
 
         const inputAddressisValid = isValidAddress(inputValue, values.to.baseObject)
         const destinationAddressisNew = !valid_addresses?.some(a => a.address === inputValue)
@@ -102,7 +102,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 <div className='flex flex-col self-center grow w-full space-y-8'>
                     <div className="text-left">
                         <label className="mb-10">{destinationAddressisNew ? 'New address' : 'Destination address'}</label>
-                        <div className="flex space-x-4">
+                        <div className="flex md:space-x-4 flex-wrap flex-col md:flex-row">
                             <motion.div initial="rest" animate={inpuFocused ? "inputFocused" : "rest"} className="flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border">
                                 <motion.input
                                     onChange={handleInputChange}
@@ -112,9 +112,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     onBlur={handleInputBlur}
                                     autoCorrect="off"
                                     type={"text"}
+                                    disabled={disabled}
                                     name={name}
                                     id={name}
-                                    className={classNames('disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none',
+                                    className={classNames('disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-darkblue-100 focus:border-darkblue-100 block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus-peer:ring-primary-900 focus-peer:border focus-peer:ring-1 focus:outline-none',
                                         className
                                     )}
                                     transition={{
@@ -193,33 +194,34 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </motion.div>
                             <button type="button" disabled={!canSetAddress} onClick={handleSetNewAddress} className={
                                 classNames(
-                                    canSetAddress ? ' border-primary text-primary' : 'border-darkblue-400',
-                                    "flex items-center shadow-sm mt-1.5 bg-darkblue-700  border p-4 rounded-lg"
+                                    canSetAddress ? 'bg-primary text-primary-buttonTextColor border-none' : 'border-darkblue-400',
+                                    "text-center w-full md:w-auto flex items-center shadow-sm mt-3 md:mt-1.5 space-x-3 md:space-x-0 bg-darkblue-700 border p-4 py-3 md:py-4 rounded-lg order-last md:order-none place-self-end"
                                 )}>
-                                <ArrowRightIcon className="w-4 h-4" />
+                                <span className="w-full md:hidden">Save</span>
+                                <ArrowRightIcon className="w-4 h-4 hidden md:block" />
                             </button>
-                        </div>
-                        {
-                            destinationAddressisNew &&
-                            <div className="mx-auto w-full rounded-lg font-normal mt-5">
-                                <div className='flex justify-end mb-4 md:mb-8 space-x-4'>
-                                    <div className='flex items-center text-xs md:text-sm font-medium'>
-                                        <ExclamationIcon className='h-6 w-6 mr-2' />
-                                        I am the owner of this address
-                                    </div>
-                                    <div className='flex items-center space-x-4'>
-                                        <ToggleButton name={"asd"} onChange={setAddressConfirmed} value={addressConfirmed} />
+                            {
+                                destinationAddressisNew &&
+                                <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
+                                    <div className='flex justify-end mb-4 md:mb-8 space-x-4'>
+                                        <label htmlFor="address_confirm" className='flex items-center text-xs md:text-sm font-medium'>
+                                            <ExclamationIcon className='h-6 w-6 mr-2' />
+                                            I am the owner of this address
+                                        </label>
+                                        <div className='flex items-center space-x-4'>
+                                            <ToggleButton name={"address_confirm"} onChange={setAddressConfirmed} value={addressConfirmed} />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        }
+                            }
+                        </div>
+
                     </div>
-                    {valid_addresses?.length > 0 &&
+                    {valid_addresses?.length > 0 && !disabled &&
                         <div className="text-left space-y-3">
                             <label className="mb-10">Your recent addresses</label>
                             <div>
                                 <RadioGroup value={values.destination_address} onChange={handleSelectAddress}>
-                                    <RadioGroup.Label className="sr-only"> Privacy setting </RadioGroup.Label>
                                     <div className="rounded-md space-y-2">
                                         {valid_addresses?.map((a, index) => (
                                             <RadioGroup.Option
@@ -227,7 +229,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                 value={a.address}
                                                 className={({ checked }) =>
                                                     classNames(
-                                                        checked ? ' border-primary z-10' : 'border-darkblue-400',
+                                                        checked ? ' border-primary-900 z-10' : 'border-darkblue-400',
                                                         'relative border p-4 flex cursor-pointer focus:outline-none rounded-md rounded-tr-md'
                                                     )
                                                 }
