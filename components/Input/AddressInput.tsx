@@ -1,5 +1,5 @@
 import { Field, useFormikContext } from "formik";
-import { FC, forwardRef, useState } from "react";
+import { FC, forwardRef, useEffect, useRef, useState } from "react";
 import { SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -14,6 +14,8 @@ import { useAuthState } from "../../context/authContext";
 import ExchangeSettings from "../../lib/ExchangeSettings";
 import ClickTooltip from "../Tooltips/ClickTooltip";
 import { useSettingsState } from "../../context/settings";
+import shortenAddress, { longerShortenAddress } from "../utils/ShortenAddress";
+import { isValidAddress } from "../../lib/addressValidator";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -35,10 +37,11 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue
         } = useFormikContext<SwapFormValues>();
 
+        const addressInputRef = useRef()
         const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount } = useSwapDataState()
         const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
-        const [inpuFocused, setInputFocused] = useState(false)
+        const [inputFocused, setInputFocused] = useState(false)
         const { authData } = useAuthState()
         const settings = useSettingsState()
 
@@ -73,16 +76,17 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     To {values?.to?.name || ''}{exchangeCurrency && values.swapType === SwapType.OffRamp && <span className="font-semibold mx-1">{networkDisplayName}</span>} address
                     {exchangeCurrency && values.swapType === SwapType.OffRamp &&
                         <span className="inline-block ">
-                            <ClickTooltip text={`The deposit address of ${values.currency.name} in ${networkDisplayName} network/chain at ${values.to?.baseObject?.display_name}`}/>
+                            <ClickTooltip text={`The deposit address of ${values.currency.name} in ${networkDisplayName} network/chain at ${values.to?.baseObject?.display_name}`} />
                         </span>}
                 </label>
             }
             <Field name={name}>
-                {({ field }) => (
-                    <motion.div initial="rest" animate={inpuFocused ? "inputFocused" : "rest"} className="flex rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border">
+                {({ field }) => {
+                    const addressInputValue = ((inputFocused || !isValidAddress(field.value, values?.to?.baseObject)) ? field.value : longerShortenAddress(field.value))
+                    return <motion.div initial="rest" animate={inputFocused ? "inputFocused" : "rest"} className="flex rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border">
                         <motion.input
                             {...field}
-                            value={field.value || ""}
+                            value={addressInputValue || ""}
                             ref={ref}
                             placeholder={placeholder}
                             autoCorrect="off"
@@ -92,7 +96,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             disabled={disabled}
                             onFocus={handleInputFocus}
                             onBlur={handleInputBlur}
-                            className={classNames('disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none',
+                            className={classNames('disabled:cursor-not-allowed text-white grow h-12 border-none leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate focus-peer:ring-primary focus-peer:border-darkblue-500 focus-peer:border focus-peer:ring-1 focus:outline-none',
                                 className
                             )}
                             transition={{
@@ -128,7 +132,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                 loading ? <SpinIcon className="animate-spin h-4 w-4" />
                                                     : <LinkIcon className="h-4 w-4" />
                                             }
-                                            <motion.span className={classNames(inpuFocused ? '' : 'ml-3', "block truncate text-clip")}
+                                            <motion.span className={classNames(inputFocused ? '' : 'ml-3', "block truncate text-clip")}
                                                 variants={
                                                     {
                                                         inputFocused: {
@@ -169,7 +173,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </span>
                         }
                     </motion.div>
-                )}
+                }}
             </Field>
         </>)
     });
