@@ -27,7 +27,7 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
     if (!destinationNetworkCurrency || !sourceNetworkCurrency)
         return 0
 
-    return (destinationNetworkCurrency.fee + sourceNetworkCurrency.fee) * 1.5;
+    return (destinationNetworkCurrency.withdrawal_fee + sourceNetworkCurrency.deposit_fee) * 1.5;
 }
 
 export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]) {
@@ -40,7 +40,7 @@ export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks
     if (amount >= minAllowedAmount) {
         let fee = CalculateFee(swapFormData, allNetworks);
         var result = amount - fee;
-        if (swapFormData.swapType == SwapType.OnRamp && swapFormData.from.baseObject.authorization_flow == "o_auth2") {
+        if (swapFormData.swapType == SwapType.OnRamp && swapFormData.from?.baseObject?.authorization_flow == "o_auth2") {
             let exchangeFee = GetExchangeFee(swapFormData.currency?.baseObject?.asset, swapFormData.from?.baseObject);
             result -= exchangeFee;
         }

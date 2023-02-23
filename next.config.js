@@ -90,7 +90,8 @@ module.exports = (phase, { defaultConfig }) => {
     compiler: {
       removeConsole: false,
     },
-    reactStrictMode: false
+    reactStrictMode: false,
+    productionBrowserSourceMaps: true,
   }
 
   if (phase === PHASE_PRODUCTION_SERVER) {
