@@ -57,10 +57,6 @@ export function SwapDataProvider({ children }) {
     const settings = useSettingsState();
 
     useEffect(() => {
-        setAddressConfirmed(false)
-    }, [swapFormData?.destination_address, swapFormData?.from])
-
-    useEffect(() => {
         setCodeRequested(false)
     }, [swapFormData?.from])
 

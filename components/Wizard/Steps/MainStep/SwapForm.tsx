@@ -146,6 +146,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                     loading={loadingDepositAddress}
                     disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
                     name={"destination_address"}
+                    partnerImage={partnerImage}
+                    isPartnerWallet={isPartnerWallet}
+                    partner={partner}
                     className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
                 />)}
             </SlideOver>

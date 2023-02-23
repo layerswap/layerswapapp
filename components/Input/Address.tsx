@@ -20,6 +20,8 @@ import { ApiResponse } from "../../Models/ApiResponse";
 import { isValidAddress } from "../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
 import ToggleButton from "../buttons/toggleButton";
+import Image from 'next/image';
+import { Partner } from "../../Models/Partner";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -31,11 +33,14 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     loading: boolean;
     onSetExchangeDepoisteAddress?: () => Promise<void>;
     exchangeAccount?: UserExchangesData;
-    close: () => void
+    close: () => void,
+    isPartnerWallet: boolean,
+    partnerImage: string,
+    partner: Partner
 }
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ exchangeAccount, name, className, onSetExchangeDepoisteAddress, loading, close, disabled }, ref) => {
+    ({ exchangeAccount, name, className, onSetExchangeDepoisteAddress, loading, close, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
 
         const layerswapApiClient = new LayerSwapApiClient()
         const address_book_endpoint = `/address_book/recent`
@@ -75,6 +80,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }
 
         const handleSelectAddress = useCallback((value: string) => {
+            setAddressConfirmed(true)
             setFieldValue("destination_address", value)
             close()
         }, [close])
@@ -101,9 +107,18 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             <div className='flex flex-col self-center grow w-full'>
                 <div className='flex flex-col self-center grow w-full space-y-8'>
                     <div className="text-left">
-                        <label className="mb-10">{destinationAddressisNew ? 'New address' : 'Destination address'}</label>
+                        {`To ${values?.to?.name || ''} address`}
+                        {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                         <div className="flex md:space-x-4 flex-wrap flex-col md:flex-row">
-                            <motion.div initial="rest" animate={inpuFocused ? "inputFocused" : "rest"} className="flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border">
+                            <motion.div initial="rest" animate={inpuFocused ? "inputFocused" : "rest"} className="relative flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border">
+                                {isPartnerWallet &&
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        {
+                                            partnerImage &&
+                                            <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
+                                        }
+                                    </div>
+                                }
                                 <motion.input
                                     onChange={handleInputChange}
                                     value={inputValue}
@@ -190,7 +205,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         </div>
                                     </span>
                                 }
-
                             </motion.div>
                             <button type="button" disabled={!canSetAddress} onClick={handleSetNewAddress} className={
                                 classNames(
@@ -215,7 +229,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 </div>
                             }
                         </div>
-
                     </div>
                     {valid_addresses?.length > 0 && !disabled &&
                         <div className="text-left space-y-3">
