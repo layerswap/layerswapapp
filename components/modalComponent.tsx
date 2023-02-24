@@ -63,7 +63,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                 >
                     <Portal>
                         <Overlay />
-                        <Content className={query?.addressSource}>
+                        <Content className={query?.addressSource} asChild={true}>
                             <MobileModalContent className={className} showModal={showModal} setShowModal={setShowModal} title={title}>
                                 {children}
                             </MobileModalContent>
