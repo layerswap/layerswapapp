@@ -96,6 +96,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setInputFocused(true)
         }
         const handleInputBlur = () => {
+            window.scrollTo(0, 0);
             setInputFocused(false)
         }
 
@@ -115,7 +116,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>
-                <div className={`flex flex-col self-center grow w-full space-y-8 ${inputFocused ? 'mb-40 md:mb-3':''}`}>
+                <div className={`flex flex-col self-center grow w-full space-y-8 ${inputFocused ? 'mb-40 md:mb-3' : ''}`}>
                     <div className="text-left">
                         {`To ${values?.to?.name || ''} address`}
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
