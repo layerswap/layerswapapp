@@ -206,11 +206,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </span>
                                 }
                             </motion.div>
-                            <button type="button" disabled={!canSetAddress} onClick={handleSetNewAddress} className={
-                                classNames(
-                                    canSetAddress ? 'bg-primary text-primary-buttonTextColor border-none' : 'border-darkblue-400',
-                                    "text-center w-full md:w-auto flex items-center shadow-sm mt-3 md:mt-1.5 space-x-3 md:space-x-0 bg-darkblue-700 border p-4 py-3 md:py-4 rounded-lg order-last md:order-none place-self-end"
-                                )}>
+                            <button type="button" disabled={!canSetAddress} onClick={handleSetNewAddress} className="transition duration-200 text-center bg-primary border-none w-full md:w-auto flex items-center text-primary-buttonTextColor shadow-sm mt-3 md:mt-1.5 disabled:bg-primary-900 disabled:text-opacity-40 space-x-3 md:space-x-0 bg-prima-700 border p-4 py-3 md:py-4 rounded-lg order-last md:order-none place-self-end">
                                 <span className="w-full md:hidden">Save</span>
                                 <ArrowRightIcon className="w-4 h-4 hidden md:block" />
                             </button>
@@ -235,7 +231,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             <label className="mb-10">Your recent addresses</label>
                             <div>
                                 <RadioGroup value={values.destination_address} onChange={handleSelectAddress}>
-                                    <div className="rounded-md space-y-2">
+                                    <div className="rounded-md space-y-2 overflow-y-scroll styled-scroll">
                                         {valid_addresses?.map((a, index) => (
                                             <RadioGroup.Option
                                                 key={a.address}
@@ -243,7 +239,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                 className={({ checked }) =>
                                                     classNames(
                                                         checked ? ' border-primary-900 z-10' : 'border-darkblue-400',
-                                                        'relative border p-4 flex cursor-pointer focus:outline-none rounded-md rounded-tr-md'
+                                                        'hover:border-primary-900 relative border p-4 flex cursor-pointer focus:outline-none rounded-md rounded-tr-md'
                                                     )
                                                 }
                                             >
