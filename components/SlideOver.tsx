@@ -15,11 +15,10 @@ type Props = {
     moreClassNames?: string;
     place: slideOverPlace;
     noPadding?: boolean;
-    containerId?: string;
     imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
 
-const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassNames, place, noPadding, children, containerId }) => {
+const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassNames, place, noPadding, children }) => {
     const [open, setOpen] = useState(false)
     const mobileModalRef = useRef(null)
     const { width } = useWindowDimensions()
@@ -55,9 +54,6 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
         else imperativeOpener?.[1](false)
     }, [open])
 
-    let container = document.getElementById(containerId)
-    console.log("container", container)
-    console.log("containerID", containerId)
     return (
         <>
             <span>{opener && opener(handleOpen)}</span>
@@ -98,7 +94,7 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
             <AnimatePresence>
                 {open && width < 640 &&
                     <Root open={open} onOpenChange={() => { }} >
-                        <Portal container={container || document.body}>
+                        <Portal>
                             <Overlay />
                             <Content>
                                 <MobileModalContent ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>

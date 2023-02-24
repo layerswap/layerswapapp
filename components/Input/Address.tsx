@@ -56,7 +56,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount, addressConfirmed } = useSwapDataState()
         const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
-        const [inpuFocused, setInputFocused] = useState(false)
+        const [inputFocused, setInputFocused] = useState(false)
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
 
         const { authData } = useAuthState()
@@ -87,30 +87,40 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const inputAddressisValid = isValidAddress(inputValue, values.to.baseObject)
         const destinationAddressisNew = !valid_addresses?.some(a => a.address === inputValue)
-        const canSetAddress = inputAddressisValid && (addressConfirmed || !destinationAddressisNew)
         const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
             setInputValue(e.target.value)
             setAddressConfirmed(false)
         }, [])
 
-        const handleSetNewAddress = useCallback(() => {
-            setFieldValue("destination_address", inputValue)
-            close()
-        }, [inputValue])
         const handleInputFocus = () => {
             setInputFocused(true)
         }
         const handleInputBlur = () => {
             setInputFocused(false)
         }
+
+        const handleConfirmAddress = useCallback((confirmed: boolean) => {
+            setAddressConfirmed(confirmed)
+            if (!confirmed)
+                return
+
+            setFieldValue("destination_address", inputValue)
+            close()
+        }, [inputValue])
+
+        const handleSetNewAddress = useCallback(() => {
+            setFieldValue("destination_address", inputValue)
+            close()
+        }, [inputValue])
+
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>
-                <div className='flex flex-col self-center grow w-full space-y-8'>
+                <div className={`flex flex-col self-center grow w-full space-y-8 ${inputFocused ? 'mb-40 md:mb-3':''}`}>
                     <div className="text-left">
                         {`To ${values?.to?.name || ''} address`}
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                         <div className="flex md:space-x-4 flex-wrap flex-col md:flex-row">
-                            <motion.div initial="rest" animate={inpuFocused ? "inputFocused" : "rest"} className="relative flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border">
+                            <motion.div initial="rest" animate={inputFocused ? "inputFocused" : "rest"} className="relative flex grow rounded-lg shadow-sm mt-1.5 ">
                                 {isPartnerWallet &&
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         {
@@ -130,7 +140,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     disabled={disabled}
                                     name={name}
                                     id={name}
-                                    className={classNames('disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-darkblue-100 focus:border-darkblue-100 block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus-peer:ring-primary-900 focus-peer:border focus-peer:ring-1 focus:outline-none',
+                                    className={classNames('myinput disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-darkblue-100 focus:border-darkblue-100 block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus-peer:ring-primary-900 focus-peer:border focus-peer:ring-1 focus:outline-none',
                                         className
                                     )}
                                     transition={{
@@ -165,7 +175,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                         loading ? <SpinIcon className="animate-spin h-4 w-4" />
                                                             : <LinkIcon className="h-4 w-4" />
                                                     }
-                                                    <motion.span className={classNames(inpuFocused ? '' : 'ml-3', "block truncate text-clip")}
+                                                    <motion.span className={classNames(inputFocused ? '' : 'ml-3', "block truncate text-clip")}
                                                         variants={
                                                             {
                                                                 inputFocused: {
@@ -206,21 +216,22 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </span>
                                 }
                             </motion.div>
-                            <button type="button" disabled={!canSetAddress} onClick={handleSetNewAddress} className="transition duration-200 text-center bg-primary border-none w-full md:w-auto flex items-center text-primary-buttonTextColor shadow-sm mt-3 md:mt-1.5 disabled:bg-primary-900 disabled:text-opacity-40 space-x-3 md:space-x-0 bg-prima-700 border p-4 py-3 md:py-4 rounded-lg order-last md:order-none place-self-end">
-                                <span className="w-full md:hidden">Save</span>
-                                <ArrowRightIcon className="w-4 h-4 hidden md:block" />
-                            </button>
                             {
-                                destinationAddressisNew &&
+                                destinationAddressisNew && inputAddressisValid &&
                                 <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
-                                    <div className='flex justify-end mb-4 md:mb-8 space-x-4'>
+                                    <div className='flex justify-start mb-4 md:mb-8 space-x-4'>
                                         <label htmlFor="address_confirm" className='flex items-center text-xs md:text-sm font-medium'>
                                             <ExclamationIcon className='h-6 w-6 mr-2' />
                                             I am the owner of this address
                                         </label>
-                                        <div className='flex items-center space-x-4'>
+                                        <div className='flex items-center space-x-4 py-2'>
                                             <ToggleButton name={"address_confirm"} onChange={setAddressConfirmed} value={addressConfirmed} />
                                         </div>
+                                        {addressConfirmed &&
+                                            <button onClick={handleSetNewAddress} className="grow rounded-md bg-primary px-3 py-2 text-sm font-semibold leading-5 text-white">
+                                                Save
+                                            </button>
+                                        }
                                     </div>
                                 </div>
                             }
@@ -231,7 +242,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             <label className="mb-10">Your recent addresses</label>
                             <div>
                                 <RadioGroup value={values.destination_address} onChange={handleSelectAddress}>
-                                    <div className="rounded-md space-y-2 overflow-y-scroll styled-scroll">
+                                    <div className="rounded-md space-y-2 overflow-y-auto styled-scroll">
                                         {valid_addresses?.map((a, index) => (
                                             <RadioGroup.Option
                                                 key={a.address}
