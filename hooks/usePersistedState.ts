@@ -3,7 +3,7 @@ import { storageAvailable, storageType } from '../helpers/storageAvailable';
 
 type PersistedState<T> = [T, Dispatch<SetStateAction<T>>];
 
-function usePersistedState<T>(defaultValue: T, key: string, type: storageType): PersistedState<T> {
+function usePersistedState<T>(defaultValue: T, key: string, type: storageType = 'localStorage'): PersistedState<T> {
   const [value, setValue] = useState<T>(() => {
     const value = storageAvailable(type) && window.localStorage.getItem(key);
 
