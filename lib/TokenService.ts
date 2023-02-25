@@ -3,7 +3,7 @@ import { storageAvailable } from "../helpers/storageAvailable";
 
 class TokenService {
     getAuthData(): (AuthData | undefined | null) {
-        return JSON.parse(storageAvailable('localStorage') && window?.localStorage?.getItem("authData")) || undefined;
+        return (JSON.parse(storageAvailable('localStorage') && window?.localStorage?.getItem("authData"))) || undefined;
     }
     setAuthData(data) {
         storageAvailable('localStorage') && localStorage.setItem("authData", JSON.stringify(data));
