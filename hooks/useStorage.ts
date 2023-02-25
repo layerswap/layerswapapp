@@ -1,4 +1,4 @@
-import { storageAvailable, storageType } from "../helpers/storageAvailable";
+import { storageType } from "../helpers/storageAvailable";
 
 type UseStorageReturnValue = {
   getItem: (key: string, type?: storageType) => string;
@@ -7,12 +7,13 @@ type UseStorageReturnValue = {
 };
 
 const useStorage = (): UseStorageReturnValue => {
+  const isBrowser: boolean = ((): boolean => typeof window !== 'undefined')();
   const getItem = (key: string, type?: storageType): string => {
-    return storageAvailable(type) ? window[type][key] : '';
+    return isBrowser ? window[type][key] : '';
   };
 
   const setItem = (key: string, value: string, type?: storageType): boolean => {
-    if (storageAvailable(type)) {
+    if (isBrowser) {
       window[type].setItem(key, value);
       return true;
     }
@@ -21,7 +22,7 @@ const useStorage = (): UseStorageReturnValue => {
   };
 
   const removeItem = (key: string, type?: storageType): void => {
-    storageAvailable(type) && window[type].removeItem(key);
+    window[type].removeItem(key);
   };
 
   return {
