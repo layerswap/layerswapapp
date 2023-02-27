@@ -7,6 +7,8 @@ import ErrorBoundary from "./ErrorBoundary";
 import { QueryParams } from "../Models/QueryParams";
 import MaintananceContent from "./maintanance/maintanance";
 import { AuthProvider } from "../context/authContext";
+import TokenService from "../lib/TokenService";
+import NoCookies from "./NoCookies";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -36,6 +38,8 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
     plausible('pageview', { u: prepareUrl(['destNetwork', 'sourceExchangeName', 'addressSource', 'asset', 'amount']) })
   }, [])
 
+  const localStorageIsEnabled = TokenService.localStorageIsEnabled()
+
   return (<>
     <Head>
       <title>Layerswap</title>
@@ -62,14 +66,17 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       <meta name="twitter:description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
       <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpeg" />
     </Head>
-    <AuthProvider>
-      <ErrorBoundary >
-        <QueryProvider query={query}>
-          <ThemeWrapper hideNavbar={hideNavbar}>
-            {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ? <MaintananceContent /> : children}
-          </ThemeWrapper>
-        </QueryProvider>
-      </ErrorBoundary>
-    </AuthProvider>
+    {localStorageIsEnabled ?
+      <AuthProvider>
+        <ErrorBoundary >
+          <QueryProvider query={query}>
+            <ThemeWrapper hideNavbar={hideNavbar}>
+              {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ? <MaintananceContent /> : children}
+            </ThemeWrapper>
+          </QueryProvider>
+        </ErrorBoundary>
+      </AuthProvider>
+      : <NoCookies />
+    }
   </>)
 }

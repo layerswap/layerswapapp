@@ -16,6 +16,16 @@ class TokenService {
     removeAuthData() {
         localStorage.removeItem("authData");
     }
+    localStorageIsEnabled (){
+        try {
+            localStorage.setItem('_ls-test-key', 'ls_test_data')
+            localStorage.getItem('_ls-test-key')
+            localStorage.removeItem('_ls-test-key')
+            return true
+          } catch (e) {
+            return false
+          }
+    }
 }
 
 export default new TokenService();
