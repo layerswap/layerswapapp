@@ -1,6 +1,6 @@
 export type storageType = 'localStorage' |  'sessionStorage';
 
-export function storageAvailable(type: storageType) {
+export function checkStorageIsAvailable(type: storageType) {
     try {
         var storage = window[type],
             x = '__storage_test__';
