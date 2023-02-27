@@ -18,14 +18,12 @@ import toast from "react-hot-toast";
 import { KnownwErrorCode } from "../Models/ApiError";
 import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
 import { useAuthDataUpdate, UserType } from "../context/authContext";
-import useStorage from "./useStorage";
 
 const useCreateSwap = () => {
     const { goToStep } = useFormWizardaUpdate()
     const { swapFormData, swap } = useSwapDataState()
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
-    const { storageAvailable } = useStorage()
 
     const MainForm: WizardStep<SwapCreateStep> = {
         Content: MainStep,
@@ -34,20 +32,14 @@ const useCreateSwap = () => {
         onNext: useCallback(async ({ values, swapId }: { values: SwapFormValues, swapId?: string }) => {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken) {
-                if (storageAvailable) {
-                    try {
-                        var apiClient = new LayerSwapAuthApiClient();
-                        const res = await apiClient.guestConnectAsync()
-                        updateAuthData(res)
-                        setUserType(UserType.GuestUser)
-                    }
-                    catch (error) {
-                        toast.error(error.response?.data?.error || error.message)
-                        return;
-                    }
+                try {
+                    var apiClient = new LayerSwapAuthApiClient();
+                    const res = await apiClient.guestConnectAsync()
+                    updateAuthData(res)
+                    setUserType(UserType.GuestUser)
                 }
-                else{
-                    goToStep(SwapCreateStep.Email)
+                catch (error) {
+                    toast.error(error.response?.data?.error || error.message)
                     return;
                 }
             }
@@ -73,7 +65,7 @@ const useCreateSwap = () => {
                 }
             }
             return goToStep(SwapCreateStep.Confirm)
-        }, [storageAvailable]),
+        }, []),
     }
 
     const Email: WizardStep<SwapCreateStep> = {
