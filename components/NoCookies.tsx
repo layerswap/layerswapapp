@@ -1,23 +1,48 @@
-import SubmitButton from "./buttons/submitButton";
-import CardContainer from "./cardContainer";
-import LayerSwapLogo from "./icons/layerSwapLogo";
-import IntroCard from "./introCard";
+import { useEffect, useState } from "react";
+import MessageComponent from "./MessageComponent";
+import Navbar from "./navbar";
+import inIframe from "./utils/inIframe";
 
 function NoCookies(props) {
+    const [embadded, setEmbadded] = useState<boolean>()
+
+    useEffect(() => {
+        setEmbadded(inIframe())
+    }, [])
+
     return (
-        <div className="flex items-stretch flex-col">
-            <LayerSwapLogo className="block md:hidden h-8 w-auto text-white mt-5"></LayerSwapLogo>
-            <CardContainer {...props} >
-                <div className="flex flex-col justify-center space-y-12 p-8 md:p-20 text-white md:min-h-fit min-h-[400px]">
-                    <p className="mb-4 text-primary-text">
-                        We apologize for any inconvenience you may experience while using our website. We noticed that you have disabled all cookies in your browser, which may prevent our site from functioning as intended.
-                    </p>
-                    <span className="block xl:inline">
-                        Cookies are small text files that are stored on your computer when you visit a website. They are commonly used to remember your preferences, personalize your experience, and track your activity on the site. Without cookies, some features of our website may not work correctly, and your browsing experience may be less efficient.
-                    </span>
+        <div className="styled-scroll">
+            <main className="styled-scroll">
+                <div className="min-h-screen overflow-hidden relative font-robo">
+                    <Navbar />
+                    <div className="mx-auto max-w-xl bg-darkblue shadow-card rounded-lg w-full overflow-hidden relative px-0 md:px-8 py-6 h-[500px] min-h-[550px]">
+                        <MessageComponent>
+                            <MessageComponent.Content icon="red">
+                                <MessageComponent.Header>
+                                    🍪 No cookies
+                                </MessageComponent.Header>
+                                <MessageComponent.Description>
+                                    <p>
+                                        Sorry, but it seems you have disabled cookies.
+                                    </p>
+                                    {
+                                        embadded === true &&
+                                        <a href="https://layerswap.io/" className="bg-primary text-primary-buttonTextColor py-3 px-3 border border-primary disabled:border-primary-900 shadowed-button items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-400 ease-in-out">
+                                            Try on Layerswap
+                                        </a>
+                                    }
+                                    {
+                                        embadded === false &&
+                                        <p>
+                                            Please enable cookies in your browser and try again.
+                                        </p>
+                                    }
+                                </MessageComponent.Description>
+                            </MessageComponent.Content>
+                        </MessageComponent>
+                    </div>
                 </div>
-            </CardContainer>
-            <IntroCard />
+            </main>
         </div>
     );
 }

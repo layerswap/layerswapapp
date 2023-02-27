@@ -9,6 +9,7 @@ import MaintananceContent from "./maintanance/maintanance";
 import { AuthProvider } from "../context/authContext";
 import TokenService from "../lib/TokenService";
 import NoCookies from "./NoCookies";
+import useStorage from "../hooks/useStorage";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -18,6 +19,8 @@ type Props = {
 
 export default function Layout({ hideFooter, hideNavbar, children }: Props) {
   const router = useRouter();
+  const { storageAvailable } = useStorage();
+
   const query: QueryParams = {
     ...router.query,
     ...(router.query.lockAddress === 'true' ? { lockAddress: true } : {}),
@@ -37,8 +40,6 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
     }
     plausible('pageview', { u: prepareUrl(['destNetwork', 'sourceExchangeName', 'addressSource', 'asset', 'amount']) })
   }, [])
-
-  const localStorageIsEnabled = TokenService.localStorageIsEnabled()
 
   return (<>
     <Head>
@@ -66,7 +67,8 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       <meta name="twitter:description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
       <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpeg" />
     </Head>
-    {localStorageIsEnabled ?
+    {
+      storageAvailable === true &&
       <AuthProvider>
         <ErrorBoundary >
           <QueryProvider query={query}>
@@ -76,7 +78,9 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
           </QueryProvider>
         </ErrorBoundary>
       </AuthProvider>
-      : <NoCookies />
+    }
+    {storageAvailable === false &&
+      <NoCookies />
     }
   </>)
 }
