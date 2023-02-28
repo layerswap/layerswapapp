@@ -139,7 +139,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                     )}
                 </SlideOver>}
             <span id="destination_address_modal">
-                <SlideOver imperativeOpener={[openAddressModal, setOpenAddressModal]} place='inStep' containerId="destination_address_modal">
+                <SlideOver imperativeOpener={[openAddressModal, setOpenAddressModal]} scrollToTopAfterClose={true} place='inStep' containerId="destination_address_modal">
                     {(close) => (<Address
                         close={close}
                         onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
