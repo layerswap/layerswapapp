@@ -8,6 +8,7 @@ import { Root, Portal, Overlay, Content, Title, Close, } from '@radix-ui/react-d
 import inIframe from './utils/inIframe';
 
 type modalSize = 'small' | 'medium' | 'large';
+export type modalHeight = 'auto' | 'large';
 
 class ModalParams {
     showModal: boolean;
@@ -16,6 +17,7 @@ class ModalParams {
     title?: React.ReactNode;
     className?: string;
     modalSize?: modalSize = "large";
+    modalHeight?: modalHeight = "auto"
 }
 
 function constructModalSize(size: modalSize) {
@@ -78,7 +80,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                             <motion.div
                                 ref={desktopModalRef}
                                 key="desktop-modal"
-                                className={`fixed inset-0 z-40 hidden min-h-screen items-center justify-center sm:flex `}
+                                className={`fixed inset-0 z-40 hidden min-h-screen items-center justify-center sm:flex`}
                                 initial={{ opacity: 0 }}
                                 animate={{
                                     opacity: 1,
@@ -95,7 +97,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                                 }}
                             >
                                 <div className={constructModalSize(modalSize)}>
-                                    <div className={`${className} space-y-3 bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
+                                    <div className={`${className} space-y-3 min-h-[80%] bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
                                         <div className='flex justify-between space-x-8'>
                                             <Title className="text-lg text-left font-medium text-primary-text" >
                                                 {title}
@@ -119,7 +121,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
     );
 }
 
-export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, setShowModal, children, title, className }, topmostRef) => {
+export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, setShowModal, children, title, className, modalHeight }, topmostRef) => {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 42 };
@@ -160,7 +162,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue ${className} shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
+                className={`${modalHeight === 'large' ? 'min-h-[80%]' : ''} group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue ${className} shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
                 initial={{ y: "100%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
