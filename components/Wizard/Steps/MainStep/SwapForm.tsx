@@ -212,7 +212,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                                 <ClickTooltip text="With Refuel, you can swap native tokens on the source chain for native tokens to transact on the destination chain" />
                                             </p>
                                             <p className="font-light text-xs">
-                                                Get Gas for transactions on {values.to.baseObject.native_currency}
+                                                Get Gas for transactions on {values.to.baseObject.display_name}
                                             </p>
                                         </div>
                                     </div>
