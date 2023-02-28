@@ -1,6 +1,6 @@
 import { XIcon } from "@heroicons/react/outline";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { Dispatch, SetStateAction, useEffect, useRef } from "react";
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef } from "react";
 import { FC, useState } from "react"
 import { MobileModalContent } from "./modalComponent";
 import { Root, Portal, Overlay, Content, } from '@radix-ui/react-dialog';
@@ -16,10 +16,11 @@ type Props = {
     place: slideOverPlace;
     noPadding?: boolean;
     containerId?: string;
+    scrollToTopAfterClose?: boolean;
     imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
 
-const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassNames, place, noPadding, children, containerId }) => {
+const SlideOver: FC<Props> = (({ header, opener, scrollToTopAfterClose, imperativeOpener, moreClassNames, place, noPadding, children, containerId }) => {
     const [open, setOpen] = useState(false)
     const mobileModalRef = useRef(null)
     const { width } = useWindowDimensions()
@@ -27,10 +28,13 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
         setOpen(false)
         imperativeOpener?.[1](false);
     }
-    const handleOpen = () => {
+    const handleOpen = useCallback(() => {
         setOpen(true)
         imperativeOpener?.[1](true);
-    }
+        if (scrollToTopAfterClose) {
+            window.scroll(0, 0)
+        }
+    }, [scrollToTopAfterClose])
 
     let heightControl = ''
 

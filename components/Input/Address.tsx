@@ -99,15 +99,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setInputFocused(false)
         }
 
-        const handleConfirmAddress = useCallback((confirmed: boolean) => {
-            setAddressConfirmed(confirmed)
-            if (!confirmed)
-                return
-
-            setFieldValue("destination_address", inputValue)
-            close()
-        }, [inputValue])
-
         const handleSetNewAddress = useCallback(() => {
             setFieldValue("destination_address", inputValue)
             close()
