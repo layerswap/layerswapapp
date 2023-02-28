@@ -15,7 +15,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
 
     let exchangeFee = swapType === SwapType.OnRamp && parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
     let fee = CalculateFee(values, networks) + (refuel ? (1 / currency?.baseObject?.usd_price) : 0);
-    let receive_amount = CalculateReceiveAmount(values, networks) + (refuel ? (1 / currency?.baseObject?.usd_price) : 0);
+    let receive_amount = CalculateReceiveAmount(values, networks)
 
     const refuelCurrencyUsdPrice = swapType !== SwapType.OffRamp && currencies.find(c => c.asset === to?.baseObject?.native_currency)?.usd_price
     const refuelAmount = swapType !== SwapType.OffRamp && `+ ${roundDecimals((1 / refuelCurrencyUsdPrice), refuelCurrencyUsdPrice?.toFixed()?.length)} ${to?.baseObject?.native_currency}`
