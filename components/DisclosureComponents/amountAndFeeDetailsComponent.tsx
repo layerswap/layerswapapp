@@ -2,7 +2,6 @@ import { ChevronDownIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
 import { SwapType } from '../../lib/layerSwapApiClient';
-import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
@@ -14,7 +13,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const { currency, from, to, swapType, refuel } = values || {}
 
     let exchangeFee = swapType === SwapType.OnRamp && parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
-    let fee = CalculateFee(values, networks);
+    let fee = CalculateFee(values, networks) + (refuel ? currency.baseObject.usd_price : 0);
     let receive_amount = CalculateReceiveAmount(values, networks);
 
     return (
@@ -73,7 +72,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                 <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                             </label>
                                             <span className="text-right">
-                                                {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.baseObject?.asset}</>} 
+                                                {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.baseObject?.asset}</>}
                                             </span>
                                         </div>
                                     }

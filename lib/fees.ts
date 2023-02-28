@@ -31,6 +31,7 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
 }
 
 export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]) {
+    const { currency, refuel } = swapFormData || {}
 
     const amount = Number(swapFormData?.amount)
     if (!amount) return 0;
@@ -43,6 +44,9 @@ export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks
         if (swapFormData.swapType == SwapType.OnRamp && swapFormData.from?.baseObject?.authorization_flow == "o_auth2") {
             let exchangeFee = GetExchangeFee(swapFormData.currency?.baseObject?.asset, swapFormData.from?.baseObject);
             result -= exchangeFee;
+        }
+        if(refuel) {
+            result -= currency.baseObject.usd_price
         }
 
         return Number(result.toFixed(swapFormData.currency?.baseObject?.precision));
