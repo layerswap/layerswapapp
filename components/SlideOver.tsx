@@ -73,7 +73,7 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
                             y: "100%",
                             transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
                         }}
-                        className={`absolute inset-0 z-40 w-full ${heightControl} hidden sm:block`}>
+                        className={`absolute inset-0 z-40 w-full ${heightControl} hidden sm:block overscroll-none`}>
                         <div className={`relative z-40 overflow-hidden flex flex-col rounded-t-2xl md:rounded-none bg-darkblue h-full space-y-3 py-4 ${!noPadding ? 'px-6 sm:px-8' : ''}`}>
                             <div className={`flex items-center justify-between text-primary-text cursor-pointer ${noPadding ? 'px-6 sm:px-8' : ''}`}>
                                 <p className="text-xl text-white font-semibold">

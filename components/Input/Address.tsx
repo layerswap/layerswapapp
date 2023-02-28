@@ -96,7 +96,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setInputFocused(true)
         }
         const handleInputBlur = () => {
-            window.scrollTo(0, 0);
             setInputFocused(false)
         }
 
@@ -114,7 +113,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             close()
         }, [inputValue])
 
-        return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
+        return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text overscroll-none'>
             <div className='flex flex-col self-center grow w-full'>
                 <div className={`flex flex-col self-center grow w-full space-y-8 ${inputFocused ? 'mb-40 md:mb-3' : ''}`}>
                     <div className="text-left">
