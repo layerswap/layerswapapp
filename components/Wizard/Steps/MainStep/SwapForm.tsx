@@ -115,7 +115,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     useEffect(() => {
         if (depositeAddressIsfromAccountRef.current)
             handleExchangeConnected()
-        if (swapType !== SwapType.OffRamp && !values?.to?.baseObject?.currencies.find(c => c.asset === values?.currency?.baseObject?.asset).is_refuel_enabled) {
+        if (swapType !== SwapType.OffRamp && !values?.to?.baseObject?.currencies.find(c => c.asset === values?.currency?.baseObject?.asset)?.is_refuel_enabled) {
             handleConfirmToggleChange(false)
         }
     }, [values.currency])
