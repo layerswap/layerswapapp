@@ -10,7 +10,7 @@ const AmountField = forwardRef((_, ref: any) => {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { networks } = useSettingsState()
-    const { currency, from, to, amount } = values
+    const { currency, from, to, amount, refuel } = values
     const name = "amount"
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks);

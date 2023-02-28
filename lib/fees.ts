@@ -66,7 +66,7 @@ export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, allNetwo
 
 export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]) {
 
-    const { currency, from, to, swapType } = swapFormData || {}
+    const { currency, from, to, swapType, refuel } = swapFormData || {}
     if (!currency || !from || !to) return 0
 
     const fee = CalculateFee(swapFormData, allNetworks)
@@ -74,6 +74,9 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
     if (from.baseObject.internal_name === KnownInternalNames.Exchanges.Coinbase && swapType === SwapType.OnRamp) {
         const exchangeCurrency = from?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
         minAmount += exchangeCurrency.withdrawal_fee
+    }
+    if (refuel) {
+        minAmount += currency.baseObject.usd_price
     }
 
     return roundDecimals(minAmount, currency.baseObject?.usd_price?.toFixed()?.length) || 0

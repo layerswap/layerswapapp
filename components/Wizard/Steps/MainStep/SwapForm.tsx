@@ -25,6 +25,9 @@ import SpinIcon from "../../../icons/spinIcon";
 import { useQueryState } from "../../../../context/query";
 import { useSettingsState } from "../../../../context/settings";
 import { isValidAddress } from "../../../../lib/addressValidator";
+import ToggleButton from "../../../buttons/toggleButton";
+import RefuelIcon from "../../../icons/RefuelIcon";
+import ClickTooltip from "../../../Tooltips/ClickTooltip";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -42,6 +45,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
+    const [enableRefuel, setEnableRefuel] = useState(false)
     const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name}.png` : null
     const router = useRouter();
     const [loadingDepositAddress, setLoadingDepositAddress] = useState(false)
@@ -58,6 +62,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const closeExchangeConnect = (open) => {
         setLoadingDepositAddress(open)
         setOpenExchangeConnect(open)
+    }
+
+    const handleConfirmToggleChange = (value: boolean) => {
+        setFieldValue('refuel', value)
     }
 
     const handleSetExchangeDepositAddress = useCallback(async () => {
@@ -190,6 +198,24 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                 </div>
                         }
                         <div className="w-full">
+                            {
+                                values?.swapType !== SwapType.OffRamp && values?.to?.baseObject.currencies.find(c => c.asset === values?.currency?.name)?.is_refuel_enabled &&
+                                <div className="flex items-center justify-between px-3.5 py-3 bg-darkblue-700 border border-darkblue-500 rounded-lg mb-4">
+                                    <div className="flex items-center space-x-2">
+                                        <RefuelIcon className='h-8 w-8 text-primary' />
+                                        <div>
+                                            <p className="font-medium flex items-center">
+                                                <span>Enable Refuel</span>
+                                                <ClickTooltip text="With Refuel, you can swap native tokens on the source chain for native tokens to transact on the destination chain" />
+                                            </p>
+                                            <p className="font-light text-xs">
+                                                Get Gas for transactions on {values.to.baseObject.native_currency}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <ToggleButton name="refuel" value={values?.refuel} onChange={handleConfirmToggleChange} />
+                                </div>
+                            }
                             <AmountAndFeeDetails values={values} />
                         </div>
                     </Widget.Content>

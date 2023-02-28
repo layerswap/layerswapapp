@@ -11,7 +11,7 @@ import ClickTooltip from '../Tooltips/ClickTooltip';
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
     const { networks } = useSettingsState()
 
-    const { currency, from, to, swapType } = values || {}
+    const { currency, from, to, swapType, refuel } = values || {}
 
     let exchangeFee = swapType === SwapType.OnRamp && parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
     let fee = CalculateFee(values, networks);
@@ -39,9 +39,9 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                         </span>
                                                     </p>
                                                     {
-                                                        KnownInternalNames.Networks.BNBChainMainnet == to?.baseObject?.internal_name &&
+                                                        swapType !== SwapType.OffRamp && refuel &&
                                                         <p className='text-[12px] text-slate-300'>
-                                                            + 0.0015 BNB
+                                                            + {currency.baseObject.usd_price} {to.baseObject.native_currency}
                                                         </p>
                                                     }
                                                 </span>

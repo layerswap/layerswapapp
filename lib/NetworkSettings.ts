@@ -18,7 +18,6 @@ export default class NetworkSettings {
     AddressPlaceholder?: string;
     Order?: number;
     AccountExplorerTemplate?: string;
-    Refuel?: boolean = false
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
@@ -122,7 +121,6 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BNBChainMainnet] = {
             Order: 3,
             AccountExplorerTemplate: 'https://bscscan.com/address/{0}',
-            Refuel: true
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
             Order: 5,
