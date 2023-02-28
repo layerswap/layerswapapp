@@ -138,22 +138,20 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             : <ConnectApiKeyExchange exchange={to?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
                     )}
                 </SlideOver>}
-            <span id="destination_address_modal">
-                <SlideOver imperativeOpener={[openAddressModal, setOpenAddressModal]} scrollToTopAfterClose={true} place='inStep' containerId="destination_address_modal">
-                    {(close) => (<Address
-                        close={close}
-                        onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
-                        exchangeAccount={exchangeAccount}
-                        loading={loadingDepositAddress}
-                        disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
-                        name={"destination_address"}
-                        partnerImage={partnerImage}
-                        isPartnerWallet={isPartnerWallet}
-                        partner={partner}
-                        className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
-                    />)}
-                </SlideOver>
-            </span>
+            <SlideOver modalHeight="large" imperativeOpener={[openAddressModal, setOpenAddressModal]} scrollToTopAfterClose={true} place='inStep'>
+                {(close) => (<Address
+                    close={close}
+                    onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
+                    exchangeAccount={exchangeAccount}
+                    loading={loadingDepositAddress}
+                    disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
+                    name={"destination_address"}
+                    partnerImage={partnerImage}
+                    isPartnerWallet={isPartnerWallet}
+                    partner={partner}
+                    className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
+                />)}
+            </SlideOver>
 
             <Widget>
                 {loading ?

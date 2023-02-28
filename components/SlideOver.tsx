@@ -2,7 +2,7 @@ import { XIcon } from "@heroicons/react/outline";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef } from "react";
 import { FC, useState } from "react"
-import { MobileModalContent } from "./modalComponent";
+import { MobileModalContent, modalHeight } from "./modalComponent";
 import { Root, Portal, Overlay, Content, } from '@radix-ui/react-dialog';
 import useWindowDimensions from "../hooks/useWindowDimensions";
 
@@ -15,12 +15,12 @@ type Props = {
     moreClassNames?: string;
     place: slideOverPlace;
     noPadding?: boolean;
-    containerId?: string;
     scrollToTopAfterClose?: boolean;
+    modalHeight?: modalHeight;
     imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
 
-const SlideOver: FC<Props> = (({ header, opener, scrollToTopAfterClose, imperativeOpener, moreClassNames, place, noPadding, children, containerId }) => {
+const SlideOver: FC<Props> = (({ header, opener, scrollToTopAfterClose, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children }) => {
     const [open, setOpen] = useState(false)
     const mobileModalRef = useRef(null)
     const { width } = useWindowDimensions()
@@ -59,9 +59,6 @@ const SlideOver: FC<Props> = (({ header, opener, scrollToTopAfterClose, imperati
         else imperativeOpener?.[1](false)
     }, [open])
 
-    let container = document.getElementById(containerId)
-    console.log("container", container)
-    console.log("containerID", containerId)
     return (
         <>
             <span>{opener && opener(handleOpen)}</span>
@@ -102,10 +99,10 @@ const SlideOver: FC<Props> = (({ header, opener, scrollToTopAfterClose, imperati
             <AnimatePresence>
                 {open && width < 640 &&
                     <Root open={open} onOpenChange={() => { }} >
-                        <Portal container={container || document.body}>
+                        <Portal>
                             <Overlay />
                             <Content>
-                                <MobileModalContent ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
+                                <MobileModalContent modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
                                     {children && children(handleClose)}
                                 </MobileModalContent>
                             </Content>
