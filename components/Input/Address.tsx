@@ -113,13 +113,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             close()
         }, [inputValue])
 
-        return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text overscroll-none'>
-            <div className='flex flex-col self-center grow w-full'>
-                <div className={`flex flex-col self-center grow w-full space-y-8`}>
+        return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text overscroll-none overflow-auto'>
+            <div className='flex flex-col self-center grow w-full overscroll-none'>
+                <div className={`flex flex-col self-center grow w-full space-y-8 overscroll-none`}>
                     <div className="text-left">
                         {`To ${values?.to?.name || ''} address`}
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
-                        <div className="flex md:space-x-4 flex-wrap flex-col md:flex-row">
+                        <div className="flex md:space-x-4 flex-wrap flex-col md:flex-row overscroll-none">
                             <motion.div initial="rest" animate={inputFocused ? "inputFocused" : "rest"} className="relative flex grow rounded-lg shadow-sm mt-1.5 ">
                                 {isPartnerWallet &&
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

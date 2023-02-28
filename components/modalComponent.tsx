@@ -151,7 +151,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
         <div ref={topmostRef}>
             <motion.div
                 key="backdrop"
-                className="fixed inset-0 z-20 bg-black/50 sm:hidden block"
+                className="fixed inset-0 z-20 bg-black/50 sm:hidden block overscroll-none overflow-auto"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
