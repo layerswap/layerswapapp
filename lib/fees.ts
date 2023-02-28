@@ -45,7 +45,7 @@ export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks
             let exchangeFee = GetExchangeFee(swapFormData.currency?.baseObject?.asset, swapFormData.from?.baseObject);
             result -= exchangeFee;
         }
-        if(refuel) {
+        if (refuel) {
             result -= currency.baseObject.usd_price
         }
 
@@ -79,8 +79,8 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
         const exchangeCurrency = from?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
         minAmount += exchangeCurrency.withdrawal_fee
     }
-    if (refuel) {
-        minAmount += currency.baseObject.usd_price
+    if (to?.baseObject?.currencies.find(c => c.asset === currency.baseObject.asset)?.is_refuel_enabled && refuel) {
+        minAmount += 1 / currency.baseObject.usd_price
     }
 
     return roundDecimals(minAmount, currency.baseObject?.usd_price?.toFixed()?.length) || 0

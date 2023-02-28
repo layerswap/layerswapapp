@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useRef } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -10,8 +10,14 @@ const AmountField = forwardRef((_, ref: any) => {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { networks } = useSettingsState()
-    const { currency, from, to, amount, refuel } = values
+    const { currency, from, to, amount } = values
     const name = "amount"
+
+    useEffect(() => {
+        if (amount) {
+            setFieldValue(name, minAllowedAmount)
+        }
+    }, [currency])
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks);
     const maxAllowedAmount = CalculateMaxAllowedAmount(values, networks);

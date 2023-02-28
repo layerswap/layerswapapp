@@ -5,16 +5,20 @@ import { SwapType } from '../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
+import roundDecimals from '../utils/RoundDecimals';
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
-    const { networks } = useSettingsState()
+    const { networks, currencies } = useSettingsState()
 
     const { currency, from, to, swapType, refuel } = values || {}
 
     let exchangeFee = swapType === SwapType.OnRamp && parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
     let fee = CalculateFee(values, networks) + (refuel ? currency.baseObject.usd_price : 0);
     let receive_amount = CalculateReceiveAmount(values, networks);
+
+    const refuelCurrencyUsdPrice = swapType !== SwapType.OffRamp && currencies.find(c => c.asset === to?.baseObject?.native_currency)?.usd_price
+    const refuelAmount = swapType !== SwapType.OffRamp && `+ ${roundDecimals((1 / refuelCurrencyUsdPrice), refuelCurrencyUsdPrice?.toFixed()?.length)} ${to?.baseObject?.native_currency}`
 
     return (
         <>
@@ -23,12 +27,12 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                     {({ open }) => (
                         <>
                             <Disclosure.Button className="items-center flex w-full relative justify-between rounded-lg text-left text-base font-medium">
-                                <span className="md:font-semibold text-sm md:text-base text-primary-text">You will receive</span>
+                                <span className="md:font-semibold text-sm md:text-base text-primary-text leading-8 md:leading-8">You will receive</span>
                                 <div className='flex items-center space-x-2'>
                                     <span className="text-sm md:text-base">
                                         {
                                             receive_amount ?
-                                                <span className="font-semibold md:font-bold text-right leading-4">
+                                                <div className="font-semibold md:font-bold text-right leading-4">
                                                     <p>
                                                         {receive_amount.toFixed(currency?.baseObject?.precision)}
                                                         <span>
@@ -38,12 +42,12 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                         </span>
                                                     </p>
                                                     {
-                                                        swapType !== SwapType.OffRamp && refuel &&
-                                                        <p className='text-[12px] text-slate-300'>
-                                                            + {currency.baseObject.usd_price} {to.baseObject.native_currency}
+                                                        refuel &&
+                                                        <p className='text-[10px] text-slate-300'>
+                                                            {refuelAmount}
                                                         </p>
                                                     }
-                                                </span>
+                                                </div>
                                                 : '-'
                                         }
                                     </span>
