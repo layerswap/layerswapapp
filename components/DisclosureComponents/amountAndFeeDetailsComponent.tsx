@@ -20,6 +20,8 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const refuelCurrencyUsdPrice = swapType !== SwapType.OffRamp && currencies.find(c => c.asset === to?.baseObject?.native_currency)?.usd_price
     const refuelAmount = swapType !== SwapType.OffRamp && `+ ${roundDecimals((1 / refuelCurrencyUsdPrice), refuelCurrencyUsdPrice?.toFixed()?.length)} ${to?.baseObject?.native_currency}`
 
+    const feeInUsd = fee * currency?.baseObject?.usd_price < 0.01 ? `0.01$<` : `(${roundDecimals(fee * currency?.baseObject?.usd_price, 2)}$)`
+
     return (
         <>
             <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 px-3.5 py-3">
@@ -64,8 +66,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                             Layerswap Fee
                                         </label>
                                         <span className="text-right">
-                                            {fee.toFixed(currency?.baseObject?.precision)}
-                                            <span>  {currency?.baseObject?.asset} </span>
+                                            {fee.toFixed(currency?.baseObject?.precision)} {currency?.baseObject?.asset} {feeInUsd}
                                         </span>
                                     </div>
                                     {
