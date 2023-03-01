@@ -54,7 +54,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         useEffect(() => {
             if (canFocus) {
-                document.getElementById(name).focus()
+                setTimeout(() => {
+                    inputReference.current?.focus()
+                }, 100);
             }
         }, [canFocus, name])
 
@@ -113,8 +115,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue("destination_address", inputValue)
             close()
         }, [inputValue])
-
-
 
         const autofillEnabled = !inputFocused && !inputAddressisValid
 

@@ -135,19 +135,20 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         setOpenAddressModal(true)
     }, [values])
     const inputReference = useRef(null);
-    const buttonReference = useRef(null);
 
     const handleFocus = () => {
         document.getElementById("myinpuut").focus()
     }
 
     useEffect(()=>{
-        buttonReference?.current?.click()
+        setTimeout(() => {
+            document.getElementById("myinpuut").focus()
+        }, 100);
     },[])
 
     return <>
         <input id="myinpuut" type="text" className="text-black" autoFocus={true} ref={inputReference} />
-        <button ref={buttonReference} onClick={handleFocus}>Focus</button>
+        <button onClick={handleFocus}>Focus</button>
         <Form className="h-full" >
             {swapType === SwapType.OffRamp &&
                 <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
