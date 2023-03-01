@@ -145,7 +145,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             : <ConnectApiKeyExchange exchange={to?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
                     )}
                 </SlideOver>}
-            <SlideOver modalHeight="large" imperativeOpener={[openAddressModal, setOpenAddressModal]} scrollToTopAfterClose={true} place='inStep'>
+            <SlideOver modalHeight="large" imperativeOpener={[openAddressModal, setOpenAddressModal]} place='inStep'>
                 {(close) => (<Address
                     close={close}
                     onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}

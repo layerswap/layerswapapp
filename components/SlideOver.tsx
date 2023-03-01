@@ -15,12 +15,11 @@ type Props = {
     moreClassNames?: string;
     place: slideOverPlace;
     noPadding?: boolean;
-    scrollToTopAfterClose?: boolean;
     modalHeight?: modalHeight;
     imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
 
-const SlideOver: FC<Props> = (({ header, opener, scrollToTopAfterClose, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children }) => {
+const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children }) => {
     const [open, setOpen] = useState(false)
     const mobileModalRef = useRef(null)
     const { width } = useWindowDimensions()
@@ -28,13 +27,10 @@ const SlideOver: FC<Props> = (({ header, opener, scrollToTopAfterClose, modalHei
         setOpen(false)
         imperativeOpener?.[1](false);
     }
-    const handleOpen = useCallback(() => {
+    const handleOpen = () => {
         setOpen(true)
         imperativeOpener?.[1](true);
-        if (scrollToTopAfterClose) {
-            window.scroll(0, 0)
-        }
-    }, [scrollToTopAfterClose])
+    }
 
     let heightControl = ''
 
