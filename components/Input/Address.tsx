@@ -1,5 +1,5 @@
 import { Field, useFormikContext } from "formik";
-import { ChangeEvent, ChangeEventHandler, FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, ChangeEventHandler, FC, forwardRef, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import LayerSwapApiClient, { AddressBookItem, SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -52,7 +52,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const inputReference = useRef(null);
 
-        useEffect(() => {
+        useLayoutEffect(() => {
             if (canFocus) {
                 setTimeout(() => {
                     inputReference.current?.focus()

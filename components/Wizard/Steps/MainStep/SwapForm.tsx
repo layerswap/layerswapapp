@@ -1,5 +1,5 @@
 import { Form, FormikErrors, useField, useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import Image from 'next/image';
 import SwapButton from "../../../buttons/swapButton";
@@ -140,7 +140,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         document.getElementById("myinpuut").focus()
     }
 
-    useEffect(()=>{
+    useLayoutEffect(()=>{
         setTimeout(() => {
             document.getElementById("myinpuut").focus()
         }, 100);
