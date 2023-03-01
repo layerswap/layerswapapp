@@ -126,107 +126,111 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                         <div className="flex flex-wrap flex-col md:flex-row">
                             <FocusTrap canFocus={canFocus} id={name} />
-                            <motion.div initial="rest" animate={autofillEnabled ? "rest" : "inputFocused"} className="relative flex grow rounded-lg shadow-sm mt-1.5 ">
-                                {isPartnerWallet &&
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        {
-                                            partnerImage &&
-                                            <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
+                            <Field name={name}>
+                                {({ field }) => (
+                                    <motion.div initial="rest" animate={autofillEnabled ? "rest" : "inputFocused"} className="relative flex grow rounded-lg shadow-sm mt-1.5 ">
+                                        {isPartnerWallet &&
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                {
+                                                    partnerImage &&
+                                                    <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
+                                                }
+                                            </div>
                                         }
-                                    </div>
-                                }
-                                <motion.input
-                                    onChange={handleInputChange}
-                                    value={inputValue}
-                                    placeholder={placeholder}
-                                    onFocus={handleInputFocus}
-                                    onBlur={handleInputBlur}
-                                    autoCorrect="off"
-                                    type={"text"}
-                                    disabled={disabled}
-                                    name={name}
-                                    id={name}
-                                    ref={inputReference}
-                                    className={classNames('myinput disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-darkblue-100 focus:border-darkblue-100 block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus-peer:ring-primary-900 focus-peer:border focus-peer:ring-1 focus:outline-none',
-                                        className
-                                    )}
-                                    transition={{
-                                        width: { ease: 'linear', }
-                                    }}
-                                    variants={
-                                        {
-                                            rest: { width: '100%' },
-                                            inputFocused: {
-                                                width: '100%',
-                                                transition: {
-                                                    when: "afterChildren",
+                                        <motion.input
+                                            onChange={handleInputChange}
+                                            value={inputValue}
+                                            placeholder={placeholder}
+                                            onFocus={handleInputFocus}
+                                            onBlur={handleInputBlur}
+                                            autoCorrect="off"
+                                            type={"text"}
+                                            disabled={disabled}
+                                            name={name}
+                                            id={name}
+                                            ref={inputReference}
+                                            className={classNames('myinput disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-darkblue-100 focus:border-darkblue-100 block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus-peer:ring-primary-900 focus-peer:border focus-peer:ring-1 focus:outline-none',
+                                                className
+                                            )}
+                                            transition={{
+                                                width: { ease: 'linear', }
+                                            }}
+                                            variants={
+                                                {
+                                                    rest: { width: '100%' },
+                                                    inputFocused: {
+                                                        width: '100%',
+                                                        transition: {
+                                                            when: "afterChildren",
+                                                        }
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }
-                                />
-                                {
-                                    values?.swapType === SwapType.OffRamp
-                                    && authData?.access_token && values.to
-                                    && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
-                                    && !depositeAddressIsfromAccount
-                                    &&
-                                    <motion.span className="inline-flex items-center mr-2 shrink"
-                                        transition={{
-                                            width: { ease: 'linear' }
-                                        }}>
-                                        <motion.div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
-                                            <motion.button
-                                                type="button"
-                                                className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100"
-                                                onClick={handleUseDepositeAddress}
-                                            >
-                                                <motion.div className="flex items-center" >
-                                                    {
-                                                        loading ? <SpinIcon className="animate-spin h-4 w-4" />
-                                                            : <LinkIcon className="h-4 w-4" />
-                                                    }
-                                                    <motion.span className={classNames(autofillEnabled ? 'ml-3' : '', "block truncate text-clip")}
-                                                        variants={
+                                        />
+                                        {
+                                            values?.swapType === SwapType.OffRamp
+                                            && authData?.access_token && values.to
+                                            && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
+                                            && !depositeAddressIsfromAccount
+                                            &&
+                                            <motion.span className="inline-flex items-center mr-2 shrink"
+                                                transition={{
+                                                    width: { ease: 'linear' }
+                                                }}>
+                                                <motion.div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
+                                                    <motion.button
+                                                        type="button"
+                                                        className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100"
+                                                        onClick={handleUseDepositeAddress}
+                                                    >
+                                                        <motion.div className="flex items-center" >
                                                             {
-                                                                inputFocused: {
-                                                                    width: '0',
-                                                                }
+                                                                loading ? <SpinIcon className="animate-spin h-4 w-4" />
+                                                                    : <LinkIcon className="h-4 w-4" />
                                                             }
-                                                        }>
-                                                        Autofill from {values?.to?.baseObject?.display_name}
-                                                    </motion.span>
+                                                            <motion.span className={classNames(autofillEnabled ? 'ml-3' : '', "block truncate text-clip")}
+                                                                variants={
+                                                                    {
+                                                                        inputFocused: {
+                                                                            width: '0',
+                                                                        }
+                                                                    }
+                                                                }>
+                                                                Autofill from {values?.to?.baseObject?.display_name}
+                                                            </motion.span>
+                                                        </motion.div>
+                                                    </motion.button>
                                                 </motion.div>
-                                            </motion.button>
-                                        </motion.div>
-                                    </motion.span>
-                                }
-                                {
-                                    values?.swapType === SwapType.OffRamp && depositeAddressIsfromAccount &&
-                                    <span className="inline-flex items-center mr-2">
-                                        <div className="text-xs flex items-center space-x-2 ml-3 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
-                                            {
-                                                values?.to?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
-                                                <span className="inline-flex items-center mr-2">
-                                                    <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
-                                                        {exchangeAccount?.note}
-                                                    </div>
-                                                </span>
-                                            }
-                                            <button
-                                                type="button"
-                                                className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
-                                                onClick={handleRemoveDepositeAddress}
+                                            </motion.span>
+                                        }
+                                        {
+                                            values?.swapType === SwapType.OffRamp && depositeAddressIsfromAccount &&
+                                            <span className="inline-flex items-center mr-2">
+                                                <div className="text-xs flex items-center space-x-2 ml-3 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
+                                                    {
+                                                        values?.to?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
+                                                        <span className="inline-flex items-center mr-2">
+                                                            <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
+                                                                {exchangeAccount?.note}
+                                                            </div>
+                                                        </span>
+                                                    }
+                                                    <button
+                                                        type="button"
+                                                        className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
+                                                        onClick={handleRemoveDepositeAddress}
 
-                                            >
-                                                <div className="flex items-center" >
-                                                    <XIcon className="h-5 w-5" />
+                                                    >
+                                                        <div className="flex items-center" >
+                                                            <XIcon className="h-5 w-5" />
+                                                        </div>
+                                                    </button>
                                                 </div>
-                                            </button>
-                                        </div>
-                                    </span>
-                                }
-                            </motion.div>
+                                            </span>
+                                        }
+                                    </motion.div>
+                                )}
+                            </Field>
                             {
                                 <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
                                     <div className='flex justify-between mb-4 md:mb-8 space-x-4'>
