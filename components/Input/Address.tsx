@@ -1,5 +1,5 @@
 import { Field, useFormikContext } from "formik";
-import { ChangeEvent, ChangeEventHandler, FC, forwardRef, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ChangeEvent, ChangeEventHandler, FC, forwardRef, Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import LayerSwapApiClient, { AddressBookItem, SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -125,6 +125,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {`To ${values?.to?.name || ''} address`}
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                         <div className="flex flex-wrap flex-col md:flex-row">
+                            <FocusTrap canFocus={canFocus} id={name} />
                             <motion.div initial="rest" animate={autofillEnabled ? "rest" : "inputFocused"} className="relative flex grow rounded-lg shadow-sm mt-1.5 ">
                                 {isPartnerWallet &&
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -309,5 +310,18 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         </div>)
     });
 
-
+type TrapProps = {
+    canFocus: boolean,
+    id: string
+}
+const FocusTrap: FC<TrapProps> = ({ canFocus, id }) => {
+    useEffect(() => {
+        if (canFocus) {
+            setTimeout(() => {
+                document.getElementById(id)
+            }, 100);
+        }
+    }, [canFocus, id])
+    return <Fragment />
+}
 export default Address
