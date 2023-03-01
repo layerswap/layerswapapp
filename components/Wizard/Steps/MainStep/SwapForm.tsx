@@ -28,6 +28,7 @@ import { isValidAddress } from "../../../../lib/addressValidator";
 import ToggleButton from "../../../buttons/toggleButton";
 import RefuelIcon from "../../../icons/RefuelIcon";
 import ClickTooltip from "../../../Tooltips/ClickTooltip";
+import { CalculateMinAllowedAmount } from "../../../../lib/fees";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -42,17 +43,17 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
     const { swapType, to } = values
+    const settings = useSettingsState();
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
-    const [enableRefuel, setEnableRefuel] = useState(false)
+    const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks);
     const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name}.png` : null
     const router = useRouter();
     const [loadingDepositAddress, setLoadingDepositAddress] = useState(false)
     const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
-    const settings = useSettingsState();
 
     const lockAddress =
         (values.destination_address && values.to)
@@ -129,6 +130,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         }
         exchangeRef.current = to?.id
     }, [to])
+
+    useEffect(() => {
+        if (swapType !== SwapType.OffRamp && values.refuel && Number(values.amount) < minAllowedAmount) {
+            setFieldValue('amount', minAllowedAmount)
+        }
+    }, [values.refuel])
 
     return <>
         <Form className="h-full" >
