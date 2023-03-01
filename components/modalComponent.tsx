@@ -17,7 +17,8 @@ class ModalParams {
     title?: React.ReactNode;
     className?: string;
     modalSize?: modalSize = "large";
-    modalHeight?: modalHeight = "auto"
+    modalHeight?: modalHeight = "auto";
+    onAnimationCompleted?: (def: any) => void
 }
 
 function constructModalSize(size: modalSize) {
@@ -38,7 +39,7 @@ function constructModalSize(size: modalSize) {
     return defaultModalStyle
 }
 
-const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX, title, className, modalSize = 'large' }) => {
+const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted, children, closeWithX, title, className, modalSize = 'large' }) => {
     const query = useQueryState()
     const router = useRouter();
     const desktopModalRef = useRef(null);
@@ -78,6 +79,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
                                 onClick={() => closeModal(closeWithX)}
                             />
                             <motion.div
+                                onAnimationComplete={onAnimationCompleted}
                                 ref={desktopModalRef}
                                 key="desktop-modal"
                                 className={`fixed inset-0 z-40 hidden min-h-screen items-center justify-center sm:flex`}
@@ -121,7 +123,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, children, closeWithX,
     );
 }
 
-export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, setShowModal, children, title, className, modalHeight }, topmostRef) => {
+export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, onAnimationCompleted, setShowModal, children, title, className, modalHeight }, topmostRef) => {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 42 };
@@ -172,6 +174,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 onDragEnd={handleDragEnd}
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
+                onAnimationComplete={onAnimationCompleted}
             >
                 <div className='px-5 grid grid-cols-6 items-center py-3 rounded-t-2xl bg-darkblue'>
                     <button className='text-base text-gray-600 col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>

@@ -11,7 +11,7 @@ export type slideOverPlace = 'inStep' | 'inModal' | 'inMenu'
 type Props = {
     header?: string;
     opener?: (open: () => void) => JSX.Element | JSX.Element[],
-    children?: (close: () => void) => JSX.Element | JSX.Element[];
+    children?: (close: () => void, animaionCompleted?: boolean) => JSX.Element | JSX.Element[];
     moreClassNames?: string;
     place: slideOverPlace;
     noPadding?: boolean;
@@ -21,17 +21,22 @@ type Props = {
 
 const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children }) => {
     const [open, setOpen] = useState(false)
+    const [openAnimaionCompleted, setOpenAnimationCompleted] = useState(false)
+
     const mobileModalRef = useRef(null)
     const { width } = useWindowDimensions()
     const handleClose = () => {
         setOpen(false)
+        setOpenAnimationCompleted(false)
         imperativeOpener?.[1](false);
     }
     const handleOpen = () => {
         setOpen(true)
         imperativeOpener?.[1](true);
     }
-
+    const handleAnimationCompleted = useCallback((def) => {
+        setOpenAnimationCompleted(def?.y === 0)
+    }, [])
     let heightControl = ''
 
     switch (place) {
@@ -54,13 +59,14 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
         if (open) imperativeOpener?.[1](true)
         else imperativeOpener?.[1](false)
     }, [open])
-
+    console.log("animationComlpeted", openAnimaionCompleted)
     return (
         <>
             <span>{opener && opener(handleOpen)}</span>
             <AnimatePresence>
                 {open &&
                     <motion.div
+                        onAnimationComplete={handleAnimationCompleted}
                         initial={{ y: "100%" }}
                         animate={{
                             y: 0,
@@ -86,7 +92,7 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                                 </button>
                             </div>
                             <div className='text-primary-text relative items-center justify-center text-center h-full'>
-                                {children && children(handleClose)}
+                                {children && children(handleClose, openAnimaionCompleted)}
                             </div>
                         </div>
                     </motion.div>
@@ -98,8 +104,8 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                         <Portal>
                             <Overlay />
                             <Content>
-                                <MobileModalContent modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
-                                    {children && children(handleClose)}
+                                <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
+                                    {children && children(handleClose, openAnimaionCompleted)}
                                 </MobileModalContent>
                             </Content>
                         </Portal>

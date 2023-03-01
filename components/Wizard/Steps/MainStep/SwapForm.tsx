@@ -146,8 +146,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                     )}
                 </SlideOver>}
             <SlideOver modalHeight="large" imperativeOpener={[openAddressModal, setOpenAddressModal]} place='inStep'>
-                {(close) => (<Address
+                {(close, openAnimaionCompleted) => (<Address
                     close={close}
+                    canFocus={openAnimaionCompleted}
                     onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
                     exchangeAccount={exchangeAccount}
                     loading={loadingDepositAddress}

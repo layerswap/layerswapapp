@@ -1,5 +1,5 @@
 import { Field, useFormikContext } from "formik";
-import { ChangeEvent, ChangeEventHandler, FC, forwardRef, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, ChangeEventHandler, FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import LayerSwapApiClient, { AddressBookItem, SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -38,16 +38,25 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     isPartnerWallet: boolean,
     partnerImage: string,
     partner: Partner,
+    canFocus: boolean,
     address_book: AddressBookItem[]
 }
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ exchangeAccount, name, className, onSetExchangeDepoisteAddress, loading, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
+    ({ exchangeAccount, name, className, onSetExchangeDepoisteAddress, loading, close, canFocus, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
 
         const {
             values,
             setFieldValue
         } = useFormikContext<SwapFormValues>();
+
+        const inputReference = useRef(null);
+
+        useEffect(()=>{
+            if(canFocus){
+                inputReference.current.focus()
+            }
+        },[canFocus])
 
         const valid_addresses = address_book?.filter(a => isValidAddress(a.address, values.from.baseObject))
             ?.sort((a) => a.networks.some(n => n.toLowerCase() === values.to?.baseObject?.internal_name?.toLowerCase()) ? -1 : 1)
@@ -75,6 +84,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const handleRemoveDepositeAddress = async () => {
             setFieldValue("destination_address", '')
+            setInputValue("")
             setDepositeAddressIsfromAccount(false)
         }
 
@@ -99,9 +109,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }
 
         const handleSetNewAddress = useCallback(() => {
+            setAddressConfirmed(true)
             setFieldValue("destination_address", inputValue)
             close()
         }, [inputValue])
+
+        const autofillEnabled = !inputFocused && !inputAddressisValid
 
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>
@@ -109,8 +122,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     <div className="text-left">
                         {`To ${values?.to?.name || ''} address`}
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
-                        <div className="flex md:space-x-4 flex-wrap flex-col md:flex-row">
-                            <motion.div initial="rest" animate={inputFocused ? "inputFocused" : "rest"} className="relative flex grow rounded-lg shadow-sm mt-1.5 ">
+                        <div className="flex flex-wrap flex-col md:flex-row">
+                            <motion.div initial="rest" animate={autofillEnabled ? "rest" : "inputFocused"} className="relative flex grow rounded-lg shadow-sm mt-1.5 ">
                                 {isPartnerWallet &&
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         {
@@ -130,7 +143,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     disabled={disabled}
                                     name={name}
                                     id={name}
-                                    autoFocus={true}
+                                    ref={inputReference}
                                     className={classNames('myinput disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-darkblue-100 focus:border-darkblue-100 block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus-peer:ring-primary-900 focus-peer:border focus-peer:ring-1 focus:outline-none',
                                         className
                                     )}
@@ -150,7 +163,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     }
                                 />
                                 {
-                                    values?.swapType === SwapType.OffRamp && authData?.access_token && values.to && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect && !depositeAddressIsfromAccount &&
+                                    values?.swapType === SwapType.OffRamp
+                                    && authData?.access_token && values.to
+                                    && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
+                                    && !depositeAddressIsfromAccount
+                                    &&
                                     <motion.span className="inline-flex items-center mr-2 shrink"
                                         transition={{
                                             width: { ease: 'linear' }
@@ -166,7 +183,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                         loading ? <SpinIcon className="animate-spin h-4 w-4" />
                                                             : <LinkIcon className="h-4 w-4" />
                                                     }
-                                                    <motion.span className={classNames(inputFocused ? '' : 'ml-3', "block truncate text-clip")}
+                                                    <motion.span className={classNames(autofillEnabled ? 'ml-3' : '', "block truncate text-clip")}
                                                         variants={
                                                             {
                                                                 inputFocused: {
@@ -208,18 +225,19 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 }
                             </motion.div>
                             {
-                                destinationAddressisNew && inputAddressisValid &&
                                 <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
-                                    <div className='flex justify-start mb-4 md:mb-8 space-x-4'>
-                                        <label htmlFor="address_confirm" className='flex items-center text-xs md:text-sm font-medium'>
-                                            <ExclamationIcon className='h-6 w-6 mr-2' />
-                                            I am the owner of this address
-                                        </label>
-                                        <div className='flex items-center space-x-4 py-2'>
-                                            <ToggleButton name={"address_confirm"} onChange={setAddressConfirmed} value={addressConfirmed} />
-                                        </div>
-                                        <button disabled={!addressConfirmed || !inputAddressisValid} onClick={handleSetNewAddress} className="disabled:border-primary-900 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed grow rounded-md bg-primary px-3 py-2 text-sm font-semibold leading-5 text-white">
-                                            Save
+                                    <div className='flex justify-between mb-4 md:mb-8 space-x-4'>
+                                        {
+                                            inputAddressisValid &&
+                                            <>
+                                                <label htmlFor="address_confirm" className='flex items-center text-xs md:text-sm font-medium'>
+                                                    <ExclamationIcon className='h-6 w-6 mr-2' />
+                                                    I am the owner of this address
+                                                </label>
+                                            </>
+                                        }
+                                        <button disabled={!inputAddressisValid} onClick={handleSetNewAddress} className="ml-auto disabled:border-primary-900 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed rounded-md bg-primary px-5 py-2 text-sm font-semibold leading-5 text-white">
+                                            Confirm
                                         </button>
                                     </div>
                                 </div>
@@ -270,7 +288,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                                         }
                                                                     </div>
                                                                     <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
-                                                                        <AvatarGroup imageUrls={a.networks?.map(address_network => `${settings.discovery.resource_storage_url}/layerswap/networks/${address_network.toLowerCase()}.png`)} />
+                                                                        Transfered to <AvatarGroup imageUrls={a.networks?.map(address_network => `${settings.discovery.resource_storage_url}/layerswap/networks/${address_network.toLowerCase()}.png`)} />
                                                                     </motion.div>
                                                                 </RadioGroup.Description>
                                                             </span>
