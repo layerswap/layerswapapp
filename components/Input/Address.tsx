@@ -52,11 +52,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const inputReference = useRef(null);
 
-        useEffect(()=>{
-            if(canFocus){
-                inputReference.current.focus()
+        useEffect(() => {
+            if (canFocus) {
+                document.getElementById(name).focus()
             }
-        },[canFocus])
+        }, [canFocus, name])
+
+        useEffect(() => {
+        }, [])
 
         const valid_addresses = address_book?.filter(a => isValidAddress(a.address, values.from.baseObject))
             ?.sort((a) => a.networks.some(n => n.toLowerCase() === values.to?.baseObject?.internal_name?.toLowerCase()) ? -1 : 1)
@@ -113,6 +116,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue("destination_address", inputValue)
             close()
         }, [inputValue])
+
+
 
         const autofillEnabled = !inputFocused && !inputAddressisValid
 
