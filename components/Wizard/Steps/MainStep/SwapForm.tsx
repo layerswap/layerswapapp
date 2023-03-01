@@ -8,7 +8,7 @@ import { classNames } from "../../../utils/classNames";
 import SwapOptionsToggle from "../../../SwapOptionsToggle";
 import SelectNetwork from "../../../Select/SelectNetwork";
 import AmountField from "../../../Input/Amount";
-import LayerSwapApiClient, { SwapType, UserExchangesData } from "../../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { AddressBookItem, SwapType, UserExchangesData } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { Partner } from "../../../../Models/Partner";
 import Widget from "../../Widget";
@@ -26,6 +26,9 @@ import { useSettingsState } from "../../../../context/settings";
 import { isValidAddress } from "../../../../lib/addressValidator";
 import Address from "../../../Input/Address";
 import NetworkSettings from "../../../../lib/NetworkSettings";
+import shortenAddress from "../../../utils/ShortenAddress";
+import useSWR from "swr";
+import { ApiResponse } from "../../../../Models/ApiResponse";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -40,6 +43,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
     const { swapType, to } = values
+
+    const layerswapApiClient = new LayerSwapApiClient()
+    const address_book_endpoint = `/address_book/recent`
+    const { data: address_book, mutate, isValidating } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher)
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
     const [openAddressModal, setOpenAddressModal] = useState(false)
@@ -149,6 +156,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                     partnerImage={partnerImage}
                     isPartnerWallet={isPartnerWallet}
                     partner={partner}
+                    address_book={address_book?.data}
                     className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
                 />)}
             </SlideOver>
@@ -224,11 +232,7 @@ function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: S
 }
 
 const TruncatedAdrress = ({ address }: { address: string }) => {
-    const splitted = address?.split('0x')
-    const first = `${splitted?.[0]} 0x${splitted?.[1]?.substring(0, 4)}`
-    const last = address.substring(address.length - 4)
-    const result = `${first}...${last}`
-    return <div className="tracking-wider text-white">{result}</div>
+    return <div className="tracking-wider text-white">{shortenAddress(address)}</div>
 }
 
 export default SwapForm

@@ -7,7 +7,7 @@ import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import SpinIcon from "../icons/spinIcon";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { ArrowRightIcon, ExclamationIcon, LinkIcon, XIcon } from "@heroicons/react/outline";
+import { ArrowDownIcon, ArrowRightIcon, ExclamationIcon, LinkIcon, XIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
@@ -22,6 +22,7 @@ import { RadioGroup } from "@headlessui/react";
 import ToggleButton from "../buttons/toggleButton";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
+import AvatarGroup from "../AvatarGroup";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -36,22 +37,20 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     close: () => void,
     isPartnerWallet: boolean,
     partnerImage: string,
-    partner: Partner
+    partner: Partner,
+    address_book: AddressBookItem[]
 }
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ exchangeAccount, name, className, onSetExchangeDepoisteAddress, loading, close, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
-
-        const layerswapApiClient = new LayerSwapApiClient()
-        const address_book_endpoint = `/address_book/recent`
-        const { data: address_book, mutate, isValidating } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher)
+    ({ exchangeAccount, name, className, onSetExchangeDepoisteAddress, loading, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
 
         const {
             values,
             setFieldValue
         } = useFormikContext<SwapFormValues>();
 
-        const valid_addresses = address_book?.data?.filter(a => isValidAddress(a.address, values.from.baseObject))
+        const valid_addresses = address_book?.filter(a => isValidAddress(a.address, values.from.baseObject))
+            ?.sort((a) => a.networks.some(n => n.toLowerCase() === values.to?.baseObject?.internal_name?.toLowerCase()) ? -1 : 1)
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount, addressConfirmed } = useSwapDataState()
@@ -104,13 +103,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             close()
         }, [inputValue])
 
-        return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text overscroll-none overflow-auto'>
-            <div className='flex flex-col self-center grow w-full overscroll-none'>
-                <div className={`flex flex-col self-center grow w-full space-y-8 overscroll-none`}>
+        return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
+            <div className='flex flex-col self-center grow w-full'>
+                <div className={`flex flex-col self-center grow w-full space-y-8`}>
                     <div className="text-left">
                         {`To ${values?.to?.name || ''} address`}
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
-                        <div className="flex md:space-x-4 flex-wrap flex-col md:flex-row overscroll-none">
+                        <div className="flex md:space-x-4 flex-wrap flex-col md:flex-row">
                             <motion.div initial="rest" animate={inputFocused ? "inputFocused" : "rest"} className="relative flex grow rounded-lg shadow-sm mt-1.5 ">
                                 {isPartnerWallet &&
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -131,6 +130,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     disabled={disabled}
                                     name={name}
                                     id={name}
+                                    autoFocus={true}
                                     className={classNames('myinput disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-darkblue-100 focus:border-darkblue-100 block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus-peer:ring-primary-900 focus-peer:border focus-peer:ring-1 focus:outline-none',
                                         className
                                     )}
@@ -218,11 +218,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         <div className='flex items-center space-x-4 py-2'>
                                             <ToggleButton name={"address_confirm"} onChange={setAddressConfirmed} value={addressConfirmed} />
                                         </div>
-                                        {addressConfirmed &&
-                                            <button onClick={handleSetNewAddress} className="grow rounded-md bg-primary px-3 py-2 text-sm font-semibold leading-5 text-white">
-                                                Save
-                                            </button>
-                                        }
+                                        <button disabled={!addressConfirmed || !inputAddressisValid} onClick={handleSetNewAddress} className="disabled:border-primary-900 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed grow rounded-md bg-primary px-3 py-2 text-sm font-semibold leading-5 text-white">
+                                            Save
+                                        </button>
                                     </div>
                                 </div>
                             }
@@ -254,20 +252,26 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                                     as="span"
                                                                     className={'block text-sm font-medium '}
                                                                 >
+
                                                                     {a.address}
                                                                 </RadioGroup.Label>
                                                                 <RadioGroup.Description
                                                                     as="span"
-                                                                    className='block text-sm text-gray-500'
+                                                                    className='flex text-sm text-gray-500 mt-1 justify-between'
                                                                 >
-                                                                    {
-                                                                        difference_in_days === 0 ?
-                                                                            <>Last used today</>
-                                                                            :
-                                                                            (difference_in_days > 1 ?
-                                                                                <>Last used {difference_in_days} days ago</>
-                                                                                : <>Last used yesterday</>)
-                                                                    }
+                                                                    <div className="flex items-center">
+                                                                        {
+                                                                            difference_in_days === 0 ?
+                                                                                <>Last used today</>
+                                                                                :
+                                                                                (difference_in_days > 1 ?
+                                                                                    <>Last used {difference_in_days} days ago</>
+                                                                                    : <>Last used yesterday</>)
+                                                                        }
+                                                                    </div>
+                                                                    <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
+                                                                        <AvatarGroup imageUrls={a.networks?.map(address_network => `${settings.discovery.resource_storage_url}/layerswap/networks/${address_network.toLowerCase()}.png`)} />
+                                                                    </motion.div>
                                                                 </RadioGroup.Description>
                                                             </span>
                                                         </>
@@ -284,5 +288,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             </div>
         </div>)
     });
+
 
 export default Address
