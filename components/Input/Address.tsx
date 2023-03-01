@@ -58,9 +58,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             }
         }, [canFocus, name])
 
-        useEffect(() => {
-        }, [])
-
         const valid_addresses = address_book?.filter(a => isValidAddress(a.address, values.from.baseObject))
             ?.sort((a) => a.networks.some(n => n.toLowerCase() === values.to?.baseObject?.internal_name?.toLowerCase()) ? -1 : 1)
 
