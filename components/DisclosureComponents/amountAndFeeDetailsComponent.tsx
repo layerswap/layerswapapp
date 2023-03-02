@@ -36,7 +36,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                             receive_amount ?
                                                 <div className="font-semibold md:font-bold text-right leading-4">
                                                     <p>
-                                                        {receive_amount.toFixed(currency?.baseObject?.precision)}
+                                                        {parseFloat(receive_amount.toFixed(currency?.baseObject?.precision))}
                                                         <span>
                                                             {
                                                                 ` ${currency?.baseObject?.asset || ""}`
@@ -66,7 +66,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                             Layerswap Fee
                                         </label>
                                         <span className="text-right">
-                                            {fee.toFixed(currency?.baseObject?.precision)} {currency?.baseObject?.asset} {feeInUsd}
+                                            {parseFloat(fee.toFixed(currency?.baseObject?.precision))} {currency?.baseObject?.asset} {fee !== 0 && feeInUsd}
                                         </span>
                                     </div>
                                     {
