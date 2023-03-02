@@ -1,4 +1,5 @@
 import React, { FC, useEffect, useState } from 'react'
+import { usePersistedState } from '../hooks/usePersistedState';
 import useStorage from '../hooks/useStorage';
 import { QueryParams } from '../Models/QueryParams';
 
@@ -8,32 +9,13 @@ const QueryStateContext = React.createContext<QueryParams>(null);
 
 const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
 
-  const [data, setData] = useState<QueryParams>(query)
-  const { setItem, getItem } = useStorage()
+  const [data, setData] = usePersistedState<QueryParams>(query, STORAGE_KEY, 'sessionStorage');
   
   useEffect(() => {
     const emptyParams = new QueryParams()
     if (query && Object.keys(emptyParams).some(key => query[key] !== undefined))
-      setItem(STORAGE_KEY, JSON.stringify(data), "session")
+      setData(query);
   }, [query])
-  
-  useEffect(() => {
-    updateData()
-  }, [])
-
-  const updateData = () => {
-    const storageData = JSON.parse(getItem(STORAGE_KEY, "session") || "{}") as QueryParams
-    setData(storageData)
-  }
-
-  useEffect(() => {
-    document.addEventListener(
-      'storageChange',
-      updateData,
-      false
-    )
-    return () => document.removeEventListener('storageChange', () => setData(undefined))
-  }, [])
 
   return (
     <QueryStateContext.Provider value={data}>
