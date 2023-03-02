@@ -34,6 +34,7 @@ import shortenAddress from "../../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../../Models/ApiResponse";
 import * as Dialog from "@radix-ui/react-dialog";
+import { SwitchHorizontalIcon } from "@heroicons/react/outline";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -148,6 +149,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         }
     }, [values.refuel])
 
+    const swapValues = () => {
+        return [values.from, values.to] = [values.to, values.from]
+    }
+
     return <>
 
         <Form className="h-full" >
@@ -171,6 +176,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             <div className="flex flex-col w-full">
                                 <SelectNetwork direction="from" label="From" />
                             </div>
+                            {
+                                swapType === SwapType.CrossChain &&
+                                <button disabled={false} onClick={swapValues} className='absolute right-[290px] top-[112px] z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
+                                    <SwitchHorizontalIcon className="h-5" />
+                                </button>
+                            }
                             <div className="flex flex-col w-full">
                                 <SelectNetwork direction="to" label="To" />
                             </div>
