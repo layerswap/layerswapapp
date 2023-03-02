@@ -187,6 +187,7 @@ type Transaction = {
     max_confirmations: number,
     transaction_id: string,
     usd_value: number
+    usd_price: number
 }
 
 
