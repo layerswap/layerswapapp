@@ -144,6 +144,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     name={name}
                                     id={name}
                                     ref={inputReference}
+                                    tabIndex={0}
                                     className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
                                     transition={{
                                         width: { ease: 'linear', }
