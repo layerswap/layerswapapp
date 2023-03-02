@@ -133,6 +133,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
         const velocity = info.velocity.y;
         const height = mobileModalRef.current.getBoundingClientRect().height;
         if (offset > height / 2 || velocity > 800) {
+            closeButtonRef.current.focus()
             await controls.start({ y: "100%", transition: transitionProps });
             setShowModal(false);
         } else {
@@ -150,6 +151,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
     }, [showModal]);
 
     const handleCloseModal = () => setShowModal(false)
+    const closeButtonRef = useRef(null)
 
     return (
         <div ref={topmostRef}>
@@ -177,16 +179,16 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 onAnimationComplete={onAnimationCompleted}
             >
                 <div className='px-5 grid grid-cols-6 items-center py-3 rounded-t-2xl bg-darkblue'>
-                    <button className='text-base text-gray-600 col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
+                    <button ref={closeButtonRef} tabIndex={-1} className='text-base text-gray-600 col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
                         Close
                     </button>
                     {
                         title ?
-                            <div className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-primary-text">
+                            <div tabIndex={-1} className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-primary-text">
                                 {title}
                             </div>
                             :
-                            <div tabIndex={0} className="rounded-t-4xl flex items-center col-start-2 col-span-4 justify-self-center">
+                            <div tabIndex={-1} className="rounded-t-4xl flex items-center col-start-2 col-span-4 justify-self-center">
                                 <div className="-mr-1 h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:rotate-12" />
                                 <div className="h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:-rotate-12" />
                             </div>

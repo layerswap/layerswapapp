@@ -1,34 +1,29 @@
-import { Field, useFormikContext } from "formik";
-import { ChangeEvent, ChangeEventHandler, FC, forwardRef, Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import LayerSwapApiClient, { AddressBookItem, SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
+import { useFormikContext } from "formik";
+import { ChangeEvent, FC, forwardRef, Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { AddressBookItem, SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import SpinIcon from "../icons/spinIcon";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { ArrowDownIcon, ArrowRightIcon, ExclamationIcon, LinkIcon, XIcon } from "@heroicons/react/outline";
+import { ExclamationIcon, LinkIcon, XIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
 import ExchangeSettings from "../../lib/ExchangeSettings";
-import ClickTooltip from "../Tooltips/ClickTooltip";
 import { useSettingsState } from "../../context/settings";
-import SubmitButton from "../buttons/submitButton";
-import useSWR from "swr";
-import { ApiResponse } from "../../Models/ApiResponse";
 import { isValidAddress } from "../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
-import ToggleButton from "../buttons/toggleButton";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
 import AvatarGroup from "../AvatarGroup";
+
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
     disabled: boolean;
     name: string;
-    className?: string;
     children?: JSX.Element | JSX.Element[];
     ref?: any;
     loading: boolean;
@@ -38,12 +33,12 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     isPartnerWallet: boolean,
     partnerImage: string,
     partner: Partner,
-    canFocus: boolean,
+    canFocus?: boolean,
     address_book: AddressBookItem[]
 }
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ exchangeAccount, name, className, onSetExchangeDepoisteAddress, loading, close, canFocus, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
+    ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, loading, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
 
         const {
             values,
@@ -51,14 +46,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         } = useFormikContext<SwapFormValues>();
 
         const inputReference = useRef(null);
-
-        useLayoutEffect(() => {
-            if (canFocus) {
-                setTimeout(() => {
-                    inputReference.current?.focus()
-                }, 100);
-            }
-        }, [canFocus, name])
 
         const valid_addresses = address_book?.filter(a => isValidAddress(a.address, values.from.baseObject))
             ?.sort((a) => a.networks.some(n => n.toLowerCase() === values.to?.baseObject?.internal_name?.toLowerCase()) ? -1 : 1)
@@ -84,11 +71,24 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             }
         }
 
-        const handleRemoveDepositeAddress = async () => {
-            setFieldValue("destination_address", '')
+        useEffect(() => {
+            console.log(!address_book?.length)
+            if (canFocus && !address_book?.length) {
+                inputReference.current.focus()
+            }
+        }, [canFocus, address_book])
+
+        useEffect(() => {
+            setInputValue(values.destination_address)
+        }, [values.destination_address])
+
+        const handleRemoveDepositeAddress = useCallback(async () => {
+            if (depositeAddressIsfromAccount) {
+                setDepositeAddressIsfromAccount(false)
+                setFieldValue("destination_address", '')
+            }
             setInputValue("")
-            setDepositeAddressIsfromAccount(false)
-        }
+        }, [depositeAddressIsfromAccount])
 
         const handleSelectAddress = useCallback((value: string) => {
             setAddressConfirmed(true)
@@ -97,7 +97,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [close])
 
         const inputAddressisValid = isValidAddress(inputValue, values.to.baseObject)
-        const destinationAddressisNew = !valid_addresses?.some(a => a.address === inputValue)
         const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
             setInputValue(e.target.value)
             setAddressConfirmed(false)
@@ -125,112 +124,105 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {`To ${values?.to?.name || ''} address`}
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                         <div className="flex flex-wrap flex-col md:flex-row">
-                            <FocusTrap canFocus={canFocus} id={name} />
-                            <Field name={name}>
-                                {({ field }) => (
-                                    <motion.div initial="rest" animate={autofillEnabled ? "rest" : "inputFocused"} className="relative flex grow rounded-lg shadow-sm mt-1.5 ">
-                                        {isPartnerWallet &&
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                {
-                                                    partnerImage &&
-                                                    <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
-                                                }
-                                            </div>
+                            <motion.div initial="rest" animate={autofillEnabled ? "rest" : "inputFocused"} className="relative flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
+                                {isPartnerWallet &&
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        {
+                                            partnerImage &&
+                                            <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
                                         }
-                                        <motion.input
-                                            onChange={handleInputChange}
-                                            value={inputValue}
-                                            placeholder={placeholder}
-                                            onFocus={handleInputFocus}
-                                            onBlur={handleInputBlur}
-                                            autoCorrect="off"
-                                            type={"text"}
-                                            disabled={disabled}
-                                            name={name}
-                                            id={name}
-                                            ref={inputReference}
-                                            className={classNames('myinput disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:ring-darkblue-100 focus:border-darkblue-100 block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus-peer:ring-primary-900 focus-peer:border focus-peer:ring-1 focus:outline-none',
-                                                className
-                                            )}
-                                            transition={{
-                                                width: { ease: 'linear', }
-                                            }}
-                                            variants={
-                                                {
-                                                    rest: { width: '100%' },
-                                                    inputFocused: {
-                                                        width: '100%',
-                                                        transition: {
-                                                            when: "afterChildren",
-                                                        }
-                                                    }
+                                    </div>
+                                }
+                                <motion.input
+                                    onChange={handleInputChange}
+                                    value={inputValue}
+                                    placeholder={placeholder}
+                                    onFocus={handleInputFocus}
+                                    onBlur={handleInputBlur}
+                                    autoCorrect="off"
+                                    type={"text"}
+                                    disabled={disabled}
+                                    name={name}
+                                    id={name}
+                                    ref={inputReference}
+                                    tabIndex={!address_book?.length ? 0 : -1}
+                                    className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
+                                    transition={{
+                                        width: { ease: 'linear', }
+                                    }}
+                                    variants={
+                                        {
+                                            rest: { width: '100%' },
+                                            inputFocused: {
+                                                width: '100%',
+                                                transition: {
+                                                    when: "afterChildren",
                                                 }
                                             }
-                                        />
-                                        {
-                                            values?.swapType === SwapType.OffRamp
-                                            && authData?.access_token && values.to
-                                            && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
-                                            && !depositeAddressIsfromAccount
-                                            &&
-                                            <motion.span className="inline-flex items-center mr-2 shrink"
-                                                transition={{
-                                                    width: { ease: 'linear' }
-                                                }}>
-                                                <motion.div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
-                                                    <motion.button
-                                                        type="button"
-                                                        className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100"
-                                                        onClick={handleUseDepositeAddress}
-                                                    >
-                                                        <motion.div className="flex items-center" >
-                                                            {
-                                                                loading ? <SpinIcon className="animate-spin h-4 w-4" />
-                                                                    : <LinkIcon className="h-4 w-4" />
-                                                            }
-                                                            <motion.span className={classNames(autofillEnabled ? 'ml-3' : '', "block truncate text-clip")}
-                                                                variants={
-                                                                    {
-                                                                        inputFocused: {
-                                                                            width: '0',
-                                                                        }
-                                                                    }
-                                                                }>
-                                                                Autofill from {values?.to?.baseObject?.display_name}
-                                                            </motion.span>
-                                                        </motion.div>
-                                                    </motion.button>
-                                                </motion.div>
-                                            </motion.span>
                                         }
-                                        {
-                                            values?.swapType === SwapType.OffRamp && depositeAddressIsfromAccount &&
-                                            <span className="inline-flex items-center mr-2">
-                                                <div className="text-xs flex items-center space-x-2 ml-3 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
+                                    }
+                                />
+                                {
+                                    values?.swapType === SwapType.OffRamp
+                                    && authData?.access_token && values.to
+                                    && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
+                                    && !depositeAddressIsfromAccount
+                                    &&
+                                    <motion.span className="inline-flex items-center mr-2 shrink"
+                                        transition={{
+                                            width: { ease: 'linear' }
+                                        }}>
+                                        <motion.div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
+                                            <motion.button
+                                                type="button"
+                                                className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100"
+                                                onClick={handleUseDepositeAddress}
+                                            >
+                                                <motion.div className="flex items-center" >
                                                     {
-                                                        values?.to?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
-                                                        <span className="inline-flex items-center mr-2">
-                                                            <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
-                                                                {exchangeAccount?.note}
-                                                            </div>
-                                                        </span>
+                                                        loading ? <SpinIcon className="animate-spin h-4 w-4" />
+                                                            : <LinkIcon className="h-4 w-4" />
                                                     }
-                                                    <button
-                                                        type="button"
-                                                        className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
-                                                        onClick={handleRemoveDepositeAddress}
-
-                                                    >
-                                                        <div className="flex items-center" >
-                                                            <XIcon className="h-5 w-5" />
-                                                        </div>
-                                                    </button>
+                                                    <motion.span className={classNames(autofillEnabled ? 'ml-3' : '', "block truncate text-clip")}
+                                                        variants={
+                                                            {
+                                                                inputFocused: {
+                                                                    width: '0',
+                                                                }
+                                                            }
+                                                        }>
+                                                        Autofill from {values?.to?.baseObject?.display_name}
+                                                    </motion.span>
+                                                </motion.div>
+                                            </motion.button>
+                                        </motion.div>
+                                    </motion.span>
+                                }
+                                {
+                                    inputAddressisValid &&
+                                    <span className="inline-flex items-center mr-2">
+                                        <div className="text-xs flex items-center space-x-2 ml-3 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
+                                            {
+                                                values?.to?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
+                                                <span className="inline-flex items-center mr-2">
+                                                    <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
+                                                        {exchangeAccount?.note}
+                                                    </div>
+                                                </span>
+                                            }
+                                            <button
+                                                type="button"
+                                                className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
+                                                onClick={handleRemoveDepositeAddress}
+                                            >
+                                                <div className="flex items-center" >
+                                                    <XIcon className="h-5 w-5" />
                                                 </div>
-                                            </span>
-                                        }
-                                    </motion.div>
-                                )}
-                            </Field>
+                                            </button>
+                                        </div>
+                                    </span>
+                                }
+                            </motion.div>
                             {
                                 <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
                                     <div className='flex justify-between mb-4 md:mb-8 space-x-4'>
@@ -314,18 +306,4 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         </div>)
     });
 
-type TrapProps = {
-    canFocus: boolean,
-    id: string
-}
-const FocusTrap: FC<TrapProps> = ({ canFocus, id }) => {
-    useEffect(() => {
-        if (canFocus) {
-            setTimeout(() => {
-                document.getElementById(id)
-            }, 100);
-        }
-    }, [canFocus, id])
-    return <Fragment />
-}
 export default Address

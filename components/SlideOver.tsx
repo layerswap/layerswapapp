@@ -22,7 +22,8 @@ type Props = {
 const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children }) => {
     const [open, setOpen] = useState(false)
     const [openAnimaionCompleted, setOpenAnimationCompleted] = useState(false)
-
+    
+    
     const mobileModalRef = useRef(null)
     const { width } = useWindowDimensions()
     const handleClose = () => {
@@ -59,7 +60,7 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
         if (open) imperativeOpener?.[1](true)
         else imperativeOpener?.[1](false)
     }, [open])
-    console.log("animationComlpeted", openAnimaionCompleted)
+
     return (
         <>
             <span>{opener && opener(handleOpen)}</span>

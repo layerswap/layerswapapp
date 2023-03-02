@@ -29,6 +29,7 @@ import NetworkSettings from "../../../../lib/NetworkSettings";
 import shortenAddress from "../../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../../Models/ApiResponse";
+import * as Dialog from "@radix-ui/react-dialog";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -134,8 +135,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
             return
         setOpenAddressModal(true)
     }, [values])
+    const inputReference = useRef(null);
+
+
 
     return <>
+
         <Form className="h-full" >
             {swapType === SwapType.OffRamp &&
                 <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
@@ -145,24 +150,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             : <ConnectApiKeyExchange exchange={to?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
                     )}
                 </SlideOver>}
-            <SlideOver modalHeight="large" imperativeOpener={[openAddressModal, setOpenAddressModal]} place='inStep'>
-                {(close, openAnimaionCompleted) => (<Address
-                    close={close}
-                    canFocus={openAnimaionCompleted}
-                    onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
-                    exchangeAccount={exchangeAccount}
-                    loading={loadingDepositAddress}
-                    disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
-                    name={"destination_address"}
-                    partnerImage={partnerImage}
-                    isPartnerWallet={isPartnerWallet}
-                    partner={partner}
-                    address_book={address_book?.data}
-                    className={classNames(isPartnerWallet ? 'pl-11' : '', 'disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-lg placeholder-gray-400 truncate')}
-                />)}
-            </SlideOver>
+
 
             <Widget>
+
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
                     : <Widget.Content>
@@ -182,22 +173,29 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
                                 {`To ${values?.to?.name || ''} address`}
                             </label>
-                            <div onClick={handleOpenAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full placeholder-gray-400 px-3.5 py-3">
-                                {isPartnerWallet && values.swapType !== SwapType.OffRamp &&
-                                    <div className="shrink-0 flex items-center pointer-events-none">
-                                        {
-                                            partnerImage &&
-                                            <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
-                                        }
-                                    </div>
-                                }
-                                <div className="truncate">
-                                    {values.destination_address ?
-                                        <TruncatedAdrress address={values.destination_address} />
-                                        :
-                                        (NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c")}
-                                </div>
-                            </div>
+                            <SlideOver modalHeight="large"
+                                opener={(open => <AddressButton
+                                    disabled={!values.to || !values.from}
+                                    isPartnerWallet={isPartnerWallet}
+                                    openAddressModal={open}
+                                    partnerImage={partnerImage}
+                                    values={values} />)}
+                                place='inStep'>
+                                {(close, animaionCompleted) => (<Address
+                                    close={close}
+                                    canFocus={animaionCompleted}
+                                    onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
+                                    exchangeAccount={exchangeAccount}
+                                    loading={loadingDepositAddress}
+                                    disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
+                                    name={"destination_address"}
+                                    partnerImage={partnerImage}
+                                    isPartnerWallet={isPartnerWallet}
+                                    partner={partner}
+                                    ref={inputReference}
+                                    address_book={address_book?.data}
+                                />)}
+                            </SlideOver>
                         </div>
                         <div className="w-full">
                             <AmountAndFeeDetails values={values} />
@@ -220,6 +218,32 @@ function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: S
 
 const TruncatedAdrress = ({ address }: { address: string }) => {
     return <div className="tracking-wider text-white">{shortenAddress(address)}</div>
+}
+
+type AddressButtonProps = {
+    openAddressModal: () => void;
+    isPartnerWallet: boolean;
+    values: SwapFormValues;
+    partnerImage: string;
+    disabled: boolean;
+}
+const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
+    return <button disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full placeholder-gray-400 px-3.5 py-3">
+        {isPartnerWallet && values.swapType !== SwapType.OffRamp &&
+            <div className="shrink-0 flex items-center pointer-events-none">
+                {
+                    partnerImage &&
+                    <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
+                }
+            </div>
+        }
+        <div className="truncate">
+            {values.destination_address ?
+                <TruncatedAdrress address={values.destination_address} />
+                :
+                (NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c")}
+        </div>
+    </button>
 }
 
 export default SwapForm
