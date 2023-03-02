@@ -72,11 +72,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }
 
         useEffect(() => {
-            console.log(!address_book?.length)
-            if (canFocus && !address_book?.length) {
+            if (canFocus) {
                 inputReference.current.focus()
             }
-        }, [canFocus, address_book])
+        }, [canFocus])
 
         useEffect(() => {
             setInputValue(values.destination_address)
@@ -119,7 +118,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>
-                <div className={`flex flex-col self-center grow w-full space-y-8`}>
+                <div className={`flex flex-col self-center grow w-full`}>
                     <div className="text-left">
                         {`To ${values?.to?.name || ''} address`}
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
@@ -145,7 +144,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     name={name}
                                     id={name}
                                     ref={inputReference}
-                                    tabIndex={!address_book?.length ? 0 : -1}
                                     className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
                                     transition={{
                                         width: { ease: 'linear', }
