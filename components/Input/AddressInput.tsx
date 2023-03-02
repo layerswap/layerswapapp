@@ -121,7 +121,6 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         type="button"
                                         className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100"
                                         onClick={handleUseDepositeAddress}
-
                                     >
                                         <motion.div className="flex items-center" >
                                             {
