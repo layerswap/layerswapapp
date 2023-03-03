@@ -121,7 +121,7 @@ export const generateExchangeMenuItems = ({ exchanges, networks, values, resourc
             name: e.display_name,
             order: ExchangeSettings.KnownSettings[e.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${e.internal_name.toLowerCase()}.png`,
-            isAvailable: true,
+            isAvailable: swapType === SwapType.OffRamp ? !ExchangeSettings?.ForceDisable?.[e?.internal_name]?.offramp : !ExchangeSettings?.ForceDisable?.[e?.internal_name]?.onramp,
             isDefault: false
         })).sort(SortingByOrder);
 
