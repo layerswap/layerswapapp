@@ -116,6 +116,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const autofillEnabled = !inputFocused && !inputAddressisValid
 
+        const availableNetworks = values.swapType === SwapType.OffRamp && values.to?.baseObject.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
+
+        const destinationNetworks = values.swapType === SwapType.OffRamp && settings.networks.filter(n => availableNetworks.includes(n.internal_name))
+
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>
                 <div className={`flex flex-col self-center grow w-full`}>
@@ -222,6 +226,15 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </span>
                                 }
                             </motion.div>
+                            {
+                                values?.swapType === SwapType.OffRamp &&
+                                <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5 justify-between'>
+                                    <span>
+                                        Available networks:
+                                    </span>
+                                    <AvatarGroup imageUrls={destinationNetworks?.map(network => `${settings.discovery.resource_storage_url}/layerswap/networks/${network.internal_name.toLowerCase()}.png`)} />
+                                </motion.div>
+                            }
                             {
                                 <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
                                     <div className='flex justify-between mb-4 md:mb-8 space-x-4'>
