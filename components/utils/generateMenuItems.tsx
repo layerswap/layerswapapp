@@ -127,7 +127,7 @@ export const generateExchangeMenuItems = ({ exchanges, networks, values, resourc
             name: e.display_name,
             order: ExchangeSettings.KnownSettings[e.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${e.internal_name.toLowerCase()}.png`,
-            isAvailable: e.status === "active" && !(swapType === SwapType.OnRamp ? (lockExchange && !ExchangeSettings?.ForceDisable?.[e?.internal_name]?.onramp) : (isSourceExchangeAvailable && !ExchangeSettings?.ForceDisable?.[e?.internal_name]?.offramp)),
+            isAvailable: e.status === "active" && !(swapType === SwapType.OnRamp ? (lockExchange || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.onramp) : (isSourceExchangeAvailable || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.offramp)),
             isDefault: false
         })).sort(SortingByOrder);
 
