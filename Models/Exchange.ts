@@ -13,6 +13,7 @@ export class Exchange {
 export class ExchangeCurrency {
     asset: string;
     withdrawal_fee: number;
+    min_deposit_amount: number;
     network: string;
     is_default: boolean;
 }
