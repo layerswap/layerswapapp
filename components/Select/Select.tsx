@@ -53,8 +53,8 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 <Combobox.Option
                                     key={item.id}
                                     value={item}
-                                    disabled={!item.isAvailable.available}
-                                    className={`flex text-left ${item.id === value?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable.available ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
+                                    disabled={!item.isAvailable.value}
+                                    className={`flex text-left ${item.id === value?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable.value ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
                                     onClick={item.id === value?.id ? () => setFieldValue(name, null) : () => handleSelect(item)}
                                 >
                                     {({ active, disabled }) => (
@@ -77,14 +77,14 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                             </div>
 
 
-                                            {item.id === value?.id && item.isAvailable.available &&
+                                            {item.id === value?.id && item.isAvailable.value &&
                                                 <div className='flex items-center'>
                                                     <div className="bg-darkblue-700 hover:bg-darkblue-600 rounded-md border border-darkblue-600 hover:border-darkblue-100 duration-200 transition p-0.5">
                                                         <XIcon className='h-4 w-4' />
                                                     </div>
                                                 </div>
                                             }
-                                            {!item.isAvailable.available && !lockNetwork && !lockExchange &&
+                                            {!item.isAvailable.value && !lockNetwork && !lockExchange &&
                                                 <div className='hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-0.5 rounded hover:cursor-pointer'>
                                                     <InformationCircleIcon className='h-4 text-primary-text' />
                                                 </div>
@@ -147,7 +147,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                             {values.map((item) => (
                                 <Listbox.Option
                                     key={item.id}
-                                    disabled={!item.isAvailable.available}
+                                    disabled={!item.isAvailable.value}
                                     className={({ active, disabled }) =>
                                         styleOption(active, disabled)
                                     }

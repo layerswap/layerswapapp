@@ -79,10 +79,11 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
     const destNetworkIsAvailable = networks.some(n => n.internal_name === destNetwork && (direction === "from" ? (n.status === "active" || n.status === "insufficient_liquidity") : (n.status === "active")) && networkIsAvailable(n))
     const shouldLockAllNetworks = destNetworkIsAvailable && lockNetwork;
     const networkDisabledReason = (network: CryptoNetwork) => {
-        if (shouldLockAllNetworks) return { available: false, disabledReason: DisabledReason.LockNetworkIsTrue }
-        else if (!(direction === 'from' ? (network.status === 'active' || network.status === 'insufficient_liquidity') : (network.status == "active"))) return { available: false, disabledReason: DisabledReason.InsufficientLiquidity }
-        else return { available: true, disabledReason: null }
+        if (shouldLockAllNetworks) return { value: false, disabledReason: DisabledReason.LockNetworkIsTrue }
+        else if (!(direction === 'from' ? (network.status === 'active' || network.status === 'insufficient_liquidity') : (network.status == "active"))) return { value: false, disabledReason: DisabledReason.InsufficientLiquidity }
+        else return { value: true, disabledReason: null }
     }
+
     const menuItems: SelectMenuItem<CryptoNetwork>[] = networks
         .filter(networkIsAvailable)
         .map(n => ({
@@ -125,10 +126,10 @@ export const generateExchangeMenuItems = ({ exchanges, networks, values, resourc
         if (((swapType === SwapType.OnRamp ?
             (lockExchange || ExchangeSettings?.ForceDisable?.[exchange?.internal_name]?.onramp) :
             (isSourceExchangeAvailable || ExchangeSettings?.ForceDisable?.[exchange?.internal_name]?.offramp)))
-        ) return { available: false, disabledReason: DisabledReason.LockNetworkIsTrue }
+        ) return { value: false, disabledReason: DisabledReason.LockNetworkIsTrue }
         if (!exchange.currencies.some(ec => networks.some(n => n.internal_name === ec.network && (swapType === SwapType.OnRamp ? n.status === 'active' : (n.status === "active" || n.status === "insufficient_liquidity"))))
-        ) return { available: false, disabledReason: DisabledReason.InsufficientLiquidity }
-        else return { available: true, disabledReason: null }
+        ) return { value: false, disabledReason: DisabledReason.InsufficientLiquidity }
+        else return { value: true, disabledReason: null }
     }
 
     const menuItems: SelectMenuItem<Exchange>[] = exchanges

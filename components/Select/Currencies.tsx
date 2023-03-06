@@ -31,8 +31,8 @@ const CurrenciesField: FC = () => {
         , [from, to, swapType])
 
     const currencyDisabledReason = (currency: Currency) => {
-        if (!(from && to && from?.baseObject.currencies.find(fc => fc.asset === currency.asset).is_deposit_enabled && to.baseObject.currencies.find(tc => tc.asset === currency.asset).is_withdrawal_enabled)) return { available: false, disabledReason: DisabledReason.InsufficientLiquidity }
-        else return { available: true, disabledReason: null }
+        if (!(from && to && from?.baseObject.currencies.find(fc => fc.asset === currency.asset).is_deposit_enabled && to.baseObject.currencies.find(tc => tc.asset === currency.asset).is_withdrawal_enabled)) return { value: false, disabledReason: DisabledReason.InsufficientLiquidity }
+        else return { value: true, disabledReason: null }
     }
 
     const mapCurranceToMenuItem = (c: Currency): SelectMenuItem<Currency> => ({
