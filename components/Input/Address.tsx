@@ -227,15 +227,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 }
                             </motion.div>
                             {
-                                values?.swapType === SwapType.OffRamp &&
-                                <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5 justify-between'>
-                                    <span>
-                                        Available networks:
-                                    </span>
-                                    <AvatarGroup imageUrls={destinationNetworks?.map(network => `${settings.discovery.resource_storage_url}/layerswap/networks/${network.internal_name.toLowerCase()}.png`)} />
-                                </motion.div>
-                            }
-                            {
                                 <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
                                     <div className='flex justify-between mb-4 md:mb-8 space-x-4'>
                                         {
@@ -252,6 +243,15 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         </button>
                                     </div>
                                 </div>
+                            }
+                            {
+                                values?.swapType === SwapType.OffRamp &&
+                                <motion.div whileTap={{ scale: 1.05 }} className=' w-fit flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5 justify-start'>
+                                    <span>
+                                        Available networks:
+                                    </span>
+                                    <AvatarGroup imageUrls={destinationNetworks?.map(network => `${settings.discovery.resource_storage_url}/layerswap/networks/${network.internal_name.toLowerCase()}.png`)} />
+                                </motion.div>
                             }
                         </div>
                     </div>
@@ -298,8 +298,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                                                     : <>Last used yesterday</>)
                                                                         }
                                                                     </div>
-                                                                    <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
-                                                                        Transfered to <AvatarGroup imageUrls={a.networks?.map(address_network => `${settings.discovery.resource_storage_url}/layerswap/networks/${address_network.toLowerCase()}.png`)} />
+                                                                    <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5 space-x-1'>
+                                                                        <span>Transfered to</span>
+                                                                        <AvatarGroup imageUrls={a.networks?.map(address_network => `${settings.discovery.resource_storage_url}/layerswap/networks/${address_network.toLowerCase()}.png`)} />
                                                                     </motion.div>
                                                                 </RadioGroup.Description>
                                                             </span>
