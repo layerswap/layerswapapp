@@ -39,10 +39,10 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                         </span>
                                                     </p>
                                                     {
-                                                        KnownInternalNames.Networks.BNBChainMainnet == to?.baseObject?.internal_name &&
-                                                        <p className='text-[12px] text-slate-300'>
-                                                            + 0.0015 BNB
-                                                        </p>
+                                                        // KnownInternalNames.Networks.BNBChainMainnet == to?.baseObject?.internal_name &&
+                                                        // <p className='text-[12px] text-slate-300'>
+                                                        //     + 0.0015 BNB
+                                                        // </p>
                                                     }
                                                 </span>
                                                 : '-'
