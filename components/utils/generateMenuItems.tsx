@@ -5,6 +5,7 @@ import { SortingByOrder } from "../../lib/sorting"
 import { CryptoNetwork, NetworkCurrency } from "../../Models/CryptoNetwork"
 import { Exchange, ExchangeCurrency } from "../../Models/Exchange"
 import { SwapFormValues } from "../DTOs/SwapFormValues"
+import { DisabledReason } from "../Select/Select"
 import { SelectMenuItem } from "../Select/selectMenuItem"
 
 type NetworkeMenuItemsParams = {
@@ -76,7 +77,13 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
     }
 
     const destNetworkIsAvailable = networks.some(n => n.internal_name === destNetwork && (direction === "from" ? (n.status === "active" || n.status === "insufficient_liquidity") : (n.status === "active")) && networkIsAvailable(n))
-    const shouldLockallNetworks = destNetworkIsAvailable && lockNetwork;
+    const shouldLockAllNetworks = destNetworkIsAvailable && lockNetwork;
+    const networkDisabledReason = (network: CryptoNetwork) => {
+        if (shouldLockAllNetworks) return { value: false, disabledReason: DisabledReason.LockNetworkIsTrue }
+        else if (!(direction === 'from' ? (network.status === 'active' || network.status === 'insufficient_liquidity') : (network.status == "active"))) return { value: false, disabledReason: DisabledReason.InsufficientLiquidity }
+        else return { value: true, disabledReason: null }
+    }
+
     const menuItems: SelectMenuItem<CryptoNetwork>[] = networks
         .filter(networkIsAvailable)
         .map(n => ({
@@ -85,7 +92,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
             name: n.display_name,
             order: NetworkSettings.KnownSettings[n.internal_name]?.Order ?? 69,
             imgSrc: `${resource_storage_url}/layerswap/networks/${n.internal_name.toLowerCase()}.png`,
-            isAvailable: direction === 'from' ? (n.status === 'active' || n.status === 'insufficient_liquidity') : (n.status == "active" && !shouldLockallNetworks),
+            isAvailable: networkDisabledReason(n),
             isDefault: false
         })).sort(SortingByOrder);
 
@@ -115,6 +122,16 @@ export const generateExchangeMenuItems = ({ exchanges, networks, values, resourc
         : e.currencies.some(ec => (to ? exchangeCurrencyIsAvailableForNetwork(ec, to.baseObject, e, swapType) : networks.some(n => exchangeCurrencyIsAvailableForNetwork(ec, n, e, swapType)))))
     )
 
+    const exchangeDisabledReason = (exchange: Exchange) => {
+        if (((swapType === SwapType.OnRamp ?
+            (lockExchange || ExchangeSettings?.ForceDisable?.[exchange?.internal_name]?.onramp) :
+            (isSourceExchangeAvailable || ExchangeSettings?.ForceDisable?.[exchange?.internal_name]?.offramp)))
+        ) return { value: false, disabledReason: DisabledReason.LockNetworkIsTrue }
+        if (!exchange.currencies.some(ec => networks.some(n => n.internal_name === ec.network && (swapType === SwapType.OnRamp ? n.status === 'active' : (n.status === "active" || n.status === "insufficient_liquidity"))))
+        ) return { value: false, disabledReason: DisabledReason.InsufficientLiquidity }
+        else return { value: true, disabledReason: null }
+    }
+
     const menuItems: SelectMenuItem<Exchange>[] = exchanges
         .filter(e => (
             (swapType === SwapType.OffRamp ?
@@ -127,11 +144,7 @@ export const generateExchangeMenuItems = ({ exchanges, networks, values, resourc
             name: e.display_name,
             order: ExchangeSettings.KnownSettings[e.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${e.internal_name.toLowerCase()}.png`,
-            isAvailable: e.status === "active"
-                && e.currencies.some(ec => networks.some(n => n.internal_name === ec.network && n.status === 'active'))
-                && (!(swapType === SwapType.OnRamp ?
-                    (lockExchange || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.onramp)
-                    : (isSourceExchangeAvailable || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.offramp))),
+            isAvailable: exchangeDisabledReason(e),
             isDefault: false
         })).sort(SortingByOrder);
 
