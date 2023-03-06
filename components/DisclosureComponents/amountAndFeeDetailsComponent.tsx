@@ -2,20 +2,25 @@ import { ChevronDownIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
 import { SwapType } from '../../lib/layerSwapApiClient';
-import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
+import roundDecimals from '../utils/RoundDecimals';
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
-    const { networks } = useSettingsState()
+    const { networks, currencies } = useSettingsState()
 
-    const { currency, from, to, swapType } = values || {}
+    const { currency, from, to, swapType, refuel } = values || {}
 
     let exchangeFee = swapType === SwapType.OnRamp && parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
-    let fee = CalculateFee(values, networks);
-    let receive_amount = CalculateReceiveAmount(values, networks);
+    let fee = CalculateFee(values, networks) + (refuel ? (1 / currency?.baseObject?.usd_price) : 0);
+    let receive_amount = CalculateReceiveAmount(values, networks)
+
+    const refuelCurrencyUsdPrice = swapType !== SwapType.OffRamp && currencies.find(c => c.asset === to?.baseObject?.native_currency)?.usd_price
+    const refuelAmount = swapType !== SwapType.OffRamp && `+ ${roundDecimals((1 / refuelCurrencyUsdPrice), refuelCurrencyUsdPrice?.toFixed()?.length)} ${to?.baseObject?.native_currency}`
+
+    const feeInUsd = fee * currency?.baseObject?.usd_price < 0.01 ? `0.01$<` : `(${roundDecimals(fee * currency?.baseObject?.usd_price, 2)}$)`
 
     return (
         <>
@@ -24,14 +29,14 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                     {({ open }) => (
                         <>
                             <Disclosure.Button className="items-center flex w-full relative justify-between rounded-lg text-left text-base font-medium">
-                                <span className="md:font-semibold text-sm md:text-base text-primary-text">You will receive</span>
+                                <span className="md:font-semibold text-sm md:text-base text-primary-text leading-8 md:leading-8">You will receive</span>
                                 <div className='flex items-center space-x-2'>
                                     <span className="text-sm md:text-base">
                                         {
                                             receive_amount ?
-                                                <span className="font-semibold md:font-bold text-right leading-4">
+                                                <div className="font-semibold md:font-bold text-right leading-4">
                                                     <p>
-                                                        {receive_amount.toFixed(currency?.baseObject?.precision)}
+                                                        {parseFloat(receive_amount.toFixed(currency?.baseObject?.precision))}
                                                         <span>
                                                             {
                                                                 ` ${currency?.baseObject?.asset || ""}`
@@ -39,12 +44,12 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                         </span>
                                                     </p>
                                                     {
-                                                        KnownInternalNames.Networks.BNBChainMainnet == to?.baseObject?.internal_name &&
-                                                        <p className='text-[12px] text-slate-300'>
-                                                            + 0.0015 BNB
+                                                        refuel &&
+                                                        <p className='text-[10px] text-slate-300'>
+                                                            {refuelAmount}
                                                         </p>
                                                     }
-                                                </span>
+                                                </div>
                                                 : '-'
                                         }
                                     </span>
@@ -61,8 +66,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                             Layerswap Fee
                                         </label>
                                         <span className="text-right">
-                                            {fee.toFixed(currency?.baseObject?.precision)}
-                                            <span>  {currency?.baseObject?.asset} </span>
+                                            {parseFloat(fee.toFixed(currency?.baseObject?.precision))} {currency?.baseObject?.asset} {fee !== 0 && feeInUsd}
                                         </span>
                                     </div>
                                     {
@@ -73,7 +77,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                 <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                             </label>
                                             <span className="text-right">
-                                                {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.baseObject?.asset}</>} 
+                                                {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.baseObject?.asset}</>}
                                             </span>
                                         </div>
                                     }

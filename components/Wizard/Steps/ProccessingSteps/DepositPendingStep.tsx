@@ -14,7 +14,7 @@ const DepositPendingStep: FC = () => {
     const { setInterval } = useSwapDataUpdate()
     const settings = useSettingsState()
 
-    const source_display_name = settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.display_name
+    const source_display_name = swap?.source_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.display_name : settings?.networks?.find(e => e.internal_name == swap?.source_network)?.display_name
 
     useEffect(() => {
         setInterval(10000)

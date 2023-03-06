@@ -4,6 +4,7 @@ export class QueryParams {
     destNetwork?: string = "";
     lockAddress?: boolean = false;
     lockNetwork?: boolean = false;
+    lockExchange?: boolean = false;
     destAddress?: string = "";
     addressSource?: string = "";
     coinbase_redirect?: string = "";
@@ -11,6 +12,7 @@ export class QueryParams {
     amount?: string = "";
     externalId?: string = ""
     products?: string = "";
+    selectedProduct?: string = "";
     signature?: string = "";
     timestamp?: string = "";
     apiKey?: string = "";

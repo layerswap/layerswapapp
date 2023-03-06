@@ -11,6 +11,7 @@ import StatusIcon from './StatusIcons';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
+import roundDecimals from '../utils/RoundDecimals';
 
 type Props = {
     id: string
@@ -42,6 +43,8 @@ const SwapDetails: FC<Props> = ({ id }) => {
 
     const source_network = networks?.find(e => e.internal_name === source_network_internal_name)
     const input_tx_id = source_network?.transaction_explorer_template
+
+    const feeInUsd = swap?.fee * swap?.input_transaction.usd_price < 0.01 ? `0.01$<` : `(${roundDecimals(swap?.fee * swap?.input_transaction.usd_price, 2)}$)`
 
     useEffect(() => {
         (async () => {
@@ -209,7 +212,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
                                     <span className="text-left">Layerswap Fee </span>
-                                    <span className='text-white font-normal'>{parseFloat(swap?.fee?.toFixed(currency?.precision))} {currency?.asset}</span>
+                                    <span className='text-white font-normal'>{swap?.fee} {currency?.asset} {feeInUsd}</span>
                                 </div>
                             </>
                         }
