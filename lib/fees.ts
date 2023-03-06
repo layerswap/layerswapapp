@@ -27,7 +27,9 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
     if (!destinationNetworkCurrency || !sourceNetworkCurrency)
         return 0
 
-    return (destinationNetworkCurrency.withdrawal_fee + sourceNetworkCurrency.deposit_fee) * 1.5;
+    const source_fee_multiplier = sourceNetwork.fee_multiplier >= 1 ? sourceNetwork.fee_multiplier : 1
+    const destination_fee_multiplier = destinationNetwork.fee_multiplier >= 1 ? destinationNetwork.fee_multiplier : 1
+    return roundDecimals((destinationNetworkCurrency.withdrawal_fee * destination_fee_multiplier) + (sourceNetworkCurrency.deposit_fee * source_fee_multiplier), currency.baseObject?.usd_price?.toFixed()?.length);
 }
 
 export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]) {
@@ -70,11 +72,14 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
     if (!currency || !from || !to) return 0
 
     const fee = CalculateFee(swapFormData, allNetworks)
-    let minAmount = fee * 1.5;
+    let minAmount = fee
     if (from.baseObject.internal_name === KnownInternalNames.Exchanges.Coinbase && swapType === SwapType.OnRamp) {
         const exchangeCurrency = from?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
         minAmount += exchangeCurrency.withdrawal_fee
     }
-
+    if (swapType === SwapType.OffRamp && to.baseObject.currencies.find(c => c.asset === currency.baseObject.asset).min_deposit_amount) {
+        minAmount += to.baseObject.currencies.find(c => c.asset === currency.baseObject.asset).min_deposit_amount
+    }
+    minAmount = minAmount * 1.5
     return roundDecimals(minAmount, currency.baseObject?.usd_price?.toFixed()?.length) || 0
 }
