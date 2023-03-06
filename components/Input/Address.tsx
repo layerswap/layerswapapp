@@ -55,7 +55,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const [inputFocused, setInputFocused] = useState(false)
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
-
         const { authData } = useAuthState()
         const settings = useSettingsState()
 
@@ -234,7 +233,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                 </label>
                                             </>
                                         }
-                                        <button disabled={!inputAddressisValid} onClick={handleSetNewAddress} className="ml-auto disabled:border-primary-900 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed rounded-md bg-primary px-5 py-2 text-sm font-semibold leading-5 text-white">
+                                        <button type="button" disabled={!inputAddressisValid} onClick={handleSetNewAddress} className="ml-auto disabled:border-primary-900 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed rounded-md bg-primary px-5 py-2 text-sm font-semibold leading-5 text-white">
                                             Confirm
                                         </button>
                                     </div>
@@ -242,20 +241,22 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             }
                         </div>
                     </div>
-                    {valid_addresses?.length > 0 && !disabled &&
+                    {valid_addresses?.length > 0 ?
                         <div className="text-left space-y-3">
                             <label className="mb-10">Your recent addresses</label>
                             <div>
-                                <RadioGroup value={values.destination_address} onChange={handleSelectAddress}>
+                                <RadioGroup disabled={disabled} value={values.destination_address} onChange={handleSelectAddress}>
                                     <div className="rounded-md space-y-2 overflow-y-auto styled-scroll">
                                         {valid_addresses?.map((a, index) => (
                                             <RadioGroup.Option
                                                 key={a.address}
                                                 value={a.address}
-                                                className={({ checked }) =>
+                                                disabled={disabled}
+                                                className={({ checked, disabled }) =>
                                                     classNames(
                                                         checked ? ' border-primary-900 z-10' : 'border-darkblue-400',
-                                                        'hover:border-primary-900 relative border p-4 flex cursor-pointer focus:outline-none rounded-md rounded-tr-md'
+                                                        disabled ? ' cursor-not-allowed ' : ' cursor-pointer ',
+                                                        'hover:border-primary-900 relative border p-4 flex focus:outline-none rounded-md rounded-tr-md'
                                                     )
                                                 }
                                             >
@@ -298,6 +299,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </div>
                                 </RadioGroup>
                             </div>
+                        </div>
+                        :
+                        <div className="text-center space-y-3">
+                            <label className="mb-10">No recent swaps</label>
+                            <p className="text-sm text-gray-500">Your addresses will be shown here</p>
                         </div>
                     }
                 </div>
