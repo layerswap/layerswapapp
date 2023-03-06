@@ -50,13 +50,13 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
         : availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable.value && (initialSwapType === SwapType.OffRamp ? !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp : !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp));
 
     let initialAddress =
-        destAddress && to && isValidAddress(destAddress, to?.baseObject) ? destAddress : "";
+        (destAddress && to && isValidAddress(destAddress, to?.baseObject)) ? destAddress : "";
 
 
     let initialCurrency =
         amount && availableCurrencies.find(c => c.baseObject.asset == asset)
 
-    const result = { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: initialSwapType !== SwapType.OffRamp ? initialAddress : "" }
+    const result = { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: (initialSwapType !== SwapType.OffRamp && initialAddress) ? initialAddress : '' }
 
     switch (initialSwapType) {
         case SwapType.OnRamp:

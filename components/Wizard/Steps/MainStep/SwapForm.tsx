@@ -206,7 +206,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             </SlideOver>
                         </div>
                         <div className="w-full">
-                            {
+                            {/* {
                                 values?.swapType !== SwapType.OffRamp && values?.to?.baseObject.currencies.find(c => c.asset === values?.currency?.name)?.is_refuel_enabled &&
                                 <div className="flex items-center justify-between px-3.5 py-3 bg-darkblue-700 border border-darkblue-500 rounded-lg mb-4">
                                     <div className="flex items-center space-x-2">
@@ -223,7 +223,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                     </div>
                                     <ToggleButton name="refuel" value={values?.refuel} onChange={handleConfirmToggleChange} />
                                 </div>
-                            }
+                            } */}
                             <AmountAndFeeDetails values={values} />
                         </div>
                     </Widget.Content>
