@@ -1,16 +1,17 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { checkStorageIsAvailable, storageType } from '../helpers/storageAvailable';
 
 type PersistedState<T> = [T, Dispatch<SetStateAction<T>>];
 
-function usePersistedState<T>(defaultValue: T, key: string): PersistedState<T> {
+function usePersistedState<T>(defaultValue: T, key: string, type: storageType = 'localStorage'): PersistedState<T> {
   const [value, setValue] = useState<T>(() => {
-    const value = window.localStorage.getItem(key);
+    const value = checkStorageIsAvailable(type) && window[type]?.getItem(key);
 
-    return value ? (JSON.parse(value) as T) : defaultValue;
+    return value ? (JSON.parse(value || "null") as T) : defaultValue;
   });
 
   useEffect(() => {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    checkStorageIsAvailable(type) && window[type]?.setItem(key, JSON.stringify(value));
   }, [key, value]);
 
   return [value, setValue];

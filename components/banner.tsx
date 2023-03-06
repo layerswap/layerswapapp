@@ -1,27 +1,21 @@
-import { SpeakerphoneIcon, XIcon } from '@heroicons/react/outline'
-import { FC, useState } from 'react'
-
-interface BannerProps
-{
+import { XIcon } from '@heroicons/react/outline'
+import { FC } from 'react'
+import { usePersistedState } from '../hooks/usePersistedState';
+interface BannerProps {
     mobileMessage: string;
     desktopMessage: string;
     localStorageId: string;
     className?: string;
 }
 
-const Banner: FC<BannerProps> = ({localStorageId, desktopMessage, mobileMessage, className}) => {
-
+const Banner: FC<BannerProps> = ({ localStorageId, desktopMessage, mobileMessage, className }) => {
     const localStorageItemKey = `HideBanner-${localStorageId}`;
-    let [isVisible, setIsVisible] = useState<boolean>(localStorage.getItem(localStorageItemKey) === null);
-
-    if (!isVisible)
-    {
+    let [isVisible, setIsVisible] = usePersistedState(true, localStorageItemKey);
+    if (!isVisible) {
         return <></>
     }
 
-    function onClickClose()
-    {
-        localStorage.setItem(localStorageItemKey, "true");
+    function onClickClose() {
         setIsVisible(false);
     }
 
@@ -31,7 +25,7 @@ const Banner: FC<BannerProps> = ({localStorageId, desktopMessage, mobileMessage,
                 <div className="flex items-center justify-between flex-wrap">
                     <div className="w-0 flex-1 flex items-center">
                         <span className="flex p-1 text-lg rounded-lg bg-primary-900">
-                        🥳
+                            🥳
                         </span>
                         <p className="ml-3 font-medium text-white truncate">
                             <span className="md:hidden">{mobileMessage}</span>
@@ -41,7 +35,7 @@ const Banner: FC<BannerProps> = ({localStorageId, desktopMessage, mobileMessage,
                     <div className="order-2 flex-shrink-0 sm:order-3 sm:ml-2">
                         <button
                             type="button"
-                            onClick={()=> onClickClose()}
+                            onClick={() => onClickClose()}
                             className="-mr-1 flex p-2 rounded-md hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-white"
                         >
                             <span className="sr-only">Dismiss</span>

@@ -1,11 +1,13 @@
 import { Combobox, Listbox } from '@headlessui/react'
 import { useCallback, useState } from 'react'
 import Image from 'next/image'
-import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon } from '@heroicons/react/outline'
+import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon, InformationCircleIcon } from '@heroicons/react/outline'
 import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
 import SlideOver from '../SlideOver'
+import ClickTooltip from '../Tooltips/ClickTooltip'
+import toast from 'react-hot-toast'
 
 export interface SelectProps<T> {
     name: string;
@@ -14,10 +16,11 @@ export interface SelectProps<T> {
     disabled: boolean;
     placeholder: string;
     smallDropdown?: boolean;
-    setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void
+    setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void;
+    lockNetwork: boolean
 }
 
-export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false }: SelectProps<T>) {
+export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false, lockNetwork }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
 
     function onChangeHandler(newValue: string) {
@@ -54,7 +57,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                     onClick={item.id === value?.id ? () => setFieldValue(name, null) : () => handleSelect(item)}
                                 >
                                     {({ active, disabled }) => (
-                                        <>
+                                        <div onClick={() => disabled && toast('Temporarily disabled. Please check back in an hour.')} className='flex items-center w-full justify-between'>
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                                     {item.imgSrc && <Image
@@ -65,13 +68,14 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                         loading="eager"
                                                         className="rounded-md object-contain" />}
                                                 </div>
+                                                <div className="ml-4 ">
+                                                    <p className='text-sm font-medium'>
+                                                        {item.name}
+                                                    </p>
+                                                </div>
                                             </div>
 
-                                            <div className="ml-4 flex-auto">
-                                                <p className='text-sm font-medium'>
-                                                    {item.name}
-                                                </p>
-                                            </div>
+
                                             {item.id === value?.id &&
                                                 <div className='flex items-center'>
                                                     <div className="bg-darkblue-700 hover:bg-darkblue-600 rounded-md border border-darkblue-600 hover:border-darkblue-100 duration-200 transition p-0.5">
@@ -79,7 +83,12 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                     </div>
                                                 </div>
                                             }
-                                        </>
+                                            {!item.isAvailable && !lockNetwork &&
+                                                <div className='hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-0.5 rounded hover:cursor-pointer'>
+                                                    <InformationCircleIcon className='h-4 text-primary-text' />
+                                                </div>
+                                            }
+                                        </div>
                                     )}
                                 </Combobox.Option>
                             ))}
@@ -124,7 +133,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                         }
 
                                     </div>
-                                    <span className="ml-3 block truncate">{value.name}</span>
+                                    <span className="ml-3 block truncate text-white">{value.name}</span>
                                 </span>
 
                                 <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-primary-text">
@@ -155,6 +164,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 opacity: 0,
                                                 transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
                                             }}
+                                            onClick={() => disabled && toast('Temporarily disabled. Please check back in an hour.')}
                                         >
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-6 w-6 relative">
@@ -169,7 +179,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                     }
 
                                                 </div>
-                                                <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
+                                                <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}>
                                                     <div className={disabled ? 'inline group-hover:hidden' : null}>{item.name}</div>
                                                     <div className={disabled ? 'hidden group-hover:inline' : 'hidden'}>Disabled</div>
                                                 </div>
@@ -246,7 +256,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 function styleOption(active: boolean, disabled: boolean) {
     let classNames = 'cursor-pointer select-none relative py-2 m-1.5 rounded-md px-3 pr-9 group';
     if (disabled) {
-        return 'text-gray-400 bg-gray-600 opacity-20 cursor-not-allowed ' + classNames;
+        return 'text-gray-400 bg-darkblue-100 opacity-20 cursor-not-allowed ' + classNames;
     }
     if (active) {
         return 'text-white bg-darkblue-300 ' + classNames;

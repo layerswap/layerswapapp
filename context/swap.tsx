@@ -57,10 +57,6 @@ export function SwapDataProvider({ children }) {
     const settings = useSettingsState();
 
     useEffect(() => {
-        setAddressConfirmed(false)
-    }, [swapFormData?.destination_address, swapFormData?.from])
-
-    useEffect(() => {
         setCodeRequested(false)
     }, [swapFormData?.from])
 
@@ -84,7 +80,7 @@ export function SwapDataProvider({ children }) {
             // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
             partner: settings.partners.find(p => p.is_enabled && p.internal_name?.toLocaleLowerCase() === query.addressSource?.toLocaleLowerCase())?.internal_name,
             external_id: query.externalId,
-            refuel: formData?.swapType === SwapType.OnRamp && NetworkSettings.KnownSettings[formData?.to.baseObject?.internal_name]?.Refuel
+            refuel: formData.refuel
         }
 
         if (formData.swapType === SwapType.OnRamp) {

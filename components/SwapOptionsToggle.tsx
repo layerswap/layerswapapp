@@ -1,5 +1,5 @@
 import { Field, useFormikContext } from "formik";
-import { forwardRef, useCallback } from "react";
+import { forwardRef, useCallback, useEffect, useState } from "react";
 import { useQueryState } from "../context/query";
 import { useSettingsState } from "../context/settings";
 import { generateSwapInitialValues } from "../lib/generateSwapInitialValues";
@@ -24,6 +24,8 @@ const SwapOptionsToggle = forwardRef((_, ref: any) => {
     const query = useQueryState()
     const name = 'swapType'
 
+    const options = query?.products ? swapOptions.filter(so => query?.products.includes(so.value)) : swapOptions
+
     const handleFieldChange = useCallback((value: SwapType) => {
         const initialValues = generateSwapInitialValues(value, settings, query)
         resetForm({ values: initialValues })
@@ -33,7 +35,7 @@ const SwapOptionsToggle = forwardRef((_, ref: any) => {
     return (
         query?.products?.toLowerCase() != SwapType.OffRamp && query?.products?.toLowerCase() != SwapType.OnRamp && query?.products?.toLowerCase() != SwapType.CrossChain &&
         <div ref={ref} tabIndex={0} >
-            <Field name={name} value={swapType} items={swapOptions} as={OptionToggle} setSelected={handleFieldChange} />
+            <Field name={name} value={swapType} items={options} as={OptionToggle} setSelected={handleFieldChange} />
         </div>
     )
 

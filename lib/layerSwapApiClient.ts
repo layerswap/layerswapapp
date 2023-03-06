@@ -174,6 +174,12 @@ export type SwapItem = {
     has_pending_deposit: boolean,
 }
 
+export type AddressBookItem = {
+    address: string,
+    date: string,
+    networks: string[]
+}
+
 type Transaction = {
     amount: number,
     confirmations: number,
@@ -181,6 +187,7 @@ type Transaction = {
     max_confirmations: number,
     transaction_id: string,
     usd_value: number
+    usd_price: number
 }
 
 

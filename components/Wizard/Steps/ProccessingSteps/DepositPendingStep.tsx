@@ -2,11 +2,8 @@ import { FC, useEffect } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import { SwapType } from '../../../../lib/layerSwapApiClient';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
-import { TrackEvent } from '../../../../pages/_document';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
-import Steps from '../StepsComponent';
 
 const DepositPendingStep: FC = () => {
 
@@ -15,7 +12,7 @@ const DepositPendingStep: FC = () => {
     const { setInterval } = useSwapDataUpdate()
     const settings = useSettingsState()
 
-    const source_display_name = settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.display_name
+    const source_display_name = swap?.source_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.display_name : settings?.networks?.find(e => e.internal_name == swap?.source_network)?.display_name
 
     useEffect(() => {
         setInterval(10000)
@@ -29,17 +26,6 @@ const DepositPendingStep: FC = () => {
             goToStep(swapStatusStep)
         }
     }, [swapStatusStep])
-
-    const steps = [
-        { name: 'Create account', description: 'Vitae sed mi luctus laoreet.', href: '#', status: 'complete' },
-        {
-            name: 'Profile information',
-            description: 'Cursus semper viverra facilisis et et some more.',
-            href: '#',
-            status: 'current',
-        },
-        { name: 'Business information', description: 'Penatibus eu quis ante.', href: '#', status: 'upcoming' },
-    ]
 
     return (
         <>

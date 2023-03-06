@@ -89,7 +89,8 @@ const ConnectWalletStep: FC = () => {
         setLoading(true)
         try {
             const imtblClient = new ImtblClient(source_network?.internal_name)
-            const res = await imtblClient.Transfer(swap.requested_amount.toString(), swap.deposit_address)
+            const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
+            const res = await imtblClient.Transfer(swap, source_currency)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
                 toast('Transfer failed or terminated')

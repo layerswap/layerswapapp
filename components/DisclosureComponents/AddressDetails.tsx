@@ -130,10 +130,6 @@ const NetworkAddress = ({ imgSrc, address, account_explorer_template, onClick }:
                                             <ExternalLinkIcon className='h-4 w-4 mr-2' />
                                             <p className=''>View In Explorer</p>
                                         </a>}
-                                        <button disabled={!onClick} onClick={onClick} className="text-sm font-normal m-1.5 flex cursor-pointer items-center hover:text-white">
-                                            <PencilAltIcon className='inline-block h-4 w-4 mr-2' />
-                                            Edit Address
-                                        </button>
                                         <div className='cursor-pointer hover:text-white flex items-center m-1.5'>
                                             <CopyButton toCopy={address}>
                                                 <span className='text-sm font-normal'>Copy Full Address</span>
