@@ -41,7 +41,7 @@ const SelectNetwork = forwardRef(({ direction, label }: Props, ref: any) => {
             {label}
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 `}>
-            <Field name={name} placeholder={placeholder} values={menuItems} label={label} value={value} as={Select} setFieldValue={setFieldValue} lockNetwork={lockNetwork} />
+            <Field name={name} placeholder={placeholder} values={menuItems} label={label} value={value} as={Select} setFieldValue={setFieldValue} lockExchange={lockExchange} lockNetwork={lockNetwork} />
         </div>
     </>)
 });

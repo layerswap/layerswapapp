@@ -17,10 +17,11 @@ export interface SelectProps<T> {
     placeholder: string;
     smallDropdown?: boolean;
     setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void;
-    lockNetwork: boolean
+    lockNetwork: boolean;
+    lockExchange: boolean
 }
 
-export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false, lockNetwork }: SelectProps<T>) {
+export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false, lockNetwork, lockExchange }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
 
     function onChangeHandler(newValue: string) {
@@ -47,17 +48,17 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     onChange={handleComboboxChange}
                 >
                     {values.length > 0 && (
-                        <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                        <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto styled-scroll">
                             {values.map((item) => (
                                 <Combobox.Option
                                     key={item.id}
                                     value={item}
-                                    disabled={!item.isAvailable}
-                                    className={`flex text-left ${item.id === value?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
+                                    disabled={!item.isAvailable.available}
+                                    className={`flex text-left ${item.id === value?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable.available ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
                                     onClick={item.id === value?.id ? () => setFieldValue(name, null) : () => handleSelect(item)}
                                 >
                                     {({ active, disabled }) => (
-                                        <div onClick={() => disabled && toast('Temporarily disabled. Please check back in an hour.')} className='flex items-center w-full justify-between'>
+                                        <div onClick={() => item.isAvailable.disabledReason === DisabledReason.InsufficientLiquidity && toast(item.isAvailable.disabledReason)} className='flex items-center w-full justify-between'>
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                                     {item.imgSrc && <Image
@@ -76,14 +77,14 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                             </div>
 
 
-                                            {item.id === value?.id &&
+                                            {item.id === value?.id && item.isAvailable.available &&
                                                 <div className='flex items-center'>
                                                     <div className="bg-darkblue-700 hover:bg-darkblue-600 rounded-md border border-darkblue-600 hover:border-darkblue-100 duration-200 transition p-0.5">
                                                         <XIcon className='h-4 w-4' />
                                                     </div>
                                                 </div>
                                             }
-                                            {!item.isAvailable && !lockNetwork &&
+                                            {!item.isAvailable.available && !lockNetwork && !lockExchange &&
                                                 <div className='hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-0.5 rounded hover:cursor-pointer'>
                                                     <InformationCircleIcon className='h-4 text-primary-text' />
                                                 </div>
@@ -127,7 +128,6 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 priority
                                                 height="40"
                                                 width="40"
-                                                layout="responsive"
                                                 className="rounded-md object-contain"
                                             />
                                         }
@@ -147,7 +147,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                             {values.map((item) => (
                                 <Listbox.Option
                                     key={item.id}
-                                    disabled={!item.isAvailable}
+                                    disabled={!item.isAvailable.available}
                                     className={({ active, disabled }) =>
                                         styleOption(active, disabled)
                                     }
@@ -164,7 +164,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 opacity: 0,
                                                 transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
                                             }}
-                                            onClick={() => disabled && toast('Temporarily disabled. Please check back in an hour.')}
+                                            onClick={() => item.isAvailable.disabledReason === DisabledReason.InsufficientLiquidity && toast(item.isAvailable.disabledReason)}
                                         >
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-6 w-6 relative">
@@ -252,6 +252,10 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
     )
 }
 
+export enum DisabledReason {
+    LockNetworkIsTrue = '',
+    InsufficientLiquidity = 'Temporarily disabled. Please check later.'
+}
 
 function styleOption(active: boolean, disabled: boolean) {
     let classNames = 'cursor-pointer select-none relative py-2 m-1.5 rounded-md px-3 pr-9 group';

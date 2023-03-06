@@ -7,7 +7,7 @@ import { SortingByOrder } from "../../lib/sorting";
 import { Currency } from "../../Models/Currency";
 import { Exchange } from "../../Models/Exchange";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import Select from "./Select";
+import Select, { DisabledReason } from "./Select";
 import { SelectMenuItem } from "./selectMenuItem";
 
 const CurrenciesField: FC = () => {
@@ -30,13 +30,18 @@ const CurrenciesField: FC = () => {
         && !(swapType === SwapType.OnRamp && (from as SelectMenuItem<Exchange>).baseObject.currencies.filter(ec => c.asset === ec.asset && ec.is_default).some(fc => fc.network === to.baseObject.internal_name))
         , [from, to, swapType])
 
+    const currencyDisabledReason = (currency: Currency) => {
+        if (!(from && to && from?.baseObject.currencies.find(fc => fc.asset === currency.asset).is_deposit_enabled && to.baseObject.currencies.find(tc => tc.asset === currency.asset).is_withdrawal_enabled)) return { available: false, disabledReason: DisabledReason.InsufficientLiquidity }
+        else return { available: true, disabledReason: null }
+    }
+
     const mapCurranceToMenuItem = (c: Currency): SelectMenuItem<Currency> => ({
         baseObject: c,
         id: c.asset,
         name: c.asset,
         order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
         imgSrc: `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`,
-        isAvailable: from && to && from?.baseObject.currencies.find(fc => fc.asset === c.asset).is_deposit_enabled && to.baseObject.currencies.find(tc => tc.asset === c.asset).is_withdrawal_enabled,
+        isAvailable: currencyDisabledReason(c),
         isDefault: false,
     })
 
