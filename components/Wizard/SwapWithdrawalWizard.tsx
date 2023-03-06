@@ -5,7 +5,6 @@ import { SwapWithdrawalStep } from "../../Models/Wizard";
 import ErrorStep from "./Steps/ErrorStep";
 import ExchangeDelay from "./Steps/ExchangeDelayStep";
 import FailedStep from "./Steps/FailedStep";
-import DepositPendingStep from "./Steps/ProccessingSteps/DepositPendingStep";
 import SuccessfulStep from "./Steps/SuccessfulStep";
 import ConnectWalletStep from "./Steps/Wallet/ConnectWalletStep";
 import CoinbaseInternalWithdrawalStep from "./Steps/Wallet/CoinbaseInternalWithdrawalStep";
@@ -15,8 +14,7 @@ import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 import { TimerProvider } from "../../context/timerContext";
 import ProccessingWalletTransactionStep from "./Steps/ProccessingSteps/ProccessingWalletTransactionStep";
-import TransferConfirmationStep from "./Steps/ProccessingSteps/TransferConfirmation";
-import OutputTransferProccessingStep from "./Steps/ProccessingSteps/OutputTransferProcessingStep";
+import ProcessingStep from "./Steps/ProccessingSteps";
 
 const SwapWithdrawalWizard: FC = () => {
     const router = useRouter();
@@ -47,14 +45,8 @@ const SwapWithdrawalWizard: FC = () => {
                 <WizardItem StepName={SwapWithdrawalStep.CoinbaseInternalWithdrawal} GoBack={GoBackToSelectWithdrawalTypeStep} PositionPercent={90} >
                     <CoinbaseInternalWithdrawalStep />
                 </WizardItem>
-                <WizardItem StepName={SwapWithdrawalStep.DepositPending} PositionPercent={95} GoBack={handleGoBack}>
-                    <DepositPendingStep />
-                </WizardItem>
-                <WizardItem StepName={SwapWithdrawalStep.TransferConfirmation} PositionPercent={95} GoBack={handleGoBack}>
-                    <TransferConfirmationStep />
-                </WizardItem>
-                <WizardItem StepName={SwapWithdrawalStep.OutputTransferProccessing} PositionPercent={95} GoBack={handleGoBack}>
-                    <OutputTransferProccessingStep />
+                <WizardItem StepName={SwapWithdrawalStep.SwapProcessing} PositionPercent={95} GoBack={handleGoBack}>
+                    <ProcessingStep />
                 </WizardItem>
                 <WizardItem StepName={SwapWithdrawalStep.ProcessingWalletTransaction} PositionPercent={95} GoBack={handleGoBack}>
                     <ProccessingWalletTransactionStep />

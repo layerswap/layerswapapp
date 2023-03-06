@@ -103,7 +103,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
                                             <Image
-                                                src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`}
+                                                src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLowerCase()}.png`}
                                                 alt="Exchange Logo"
                                                 height="60"
                                                 width="60"
@@ -125,7 +125,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
                                             <Image
-                                                src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
+                                                src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
                                                 alt="Exchange Logo"
                                                 height="60"
                                                 width="60"

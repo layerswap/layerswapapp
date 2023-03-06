@@ -55,6 +55,7 @@ export default class ExchangeSettings {
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Coinbase] = {
             EnableDepositAddressConnect: true,
+            ExchangeWithdrawalGuideUrl: "https://docs.layerswap.io/user-docs/your-first-swap/on-ramp/withdraw-from-coinbase",
             Order: 0,
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.CryptoCom] = {

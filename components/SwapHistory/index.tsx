@@ -263,7 +263,7 @@ function TransactionsHistory() {
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     {
                                       <Image
-                                        src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`}
+                                        src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLowerCase()}.png`}
                                         alt="From Logo"
                                         height="60"
                                         width="60"
@@ -276,7 +276,7 @@ function TransactionsHistory() {
                                   <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
                                     {
                                       <Image
-                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
+                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
                                         alt="To Logo"
                                         height="60"
                                         width="60"
@@ -305,7 +305,7 @@ function TransactionsHistory() {
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     {
                                       <Image
-                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
+                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
                                         alt="To Logo"
                                         height="60"
                                         width="60"
