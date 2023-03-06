@@ -97,17 +97,23 @@ type ExchangeMenuItemsProps = {
     resource_storage_url: string
     values: SwapFormValues,
     networks: CryptoNetwork[],
+    sourceExchangeName: string,
+    lockExchange: boolean
 }
 
 const exchangeCurrencyIsAvailableForNetwork = ((ec: ExchangeCurrency & NetworkCurrency, network: CryptoNetwork, exchange: Exchange, swapType: SwapType) => {
     return (
         (swapType === SwapType.OffRamp ? (ec.is_withdrawal_enabled && ec.status === "active") : (ec.is_deposit_enabled && (ec.status === "active" || ec.status === "insufficient_liquidity")))
-        && network.currencies?.some(nc => nc.asset === ec.asset && (swapType === SwapType.OffRamp ? (nc.status === "active" || nc.status === "insufficient_liquidity"): nc.status === "active") && (swapType === SwapType.OffRamp ? nc.is_deposit_enabled : nc.is_withdrawal_enabled))
+        && network.currencies?.some(nc => nc.asset === ec.asset && (swapType === SwapType.OffRamp ? (nc.status === "active" || nc.status === "insufficient_liquidity") : nc.status === "active") && (swapType === SwapType.OffRamp ? nc.is_deposit_enabled : nc.is_withdrawal_enabled))
         && !exchange.currencies.filter(c => c.asset === ec.asset && c.is_default).some(c => c.network === network.internal_name))
 })
 
-export const generateExchangeMenuItems = ({ exchanges, networks, values, resource_storage_url }: ExchangeMenuItemsProps): SelectMenuItem<Exchange>[] => {
+export const generateExchangeMenuItems = ({ exchanges, networks, values, resource_storage_url, sourceExchangeName, lockExchange }: ExchangeMenuItemsProps): SelectMenuItem<Exchange>[] => {
     const { swapType, from, to } = values
+    const isSourceExchangeAvailable = exchanges.some(e => e?.internal_name?.toLowerCase() === sourceExchangeName?.toLowerCase() && e.status === "active" && (swapType === SwapType.OffRamp ?
+        e.currencies.some(ec => (from ? exchangeCurrencyIsAvailableForNetwork(ec, from.baseObject, e, swapType) : networks.some(n => exchangeCurrencyIsAvailableForNetwork(ec, n, e, swapType))))
+        : e.currencies.some(ec => (to ? exchangeCurrencyIsAvailableForNetwork(ec, to.baseObject, e, swapType) : networks.some(n => exchangeCurrencyIsAvailableForNetwork(ec, n, e, swapType)))))
+    )
 
     const menuItems: SelectMenuItem<Exchange>[] = exchanges
         .filter(e => (
@@ -121,7 +127,7 @@ export const generateExchangeMenuItems = ({ exchanges, networks, values, resourc
             name: e.display_name,
             order: ExchangeSettings.KnownSettings[e.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${e.internal_name.toLowerCase()}.png`,
-            isAvailable: true,
+            isAvailable: e.status === "active" && !(swapType === SwapType.OnRamp ? (lockExchange || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.onramp) : (isSourceExchangeAvailable || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.offramp)),
             isDefault: false
         })).sort(SortingByOrder);
 
