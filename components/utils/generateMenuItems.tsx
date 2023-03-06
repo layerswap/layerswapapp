@@ -18,7 +18,7 @@ type NetworkeMenuItemsParams = {
 }
 
 const networkCurrencyIsAvailableForExchange = (nc: NetworkCurrency, exchange: Exchange, network: CryptoNetwork, swapType: SwapType) => {
-    return (swapType === SwapType.OnRamp ? nc.status === "active" : (nc.status === "insufficient_liquidity" || nc.status === "active"))
+    return (nc.status === "insufficient_liquidity" || nc.status === "active")
         && (swapType === SwapType.OnRamp ? nc.is_withdrawal_enabled : nc.is_deposit_enabled)
         && exchange.currencies?.some(ec =>
             ec.asset === nc.asset
@@ -50,7 +50,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
             && (to ? (networkCurrencyIsAvailableForExchange(nc, to.baseObject, n, swapType))
                 : exchanges.some(e => networkCurrencyIsAvailableForExchange(nc, e, n, swapType))))
 
-    const networkIsAbailableInOnramp = (n: CryptoNetwork) => swapType === SwapType.OnRamp
+    const networkIsAvailableInOnramp = (n: CryptoNetwork) => swapType === SwapType.OnRamp
         && n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.onramp
             && (from ? (networkCurrencyIsAvailableForExchange(nc, from.baseObject, n, swapType))
                 : exchanges.some(e => networkCurrencyIsAvailableForExchange(nc, e, n, swapType))))
@@ -65,7 +65,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
     let networkIsAvailable;
     switch (swapType) {
         case SwapType.OnRamp:
-            networkIsAvailable = networkIsAbailableInOnramp
+            networkIsAvailable = networkIsAvailableInOnramp
             break;
         case SwapType.OffRamp:
             networkIsAvailable = networkIsAvailableInOfframp
@@ -75,17 +75,17 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
             break;
     }
 
-    const destNetworkIsAvailable = networks.some(n => n.internal_name === destNetwork && n.status === "active" && networkIsAvailable(n))
-
+    const destNetworkIsAvailable = networks.some(n => n.internal_name === destNetwork && (direction === "from" ? (n.status === "active" || n.status === "insufficient_liquidity") : (n.status === "active")) && networkIsAvailable(n))
+    const shouldLockallNetworks = destNetworkIsAvailable && lockNetwork;
     const menuItems: SelectMenuItem<CryptoNetwork>[] = networks
         .filter(networkIsAvailable)
         .map(n => ({
             baseObject: n,
             id: n.internal_name,
             name: n.display_name,
-            order: NetworkSettings.KnownSettings[n.internal_name]?.Order,
+            order: NetworkSettings.KnownSettings[n.internal_name]?.Order ?? 69,
             imgSrc: `${resource_storage_url}/layerswap/networks/${n.internal_name.toLowerCase()}.png`,
-            isAvailable: n.status === "active" && (swapType === SwapType.OnRamp ? !lockNetwork : !destNetworkIsAvailable),
+            isAvailable: direction === 'from' ? (n.status === 'active' || n.status === 'insufficient_liquidity') : (n.status == "active" && !shouldLockallNetworks),
             isDefault: false
         })).sort(SortingByOrder);
 
@@ -127,7 +127,11 @@ export const generateExchangeMenuItems = ({ exchanges, networks, values, resourc
             name: e.display_name,
             order: ExchangeSettings.KnownSettings[e.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${e.internal_name.toLowerCase()}.png`,
-            isAvailable: e.status === "active" && !(swapType === SwapType.OnRamp ? (lockExchange || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.onramp) : (isSourceExchangeAvailable || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.offramp)),
+            isAvailable: e.status === "active"
+                && e.currencies.some(ec => networks.some(n => n.internal_name === ec.network && n.status === 'active'))
+                && (!(swapType === SwapType.OnRamp ?
+                    (lockExchange || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.onramp)
+                    : (isSourceExchangeAvailable || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.offramp))),
             isDefault: false
         })).sort(SortingByOrder);
 
