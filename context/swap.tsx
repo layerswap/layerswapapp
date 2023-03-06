@@ -78,7 +78,7 @@ export function SwapDataProvider({ children }) {
             asset: currency.baseObject.asset,
             destination_address: formData.destination_address,
             // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
-            partner: settings.partners.find(p => p.is_enabled && p.internal_name?.toLocaleLowerCase() === query.addressSource?.toLocaleLowerCase())?.internal_name,
+            partner: settings.partners.find(p => p.is_enabled && p.internal_name?.toLowerCase() === query.addressSource?.toLowerCase())?.internal_name,
             external_id: query.externalId,
             refuel: formData.refuel
         }

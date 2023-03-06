@@ -20,7 +20,7 @@ export default function Steps({ steps }) {
                                     </span>
                                     <span className="ml-4 flex min-w-0 flex-col">
                                         <span className="text-sm font-medium text-gray-300">{step.name}</span>
-                                        {/* <span className="text-sm text-primary-text">{step.description}</span> */}
+                                        <span className="text-sm text-primary-text">{step.description}</span>
                                     </span>
                                 </div>
                             </>

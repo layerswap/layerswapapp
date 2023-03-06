@@ -5,11 +5,11 @@ import { SwapWithdrawalStep } from "../../Models/Wizard";
 export const GetSwapStatusStep = (swap: SwapItem): SwapWithdrawalStep => {
     const swapStatus = swap?.status;
     if (swapStatus == SwapStatus.UserTransferPending && swap.has_pending_deposit && !swap.input_transaction)
-        return SwapWithdrawalStep.DepositPending
+        return SwapWithdrawalStep.SwapProcessing
     else if (swapStatus == SwapStatus.UserTransferPending && swap.input_transaction)
-        return SwapWithdrawalStep.TransferConfirmation
+        return SwapWithdrawalStep.SwapProcessing
     else if (swapStatus == SwapStatus.LsTransferPending)
-        return SwapWithdrawalStep.OutputTransferProccessing
+        return SwapWithdrawalStep.SwapProcessing
     else if (swapStatus == SwapStatus.UserTransferPending)
         return swap.source_exchange ? SwapWithdrawalStep.Withdrawal : SwapWithdrawalStep.OffRampWithdrawal
     else if (swapStatus == SwapStatus.Completed)

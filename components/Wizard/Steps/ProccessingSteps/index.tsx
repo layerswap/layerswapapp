@@ -1,12 +1,14 @@
+import { ArrowRightIcon, ExternalLinkIcon } from '@heroicons/react/outline';
 import { FC, useEffect } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
 import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
+import shortenAddress from '../../../utils/ShortenAddress';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import Steps from '../StepsComponent';
-import { ProcessingComponent, ProcessingSteps } from './ProcessingComponent';
+import Image from 'next/image';
 
 const ProcessingStep: FC = () => {
 
@@ -17,6 +19,9 @@ const ProcessingStep: FC = () => {
     const settings = useSettingsState()
 
     const source_display_name = swap?.source_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.display_name : settings?.networks?.find(e => e.internal_name == swap?.source_network)?.display_name
+    const source_internal_name = swap?.source_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.internal_name : settings?.networks?.find(e => e.internal_name == swap?.source_network)?.internal_name
+    const destination_internal_name = swap?.destination_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.destination_exchange)?.internal_name : settings?.networks?.find(e => e.internal_name == swap?.destination_network)?.internal_name
+    const destination_display_name = swap?.destination_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.destination_exchange)?.display_name : settings?.networks?.find(e => e.internal_name == swap?.destination_network)?.display_name
 
     useEffect(() => {
         setInterval(10000)
@@ -31,8 +36,6 @@ const ProcessingStep: FC = () => {
         }
     }, [swapStatusStep])
 
-    console.log(currentStepName)
-
     let status = 0
     switch (swap.status) {
         case SwapStatus.UserTransferPending:
@@ -44,25 +47,57 @@ const ProcessingStep: FC = () => {
             break
     }
 
+    const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
+    const input_tx_id = source_network?.transaction_explorer_template
+
     const progress = [
-        { name: 'Source transfer', status: status > 1 ? 'complete' : 'current' },
         {
-            name: 'Transfer confirmation',
-            status: status === 2 && 'current' || status === 3 && 'complete' || status === 1 && 'upcoming',
+            name: status === 1 ? 'Detecting your transfer' : `Transfer from ${source_display_name} is completed`, status: status > 1 ? 'complete' : 'current', description: status > 1 ?
+                <div className='flex items-center space-x-1'>
+                    <span>Source Tx </span>
+                    <div className='underline hover:no-underline flex items-center space-x-1'>
+                        <a target={"_blank"} href={input_tx_id.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
+                        <ExternalLinkIcon className='h-4' />
+                    </div>
+                </div>
+                :
+                <span>Estimated time: <span className='text-white'>less than {swap?.source_exchange ? '10' : '3'} minutes</span></span>
         },
-        { name: 'Destination transfer', status: status < 3 ? 'upcoming' : 'current' },
+        {
+            name: (status === 1 && 'Transfer confirmation') || (status === 2 && ' Waiting for the transfer to get confirmed') || (status === 3 && 'The trasnfer is confirmed'),
+            status: (status === 2 && 'current') || (status === 3 && 'complete') || (status === 1 && 'upcoming'),
+            description: status! >= 2 ? <div>Confirmations: <span className='text-white'>{swap?.input_transaction?.confirmations ?? 0}</span>/{swap?.input_transaction?.max_confirmations}</div> : ""
+        },
+        { name: status === 3 ? 'Your assets are on their way' : 'Transfer of assets to your address', status: status < 3 ? 'upcoming' : 'current', description: '' },
     ]
 
-    const steps: ProcessingSteps[] = [
-        { name: SwapWithdrawalStep.DepositPending, header: `Transfer from ${source_display_name} is in progress`, description: <span>Estimated time: <span className='text-white'>less than {swap?.source_exchange ? '10' : '3'} minutes</span></span>, status: swapStatusStep === SwapWithdrawalStep.DepositPending ? 'active' : 'inactive' },
-        { name: SwapWithdrawalStep.OutputTransferProccessing, header: `Your assets are on their way`, description: <span>Estimated time: <span className='text-white'>less than 2 minutes</span></span>, status: swapStatusStep === SwapWithdrawalStep.OutputTransferProccessing ? 'active' : 'inactive' },
-        { name: SwapWithdrawalStep.TransferConfirmation, header: `Transfer from ${source_display_name} is completed`, description: <div><p>Waiting for the transfer to get confirmed</p><p>Confirmations: <span className='text-white'>{swap?.input_transaction?.confirmations ?? 0}</span>/{swap?.input_transaction?.max_confirmations}</p></div>, status: swapStatusStep === SwapWithdrawalStep.TransferConfirmation ? 'active' : 'inactive' },
-    ]
+    if (!swap) return <></>
 
     return (
-        <div className="w-full items-center flex flex-col h-full">
-            <ProcessingComponent processingSteps={steps} />
-            <Steps steps={progress} />
+        <div className="w-full flex flex-col h-full space-y-5">
+            <div className="text-left text-primary-text mt-4 space-y-2">
+                <p className="block sm:text-lg font-medium text-white">
+                    Transfer status
+                </p>
+                <p className='text-sm flex space-x-1'>
+                    <span>
+                        Transfering {swap.requested_amount} {swap.source_network_asset} to
+                    </span>
+                    <div className="h-5 w-5 relative">
+                        <Image
+                            src={`${settings.discovery.resource_storage_url}/layerswap/networks/${destination_internal_name.toLowerCase()}.png`}
+                            alt="Source Logo"
+                            height="60"
+                            width="60"
+                            className="rounded-md object-contain"
+                        />
+                    </div>
+                    <p>{shortenAddress(swap.destination_address)}</p>
+                </p>
+            </div>
+            <div className='flex flex-col h-full justify-center'>
+                <Steps steps={progress} />
+            </div>
         </div>
     )
 }
