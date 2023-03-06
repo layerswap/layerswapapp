@@ -12,7 +12,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     baseObject: T;
     isDefault: boolean;
 
-    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, isDefault = false) {
+    constructor(baseObject: T, id: string, name: string, order:number, imgSrc: string, isEnabled: boolean = true, isDefault = false) {
         this.baseObject = baseObject;
         this.id = id;
         this.name = name;
