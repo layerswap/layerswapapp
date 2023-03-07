@@ -80,19 +80,7 @@ const ProcessingStep: FC = () => {
                     Transfer status
                 </p>
                 <p className='text-sm flex space-x-1'>
-                    <span>
-                        Transfering {swap.requested_amount} {swap.source_network_asset} to
-                    </span>
-                    <div className="h-5 w-5 relative">
-                        <Image
-                            src={`${settings.discovery.resource_storage_url}/layerswap/networks/${destination_internal_name.toLowerCase()}.png`}
-                            alt="Source Logo"
-                            height="60"
-                            width="60"
-                            className="rounded-md object-contain"
-                        />
-                    </div>
-                    <p>{shortenAddress(swap.destination_address)}</p>
+                    Assets will be sent as soon as the transfer is confirmed
                 </p>
             </div>
             <div className='flex flex-col h-full justify-center'>

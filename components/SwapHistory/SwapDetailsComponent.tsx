@@ -44,7 +44,9 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const source_network = networks?.find(e => e.internal_name === source_network_internal_name)
     const input_tx_id = source_network?.transaction_explorer_template
 
-    const feeInUsd = swap?.fee * swap?.input_transaction.usd_price < 0.01 ? `0.01$<` : `(${roundDecimals(swap?.fee * swap?.input_transaction.usd_price, 2)}$)`
+    let feeInUsd = ""
+    if (swap?.input_transaction)
+        feeInUsd = swap?.fee * swap?.input_transaction?.usd_price < 0.01 ? `0.01$<` : `(${roundDecimals(swap?.fee * swap?.input_transaction?.usd_price, 2)}$)`
 
     useEffect(() => {
         (async () => {
