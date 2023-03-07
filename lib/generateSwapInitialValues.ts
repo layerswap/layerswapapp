@@ -18,7 +18,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
 
     const productsArray = products?.split(",")
     const filteredProducts = products ? swapTypes?.filter(st => productsArray.some(p => st?.toLowerCase() === p?.toLowerCase())) : swapTypes
-    const selectedSwapType = filteredProducts.find(st=>st?.toLowerCase() === selectedProduct?.toLowerCase())
+    const selectedSwapType = filteredProducts.find(st => st?.toLowerCase() === selectedProduct?.toLowerCase())
 
     let initialSwapType = (swapType || selectedSwapType || filteredProducts?.[0]) ?? SwapType.OnRamp;
 
@@ -40,23 +40,23 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
         availableExchanges.find(x => x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() && x.baseObject.currencies);
 
     const initialNetwork =
-        availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable && (initialSwapType === SwapType.OffRamp ? !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp : !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp))
+        availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable.value && (initialSwapType === SwapType.OffRamp ? !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp : !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp))
 
     const availableCurrencies = currencies
         .map(c => new SelectMenuItem<Currency>(c, c.asset, c.asset, 0, `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`))
 
     const to = swapType === SwapType.OffRamp ?
         availableExchanges.find(x => x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() && x.baseObject.currencies)
-        : availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable && (initialSwapType === SwapType.OffRamp ? !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp : !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp));
+        : availableNetworks.find(x => x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && x.isAvailable.value && (initialSwapType === SwapType.OffRamp ? !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp : !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp));
 
     let initialAddress =
-        destAddress && to && isValidAddress(destAddress, to?.baseObject) ? destAddress : "";
+        (destAddress && to && isValidAddress(destAddress, to?.baseObject)) ? destAddress : "";
 
 
     let initialCurrency =
         amount && availableCurrencies.find(c => c.baseObject.asset == asset)
 
-    const result = { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: initialSwapType !== SwapType.OffRamp && initialAddress }
+    const result = { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: (initialSwapType !== SwapType.OffRamp && initialAddress) ? initialAddress : '' }
 
     switch (initialSwapType) {
         case SwapType.OnRamp:

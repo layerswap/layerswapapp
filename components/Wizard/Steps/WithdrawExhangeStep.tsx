@@ -74,7 +74,7 @@ const WithdrawExchangeStep: FC = () => {
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
-    const sourceIsCoinbase = swap.source_exchange?.toLocaleLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLocaleLowerCase()
+    const sourceIsCoinbase = swap.source_exchange?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()
 
     const handleCancelSwap = useCallback(() => {
         mutateSwap()
@@ -232,7 +232,7 @@ const WithdrawExchangeStep: FC = () => {
                                                     {
                                                         destination_network_asset &&
                                                         <Image
-                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
+                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
                                                             alt="From Logo"
                                                             height="60"
                                                             width="60"

@@ -20,7 +20,7 @@ const ClickTooltip: FC<Props> = (({ children, text, moreClassNames }) => {
                 }
             </Popover.Trigger>
             <Popover.Portal>
-                <Popover.Content className='bg-darkblue-300 shadow-lg rounded-md p-2 w-fit max-w-[192px] leading-4 text-xs mt-1'>
+                <Popover.Content className='bg-darkblue-300 z-50 shadow-lg rounded-md p-2 w-fit max-w-[192px] leading-4 text-xs mt-1'>
                     <span className={`text-primary-text whitespace-no-wrap word-break ${moreClassNames}`}>
                         {text}
                     </span>
