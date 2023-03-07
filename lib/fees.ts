@@ -5,6 +5,7 @@ import { Currency } from "../Models/Currency";
 import { Exchange } from "../Models/Exchange";
 import KnownInternalNames from "./knownIds";
 import { SwapType } from "./layerSwapApiClient";
+import NetworkSettings from "./NetworkSettings";
 
 export function GetExchangeFee(asste?: string, exchange?: Exchange): number {
     return exchange?.currencies.find(ec => ec.asset === asste)?.withdrawal_fee || 0;
@@ -27,9 +28,12 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
     if (!destinationNetworkCurrency || !sourceNetworkCurrency)
         return 0
 
-    const source_fee_multiplier = sourceNetwork.fee_multiplier >= 1 ? sourceNetwork.fee_multiplier : 1
-    const destination_fee_multiplier = destinationNetwork.fee_multiplier >= 1 ? destinationNetwork.fee_multiplier : 1
-    return (destinationNetworkCurrency.withdrawal_fee * destination_fee_multiplier) + (sourceNetworkCurrency.deposit_fee * source_fee_multiplier);
+    let refule = 0;
+    if (swapFormData?.swapType === SwapType.OnRamp && NetworkSettings.KnownSettings[destinationNetwork.internal_name]?.Refuel && sourceNetwork.refuel_amount_in_usd > 0) {
+        refule += sourceNetwork.refuel_amount_in_usd / currency.baseObject.usd_price;
+    }
+
+    return (destinationNetworkCurrency.withdrawal_fee + sourceNetworkCurrency.deposit_fee + destinationNetworkCurrency.base_fee);
 }
 
 export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]) {
