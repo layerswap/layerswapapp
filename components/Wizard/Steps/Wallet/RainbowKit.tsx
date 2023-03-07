@@ -5,44 +5,106 @@ import {
     ConnectButton,
     getDefaultWallets,
     RainbowKitProvider,
+
 } from '@rainbow-me/rainbowkit';
 import { Chain, configureChains, createClient, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
-import NetworkSettings from '../../../../lib/NetworkSettings';
-import { SwapItem } from '../../../../lib/layerSwapApiClient';
-import { CryptoNetwork } from '../../../../Models/CryptoNetwork';
-import { mainnet, polygon, optimism, arbitrum } from 'wagmi/chains';
+
+import "@rainbow-me/rainbowkit/styles.css";
+
+import { mainnet, polygon, optimism, arbitrum, goerli, arbitrumGoerli } from 'wagmi/chains';
 
 
+const { chains, provider } = configureChains(
+    [mainnet, polygon, optimism, arbitrum, goerli, arbitrumGoerli],
+    [
+        alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_ID }),
+        publicProvider()
+    ]
+);
 
-const RainbowKit: FC= () => {
-    console.log("blah blah")
+const { connectors } = getDefaultWallets({
+    appName: 'My RainbowKit App',
+    chains
+});
 
-    const { chains, provider } = configureChains(
-        [mainnet, polygon, optimism, arbitrum],
-        [
-            alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_ID }),
-            publicProvider()
-        ]
-    );
+const wagmiClient = createClient({
+    autoConnect: false,
+    connectors,
+    provider
+})
 
-    const { connectors } = getDefaultWallets({
-        appName: 'My RainbowKit App',
-        chains
-    });
+type Props = {
+    chainId?: number,
+    onConnect?: (address: string) => void
+}
 
-    const wagmiClient = createClient({
-        autoConnect: true,
-        connectors,
-        provider
-    })
+const RainbowKit: FC<Props> = ({ chainId, onConnect, children }) => {
 
+    const filteredChains = chainId ? chains.filter(ch => ch.id === chainId) : chains
 
     return (
         <WagmiConfig client={wagmiClient}>
-            <RainbowKitProvider chains={chains}>
-                <Connect />
+            <RainbowKitProvider chains={filteredChains}>
+                <ConnectButton.Custom>
+                    {({
+                        account,
+                        chain,
+                        openAccountModal,
+                        openChainModal,
+                        openConnectModal,
+                        authenticationStatus,
+                        mounted,
+                    }) => {
+                        // Note: If your app doesn't use authentication, you
+                        // can remove all 'authenticationStatus' checks
+                        const ready = mounted && authenticationStatus !== 'loading';
+                        const connected =
+                            ready &&
+                            account &&
+                            chain &&
+                            (!authenticationStatus ||
+                                authenticationStatus === 'authenticated');
+                        if (account?.address)
+                            console.log(account.address)
+                        //     onConnect(account.address)
+                        return (
+                            <div
+                                {...(!ready && {
+                                    'aria-hidden': true,
+                                    'style': {
+                                        opacity: 0,
+                                        pointerEvents: 'none',
+                                        userSelect: 'none',
+                                    },
+                                })}
+                            >
+                                {(() => {
+                                    if (!connected) {
+                                        return (
+                                            <button onClick={openConnectModal} type="button">
+                                                {children}
+                                            </button>
+                                        );
+                                    }
+
+                                    if (chain.unsupported) {
+                                        return (
+                                            <button onClick={openChainModal} type="button">
+                                                Wrong network
+                                            </button>
+                                        );
+                                    }
+
+                                    return (
+                                        <></>
+                                    );
+                                })()}
+                            </div>
+                        );
+                    }}
+                </ConnectButton.Custom>
             </RainbowKitProvider>
         </WagmiConfig>
     )

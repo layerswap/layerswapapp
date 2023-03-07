@@ -18,7 +18,9 @@ import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
 import AvatarGroup from "../AvatarGroup";
-
+import RainbowKit from "../Wizard/Steps/Wallet/RainbowKit";
+import { useAccount } from "wagmi";
+import { disconnect } from '@wagmi/core'
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -45,6 +47,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue
         } = useFormikContext<SwapFormValues>();
 
+
+
+
+
         const inputReference = useRef(null);
 
         const valid_addresses = address_book?.filter(a => isValidAddress(a.address, values.from.baseObject))
@@ -55,8 +61,23 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const [inputFocused, setInputFocused] = useState(false)
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
+        const [_inputValue, _setInputValue] = useState("a")
+
         const { authData } = useAuthState()
         const settings = useSettingsState()
+
+        const { address, status, isConnected, isConnecting, isDisconnected, connector } = useAccount({
+            onConnect({ address, connector, isReconnected }) {
+                setInputValue(address)
+                setAddressConfirmed(true)
+                setFieldValue("destination_address", address)
+            },
+            onDisconnect() {
+                setInputValue("")
+                setAddressConfirmed(false)
+                setFieldValue("destination_address", "")
+            }
+        });
 
         const exchangeCurrency = values?.swapType === SwapType.OffRamp && values.to?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
         const networkDisplayName = settings?.networks?.find(n => n.internal_name === exchangeCurrency?.network)?.display_name
@@ -81,12 +102,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [values.destination_address])
 
         const handleRemoveDepositeAddress = useCallback(async () => {
-            if (depositeAddressIsfromAccount) {
+            if (depositeAddressIsfromAccount || isConnected) {
                 setDepositeAddressIsfromAccount(false)
                 setFieldValue("destination_address", '')
+                disconnect()
             }
             setInputValue("")
-        }, [depositeAddressIsfromAccount])
+        }, [depositeAddressIsfromAccount, isConnected, connector, isDisconnected])
 
         const handleSelectAddress = useCallback((value: string) => {
             setAddressConfirmed(true)
@@ -113,7 +135,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             close()
         }, [inputValue])
 
+        const handleWaletConnect = (address: string) => {
+            setAddressConfirmed(true)
+            setFieldValue("destination_address", address)
+            setInputValue(address)
+        }
+
         const autofillEnabled = !inputFocused && !inputAddressisValid
+        const networkChainId = NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name].ChainId
 
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>
@@ -139,7 +168,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     onBlur={handleInputBlur}
                                     autoCorrect="off"
                                     type={"text"}
-                                    disabled={disabled}
+                                    disabled={disabled || isConnected}
                                     name={name}
                                     id={name}
                                     ref={inputReference}
@@ -197,6 +226,40 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </motion.span>
                                 }
                                 {
+                                    networkChainId
+                                    && !isConnected &&
+                                    <motion.span className="inline-flex items-center mr-2 shrink"
+                                        transition={{
+                                            width: { ease: 'linear' }
+                                        }}>
+                                        <motion.div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
+                                            <motion.button
+                                                type="button"
+                                                className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100"
+                                            >
+                                                <motion.div className="flex items-center" >
+                                                    {
+                                                        loading ? <SpinIcon className="animate-spin h-4 w-4" />
+                                                            : <LinkIcon className="h-4 w-4" />
+                                                    }
+                                                    <RainbowKit chainId={networkChainId} onConnect={handleWaletConnect} >
+                                                        <motion.span className={classNames(autofillEnabled ? 'ml-3' : '', "block truncate text-clip")}
+                                                            variants={
+                                                                {
+                                                                    inputFocused: {
+                                                                        width: '0',
+                                                                    }
+                                                                }
+                                                            }>
+                                                            Add wallet
+                                                        </motion.span>
+                                                    </RainbowKit>
+                                                </motion.div>
+                                            </motion.button>
+                                        </motion.div>
+                                    </motion.span>
+                                }
+                                {
                                     inputAddressisValid &&
                                     <span className="inline-flex items-center mr-2">
                                         <div className="text-xs flex items-center space-x-2 ml-3 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
@@ -214,7 +277,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                 onClick={handleRemoveDepositeAddress}
                                             >
                                                 <div className="flex items-center" >
-                                                    <XIcon className="h-5 w-5" />
+                                                    {connector.name}<XIcon className="h-5 w-5" />
                                                 </div>
                                             </button>
                                         </div>
@@ -225,6 +288,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
                                     <div className='flex justify-between mb-4 md:mb-8 space-x-4'>
                                         {
+                                            // networkChainId && <RainbowKit chainId={networkChainId} onConnect={handleWaletConnect} />
+                                        }
+
+                                        {/* {
                                             inputAddressisValid &&
                                             <>
                                                 <label htmlFor="address_confirm" className='flex items-center text-xs md:text-sm font-medium'>
@@ -235,7 +302,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         }
                                         <button type="button" disabled={!inputAddressisValid} onClick={handleSetNewAddress} className="ml-auto disabled:border-primary-900 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed rounded-md bg-primary px-5 py-2 text-sm font-semibold leading-5 text-white">
                                             Confirm
-                                        </button>
+                                        </button> */}
                                     </div>
                                 </div>
                             }
