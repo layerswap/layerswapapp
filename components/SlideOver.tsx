@@ -10,6 +10,7 @@ export type slideOverPlace = 'inStep' | 'inModal' | 'inMenu'
 
 type Props = {
     header?: string;
+    subHeader?: string | JSX.Element
     opener?: (open: () => void) => JSX.Element | JSX.Element[],
     children?: (close: () => void, animaionCompleted?: boolean) => JSX.Element | JSX.Element[];
     moreClassNames?: string;
@@ -19,11 +20,11 @@ type Props = {
     imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
 
-const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children }) => {
+const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children, subHeader }) => {
     const [open, setOpen] = useState(false)
     const [openAnimaionCompleted, setOpenAnimationCompleted] = useState(false)
-    
-    
+
+
     const mobileModalRef = useRef(null)
     const { width } = useWindowDimensions()
     const handleClose = () => {
@@ -79,10 +80,13 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                         }}
                         className={`absolute inset-0 z-40 w-full ${heightControl} hidden sm:block`}>
                         <div className={`relative z-40 overflow-hidden flex flex-col rounded-t-2xl md:rounded-none bg-darkblue h-full space-y-3 py-4 ${!noPadding ? 'px-6 sm:px-8' : ''}`}>
-                            <div className={`flex items-center justify-between text-primary-text cursor-pointer ${noPadding ? 'px-6 sm:px-8' : ''}`}>
-                                <p className="text-xl text-white font-semibold">
-                                    {header}
-                                </p>
+                            <div className={`flex items-center justify-between text-primary-text ${noPadding ? 'px-6 sm:px-8' : ''}`}>
+                                <div className="text-xl text-white font-semibold">
+                                    <p>{header}</p>
+                                    <div className="text-base text-primary-text font-medium leading-4">
+                                        {subHeader}
+                                    </div>
+                                </div>
                                 <button
                                     type="button"
                                     className="rounded-md hover:text-darkblue-200"
@@ -101,11 +105,11 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
             </AnimatePresence>
             <AnimatePresence>
                 {open && width < 640 &&
-                    <Root open={open} onOpenChange={() => { }} >
+                    <Root open={open} >
                         <Portal>
                             <Overlay />
                             <Content>
-                                <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
+                                <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} description={subHeader} className={moreClassNames}>
                                     {children && children(handleClose, openAnimaionCompleted)}
                                 </MobileModalContent>
                             </Content>

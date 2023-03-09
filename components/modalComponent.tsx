@@ -15,6 +15,7 @@ class ModalParams {
     setShowModal: Dispatch<SetStateAction<boolean>>;
     closeWithX?: boolean;
     title?: React.ReactNode;
+    description?: JSX.Element | string;
     className?: string;
     modalSize?: modalSize = "large";
     modalHeight?: modalHeight = "auto";
@@ -123,7 +124,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
     );
 }
 
-export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, onAnimationCompleted, setShowModal, children, title, className, modalHeight }, topmostRef) => {
+export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, onAnimationCompleted, setShowModal, children, title, className, modalHeight, description }, topmostRef) => {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 42 };
@@ -178,20 +179,28 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 dragConstraints={{ top: 0, bottom: 0 }}
                 onAnimationComplete={onAnimationCompleted}
             >
-                <div className='px-5 grid grid-cols-6 items-center py-3 rounded-t-2xl bg-darkblue'>
-                    <button ref={closeButtonRef} tabIndex={-1} className='text-base text-gray-600 col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
-                        Close
-                    </button>
+                <div className='px-5 py-3 rounded-t-2xl bg-darkblue'>
+                    <div className='grid grid-cols-6 items-center'>
+                        <button ref={closeButtonRef} tabIndex={-1} className='text-base text-gray-600 col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
+                            Close
+                        </button>
+                        {
+                            title ?
+                                <div tabIndex={-1} className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-primary-text">
+                                    {title}
+                                </div>
+                                :
+                                <div tabIndex={-1} className="rounded-t-4xl flex items-center col-start-2 col-span-4 justify-self-center">
+                                    <div className="-mr-1 h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:rotate-12" />
+                                    <div className="h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:-rotate-12" />
+                                </div>
+                        }
+                    </div>
                     {
-                        title ?
-                            <div tabIndex={-1} className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-primary-text">
-                                {title}
-                            </div>
-                            :
-                            <div tabIndex={-1} className="rounded-t-4xl flex items-center col-start-2 col-span-4 justify-self-center">
-                                <div className="-mr-1 h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:rotate-12" />
-                                <div className="h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:-rotate-12" />
-                            </div>
+                        description &&
+                        <div className='text-primary-text opacity-70 flex justify-center'>
+                            {description}
+                        </div>
                     }
                 </div>
                 <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto ${inIframe() && 'styled-scroll'}`}>

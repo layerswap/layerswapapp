@@ -18,6 +18,7 @@ import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
 import AvatarGroup from "../AvatarGroup";
+import SubmitButton from "../buttons/submitButton";
 
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
@@ -115,15 +116,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const autofillEnabled = !inputFocused && !inputAddressisValid
 
-        const availableNetworks = values.swapType === SwapType.OffRamp && values.to?.baseObject.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
-
-        const destinationNetworks = values.swapType === SwapType.OffRamp && settings.networks.filter(n => availableNetworks.includes(n.internal_name))
-
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>
                 <div className={`flex flex-col self-center grow w-full`}>
-                    <div className="text-left">
-                        {`To ${values?.to?.name || ''} address`}
+                    <div className="text-left mb-10">
+                        <label htmlFor={name}>Address</label>
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                         <div className="flex flex-wrap flex-col md:flex-row">
                             <motion.div initial="rest" animate={autofillEnabled ? "rest" : "inputFocused"} className="relative flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
@@ -225,25 +222,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </span>
                                 }
                             </motion.div>
-                            {
-                                <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
-                                    <div className='flex justify-between mb-4 md:mb-8 space-x-4'>
-                                        {
-                                            inputAddressisValid &&
-                                            <>
-                                                <label htmlFor="address_confirm" className='flex items-center text-xs md:text-sm font-medium'>
-                                                    <ExclamationIcon className='h-6 w-6 mr-2' />
-                                                    I am the owner of this address
-                                                </label>
-                                            </>
-                                        }
-                                        <button type="button" disabled={!inputAddressisValid} onClick={handleSetNewAddress} className="ml-auto disabled:border-primary-900 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed rounded-md bg-primary px-5 py-2 text-sm font-semibold leading-5 text-white">
-                                            Confirm
-                                        </button>
-                                    </div>
-                                </div>
-                            }
-                            {
+
+                            {/* {
                                 values?.swapType === SwapType.OffRamp &&
                                 <motion.div whileTap={{ scale: 1.05 }} className=' w-fit flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5 justify-start'>
                                     <span>
@@ -251,7 +231,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </span>
                                     <AvatarGroup imageUrls={destinationNetworks?.map(network => `${settings.discovery.resource_storage_url}/layerswap/networks/${network.internal_name.toLowerCase()}.png`)} />
                                 </motion.div>
-                            }
+                            } */}
                         </div>
                     </div>
                     {valid_addresses?.length > 0 ?
@@ -320,6 +300,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             <p className="text-sm text-gray-500">Your addresses will be shown here</p>
                         </div>
                     }
+                </div>
+                <div>
+                    <SubmitButton type="button" isDisabled={!inputAddressisValid} isSubmitting={false} onClick={handleSetNewAddress} >
+                        Confirm
+                    </SubmitButton>
                 </div>
             </div>
         </div>)
