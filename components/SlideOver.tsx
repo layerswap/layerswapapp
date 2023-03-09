@@ -22,8 +22,14 @@ type Props = {
 const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children }) => {
     const [open, setOpen] = useState(false)
     const [openAnimaionCompleted, setOpenAnimationCompleted] = useState(false)
-    
-    
+
+    if(open){
+        document.body.style.overflow = 'hidden'
+    }
+    else{
+        document.body.style.overflow = ''
+    }
+
     const mobileModalRef = useRef(null)
     const { width } = useWindowDimensions()
     const handleClose = () => {
@@ -101,16 +107,11 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
             </AnimatePresence>
             <AnimatePresence>
                 {open && width < 640 &&
-                    <Root open={open} onOpenChange={() => { }} >
-                        <Portal>
-                            <Overlay />
-                            <Content>
-                                <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
-                                    {children && children(handleClose, openAnimaionCompleted)}
-                                </MobileModalContent>
-                            </Content>
-                        </Portal>
-                    </Root>
+                    <div className="absolute">
+                        <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
+                            {children && children(handleClose, openAnimaionCompleted)}
+                        </MobileModalContent>
+                    </div>
                 }
             </AnimatePresence>
         </>
