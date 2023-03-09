@@ -3,11 +3,12 @@ import { FC } from 'react';
 
 import {
     ConnectButton,
+    darkTheme,
     getDefaultWallets,
     RainbowKitProvider,
 
 } from '@rainbow-me/rainbowkit';
-import { Chain, configureChains, createClient, WagmiConfig } from 'wagmi';
+import { configureChains, createClient, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 
@@ -36,22 +37,27 @@ const wagmiClient = createClient({
 })
 
 type Props = {
-    chainId?: number,
-    onConnect?: (address: string) => void
+    chainIds?: number[],
 }
 
-const RainbowKit: FC<Props> = ({ chainId, onConnect, children }) => {
+const RainbowKit: FC<Props> = ({ chainIds, children }) => {
 
-    const filteredChains = chainId ? chains.filter(ch => ch.id === chainId) : chains
-
+    const filteredChains = chainIds?.length > 0 ? chains.filter(ch => chainIds.some(id => id === ch.id)) : chains
+    const theme = darkTheme({
+        accentColor: '#E42575',
+        accentColorForeground: 'white',
+        borderRadius: 'small',
+        fontStack: 'system',
+        overlayBlur: 'small',
+    })
+    theme.colors.modalBackground = '#0e1426'
     return (
         <WagmiConfig client={wagmiClient}>
-            <RainbowKitProvider chains={filteredChains}>
+            <RainbowKitProvider modalSize="compact" chains={filteredChains} theme={theme}>
                 <ConnectButton.Custom>
                     {({
                         account,
                         chain,
-                        openAccountModal,
                         openChainModal,
                         openConnectModal,
                         authenticationStatus,
@@ -66,9 +72,6 @@ const RainbowKit: FC<Props> = ({ chainId, onConnect, children }) => {
                             chain &&
                             (!authenticationStatus ||
                                 authenticationStatus === 'authenticated');
-                        if (account?.address)
-                            console.log(account.address)
-                        //     onConnect(account.address)
                         return (
                             <div
                                 {...(!ready && {
