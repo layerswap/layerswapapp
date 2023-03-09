@@ -80,7 +80,7 @@ export function SwapDataProvider({ children }) {
             // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
             partner: settings.partners.find(p => p.is_enabled && p.internal_name?.toLowerCase() === query.addressSource?.toLowerCase())?.internal_name,
             external_id: query.externalId,
-            refuel: formData.refuel
+            refuel: formData?.swapType === SwapType.OnRamp && NetworkSettings.KnownSettings[formData?.to.baseObject?.internal_name]?.Refuel
         }
 
         if (formData.swapType === SwapType.OnRamp) {
