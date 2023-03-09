@@ -150,7 +150,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }
 
         const autofillEnabled = !inputFocused && !inputAddressisValid
-        const chains:number[] = []
+        const chains: number[] = []
         values.swapType !== SwapType.OffRamp
         [NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name]?.ChainId]
 
@@ -318,8 +318,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             {
                                 <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
                                     <div className='flex justify-between mb-4 md:mb-8 space-x-4'>
-                                        {/* {
-                                            inputAddressisValid &&
+                                        {
                                             <>
                                                 <label htmlFor="address_confirm" className='flex items-center text-xs md:text-sm font-medium'>
                                                     <ExclamationIcon className='h-6 w-6 mr-2' />
@@ -329,7 +328,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         }
                                         <button type="button" disabled={!inputAddressisValid} onClick={handleSetNewAddress} className="ml-auto disabled:border-primary-900 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed rounded-md bg-primary px-5 py-2 text-sm font-semibold leading-5 text-white">
                                             Confirm
-                                        </button> */}
+                                        </button>
                                     </div>
                                 </div>
                             }
