@@ -389,6 +389,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         </div>
                     }
                     <ModalFooter>
+                        <label htmlFor="address_confirm" className='flex items-center text-sm md:text-sm font-medium mb-4'>
+                            <ExclamationIcon className='h-6 w-6 mr-2' />
+                            I am the owner of this address
+                        </label>
                         <SubmitButton type="button" isDisabled={!inputAddressisValid} isSubmitting={false} onClick={handleSetNewAddress} >
                             Confirm
                         </SubmitButton>
