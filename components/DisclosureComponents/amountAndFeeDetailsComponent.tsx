@@ -1,21 +1,26 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
-import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
+import { GetExchangeFee, CalculateFee, CalculateReceiveAmount, CaluclateRefuelAmount } from '../../lib/fees';
 import { SwapType } from '../../lib/layerSwapApiClient';
 import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
+import roundDecimals from '../utils/RoundDecimals';
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
-    const { networks } = useSettingsState()
+    const { networks, currencies } = useSettingsState()
 
     const { currency, from, to, swapType } = values || {}
 
     let exchangeFee = swapType === SwapType.OnRamp && parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
     let fee = CalculateFee(values, networks);
     let receive_amount = CalculateReceiveAmount(values, networks);
+
+    const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
+    const refuel_usd_price = currencies.find(c => c.asset === destination_native_currency)
+    const refuel = roundDecimals(CaluclateRefuelAmount(values, networks), refuel_usd_price?.usd_price?.toFixed()?.length)
 
     return (
         <>
@@ -39,10 +44,10 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                         </span>
                                                     </p>
                                                     {
-                                                        // KnownInternalNames.Networks.BNBChainMainnet == to?.baseObject?.internal_name &&
-                                                        // <p className='text-[12px] text-slate-300'>
-                                                        //     + 0.0015 BNB
-                                                        // </p>
+                                                        refuel > 0 &&
+                                                        <p className='text-[12px] text-slate-300'>
+                                                            + {refuel} {destination_native_currency}
+                                                        </p>
                                                     }
                                                 </span>
                                                 : '-'
@@ -73,7 +78,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                 <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                             </label>
                                             <span className="text-right">
-                                                {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.baseObject?.asset}</>} 
+                                                {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.baseObject?.asset}</>}
                                             </span>
                                         </div>
                                     }
