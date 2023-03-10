@@ -1,7 +1,7 @@
 ///Doe to typechecking please always set default values in this class
 export class QueryParams {
-    from?: string;
-    to?: string;
+    from?: string = "";
+    to?: string = "";
     sourceExchangeName?: string = "";
     destNetwork?: string = "";
     lockAddress?: boolean = false;
