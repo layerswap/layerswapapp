@@ -75,7 +75,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
             break;
     }
 
-    const destNetworkIsAvailable = networks.some(n => n.internal_name === destNetwork && n.status === "active" && networkIsAvailable(n))
+    const destNetworkIsAvailable = networks.some(n => n.internal_name?.toLowerCase() === destNetwork?.toLowerCase() && n.status === "active" && networkIsAvailable(n))
 
     const menuItems: SelectMenuItem<CryptoNetwork>[] = networks
         .filter(networkIsAvailable)
@@ -98,6 +98,7 @@ type ExchangeMenuItemsProps = {
     values: SwapFormValues,
     networks: CryptoNetwork[],
     sourceExchangeName: string,
+    source: string,
     lockExchange: boolean
 }
 
@@ -108,9 +109,9 @@ const exchangeCurrencyIsAvailableForNetwork = ((ec: ExchangeCurrency & NetworkCu
         && !exchange.currencies.filter(c => c.asset === ec.asset && c.is_default).some(c => c.network === network.internal_name))
 })
 
-export const generateExchangeMenuItems = ({ exchanges, networks, values, resource_storage_url, sourceExchangeName, lockExchange }: ExchangeMenuItemsProps): SelectMenuItem<Exchange>[] => {
+export const generateExchangeMenuItems = ({ exchanges, networks, values, resource_storage_url, sourceExchangeName, source, lockExchange }: ExchangeMenuItemsProps): SelectMenuItem<Exchange>[] => {
     const { swapType, from, to } = values
-    const isSourceExchangeAvailable = exchanges.some(e => e?.internal_name?.toLowerCase() === sourceExchangeName?.toLowerCase() && e.status === "active" && (swapType === SwapType.OffRamp ?
+    const isSourceExchangeAvailable = exchanges.some(e => (e?.internal_name?.toLowerCase() === sourceExchangeName?.toLowerCase() || e?.internal_name?.toLowerCase() === source?.toLowerCase()) && e.status === "active" && (swapType === SwapType.OffRamp ?
         e.currencies.some(ec => (from ? exchangeCurrencyIsAvailableForNetwork(ec, from.baseObject, e, swapType) : networks.some(n => exchangeCurrencyIsAvailableForNetwork(ec, n, e, swapType))))
         : e.currencies.some(ec => (to ? exchangeCurrencyIsAvailableForNetwork(ec, to.baseObject, e, swapType) : networks.some(n => exchangeCurrencyIsAvailableForNetwork(ec, n, e, swapType)))))
     )

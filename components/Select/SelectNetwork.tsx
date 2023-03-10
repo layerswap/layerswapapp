@@ -21,13 +21,13 @@ const SelectNetwork = forwardRef(({ direction, label }: Props, ref: any) => {
     } = useFormikContext<SwapFormValues>();
     const name = direction
     const { swapType, from, to } = values
-    const { lockNetwork, destNetwork, sourceExchangeName, lockExchange } = useQueryState()
+    const { lockNetwork, destNetwork, sourceExchangeName, lockExchange, from: source } = useQueryState()
     const { discovery: { resource_storage_url }, exchanges, networks } = useSettingsState();
 
     let menuItems: SelectMenuItem<CryptoNetwork | Exchange>[]
     let placeholder = "";
     if (direction === "from" ? (swapType === SwapType.OnRamp) : (swapType === SwapType.OffRamp)) {
-        menuItems = generateExchangeMenuItems({ exchanges, values, networks, resource_storage_url, sourceExchangeName, lockExchange });
+        menuItems = generateExchangeMenuItems({ exchanges, values, networks, resource_storage_url, sourceExchangeName, source, lockExchange });
         placeholder = "Exchange";
     }
     else {
