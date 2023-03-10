@@ -85,7 +85,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
             name: n.display_name,
             order: NetworkSettings.KnownSettings[n.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${n.internal_name.toLowerCase()}.png`,
-            isAvailable: n.status === "active" && (swapType === SwapType.OnRamp ? !lockNetwork : !destNetworkIsAvailable),
+            isAvailable: n.status === "active" && (swapType === SwapType.OffRamp ? !destNetworkIsAvailable : !lockNetwork),
             isDefault: false
         })).sort(SortingByOrder);
 
@@ -99,6 +99,7 @@ type ExchangeMenuItemsProps = {
     networks: CryptoNetwork[],
     sourceExchangeName: string,
     source: string,
+    destination: string,
     lockExchange: boolean
 }
 
@@ -109,9 +110,9 @@ const exchangeCurrencyIsAvailableForNetwork = ((ec: ExchangeCurrency & NetworkCu
         && !exchange.currencies.filter(c => c.asset === ec.asset && c.is_default).some(c => c.network === network.internal_name))
 })
 
-export const generateExchangeMenuItems = ({ exchanges, networks, values, resource_storage_url, sourceExchangeName, source, lockExchange }: ExchangeMenuItemsProps): SelectMenuItem<Exchange>[] => {
+export const generateExchangeMenuItems = ({ exchanges, networks, values, resource_storage_url, sourceExchangeName, source, destination, lockExchange }: ExchangeMenuItemsProps): SelectMenuItem<Exchange>[] => {
     const { swapType, from, to } = values
-    const isSourceExchangeAvailable = exchanges.some(e => (e?.internal_name?.toLowerCase() === sourceExchangeName?.toLowerCase() || e?.internal_name?.toLowerCase() === source?.toLowerCase()) && e.status === "active" && (swapType === SwapType.OffRamp ?
+    const isSourceExchangeAvailable = exchanges.some(e => (e?.internal_name?.toLowerCase() === sourceExchangeName?.toLowerCase() || e?.internal_name?.toLowerCase() === source?.toLowerCase() || e?.internal_name?.toLowerCase() === destination?.toLowerCase()) && e.status === "active" && (swapType === SwapType.OffRamp ?
         e.currencies.some(ec => (from ? exchangeCurrencyIsAvailableForNetwork(ec, from.baseObject, e, swapType) : networks.some(n => exchangeCurrencyIsAvailableForNetwork(ec, n, e, swapType))))
         : e.currencies.some(ec => (to ? exchangeCurrencyIsAvailableForNetwork(ec, to.baseObject, e, swapType) : networks.some(n => exchangeCurrencyIsAvailableForNetwork(ec, n, e, swapType)))))
     )
@@ -128,7 +129,7 @@ export const generateExchangeMenuItems = ({ exchanges, networks, values, resourc
             name: e.display_name,
             order: ExchangeSettings.KnownSettings[e.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${e.internal_name.toLowerCase()}.png`,
-            isAvailable: e.status === "active" && !(swapType === SwapType.OnRamp ? (lockExchange || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.onramp) : (isSourceExchangeAvailable || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.offramp)),
+            isAvailable: e.status === "active" && !(swapType === SwapType.OnRamp ? (lockExchange || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.onramp) : ((sourceExchangeName && isSourceExchangeAvailable) || ExchangeSettings?.ForceDisable?.[e?.internal_name]?.offramp)),
             isDefault: false
         })).sort(SortingByOrder);
 
