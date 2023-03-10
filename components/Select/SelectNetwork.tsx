@@ -31,7 +31,7 @@ const SelectNetwork = forwardRef(({ direction, label }: Props, ref: any) => {
         placeholder = "Exchange";
     }
     else {
-        menuItems = generateNetworkMenuItems({ values, networks, resource_storage_url, destNetwork, lockNetwork, direction, exchanges })
+        menuItems = generateNetworkMenuItems({ values, networks, resource_storage_url, destNetwork, lockNetwork, direction, exchanges, source, destination })
         placeholder = "Network";
     }
 

@@ -9,7 +9,7 @@ function usePersistedState<T>(defaultValue: T, key: string, type: storageType = 
 
     return value ? (JSON.parse(value || "null") as T) : defaultValue;
   });
-  console.log(value)
+
   useEffect(() => {
     checkStorageIsAvailable(type) && window[type]?.setItem(key, JSON.stringify(value));
   }, [key, value]);
