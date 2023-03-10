@@ -29,8 +29,8 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
         return 0
 
     let refule = 0;
-    if (swapFormData?.swapType === SwapType.OnRamp && NetworkSettings.KnownSettings[destinationNetwork.internal_name]?.Refuel && sourceNetwork.refuel_amount_in_usd > 0) {
-        refule += sourceNetwork.refuel_amount_in_usd / currency.baseObject.usd_price;
+    if (swapFormData?.swapType === SwapType.OnRamp && NetworkSettings.KnownSettings[destinationNetwork.internal_name]?.Refuel && destinationNetwork.refuel_amount_in_usd > 0) {
+        refule += destinationNetwork.refuel_amount_in_usd / currency.baseObject.usd_price;
     }
 
     return (destinationNetworkCurrency.withdrawal_fee + sourceNetworkCurrency.deposit_fee + destinationNetworkCurrency.base_fee);
