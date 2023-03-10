@@ -1,4 +1,4 @@
-import { Dispatch, FC, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef } from 'react'
+import { Dispatch, FC, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
 import { XIcon } from '@heroicons/react/outline';
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useQueryState } from '../context/query';
@@ -6,6 +6,8 @@ import { useRouter } from 'next/router';
 import { forwardRef } from 'react';
 import { Root, Portal, Overlay, Content, Title, Close, } from '@radix-ui/react-dialog';
 import inIframe from './utils/inIframe';
+import { variants } from '../tailwind.config';
+import { ReactPortal } from './Wizard/Widget';
 
 type modalSize = 'small' | 'medium' | 'large';
 export type modalHeight = 'auto' | 'large';
@@ -167,7 +169,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${modalHeight === 'large' ? 'min-h-[80%]' : ''} group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue ${className} shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
+                className={`group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue ${className} shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
                 initial={{ y: "100%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
@@ -203,12 +205,44 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                         </div>
                     }
                 </div>
-                <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto ${inIframe() && 'styled-scroll'}`}>
+                <div className={`${modalHeight === 'large' ? 'h-[calc(100vh)]' : ''} ${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto ${inIframe() && 'styled-scroll'}`}>
                     {children}
                 </div>
+                <div id='test' />
             </motion.div>
         </div>
     )
 })
+
+export const ModalFooter: FC = ({ children }) => {
+    const [height, setHeight] = useState(0)
+    const footerRef = useRef(null)
+
+    const handleAnimationEnd = (variant) => {
+        if (variant == "center") {
+            setHeight(footerRef?.current?.clientHeight)
+        }
+    }
+
+    return (
+        <ReactPortal wrapperId="test">
+            <motion.div
+                onAnimationComplete={handleAnimationEnd}
+                ref={footerRef}
+                transition={{
+                    duration: 0.15,
+                }}
+                custom={{ direction: "back" ? -1 : 1, width: 100 }}
+                variants={variants}
+                className={`text-white text-base 
+                 max-sm:fixed 
+                 max-sm:inset-x-0 
+                 max-sm:bottom-0
+                 max-sm:z-30 max-sm:bg-darkblue max-sm:shadow-widget-footer max-sm:p-4 max-sm:px-6 max-sm:w-full`}>
+                {children}
+            </motion.div>
+        </ReactPortal>
+    )
+}
 
 export default Modal;

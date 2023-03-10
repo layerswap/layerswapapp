@@ -24,6 +24,12 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
     const [open, setOpen] = useState(false)
     const [openAnimaionCompleted, setOpenAnimationCompleted] = useState(false)
 
+    if (open) {
+        document.body.style.overflow = 'hidden'
+    }
+    else {
+        document.body.style.overflow = ''
+    }
 
     const mobileModalRef = useRef(null)
     const { width } = useWindowDimensions()
@@ -66,7 +72,7 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
         <>
             <span>{opener && opener(handleOpen)}</span>
             <AnimatePresence>
-                {open &&
+                {open && width > 640 &&
                     <motion.div
                         onAnimationComplete={handleAnimationCompleted}
                         initial={{ y: "100%" }}
@@ -79,7 +85,7 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                             transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
                         }}
                         className={`absolute inset-0 z-40 w-full ${heightControl} hidden sm:block`}>
-                        <div className={`relative z-40 overflow-hidden flex flex-col rounded-t-2xl md:rounded-none bg-darkblue h-full space-y-3 py-4 ${!noPadding ? 'px-6 sm:px-8' : ''}`}>
+                        <div className={`relative z-40 flex flex-col rounded-t-2xl md:rounded-none bg-darkblue h-full space-y-3 py-4 ${!noPadding ? 'px-6 sm:px-8' : ''}`}>
                             <div className={`flex items-center justify-between text-primary-text ${noPadding ? 'px-6 sm:px-8' : ''}`}>
                                 <div className="text-xl text-white font-semibold">
                                     <p>{header}</p>
@@ -96,25 +102,20 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                                     <XIcon className="h-7 w-7" aria-hidden="true" />
                                 </button>
                             </div>
-                            <div className='text-primary-text relative items-center justify-center text-center h-full'>
+                            <div className='text-primary-text relative items-center justify-center text-center h-full overflow-y-auto styled-scroll'>
                                 {children && children(handleClose, openAnimaionCompleted)}
                             </div>
+                            <div id="test"/>
+
                         </div>
                     </motion.div>
                 }
             </AnimatePresence>
             <AnimatePresence>
                 {open && width < 640 &&
-                    <Root open={open} >
-                        <Portal>
-                            <Overlay />
-                            <Content>
-                                <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} description={subHeader} className={moreClassNames}>
-                                    {children && children(handleClose, openAnimaionCompleted)}
-                                </MobileModalContent>
-                            </Content>
-                        </Portal>
-                    </Root>
+                    <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
+                        {children && children(handleClose, openAnimaionCompleted)}
+                    </MobileModalContent>
                 }
             </AnimatePresence>
         </>
