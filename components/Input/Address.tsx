@@ -60,7 +60,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const inputReference = useRef(null);
 
-        const valid_addresses = address_book?.filter(a => isValidAddress(a.address, values.from.baseObject))
+        const valid_addresses = address_book?.filter(a => isValidAddress(a.address, values.to.baseObject))
             ?.sort((a) => a.networks.some(n => n.toLowerCase() === values.to?.baseObject?.internal_name?.toLowerCase()) ? -1 : 1)
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
@@ -252,43 +252,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </motion.span>
                                 }
                                 {
-                                    chains
-                                    && !isConnected && !inputAddressisValid &&
-                                    <motion.span className="inline-flex items-center mr-2 shrink"
-                                        transition={{
-                                            width: { ease: 'linear' }
-                                        }}>
-                                        <motion.div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
-                                            <motion.button
-                                                type="button"
-                                                className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100"
-                                            >
-                                                <motion.div className="flex items-center" >
-                                                    {
-                                                        loading ? <SpinIcon className="animate-spin h-4 w-4" />
-                                                            : <LinkIcon className="h-4 w-4" />
-                                                    }
-                                                    <RainbowKit chainIds={chains} >
-                                                        <motion.span className={classNames(autofillEnabled ? 'ml-3' : '', "block truncate text-clip")}
-                                                            variants={
-                                                                {
-                                                                    inputFocused: {
-                                                                        width: '0',
-                                                                    }
-                                                                }
-                                                            }>
-                                                            Connect wallet
-                                                        </motion.span>
-                                                    </RainbowKit>
-                                                </motion.div>
-                                            </motion.button>
-                                        </motion.div>
-                                    </motion.span>
-                                }
-                                {
-                                    inputAddressisValid &&
+                                    inputValue &&
                                     <span className="inline-flex items-center mr-2">
-                                        <div className="text-xs flex items-center space-x-2 ml-3 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
+                                        <div className="text-xs flex items-center space-x-2 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
                                             {
                                                 values?.to?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
                                                 <span className="inline-flex items-center mr-2">
@@ -361,11 +327,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                                 <div className="text-gray-500">
                                                                     {
                                                                         difference_in_days === 0 ?
-                                                                            <>Last used today</>
+                                                                            <>Used today</>
                                                                             :
                                                                             (difference_in_days > 1 ?
-                                                                                <>Last used {difference_in_days} days ago</>
-                                                                                : <>Last used yesterday</>)
+                                                                                <>Used {difference_in_days} days ago</>
+                                                                                : <>Used yesterday</>)
                                                                     }
                                                                 </div>
                                                             </div>
@@ -389,10 +355,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         </div>
                     }
                     <ModalFooter>
-                        <label htmlFor="address_confirm" className='flex items-center text-sm md:text-sm font-medium mb-4'>
-                            <ExclamationIcon className='h-6 w-6 mr-2' />
-                            I am the owner of this address
-                        </label>
                         <SubmitButton type="button" isDisabled={!inputAddressisValid} isSubmitting={false} onClick={handleSetNewAddress} >
                             Confirm
                         </SubmitButton>
