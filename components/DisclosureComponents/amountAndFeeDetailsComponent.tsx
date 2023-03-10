@@ -19,8 +19,8 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     let receive_amount = CalculateReceiveAmount(values, networks);
 
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
-    const refuel_usd_price = currencies.find(c => c.asset === destination_native_currency)
-    const refuel = roundDecimals(CaluclateRefuelAmount(values, networks), refuel_usd_price?.usd_price?.toFixed()?.length)
+    const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
+    const refuel = roundDecimals(CaluclateRefuelAmount(values, networks), refuel_native_currency?.usd_price?.toFixed()?.length)
 
     return (
         <>
