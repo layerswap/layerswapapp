@@ -303,7 +303,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                 disabled={disabled}
                                                 className={({ checked, disabled }) =>
                                                     classNames(
-                                                        checked ? ' border-primary-900 z-10' : '',
                                                         disabled ? ' cursor-not-allowed ' : ' cursor-pointer ',
                                                         'relative flex focus:outline-none mt-2 mb-3  '
                                                     )
@@ -314,7 +313,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                     return (
                                                         <RadioGroup.Description
                                                             as="span"
-                                                            className='flex text-sm justify-between rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:bg-darkblue-700/70 hover:shadow-xl'
+                                                            className={`flex text-sm justify-between rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
                                                         >
                                                             <div className="flex flex-col">
                                                                 <div className="block text-sm font-medium">
