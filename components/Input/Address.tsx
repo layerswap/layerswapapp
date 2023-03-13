@@ -56,11 +56,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue
         } = useFormikContext<SwapFormValues>();
 
-        const { openConnectModal } = useConnectModal();
-
         const inputReference = useRef(null);
 
-        const valid_addresses = address_book?.filter(a => isValidAddress(a.address, values.to.baseObject))
+        const valid_addresses = address_book?.filter(a => values.swapType === SwapType.OffRamp ? a.exchanges.some(e => values.to.baseObject.internal_name) : isValidAddress(a.address, values.to.baseObject))
             ?.sort((a) => a.networks.some(n => n.toLowerCase() === values.to?.baseObject?.internal_name?.toLowerCase()) ? -1 : 1)
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
@@ -71,9 +69,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
-
-        console.log("openConnectModal", openConnectModal)
-
+        const resource_storage_url = settings.discovery.resource_storage_url
         const { address, status, isConnected, isConnecting, isDisconnected, connector } = useAccount({
             onConnect({ address, connector, isReconnected }) {
                 setInputValue(address)
@@ -337,7 +333,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                             </div>
                                                             <motion.div whileTap={{ scale: 1.05 }} className='flex text-primary-text flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md space-x-1'>
                                                                 <span>Transfered to</span>
-                                                                <AvatarGroup imageUrls={a.networks?.map(address_network => `${settings.discovery.resource_storage_url}/layerswap/networks/${address_network.toLowerCase()}.png`)} />
+                                                                <AvatarGroup imageUrls={values.swapType === SwapType.OffRamp ? a.exchanges?.map(address_excange => GetIcon({ internal_name: address_excange, resource_storage_url }))
+                                                                    : a.networks?.map(address_network => GetIcon({ internal_name: address_network, resource_storage_url }))} />
                                                             </motion.div>
                                                         </RadioGroup.Description>
                                                     )
@@ -363,5 +360,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             </div>
         </div>)
     });
+
+function GetIcon({ internal_name, resource_storage_url }) {
+    return `${resource_storage_url}/layerswap/networks/${internal_name.toLowerCase()}.png`;
+}
 
 export default Address
