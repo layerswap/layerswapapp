@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef } from "react";
 import { FC, useState } from "react"
 import { MobileModalContent, modalHeight } from "./modalComponent";
-import { Root, Portal, Overlay, Content, } from '@radix-ui/react-dialog';
 import useWindowDimensions from "../hooks/useWindowDimensions";
 
 export type slideOverPlace = 'inStep' | 'inModal' | 'inMenu'
@@ -23,8 +22,10 @@ type Props = {
 const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children, subHeader }) => {
     const [open, setOpen] = useState(false)
     const [openAnimaionCompleted, setOpenAnimationCompleted] = useState(false)
+    const { width } = useWindowDimensions()
+    const isMobile = width < 640
 
-    if (open) {
+    if (open && isMobile) {
         document.body.style.overflow = 'hidden'
     }
     else {
@@ -32,7 +33,6 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
     }
 
     const mobileModalRef = useRef(null)
-    const { width } = useWindowDimensions()
     const handleClose = () => {
         setOpen(false)
         setOpenAnimationCompleted(false)
@@ -72,7 +72,7 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
         <>
             <span>{opener && opener(handleOpen)}</span>
             <AnimatePresence>
-                {open && width > 640 &&
+                {open && !isMobile &&
                     <motion.div
                         onAnimationComplete={handleAnimationCompleted}
                         initial={{ y: "100%" }}
@@ -105,15 +105,14 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                             <div className='text-primary-text relative items-center justify-center text-center h-full overflow-y-auto styled-scroll'>
                                 {children && children(handleClose, openAnimaionCompleted)}
                             </div>
-                            <div id="test"/>
-
+                            <div id="test" />
                         </div>
                     </motion.div>
                 }
             </AnimatePresence>
             <AnimatePresence>
-                {open && width < 640 &&
-                    <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
+                {open && isMobile &&
+                    <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} description={subHeader} className={moreClassNames}>
                         {children && children(handleClose, openAnimaionCompleted)}
                     </MobileModalContent>
                 }
