@@ -6,7 +6,7 @@ import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
-import roundDecimals from '../utils/RoundDecimals';
+import roundDecimals, { truncateDecimals } from '../utils/RoundDecimals';
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
@@ -20,7 +20,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
 
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
-    const refuel = roundDecimals(CaluclateRefuelAmount(values, networks), refuel_native_currency?.usd_price?.toFixed()?.length)
+    const refuel = truncateDecimals(CaluclateRefuelAmount(values, networks), refuel_native_currency?.precision)
 
     return (
         <>

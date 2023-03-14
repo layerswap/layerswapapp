@@ -60,7 +60,8 @@ export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks
 
     if (amount >= minAllowedAmount) {
         let fee = CalculateFee(swapFormData, allNetworks);
-        var result = amount - fee;
+        const refuel = CaluclateRefuelAmount(swapFormData, allNetworks)
+        var result = amount - fee - refuel;
         if (swapFormData.swapType == SwapType.OnRamp && swapFormData.from?.baseObject?.authorization_flow == "o_auth2") {
             let exchangeFee = GetExchangeFee(swapFormData.currency?.baseObject?.asset, swapFormData.from?.baseObject);
             result -= exchangeFee;
@@ -100,9 +101,9 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
     }
     const destinationNetwork = swapType === SwapType.OffRamp ? allNetworks.find(n => n.internal_name === to?.baseObject?.currencies.find(c => c.asset === currency?.baseObject?.asset && c.is_default)?.network) : to?.baseObject
     const destinationNetworkCurrency = destinationNetwork?.currencies?.find(c => c.asset === currency?.baseObject?.asset)
-    
+
     const refuel = CaluclateRefuelAmount(swapFormData, allNetworks)
     minAmount += destinationNetworkCurrency?.base_fee + refuel
-    
+
     return roundDecimals(minAmount, currency.baseObject?.usd_price?.toFixed()?.length) || 0
 }
