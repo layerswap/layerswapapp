@@ -219,7 +219,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                                 <ClickTooltip text="You will get a small amount of ETH that you can use to pay for gas fees." />
                                             </p>
                                             <p className="font-light text-xs">
-                                                Get {destination_native_currency} to pay fees in {values.to.baseObject.display_name}
+                                                Get <span className="font-semibold">{destination_native_currency}</span> to pay fees in {values.to.baseObject.display_name}
                                             </p>
                                         </div>
                                     </div>
