@@ -25,6 +25,10 @@ import SpinIcon from "../../../icons/spinIcon";
 import { useQueryState } from "../../../../context/query";
 import { useSettingsState } from "../../../../context/settings";
 import { isValidAddress } from "../../../../lib/addressValidator";
+import RefuelIcon from "../../../icons/RefuelIcon";
+import ClickTooltip from "../../../Tooltips/ClickTooltip";
+import ToggleButton from "../../../buttons/toggleButton";
+import { CalculateMinAllowedAmount } from "../../../../lib/fees";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -39,16 +43,17 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
     const { swapType, to } = values
+    const settings = useSettingsState();
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
+    const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks);
     const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name}.png` : null
     const router = useRouter();
     const [loadingDepositAddress, setLoadingDepositAddress] = useState(false)
     const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
-    const settings = useSettingsState();
 
     const lockAddress =
         (values.destination_address && values.to)
@@ -58,6 +63,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const closeExchangeConnect = (open) => {
         setLoadingDepositAddress(open)
         setOpenExchangeConnect(open)
+    }
+
+    const handleConfirmToggleChange = (value: boolean) => {
+        setFieldValue('refuel', value)
     }
 
     const handleSetExchangeDepositAddress = useCallback(async () => {
@@ -107,7 +116,16 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     useEffect(() => {
         if (depositeAddressIsfromAccountRef.current)
             handleExchangeConnected()
+        if (swapType !== SwapType.OffRamp && !values?.to?.baseObject?.currencies.find(c => c.asset === values?.currency?.baseObject?.asset)?.is_refuel_enabled) {
+            handleConfirmToggleChange(false)
+        }
     }, [values.currency])
+
+    useEffect(() => {
+        if (swapType !== SwapType.OffRamp && values.refuel && values.amount && Number(values.amount) < minAllowedAmount) {
+            setFieldValue('amount', minAllowedAmount)
+        }
+    }, [values.refuel])
 
     const exchangeRef = useRef(to?.id);
 
@@ -118,7 +136,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         }
         exchangeRef.current = to?.id
     }, [to])
-
+    const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     return <>
         <Form className="h-full" >
             {swapType === SwapType.OffRamp &&
@@ -190,6 +208,24 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                 </div>
                         }
                         <div className="w-full">
+                            {
+                                values?.swapType !== SwapType.OffRamp && values?.to?.baseObject.currencies.find(c => c.asset === values?.currency?.name)?.is_refuel_enabled &&
+                                <div className="flex items-center justify-between px-3.5 py-3 bg-darkblue-700 border border-darkblue-500 rounded-lg mb-4">
+                                    <div className="flex items-center space-x-2">
+                                        <RefuelIcon className='h-8 w-8 text-primary' />
+                                        <div>
+                                            <p className="font-medium flex items-center">
+                                                <span>Need gas?</span>
+                                                <ClickTooltip text="You will get a small amount of ETH that you can use to pay for gas fees." />
+                                            </p>
+                                            <p className="font-light text-xs">
+                                                Get {destination_native_currency} to pay fees in {values.to.baseObject.display_name}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <ToggleButton name="refuel" value={values?.refuel} onChange={handleConfirmToggleChange} />
+                                </div>
+                            }
                             <AmountAndFeeDetails values={values} />
                         </div>
                     </Widget.Content>

@@ -68,7 +68,7 @@ export function SwapDataProvider({ children }) {
         if (!formData)
             throw new Error("No swap data")
 
-        const { to, currency, from } = formData
+        const { to, currency, from, refuel } = formData
 
         if (!to || !currency || !from)
             throw new Error("Form data is missing")
@@ -87,10 +87,10 @@ export function SwapDataProvider({ children }) {
         }
 
         if (formData.swapType === SwapType.OnRamp) {
-            const destination_currency = formData?.to?.baseObject?.currencies?.find(c=>c.asset === formData?.currency?.baseObject?.asset)
+            const destination_currency = formData?.to?.baseObject?.currencies?.find(c => c.asset === formData?.currency?.baseObject?.asset)
             data.source_exchange = from?.id;
             data.destination_network = to?.id;
-            data.refuel = !!destination_currency?.is_refuel_enabled
+            data.refuel = refuel
         }
         else if (formData.swapType === SwapType.OffRamp) {
             data.source_network = from?.id;
@@ -98,6 +98,7 @@ export function SwapDataProvider({ children }) {
         } else {
             data.source_network = from?.id;
             data.destination_network = to?.id
+            data.refuel = refuel
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
