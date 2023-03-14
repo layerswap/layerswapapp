@@ -1,5 +1,5 @@
-import { SwitchHorizontalIcon } from '@heroicons/react/outline';
-import { CheckIcon, XIcon } from '@heroicons/react/solid';
+import { LinkIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
+import { CheckIcon, HomeIcon, ChatIcon, XIcon } from '@heroicons/react/solid';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
@@ -19,11 +19,19 @@ import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
+import WithdrawFromWallet from './Wallet/WithdrawFromWallet';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import RainbowKit from './Wallet/RainbowKit';
+import { mainnet, polygon, optimism, arbitrum, arbitrumGoerli, } from 'wagmi/chains';
+
+
+const CAINS = [mainnet, polygon, optimism, arbitrum, arbitrumGoerli]
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks } = useSettingsState()
+    const [openWithdrawFromWallet, setOpenWithdrawFromWallet] = useState(false)
+    const { networks, currencies, exchanges, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
@@ -77,6 +85,14 @@ const WithdrawNetworkStep: FC = () => {
         setOpenCancelConfirmModal(true)
     }
     const userGuideUrlForDesktop = NetworkSettings.KnownSettings[source_network_internal_name]?.UserGuideUrlForDesktop
+
+    const handleOpenWithdrawFromWallet = () => {
+        setOpenWithdrawFromWallet(true)
+    }
+
+    const source_chain_id = NetworkSettings.KnownSettings[source_network.internal_name]?.ChainId
+
+    const chain = source_chain_id ? CAINS.find(ch => ch.id === source_chain_id) : null
 
     return (
         <>
@@ -167,6 +183,11 @@ const WithdrawNetworkStep: FC = () => {
                     {
                         !transferDone &&
                         <>
+                            <div className='mb-4'>
+                                {swap && chain &&
+                                    <RainbowKit />
+                                }
+                            </div>
                             <div className="flex text-center mb-4 space-x-2">
                                 <div className='relative'>
                                     <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>

@@ -1,10 +1,9 @@
-import { Form, FormikErrors, useField, useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Form, FormikErrors, useFormikContext } from "formik";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import Image from 'next/image';
 import SwapButton from "../../../buttons/swapButton";
 import React from "react";
-import { classNames } from "../../../utils/classNames";
 import SwapOptionsToggle from "../../../SwapOptionsToggle";
 import SelectNetwork from "../../../Select/SelectNetwork";
 import AmountField from "../../../Input/Amount";
@@ -24,16 +23,14 @@ import SpinIcon from "../../../icons/spinIcon";
 import { useQueryState } from "../../../../context/query";
 import { useSettingsState } from "../../../../context/settings";
 import { isValidAddress } from "../../../../lib/addressValidator";
-import ToggleButton from "../../../buttons/toggleButton";
-import RefuelIcon from "../../../icons/RefuelIcon";
-import ClickTooltip from "../../../Tooltips/ClickTooltip";
 import { CalculateMinAllowedAmount } from "../../../../lib/fees";
 import Address from "../../../Input/Address";
 import NetworkSettings from "../../../../lib/NetworkSettings";
 import shortenAddress from "../../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../../Models/ApiResponse";
-import * as Dialog from "@radix-ui/react-dialog";
+import { motion } from "framer-motion";
+import AvatarGroup from "../../../AvatarGroup";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -148,6 +145,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         }
     }, [values.refuel])
 
+    const availableNetworks = values.swapType === SwapType.OffRamp && values.currency && values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
+    const destinationNetworks = values.swapType === SwapType.OffRamp && settings.networks.filter(n => availableNetworks && availableNetworks.includes(n.internal_name))
+
     return <>
 
         <Form className="h-full" >
@@ -182,7 +182,18 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
                                 {`To ${values?.to?.name || ''} address`}
                             </label>
-                            <SlideOver modalHeight="large"
+                            <SlideOver
+                                header={`To ${values?.to?.name || ''} address`}
+                                subHeader={
+                                    values?.swapType === SwapType.OffRamp &&
+                                    <motion.div whileTap={{ scale: 1.05 }} className='text-xs w-fit flex flex-row items-center justify-start'>
+                                        <span>
+                                            Make sure the address is in one of the networks
+                                        </span>
+                                        <AvatarGroup imageUrls={destinationNetworks?.map(network => `${settings.discovery.resource_storage_url}/layerswap/networks/${network.internal_name.toLowerCase()}.png`)} />
+                                    </motion.div>
+                                }
+                                modalHeight="large"
                                 opener={(open => <AddressButton
                                     disabled={!values.to || !values.from}
                                     isPartnerWallet={isPartnerWallet}

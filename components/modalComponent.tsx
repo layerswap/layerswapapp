@@ -1,4 +1,4 @@
-import { Dispatch, FC, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef } from 'react'
+import { Dispatch, FC, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
 import { XIcon } from '@heroicons/react/outline';
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useQueryState } from '../context/query';
@@ -6,6 +6,8 @@ import { useRouter } from 'next/router';
 import { forwardRef } from 'react';
 import { Root, Portal, Overlay, Content, Title, Close, } from '@radix-ui/react-dialog';
 import inIframe from './utils/inIframe';
+import { variants } from '../tailwind.config';
+import { ReactPortal } from './Wizard/Widget';
 
 type modalSize = 'small' | 'medium' | 'large';
 export type modalHeight = 'auto' | 'large';
@@ -15,6 +17,7 @@ class ModalParams {
     setShowModal: Dispatch<SetStateAction<boolean>>;
     closeWithX?: boolean;
     title?: React.ReactNode;
+    description?: JSX.Element | string;
     className?: string;
     modalSize?: modalSize = "large";
     modalHeight?: modalHeight = "auto";
@@ -123,7 +126,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
     );
 }
 
-export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, onAnimationCompleted, setShowModal, children, title, className, modalHeight }, topmostRef) => {
+export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, onAnimationCompleted, setShowModal, children, title, className, modalHeight, description }, topmostRef) => {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 42 };
@@ -166,7 +169,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${modalHeight === 'large' ? 'min-h-[80%]' : ''} group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue ${className} shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
+                className={`group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue ${className} shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
                 initial={{ y: "100%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
@@ -178,28 +181,68 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 dragConstraints={{ top: 0, bottom: 0 }}
                 onAnimationComplete={onAnimationCompleted}
             >
-                <div className='px-5 grid grid-cols-6 items-center py-3 rounded-t-2xl bg-darkblue'>
-                    <button ref={closeButtonRef} tabIndex={-1} className='text-base text-gray-600 col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
-                        Close
-                    </button>
+                <div className='px-5 py-3 rounded-t-2xl bg-darkblue'>
+                    <div className='grid grid-cols-6 items-center'>
+                        <button ref={closeButtonRef} tabIndex={-1} className='text-base text-gray-600 col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
+                            Close
+                        </button>
+                        {
+                            title ?
+                                <div tabIndex={-1} className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-primary-text">
+                                    {title}
+                                </div>
+                                :
+                                <div tabIndex={-1} className="rounded-t-4xl flex items-center col-start-2 col-span-4 justify-self-center">
+                                    <div className="-mr-1 h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:rotate-12" />
+                                    <div className="h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:-rotate-12" />
+                                </div>
+                        }
+                    </div>
                     {
-                        title ?
-                            <div tabIndex={-1} className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-primary-text">
-                                {title}
-                            </div>
-                            :
-                            <div tabIndex={-1} className="rounded-t-4xl flex items-center col-start-2 col-span-4 justify-self-center">
-                                <div className="-mr-1 h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:rotate-12" />
-                                <div className="h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:-rotate-12" />
-                            </div>
+                        description &&
+                        <div className='text-primary-text opacity-70 flex justify-center'>
+                            {description}
+                        </div>
                     }
                 </div>
-                <div className={`${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto ${inIframe() && 'styled-scroll'}`}>
+                <div className={`${modalHeight === 'large' ? 'h-[calc(100vh)]' : ''} ${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto ${inIframe() && 'styled-scroll'}`}>
                     {children}
                 </div>
+                <div id='test' />
             </motion.div>
         </div>
     )
 })
+
+export const ModalFooter: FC = ({ children }) => {
+    const [height, setHeight] = useState(0)
+    const footerRef = useRef(null)
+
+    const handleAnimationEnd = (variant) => {
+        if (variant == "center") {
+            setHeight(footerRef?.current?.clientHeight)
+        }
+    }
+
+    return (
+        <ReactPortal wrapperId="test">
+            <motion.div
+                onAnimationComplete={handleAnimationEnd}
+                ref={footerRef}
+                transition={{
+                    duration: 0.15,
+                }}
+                custom={{ direction: "back" ? -1 : 1, width: 100 }}
+                variants={variants}
+                className={`text-white text-base 
+                 max-sm:fixed 
+                 max-sm:inset-x-0 
+                 max-sm:bottom-0
+                 max-sm:z-30 max-sm:bg-darkblue max-sm:shadow-widget-footer max-sm:p-4 max-sm:px-6 max-sm:w-full`}>
+                {children}
+            </motion.div>
+        </ReactPortal>
+    )
+}
 
 export default Modal;

@@ -17,7 +17,7 @@ import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
 import NetworkSettings from '../../../../lib/NetworkSettings';
 
-const ConnectWalletStep: FC = () => {
+const ImtblxWalletWithdrawStep: FC = () => {
     const [loading, setLoading] = useState(false)
     const [verified, setVerified] = useState<boolean>()
     const [txidApplied, setTxidApplied] = useState(false)
@@ -82,8 +82,6 @@ const ConnectWalletStep: FC = () => {
         }
         setLoading(false)
     }, [source_network])
-
-
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)
@@ -150,4 +148,4 @@ const ConnectWalletStep: FC = () => {
 }
 
 
-export default ConnectWalletStep;
+export default ImtblxWalletWithdrawStep;

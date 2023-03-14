@@ -177,7 +177,8 @@ export type SwapItem = {
 export type AddressBookItem = {
     address: string,
     date: string,
-    networks: string[]
+    networks: string[],
+    exchanges: string[]
 }
 
 type Transaction = {
