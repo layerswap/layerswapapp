@@ -1,5 +1,5 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
-import roundDecimals from "../components/utils/RoundDecimals";
+import truncateDecimals, { roundDecimals } from "../components/utils/RoundDecimals";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
 import { Exchange } from "../Models/Exchange";
@@ -78,11 +78,11 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
     const isRefuelEnabled = to?.baseObject?.currencies.find(c => c.asset === currency.baseObject.asset)?.is_refuel_enabled && refuel
 
     const fee = CalculateFee(swapFormData, allNetworks)
-    let minAmount = roundDecimals(fee, currency.baseObject?.usd_price?.toFixed()?.length)
+    let minAmount = truncateDecimals(fee, currency.baseObject?.precision)
     if (from.baseObject.internal_name === KnownInternalNames.Exchanges.Coinbase && swapType === SwapType.OnRamp) {
         const exchangeCurrency = from?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)
         minAmount += exchangeCurrency.withdrawal_fee
-    } 
+    }
     if (swapType === SwapType.OffRamp && to.baseObject.currencies.find(c => c.asset === currency.baseObject.asset).min_deposit_amount) {
         minAmount += to.baseObject.currencies.find(c => c.asset === currency.baseObject.asset).min_deposit_amount
     }

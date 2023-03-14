@@ -11,7 +11,7 @@ import StatusIcon from './StatusIcons';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
-import roundDecimals from '../utils/RoundDecimals';
+import truncateDecimals from '../utils/RoundDecimals';
 
 type Props = {
     id: string
@@ -46,7 +46,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
 
     let feeInUsd = ""
     if (swap?.input_transaction)
-        feeInUsd = swap?.fee * swap?.input_transaction?.usd_price < 0.01 ? `0.01$<` : `(${roundDecimals(swap?.fee * swap?.input_transaction?.usd_price, 2)}$)`
+        feeInUsd = swap?.fee * swap?.input_transaction?.usd_price < 0.01 ? `0.01$<` : `(${truncateDecimals(swap?.fee * swap?.input_transaction?.usd_price, 2)}$)`
 
     useEffect(() => {
         (async () => {

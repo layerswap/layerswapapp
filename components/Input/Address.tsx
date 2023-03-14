@@ -23,10 +23,9 @@ import RainbowKit from "../Wizard/Steps/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
 import { disconnect } from '@wagmi/core'
 import { metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet } from '@rainbow-me/rainbowkit/wallets';
-import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { ReactPortal } from "../Wizard/Widget";
 import { ModalFooter } from "../modalComponent";
 import shortenAddress from "../utils/ShortenAddress";
+import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 
 const wallets = [metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet]
 
@@ -58,7 +57,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const inputReference = useRef(null);
 
-        const valid_addresses = address_book?.filter(a => values.swapType === SwapType.OffRamp ? a.exchanges.some(e => values.to.baseObject.internal_name) : isValidAddress(a.address, values.to.baseObject))
+        const valid_addresses = address_book?.filter(a => values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name) : isValidAddress(a.address, values.to.baseObject))
             ?.sort((a) => a.networks.some(n => n.toLowerCase() === values.to?.baseObject?.internal_name?.toLowerCase()) ? -1 : 1)
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
@@ -66,6 +65,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const [inputFocused, setInputFocused] = useState(false)
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
+        const [errorMesage, setErrorMessage] = useState('')
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
@@ -120,10 +120,16 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             close()
         }, [close])
 
-        const inputAddressisValid = isValidAddress(inputValue, values.to.baseObject)
+        const inputAddressIsValid = isValidAddress(inputValue, values.to.baseObject)
         const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+            setErrorMessage('')
             setInputValue(e.target.value)
             setAddressConfirmed(false)
+            if (inputValue && values.swapType !== SwapType.OffRamp && isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, e.target.value)) {
+                setErrorMessage(`You can not transfer to this address`);
+            } else if (e.target.value && !isValidAddress(e.target.value, values.to.baseObject)) {
+                setErrorMessage(`Enter a valid ${values.to.name} address`);
+            }
         }, [])
 
         const handleInputFocus = () => {
@@ -145,7 +151,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setInputValue(address)
         }
 
-        const autofillEnabled = !inputFocused && !inputAddressisValid
+        const autofillEnabled = !inputFocused && !inputAddressIsValid
         const chains: number[] = []
         values.swapType !== SwapType.OffRamp
         [NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name]?.ChainId]
@@ -164,7 +170,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             if (networkChainId)
                 chains.push(NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name]?.ChainId)
         }
-
 
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>
@@ -277,8 +282,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </span>
                                 }
                             </motion.div>
+                            <div className="basis-full leading-6 text-sm h-4 ">
+                                {errorMesage && errorMesage}
+                            </div>
                             {
-                                <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
+                                <div className="mx-auto w-full rounded-lg font-normal mt-4 basis-full">
                                     <div className='flex justify-between mb-4 md:mb-8 space-x-4'>
                                         <RainbowKit chainIds={chains} >
                                             <div className="ml-auto disabled:border-primary-900 rounded-md bg-primary px-5 py-2 text-md font-semibold leading-7 text-white">
@@ -351,13 +359,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         </div>
                     }
                     <ModalFooter>
-                        <SubmitButton type="button" isDisabled={!inputAddressisValid} isSubmitting={false} onClick={handleSetNewAddress} >
+                        <SubmitButton type="button" isDisabled={!inputAddressIsValid} isSubmitting={false} onClick={handleSetNewAddress} >
                             Confirm
                         </SubmitButton>
                     </ModalFooter>
                 </div>
             </div>
-        </div>)
+        </div >)
     });
 
 function GetIcon({ internal_name, resource_storage_url }) {

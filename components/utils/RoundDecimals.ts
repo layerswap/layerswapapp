@@ -1,4 +1,8 @@
-export default function roundDecimals(value: number, decimals: number) {
+export default function truncateDecimals(value: number, decimals: number) {
+    return Number((Number(value + 'e' + decimals)) + 'e-' + decimals);
+}
+
+export function roundDecimals(value: number, decimals: number) {
     if (decimals === 1) {
         decimals = 0
     }

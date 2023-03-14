@@ -169,7 +169,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue ${className} shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
+                className={`${modalHeight === 'large' ? 'h-[80%]' : ''} group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue ${className} shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
                 initial={{ y: "100%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
@@ -205,7 +205,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                         </div>
                     }
                 </div>
-                <div className={`${modalHeight === 'large' ? 'h-[calc(100vh)]' : ''} ${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto ${inIframe() && 'styled-scroll'}`}>
+                <div className={` ${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto ${inIframe() && 'styled-scroll'}`}>
                     {children}
                 </div>
                 <div id='test' />

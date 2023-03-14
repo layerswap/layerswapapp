@@ -5,7 +5,7 @@ import { SwapType } from '../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
-import roundDecimals from '../utils/RoundDecimals';
+import truncateDecimals, { roundDecimals } from '../utils/RoundDecimals';
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
@@ -17,8 +17,9 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     let fee = CalculateFee(values, networks) + (refuel ? (1 / currency?.baseObject?.usd_price) : 0);
     let receive_amount = CalculateReceiveAmount(values, networks)
 
-    const refuelCurrencyUsdPrice = swapType !== SwapType.OffRamp && currencies.find(c => c.asset === to?.baseObject?.native_currency)?.usd_price
-    const refuelAmount = swapType !== SwapType.OffRamp && `+ ${roundDecimals((1 / refuelCurrencyUsdPrice), refuelCurrencyUsdPrice?.toFixed()?.length)} ${to?.baseObject?.native_currency}`
+    const refuelCurrencyPrecision = swapType !== SwapType.OffRamp && currencies.find(c => c.asset === to?.baseObject?.native_currency)?.precision
+    const refuelCurrencyInUsd = swapType !== SwapType.OffRamp && currencies.find(c => c.asset === to?.baseObject?.native_currency)?.precision
+    const refuelAmount = swapType !== SwapType.OffRamp && `+ ${truncateDecimals((1 / refuelCurrencyInUsd), refuelCurrencyPrecision)} ${to?.baseObject?.native_currency}`
 
     const feeInUsd = fee * currency?.baseObject?.usd_price < 0.01 ? `0.01$<` : `(${roundDecimals(fee * currency?.baseObject?.usd_price, 2)}$)`
 

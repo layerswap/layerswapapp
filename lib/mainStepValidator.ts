@@ -57,6 +57,6 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         return Object.assign(errorsOrder, errors);
     };
 }
-function isBlacklistedAddress(blacklisted_addresses: BlacklistedAddress[], network: CryptoNetwork, address: string) {
+export function isBlacklistedAddress(blacklisted_addresses: BlacklistedAddress[], network: CryptoNetwork, address: string) {
     return blacklisted_addresses?.some(ba => (!ba.network || ba.network === network?.internal_name) && ba.address?.toLowerCase() === address?.toLowerCase());
 }
