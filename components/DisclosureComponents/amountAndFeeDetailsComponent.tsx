@@ -2,25 +2,23 @@ import { ChevronDownIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount, CaluclateRefuelAmount } from '../../lib/fees';
 import { SwapType } from '../../lib/layerSwapApiClient';
-import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
-import roundDecimals, { truncateDecimals } from '../utils/RoundDecimals';
+import { truncateDecimals } from '../utils/RoundDecimals';
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
     const { networks, currencies } = useSettingsState()
-
     const { currency, from, to, swapType } = values || {}
 
     let exchangeFee = swapType === SwapType.OnRamp && parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
     let fee = CalculateFee(values, networks);
-    let receive_amount = CalculateReceiveAmount(values, networks);
+    let receive_amount = CalculateReceiveAmount(values, networks, currencies);
 
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
-    const refuel = truncateDecimals(CaluclateRefuelAmount(values, networks), refuel_native_currency?.precision)
+    const refuel = truncateDecimals(CaluclateRefuelAmount(values, networks, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
 
     return (
         <>
