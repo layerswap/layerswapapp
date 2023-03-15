@@ -19,10 +19,6 @@ const ProcessingStep: FC = () => {
     const settings = useSettingsState()
 
     const source_display_name = swap?.source_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.display_name : settings?.networks?.find(e => e.internal_name == swap?.source_network)?.display_name
-    const source_internal_name = swap?.source_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.internal_name : settings?.networks?.find(e => e.internal_name == swap?.source_network)?.internal_name
-    const destination_internal_name = swap?.destination_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.destination_exchange)?.internal_name : settings?.networks?.find(e => e.internal_name == swap?.destination_network)?.internal_name
-    const destination_display_name = swap?.destination_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.destination_exchange)?.display_name : settings?.networks?.find(e => e.internal_name == swap?.destination_network)?.display_name
-
     useEffect(() => {
         setInterval(10000)
         return () => setInterval(0)
@@ -48,7 +44,9 @@ const ProcessingStep: FC = () => {
     }
 
     const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
-    const input_tx_id = source_network?.transaction_explorer_template
+    const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
+    const input_tx_explorer = source_network?.transaction_explorer_template
+    const output_tx_explorer = destination_network?.transaction_explorer_template
 
     const progress = [
         {
@@ -56,7 +54,7 @@ const ProcessingStep: FC = () => {
                 <div className='flex items-center space-x-1'>
                     <span>Source Tx </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={input_tx_id.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
+                        <a target={"_blank"} href={input_tx_explorer.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
                         <ExternalLinkIcon className='h-4' />
                     </div>
                 </div>
@@ -68,7 +66,18 @@ const ProcessingStep: FC = () => {
             status: (status === 2 && 'current') || (status === 3 && 'complete') || (status === 1 && 'upcoming'),
             description: status! >= 2 ? <div>Confirmations: <span className='text-white'>{swap?.input_transaction?.confirmations ?? 0}</span>/{swap?.input_transaction?.max_confirmations}</div> : ""
         },
-        { name: status === 3 ? 'Your assets are on their way' : 'Transfer of assets to your address', status: status < 3 ? 'upcoming' : 'current', description: '' },
+        {
+            name: status === 3 ? 'Your assets are on their way' : 'Transfer of assets to your address',
+            status: status < 3 ? 'upcoming' : 'current',
+            description:
+                swap?.output_transaction && <div className='flex items-center space-x-1'>
+                    <span>Destination Tx </span>
+                    <div className='underline hover:no-underline flex items-center space-x-1'>
+                        <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                        <ExternalLinkIcon className='h-4' />
+                    </div>
+                </div>
+        },
     ]
 
     if (!swap) return <></>

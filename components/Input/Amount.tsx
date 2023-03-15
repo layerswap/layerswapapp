@@ -9,7 +9,7 @@ import NumericInput from "./NumericInput";
 const AmountField = forwardRef((_, ref: any) => {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { networks } = useSettingsState()
+    const { networks, currencies } = useSettingsState()
     const { currency, from, to, amount } = values
     const name = "amount"
 
@@ -19,7 +19,7 @@ const AmountField = forwardRef((_, ref: any) => {
         }
     }, [currency])
 
-    const minAllowedAmount = CalculateMinAllowedAmount(values, networks);
+    const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
     const maxAllowedAmount = CalculateMaxAllowedAmount(values, networks);
 
     const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
