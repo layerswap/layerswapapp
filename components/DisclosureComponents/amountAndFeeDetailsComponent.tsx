@@ -5,7 +5,6 @@ import { SwapType } from '../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
-import roundDecimals from '../utils/RoundDecimals';
 import { truncateDecimals } from '../utils/RoundDecimals';
 
 
