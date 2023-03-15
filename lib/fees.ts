@@ -1,5 +1,5 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
-import { roundDecimals, truncateDecimals } from "../components/utils/RoundDecimals";
+import { roundDecimals } from "../components/utils/RoundDecimals";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
 import { Exchange } from "../Models/Exchange";

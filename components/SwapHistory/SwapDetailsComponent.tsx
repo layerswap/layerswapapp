@@ -11,7 +11,7 @@ import StatusIcon from './StatusIcons';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
-import truncateDecimals from '../utils/RoundDecimals';
+import { truncateDecimals } from '../utils/RoundDecimals';
 
 type Props = {
     id: string
