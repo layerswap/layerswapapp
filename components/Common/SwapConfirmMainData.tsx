@@ -13,9 +13,9 @@ type Props = {
 
 const SwapConfirmMainData: FC<Props> = ({ children }) => {
     const { swapFormData } = useSwapDataState()
-    const { networks } = useSettingsState()
+    const { networks, currencies } = useSettingsState()
     const { amount, currency, from, to } = swapFormData || {}
-    const receive_amount = CalculateReceiveAmount(swapFormData, networks)
+    const receive_amount = CalculateReceiveAmount(swapFormData, networks, currencies)
 
     return <div>
         <h3 className='mb-7 pt-2 sm:text-lg font-roboto text-white font-semibold'>
