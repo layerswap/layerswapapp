@@ -1,26 +1,25 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { Disclosure } from "@headlessui/react";
-import { GetExchangeFee, CalculateFee, CalculateReceiveAmount } from '../../lib/fees';
+import { GetExchangeFee, CalculateFee, CalculateReceiveAmount, CaluclateRefuelAmount } from '../../lib/fees';
 import { SwapType } from '../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
 import roundDecimals from '../utils/RoundDecimals';
+import { truncateDecimals } from '../utils/RoundDecimals';
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
     const { networks, currencies } = useSettingsState()
-
-    const { currency, from, to, swapType, refuel } = values || {}
+    const { currency, from, to, swapType } = values || {}
 
     let exchangeFee = swapType === SwapType.OnRamp && parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
-    let fee = CalculateFee(values, networks) + (refuel ? (1 / currency?.baseObject?.usd_price) : 0);
-    let receive_amount = CalculateReceiveAmount(values, networks)
+    let fee = CalculateFee(values, networks);
+    let receive_amount = CalculateReceiveAmount(values, networks, currencies);
 
-    const refuelCurrencyUsdPrice = swapType !== SwapType.OffRamp && currencies.find(c => c.asset === to?.baseObject?.native_currency)?.usd_price
-    const refuelAmount = swapType !== SwapType.OffRamp && `+ ${roundDecimals((1 / refuelCurrencyUsdPrice), refuelCurrencyUsdPrice?.toFixed()?.length)} ${to?.baseObject?.native_currency}`
-
-    const feeInUsd = fee * currency?.baseObject?.usd_price < 0.01 ? `0.01$<` : `(${roundDecimals(fee * currency?.baseObject?.usd_price, 2)}$)`
+    const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
+    const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
+    const refuel = truncateDecimals(CaluclateRefuelAmount(values, networks, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
 
     return (
         <>
@@ -44,9 +43,9 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                         </span>
                                                     </p>
                                                     {
-                                                        refuel &&
-                                                        <p className='text-[10px] text-slate-300'>
-                                                            {refuelAmount}
+                                                        refuel > 0 &&
+                                                        <p className='text-[12px] text-slate-300'>
+                                                            + {refuel} {destination_native_currency}
                                                         </p>
                                                     }
                                                 </div>
@@ -66,7 +65,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                             Layerswap Fee
                                         </label>
                                         <span className="text-right">
-                                            {parseFloat(fee.toFixed(currency?.baseObject?.precision))} {currency?.baseObject?.asset} {fee !== 0 && feeInUsd}
+                                            {parseFloat(fee.toFixed(currency?.baseObject?.precision))} {currency?.baseObject?.asset}
                                         </span>
                                     </div>
                                     {

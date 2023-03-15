@@ -13,6 +13,8 @@ type NetworkeMenuItemsParams = {
     exchanges: Exchange[],
     resource_storage_url: string,
     destNetwork: string,
+    source: string,
+    destination: string,
     lockNetwork: boolean,
     direction: "from" | "to",
     values: SwapFormValues
@@ -30,7 +32,7 @@ const networkCurrencyIsAvailableForExchange = (nc: NetworkCurrency, exchange: Ex
         && !exchange.currencies?.some(ec => ec.asset === nc.asset && ec.is_default && ec.network === network.internal_name)
 }
 
-export const generateNetworkMenuItems = ({ values, networks, resource_storage_url, destNetwork, lockNetwork, direction, exchanges }: NetworkeMenuItemsParams): SelectMenuItem<CryptoNetwork>[] => {
+export const generateNetworkMenuItems = ({ values, networks, resource_storage_url, destNetwork, lockNetwork, direction, exchanges, source, destination }: NetworkeMenuItemsParams): SelectMenuItem<CryptoNetwork>[] => {
     const { swapType, from, to } = values
 
     const currencyWithdrawalIsAvailable = ((currency: NetworkCurrency, network: CryptoNetwork) => currency.is_withdrawal_enabled
@@ -75,8 +77,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
             networkIsAvailable = networkIsAvailableInCrossChain
             break;
     }
-
-    const destNetworkIsAvailable = networks.some(n => n.internal_name === destNetwork && (direction === "from" ? (n.status === "active" || n.status === "insufficient_liquidity") : (n.status === "active")) && networkIsAvailable(n))
+    const destNetworkIsAvailable = networks.some(n => (n.internal_name?.toLowerCase() === destNetwork?.toLowerCase() || n.internal_name?.toLowerCase() === (direction === 'from' ? source : destination)) && n.status === "active" && networkIsAvailable(n))
     const shouldLockAllNetworks = destNetworkIsAvailable && lockNetwork;
     const networkDisabledReason = (network: CryptoNetwork) => {
         if (shouldLockAllNetworks) return { value: false, disabledReason: DisabledReason.LockNetworkIsTrue }
@@ -105,6 +106,8 @@ type ExchangeMenuItemsProps = {
     values: SwapFormValues,
     networks: CryptoNetwork[],
     sourceExchangeName: string,
+    source: string,
+    destination: string,
     lockExchange: boolean
 }
 
@@ -115,9 +118,9 @@ const exchangeCurrencyIsAvailableForNetwork = ((ec: ExchangeCurrency & NetworkCu
         && !exchange.currencies.filter(c => c.asset === ec.asset && c.is_default).some(c => c.network === network.internal_name))
 })
 
-export const generateExchangeMenuItems = ({ exchanges, networks, values, resource_storage_url, sourceExchangeName, lockExchange }: ExchangeMenuItemsProps): SelectMenuItem<Exchange>[] => {
+export const generateExchangeMenuItems = ({ exchanges, networks, values, resource_storage_url, sourceExchangeName, source, destination, lockExchange }: ExchangeMenuItemsProps): SelectMenuItem<Exchange>[] => {
     const { swapType, from, to } = values
-    const isSourceExchangeAvailable = exchanges.some(e => e?.internal_name?.toLowerCase() === sourceExchangeName?.toLowerCase() && e.status === "active" && (swapType === SwapType.OffRamp ?
+    const isSourceExchangeAvailable = exchanges.some(e => (e?.internal_name?.toLowerCase() === sourceExchangeName?.toLowerCase() || e?.internal_name?.toLowerCase() === source?.toLowerCase() || e?.internal_name?.toLowerCase() === destination?.toLowerCase()) && e.status === "active" && (swapType === SwapType.OffRamp ?
         e.currencies.some(ec => (from ? exchangeCurrencyIsAvailableForNetwork(ec, from.baseObject, e, swapType) : networks.some(n => exchangeCurrencyIsAvailableForNetwork(ec, n, e, swapType))))
         : e.currencies.some(ec => (to ? exchangeCurrencyIsAvailableForNetwork(ec, to.baseObject, e, swapType) : networks.some(n => exchangeCurrencyIsAvailableForNetwork(ec, n, e, swapType)))))
     )
