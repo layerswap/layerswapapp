@@ -8,7 +8,6 @@ export class CryptoNetwork {
     status: "active" | "inactive" | string;
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
-    native_currency: string
 }
 
 export class NetworkCurrency {
