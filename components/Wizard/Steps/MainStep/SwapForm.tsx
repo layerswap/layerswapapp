@@ -30,7 +30,7 @@ import shortenAddress from "../../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../../Models/ApiResponse";
 import { SwitchVerticalIcon } from "@heroicons/react/outline";
-import { motion } from "framer-motion";
+import { motion, useCycle } from "framer-motion";
 import AvatarGroup from "../../../AvatarGroup";
 import RefuelIcon from "../../../icons/RefuelIcon";
 import ClickTooltip from "../../../Tooltips/ClickTooltip";
@@ -167,7 +167,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         else if (values.from && values.to && fromCurrency && toCurrency) setValuesSwapperDisabled(false)
         else setValuesSwapperDisabled(true)
     }
-
+    const [animate, cycle] = useCycle(
+        { rotate: 0 },
+        { rotate: 180 }
+    );
     useEffect(() => {
         valuesSwapperFiltering()
     }, [values.from, values.to])
@@ -201,8 +204,16 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             </div>
                             {
                                 swapType === SwapType.CrossChain &&
+
                                 <button disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-20px)] top-[142px] sm:right-[298px] sm:top-[112px] sm:rotate-90 z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
-                                    <SwitchVerticalIcon className="h-5" />
+                                    <motion.div
+                                        animate={animate}
+                                        transition={{ duration: 0.3 }}
+                                        onTap={() => cycle()}
+                                    >
+                                        <SwitchVerticalIcon className="h-5" />
+                                    </motion.div>
+
                                 </button>
                             }
                             <div className="flex flex-col w-full">
