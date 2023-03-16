@@ -18,7 +18,16 @@ import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
 import AvatarGroup from "../AvatarGroup";
+import SubmitButton from "../buttons/submitButton";
+import RainbowKit from "../Wizard/Steps/Wallet/RainbowKit";
+import { useAccount } from "wagmi";
+import { disconnect } from '@wagmi/core'
+import { metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet } from '@rainbow-me/rainbowkit/wallets';
+import { ModalFooter } from "../modalComponent";
+import shortenAddress from "../utils/ShortenAddress";
+import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 
+const wallets = [metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet]
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -37,6 +46,7 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     address_book: AddressBookItem[]
 }
 
+
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
     ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, loading, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
 
@@ -47,7 +57,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const inputReference = useRef(null);
 
-        const valid_addresses = address_book?.filter(a => isValidAddress(a.address, values.from.baseObject))
+        const valid_addresses = address_book?.filter(a => values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name) : isValidAddress(a.address, values.to.baseObject))
             ?.sort((a) => a.networks.some(n => n.toLowerCase() === values.to?.baseObject?.internal_name?.toLowerCase()) ? -1 : 1)
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
@@ -55,9 +65,23 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const [inputFocused, setInputFocused] = useState(false)
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
+        const [errorMesage, setErrorMessage] = useState('')
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
+        const resource_storage_url = settings.discovery.resource_storage_url
+        const { address, status, isConnected, isConnecting, isDisconnected, connector } = useAccount({
+            onConnect({ address, connector, isReconnected }) {
+                setInputValue(address)
+                setAddressConfirmed(true)
+                setFieldValue("destination_address", address)
+            },
+            onDisconnect() {
+                setInputValue("")
+                setAddressConfirmed(false)
+                setFieldValue("destination_address", "")
+            }
+        });
 
         const exchangeCurrency = values?.swapType === SwapType.OffRamp && values.to?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
         const networkDisplayName = settings?.networks?.find(n => n.internal_name === exchangeCurrency?.network)?.display_name
@@ -82,12 +106,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [values.destination_address])
 
         const handleRemoveDepositeAddress = useCallback(async () => {
-            if (depositeAddressIsfromAccount) {
+            if (depositeAddressIsfromAccount || isConnected) {
                 setDepositeAddressIsfromAccount(false)
                 setFieldValue("destination_address", '')
+                disconnect()
             }
             setInputValue("")
-        }, [depositeAddressIsfromAccount])
+        }, [depositeAddressIsfromAccount, isConnected, connector, isDisconnected])
 
         const handleSelectAddress = useCallback((value: string) => {
             setAddressConfirmed(true)
@@ -95,10 +120,16 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             close()
         }, [close])
 
-        const inputAddressisValid = isValidAddress(inputValue, values.to.baseObject)
+        const inputAddressIsValid = isValidAddress(inputValue, values.to.baseObject)
         const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+            setErrorMessage('')
             setInputValue(e.target.value)
             setAddressConfirmed(false)
+            if (inputValue && values.swapType !== SwapType.OffRamp && isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, e.target.value)) {
+                setErrorMessage(`You can not transfer to this address`);
+            } else if (e.target.value && !isValidAddress(e.target.value, values.to.baseObject)) {
+                setErrorMessage(`Enter a valid ${values.to.name} address`);
+            }
         }, [])
 
         const handleInputFocus = () => {
@@ -114,13 +145,37 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             close()
         }, [inputValue])
 
-        const autofillEnabled = !inputFocused && !inputAddressisValid
+        const handleWaletConnect = (address: string) => {
+            setAddressConfirmed(true)
+            setFieldValue("destination_address", address)
+            setInputValue(address)
+        }
+
+        const autofillEnabled = !inputFocused && !inputAddressIsValid
+        const chains: number[] = []
+        values.swapType !== SwapType.OffRamp
+        [NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name]?.ChainId]
+
+        if (values.swapType === SwapType.OffRamp) {
+            const availableNetworks = values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active')
+            availableNetworks.forEach(c => {
+                if (c.network) {
+                    const chainId = NetworkSettings.KnownSettings[c.network]?.ChainId
+                    chains.push(chainId)
+                }
+            })
+        }
+        else {
+            const networkChainId = [NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name]?.ChainId]
+            if (networkChainId)
+                chains.push(NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name]?.ChainId)
+        }
 
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>
-                <div className={`flex flex-col self-center grow w-full`}>
-                    <div className="text-left">
-                        {`To ${values?.to?.name || ''} address`}
+                <div className={`flex flex-col self-center grow w-full mb-16 sm:mb-0`}>
+                    <div className="text-left mb-10">
+                        <label htmlFor={name}>Address</label>
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                         <div className="flex flex-wrap flex-col md:flex-row">
                             <motion.div initial="rest" animate={autofillEnabled ? "rest" : "inputFocused"} className="relative flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
@@ -140,7 +195,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     onBlur={handleInputBlur}
                                     autoCorrect="off"
                                     type={"text"}
-                                    disabled={disabled}
+                                    disabled={disabled || isConnected}
                                     name={name}
                                     id={name}
                                     ref={inputReference}
@@ -198,9 +253,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </motion.span>
                                 }
                                 {
-                                    inputAddressisValid &&
+                                    inputValue &&
                                     <span className="inline-flex items-center mr-2">
-                                        <div className="text-xs flex items-center space-x-2 ml-3 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
+                                        <div className="text-xs flex items-center space-x-2 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
                                             {
                                                 values?.to?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
                                                 <span className="inline-flex items-center mr-2">
@@ -215,6 +270,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                 onClick={handleRemoveDepositeAddress}
                                             >
                                                 <div className="flex items-center" >
+                                                    {/* <Image
+                                                        alt={chain.name ?? 'Chain icon'}
+                                                        src={chain.iconUrl}
+                                                        style={{ width: 12, height: 12 }}
+                                                    /> */}
                                                     <XIcon className="h-5 w-5" />
                                                 </div>
                                             </button>
@@ -222,75 +282,68 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </span>
                                 }
                             </motion.div>
+                            <div className="basis-full leading-6 text-sm h-4 ">
+                                {errorMesage && errorMesage}
+                            </div>
                             {
-                                <div className="mx-auto w-full rounded-lg font-normal mt-5 basis-full">
+                                <div className="mx-auto w-full rounded-lg font-normal mt-4 basis-full">
                                     <div className='flex justify-between mb-4 md:mb-8 space-x-4'>
-                                        {
-                                            inputAddressisValid &&
-                                            <>
-                                                <label htmlFor="address_confirm" className='flex items-center text-xs md:text-sm font-medium'>
-                                                    <ExclamationIcon className='h-6 w-6 mr-2' />
-                                                    I am the owner of this address
-                                                </label>
-                                            </>
-                                        }
-                                        <button type="button" disabled={!inputAddressisValid} onClick={handleSetNewAddress} className="ml-auto disabled:border-primary-900 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed rounded-md bg-primary px-5 py-2 text-sm font-semibold leading-5 text-white">
-                                            Confirm
-                                        </button>
+                                        <RainbowKit chainIds={chains} >
+                                            <div className="ml-auto disabled:border-primary-900 rounded-md bg-primary px-5 py-2 text-md font-semibold leading-7 text-white">
+                                                Connect Wallet
+                                            </div>
+                                        </RainbowKit>
                                     </div>
                                 </div>
                             }
                         </div>
                     </div>
-                    {valid_addresses?.length > 0 && !disabled &&
-                        <div className="text-left space-y-3">
-                            <label className="mb-10">Your recent addresses</label>
+                    {valid_addresses?.length > 0 ?
+                        <div className="text-left space-y-2">
+                            <label className="">Your recent addresses</label>
                             <div>
-                                <RadioGroup value={values.destination_address} onChange={handleSelectAddress}>
-                                    <div className="rounded-md space-y-2 overflow-y-auto styled-scroll">
+                                <RadioGroup disabled={disabled} value={values.destination_address} onChange={handleSelectAddress}>
+                                    <div className="rounded-md overflow-y-auto styled-scroll">
                                         {valid_addresses?.map((a, index) => (
                                             <RadioGroup.Option
                                                 key={a.address}
                                                 value={a.address}
-                                                className={({ checked }) =>
+                                                disabled={disabled}
+                                                className={({ checked, disabled }) =>
                                                     classNames(
-                                                        checked ? ' border-primary-900 z-10' : 'border-darkblue-400',
-                                                        'hover:border-primary-900 relative border p-4 flex cursor-pointer focus:outline-none rounded-md rounded-tr-md'
+                                                        disabled ? ' cursor-not-allowed ' : ' cursor-pointer ',
+                                                        'relative flex focus:outline-none mt-2 mb-3  '
                                                     )
                                                 }
                                             >
                                                 {({ active, checked }) => {
                                                     const difference_in_days = Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24)))
                                                     return (
-                                                        <>
-                                                            <span className="flex flex-col w-full truncate">
-                                                                <RadioGroup.Label
-                                                                    as="span"
-                                                                    className={'block text-sm font-medium '}
-                                                                >
-
-                                                                    {a.address}
-                                                                </RadioGroup.Label>
-                                                                <RadioGroup.Description
-                                                                    as="span"
-                                                                    className='flex text-sm text-gray-500 mt-1 justify-between'
-                                                                >
-                                                                    <div className="flex items-center">
-                                                                        {
-                                                                            difference_in_days === 0 ?
-                                                                                <>Last used today</>
-                                                                                :
-                                                                                (difference_in_days > 1 ?
-                                                                                    <>Last used {difference_in_days} days ago</>
-                                                                                    : <>Last used yesterday</>)
-                                                                        }
-                                                                    </div>
-                                                                    <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
-                                                                        Transfered to <AvatarGroup imageUrls={a.networks?.map(address_network => `${settings.discovery.resource_storage_url}/layerswap/networks/${address_network.toLowerCase()}.png`)} />
-                                                                    </motion.div>
-                                                                </RadioGroup.Description>
-                                                            </span>
-                                                        </>
+                                                        <RadioGroup.Description
+                                                            as="span"
+                                                            className={`flex text-sm justify-between rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
+                                                        >
+                                                            <div className="flex flex-col">
+                                                                <div className="block text-sm font-medium">
+                                                                    {shortenAddress(a.address)}
+                                                                </div>
+                                                                <div className="text-gray-500">
+                                                                    {
+                                                                        difference_in_days === 0 ?
+                                                                            <>Used today</>
+                                                                            :
+                                                                            (difference_in_days > 1 ?
+                                                                                <>Used {difference_in_days} days ago</>
+                                                                                : <>Used yesterday</>)
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            <motion.div whileTap={{ scale: 1.05 }} className='flex text-primary-text flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md space-x-1'>
+                                                                <span>Transfered to</span>
+                                                                <AvatarGroup imageUrls={values.swapType === SwapType.OffRamp ? a.exchanges?.map(address_excange => GetIcon({ internal_name: address_excange, resource_storage_url }))
+                                                                    : a.networks?.map(address_network => GetIcon({ internal_name: address_network, resource_storage_url }))} />
+                                                            </motion.div>
+                                                        </RadioGroup.Description>
                                                     )
                                                 }}
                                             </RadioGroup.Option>
@@ -299,10 +352,24 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 </RadioGroup>
                             </div>
                         </div>
+                        :
+                        <div className="text-center space-y-3">
+                            <label className="mb-10">No recent swaps</label>
+                            <p className="text-sm text-gray-500">Your addresses will be shown here</p>
+                        </div>
                     }
+                    <ModalFooter>
+                        <SubmitButton type="button" isDisabled={!inputAddressIsValid} isSubmitting={false} onClick={handleSetNewAddress} >
+                            Confirm
+                        </SubmitButton>
+                    </ModalFooter>
                 </div>
             </div>
-        </div>)
+        </div >)
     });
+
+function GetIcon({ internal_name, resource_storage_url }) {
+    return `${resource_storage_url}/layerswap/networks/${internal_name.toLowerCase()}.png`;
+}
 
 export default Address

@@ -149,7 +149,7 @@ export type CreateSwapParams = {
     destination_address: string,
     partner?: string,
     external_id?: string,
-    refuel: boolean
+    refuel?: boolean
 }
 
 export type SwapItem = {
@@ -177,7 +177,8 @@ export type SwapItem = {
 export type AddressBookItem = {
     address: string,
     date: string,
-    networks: string[]
+    networks: string[],
+    exchanges: string[]
 }
 
 type Transaction = {

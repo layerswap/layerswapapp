@@ -3,9 +3,11 @@ export class CryptoNetwork {
     display_name: string;
     internal_name: string;
     native_currency: string;
+    fee_multiplier: number;
     transaction_explorer_template: string;
     status: "active" | "inactive" | string;
     currencies: NetworkCurrency[];
+    refuel_amount_in_usd: number;
 }
 
 export class NetworkCurrency {
@@ -18,5 +20,6 @@ export class NetworkCurrency {
     deposit_fee: number;
     withdrawal_fee: number;
     contract_address: string;
-    decimals: number;;
+    decimals: number;
+    base_fee: number;
 }

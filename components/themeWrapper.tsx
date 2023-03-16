@@ -33,7 +33,20 @@ export default function ({ hideNavbar, children }: Props) {
         <div className="invisible imxMarketplace"></div>
         <main className="styled-scroll">
             <div className="min-h-screen overflow-hidden relative font-robo">
-                <Toaster position="top-center" toastOptions={{ duration: Infinity, style: { background: '#131E36', color: '#a4afc8' }, position: 'top-center' }}>
+                <Toaster position="top-center" toastOptions={{
+                    duration: 5000,
+                    style: {
+                        background: '#131E36',
+                        color: '#a4afc8'
+                    },
+                    position: 'top-center',
+
+
+                    error: {
+                        duration: Infinity,
+                    },
+                }}
+                >
                     {(t) => (
                         <ToastBar toast={t}>
                             {({ icon, message }) => (
@@ -41,7 +54,7 @@ export default function ({ hideNavbar, children }: Props) {
                                     {icon}
                                     {message}
                                     {t.type !== 'loading' && (
-                                        <button onClick={() => toast.dismiss(t.id)}><XIcon className="h-6 w-6" /></button>
+                                        <button onClick={() => toast.dismiss(t.id)}><XIcon className="h-5" /></button>
                                     )}
                                 </>
                             )}

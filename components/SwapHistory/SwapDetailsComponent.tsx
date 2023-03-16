@@ -11,7 +11,7 @@ import StatusIcon from './StatusIcons';
 import { ExternalLinkIcon } from '@heroicons/react/outline';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
-import roundDecimals from '../utils/RoundDecimals';
+import { truncateDecimals } from '../utils/RoundDecimals';
 
 type Props = {
     id: string
@@ -44,7 +44,9 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const source_network = networks?.find(e => e.internal_name === source_network_internal_name)
     const input_tx_id = source_network?.transaction_explorer_template
 
-    const feeInUsd = swap?.fee * swap?.input_transaction.usd_price < 0.01 ? `0.01$<` : `(${roundDecimals(swap?.fee * swap?.input_transaction.usd_price, 2)}$)`
+    let feeInUsd = ""
+    if (swap?.input_transaction)
+        feeInUsd = swap?.fee * swap?.input_transaction?.usd_price < 0.01 ? `0.01$<` : `(${truncateDecimals(swap?.fee * swap?.input_transaction?.usd_price, 2)}$)`
 
     useEffect(() => {
         (async () => {
@@ -103,7 +105,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
                                             <Image
-                                                src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`}
+                                                src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLowerCase()}.png`}
                                                 alt="Exchange Logo"
                                                 height="60"
                                                 width="60"
@@ -125,7 +127,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
                                             <Image
-                                                src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
+                                                src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
                                                 alt="Exchange Logo"
                                                 height="60"
                                                 width="60"

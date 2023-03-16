@@ -12,10 +12,12 @@ import { classNames } from '../../../utils/classNames';
 import { useInterval } from '../../../../hooks/useInterval';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import shortenAddress from "../../../utils/ShortenAddress"
-import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
 import { SwapStatus } from '../../../../Models/SwapStatus';
-
-const ConnectWalletStep: FC = () => {
+const options = {
+    injectProvider: false,
+    communicationLayerPreference: 'webrtc',
+};
+const WithdrawFromWallet: FC = () => {
     const [loading, setLoading] = useState(false)
     const [verified, setVerified] = useState<boolean>()
     const [txidApplied, setTxidApplied] = useState(false)
@@ -30,6 +32,8 @@ const ConnectWalletStep: FC = () => {
 
     const { source_network: source_network_internal_name } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+
+
 
     const steps = [
         { name: walletAddress ? `Connected to ${shortenAddress(walletAddress)}` : 'Connect wallet', description: 'Connect your ImmutableX wallet', href: '#', status: walletAddress ? 'complete' : 'current' },
@@ -67,13 +71,7 @@ const ConnectWalletStep: FC = () => {
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
-            let address: string = walletAddress
-            if (!address) {
-                const imtblClient = new ImtblClient(source_network?.internal_name)
-                const res = await imtblClient.ConnectWallet()
-                setWalletAddress(res.address)
-                address = res.address
-            }
+          
         }
         catch (e) {
             toast(e.message)
@@ -86,20 +84,7 @@ const ConnectWalletStep: FC = () => {
     const handleTransfer = useCallback(async () => {
         setLoading(true)
         try {
-            const imtblClient = new ImtblClient(source_network?.internal_name)
-            const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
-            const res = await imtblClient.Transfer(swap, source_currency)
-            const transactionRes = res?.result?.[0]
-            if (!transactionRes)
-                toast('Transfer failed or terminated')
-            else if (transactionRes.status == "error") {
-                toast(transactionRes.message)
-            }
-            else if (transactionRes.status == "success") {
-                setTransactionId(transactionRes.txId.toString())
-                setTransferDone(true)
-                setInterval(2000)
-            }
+            
         }
         catch (e) {
             if (e?.message)
@@ -205,4 +190,4 @@ function WalletSteps({ steps }) {
     )
 }
 
-export default ConnectWalletStep;
+export default WithdrawFromWallet;
