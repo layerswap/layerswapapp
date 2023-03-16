@@ -34,7 +34,8 @@ import shortenAddress from "../../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../../Models/ApiResponse";
 import * as Dialog from "@radix-ui/react-dialog";
-import { SwitchHorizontalIcon } from "@heroicons/react/outline";
+import { SwitchHorizontalIcon, SwitchVerticalIcon } from "@heroicons/react/outline";
+import { CryptoNetwork, NetworkCurrency } from "../../../../Models/CryptoNetwork";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -65,6 +66,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
+    const [valuesSwapperDisabled, setValuesSwapperDisabled] = useState(true)
 
     const lockAddress =
         (values.destination_address && values.to)
@@ -149,9 +151,21 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         }
     }, [values.refuel])
 
-    const swapValues = () => {
+    const valuesSwapper = () => {
         return [values.from, values.to] = [values.to, values.from]
     }
+
+    const valuesSwapperFiltering = () => {
+        const fromCurrency = values?.from?.baseObject.currencies.some(c => c.is_deposit_enabled && c.is_withdrawal_enabled)
+        const toCurrency = values?.to?.baseObject.currencies.some(c => c.is_deposit_enabled && c.is_withdrawal_enabled)
+        if (values.from && values.to && fromCurrency && toCurrency) setValuesSwapperDisabled(false)
+        else if ((values.from && !values.swapType && fromCurrency) || (values.to && !values.from && toCurrency)) setValuesSwapperDisabled(false)
+        else setValuesSwapperDisabled(true)
+    }
+
+    useEffect(() => {
+        valuesSwapperFiltering()
+    }, [values.from, values.to])
 
     return <>
 
@@ -178,8 +192,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             </div>
                             {
                                 swapType === SwapType.CrossChain &&
-                                <button disabled={false} onClick={swapValues} className='absolute right-[290px] top-[112px] z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
-                                    <SwitchHorizontalIcon className="h-5" />
+                                <button disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-20px)] top-[142px] sm:right-[298px] sm:top-[112px] sm:rotate-90 z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
+                                    <SwitchVerticalIcon className="h-5" />
                                 </button>
                             }
                             <div className="flex flex-col w-full">

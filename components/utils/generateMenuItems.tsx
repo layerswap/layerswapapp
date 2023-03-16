@@ -50,7 +50,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
             && (to ? (networkCurrencyIsAvailableForExchange(nc, to.baseObject, n, swapType))
                 : exchanges.some(e => networkCurrencyIsAvailableForExchange(nc, e, n, swapType))))
 
-    const networkIsAbailableInOnramp = (n: CryptoNetwork) => swapType === SwapType.OnRamp
+    const networkIsAvailableInOnramp = (n: CryptoNetwork) => swapType === SwapType.OnRamp
         && n.currencies.some(nc => !NetworkSettings?.ForceDisable?.[n?.internal_name]?.onramp
             && (from ? (networkCurrencyIsAvailableForExchange(nc, from.baseObject, n, swapType))
                 : exchanges.some(e => networkCurrencyIsAvailableForExchange(nc, e, n, swapType))))
@@ -62,10 +62,10 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
                 (n.internal_name !== to?.baseObject?.internal_name && currencyDepositIsAvailable(nc, to?.baseObject))
                 : (n.internal_name !== from?.baseObject?.internal_name && currencyWithdrawalIsAvailable(nc, from?.baseObject))))
 
-    let networkIsAvailable;
+    let networkIsAvailable: (n: CryptoNetwork) => boolean;
     switch (swapType) {
         case SwapType.OnRamp:
-            networkIsAvailable = networkIsAbailableInOnramp
+            networkIsAvailable = networkIsAvailableInOnramp
             break;
         case SwapType.OffRamp:
             networkIsAvailable = networkIsAvailableInOfframp
@@ -102,7 +102,7 @@ type ExchangeMenuItemsProps = {
 const exchangeCurrencyIsAvailableForNetwork = ((ec: ExchangeCurrency & NetworkCurrency, network: CryptoNetwork, exchange: Exchange, swapType: SwapType) => {
     return (
         (swapType === SwapType.OffRamp ? (ec.is_withdrawal_enabled && ec.status === "active") : (ec.is_deposit_enabled && (ec.status === "active" || ec.status === "insufficient_liquidity")))
-        && network.currencies?.some(nc => nc.asset === ec.asset && (swapType === SwapType.OffRamp ? (nc.status === "active" || nc.status === "insufficient_liquidity"): nc.status === "active") && (swapType === SwapType.OffRamp ? nc.is_deposit_enabled : nc.is_withdrawal_enabled))
+        && network.currencies?.some(nc => nc.asset === ec.asset && (swapType === SwapType.OffRamp ? (nc.status === "active" || nc.status === "insufficient_liquidity") : nc.status === "active") && (swapType === SwapType.OffRamp ? nc.is_deposit_enabled : nc.is_withdrawal_enabled))
         && !exchange.currencies.filter(c => c.asset === ec.asset && c.is_default).some(c => c.network === network.internal_name))
 })
 
