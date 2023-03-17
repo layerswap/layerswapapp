@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { ChangeEvent, FC, forwardRef, Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { AddressBookItem, SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -7,7 +7,7 @@ import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import SpinIcon from "../icons/spinIcon";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { ExclamationIcon, LinkIcon, XIcon } from "@heroicons/react/outline";
+import { LinkIcon, XIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
@@ -26,6 +26,8 @@ import { metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConne
 import { ModalFooter } from "../modalComponent";
 import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
+import HighlightedValue from "../highlightedValue";
+import ListTable from "../listTable";
 
 const wallets = [metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet]
 
@@ -171,6 +173,16 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 chains.push(NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name]?.ChainId)
         }
 
+        const list = [
+            <span>Go to the Deposits page</span>,
+            <span>
+                Select
+                <HighlightedValue value={values.currency} />
+                as asset/currency
+            </span>,
+            <span>Select {values.to.baseObject.display_name} as network</span>
+        ]
+
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>
                 <div className={`flex flex-col self-center grow w-full mb-16 sm:mb-0`}>
@@ -297,22 +309,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 </div>
                             }
                             {
-                                <div className="border-2 border-darkblue-500 rounded-md flex w-full flex-col">
-                                    <div className="w-full border-b-2 flex border-darkblue-500">
-                                        <p className="text-slate-200 m-3 ">How to find your {values.to.baseObject.display_name} deposit address</p>
-                                    </div>
-                                    <ul className="m-3 ml-6 text-sm list-disc">
-                                        <li>Go to the Deposits page</li>
-                                        <li>Select
-                                            <span className="inline bg-slate-700 py-1 px-2 rounded-sm space-x-1 m-1">
-                                                <Image width={18} height={18} alt="currency" src={values.currency.imgSrc} className='inline rounded-sm'></Image>
-                                                <span className="text-white font-semibold"> {values.currency.name}</span>
-                                            </span>
-                                            as asset/currency
-                                        </li>
-                                        <li>Select {values.to.baseObject.display_name} as network</li>
-                                    </ul>
-                                </div>
+                                values.swapType === SwapType.OffRamp &&
+                                <ListTable header={`How to find your ${values.to.baseObject.display_name} deposit address`} list={list} />
                             }
                         </div>
                     </div>
