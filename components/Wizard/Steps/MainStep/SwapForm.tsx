@@ -154,9 +154,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         }
     }, [values.refuel])
 
-    const availableNetworks = values.swapType === SwapType.OffRamp && values.currency && values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
-    const destinationNetworks = values.swapType === SwapType.OffRamp && settings.networks.filter(n => availableNetworks && availableNetworks.includes(n.internal_name))
-
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     return <>
 

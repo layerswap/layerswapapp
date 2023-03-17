@@ -172,15 +172,21 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             if (networkChainId)
                 chains.push(NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name]?.ChainId)
         }
+        const availableNetworks = values.swapType === SwapType.OffRamp && values.currency && values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
+        const destinationNetwork = values.swapType === SwapType.OffRamp && settings.networks.find(n => availableNetworks && availableNetworks.includes(n.internal_name))
 
         const list = [
             <span>Go to the Deposits page</span>,
             <span>
                 Select
-                <HighlightedValue value={values.currency} />
+                <HighlightedValue int_name={values.currency.name} disp_name={values.currency.name} type='currency' />
                 as asset/currency
             </span>,
-            <span>Select {values.to.baseObject.display_name} as network</span>
+            <span>
+                Select
+                <HighlightedValue int_name={destinationNetwork.internal_name} disp_name={destinationNetwork.display_name} />
+                as network
+            </span>
         ]
 
         return (<div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
