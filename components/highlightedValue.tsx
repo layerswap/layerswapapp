@@ -1,8 +1,5 @@
 import Image from "next/image"
 import { useSettingsState } from "../context/settings"
-import { CryptoNetwork } from "../Models/CryptoNetwork"
-import { Currency } from "../Models/Currency"
-import { Exchange } from "../Models/Exchange"
 
 type HighlightedValueProps = {
     int_name: string;
