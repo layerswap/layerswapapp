@@ -159,20 +159,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
 
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     return <>
-
         <Form className="h-full" >
-            {swapType === SwapType.OffRamp &&
-                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
-                    {(close) => (
-                        (values?.to?.baseObject.authorization_flow) === "o_auth2" ?
-                            <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />
-                            : <ConnectApiKeyExchange exchange={to?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
-                    )}
-                </SlideOver>}
-
 
             <Widget>
-
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
                     : <Widget.Content>
@@ -255,6 +244,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                     </SwapButton>
                 </Widget.Footer>
             </Widget>
+            {swapType === SwapType.OffRamp &&
+                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
+                    {(close) => (
+                        (values?.to?.baseObject.authorization_flow) === "o_auth2" ?
+                            <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />
+                            : <ConnectApiKeyExchange exchange={to?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
+                    )}
+                </SlideOver>}
         </Form >
     </>
 }
