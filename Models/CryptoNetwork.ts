@@ -8,6 +8,7 @@ export class CryptoNetwork {
     status: "active" | "inactive" | string;
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
+    address_type: "evm" | 'starknet' | 'solana' | 'osmosis'
 }
 
 export class NetworkCurrency {
