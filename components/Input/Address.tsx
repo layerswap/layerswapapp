@@ -66,9 +66,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const [inputFocused, setInputFocused] = useState(false)
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
-        const [validInputAddress, setValidInputAddress] = useState<string>(inputValue)
-
-        const [errorMesage, setErrorMessage] = useState('')
+        const [validInputAddress, setValidInputAddress] = useState<string>()
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
@@ -124,15 +122,19 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [close])
 
         const inputAddressIsValid = isValidAddress(inputValue, values.to.baseObject)
+
+
+        let errorMessage = '';
+        if (inputValue && !isValidAddress(inputValue, values.to.baseObject)) {
+            errorMessage = `Enter a valid ${values.to.name} address`
+        }
+        else if (inputValue && values.swapType !== SwapType.OffRamp && isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, inputValue)) {
+            errorMessage = `You can not transfer to this address`
+        }
+
         const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-            setErrorMessage('')
             setInputValue(e.target.value)
             setAddressConfirmed(false)
-            if (inputValue && values.swapType !== SwapType.OffRamp && isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, e.target.value)) {
-                setErrorMessage(`You can not transfer to this address`);
-            } else if (e.target.value && !isValidAddress(e.target.value, values.to.baseObject)) {
-                setErrorMessage(`Enter a valid ${values.to.name} address`);
-            }
         }, [])
 
         useEffect(() => {
@@ -234,8 +236,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </span>
                                 }
                             </motion.div>
-                            <div className="basis-full text-xs">
-                                {errorMesage && errorMesage}
+                            <div className="basis-full text-xs text-primary">
+                                {errorMessage}
                             </div>
                             {
                                 validInputAddress &&
@@ -302,65 +304,67 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         </div>
                     </div>
                     {
-                        valid_addresses?.length > 0 ?
-                            <div className="text-left space-y-2">
-                                <label className="">Your recent addresses</label>
-                                <div>
-                                    <RadioGroup disabled={disabled} value={values.destination_address} onChange={handleSelectAddress}>
-                                        <div className="rounded-md overflow-y-auto styled-scroll">
-                                            {valid_addresses?.map((a, index) => (
-                                                <RadioGroup.Option
-                                                    key={a.address}
-                                                    value={a.address}
-                                                    disabled={disabled}
-                                                    className={({ checked, disabled }) =>
-                                                        classNames(
-                                                            disabled ? ' cursor-not-allowed ' : ' cursor-pointer ',
-                                                            'relative flex focus:outline-none mt-2 mb-3  '
-                                                        )
-                                                    }
-                                                >
-                                                    {({ active, checked }) => {
-                                                        const difference_in_days = Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24)))
-                                                        return (
-                                                            <RadioGroup.Description
-                                                                as="span"
-                                                                className={`flex text-sm justify-between rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
-                                                            >
-                                                                <div className="flex flex-col">
-                                                                    <div className="block text-sm font-medium">
-                                                                        {shortenAddress(a.address)}
-                                                                    </div>
-                                                                    <div className="text-gray-500">
-                                                                        {
-                                                                            difference_in_days === 0 ?
-                                                                                <>Used today</>
-                                                                                :
-                                                                                (difference_in_days > 1 ?
-                                                                                    <>Used {difference_in_days} days ago</>
-                                                                                    : <>Used yesterday</>)
-                                                                        }
-                                                                    </div>
+                        valid_addresses?.length > 0 &&
+                        <div className="text-left space-y-2">
+                            <label className="">Your recent addresses</label>
+                            <div>
+                                <RadioGroup disabled={disabled} value={values.destination_address} onChange={handleSelectAddress}>
+                                    <div className="rounded-md overflow-y-auto styled-scroll">
+                                        {valid_addresses?.map((a, index) => (
+                                            <RadioGroup.Option
+                                                key={a.address}
+                                                value={a.address}
+                                                disabled={disabled}
+                                                className={({ checked, disabled }) =>
+                                                    classNames(
+                                                        disabled ? ' cursor-not-allowed ' : ' cursor-pointer ',
+                                                        'relative flex focus:outline-none mt-2 mb-3  '
+                                                    )
+                                                }
+                                            >
+                                                {({ active, checked }) => {
+                                                    const difference_in_days = Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24)))
+                                                    return (
+                                                        <RadioGroup.Description
+                                                            as="span"
+                                                            className={`flex text-sm justify-between rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
+                                                        >
+                                                            <div className="flex flex-col">
+                                                                <div className="block text-sm font-medium">
+                                                                    {shortenAddress(a.address)}
                                                                 </div>
-                                                                <motion.div whileTap={{ scale: 1.05 }} className='flex text-primary-text flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md space-x-1'>
-                                                                    <span>Transfered to</span>
-                                                                    <AvatarGroup imageUrls={values.swapType === SwapType.OffRamp ? a.exchanges?.map(address_excange => GetIcon({ internal_name: address_excange, resource_storage_url }))
-                                                                        : a.networks?.map(address_network => GetIcon({ internal_name: address_network, resource_storage_url }))} />
-                                                                </motion.div>
-                                                            </RadioGroup.Description>
-                                                        )
-                                                    }}
-                                                </RadioGroup.Option>
-                                            ))}
-                                        </div>
-                                    </RadioGroup>
-                                </div>
+                                                                <div className="text-gray-500">
+                                                                    {
+                                                                        difference_in_days === 0 ?
+                                                                            <>Used today</>
+                                                                            :
+                                                                            (difference_in_days > 1 ?
+                                                                                <>Used {difference_in_days} days ago</>
+                                                                                : <>Used yesterday</>)
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            <motion.div whileTap={{ scale: 1.05 }} className='flex text-primary-text flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md space-x-1'>
+                                                                <span>Transfered to</span>
+                                                                <AvatarGroup imageUrls={values.swapType === SwapType.OffRamp ? a.exchanges?.map(address_excange => GetIcon({ internal_name: address_excange, resource_storage_url }))
+                                                                    : a.networks?.map(address_network => GetIcon({ internal_name: address_network, resource_storage_url }))} />
+                                                            </motion.div>
+                                                        </RadioGroup.Description>
+                                                    )
+                                                }}
+                                            </RadioGroup.Option>
+                                        ))}
+                                    </div>
+                                </RadioGroup>
                             </div>
-                            :
-                            <div className="text-center space-y-3">
-                                <label className="mb-10">No recent swaps</label>
-                                <p className="text-sm text-gray-500">Your addresses will be shown here</p>
-                            </div>
+                        </div>
+                    }
+                    {
+                        !valid_addresses?.length && !inputValue && !validInputAddress &&
+                        <div className="text-center space-y-3">
+                            <label className="mb-10">No recent swaps</label>
+                            <p className="text-sm text-gray-500">Your addresses will be shown here</p>
+                        </div>
                     }
                 </div>
             </div>
