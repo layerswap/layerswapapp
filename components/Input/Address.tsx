@@ -239,7 +239,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </div>
                             {
                                 validInputAddress &&
-                                <div onClick={handleSetNewAddress} className={`mt-2 space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
+                                <div onClick={handleSetNewAddress} className={`mt-2 cursor-pointer space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:shadow-xl`}>
                                     <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
                                         <ChevronRightIcon className="h-6 w-6 text-primary-text" />
                                     </div>
@@ -265,7 +265,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 && authData?.access_token && values.to
                                 && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
                                 && !depositeAddressIsfromAccount &&
-                                <div onClick={handleUseDepositeAddress} className={`mt-2 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
+                                <div onClick={handleUseDepositeAddress} className={`cursor-pointer mt-2 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
                                     <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
                                         <WalletIcon className="h-6 w-6 text-primary-text" />
                                     </div>
@@ -280,32 +280,23 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 </div>
                             }
                             {
-                                !inputValue && values?.swapType !== SwapType.OffRamp &&
-                                <RainbowKit>
-                                    <div className={`text-left mt-4 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
-                                        <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
-                                            <WalletIcon className="h-6 w-6 text-primary-text" />
+                                !inputValue && values?.swapType !== SwapType.OffRamp && values.to?.baseObject?.address_type === 'evm' &&
+                                <div className="grow">
+                                    <RainbowKit>
+                                        <div className={`text-left mt-4 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
+                                            <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
+                                                <WalletIcon className="h-6 w-6 text-primary-text" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <div className="block text-sm font-medium">
+                                                    Autofill from wallet
+                                                </div>
+                                                <div className="text-gray-500">
+                                                    Connect your wallet to fetch the address
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col">
-                                            <div className="block text-sm font-medium">
-                                                Autofill from wallet
-                                            </div>
-                                            <div className="text-gray-500">
-                                                Connect your wallet to fetch the address
-                                            </div>
-                                        </div>
-                                    </div>
-                                </RainbowKit>
-                            }
-                            {
-                                <div className="mx-auto w-full rounded-lg font-normal mt-4 basis-full hidden">
-                                    <div className='flex justify-between mb-4 md:mb-8 space-x-4'>
-                                        <RainbowKit >
-                                            <div className="ml-auto disabled:border-primary-900 rounded-md bg-primary px-5 py-2 text-md font-semibold leading-7 text-white">
-                                                Connect wallet
-                                            </div>
-                                        </RainbowKit>
-                                    </div>
+                                    </RainbowKit>
                                 </div>
                             }
                         </div>

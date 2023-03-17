@@ -86,9 +86,9 @@ const RainbowKit: FC<Props> = ({ chainIds, children }) => {
                                 {(() => {
                                     if (!connected) {
                                         return (
-                                            <button className='w-full' onClick={openConnectModal} type="button">
+                                            <span className='w-full cursor-pointer' onClick={openConnectModal} >
                                                 {children}
-                                            </button>
+                                            </span>
                                         );
                                     }
 
