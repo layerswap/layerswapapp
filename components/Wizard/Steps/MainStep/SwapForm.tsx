@@ -194,15 +194,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             </label>
                             <SlideOver
                                 header={`To ${values?.to?.name || ''} address`}
-                                subHeader={
-                                    values?.swapType === SwapType.OffRamp &&
-                                    <motion.div whileTap={{ scale: 1.05 }} className='text-xs w-fit flex flex-row items-center justify-start'>
-                                        <span>
-                                            Make sure the address is in one of the networks
-                                        </span>
-                                        <AvatarGroup imageUrls={destinationNetworks?.map(network => `${settings.discovery.resource_storage_url}/layerswap/networks/${network.internal_name.toLowerCase()}.png`)} />
-                                    </motion.div>
-                                }
                                 modalHeight="large"
                                 opener={(open => <AddressButton
                                     disabled={!values.to || !values.from}

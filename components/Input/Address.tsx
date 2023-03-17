@@ -296,6 +296,24 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </div>
                                 </div>
                             }
+                            {
+                                <div className="border-2 border-darkblue-500 rounded-md flex w-full flex-col">
+                                    <div className="w-full border-b-2 flex border-darkblue-500">
+                                        <p className="text-slate-200 m-3 ">How to find your {values.to.baseObject.display_name} deposit address</p>
+                                    </div>
+                                    <ul className="m-3 ml-6 text-sm list-disc">
+                                        <li>Go to the Deposits page</li>
+                                        <li>Select
+                                            <span className="inline bg-slate-700 py-1 px-2 rounded-sm space-x-1 m-1">
+                                                <Image width={18} height={18} alt="currency" src={values.currency.imgSrc} className='inline rounded-sm'></Image>
+                                                <span className="text-white font-semibold"> {values.currency.name}</span>
+                                            </span>
+                                            as asset/currency
+                                        </li>
+                                        <li>Select {values.to.baseObject.display_name} as network</li>
+                                    </ul>
+                                </div>
+                            }
                         </div>
                     </div>
                     {valid_addresses?.length > 0 ?
