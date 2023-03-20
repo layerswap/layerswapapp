@@ -55,8 +55,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const inputReference = useRef(null);
 
-        const valid_addresses = address_book?.filter(a => values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name) : isValidAddress(a.address, values.to.baseObject))
-            ?.sort((a) => a.networks.some(n => n.toLowerCase() === values.to?.baseObject?.internal_name?.toLowerCase()) ? -1 : 1)
+        const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name) :  a.networks?.some(e => values.to.baseObject.internal_name)) && isValidAddress(a.address, values.to.baseObject))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount, addressConfirmed } = useSwapDataState()
@@ -104,11 +103,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [values.destination_address])
 
         const handleRemoveDepositeAddress = useCallback(async () => {
-            if (depositeAddressIsfromAccount || isConnected) {
-                setDepositeAddressIsfromAccount(false)
-                setFieldValue("destination_address", '')
-                disconnect()
-            }
+            setDepositeAddressIsfromAccount(false)
+            setFieldValue("destination_address", '')
+            disconnect()
             setInputValue("")
         }, [depositeAddressIsfromAccount, isConnected, connector, isDisconnected])
 
@@ -119,7 +116,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [close])
 
         const inputAddressIsValid = isValidAddress(inputValue, values.to.baseObject)
-
 
         let errorMessage = '';
         if (inputValue && !isValidAddress(inputValue, values.to.baseObject)) {
@@ -229,8 +225,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                     className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
                                                     onClick={handleRemoveDepositeAddress}
                                                 >
-                                                    <div className="flex items-center" >
-                                                        <XIcon className="h-5 w-5" />
+                                                    <div className="flex items-center px-2 text-sm py-1 font-semibold">
+                                                        {
+                                                            isConnected ? <>Disconnect</>
+                                                                : <>Clear</>
+                                                        }
                                                     </div>
                                                 </button>
                                             </div>
@@ -258,7 +257,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                     : depositeAddressIsfromAccount ? <div className="text-gray-500">
                                                         Autofilled from {values?.to?.baseObject?.display_name}
                                                     </div>
-                                                        : <div className="text-gray-500">
+                                                        : <div className="text-gray-400">
                                                             Please make sure this is your address
                                                         </div>
                                             }
@@ -352,7 +351,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             }
                         </div>
                         {
-                            valid_addresses?.length > 0 &&
+                            valid_addresses?.length > 0 && !inputValue &&
                             <div className="text-left space-y-2">
                                 <label className="">Your recent addresses</label>
                                 <div>
@@ -392,11 +391,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                                         }
                                                                     </div>
                                                                 </div>
-                                                                <motion.div whileTap={{ scale: 1.05 }} className='flex text-primary-text flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md space-x-1'>
-                                                                    <span>Transfered to</span>
-                                                                    <AvatarGroup imageUrls={values.swapType === SwapType.OffRamp ? a.exchanges?.map(address_excange => GetIcon({ internal_name: address_excange, resource_storage_url }))
-                                                                        : a.networks?.map(address_network => GetIcon({ internal_name: address_network, resource_storage_url }))} />
-                                                                </motion.div>
                                                             </RadioGroup.Description>
                                                         )
                                                     }}
