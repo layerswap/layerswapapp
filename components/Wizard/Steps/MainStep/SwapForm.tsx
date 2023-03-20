@@ -155,7 +155,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     }, [values.refuel])
 
     const valuesSwapper = () => {
-        [values.from, values.to] = [values.to, values.from]
+        setFieldValue('from', values.to)
+        setFieldValue('to', values.from)
     }
 
     const valuesSwapperFiltering = () => {
@@ -188,7 +189,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             </div>
                             {
                                 swapType === SwapType.CrossChain &&
-                                <button disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-13px)] top-[142px] sm:top-[112px] sm:rotate-90 z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
+                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-13px)] top-[142px] sm:top-[112px] sm:rotate-90 z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
                                     <motion.div
                                         animate={animate}
                                         transition={{ duration: 0.3 }}
