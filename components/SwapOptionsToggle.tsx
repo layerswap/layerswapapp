@@ -6,6 +6,7 @@ import { generateSwapInitialValues } from "../lib/generateSwapInitialValues";
 import { SwapType } from "../lib/layerSwapApiClient";
 import { SwapFormValues } from "./DTOs/SwapFormValues";
 import OptionToggle, { NavRadioOption } from "./OptionToggle"
+import updateQueryStringParam from "./utils/updateQueryStringParam";
 
 const swapOptions: NavRadioOption[] = [
     { value: SwapType.OnRamp, isEnabled: true, isHighlighted: false },
@@ -30,6 +31,8 @@ const SwapOptionsToggle = forwardRef((_, ref: any) => {
         const initialValues = generateSwapInitialValues(value, settings, query)
         resetForm({ values: initialValues })
         validateForm(initialValues)
+        updateQueryStringParam('selectedProduct', value)
+
     }, [settings, query])
 
     return (

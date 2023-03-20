@@ -7,6 +7,7 @@ import { SortingByOrder } from "../../lib/sorting";
 import { Currency } from "../../Models/Currency";
 import { Exchange } from "../../Models/Exchange";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
+import updateQueryStringParam from "../utils/updateQueryStringParam";
 import Select, { DisabledReason } from "./Select";
 import { SelectMenuItem } from "./selectMenuItem";
 
@@ -67,6 +68,10 @@ const CurrenciesField: FC = () => {
         }
 
     }, [from, to, currencies, exchanges, currency])
+
+    useEffect(() => {
+        from && to && currency && updateQueryStringParam('asset', currency?.name)
+    }, [from, to, currency])
 
     return (<>
         <Field disabled={!currencyMenuItems?.length} name={name} values={currencyMenuItems} value={currency} as={Select} setFieldValue={setFieldValue} smallDropdown={true} />

@@ -1,5 +1,5 @@
 import { Field, useFormikContext } from "formik";
-import { forwardRef } from "react";
+import { forwardRef, useEffect } from "react";
 import { useQueryState } from "../../context/query";
 import { useSettingsState } from "../../context/settings";
 import { SwapType } from "../../lib/layerSwapApiClient";
@@ -7,6 +7,7 @@ import { CryptoNetwork } from "../../Models/CryptoNetwork";
 import { Exchange } from "../../Models/Exchange";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { generateExchangeMenuItems, generateNetworkMenuItems } from "../utils/generateMenuItems";
+import updateQueryStringParam from "../utils/updateQueryStringParam";
 import Select from "./Select";
 import { SelectMenuItem } from "./selectMenuItem";
 
@@ -34,6 +35,10 @@ const SelectNetwork = forwardRef(({ direction, label }: Props, ref: any) => {
         menuItems = generateNetworkMenuItems({ values, networks, resource_storage_url, destNetwork, lockNetwork, direction, exchanges, source, destination })
         placeholder = "Network";
     }
+
+    useEffect(() => {
+        direction === 'from' ? (from && updateQueryStringParam('from', from.baseObject.internal_name)) : (to && updateQueryStringParam('to', to.baseObject.internal_name))
+    }, [from, to])
 
     const value = direction === "from" ? from : to;
     return (<>

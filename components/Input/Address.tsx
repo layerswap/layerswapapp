@@ -6,7 +6,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { ChevronRightIcon, InformationCircleIcon, XIcon } from "@heroicons/react/outline";
+import { ChevronRightIcon, InformationCircleIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
@@ -16,7 +16,6 @@ import { isValidAddress } from "../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
-import AvatarGroup from "../AvatarGroup";
 import RainbowKit from "../Wizard/Steps/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
 import { disconnect } from '@wagmi/core'
@@ -24,6 +23,7 @@ import { metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConne
 import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import WalletIcon from "../icons/WalletIcon";
+import updateQueryStringParam from "../utils/updateQueryStringParam";
 
 const wallets = [metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet]
 
@@ -55,10 +55,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const inputReference = useRef(null);
 
-        const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name) :  a.networks?.some(e => values.to.baseObject.internal_name)) && isValidAddress(a.address, values.to.baseObject))
+        const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name) : a.networks?.some(e => values.to.baseObject.internal_name)) && isValidAddress(a.address, values.to.baseObject))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
-        const { depositeAddressIsfromAccount, addressConfirmed } = useSwapDataState()
+        const { depositeAddressIsfromAccount } = useSwapDataState()
         const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const [inputFocused, setInputFocused] = useState(false)
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
@@ -66,9 +66,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
-        const resource_storage_url = settings.discovery.resource_storage_url
-        const { address, status, isConnected, isConnecting, isDisconnected, connector } = useAccount({
-            onConnect({ address, connector, isReconnected }) {
+        const { isConnected, isDisconnected, connector } = useAccount({
+            onConnect({ address }) {
                 setInputValue(address)
                 setAddressConfirmed(true)
                 setFieldValue("destination_address", address)
@@ -79,9 +78,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 setFieldValue("destination_address", "")
             }
         });
-
-        const exchangeCurrency = values?.swapType === SwapType.OffRamp && values.to?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
-        const networkDisplayName = settings?.networks?.find(n => n.internal_name === exchangeCurrency?.network)?.display_name
 
         const handleUseDepositeAddress = async () => {
             try {
@@ -112,6 +108,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const handleSelectAddress = useCallback((value: string) => {
             setAddressConfirmed(true)
             setFieldValue("destination_address", value)
+            updateQueryStringParam('destAddress', value)
             close()
         }, [close])
 
@@ -146,14 +143,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const handleSetNewAddress = useCallback(() => {
             setAddressConfirmed(true)
             setFieldValue("destination_address", validInputAddress)
+            updateQueryStringParam('destAddress', validInputAddress)
             close()
         }, [validInputAddress])
-
-        const handleWaletConnect = (address: string) => {
-            setAddressConfirmed(true)
-            setFieldValue("destination_address", address)
-            setInputValue(address)
-        }
 
         const autofillEnabled = !inputFocused && !inputAddressIsValid
         values.swapType !== SwapType.OffRamp
@@ -414,9 +406,5 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         </>
         )
     });
-
-function GetIcon({ internal_name, resource_storage_url }) {
-    return `${resource_storage_url}/layerswap/networks/${internal_name.toLowerCase()}.png`;
-}
 
 export default Address
