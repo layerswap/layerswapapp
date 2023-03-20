@@ -154,9 +154,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         }
     }, [values.refuel])
 
-    const availableNetworks = values.swapType === SwapType.OffRamp && values.currency && values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
-    const destinationNetworks = values.swapType === SwapType.OffRamp && settings.networks.filter(n => availableNetworks && availableNetworks.includes(n.internal_name))
-
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     return <>
         <Form className="h-full" >
@@ -183,15 +180,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             </label>
                             <SlideOver
                                 header={`To ${values?.to?.name || ''} address`}
-                                subHeader={
-                                    values?.swapType === SwapType.OffRamp &&
-                                    <motion.div whileTap={{ scale: 1.05 }} className='text-xs w-fit flex flex-row items-center justify-start'>
-                                        <span>
-                                            Make sure the address is in one of the networks
-                                        </span>
-                                        <AvatarGroup imageUrls={destinationNetworks?.map(network => `${settings.discovery.resource_storage_url}/layerswap/networks/${network.internal_name.toLowerCase()}.png`)} />
-                                    </motion.div>
-                                }
                                 modalHeight="large"
                                 opener={(open => <AddressButton
                                     disabled={!values.to || !values.from}

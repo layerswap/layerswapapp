@@ -1,13 +1,12 @@
 import { useFormikContext } from "formik";
-import { ChangeEvent, FC, forwardRef, Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { AddressBookItem, SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
-import SpinIcon from "../icons/spinIcon";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { ArrowRightIcon, CheckCircleIcon, ChevronRightIcon, ExclamationIcon, LinkIcon, XIcon } from "@heroicons/react/outline";
+import { ChevronRightIcon, InformationCircleIcon, XIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
@@ -18,12 +17,10 @@ import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
 import AvatarGroup from "../AvatarGroup";
-import SubmitButton from "../buttons/submitButton";
 import RainbowKit from "../Wizard/Steps/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
 import { disconnect } from '@wagmi/core'
 import { metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet } from '@rainbow-me/rainbowkit/wallets';
-import { ModalFooter } from "../modalComponent";
 import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import WalletIcon from "../icons/WalletIcon";
@@ -166,6 +163,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         values.swapType !== SwapType.OffRamp
         [NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name]?.ChainId]
 
+        const availableNetworks = values.swapType === SwapType.OffRamp && values.currency && values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active' && c.is_default).map(n => n.network)
+        const destinationNetwork = values.swapType === SwapType.OffRamp && settings.networks.find(n => availableNetworks && availableNetworks.includes(n.internal_name))
+
         return (<>
             <div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
                 <div className='flex flex-col self-center grow w-full'>
@@ -237,7 +237,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         </span>
                                     }
                                 </motion.div>
-                                <div className="basis-full text-xs text-primary">
+                                <div className="basis-full text-xs text-primary h-3">
                                     {errorMessage}
                                 </div>
                                 {
@@ -306,6 +306,50 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </div>
                                 }
                             </div>
+                            {
+                                values.swapType === SwapType.OffRamp &&
+                                <div className="mt-4">
+                                    <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500 mb-5'>
+                                        <div className="flex items-center">
+                                            <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
+                                            <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.to.baseObject.display_name} deposit address</label>
+                                        </div>
+                                        <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
+                                            <li>Go to the Deposits page</li>
+                                            <li>
+                                                Select
+                                                <span className="inline-block mx-1">
+                                                    <span className='flex gap-1 items-baseline text-sm '>
+                                                        <Image src={`${settings.discovery.resource_storage_url}/layerswap/currencies/${values.currency.name.toLowerCase()}.png`}
+                                                            alt="Project Logo"
+                                                            height="15"
+                                                            width="15"
+                                                            className='rounded-sm'
+                                                        />
+                                                        <span className="text-white">{values.currency.name}</span>
+                                                    </span>
+                                                </span>
+                                                as asset
+                                            </li>
+                                            <li>
+                                                Select
+                                                <span className="inline-block mx-1">
+                                                    <span className='flex gap-1 items-baseline text-sm '>
+                                                        <Image src={`${settings.discovery.resource_storage_url}/layerswap/networks/${destinationNetwork.internal_name.toLowerCase()}.png`}
+                                                            alt="Project Logo"
+                                                            height="15"
+                                                            width="15"
+                                                            className='rounded-sm'
+                                                        />
+                                                        <span className="text-white">{destinationNetwork.display_name}</span>
+                                                    </span>
+                                                </span>
+                                                as network
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            }
                         </div>
                         {
                             valid_addresses?.length > 0 &&
