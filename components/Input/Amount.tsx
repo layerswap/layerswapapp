@@ -4,6 +4,7 @@ import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import CurrenciesField from "../Select/Currencies";
+import updateQueryStringParam from "../utils/updateQueryStringParam";
 import NumericInput from "./NumericInput";
 
 const AmountField = forwardRef((_, ref: any) => {
@@ -18,6 +19,10 @@ const AmountField = forwardRef((_, ref: any) => {
             setFieldValue(name, minAllowedAmount)
         }
     }, [currency])
+
+    useEffect(() => {
+        amount && updateQueryStringParam('amount', amount)
+    }, [amount])
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
     const maxAllowedAmount = CalculateMaxAllowedAmount(values, networks);
