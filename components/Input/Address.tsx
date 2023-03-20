@@ -172,7 +172,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             if (networkChainId)
                 chains.push(NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name]?.ChainId)
         }
-        const availableNetworks = values.swapType === SwapType.OffRamp && values.currency && values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
+        const availableNetworks = values.swapType === SwapType.OffRamp && values.currency && values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active' && c.is_default).map(n => n.network)
         const destinationNetwork = values.swapType === SwapType.OffRamp && settings.networks.find(n => availableNetworks && availableNetworks.includes(n.internal_name))
 
         const list = [
