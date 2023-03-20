@@ -56,7 +56,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const { data: address_book, mutate, isValidating } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher)
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
-    const [openAddressModal, setOpenAddressModal] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
     const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
     const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name}.png` : null
@@ -91,7 +90,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
             setFieldValue("destination_address", deposit_address.data)
             setDepositeAddressIsfromAccount(true)
             setLoadingDepositAddress(false)
-            setOpenAddressModal(false)
         }
         catch (e) {
             if (e?.response?.data?.error?.code === KnownwErrorCode.NOT_FOUND || e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS)
@@ -175,25 +173,11 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         valuesSwapperFiltering()
     }, [values.from, values.to])
 
-    const availableNetworks = values.swapType === SwapType.OffRamp && values.currency && values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
-    const destinationNetworks = values.swapType === SwapType.OffRamp && settings.networks.filter(n => availableNetworks && availableNetworks.includes(n.internal_name))
-
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     return <>
-
         <Form className="h-full" >
-            {swapType === SwapType.OffRamp &&
-                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
-                    {(close) => (
-                        (values?.to?.baseObject.authorization_flow) === "o_auth2" ?
-                            <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />
-                            : <ConnectApiKeyExchange exchange={to?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
-                    )}
-                </SlideOver>}
-
 
             <Widget>
-
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
                     : <Widget.Content>
@@ -227,15 +211,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             </label>
                             <SlideOver
                                 header={`To ${values?.to?.name || ''} address`}
-                                subHeader={
-                                    values?.swapType === SwapType.OffRamp &&
-                                    <motion.div whileTap={{ scale: 1.05 }} className='text-xs w-fit flex flex-row items-center justify-start'>
-                                        <span>
-                                            Make sure the address is in one of the networks
-                                        </span>
-                                        <AvatarGroup imageUrls={destinationNetworks?.map(network => `${settings.discovery.resource_storage_url}/layerswap/networks/${network.internal_name.toLowerCase()}.png`)} />
-                                    </motion.div>
-                                }
                                 modalHeight="large"
                                 opener={(open => <AddressButton
                                     disabled={!values.to || !values.from}
@@ -288,6 +263,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                     </SwapButton>
                 </Widget.Footer>
             </Widget>
+            {swapType === SwapType.OffRamp &&
+                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
+                    {(close) => (
+                        (values?.to?.baseObject.authorization_flow) === "o_auth2" ?
+                            <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />
+                            : <ConnectApiKeyExchange exchange={to?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
+                    )}
+                </SlideOver>}
         </Form >
     </>
 }
