@@ -9,6 +9,7 @@ export type SwapFormValues =  {
   amount: string;
   destination_address: string;
   currency?: SelectMenuItem<Currency>;
+  refuel?: boolean;
 } & SwapFormProductsData
 
 

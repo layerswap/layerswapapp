@@ -1,36 +1,50 @@
 import { XIcon } from "@heroicons/react/outline";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { Dispatch, SetStateAction, useEffect, useRef } from "react";
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef } from "react";
 import { FC, useState } from "react"
-import { MobileModalContent } from "./modalComponent";
-import { Root, Portal, Overlay, Content, } from '@radix-ui/react-dialog';
+import { MobileModalContent, modalHeight } from "./modalComponent";
 import useWindowDimensions from "../hooks/useWindowDimensions";
 
 export type slideOverPlace = 'inStep' | 'inModal' | 'inMenu'
 
 type Props = {
     header?: string;
+    subHeader?: string | JSX.Element
     opener?: (open: () => void) => JSX.Element | JSX.Element[],
-    children?: (close: () => void) => JSX.Element | JSX.Element[];
+    children?: (close: () => void, animaionCompleted?: boolean) => JSX.Element | JSX.Element[];
     moreClassNames?: string;
     place: slideOverPlace;
     noPadding?: boolean;
+    modalHeight?: modalHeight;
     imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
 
-const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassNames, place, noPadding, children }) => {
+const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children, subHeader }) => {
     const [open, setOpen] = useState(false)
-    const mobileModalRef = useRef(null)
+    const [openAnimaionCompleted, setOpenAnimationCompleted] = useState(false)
     const { width } = useWindowDimensions()
+    const isMobile = width < 640
+
+    if (open && isMobile) {
+        document.body.style.overflow = 'hidden'
+    }
+    else {
+        document.body.style.overflow = ''
+    }
+
+    const mobileModalRef = useRef(null)
     const handleClose = () => {
         setOpen(false)
+        setOpenAnimationCompleted(false)
         imperativeOpener?.[1](false);
     }
     const handleOpen = () => {
         setOpen(true)
         imperativeOpener?.[1](true);
     }
-
+    const handleAnimationCompleted = useCallback((def) => {
+        setOpenAnimationCompleted(def?.y === 0)
+    }, [])
     let heightControl = ''
 
     switch (place) {
@@ -58,8 +72,9 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
         <>
             <span>{opener && opener(handleOpen)}</span>
             <AnimatePresence>
-                {open &&
+                {open && !isMobile &&
                     <motion.div
+                        onAnimationComplete={handleAnimationCompleted}
                         initial={{ y: "100%" }}
                         animate={{
                             y: 0,
@@ -70,11 +85,14 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
                             transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
                         }}
                         className={`absolute inset-0 z-40 w-full ${heightControl} hidden sm:block`}>
-                        <div className={`relative z-40 overflow-hidden flex flex-col rounded-t-2xl md:rounded-none bg-darkblue h-full space-y-3 py-4 ${!noPadding ? 'px-6 sm:px-8' : ''}`}>
-                            <div className={`flex items-center justify-between text-primary-text cursor-pointer ${noPadding ? 'px-6 sm:px-8' : ''}`}>
-                                <p className="text-xl text-white font-semibold">
-                                    {header}
-                                </p>
+                        <div className={`relative z-40 flex flex-col rounded-t-2xl md:rounded-none bg-darkblue h-full space-y-3 py-4 ${!noPadding ? 'px-6 sm:px-8' : ''}`}>
+                            <div className={`flex items-center justify-between text-primary-text ${noPadding ? 'px-6 sm:px-8' : ''}`}>
+                                <div className="text-xl text-white font-semibold">
+                                    <p>{header}</p>
+                                    <div className="text-base text-primary-text font-medium leading-4">
+                                        {subHeader}
+                                    </div>
+                                </div>
                                 <button
                                     type="button"
                                     className="rounded-md hover:text-darkblue-200"
@@ -84,25 +102,19 @@ const SlideOver: FC<Props> = (({ header, opener, imperativeOpener, moreClassName
                                     <XIcon className="h-7 w-7" aria-hidden="true" />
                                 </button>
                             </div>
-                            <div className='text-primary-text relative items-center justify-center text-center h-full'>
-                                {children && children(handleClose)}
+                            <div className='text-primary-text relative items-center justify-center text-center h-full overflow-y-auto styled-scroll'>
+                                {children && children(handleClose, openAnimaionCompleted)}
                             </div>
+                            <div id="test" />
                         </div>
                     </motion.div>
                 }
             </AnimatePresence>
             <AnimatePresence>
-                {open && width < 640 &&
-                    <Root open={open} onOpenChange={() => { }} >
-                        <Portal>
-                            <Overlay />
-                            <Content>
-                                <MobileModalContent ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
-                                    {children && children(handleClose)}
-                                </MobileModalContent>
-                            </Content>
-                        </Portal>
-                    </Root>
+                {open && isMobile &&
+                    <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} description={subHeader} className={moreClassNames}>
+                        {children && children(handleClose, openAnimaionCompleted)}
+                    </MobileModalContent>
                 }
             </AnimatePresence>
         </>

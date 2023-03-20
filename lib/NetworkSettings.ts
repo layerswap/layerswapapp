@@ -40,7 +40,7 @@ export default class NetworkSettings {
 
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LoopringMainnet] = {
             UserGuideUrlForDesktop: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/loopring",
-            ConfirmationWarningMessage: "If you're using the GameStop wallet, please navigate to Loopring.io and use it to transfer funds instead of the GameStop wallet itself",
+            ConfirmationWarningMessage: "You can now transfer funds directly from the GameStop wallet.",
             Order: 0,
             AccountExplorerTemplate: 'https://explorer.loopring.io/account/{0}',
         };
@@ -76,6 +76,9 @@ export default class NetworkSettings {
             Order: 10,
             AccountExplorerTemplate: 'https://nova.arbiscan.io/address/{0}'
             ,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumGoerly] = {
+            ChainId: 421613,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismKovan] = {
             ChainId: 69,

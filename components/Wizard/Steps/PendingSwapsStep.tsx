@@ -26,7 +26,7 @@ export const CurrencyPendingSwapStep: FC = () => {
     const layerswapApiClient = new LayerSwapApiClient()
     const pending_swaps_endpoint = `/swaps?status=0`
     const { data: allPendingSwaps, isValidating, mutate } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher)
-    const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLocaleLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
+    const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
 
     useEffect(() => {
         if (pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
@@ -144,7 +144,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <p className='flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{swap?.destination_network_asset}</span></p>
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
+                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
                                                                         alt="Source Logo"
                                                                         height="60"
                                                                         width="60"
@@ -160,7 +160,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <div className="h-5 w-5 relative">
                                                                     {
                                                                         <Image
-                                                                            src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`}
+                                                                            src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLowerCase()}.png`}
                                                                             alt="Source Logo"
                                                                             height="60"
                                                                             width="60"
@@ -175,7 +175,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <div className="h-5 w-5 relative">
                                                                     {
                                                                         <Image
-                                                                            src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
+                                                                            src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
                                                                             alt="Source Logo"
                                                                             height="60"
                                                                             width="60"
@@ -192,7 +192,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <p className='md:hidden flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{swap?.destination_network_asset}</span></p>
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
+                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
                                                                         alt="Source Logo"
                                                                         height="60"
                                                                         width="60"

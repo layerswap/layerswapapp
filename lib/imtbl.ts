@@ -1,4 +1,7 @@
-import { ETHTokenType, Link, LinkResults } from '@imtbl/imx-sdk'
+import { ERC20TokenType, ETHTokenType, Link, LinkResults } from '@imtbl/imx-sdk'
+import { NetworkCurrency } from '../Models/CryptoNetwork'
+import KnownInternalNames from './knownIds'
+import { SwapItem } from './layerSwapApiClient'
 import NetworkSettings from './NetworkSettings'
 
 export default class ImtblClient {
@@ -30,16 +33,30 @@ export default class ImtblClient {
         }
     }
 
-    async Transfer(amount: string, toAddress: string) {
+    async Transfer(swap: SwapItem, currency: NetworkCurrency) {
         try {
-            const res = await this.link.transfer([
-                {
-                    type: ETHTokenType.ETH,
-                    amount: amount,
-                    toAddress: toAddress
-                }
-            ])
-            return res;
+            if (swap.source_network_asset === KnownInternalNames.Currencies.ETH) {
+                const res = await this.link.transfer([
+                    {
+                        type: ETHTokenType.ETH,
+                        amount: swap.requested_amount.toString(),
+                        toAddress: swap.deposit_address
+                    }
+                ])
+                return res;
+            }
+            else {
+                const res = await this.link.transfer([
+                    {
+                        type: ERC20TokenType.ERC20,
+                        amount: swap.requested_amount.toString(),
+                        toAddress: swap.deposit_address,
+                        tokenAddress: currency.contract_address?.toLowerCase(),
+                        symbol: swap.source_network_asset
+                    }
+                ])
+                return res;
+            }
         }
         catch (e) {
             console.log(e)

@@ -101,7 +101,7 @@ const Expired = ({ swap, onGetHelp }: Props) => {
 
 const Canceled = ({ swap, onGetHelp }: Props) => {
     return <MessageComponent>
-        <MessageComponent.Content icon='red'>
+        <MessageComponent.Content icon='gray'>
             <MessageComponent.Header>
                 Swap canceled
             </MessageComponent.Header>

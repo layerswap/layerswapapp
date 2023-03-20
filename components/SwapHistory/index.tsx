@@ -263,7 +263,7 @@ function TransactionsHistory() {
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     {
                                       <Image
-                                        src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`}
+                                        src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLowerCase()}.png`}
                                         alt="From Logo"
                                         height="60"
                                         width="60"
@@ -276,7 +276,7 @@ function TransactionsHistory() {
                                   <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
                                     {
                                       <Image
-                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
+                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
                                         alt="To Logo"
                                         height="60"
                                         width="60"
@@ -305,7 +305,7 @@ function TransactionsHistory() {
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     {
                                       <Image
-                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
+                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
                                         alt="To Logo"
                                         height="60"
                                         width="60"
@@ -388,7 +388,7 @@ function TransactionsHistory() {
                                 <button
                                   type="button"
                                   onClick={() => handleopenSwapDetails(swap)}
-                                  className="group text-white  relative w-full flex justify-center py-2 px-2 border-0 font-semibold rounded-md transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                                  className="group text-white  relative w-full flex justify-center py-2 px-2 border-0 font-semibold rounded-md transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
                                 >
                                   <ChevronRightIcon className="h-5 w-5" />
                                 </button>
@@ -407,7 +407,7 @@ function TransactionsHistory() {
                         disabled={isLastPage || loading}
                         type="button"
                         onClick={handleLoadMore}
-                        className="group disabled:text-primary-800 mb-2 text-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-400 ease-in-out"
+                        className="group disabled:text-primary-800 mb-2 text-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
                       >
                         <span className="flex items-center mr-2">
                           {(!isLastPage && !loading) &&

@@ -147,7 +147,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess }) => {
             onSubmit={handleSubmit}
         >
             {({ isValid, isSubmitting, errors, handleChange }) => (
-                <Form className='flex text-primary-text h-full px-6 sm:px-8'>
+                <Form className='flex text-primary-text h-full'>
                     <div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
                         <div className='flex flex-col self-center grow w-full'>
                             <div className='flex flex-col self-center grow w-full'>

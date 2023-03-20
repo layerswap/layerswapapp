@@ -1,20 +1,21 @@
 import { AuthData } from "../context/authContext";
+import { checkStorageIsAvailable } from "../helpers/storageAvailable";
 
 class TokenService {
     getAuthData(): (AuthData | undefined | null) {
-        return JSON.parse(typeof window !== 'undefined' && window?.localStorage?.getItem("authData")) || undefined;
+        return (JSON.parse(checkStorageIsAvailable('localStorage') && (window?.localStorage?.getItem("authData") || "null"))) || undefined;
     }
     setAuthData(data) {
-        localStorage.setItem("authData", JSON.stringify(data));
+        checkStorageIsAvailable('localStorage') && localStorage.setItem("authData", JSON.stringify(data));
     }
     getCodeNextTime(): Date | undefined {
-        return JSON.parse(typeof window !== 'undefined' && window?.localStorage?.getItem("codeNextTime")) || undefined;
+        return JSON.parse(checkStorageIsAvailable('localStorage') && (window?.localStorage?.getItem("codeNextTime") || "null")) || undefined;
     }
     setCodeNextTime(time) {
-        localStorage.setItem("codeNextTime", JSON.stringify(time));
+        checkStorageIsAvailable('localStorage') && localStorage.setItem("codeNextTime", JSON.stringify(time));
     }
     removeAuthData() {
-        localStorage.removeItem("authData");
+        checkStorageIsAvailable('localStorage') && localStorage.removeItem("authData");
     }
 }
 

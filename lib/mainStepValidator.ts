@@ -11,7 +11,7 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
     return (values: SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
-        let minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks);
+        let minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
         let maxAllowedAmount = CalculateMaxAllowedAmount(values, settings.networks);
 
         if (!values.from) {
@@ -35,7 +35,7 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         if (minAllowedAmount != undefined && amount < minAllowedAmount) {
             errors.amount = `Min amount is ${minAllowedAmount}`;
         }
-        if(values.to){
+        if (values.to) {
             if (!values.destination_address) {
                 errors.destination_address = `Enter ${values.to.name} address`;
             }
@@ -46,7 +46,7 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
                 errors.destination_address = `You can not transfer to this address`;
             }
         }
-        
+
         if (Object.keys(errors).length === 0) return errors
 
         if (Object.keys(errors).length === 0) return errors
@@ -57,6 +57,6 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         return Object.assign(errorsOrder, errors);
     };
 }
-function isBlacklistedAddress(blacklisted_addresses: BlacklistedAddress[], network: CryptoNetwork, address: string) {
+export function isBlacklistedAddress(blacklisted_addresses: BlacklistedAddress[], network: CryptoNetwork, address: string) {
     return blacklisted_addresses?.some(ba => (!ba.network || ba.network === network?.internal_name) && ba.address?.toLowerCase() === address?.toLowerCase());
 }

@@ -1,4 +1,4 @@
-import { InformationCircleIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
+import { LinkIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
 import { CheckIcon, HomeIcon, ChatIcon, XIcon } from '@heroicons/react/solid';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
@@ -13,17 +13,24 @@ import WarningMessage from '../../WarningMessage';
 import NetworkSettings from '../../../lib/NetworkSettings';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import GoHomeButton from '../../utils/GoHome';
 import Widget from '../Widget';
 import Modal from '../../modalComponent';
 import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
+import WithdrawFromWallet from './Wallet/WithdrawFromWallet';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import RainbowKit from './Wallet/RainbowKit';
+import { mainnet, polygon, optimism, arbitrum, arbitrumGoerli, } from 'wagmi/chains';
+
+
+const CAINS = [mainnet, polygon, optimism, arbitrum, arbitrumGoerli]
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
+    const [openWithdrawFromWallet, setOpenWithdrawFromWallet] = useState(false)
     const { networks, currencies, exchanges, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
@@ -78,6 +85,14 @@ const WithdrawNetworkStep: FC = () => {
         setOpenCancelConfirmModal(true)
     }
     const userGuideUrlForDesktop = NetworkSettings.KnownSettings[source_network_internal_name]?.UserGuideUrlForDesktop
+
+    const handleOpenWithdrawFromWallet = () => {
+        setOpenWithdrawFromWallet(true)
+    }
+
+    const source_chain_id = NetworkSettings.KnownSettings[source_network.internal_name]?.ChainId
+
+    const chain = source_chain_id ? CAINS.find(ch => ch.id === source_chain_id) : null
 
     return (
         <>
@@ -148,7 +163,16 @@ const WithdrawNetworkStep: FC = () => {
                                         <span className='flex-none'>
                                             Learn how to send from
                                         </span>
-                                        <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep"></GuideLink>
+                                        <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep"/>
+                                    </WarningMessage>
+                                }
+                                {
+                                    !swap?.destination_exchange &&
+                                    <WarningMessage messageType='informing'>
+                                        <span className='flex-none'>
+                                            Learn how to do
+                                        </span>
+                                        <GuideLink text='Cross-Chain swap' userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/cross-chain' place="inStep"/>
                                     </WarningMessage>
                                 }
                             </div>
@@ -159,6 +183,11 @@ const WithdrawNetworkStep: FC = () => {
                     {
                         !transferDone &&
                         <>
+                            <div className='mb-4'>
+                                {swap && chain &&
+                                    <RainbowKit />
+                                }
+                            </div>
                             <div className="flex text-center mb-4 space-x-2">
                                 <div className='relative'>
                                     <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>

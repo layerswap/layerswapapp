@@ -149,7 +149,7 @@ export type CreateSwapParams = {
     destination_address: string,
     partner?: string,
     external_id?: string,
-    refuel: boolean
+    refuel?: boolean
 }
 
 export type SwapItem = {
@@ -174,6 +174,13 @@ export type SwapItem = {
     has_pending_deposit: boolean,
 }
 
+export type AddressBookItem = {
+    address: string,
+    date: string,
+    networks: string[],
+    exchanges: string[]
+}
+
 type Transaction = {
     amount: number,
     confirmations: number,
@@ -181,6 +188,7 @@ type Transaction = {
     max_confirmations: number,
     transaction_id: string,
     usd_value: number
+    usd_price: number
 }
 
 

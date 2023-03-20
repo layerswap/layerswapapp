@@ -115,10 +115,12 @@ const OffRampSwapConfirmationStep: FC = () => {
                         NetworkSettings.KnownSettings[from?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
                         <WarningMessage className='mb-4'>
                             <span>{NetworkSettings.KnownSettings[from?.baseObject?.internal_name]?.ConfirmationWarningMessage}.</span>
-                            {
-                                from?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
-                                <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how' place='inStep' />
-                            }
+                            <p>
+                                {
+                                    from?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
+                                    <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how' place='inStep' />
+                                }
+                            </p>
                         </WarningMessage>
                     }
                     <AddressDetails canEditAddress={true} />

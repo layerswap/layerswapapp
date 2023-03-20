@@ -21,7 +21,7 @@ const Content = ({ children, center }: ContetProps) => {
         </div>
         : <div className='space-y-4 py-1 mt-1 md:py-0 md:mt-0'>{children}</div>
 }
-let variants = {
+export let variants = {
     enter: ({ direction, width }) => {
         return ({
             opacity: 0,
@@ -93,7 +93,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
 Widget.Content = Content
 Widget.Footer = Footer
 
-function ReactPortal({ children, wrapperId = "react-portal-wrapper" }) {
+export function ReactPortal({ children, wrapperId = "react-portal-wrapper" }) {
     let element = document.getElementById(wrapperId);
     // if element is not found with wrapperId,
     // create and append to body
