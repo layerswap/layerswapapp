@@ -11,7 +11,20 @@ const securityHeaders = [
   },
 ]
 const DOCS_URL = 'https://docs.layerswap.io/user-docs'
+const LAYERSWAP_APP_URL= 'https://app.layerswap.io'
+
 const redirects = async () => [
+  {
+    source: '/',
+    destination: LAYERSWAP_APP_URL,
+    permanent: true,
+    has: [
+      {
+        type: 'query',
+        key: 'addressSource'
+      }
+    ]
+  },
   {
     source: '/userguide',
     destination: DOCS_URL,
