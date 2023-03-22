@@ -4,6 +4,7 @@ import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef } from 
 import { FC, useState } from "react"
 import { MobileModalContent, modalHeight } from "./modalComponent";
 import useWindowDimensions from "../hooks/useWindowDimensions";
+import { Content, Overlay, Portal, Root } from "@radix-ui/react-dialog";
 
 export type slideOverPlace = 'inStep' | 'inModal' | 'inMenu'
 
@@ -16,21 +17,15 @@ type Props = {
     place: slideOverPlace;
     noPadding?: boolean;
     modalHeight?: modalHeight;
+    withoutEnterAnimation?: boolean;
     imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
 
-const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children, subHeader }) => {
+const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children, subHeader, withoutEnterAnimation }) => {
     const [open, setOpen] = useState(false)
     const [openAnimaionCompleted, setOpenAnimationCompleted] = useState(false)
     const { width } = useWindowDimensions()
-    const isMobile = width < 640
-
-    if (open && isMobile) {
-        document.body.style.overflow = 'hidden'
-    }
-    else {
-        document.body.style.overflow = ''
-    }
+    const isMobile = width <= 640
 
     const mobileModalRef = useRef(null)
     const handleClose = () => {
@@ -75,7 +70,7 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                 {open && !isMobile &&
                     <motion.div
                         onAnimationComplete={handleAnimationCompleted}
-                        initial={{ y: "100%" }}
+                        initial={!withoutEnterAnimation && { y: "100%" }}
                         animate={{
                             y: 0,
                             transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
@@ -84,9 +79,9 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                             y: "100%",
                             transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
                         }}
-                        className={`absolute inset-0 z-40 w-full ${heightControl} hidden sm:block`}>
-                        <div className={`relative z-40 flex flex-col rounded-t-2xl md:rounded-none bg-darkblue h-full space-y-3 py-4 ${!noPadding ? 'px-6 sm:px-8' : ''}`}>
-                            <div className={`flex items-center justify-between text-primary-text ${noPadding ? 'px-6 sm:px-8' : ''}`}>
+                        className={`absolute inset-0 z-40 w-full ${heightControl} block`}>
+                        <div className={`relative z-40 flex flex-col rounded-t-2xl md:rounded-none bg-darkblue h-full space-y-3 py-4 ${!noPadding && 'px-6 sm:px-8'}`}>
+                            <div className={`flex items-center justify-between text-primary-text ${noPadding && 'px-6 sm:px-8'}`}>
                                 <div className="text-xl text-white font-semibold">
                                     <p>{header}</p>
                                     <div className="text-base text-primary-text font-medium leading-4">
@@ -105,16 +100,22 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                             <div className='text-primary-text relative items-center justify-center text-center h-full overflow-y-auto styled-scroll'>
                                 {children && children(handleClose, openAnimaionCompleted)}
                             </div>
-                            <div id="test" />
                         </div>
                     </motion.div>
                 }
             </AnimatePresence>
             <AnimatePresence>
                 {open && isMobile &&
-                    <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} description={subHeader} className={moreClassNames}>
-                        {children && children(handleClose, openAnimaionCompleted)}
-                    </MobileModalContent>
+                    <Root open={open} >
+                        <Portal>
+                            <Overlay />
+                            <Content>
+                                <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} description={subHeader} className={moreClassNames}>
+                                    {children && children(handleClose, openAnimaionCompleted)}
+                                </MobileModalContent>
+                            </Content>
+                        </Portal>
+                    </Root>
                 }
             </AnimatePresence>
         </>

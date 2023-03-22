@@ -184,65 +184,67 @@ const WithdrawExchangeStep: FC = () => {
                                     </p>
                                 </div>
                                 <div className={`mb-6 grid grid-cols-1 gap-5 `}>
-                                    <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.deposit_address} header={'Address'}>
-                                        <div>
-                                            <p className='break-all'>
-                                                {swap?.deposit_address}
-                                            </p>
-                                            {sourceNetworks.length === 1 ?
-                                                <div className='flex space-x-2 items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5 w-fit'>
-                                                    <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${sourceNetworks[0]?.internal_name.toLowerCase()}.png`}></Image>
-                                                    <span>Available on {sourceNetworks[0].display_name}</span>
-                                                </div>
-                                                :
-                                                <ClickTooltip text={
-                                                    <div>
-                                                        <span className='font-semibold text-primary-text text-sm'>
-                                                            Deposits will be detected on any one of these networks
-                                                        </span>
-                                                        <div className='flex flex-col space-y-1 mt-2'>
-                                                            {
-                                                                sourceNetworks.map(x => (
-                                                                    <div key={x?.internal_name} className='flex flex-row items-center space-x-2 text-white bg-darkblue-500 rounded py-1 px-2'>
-                                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full' src={`${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`}></Image>
-                                                                        <span>{networks.find(n => n.internal_name === x?.internal_name).display_name}</span>
-                                                                    </div>
-                                                                ))
-                                                            }
-                                                        </div>
+                                    <div className='rounded-md bg-darkblue-700 border border-darkblue-300 divide-y divide-darkblue-300'>
+                                        <BackgroundField Copiable QRable toCopy={swap?.deposit_address} header={'Address'} withoutBorder>
+                                            <div>
+                                                <p className='break-all text-white'>
+                                                    {swap?.deposit_address}
+                                                </p>
+                                                {/* {sourceNetworks.length === 1 ?
+                                                    <div className='flex space-x-2 items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5 w-fit'>
+                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${sourceNetworks[0]?.internal_name.toLowerCase()}.png`}></Image>
+                                                        <span>Available on {sourceNetworks[0].display_name}</span>
                                                     </div>
-                                                }>
-                                                    <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
-                                                        <AvatarGroup imageUrls={sourceNetworks?.map(x => `${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`)} />
-                                                        <span className='text-xs grow md:text-sm break-keep'>Available on {sourceNetworks.length} networks</span>
-                                                        <span><ArrowDownIcon className='h-4 md:h-5 bg-darkblue-700 text-primary-text ml-1 md:ml-2 rounded-full p-0.5' /></span>
-                                                    </motion.div>
-                                                </ClickTooltip>}
-                                        </div>
-                                    </BackgroundField>
-                                    <div className='flex space-x-4'>
-                                        <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
-                                            <p>
-                                                {swap?.requested_amount}
-                                            </p>
-                                        </BackgroundField>
-                                        <BackgroundField header={'Asset'}>
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-5 w-5 relative">
-                                                    {
-                                                        destination_network_asset &&
-                                                        <Image
-                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
-                                                            alt="From Logo"
-                                                            height="60"
-                                                            width="60"
-                                                            className="rounded-md object-contain"
-                                                        />
-                                                    }
-                                                </div>
-                                                <div className="mx-1 block">{destination_network_asset}</div>
+                                                    :
+                                                    <ClickTooltip text={
+                                                        <div>
+                                                            <span className='font-semibold text-primary-text text-sm'>
+                                                                Deposits will be detected on any one of these networks
+                                                            </span>
+                                                            <div className='flex flex-col space-y-1 mt-2'>
+                                                                {
+                                                                    sourceNetworks.map(x => (
+                                                                        <div key={x?.internal_name} className='flex flex-row items-center space-x-2 text-white bg-darkblue-500 rounded py-1 px-2'>
+                                                                            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full' src={`${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`}></Image>
+                                                                            <span>{networks.find(n => n.internal_name === x?.internal_name).display_name}</span>
+                                                                        </div>
+                                                                    ))
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    }>
+                                                        <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
+                                                            <AvatarGroup imageUrls={sourceNetworks?.map(x => `${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`)} />
+                                                            <span className='text-xs grow md:text-sm break-keep'>Available on {sourceNetworks.length} networks</span>
+                                                            <span><ArrowDownIcon className='h-4 md:h-5 bg-darkblue-700 text-primary-text ml-1 md:ml-2 rounded-full p-0.5' /></span>
+                                                        </motion.div>
+                                                    </ClickTooltip>} */}
                                             </div>
                                         </BackgroundField>
+                                        <div className='flex divide-x divide-darkblue-300'>
+                                            <BackgroundField Copiable toCopy={swap?.requested_amount} header={'Amount'} withoutBorder>
+                                                <p>
+                                                    {swap?.requested_amount}
+                                                </p>
+                                            </BackgroundField>
+                                            <BackgroundField header={'Asset'} withoutBorder>
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 h-5 w-5 relative">
+                                                        {
+                                                            destination_network_asset &&
+                                                            <Image
+                                                                src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
+                                                                alt="From Logo"
+                                                                height="60"
+                                                                width="60"
+                                                                className="rounded-md object-contain"
+                                                            />
+                                                        }
+                                                    </div>
+                                                    <div className="mx-1 block">{destination_network_asset}</div>
+                                                </div>
+                                            </BackgroundField>
+                                        </div>
                                     </div>
                                     {
                                         source_exchange_settings?.WithdrawalWarningMessage &&

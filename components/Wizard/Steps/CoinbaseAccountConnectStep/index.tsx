@@ -16,6 +16,7 @@ import { ApiResponse } from '../../../../Models/ApiResponse';
 import { SwapCreateStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
+import SlideOver from '../../../SlideOver';
 import Widget from '../../Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectGuideScreens';
 
@@ -29,12 +30,14 @@ type Props = {
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap, swapFormData } = useSwapDataState()
     const { setWithdrawManually } = useSwapDataUpdate()
-    const { networks, exchanges, currencies, discovery: { resource_storage_url } } = useSettingsState()
+    const { exchanges, currencies } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate()
     const localStorageItemKey = "alreadyFamiliarWithCoinbaseConnect";
-    let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<boolean>(false, localStorageItemKey)
+    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<boolean>(false, localStorageItemKey)
+    const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
+    const [openGuide, setOpenGuide] = useState(false)
 
-    const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar)
+    const [carouselFinished, setCarouselFinished] = useState(storageAlreadyFamiliar)
     const [authWindow, setAuthWindow] = useState<Window>()
     const [authorizedAmount, setAuthorizedAmount] = useState<number>()
 
@@ -95,10 +98,6 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const handleConnect = useCallback(() => {
         try {
-            if (!carouselFinished && !alreadyFamiliar) {
-                carouselRef?.current?.next()
-                return;
-            }
             const access_token = TokenService.getAuthData()?.access_token
             if (!access_token)
                 goToStep(SwapCreateStep.Email)
@@ -112,33 +111,65 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
         }
     }, [oauth_authorize_url, carouselRef, carouselFinished, query, swap])
 
+    const hanldeGuideModalClose = () => {
+        if (!carouselFinished) {
+            carouselRef?.current?.next()
+            return;
+        } else {
+            setOpenGuide(false)
+            if (localAlreadyFamiliar && !storageAlreadyFamiliar) {
+                setStorageAlreadyFamiliar(true)
+            }
+        }
+    }
+
+    useEffect(() => {
+        if (!storageAlreadyFamiliar) {
+            setOpenGuide(true)
+        }
+    }, [])
+
     const exchange_name = exchange?.display_name
 
     const onCarouselLast = (value) => {
         setCarouselFinished(value)
     }
 
-    const handleToggleChange = (value: boolean) => {
-        setAlreadyFamiliar(value)
-        onCarouselLast(value)
+    const handleToggleChange = () => {
+        setLocalAlreadyFamiliar(!localAlreadyFamiliar)
+        onCarouselLast(true)
     }
 
     return (
-        <Widget>
-            <Widget.Content>
-                {
-                    !hideHeader &&
-                    <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
-                        Please connect your {exchange_name} account
-                    </h3>
-                }
-                {
-                    alreadyFamiliar ?
-                        <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkblue to-darkblue-700 h-100%`} style={{ width: '100%' }}>
-                            <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                        </div>
-                        :
-                        <div className="w-full space-y-3">
+        <>
+            <Widget>
+                <Widget.Content>
+                    {
+                        !hideHeader &&
+                        <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
+                            Please connect your {exchange_name} account
+                        </h3>
+                    }
+
+                    <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkblue to-darkblue-700 h-100%`} style={{ width: '100%' }}>
+                        <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                    </div>
+                    <div className="flex font-normal text-sm text-primary-text">
+                        <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
+                    </div>
+                </Widget.Content>
+                <Widget.Footer sticky={stickyFooter}>
+                    <div>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+                            Connect
+                        </SubmitButton>
+                        <p className='text-xs sm:text-sm mt-2 font-lighter text-primary-text'>Don't want to connect Coinbase account? <span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
+                    </div>
+                </Widget.Footer>
+            </Widget>
+            <SlideOver imperativeOpener={[openGuide, setOpenGuide]} place={'inStep'} withoutEnterAnimation>
+                    {() => (
+                        <div className="w-full space-y-3 h-full flex flex-col justify-between">
                             {(swap || swapFormData) && <Carousel onLast={onCarouselLast} ref={carouselRef}>
                                 <CarouselItem width={100} >
                                     <FirstScreen exchange_name={exchange_name} />
@@ -153,44 +184,33 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                                     <FourthScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                                 </CarouselItem>
                                 <CarouselItem width={100}>
-                                    <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                                    <LastScreen number minimalAuthorizeAmount={minimalAuthorizeAmount} />
                                 </CarouselItem>
                             </Carousel>}
+                            <div>
+                                <div className="flex items-center mb-3">
+                                    <input
+                                        name="alreadyFamiliar"
+                                        id='alreadyFamiliar'
+                                        type="checkbox"
+                                        className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
+                                        onChange={handleToggleChange}
+                                        checked={localAlreadyFamiliar}
+                                    />
+                                    <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
+                                        I'm already familiar with the process.
+                                    </label>
+                                </div>
+                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
+                                    {
+                                        carouselFinished ? "Got it" : "Next"
+                                    }
+                                </SubmitButton>
+                            </div>
                         </div>
-                }
-                <div className="flex font-normal text-sm text-primary-text">
-                    <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
-                </div>
-            </Widget.Content>
-            <Widget.Footer sticky={stickyFooter}>
-                {
-                    alreadyFamiliar && carouselFinished ?
-                        <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100 w-full mb-3">
-                            Show me full guide
-                        </button>
-                        :
-                        <div className="flex items-center mb-3">
-                            <input
-                                name="alreadyFamiliar"
-                                id='alreadyFamiliar'
-                                type="checkbox"
-                                className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
-                                onChange={() => handleToggleChange(true)}
-                                checked={alreadyFamiliar}
-                            />
-                            <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
-                                I'm already familiar with the process.
-                            </label>
-                        </div>
-                }
-                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
-                    {
-                        carouselFinished ? "Connect" : "Next"
-                    }
-                </SubmitButton>
-                <p className='text-sm mt-2 font-lighter text-primary-text'>Don't want to connect Coinbase account? <span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
-            </Widget.Footer>
-        </Widget>
+                    )}
+                </SlideOver>
+        </>
     )
 }
 
