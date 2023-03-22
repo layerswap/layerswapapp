@@ -87,7 +87,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
             name: n.display_name,
             order: NetworkSettings.KnownSettings[n.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${n.internal_name.toLowerCase()}.png`,
-            isAvailable: n.status === "active" && (swapType === SwapType.OffRamp ? !destNetworkIsAvailable : (direction === 'from' ? !(source && lockNetwork) : !(destination && lockNetwork))),
+            isAvailable: n.status === "active" && (swapType === SwapType.OffRamp ? !destNetworkIsAvailable : (direction === 'from' ? !(source && lockNetwork) : !((destination || destNetwork) && lockNetwork))),
             isDefault: false
         })).sort(SortingByOrder);
 
