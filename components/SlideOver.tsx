@@ -4,6 +4,7 @@ import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef } from 
 import { FC, useState } from "react"
 import { MobileModalContent, modalHeight } from "./modalComponent";
 import useWindowDimensions from "../hooks/useWindowDimensions";
+import { Root, Portal, Overlay, Content, } from '@radix-ui/react-dialog';
 
 export type slideOverPlace = 'inStep' | 'inModal' | 'inMenu'
 
@@ -112,9 +113,16 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
             </AnimatePresence>
             <AnimatePresence>
                 {open && isMobile &&
-                    <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} description={subHeader} className={moreClassNames}>
-                        {children && children(handleClose, openAnimaionCompleted)}
-                    </MobileModalContent>
+                    <Root open={open} onOpenChange={() => { }} >
+                        <Portal>
+                            <Overlay />
+                            <Content>
+                                <MobileModalContent modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
+                                    {children && children(handleClose)}
+                                </MobileModalContent>
+                            </Content>
+                        </Portal>
+                    </Root>
                 }
             </AnimatePresence>
         </>
