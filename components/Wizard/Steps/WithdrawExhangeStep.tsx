@@ -184,7 +184,7 @@ const WithdrawExchangeStep: FC = () => {
                                     </p>
                                 </div>
                                 <div className={`mb-6 grid grid-cols-1 gap-5 `}>
-                                    <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.deposit_address} header={'Address'}>
+                                    <BackgroundField Copiable={true} QRable={true} toCopy={swap?.deposit_address} header={'Address'}>
                                         <div>
                                             <p className='break-all'>
                                                 {swap?.deposit_address}
@@ -221,7 +221,7 @@ const WithdrawExchangeStep: FC = () => {
                                         </div>
                                     </BackgroundField>
                                     <div className='flex space-x-4'>
-                                        <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
+                                        <BackgroundField Copiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
                                             <p>
                                                 {swap?.requested_amount}
                                             </p>

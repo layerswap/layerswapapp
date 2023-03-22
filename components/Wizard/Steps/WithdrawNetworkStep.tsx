@@ -120,7 +120,7 @@ const WithdrawNetworkStep: FC = () => {
                                         </div>
                                     </BackgroundField>
                                 }
-                                <BackgroundField isCopiable={true} isQRable={true} toCopy={swap?.deposit_address} header={'Recipient'}>
+                                <BackgroundField Copiable={true} QRable={true} toCopy={swap?.deposit_address} header={'Recipient'}>
                                     <div>
                                         <p className='break-all'>
                                             {swap?.deposit_address}
@@ -146,7 +146,7 @@ const WithdrawNetworkStep: FC = () => {
                                     </div>
                                 }
                                 <div className='flex space-x-4'>
-                                    <BackgroundField isCopiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
+                                    <BackgroundField Copiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
                                         <p>
                                             {swap?.requested_amount}
                                         </p>
