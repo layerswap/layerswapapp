@@ -1,4 +1,4 @@
-import { XIcon } from "@heroicons/react/outline";
+import { XIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"

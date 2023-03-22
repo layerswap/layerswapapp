@@ -1,5 +1,5 @@
 import { RadioGroup } from "@headlessui/react";
-import { ArrowRightIcon } from "@heroicons/react/solid";
+import { ArrowRightIcon } from "lucide-react";
 import { FC } from "react";
 import { SwapType } from "../lib/layerSwapApiClient";
 import { classNames } from "./utils/classNames";

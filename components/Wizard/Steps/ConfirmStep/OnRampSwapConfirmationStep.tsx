@@ -1,4 +1,4 @@
-import { PencilAltIcon, ExclamationIcon } from '@heroicons/react/outline';
+import { Edit, AlertOctagon } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useRef, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
@@ -18,10 +18,8 @@ import Modal from '../../../modalComponent';
 import { useTimerState } from '../../../../context/timerContext';
 import Widget from '../../Widget';
 import WarningMessage from '../../../WarningMessage';
-import SwapSettings from '../../../../lib/SwapSettings';
 import KnownInternalNames from '../../../../lib/knownIds';
 import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
-import Image from 'next/image'
 import { useSettingsState } from '../../../../context/settings';
 import { Exchange } from '../../../../Models/Exchange';
 
@@ -153,7 +151,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                     <div className="mx-auto w-full rounded-lg font-normal">
                         <div className='flex justify-between mb-4 md:mb-8'>
                             <div className='flex items-center text-xs md:text-sm font-medium'>
-                                <ExclamationIcon className='h-6 w-6 mr-2' />
+                                <AlertOctagon className='h-6 w-6 mr-2' />
                                 I am the owner of this address
                             </div>
                             <div className='flex items-center space-x-4'>
@@ -171,7 +169,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 setShowModal={setEditingAddress}
                 title={
                     <h4 className='text-lg text-white'>
-                        <PencilAltIcon onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
+                        <Edit onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
                         Editing your {swapFormData?.to?.name} wallet address</h4>
                 }
             >

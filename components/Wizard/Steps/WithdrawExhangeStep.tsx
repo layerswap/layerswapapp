@@ -11,7 +11,7 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import { CheckIcon, SwitchHorizontalIcon, XIcon } from '@heroicons/react/solid';
+import { CheckIcon, ArrowLeftRight, XIcon } from 'lucide-react';
 import Widget from '../Widget';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
@@ -28,7 +28,7 @@ import Coinbase2FA from '../../Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 import Modal from '../../modalComponent';
-import { ArrowDownIcon, LinkIcon } from '@heroicons/react/outline';
+import { ArrowDownIcon, LinkIcon } from 'lucide-react';
 import AvatarGroup from '../../AvatarGroup';
 import ClickTooltip from '../../Tooltips/ClickTooltip';
 import { motion } from 'framer-motion';
@@ -276,7 +276,7 @@ const WithdrawExchangeStep: FC = () => {
                                     sourceIsCoinbase &&
                                     <div className='mb-4'>
                                         {
-                                            authorized ? <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                            authorized ? <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                                 Transfer using Coinbase
                                             </SubmitButton> :
                                                 <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={openConnect} icon={<LinkIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >

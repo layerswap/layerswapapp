@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { ExternalLinkIcon } from "@heroicons/react/outline";
+import { ExternalLinkIcon } from "lucide-react";
 import { DocInFrameSceleton } from "./Sceletons";
 
 type Props = {

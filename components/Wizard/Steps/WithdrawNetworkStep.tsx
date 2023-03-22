@@ -1,5 +1,5 @@
-import { LinkIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
-import { CheckIcon, HomeIcon, ChatIcon, XIcon } from '@heroicons/react/solid';
+import { ArrowLeftRight } from 'lucide-react';
+import { CheckIcon, XIcon } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
@@ -19,8 +19,6 @@ import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
-import WithdrawFromWallet from './Wallet/WithdrawFromWallet';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import RainbowKit from './Wallet/RainbowKit';
 import { mainnet, polygon, optimism, arbitrum, arbitrumGoerli, } from 'wagmi/chains';
 
@@ -113,7 +111,7 @@ const WithdrawNetworkStep: FC = () => {
                                     (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
                                     <BackgroundField header={'Send type'}>
                                         <div className='flex items-center space-x-2'>
-                                            <SwitchHorizontalIcon className='h-4 w-4' />
+                                            <ArrowLeftRight className='h-4 w-4' />
                                             <p>
                                                 To Another Loopring L2 Account
                                             </p>

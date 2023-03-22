@@ -1,7 +1,7 @@
 import { Combobox, Listbox } from '@headlessui/react'
 import { useCallback, useState } from 'react'
 import Image from 'next/image'
-import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon, InformationCircleIcon } from '@heroicons/react/outline'
+import { AlertCircle, XIcon, ChevronDownIcon, CheckIcon, Info } from 'lucide-react'
 import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
@@ -86,7 +86,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                             }
                                             {!item.isAvailable.value && !lockNetwork && !lockExchange &&
                                                 <div className='hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-0.5 rounded hover:cursor-pointer'>
-                                                    <InformationCircleIcon className='h-4 text-primary-text' />
+                                                    <Info className='h-4 text-primary-text' />
                                                 </div>
                                             }
                                         </div>
@@ -98,8 +98,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
                     {values.length === 0 && (
                         <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
-                            <ExclamationCircleIcon
-                                type="outline"
+                            <AlertCircle
                                 name="exclamation-circle"
                                 className="mx-auto h-16 w-16 text-primary" />
                             <p className="mt-4 font-semibold">No 'items' found.</p>

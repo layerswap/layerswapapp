@@ -1,6 +1,6 @@
 import { FC, useState } from 'react'
 import { Link } from '@imtbl/imx-sdk';
-import { LinkIcon } from '@heroicons/react/outline';
+import { LinkIcon } from 'lucide-react';
 import SubmitButton from '../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import NetworkSettings from '../../../lib/NetworkSettings';

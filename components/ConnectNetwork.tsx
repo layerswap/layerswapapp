@@ -1,5 +1,5 @@
 import SubmitButton from './buttons/submitButton';
-import { LinkIcon } from '@heroicons/react/outline';
+import { LinkIcon } from 'lucide-react';
 import { FC } from 'react';
 
 type Props = {

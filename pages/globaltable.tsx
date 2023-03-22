@@ -5,7 +5,7 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
 import { useRouter } from 'next/router'
-import { ArrowLeftIcon } from '@heroicons/react/solid'
+import { ArrowLeftIcon } from 'lucide-react'
 
 export default function GlobalTable(props) {
     const router = useRouter();

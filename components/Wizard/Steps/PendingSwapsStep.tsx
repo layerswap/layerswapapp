@@ -1,4 +1,4 @@
-import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, XIcon } from 'lucide-react';
 import { Dispatch, FC, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';

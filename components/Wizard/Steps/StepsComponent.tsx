@@ -1,4 +1,4 @@
-import { CheckIcon } from "@heroicons/react/outline";
+import { CheckIcon } from "lucide-react";
 import { classNames } from "../../utils/classNames";
 
 export default function Steps({ steps }) {

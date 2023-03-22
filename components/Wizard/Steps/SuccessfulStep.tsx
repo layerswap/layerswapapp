@@ -1,5 +1,5 @@
-import { ExternalLinkIcon } from '@heroicons/react/outline';
-import { HomeIcon } from '@heroicons/react/solid';
+import { ExternalLinkIcon } from 'lucide-react';
+import { HomeIcon } from 'lucide-react';
 import { FC, useCallback } from 'react'
 import { useAuthState, UserType } from '../../../context/authContext';
 import { FormWizardProvider, useFormWizardaUpdate } from '../../../context/formWizardProvider';

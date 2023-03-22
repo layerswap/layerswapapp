@@ -1,4 +1,4 @@
-import { ChevronDownIcon, MailOpenIcon } from '@heroicons/react/outline';
+import { ChevronDownIcon, MailOpenIcon } from 'lucide-react';
 import { Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';

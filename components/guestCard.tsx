@@ -1,4 +1,4 @@
-import { ArrowLeftIcon } from '@heroicons/react/outline';
+import { ArrowLeftIcon } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useCallback } from 'react';
 import { toast } from 'react-hot-toast';

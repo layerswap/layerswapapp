@@ -1,4 +1,4 @@
-import { ArrowRightIcon, ExternalLinkIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, ExternalLinkIcon } from 'lucide-react';
 import { FC, useEffect } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
 import { useSettingsState } from '../../../../context/settings';

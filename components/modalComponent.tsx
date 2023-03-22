@@ -1,5 +1,5 @@
 import { Dispatch, FC, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
-import { XIcon } from '@heroicons/react/outline';
+import { XIcon } from 'lucide-react';
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useQueryState } from '../context/query';
 import { useRouter } from 'next/router';
@@ -8,6 +8,7 @@ import { Root, Portal, Overlay, Content, Title, Close, } from '@radix-ui/react-d
 import inIframe from './utils/inIframe';
 import { variants } from '../tailwind.config';
 import { ReactPortal } from './Wizard/Widget';
+import IconButton from './buttons/iconButton';
 
 type modalSize = 'small' | 'medium' | 'large';
 export type modalHeight = 'auto' | 'large';
@@ -108,10 +109,11 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                                                 {title}
                                             </Title>
                                             <Close
-                                                type="button"
-                                                className="rounded-md hover:text-darkblue-200 text-primary-text" >
-                                                <span className="sr-only">Close</span>
-                                                <XIcon className="h-7 w-7" aria-hidden="true" />
+                                                type="button">
+                                                <IconButton icon={
+                                                    <XIcon strokeWidth={3}/>
+                                                }>
+                                                </IconButton>
                                             </Close>
                                         </div>
                                         {children}
@@ -181,14 +183,14 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 dragConstraints={{ top: 0, bottom: 0 }}
                 onAnimationComplete={onAnimationCompleted}
             >
-                <div className='px-5 py-3 rounded-t-2xl bg-darkblue'>
+                <div className='px-5 py-3 mb-4 rounded-t-2xl bg-darkblue  border-b border-darkblue-400'>
                     <div className='grid grid-cols-6 items-center'>
-                        <button ref={closeButtonRef} tabIndex={-1} className='text-base text-gray-600 col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
+                        <button ref={closeButtonRef} tabIndex={-1} className='text-base text-primary-text col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
                             Close
                         </button>
                         {
                             title ?
-                                <div tabIndex={-1} className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-primary-text">
+                                <div tabIndex={-1} className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-white">
                                     {title}
                                 </div>
                                 :

@@ -2,7 +2,7 @@ import { FC } from "react"
 import { useSwapDataState } from "../../context/swap"
 import { classNames } from "../utils/classNames"
 import Image from 'next/image'
-import { ArrowRightIcon } from "@heroicons/react/outline"
+import { ArrowRightIcon } from "lucide-react"
 import { SwapType } from "../../lib/layerSwapApiClient"
 import { CalculateReceiveAmount } from "../../lib/fees"
 import { useSettingsState } from "../../context/settings"

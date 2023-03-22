@@ -6,8 +6,7 @@ import { parseJwt } from '../lib/jwtParser';
 import { OpenLink } from '../lib/openLink';
 import TokenService from '../lib/TokenService';
 import Image from 'next/image'
-import SwitchIcon from './icons/switchIcon';
-import { ExternalLinkIcon } from '@heroicons/react/outline';
+import { ExternalLinkIcon, ArrowLeftRight } from 'lucide-react';
 import SubmitButton from './buttons/submitButton';
 import { SwapFormValues } from './DTOs/SwapFormValues';
 import { useFormikContext } from 'formik';
@@ -100,7 +99,7 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
                                             className="object-contain rounded-md"
                                         />
                                     </div>
-                                    <SwitchIcon />
+                                    <ArrowLeftRight />
                                     <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
                                         <Image
                                             src="/images/layerswapWhite.png"

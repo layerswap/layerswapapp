@@ -1,4 +1,4 @@
-import { ChevronRightIcon } from "@heroicons/react/outline"
+import { ChevronRightIcon } from "lucide-react"
 import { classNames } from "./utils/classNames"
 
 export const SwapHistoryComponentSceleton = () => {

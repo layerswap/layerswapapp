@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
-import { ArrowRightIcon, ChevronRightIcon, ExclamationIcon, ExternalLinkIcon, RefreshIcon, SelectorIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, RefreshCcw, XIcon } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
 import LayerswapMenu from "../LayerswapMenu"
 import { useSettingsState } from "../../context/settings"
@@ -14,10 +14,10 @@ import SubmitButton, { DoubleLineText } from "../buttons/submitButton"
 import CopyButton from "../buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "../Sceletons"
 import GoHomeButton from "../utils/GoHome"
-import StatusIcon, { GreenIcon, GreyIcon } from "./StatusIcons"
+import StatusIcon, {  } from "./StatusIcons"
 import Modal from "../modalComponent"
 import toast from "react-hot-toast"
-import { ArrowLeftIcon } from "@heroicons/react/solid"
+import { ArrowLeftIcon } from "lucide-react"
 import { useSwapDataUpdate } from "../../context/swap"
 import { SwapStatus } from "../../Models/SwapStatus"
 import FormattedDate from "../Common/FormattedDate";
@@ -411,7 +411,7 @@ function TransactionsHistory() {
                       >
                         <span className="flex items-center mr-2">
                           {(!isLastPage && !loading) &&
-                            <RefreshIcon className="h-5 w-5" />}
+                            <RefreshCcw className="h-5 w-5" />}
                           {loading ?
                             <SpinIcon className="animate-spin h-5 w-5" />
                             : null}

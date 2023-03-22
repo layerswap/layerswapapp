@@ -1,4 +1,4 @@
-import { HomeIcon } from "@heroicons/react/outline"
+import { HomeIcon } from "lucide-react"
 import { useEffect } from "react"
 import SubmitButton from "../components/buttons/submitButton"
 import MessageComponent from "../components/MessageComponent"

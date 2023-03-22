@@ -1,5 +1,5 @@
 import CardContainer from './cardContainer';
-import { ChevronRightIcon } from '@heroicons/react/solid';
+import { ChevronRightIcon } from 'lucide-react';
 import FooterComponent from './footerComponent';
 import { useState } from 'react';
 import Modal from './modalComponent';

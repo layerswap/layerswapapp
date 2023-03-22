@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ExternalLinkIcon, PencilAltIcon } from '@heroicons/react/outline'
+import { ChevronDownIcon, ExternalLinkIcon } from 'lucide-react'
 import { Disclosure } from "@headlessui/react";
 import { useSwapDataState } from '../../context/swap';
 import Image from 'next/dist/client/image';

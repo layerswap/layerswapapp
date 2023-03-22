@@ -1,4 +1,4 @@
-import { XIcon } from '@heroicons/react/outline'
+import { XIcon } from 'lucide-react'
 import { FC } from 'react'
 import { usePersistedState } from '../hooks/usePersistedState';
 interface BannerProps {

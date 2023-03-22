@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import { ArrowLeftIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
+import { ArrowLeftIcon, AlertCircle } from 'lucide-react';
 import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
 import LayerswapApiClient from "../lib/layerSwapApiClient"
@@ -219,8 +219,7 @@ function UserExchanges() {
 
                             {userExchanges?.length === 0 && (
                                 <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
-                                    <ExclamationCircleIcon
-                                        type="outline"
+                                    <AlertCircle
                                         name="exclamation-circle"
                                         className="mx-auto h-16 w-16 text-primary"
                                     />

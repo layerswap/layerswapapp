@@ -1,6 +1,6 @@
 import { Disclosure } from '@headlessui/react';
-import { ChevronDownIcon } from '@heroicons/react/outline';
-import { UserIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon } from 'lucide-react';
+import { UserIcon } from 'lucide-react';
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';

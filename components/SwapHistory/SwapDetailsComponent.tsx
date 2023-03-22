@@ -8,7 +8,7 @@ import shortenAddress from '../utils/ShortenAddress';
 import CopyButton from '../buttons/copyButton';
 import { SwapDetailsComponentSceleton } from '../Sceletons';
 import StatusIcon from './StatusIcons';
-import { ExternalLinkIcon } from '@heroicons/react/outline';
+import { ExternalLinkIcon } from 'lucide-react';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
 import { truncateDecimals } from '../utils/RoundDecimals';
