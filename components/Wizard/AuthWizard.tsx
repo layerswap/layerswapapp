@@ -20,6 +20,7 @@ const AuthWizard: FC = () => {
         await router.push(redirect?.toString() || '/')
         plausible(TrackEvent.SignedIn)
     }, [redirect]);
+    
     const GoBackToEmailStep = useCallback(() => goToStep(AuthStep.Email, "back"), [])
     const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
 
@@ -30,10 +31,10 @@ const AuthWizard: FC = () => {
     return (
         <TimerProvider>
             <Wizard>
-                <WizardItem StepName={SwapCreateStep.Email} GoBack={handleGoBack}>
+                <WizardItem StepName={AuthStep.Email} GoBack={handleGoBack}>
                     <EmailStep OnNext={GoToCodeStep} />
                 </WizardItem>
-                <WizardItem StepName={SwapCreateStep.Code} GoBack={GoBackToEmailStep}>
+                <WizardItem StepName={AuthStep.Code} GoBack={GoBackToEmailStep}>
                     <CodeStep OnNext={CodeOnNext} />
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.PendingSwaps}>

@@ -58,6 +58,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
         setWithdrawManually(true)
         onDoNotConnect()
     }, [])
+    
 
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref = ""
