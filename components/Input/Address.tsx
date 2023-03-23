@@ -165,8 +165,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         return (<>
             <div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
                 <div className='flex flex-col self-center grow w-full'>
-                    <div className={`flex flex-col self-center grow w-full mb-16 sm:mb-0`}>
-                        <div className="text-left mb-10">
+                    <div className={`flex flex-col self-center grow w-full sm:mb-0`}>
+                        <div className="text-left mb-4">
                             <label htmlFor={name}>Address</label>
                             {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                             <div className="flex flex-wrap flex-col md:flex-row">

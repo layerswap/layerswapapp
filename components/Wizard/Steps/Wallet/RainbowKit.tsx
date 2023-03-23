@@ -20,7 +20,6 @@ import { mainnet, polygon, optimism, arbitrum, goerli, arbitrumGoerli } from 'wa
 const { chains, provider } = configureChains(
     [mainnet, polygon, optimism, arbitrum, goerli, arbitrumGoerli],
     [
-        alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_ID }),
         publicProvider()
     ]
 );
