@@ -1,9 +1,11 @@
-import { XIcon } from "@heroicons/react/outline";
+import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef } from "react";
 import { FC, useState } from "react"
 import { MobileModalContent, modalHeight } from "./modalComponent";
 import useWindowDimensions from "../hooks/useWindowDimensions";
+import IconButton from "./buttons/iconButton";
+import { Root, Portal, Overlay, Content, } from '@radix-ui/react-dialog';
 
 export type slideOverPlace = 'inStep' | 'inModal' | 'inMenu'
 
@@ -93,14 +95,10 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                                         {subHeader}
                                     </div>
                                 </div>
-                                <button
-                                    type="button"
-                                    className="rounded-md hover:text-darkblue-200"
-                                    onClick={handleClose}
-                                >
-                                    <span className="sr-only">Close</span>
-                                    <XIcon className="h-7 w-7" aria-hidden="true" />
-                                </button>
+                                <IconButton onClick={handleClose} icon={
+                                    <X strokeWidth={3} />
+                                }>
+                                </IconButton>
                             </div>
                             <div className='text-primary-text relative items-center justify-center text-center h-full overflow-y-auto styled-scroll'>
                                 {children && children(handleClose, openAnimaionCompleted)}
@@ -112,9 +110,16 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
             </AnimatePresence>
             <AnimatePresence>
                 {open && isMobile &&
-                    <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} description={subHeader} className={moreClassNames}>
-                        {children && children(handleClose, openAnimaionCompleted)}
-                    </MobileModalContent>
+                    <Root open={open} onOpenChange={() => { }} >
+                        <Portal>
+                            <Overlay />
+                            <Content>
+                                <MobileModalContent modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
+                                    {children && children(handleClose)}
+                                </MobileModalContent>
+                            </Content>
+                        </Portal>
+                    </Root>
                 }
             </AnimatePresence>
         </>

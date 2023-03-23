@@ -1,4 +1,4 @@
-import { HomeIcon } from "@heroicons/react/outline"
+import { Home } from "lucide-react"
 import { useEffect } from "react"
 import SubmitButton from "../components/buttons/submitButton"
 import MessageComponent from "../components/MessageComponent"
@@ -27,7 +27,7 @@ export default function Custom404() {
                             </MessageComponent.Content>
                             <MessageComponent.Buttons>
                                 <GoHomeButton>
-                                    <SubmitButton buttonStyle="outline" isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                    <SubmitButton buttonStyle="outline" isDisabled={false} isSubmitting={false} icon={<Home className="h-5 w-5" />}>
                                         Go home
                                     </SubmitButton>
                                 </GoHomeButton>

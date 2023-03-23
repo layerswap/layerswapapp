@@ -19,7 +19,7 @@ import GuideLink from '../../../guideLink';
 import { useQueryState } from '../../../../context/query';
 import InternalApiClient from '../../../../lib/internalApiClient';
 import { useSettingsState } from '../../../../context/settings';
-import { ExclamationIcon } from '@heroicons/react/outline';
+import { AlertOctagon } from 'lucide-react';
 import ToggleButton from '../../../buttons/toggleButton';
 import { nameOf } from '../../../../lib/external/nameof';
 import { FormikProps } from 'formik';
@@ -134,7 +134,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                     <div className="mx-auto w-full rounded-lg font-normal">
                         <div className='flex justify-between mb-4 md:mb-8'>
                             <div className='flex items-center text-xs md:text-sm font-medium'>
-                                <ExclamationIcon className='h-6 w-6 mr-2' />
+                                <AlertOctagon className='h-6 w-6 mr-2' />
                                 I am the owner of this address
                             </div>
                             <div className='flex items-center space-x-4'>
