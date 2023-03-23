@@ -118,4 +118,5 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
         </>
     )
 })
+
 export default SlideOver;
