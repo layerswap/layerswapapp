@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { Disclosure } from "@headlessui/react";
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount, CaluclateRefuelAmount } from '../../lib/fees';
 import { SwapType } from '../../lib/layerSwapApiClient';
@@ -51,7 +51,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                 : '-'
                                         }
                                     </span>
-                                    <ChevronDownIcon
+                                    <ChevronDown
                                         className={`${open ? 'rotate-180 transform' : ''
                                             } h-4 w-4 text-primary-text`}
                                     />

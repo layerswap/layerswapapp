@@ -1,4 +1,4 @@
-import { CheckIcon, Copy } from 'lucide-react'
+import { Check, Copy } from 'lucide-react'
 import { classNames } from '../utils/classNames'
 import useCopyClipboard from '../../hooks/useCopyClipboard'
 import React, { FC } from 'react'
@@ -19,7 +19,7 @@ const CopyButton: FC<CopyButtonProps> = ({ className, toCopy, children, iconHeig
     <div className={classNames(className)} onClick={() => setCopied(toCopy)}>
       {isCopied && (
         <div className="flex items-center gap-1 cursor-pointer">
-          <CheckIcon className={iconClassName} width={iconWidth ? iconWidth : 16} height={iconHeight ? iconHeight : 16} />
+          <Check className={iconClassName} width={iconWidth ? iconWidth : 16} height={iconHeight ? iconHeight : 16} />
           {children}
         </div>
       )}

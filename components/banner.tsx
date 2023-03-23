@@ -1,4 +1,4 @@
-import { XIcon } from 'lucide-react'
+import { X } from 'lucide-react'
 import { FC } from 'react'
 import { usePersistedState } from '../hooks/usePersistedState';
 interface BannerProps {
@@ -39,7 +39,7 @@ const Banner: FC<BannerProps> = ({ localStorageId, desktopMessage, mobileMessage
                             className="-mr-1 flex p-2 rounded-md hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-white"
                         >
                             <span className="sr-only">Dismiss</span>
-                            <XIcon className="h-4 w-5 text-white" aria-hidden="true" />
+                            <X className="h-4 w-5 text-white" aria-hidden="true" />
                         </button>
                     </div>
                 </div>

@@ -7,7 +7,7 @@ import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import SpinIcon from "../icons/spinIcon";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { LinkIcon, XIcon } from "lucide-react";
+import { Link, X } from "lucide-react";
 import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
@@ -125,7 +125,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         <motion.div className="flex items-center" >
                                             {
                                                 loading ? <SpinIcon className="animate-spin h-4 w-4" />
-                                                    : <LinkIcon className="h-4 w-4" />
+                                                    : <Link className="h-4 w-4" />
                                             }
                                             <motion.span className={classNames(inpuFocused ? '' : 'ml-3', "block truncate text-clip")}
                                                 variants={
@@ -161,7 +161,7 @@ const AddressInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
                                     >
                                         <div className="flex items-center" >
-                                            <XIcon className="h-5 w-5" />
+                                            <X className="h-5 w-5" />
                                         </div>
                                     </button>
                                 </div>

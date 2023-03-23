@@ -1,4 +1,4 @@
-import { ArrowRightIcon, ExternalLinkIcon } from 'lucide-react';
+import { ArrowRight, ExternalLink } from 'lucide-react';
 import { FC, useEffect } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
 import { useSettingsState } from '../../../../context/settings';
@@ -55,7 +55,7 @@ const ProcessingStep: FC = () => {
                     <span>Source Tx </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={input_tx_explorer.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
-                        <ExternalLinkIcon className='h-4' />
+                        <ExternalLink className='h-4' />
                     </div>
                 </div>
                 :
@@ -74,7 +74,7 @@ const ProcessingStep: FC = () => {
                     <span>Destination Tx </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
-                        <ExternalLinkIcon className='h-4' />
+                        <ExternalLink className='h-4' />
                     </div>
                 </div>
         },

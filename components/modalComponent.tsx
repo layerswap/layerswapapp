@@ -1,5 +1,5 @@
 import { Dispatch, FC, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
-import { XIcon } from 'lucide-react';
+import { X } from 'lucide-react';
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useQueryState } from '../context/query';
 import { useRouter } from 'next/router';
@@ -111,7 +111,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                                             <Close
                                                 type="button">
                                                 <IconButton icon={
-                                                    <XIcon strokeWidth={3}/>
+                                                    <X strokeWidth={3}/>
                                                 }>
                                                 </IconButton>
                                             </Close>

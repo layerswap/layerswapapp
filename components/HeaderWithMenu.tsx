@@ -4,7 +4,7 @@ import { useAuthState } from "../context/authContext"
 import IconButton from "./buttons/iconButton"
 import LayerswapMenu from "./LayerswapMenu"
 import GoHomeButton from "./utils/GoHome"
-import { ArrowLeftIcon } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 function HeaderWithMenu({ goBack }: { goBack: () => void }) {
    const { email, userId } = useAuthState()
@@ -16,7 +16,7 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
          {
             goBack &&
             <IconButton onClick={goBack} icon={
-               <ArrowLeftIcon strokeWidth="3" />
+               <ArrowLeft strokeWidth="3" />
             }>
             </IconButton>
          }

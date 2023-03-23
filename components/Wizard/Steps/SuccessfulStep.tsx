@@ -1,5 +1,5 @@
-import { ExternalLinkIcon } from 'lucide-react';
-import { HomeIcon } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
+import { Home } from 'lucide-react';
 import { FC, useCallback } from 'react'
 import { useAuthState, UserType } from '../../../context/authContext';
 import { FormWizardProvider, useFormWizardaUpdate } from '../../../context/formWizardProvider';
@@ -55,7 +55,7 @@ const SuccessfulStep: FC = () => {
                             (transaction_explorer_template && swap?.output_transaction?.transaction_id) ?
                                 <>
                                     <div className='basis-1/3'>
-                                        <SubmitButton text_align='left' buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer} icon={<ExternalLinkIcon className='h-5 w-5' />}>
+                                        <SubmitButton text_align='left' buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer} icon={<ExternalLink className='h-5 w-5' />}>
                                             <DoubleLineText
                                                 colorStyle='mltln-text-light'
                                                 primaryText='Explorer'
@@ -65,7 +65,7 @@ const SuccessfulStep: FC = () => {
                                     </div>
                                     <div className='basis-2/3 grow '>
                                         <GoHomeButton>
-                                            <SubmitButton button_align='right' text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                            <SubmitButton button_align='right' text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                                                 <DoubleLineText
                                                     colorStyle='mltln-text-dark'
                                                     primaryText='Swap'
@@ -78,7 +78,7 @@ const SuccessfulStep: FC = () => {
                                 :
                                 <div className='grow'>
                                     <GoHomeButton>
-                                        <SubmitButton className='plausible-event-name=Swap+more' text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                        <SubmitButton className='plausible-event-name=Swap+more' text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                                             Swap more
                                         </SubmitButton>
                                     </GoHomeButton>

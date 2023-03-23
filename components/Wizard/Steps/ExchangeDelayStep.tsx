@@ -1,4 +1,4 @@
-import { BookOpenIcon, HomeIcon, Info } from 'lucide-react';
+import { BookOpen, Home, Info } from 'lucide-react';
 import { FC } from 'react'
 import SubmitButton from '../../buttons/submitButton';
 import MessageComponent from '../../MessageComponent';
@@ -29,13 +29,13 @@ const ExchangeDelay: FC = () => {
                 <div className="flex flex-row text-white text-base space-x-2">
                     <div className='basis-1/3'>
                         <GoHomeButton>
-                            <SubmitButton text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                            <SubmitButton text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                                 Go Home
                             </SubmitButton>
                         </GoHomeButton>
                     </div>
                     <div className='basis-2/3'>
-                        <SubmitButton button_align='right' text_align='left' buttonStyle='outline' icon={<BookOpenIcon className="h-5 w-5" />} isDisabled={false} isSubmitting={false} onClick={() => {
+                        <SubmitButton button_align='right' text_align='left' buttonStyle='outline' icon={<BookOpen className="h-5 w-5" />} isDisabled={false} isSubmitting={false} onClick={() => {
                             window.open('https://docs.layerswap.io/user-docs/why-is-coinbase-transfer-taking-so-long', '_blank')
                         }}>
                             Learn More

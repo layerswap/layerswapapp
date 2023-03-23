@@ -1,6 +1,5 @@
 import { Disclosure } from '@headlessui/react';
-import { ChevronDownIcon } from 'lucide-react';
-import { UserIcon } from 'lucide-react';
+import { ChevronDown, User } from 'lucide-react';
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
@@ -98,7 +97,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                             Sign in with email
                                                         </p>
                                                         <div className='bg-darkblue-500 hover:bg-darkblue-400 p-0.5 rounded-md duration-200 transition'>
-                                                            <ChevronDownIcon
+                                                            <ChevronDown
                                                                 className={`${open ? 'rotate-180 transform' : ''
                                                                     } h-5 text-primary-text`}
                                                             />
@@ -139,7 +138,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                 :
                                 <Widget>
                                     <Widget.Content center={true}>
-                                        <UserIcon className='w-16 h-16 text-primary self-center mt-auto' />
+                                        <User className='w-16 h-16 text-primary self-center mt-auto' />
                                         <div>
                                             <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
                                                 What's your email?

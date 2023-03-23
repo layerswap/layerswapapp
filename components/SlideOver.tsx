@@ -1,4 +1,4 @@
-import { XIcon } from "lucide-react";
+import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef } from "react";
 import { FC, useState } from "react"
@@ -95,7 +95,7 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                                     </div>
                                 </div>
                                 <IconButton onClick={handleClose} icon={
-                                    <XIcon strokeWidth={3} />
+                                    <X strokeWidth={3} />
                                 }>
                                 </IconButton>
                             </div>

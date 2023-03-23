@@ -1,4 +1,4 @@
-import { ArrowLeftIcon } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useCallback } from 'react';
 import { toast } from 'react-hot-toast';
@@ -36,7 +36,7 @@ function GuestCard() {
                     <div className={noToolBar ? `p-6 border border-darkblue-400 rounded-md` : "pt-6"}>
                         {goBack &&
                             <button onClick={goBack} className="justify-self-start text-xs text-primary-text flex items-center hover:text-primary-text/70 cursor-pointer space-x-1" style={{ visibility: false ? 'hidden' : 'visible' }}>
-                                <ArrowLeftIcon className='h-3' />
+                                <ArrowLeft className='h-3' />
                                 <span>Edit email</span>
                             </button>
                         }

@@ -1,4 +1,4 @@
-import { ChevronDownIcon, MailOpenIcon } from 'lucide-react';
+import { ChevronDown, MailOpen } from 'lucide-react';
 import { Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
@@ -166,7 +166,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                             :
                             <Widget>
                                 <Widget.Content center={true}>
-                                    <MailOpenIcon className='w-16 h-16 mt-auto text-primary self-center' />
+                                    <MailOpen className='w-16 h-16 mt-auto text-primary self-center' />
                                     <div className='text-center mt-5'>
                                         <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{tempEmail}</span></p>
                                     </div>

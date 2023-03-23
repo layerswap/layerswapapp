@@ -1,4 +1,4 @@
-import { CheckIcon } from "lucide-react";
+import { Check } from "lucide-react";
 import { classNames } from "../../utils/classNames";
 
 export default function Steps({ steps }) {
@@ -15,7 +15,7 @@ export default function Steps({ steps }) {
                                 <div className="group relative flex items-start">
                                     <span className="flex h-9 items-center">
                                         <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full  bg-primary">
-                                            <CheckIcon className="h-5 w-5 text-white" aria-hidden="true" />
+                                            <Check className="h-5 w-5 text-white" aria-hidden="true" />
                                         </span>
                                     </span>
                                     <span className="ml-4 flex min-w-0 flex-col">

@@ -8,7 +8,7 @@ import shortenAddress from '../utils/ShortenAddress';
 import CopyButton from '../buttons/copyButton';
 import { SwapDetailsComponentSceleton } from '../Sceletons';
 import StatusIcon from './StatusIcons';
-import { ExternalLinkIcon } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
 import { truncateDecimals } from '../utils/RoundDecimals';
@@ -160,7 +160,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                         <div className='inline-flex items-center'>
                                             <div className='underline hover:no-underline flex items-center space-x-1'>
                                                 <a target={"_blank"} href={input_tx_id.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
-                                                <ExternalLinkIcon className='h-4' />
+                                                <ExternalLink className='h-4' />
                                             </div>
                                         </div>
                                     </span>
@@ -180,7 +180,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                                     :
                                                     <div className='underline hover:no-underline flex items-center space-x-1'>
                                                         <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
-                                                        <ExternalLinkIcon className='h-4' />
+                                                        <ExternalLink className='h-4' />
                                                     </div>
                                                 }
                                             </div>

@@ -7,7 +7,7 @@ import MessageComponent from '../../MessageComponent';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
 import { SwapItem } from '../../../lib/layerSwapApiClient';
-import { MessageSquare, HomeIcon } from 'lucide-react';
+import { MessageSquare, Home } from 'lucide-react';
 import { TrackEvent } from '../../../pages/_document';
 
 const FailedStep: FC = () => {
@@ -84,7 +84,7 @@ const Expired = ({ swap, onGetHelp }: Props) => {
                 </div>
                 <div className='basis-2/3'>
                     <GoHomeButton>
-                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                             <DoubleLineText
                                 colorStyle='mltln-text-dark'
                                 primaryText='Swap'
@@ -128,7 +128,7 @@ const Canceled = ({ swap, onGetHelp }: Props) => {
                 </div>
                 <div className='basis-2/3'>
                     <GoHomeButton>
-                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                             <DoubleLineText
                                 colorStyle='mltln-text-dark'
                                 primaryText='Swap'
@@ -175,7 +175,7 @@ const Failed = ({ swap, onGetHelp }: Props) => {
                     </div>
                     <div className='basis-2/3'>
                         <GoHomeButton>
-                            <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                            <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                                 <DoubleLineText
                                     colorStyle='mltln-text-dark'
                                     primaryText='Swap'

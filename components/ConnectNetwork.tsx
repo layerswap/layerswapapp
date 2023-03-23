@@ -1,5 +1,5 @@
 import SubmitButton from './buttons/submitButton';
-import { LinkIcon } from 'lucide-react';
+import { Link } from 'lucide-react';
 import { FC } from 'react';
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 }
 
 const ConnectNetwork: FC<Props> = ({ NetworkDisplayName, AppURL }) => {
-    const connectButtonIcon = <LinkIcon className='h-5 w-5'></LinkIcon>
+    const connectButtonIcon = <Link className='h-5 w-5'></Link>
 
     return (
         <div className="relative inset-0 flex flex-col overflow-y-auto styled-scroll">

@@ -1,5 +1,5 @@
 import { ArrowLeftRight } from 'lucide-react';
-import { CheckIcon, XIcon } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
@@ -196,7 +196,7 @@ const WithdrawNetworkStep: FC = () => {
                             </div>
                             <div className="flex flex-row text-white text-base space-x-2">
                                 <div className='basis-1/3'>
-                                    <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<XIcon className='h-5 w-5' />}>
+                                    <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
                                         <DoubleLineText
                                             colorStyle='mltln-text-dark'
                                             primaryText='Cancel'
@@ -206,7 +206,7 @@ const WithdrawNetworkStep: FC = () => {
                                     </SubmitButton>
                                 </div>
                                 <div className='basis-2/3'>
-                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<CheckIcon className="h-5 w-5" aria-hidden="true" />} >
+                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<Check className="h-5 w-5" aria-hidden="true" />} >
                                         <DoubleLineText
                                             colorStyle='mltln-text-light'
                                             primaryText='I did'

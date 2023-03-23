@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import { ArrowLeftIcon, AlertCircle } from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
 import LayerswapApiClient from "../lib/layerSwapApiClient"
@@ -137,7 +137,7 @@ function UserExchanges() {
                 <div className="mt-3 flex items-center justify-between z-20" >
                     <div className="flex ">
                         <button onClick={handleGoBack} className="self-start md:mt-2">
-                            <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+                            <ArrowLeft className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
                         </button>
                         <div className="hidden md:block ml-4">
                             <p className="text-2xl font-bold relative">Account</p>
