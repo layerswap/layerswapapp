@@ -40,7 +40,7 @@ export default function () {
                     {({ open }) => (
                         <>
                             <div className="relative top-">
-                                <Menu.Button >
+                                <Menu.Button as='div'>
                                     <IconButton icon={
                                         <MenuIcon strokeWidth={3} />
                                     }>
