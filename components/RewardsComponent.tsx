@@ -1,11 +1,11 @@
 import { useRouter } from "next/router"
 import { useCallback } from "react"
-import { ArrowLeftIcon, ClockIcon } from '@heroicons/react/outline';
 import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
 import LayerswapMenu from "./LayerswapMenu"
 import GoHomeButton from "./utils/GoHome";
 import BackgroundField from "./backgroundField";
+import { ArrowLeft, Clock } from "lucide-react"
 
 function RewardsComponent() {
 
@@ -21,7 +21,7 @@ function RewardsComponent() {
         <div className='bg-darkblue px-6 sm:px-8 pb-6 sm:mb-10 sm:shadow-card rounded-lg sm:mx-24 text-white overflow-hidden relative min-h-[400px] space-y-5'>
             <div className="mt-3 flex items-center justify-between z-20" >
                 <button onClick={handleGoBack} className="self-start md:mt-2">
-                    <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+                    <ArrowLeft className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
                 </button>
                 <div className="hidden md:block">
                     <p className="font-bold text-2xl">Optimism Rewards</p>
@@ -55,7 +55,7 @@ function RewardsComponent() {
                                 </p>
                             </div>
                             <div className="flex items-center space-x-1">
-                                <ClockIcon className="h-5" />
+                                <Clock className="h-5" />
                                 <p>
                                     6d 5h
                                 </p>
