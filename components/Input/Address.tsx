@@ -149,16 +149,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             close()
         }, [validInputAddress])
 
-        const handleWaletConnect = (address: string) => {
-            setAddressConfirmed(true)
-            setFieldValue("destination_address", address)
-            setInputValue(address)
-        }
-
-        const autofillEnabled = !inputFocused && !inputAddressIsValid
-        values.swapType !== SwapType.OffRamp
-        [NetworkSettings.KnownSettings[values.to?.baseObject?.internal_name]?.ChainId]
-
         const availableNetworks = values.swapType === SwapType.OffRamp && values.currency && values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network).status === 'active' && c.is_default).map(n => n.network)
         const destinationNetwork = values.swapType === SwapType.OffRamp && settings.networks.find(n => availableNetworks && availableNetworks.includes(n.internal_name))
 
@@ -170,7 +160,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             <label htmlFor={name}>Address</label>
                             {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                             <div className="flex flex-wrap flex-col md:flex-row">
-                                <div className="flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
+                                <div className="relative flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
                                     {isPartnerWallet &&
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             {
@@ -206,18 +196,21 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                         </div>
                                                     </span>
                                                 }
-                                                <button
-                                                    type="button"
-                                                    className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
-                                                    onClick={handleRemoveDepositeAddress}
-                                                >
-                                                    <div className="flex items-center px-2 text-sm py-1 font-semibold">
-                                                        {
-                                                            isConnected ? <>Disconnect</>
-                                                                : <>Clear</>
-                                                        }
-                                                    </div>
-                                                </button>
+                                                {
+                                                    !disabled &&
+                                                    <button
+                                                        type="button"
+                                                        className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
+                                                        onClick={handleRemoveDepositeAddress}
+                                                    >
+                                                        <div className="flex items-center px-2 text-sm py-1 font-semibold">
+                                                            {
+                                                                isConnected ? <>Disconnect</>
+                                                                    : <>Clear</>
+                                                            }
+                                                        </div>
+                                                    </button>
+                                                }
                                             </div>
                                         </span>
                                     }
@@ -251,7 +244,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </div>
                         }
                         {
-                            !inputValue
+                            !disabled
+                            && !inputValue
                             && values?.swapType === SwapType.OffRamp
                             && authData?.access_token && values.to
                             && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
@@ -271,7 +265,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </div>
                         }
                         {
-                            !inputValue && values?.swapType !== SwapType.OffRamp && values.to?.baseObject?.address_type === 'evm' &&
+                            !disabled && !inputValue && values?.swapType !== SwapType.OffRamp && values.to?.baseObject?.address_type === 'evm' &&
                             <div className="grow">
                                 <RainbowKit>
                                     <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
@@ -291,7 +285,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </div>
                         }
                         {
-                            values.swapType === SwapType.OffRamp &&
+                            values.swapType === SwapType.OffRamp && !inputAddressIsValid &&
                             <div className='text-left p-4 bg-darkblue-800 text-white rounded-lg border border-darkblue-500'>
                                 <div className="flex items-center">
                                     <Info className='h-5 w-5 text-primary-600 mr-3' />
@@ -332,9 +326,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 </ul>
                             </div>
                         }
-
                         {
-                            valid_addresses?.length > 0 && !inputValue &&
+                            !disabled && valid_addresses?.length > 0 && !inputValue &&
                             <div className="text-left">
                                 <label className="">Recently used</label>
                                 <div>
