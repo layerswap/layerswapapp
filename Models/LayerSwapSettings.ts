@@ -16,4 +16,10 @@ export class LayerSwapSettings {
         resource_storage_url: string;
     }
     validSignatureisPresent?: boolean;
+    campaigns: {
+        name: string,
+        asset: string,
+        network_name: string,
+        percentage: number
+    }[]
 };
