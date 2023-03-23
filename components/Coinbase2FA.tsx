@@ -1,4 +1,4 @@
-import { InformationCircleIcon, LockClosedIcon } from '@heroicons/react/outline';
+import { Info, ScanFace } from 'lucide-react';
 import { Form, Formik, FormikErrors, FormikProps } from 'formik';
 import { FC, useCallback, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
@@ -153,7 +153,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess }) => {
                             <div className='flex flex-col self-center grow w-full'>
                                 <div className='flex flex-col self-start w-full'>
                                     <div className="w-full flex-col justify-between flex h-full">
-                                        <LockClosedIcon className='w-12 h-12 md:w-16 md:h-16 mt-auto text-primary self-center' />
+                                        <ScanFace className='w-12 h-12 md:w-16 md:h-16 mt-auto text-primary self-center' />
                                         <div className='text-center md:mt-5 md:mb-8'>
                                             <p className='mb-2 md:mb-6 mt-2 pt-2 text-2xl font-bold text-white leading-6 text-center font-roboto'>
                                                 Coinbase 2FA
@@ -197,7 +197,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess }) => {
                             <div className='md:mb-5'>
                                 <div className='p-4 bg-darkblue-700 mt-5 text-primary-text rounded-lg border border-darkblue-500 mb-5'>
                                     <div className="flex items-center">
-                                        <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
+                                        <Info className='h-5 w-5 text-primary-600 mr-3' />
                                         <label className="block text-sm md:text-base font-medium leading-6">To obtain the 2 step verification code, check:</label>
                                     </div>
                                     <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-left">

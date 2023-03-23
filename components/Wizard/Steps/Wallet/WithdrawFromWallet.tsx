@@ -1,4 +1,4 @@
-import { CheckIcon, LinkIcon, SwitchHorizontalIcon } from '@heroicons/react/solid';
+import { Check, Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
@@ -109,13 +109,13 @@ const WithdrawFromWallet: FC = () => {
                 <WalletSteps steps={steps} />
                 {
                     !walletAddress &&
-                    <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<LinkIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                    <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
                         Connect
                     </SubmitButton>
                 }
                 {
                     walletAddress &&
-                    <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                    <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                         Transfer
                     </SubmitButton>
                 }
@@ -139,7 +139,7 @@ function WalletSteps({ steps }) {
                                 <div className="group relative flex items-start">
                                     <span className="flex h-9 items-center">
                                         <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full  bg-primary">
-                                            <CheckIcon className="h-5 w-5 text-white" aria-hidden="true" />
+                                            <Check className="h-5 w-5 text-white" aria-hidden="true" />
                                         </span>
                                     </span>
                                     <span className="ml-4 flex min-w-0 flex-col">

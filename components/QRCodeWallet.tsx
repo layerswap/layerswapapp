@@ -2,7 +2,7 @@ import { FC, useState } from "react"
 import Modal from "./modalComponent"
 import QRCode from "qrcode.react";
 import { classNames } from "./utils/classNames";
-import { QrcodeIcon } from "@heroicons/react/outline";
+import { QrCode } from "lucide-react";
 import SubmitButton from "./buttons/submitButton";
 import shortenAddress from "./utils/ShortenAddress";
 import CopyButton from "./buttons/copyButton";
@@ -37,7 +37,7 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconW
         <>
             <div className={classNames(className)} onClick={handleOpenModal}>
                 <div className="flex items-center gap-1 cursor-pointer">
-                    <QrcodeIcon className={iconClassName} width={iconWidth ? iconWidth : 16} height={iconHeight ? iconHeight : 16} />
+                    <QrCode className={iconClassName} width={iconWidth ? iconWidth : 16} height={iconHeight ? iconHeight : 16} />
                 </div>
             </div>
             <Modal showModal={isOpen} setShowModal={setIsOpen} modalSize='medium'>

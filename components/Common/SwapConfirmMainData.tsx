@@ -2,7 +2,7 @@ import { FC } from "react"
 import { useSwapDataState } from "../../context/swap"
 import { classNames } from "../utils/classNames"
 import Image from 'next/image'
-import { ArrowRightIcon } from "@heroicons/react/outline"
+import { ArrowRight } from "lucide-react"
 import { SwapType } from "../../lib/layerSwapApiClient"
 import { CalculateReceiveAmount } from "../../lib/fees"
 import { useSettingsState } from "../../context/settings"
@@ -42,7 +42,7 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
                                 <div className="mx-1 text-white">{from?.name.toUpperCase()}</div>
                             </div>
                         </span>
-                        <ArrowRightIcon className='h-5 w-5 block md:hidden' />
+                        <ArrowRight className='h-5 w-5 block md:hidden' />
                         <span className="flex"><span className='hidden md:block'>To</span>
                             <div className="flex items-center">
                                 <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">

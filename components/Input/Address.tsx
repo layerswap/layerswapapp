@@ -6,7 +6,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { ChevronRightIcon, InformationCircleIcon, XIcon } from "@heroicons/react/outline";
+import { Info } from "lucide-react";
 import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
@@ -16,14 +16,13 @@ import { isValidAddress } from "../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
-import AvatarGroup from "../AvatarGroup";
 import RainbowKit from "../Wizard/Steps/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
 import { disconnect } from '@wagmi/core'
 import { metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet } from '@rainbow-me/rainbowkit/wallets';
 import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
-import WalletIcon from "../icons/WalletIcon";
+import { Wallet } from 'lucide-react'
 import makeBlockie from 'ethereum-blockies-base64';
 
 const wallets = [metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet]
@@ -269,7 +268,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     && !depositeAddressIsfromAccount &&
                                     <div onClick={handleUseDepositeAddress} className={`min-h-12 cursor-pointer mt-2 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
                                         <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
-                                            <WalletIcon className="h-6 w-6 text-primary-text" />
+                                            <Wallet className="h-6 w-6 text-primary-text" />
                                         </div>
                                         <div className="flex flex-col">
                                             <div className="block text-sm font-medium">
@@ -287,7 +286,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         <RainbowKit>
                                             <div className={`min-h-12 text-left mt-4 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
                                                 <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
-                                                    <WalletIcon className="h-6 w-6 text-primary-text" />
+                                                    <Wallet className="h-6 w-6 text-primary-text" />
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <div className="block text-sm font-medium">
@@ -307,7 +306,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 <div className="mt-4">
                                     <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500 mb-5'>
                                         <div className="flex items-center">
-                                            <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
+                                            <Info className='h-5 w-5 text-primary-600 mr-3' />
                                             <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.to.baseObject.display_name} deposit address</label>
                                         </div>
                                         <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">

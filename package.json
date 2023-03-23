@@ -11,7 +11,6 @@
   "dependencies": {
     "@ethersproject/providers": "^5.5.3",
     "@headlessui/react": "^1.7.3",
-    "@heroicons/react": "^1.0.6",
     "@imtbl/imx-sdk": "1.36.1",
     "@markdoc/markdoc": "^0.1.3",
     "@markdoc/next.js": "^0.1.6",
@@ -31,6 +30,7 @@
     "framer-motion": "^6.5.1",
     "gray-matter": "^4.0.3",
     "js-sha3": "^0.8.0",
+    "lucide-react": "^0.127.0",
     "next": "^13.0.4",
     "next-mdx-remote": "^4.1.0",
     "qrcode.react": "^3.1.0",
