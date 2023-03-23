@@ -112,6 +112,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                                             {title}
                                         </div>
                                         <button
+                                            onClick={() => closeModal()}
                                             type="button">
                                             <IconButton icon={
                                                 <X strokeWidth={3} />
