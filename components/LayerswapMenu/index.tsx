@@ -39,7 +39,7 @@ export default function () {
                 <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
                     {({ open }) => (
                         <>
-                            <div className="relative top-[3px]">
+                            <div className="relative top-">
                                 <Menu.Button >
                                     <IconButton icon={
                                         <MenuIcon strokeWidth={3} />

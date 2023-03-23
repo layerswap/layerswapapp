@@ -1,4 +1,4 @@
-import { AlertOctagon, Brain } from "lucide-react";
+import { AlertOctagon, Scroll } from "lucide-react";
 import { FC } from "react";
 
 type messageType = 'warning' | 'informing'
@@ -18,7 +18,7 @@ function constructIcons(messageType: messageType) {
             iconStyle = <AlertOctagon className="sm:h-5 h-4 text-black inline sm:block" />;
             break;
         case 'informing':
-            iconStyle = <Brain className="sm:h-5 h-4 text-white inline self-center sm:block" />;
+            iconStyle = <Scroll className="sm:h-5 h-4 text-white inline self-center sm:block" />;
             break;
     }
     return iconStyle

@@ -12,7 +12,7 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
    const updateWithProps = () => update({ email: email, userId: userId })
 
    return (
-      <div className="w-full grid grid-cols-5 px-6 md:px-8 my-1" >
+      <div className="w-full grid grid-cols-5 px-6 md:px-8 mt-3" >
          {
             goBack &&
             <IconButton onClick={goBack} icon={
@@ -24,7 +24,7 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
             <GoHomeButton />
          </div>
          <div className="col-start-5 justify-self-end self-center flex items-center gap-5">
-            <IconButton className="top-[3px] relative" onClick={() => {
+            <IconButton className="relative" onClick={() => {
                boot();
                show();
                updateWithProps()
