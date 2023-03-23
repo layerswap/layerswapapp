@@ -163,14 +163,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const destinationNetwork = values.swapType === SwapType.OffRamp && settings.networks.find(n => availableNetworks && availableNetworks.includes(n.internal_name))
 
         return (<>
-            <div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
+            <div className='w-full flex flex-col justify-between h-full text-primary-text'>
                 <div className='flex flex-col self-center grow w-full'>
-                    <div className={`flex flex-col self-center grow w-full mb-16 sm:mb-0`}>
-                        <div className="text-left mb-10">
+                    <div className={`flex flex-col self-center grow w-full space-y-3`}>
+                        <div className="text-left">
                             <label htmlFor={name}>Address</label>
                             {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                             <div className="flex flex-wrap flex-col md:flex-row">
-                                <motion.div initial="rest" animate={autofillEnabled ? "rest" : "inputFocused"} className="flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
+                                <div className="flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
                                     {isPartnerWallet &&
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             {
@@ -179,7 +179,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                             }
                                         </div>
                                     }
-                                    <motion.input
+                                    <input
                                         onChange={handleInputChange}
                                         value={inputValue}
                                         placeholder={placeholder}
@@ -193,20 +193,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         ref={inputReference}
                                         tabIndex={0}
                                         className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
-                                        transition={{
-                                            width: { ease: 'linear', }
-                                        }}
-                                        variants={
-                                            {
-                                                rest: { width: '100%' },
-                                                inputFocused: {
-                                                    width: '100%',
-                                                    transition: {
-                                                        when: "afterChildren",
-                                                    }
-                                                }
-                                            }
-                                        }
                                     />
                                     {
                                         inputValue &&
@@ -235,121 +221,122 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                             </div>
                                         </span>
                                     }
-                                </motion.div>
-                                <div className="basis-full text-xs text-primary h-3">
-                                    {errorMessage}
                                 </div>
-                                {
-                                    validInputAddress &&
-                                    <div onClick={handleSetNewAddress} className={`mt-2 min-h-12 cursor-pointer space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-2 hover:border-darkblue-500 hover:shadow-xl`}>
-                                        <div className='flex text-primary-text bg-darkblue-400 flex-row items-left rounded-md p-2'>
-                                            <Image src={makeBlockie(validInputAddress)}
-                                                alt="Project Logo"
-                                                height="20"
-                                                width="20"
-                                                className='rounded-sm'
-                                            />
-                                        </div>
-                                        <div className="flex flex-col grow">
-                                            <div className="block text-md font-medium text-white">
-                                                {shortenAddress(validInputAddress)}
-                                            </div>
-                                        </div>
-                                        <div className='flex text-primary-text flex-row items-left px-2 py-1 rounded-md'>
-                                            Select
-                                        </div>
+                                {errorMessage &&
+                                    <div className="basis-full text-xs text-primary h-3">
+                                        {errorMessage}
                                     </div>
                                 }
-                                {
-                                    !inputValue
-                                    && values?.swapType === SwapType.OffRamp
-                                    && authData?.access_token && values.to
-                                    && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
-                                    && !depositeAddressIsfromAccount &&
-                                    <div onClick={handleUseDepositeAddress} className={`min-h-12 cursor-pointer mt-2 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
+                            </div>
+                        </div>
+                        {
+                            validInputAddress &&
+                            <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-2 hover:border-darkblue-500 hover:shadow-xl`}>
+                                <div className='flex text-primary-text bg-darkblue-400 flex-row items-left rounded-md p-2'>
+                                    <Image src={makeBlockie(validInputAddress)}
+                                        alt="Project Logo"
+                                        height="20"
+                                        width="20"
+                                        className='rounded-sm'
+                                    />
+                                </div>
+                                <div className="flex flex-col grow">
+                                    <div className="block text-md font-medium text-white">
+                                        {shortenAddress(validInputAddress)}
+                                    </div>
+                                </div>
+                                <div className='flex text-primary-text flex-row items-left px-2 py-1 rounded-md'>
+                                    Select
+                                </div>
+                            </div>
+                        }
+                        {
+                            !inputValue
+                            && values?.swapType === SwapType.OffRamp
+                            && authData?.access_token && values.to
+                            && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
+                            && !depositeAddressIsfromAccount &&
+                            <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
+                                <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
+                                    <Wallet className="h-6 w-6 text-primary-text" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <div className="block text-sm font-medium">
+                                        Autofill from {values?.to?.baseObject?.display_name}
+                                    </div>
+                                    <div className="text-gray-500">
+                                        Connect your account to fetch the address
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        {
+                            !inputValue && values?.swapType !== SwapType.OffRamp && values.to?.baseObject?.address_type === 'evm' &&
+                            <div className="grow">
+                                <RainbowKit>
+                                    <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
                                         <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
                                             <Wallet className="h-6 w-6 text-primary-text" />
                                         </div>
                                         <div className="flex flex-col">
                                             <div className="block text-sm font-medium">
-                                                Autofill from {values?.to?.baseObject?.display_name}
+                                                Autofill from wallet
                                             </div>
                                             <div className="text-gray-500">
-                                                Connect your account to fetch the address
+                                                Connect your wallet to fetch the address
                                             </div>
                                         </div>
                                     </div>
-                                }
-                                {
-                                    !inputValue && values?.swapType !== SwapType.OffRamp && values.to?.baseObject?.address_type === 'evm' &&
-                                    <div className="grow">
-                                        <RainbowKit>
-                                            <div className={`min-h-12 text-left mt-4 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
-                                                <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
-                                                    <Wallet className="h-6 w-6 text-primary-text" />
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <div className="block text-sm font-medium">
-                                                        Autofill from wallet
-                                                    </div>
-                                                    <div className="text-gray-500">
-                                                        Connect your wallet to fetch the address
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </RainbowKit>
-                                    </div>
-                                }
+                                </RainbowKit>
                             </div>
-                            {
-                                values.swapType === SwapType.OffRamp &&
-                                <div className="mt-4">
-                                    <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500 mb-5'>
-                                        <div className="flex items-center">
-                                            <Info className='h-5 w-5 text-primary-600 mr-3' />
-                                            <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.to.baseObject.display_name} deposit address</label>
-                                        </div>
-                                        <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
-                                            <li>Go to the Deposits page</li>
-                                            <li>
-                                                Select
-                                                <span className="inline-block mx-1">
-                                                    <span className='flex gap-1 items-baseline text-sm '>
-                                                        <Image src={`${settings.discovery.resource_storage_url}/layerswap/currencies/${values.currency.name.toLowerCase()}.png`}
-                                                            alt="Project Logo"
-                                                            height="15"
-                                                            width="15"
-                                                            className='rounded-sm'
-                                                        />
-                                                        <span className="text-white">{values.currency.name}</span>
-                                                    </span>
-                                                </span>
-                                                as asset
-                                            </li>
-                                            <li>
-                                                Select
-                                                <span className="inline-block mx-1">
-                                                    <span className='flex gap-1 items-baseline text-sm '>
-                                                        <Image src={`${settings.discovery.resource_storage_url}/layerswap/networks/${destinationNetwork.internal_name.toLowerCase()}.png`}
-                                                            alt="Project Logo"
-                                                            height="15"
-                                                            width="15"
-                                                            className='rounded-sm'
-                                                        />
-                                                        <span className="text-white">{destinationNetwork.display_name}</span>
-                                                    </span>
-                                                </span>
-                                                as network
-                                            </li>
-                                        </ul>
-                                    </div>
+                        }
+                        {
+                            values.swapType === SwapType.OffRamp &&
+                            <div className='text-left p-4 bg-darkblue-800 text-white rounded-lg border border-darkblue-500'>
+                                <div className="flex items-center">
+                                    <Info className='h-5 w-5 text-primary-600 mr-3' />
+                                    <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.to.baseObject.display_name} deposit address</label>
                                 </div>
-                            }
-                        </div>
+                                <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
+                                    <li>Go to the Deposits page</li>
+                                    <li>
+                                        Select
+                                        <span className="inline-block mx-1">
+                                            <span className='flex gap-1 items-baseline text-sm '>
+                                                <Image src={`${settings.discovery.resource_storage_url}/layerswap/currencies/${values.currency.name.toLowerCase()}.png`}
+                                                    alt="Project Logo"
+                                                    height="15"
+                                                    width="15"
+                                                    className='rounded-sm'
+                                                />
+                                                <span className="text-white">{values.currency.name}</span>
+                                            </span>
+                                        </span>
+                                        as asset
+                                    </li>
+                                    <li>
+                                        Select
+                                        <span className="inline-block mx-1">
+                                            <span className='flex gap-1 items-baseline text-sm '>
+                                                <Image src={`${settings.discovery.resource_storage_url}/layerswap/networks/${destinationNetwork.internal_name.toLowerCase()}.png`}
+                                                    alt="Project Logo"
+                                                    height="15"
+                                                    width="15"
+                                                    className='rounded-sm'
+                                                />
+                                                <span className="text-white">{destinationNetwork.display_name}</span>
+                                            </span>
+                                        </span>
+                                        as network
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+
                         {
                             valid_addresses?.length > 0 && !inputValue &&
-                            <div className="text-left space-y-2">
-                                <label className="">Your recent addresses</label>
+                            <div className="text-left">
+                                <label className="">Recently used</label>
                                 <div>
                                     <RadioGroup disabled={disabled} value={values.destination_address} onChange={handleSelectAddress}>
                                         <div className="rounded-md overflow-y-auto styled-scroll">
@@ -408,13 +395,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {
                             !valid_addresses?.length && !inputValue && !validInputAddress &&
                             <div className="text-center space-y-3">
-                                <label className="mb-10">No recent swaps</label>
-                                <p className="text-sm text-gray-500">Your addresses will be shown here</p>
+                                <p className="text-sm opacity-50">Recently used addresses will be shown here</p>
                             </div>
                         }
                     </div>
                 </div>
-            </div >
+            </div>
         </>
         )
     });
