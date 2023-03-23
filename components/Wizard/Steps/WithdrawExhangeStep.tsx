@@ -11,7 +11,7 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import { CheckIcon, SwitchHorizontalIcon, XIcon } from '@heroicons/react/solid';
+import { Check, ArrowLeftRight, X } from 'lucide-react';
 import Widget from '../Widget';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
@@ -28,7 +28,7 @@ import Coinbase2FA from '../../Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 import Modal from '../../modalComponent';
-import { ArrowDownIcon, LinkIcon } from '@heroicons/react/outline';
+import { ArrowDown, Link } from 'lucide-react';
 import AvatarGroup from '../../AvatarGroup';
 import ClickTooltip from '../../Tooltips/ClickTooltip';
 import { motion } from 'framer-motion';
@@ -215,7 +215,7 @@ const WithdrawExchangeStep: FC = () => {
                                                     <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
                                                         <AvatarGroup imageUrls={sourceNetworks?.map(x => `${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`)} />
                                                         <span className='text-xs grow md:text-sm break-keep'>Available on {sourceNetworks.length} networks</span>
-                                                        <span><ArrowDownIcon className='h-4 md:h-5 bg-darkblue-700 text-primary-text ml-1 md:ml-2 rounded-full p-0.5' /></span>
+                                                        <span><ArrowDown className='h-4 md:h-5 bg-darkblue-700 text-primary-text ml-1 md:ml-2 rounded-full p-0.5' /></span>
                                                     </motion.div>
                                                 </ClickTooltip>}
                                         </div>
@@ -276,10 +276,10 @@ const WithdrawExchangeStep: FC = () => {
                                     sourceIsCoinbase &&
                                     <div className='mb-4'>
                                         {
-                                            authorized ? <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                            authorized ? <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                                 Transfer using Coinbase
                                             </SubmitButton> :
-                                                <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={openConnect} icon={<LinkIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                                <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={openConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                                     Connect Coinbase
                                                 </SubmitButton>
                                         }
@@ -295,7 +295,7 @@ const WithdrawExchangeStep: FC = () => {
                                 </div>
                                 <div className="flex flex-row text-white text-base space-x-2">
                                     <div className='basis-1/3'>
-                                        <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<XIcon className='h-5 w-5' />}>
+                                        <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
                                             <DoubleLineText
                                                 colorStyle='mltln-text-dark'
                                                 primaryText='Cancel'
@@ -305,7 +305,7 @@ const WithdrawExchangeStep: FC = () => {
                                         </SubmitButton>
                                     </div>
                                     <div className='basis-2/3'>
-                                        <SubmitButton className='plausible-event-name=I+did+the+transfer' button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<CheckIcon className="h-5 w-5" aria-hidden="true" />} >
+                                        <SubmitButton className='plausible-event-name=I+did+the+transfer' button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<Check className="h-5 w-5" aria-hidden="true" />} >
                                             <DoubleLineText
                                                 colorStyle='mltln-text-light'
                                                 primaryText='I did'

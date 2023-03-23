@@ -6,8 +6,7 @@ import { parseJwt } from '../lib/jwtParser';
 import { OpenLink } from '../lib/openLink';
 import TokenService from '../lib/TokenService';
 import Image from 'next/image'
-import SwitchIcon from './icons/switchIcon';
-import { ExternalLinkIcon } from '@heroicons/react/outline';
+import { ExternalLink, ArrowLeftRight } from 'lucide-react';
 import SubmitButton from './buttons/submitButton';
 import { SwapFormValues } from './DTOs/SwapFormValues';
 import { useFormikContext } from 'formik';
@@ -100,7 +99,7 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
                                             className="object-contain rounded-md"
                                         />
                                     </div>
-                                    <SwitchIcon />
+                                    <ArrowLeftRight />
                                     <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
                                         <Image
                                             src="/images/layerswapWhite.png"
@@ -136,8 +135,8 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
                     <div className='mb-4'>
                         <a className='mb-2 flex text-sm items-center text-left underline hover:text-primary' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
                             Read more about Coinbase's OAuth API here
-                            <ExternalLinkIcon className='ml-1 h-4 w-4'>
-                            </ExternalLinkIcon>
+                            <ExternalLink className='ml-1 h-4 w-4'>
+                            </ExternalLink>
                         </a>
                         <SubmitButton  isDisabled={loading} isSubmitting={loading} onClick={handleConnect}>
                             Connect

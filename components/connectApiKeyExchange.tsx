@@ -1,4 +1,4 @@
-import { InformationCircleIcon } from '@heroicons/react/outline';
+import { Info } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import LayerswapApiClient from '../lib/layerSwapApiClient';
@@ -8,9 +8,7 @@ import SubmitButton from './buttons/submitButton';
 import { slideOverPlace } from './SlideOver';
 import WarningMessage from './WarningMessage';
 import { useRouter } from 'next/router';
-import Widget from './Wizard/Widget';
 import GuideLink from './guideLink';
-
 
 type Props = {
     exchange: Exchange,
@@ -77,7 +75,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
                     </div>
                     <div className='space-y-4'>
                         <div>
-                            <label htmlFor="apiKey" className="block font-normal text-sm">
+                            <label htmlFor="apiKey" className="block font-semibold text-sm">
                                 API Key
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1">
@@ -95,7 +93,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
                             </div>
                         </div>
                         <div>
-                            <label htmlFor="apiSecret" className="block font-normal text-sm">
+                            <label htmlFor="apiSecret" className="block font-semibold text-sm">
                                 API Secret
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1">
@@ -133,7 +131,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
             <div className='mb-4'>
                 <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500 mb-5'>
                     <div className="flex items-center">
-                        <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
+                        <Info className='h-5 w-5 text-primary-600 mr-3' />
                         <label className="block text-sm md:text-base font-medium leading-6">We're requesting <span className='font-bold'>Read-Only</span> API Keys</label>
                     </div>
                     <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8">

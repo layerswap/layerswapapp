@@ -31,9 +31,9 @@ import useSWR from "swr";
 import { ApiResponse } from "../../../../Models/ApiResponse";
 import { motion } from "framer-motion";
 import AvatarGroup from "../../../AvatarGroup";
-import RefuelIcon from "../../../icons/RefuelIcon";
 import ClickTooltip from "../../../Tooltips/ClickTooltip";
 import ToggleButton from "../../../buttons/toggleButton";
+import { Fuel } from 'lucide-react'
 
 type Props = {
     isPartnerWallet: boolean,
@@ -175,7 +175,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             <AmountField />
                         </div>
                         <div className="w-full mb-3.5 leading-4">
-                            <label htmlFor="destination_address" className="block font-normal text-primary-text text-sm">
+                            <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
                                 {`To ${values?.to?.name || ''} address`}
                             </label>
                             <SlideOver
@@ -208,7 +208,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                 values?.swapType !== SwapType.OffRamp && values?.to?.baseObject.currencies.find(c => c.asset === values?.currency?.name)?.is_refuel_enabled &&
                                 <div className="flex items-center justify-between px-3.5 py-3 bg-darkblue-700 border border-darkblue-500 rounded-lg mb-4">
                                     <div className="flex items-center space-x-2">
-                                        <RefuelIcon className='h-8 w-8 text-primary' />
+                                        <Fuel className='h-8 w-8 text-primary' />
                                         <div>
                                             <p className="font-medium flex items-center">
                                                 <span>Need gas?</span>
