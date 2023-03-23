@@ -1,6 +1,6 @@
-import { HomeIcon, RefreshIcon } from "@heroicons/react/solid";
+import { Home, RefreshCcw } from "lucide-react";
 import { NextRouter, withRouter } from "next/router"
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import React, { ErrorInfo } from "react";
 import { SendErrorMessage } from "../lib/telegram"
 import SubmitButton from "./buttons/submitButton"
 import ContactSupport from "./ContactSupport"
@@ -54,7 +54,7 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
                                             <div className='basis-1/3'>
                                                 {
                                                     this.props.router.asPath !== "/" && <GoHomeButton>
-                                                        <SubmitButton text_align="left" buttonStyle="outline" isDisabled={false} isSubmitting={false} icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                                                        <SubmitButton text_align="left" buttonStyle="outline" isDisabled={false} isSubmitting={false} icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                                                             Go home
                                                         </SubmitButton>
                                                     </GoHomeButton>
@@ -63,7 +63,7 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
                                             <div className='basis-2/3'>
                                                 <SubmitButton button_align="right" text_align="left" isDisabled={false} isSubmitting={false} onClick={() => {
                                                     this.setState({ hasError: false })
-                                                }} icon={<RefreshIcon className="h-5 w-5" aria-hidden="true" />}>
+                                                }} icon={<RefreshCcw className="h-5 w-5" aria-hidden="true" />}>
                                                     Try Again
                                                 </SubmitButton>
                                             </div>

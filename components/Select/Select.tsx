@@ -1,7 +1,7 @@
 import { Combobox, Listbox } from '@headlessui/react'
 import { useCallback, useState } from 'react'
 import Image from 'next/image'
-import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon, InformationCircleIcon } from '@heroicons/react/outline'
+import { AlertCircle, X, ChevronDown, Check, Info } from 'lucide-react'
 import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
@@ -80,13 +80,13 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                             {item.id === value?.id && item.isAvailable.value &&
                                                 <div className='flex items-center'>
                                                     <div className="bg-darkblue-700 hover:bg-darkblue-600 rounded-md border border-darkblue-600 hover:border-darkblue-100 duration-200 transition p-0.5">
-                                                        <XIcon className='h-4 w-4' />
+                                                        <X className='h-4 w-4' />
                                                     </div>
                                                 </div>
                                             }
                                             {!item.isAvailable.value && !lockNetwork && !lockExchange &&
                                                 <div className='hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-0.5 rounded hover:cursor-pointer'>
-                                                    <InformationCircleIcon className='h-4 text-primary-text' />
+                                                    <Info className='h-4 text-primary-text' />
                                                 </div>
                                             }
                                         </div>
@@ -98,8 +98,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
                     {values.length === 0 && (
                         <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
-                            <ExclamationCircleIcon
-                                type="outline"
+                            <AlertCircle
                                 name="exclamation-circle"
                                 className="mx-auto h-16 w-16 text-primary" />
                             <p className="mt-4 font-semibold">No 'items' found.</p>
@@ -137,7 +136,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                 </span>
 
                                 <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-primary-text">
-                                    <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
+                                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
                                 </span>
                             </>
                         }
@@ -187,7 +186,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
                                             {selected ? (
                                                 <span className="text-white absolute inset-y-0 right-0 flex items-center px-4">
-                                                    <CheckIcon className="h-6 w-6" aria-hidden="true" />
+                                                    <Check className="h-6 w-6" aria-hidden="true" />
                                                 </span>
                                             ) : null}
                                         </motion.div>
@@ -239,7 +238,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                             </span>}
                     </span>
                     <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-white">
-                        <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
+                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
                     </span>
                 </button>
             </div>

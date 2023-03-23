@@ -1,4 +1,4 @@
-import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRight, ChevronRight, ExternalLink, X } from 'lucide-react';
 import { Dispatch, FC, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
@@ -169,7 +169,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 </div>
                                                                 <p className='font-normal md:font-medium'>{source?.display_name}</p>
                                                             </div>
-                                                            <ArrowRightIcon className='h-3 w-3 text-primary-text' />
+                                                            <ArrowRight className='h-3 w-3 text-primary-text' />
                                                             <div className='flex space-x-1 items-center'>
                                                                 <div className="h-5 w-5 relative">
                                                                     {
@@ -206,7 +206,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                             <div className="text-white text-sm md:text-base">
                                                 <div className="flex flex-row text-white space-x-2">
                                                     <div className='basis-1/3'>
-                                                        <SubmitButton text_align="left" size="medium" buttonStyle="outline" onClick={() => { handleCancelSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<XIcon className='md:h-5 h-3' />}>
+                                                        <SubmitButton text_align="left" size="medium" buttonStyle="outline" onClick={() => { handleCancelSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<X className='md:h-5 h-3' />}>
                                                             <DoubleLineText
                                                                 colorStyle='mltln-text-dark'
                                                                 primaryText='Cancel'
@@ -216,7 +216,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                         </SubmitButton>
                                                     </div>
                                                     <div className='basis-2/3'>
-                                                        <SubmitButton button_align='right' size="medium" text_align="left" onClick={() => { handleCompleteSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='md:h-5 h-3' />}>
+                                                        <SubmitButton button_align='right' size="medium" text_align="left" onClick={() => { handleCompleteSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<ExternalLink className='md:h-5 h-3' />}>
                                                             <DoubleLineText
                                                                 colorStyle='mltln-text-light'
                                                                 primaryText="Complete"

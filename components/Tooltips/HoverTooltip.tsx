@@ -1,4 +1,4 @@
-import { InformationCircleIcon } from "@heroicons/react/outline";
+import { Info } from "lucide-react";
 import { FC } from "react";
 
 type Props = {
@@ -22,7 +22,7 @@ const HoverTooltip: FC<Props> = (({ text, moreClassNames, positionClassnames, ch
                 </div>
                 <div className="justify-self-end">
                     {
-                        children ?? <InformationCircleIcon className="h-5 w-5 opacity-30" aria-hidden="true" />
+                        children ?? <Info className="h-5 w-5 opacity-30" aria-hidden="true" />
                     }
                 </div>
             </div>

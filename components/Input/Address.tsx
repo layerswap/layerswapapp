@@ -6,7 +6,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { ChevronRightIcon, InformationCircleIcon, XIcon } from "@heroicons/react/outline";
+import { Info } from "lucide-react";
 import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
@@ -16,14 +16,14 @@ import { isValidAddress } from "../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
-import AvatarGroup from "../AvatarGroup";
 import RainbowKit from "../Wizard/Steps/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
 import { disconnect } from '@wagmi/core'
 import { metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet } from '@rainbow-me/rainbowkit/wallets';
 import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
-import WalletIcon from "../icons/WalletIcon";
+import { Wallet } from 'lucide-react'
+import makeBlockie from 'ethereum-blockies-base64';
 
 const wallets = [metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet]
 
@@ -55,8 +55,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const inputReference = useRef(null);
 
-        const valid_addresses = address_book?.filter(a => values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name) : isValidAddress(a.address, values.to.baseObject))
-            ?.sort((a) => a.networks.some(n => n.toLowerCase() === values.to?.baseObject?.internal_name?.toLowerCase()) ? -1 : 1)
+        const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name) : a.networks?.some(e => values.to.baseObject.internal_name)) && isValidAddress(a.address, values.to.baseObject))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount, addressConfirmed } = useSwapDataState()
@@ -104,11 +103,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [values.destination_address])
 
         const handleRemoveDepositeAddress = useCallback(async () => {
-            if (depositeAddressIsfromAccount || isConnected) {
-                setDepositeAddressIsfromAccount(false)
-                setFieldValue("destination_address", '')
-                disconnect()
-            }
+            setDepositeAddressIsfromAccount(false)
+            setFieldValue("destination_address", '')
+            disconnect()
             setInputValue("")
         }, [depositeAddressIsfromAccount, isConnected, connector, isDisconnected])
 
@@ -119,7 +116,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [close])
 
         const inputAddressIsValid = isValidAddress(inputValue, values.to.baseObject)
-
 
         let errorMessage = '';
         if (inputValue && !isValidAddress(inputValue, values.to.baseObject)) {
@@ -229,8 +225,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                     className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
                                                     onClick={handleRemoveDepositeAddress}
                                                 >
-                                                    <div className="flex items-center" >
-                                                        <XIcon className="h-5 w-5" />
+                                                    <div className="flex items-center px-2 text-sm py-1 font-semibold">
+                                                        {
+                                                            isConnected ? <>Disconnect</>
+                                                                : <>Clear</>
+                                                        }
                                                     </div>
                                                 </button>
                                             </div>
@@ -242,26 +241,22 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 </div>
                                 {
                                     validInputAddress &&
-                                    <div onClick={handleSetNewAddress} className={`mt-2 cursor-pointer space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:shadow-xl`}>
-                                        <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
-                                            <ChevronRightIcon className="h-6 w-6 text-primary-text" />
+                                    <div onClick={handleSetNewAddress} className={`mt-2 min-h-12 cursor-pointer space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-2 hover:border-darkblue-500 hover:shadow-xl`}>
+                                        <div className='flex text-primary-text bg-darkblue-400 flex-row items-left rounded-md p-2'>
+                                            <Image src={makeBlockie(validInputAddress)}
+                                                alt="Project Logo"
+                                                height="20"
+                                                width="20"
+                                                className='rounded-sm'
+                                            />
                                         </div>
-                                        <div className="flex flex-col">
-                                            <div className="block text-sm font-medium text-white">
+                                        <div className="flex flex-col grow">
+                                            <div className="block text-md font-medium text-white">
                                                 {shortenAddress(validInputAddress)}
                                             </div>
-                                            {
-                                                connector?.name ?
-                                                    <div className="text-gray-500">
-                                                        Autofilled from {connector?.name}
-                                                    </div>
-                                                    : depositeAddressIsfromAccount ? <div className="text-gray-500">
-                                                        Autofilled from {values?.to?.baseObject?.display_name}
-                                                    </div>
-                                                        : <div className="text-gray-500">
-                                                            Please make sure this is your address
-                                                        </div>
-                                            }
+                                        </div>
+                                        <div className='flex text-primary-text flex-row items-left px-2 py-1 rounded-md'>
+                                            Select
                                         </div>
                                     </div>
                                 }
@@ -271,9 +266,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     && authData?.access_token && values.to
                                     && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
                                     && !depositeAddressIsfromAccount &&
-                                    <div onClick={handleUseDepositeAddress} className={`cursor-pointer mt-2 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
+                                    <div onClick={handleUseDepositeAddress} className={`min-h-12 cursor-pointer mt-2 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
                                         <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
-                                            <WalletIcon className="h-6 w-6 text-primary-text" />
+                                            <Wallet className="h-6 w-6 text-primary-text" />
                                         </div>
                                         <div className="flex flex-col">
                                             <div className="block text-sm font-medium">
@@ -289,9 +284,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     !inputValue && values?.swapType !== SwapType.OffRamp && values.to?.baseObject?.address_type === 'evm' &&
                                     <div className="grow">
                                         <RainbowKit>
-                                            <div className={`text-left mt-4 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
+                                            <div className={`min-h-12 text-left mt-4 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
                                                 <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
-                                                    <WalletIcon className="h-6 w-6 text-primary-text" />
+                                                    <Wallet className="h-6 w-6 text-primary-text" />
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <div className="block text-sm font-medium">
@@ -311,7 +306,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 <div className="mt-4">
                                     <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500 mb-5'>
                                         <div className="flex items-center">
-                                            <InformationCircleIcon className='h-5 w-5 text-primary-600 mr-3' />
+                                            <Info className='h-5 w-5 text-primary-600 mr-3' />
                                             <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.to.baseObject.display_name} deposit address</label>
                                         </div>
                                         <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
@@ -352,7 +347,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             }
                         </div>
                         {
-                            valid_addresses?.length > 0 &&
+                            valid_addresses?.length > 0 && !inputValue &&
                             <div className="text-left space-y-2">
                                 <label className="">Your recent addresses</label>
                                 <div>
@@ -375,8 +370,16 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                         return (
                                                             <RadioGroup.Description
                                                                 as="span"
-                                                                className={`flex text-sm justify-between rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
+                                                                className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
                                                             >
+                                                                <div className='flex bg-darkblue-400 text-primary-text flex-row items-left  rounded-md p-2'>
+                                                                    <Image src={makeBlockie(a.address)}
+                                                                        alt="Project Logo"
+                                                                        height="20"
+                                                                        width="20"
+                                                                        className='rounded-sm'
+                                                                    />
+                                                                </div>
                                                                 <div className="flex flex-col">
                                                                     <div className="block text-sm font-medium">
                                                                         {shortenAddress(a.address)}
@@ -392,11 +395,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                                         }
                                                                     </div>
                                                                 </div>
-                                                                <motion.div whileTap={{ scale: 1.05 }} className='flex text-primary-text flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md space-x-1'>
-                                                                    <span>Transfered to</span>
-                                                                    <AvatarGroup imageUrls={values.swapType === SwapType.OffRamp ? a.exchanges?.map(address_excange => GetIcon({ internal_name: address_excange, resource_storage_url }))
-                                                                        : a.networks?.map(address_network => GetIcon({ internal_name: address_network, resource_storage_url }))} />
-                                                                </motion.div>
                                                             </RadioGroup.Description>
                                                         )
                                                     }}
