@@ -29,12 +29,11 @@ import NetworkSettings from "../../../../lib/NetworkSettings";
 import shortenAddress from "../../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../../Models/ApiResponse";
-import { SwitchVerticalIcon } from "@heroicons/react/outline";
 import { motion, useCycle } from "framer-motion";
 import AvatarGroup from "../../../AvatarGroup";
 import ClickTooltip from "../../../Tooltips/ClickTooltip";
 import ToggleButton from "../../../buttons/toggleButton";
-import { Fuel } from 'lucide-react'
+import { ArrowLeftRight, ArrowUpDown, Fuel } from 'lucide-react'
 
 type Props = {
     isPartnerWallet: boolean,
@@ -189,13 +188,13 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             </div>
                             {
                                 swapType === SwapType.CrossChain &&
-                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-13px)] top-[142px] sm:top-[112px] sm:rotate-90 z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
+                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-15px)] top-[139px] sm:top-[112px] sm:rotate-90 z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary py-1.5 p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
                                     <motion.div
                                         animate={animate}
                                         transition={{ duration: 0.3 }}
                                         onTap={() => !valuesSwapperDisabled && cycle()}
                                     >
-                                        <SwitchVerticalIcon className="h-5" />
+                                        <ArrowUpDown className="h-5" />
                                     </motion.div>
                                 </button>
                             }
