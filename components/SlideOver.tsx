@@ -110,16 +110,9 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
             </AnimatePresence>
             <AnimatePresence>
                 {open && isMobile &&
-                    <Root open={open} onOpenChange={() => { }} >
-                        <Portal>
-                            <Overlay />
-                            <Content>
-                                <MobileModalContent modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
-                                    {children && children(handleClose)}
-                                </MobileModalContent>
-                            </Content>
-                        </Portal>
-                    </Root>
+                    <MobileModalContent modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
+                        {children && children(handleClose)}
+                    </MobileModalContent>
                 }
             </AnimatePresence>
         </>
