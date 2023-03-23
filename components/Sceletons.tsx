@@ -1,4 +1,4 @@
-import { ChevronRightIcon } from "@heroicons/react/outline"
+import { ChevronRight } from "lucide-react"
 import { classNames } from "./utils/classNames"
 
 export const SwapHistoryComponentSceleton = () => {
@@ -161,7 +161,7 @@ export const SwapHistoryComponentSceleton = () => {
                   )}
                 >
                   <div className="grid grid-cols-1 gap-4">
-                    <ChevronRightIcon className="h-5 w-5 text-slate-700" />
+                    <ChevronRight className="h-5 w-5 text-slate-700" />
                   </div>
                 </td>
 

@@ -37,7 +37,7 @@ const SelectNetwork = forwardRef(({ direction, label }: Props, ref: any) => {
 
     const value = direction === "from" ? from : to;
     return (<>
-        <label htmlFor={name} className="block font-normal text-primary-text text-sm">
+        <label htmlFor={name} className="block font-semibold text-primary-text text-sm">
             {label}
         </label>
         <div ref={ref} tabIndex={0} className={`mt-1.5 `}>

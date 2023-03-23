@@ -5,7 +5,7 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
 import { useRouter } from 'next/router'
-import { ArrowLeftIcon } from '@heroicons/react/solid'
+import { ArrowLeft } from 'lucide-react'
 
 export default function GlobalTable(props) {
     const router = useRouter();
@@ -25,7 +25,7 @@ export default function GlobalTable(props) {
                         <div className="mt-3 flex items-center justify-between z-20" >
                             <div className="flex ">
                                 <button onClick={handleGoBack} className="self-start md:mt-2">
-                                    <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+                                    <ArrowLeft className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
                                 </button>
                             </div>
                         </div>

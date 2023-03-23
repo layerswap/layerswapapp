@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
-import { ArrowRightIcon, ChevronRightIcon, ExclamationIcon, ExternalLinkIcon, RefreshIcon, SelectorIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRight, ChevronRight, ExternalLink, RefreshCcw, X } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
 import LayerswapMenu from "../LayerswapMenu"
 import { useSettingsState } from "../../context/settings"
@@ -14,10 +14,10 @@ import SubmitButton, { DoubleLineText } from "../buttons/submitButton"
 import CopyButton from "../buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "../Sceletons"
 import GoHomeButton from "../utils/GoHome"
-import StatusIcon, { GreenIcon, GreyIcon } from "./StatusIcons"
+import StatusIcon, {  } from "./StatusIcons"
 import Modal from "../modalComponent"
 import toast from "react-hot-toast"
-import { ArrowLeftIcon } from "@heroicons/react/solid"
+import { ArrowLeft } from "lucide-react"
 import { useSwapDataUpdate } from "../../context/swap"
 import { SwapStatus } from "../../Models/SwapStatus"
 import FormattedDate from "../Common/FormattedDate";
@@ -137,7 +137,7 @@ function TransactionsHistory() {
       <div className="mt-3 flex items-center justify-between z-20" >
         <div className="flex ">
           <button onClick={handleGoBack} className="self-start md:mt-2">
-            <ArrowLeftIcon className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
+            <ArrowLeft className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
           </button>
           {userType == UserType.AuthenticatedUser &&
             <div className="hidden md:block ml-4">
@@ -272,7 +272,7 @@ function TransactionsHistory() {
                                     }
                                   </div>
                                   <div className="mx-1 hidden lg:block">{source.display_name}</div>
-                                  <ArrowRightIcon className="h-4 w-4 lg:hidden mx-2" />
+                                  <ArrowRight className="h-4 w-4 lg:hidden mx-2" />
                                   <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
                                     {
                                       <Image
@@ -338,7 +338,7 @@ function TransactionsHistory() {
                                     }
                                     <span className="ml-1">{swap.destination_network_asset}</span>
                                   </div>
-                                  <ChevronRightIcon className="h-5 w-5 lg:hidden" />
+                                  <ChevronRight className="h-5 w-5 lg:hidden" />
                                 </div>
                               </td>
                               <td
@@ -355,7 +355,7 @@ function TransactionsHistory() {
                                         :
                                         <div className='underline hover:no-underline flex items-center space-x-1'>
                                           <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
-                                          <ExternalLinkIcon className='h-4' />
+                                          <ExternalLink className='h-4' />
                                         </div>
                                       }
                                     </>
@@ -390,7 +390,7 @@ function TransactionsHistory() {
                                   onClick={() => handleopenSwapDetails(swap)}
                                   className="group text-white  relative w-full flex justify-center py-2 px-2 border-0 font-semibold rounded-md transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
                                 >
-                                  <ChevronRightIcon className="h-5 w-5" />
+                                  <ChevronRight className="h-5 w-5" />
                                 </button>
                                 {index !== 0 ? <div className="absolute right-6 left-0 -top-px h-px bg-darkblue-500" /> : null}
                               </td>
@@ -411,7 +411,7 @@ function TransactionsHistory() {
                       >
                         <span className="flex items-center mr-2">
                           {(!isLastPage && !loading) &&
-                            <RefreshIcon className="h-5 w-5" />}
+                            <RefreshCcw className="h-5 w-5" />}
                           {loading ?
                             <SpinIcon className="animate-spin h-5 w-5" />
                             : null}
@@ -428,7 +428,7 @@ function TransactionsHistory() {
                         <div className="text-white text-sm mt-6 space-y-3">
                           <div className="flex flex-row text-white text-base space-x-2">
                             <div className='basis-1/3'>
-                              <SubmitButton text_align="left" buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false} icon={<XIcon className='h-5 w-5' />}>
+                              <SubmitButton text_align="left" buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false} icon={<X className='h-5 w-5' />}>
                                 <DoubleLineText
                                   colorStyle='mltln-text-dark'
                                   primaryText='Cancel'
@@ -438,7 +438,7 @@ function TransactionsHistory() {
                               </SubmitButton>
                             </div>
                             <div className='basis-2/3'>
-                              <SubmitButton button_align='right' text_align="left" onClick={() => router.push(`/swap/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='h-5 w-5' />}>
+                              <SubmitButton button_align='right' text_align="left" onClick={() => router.push(`/swap/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={<ExternalLink className='h-5 w-5' />}>
                                 <DoubleLineText
                                   colorStyle='mltln-text-light'
                                   primaryText="Complete"

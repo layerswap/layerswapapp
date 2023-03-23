@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { ExternalLinkIcon } from "@heroicons/react/outline";
+import { ExternalLink } from "lucide-react";
 import { DocInFrameSceleton } from "./Sceletons";
 
 type Props = {
@@ -31,7 +31,7 @@ export function DocIframe({ URl, onConfirm, className }: Props) {
                     className="shadowed-button hidden sm:flex justify-center items-center mt-3 group disabled:white disabled:bg-primary-600 disabled:cursor-not-allowed text-primary relative w-full font-semibold focus:outline-none"
                 >
                     View in new tab
-                    <ExternalLinkIcon className='ml-2 h-5 w-5' />
+                    <ExternalLink className='ml-2 h-5 w-5' />
                 </a>
             }
         </div>)

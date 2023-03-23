@@ -23,7 +23,7 @@ export default function ForPartners(props) {
 
     return (
         <Layout>
-            <div className="bg-darkblue shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto max-w-3xl">
+            <div className="bg-darkblue shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container">
                 <Head>
                     <title>Layerswap Partners</title>
                 </Head>
@@ -31,7 +31,7 @@ export default function ForPartners(props) {
                     <MenuProvider>
                         <HeaderWithMenu goBack={handleGoBack} />
                     </MenuProvider>
-                    <div className="flex-col justify-center py-4 px-8 sm:px-6">
+                    <div className="flex-col justify-center py-4 md:px-8 px-6">
                         <div className="prose md:prose-xl text-primary-text">
                             <MDXRemote {...props.mdxSource} />
                         </div>
