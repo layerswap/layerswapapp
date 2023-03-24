@@ -1,29 +1,29 @@
 import { useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { AddressBookItem, SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
-import NetworkSettings from "../../lib/NetworkSettings";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { classNames } from '../utils/classNames'
+import { AddressBookItem, SwapType, UserExchangesData } from "../../../lib/layerSwapApiClient";
+import NetworkSettings from "../../../lib/NetworkSettings";
+import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { classNames } from '../../utils/classNames'
 import { toast } from "react-hot-toast";
-import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { ChevronRightIcon, InformationCircleIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
-import KnownInternalNames from "../../lib/knownIds";
-import { useAuthState } from "../../context/authContext";
-import ExchangeSettings from "../../lib/ExchangeSettings";
-import { useSettingsState } from "../../context/settings";
-import { isValidAddress } from "../../lib/addressValidator";
+import KnownInternalNames from "../../../lib/knownIds";
+import { useAuthState } from "../../../context/authContext";
+import ExchangeSettings from "../../../lib/ExchangeSettings";
+import { useSettingsState } from "../../../context/settings";
+import { isValidAddress } from "../../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
-import { Partner } from "../../Models/Partner";
-import RainbowKit from "../Wizard/Steps/Wallet/RainbowKit";
+import { Partner } from "../../../Models/Partner";
+import RainbowKit from "../../Wizard/Steps/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
 import { disconnect } from '@wagmi/core'
 import { metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet } from '@rainbow-me/rainbowkit/wallets';
-import shortenAddress from "../utils/ShortenAddress";
-import { isBlacklistedAddress } from "../../lib/mainStepValidator";
-import WalletIcon from "../icons/WalletIcon";
-import updateQueryStringParam from "../utils/updateQueryStringParam";
+import shortenAddress from "../../utils/ShortenAddress";
+import { isBlacklistedAddress } from "../../../lib/mainStepValidator";
+import WalletIcon from "../../icons/WalletIcon";
+import updateQueryStringParam from "../../utils/updateQueryStringParam";
 
 const wallets = [metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet]
 
@@ -37,16 +37,15 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     onSetExchangeDepoisteAddress?: () => Promise<void>;
     exchangeAccount?: UserExchangesData;
     close: () => void,
-    isPartnerWallet: boolean,
+    displayPartner: boolean,
     partnerImage: string,
     partner: Partner,
     canFocus?: boolean,
     address_book: AddressBookItem[]
 }
 
-
-const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, loading, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
+const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(
+    ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, loading, close, address_book, disabled, displayPartner, partnerImage, partner }, ref) => {
 
         const {
             values,
@@ -160,10 +159,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     <div className={`flex flex-col self-center grow w-full mb-16 sm:mb-0`}>
                         <div className="text-left mb-10">
                             <label htmlFor={name}>Address</label>
-                            {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
+                            {displayPartner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                             <div className="flex flex-wrap flex-col md:flex-row">
                                 <motion.div initial="rest" animate={autofillEnabled ? "rest" : "inputFocused"} className="flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
-                                    {isPartnerWallet &&
+                                    {displayPartner &&
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             {
                                                 partnerImage &&
@@ -184,7 +183,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         id={name}
                                         ref={inputReference}
                                         tabIndex={0}
-                                        className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
+                                        className={`${displayPartner ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
                                         transition={{
                                             width: { ease: 'linear', }
                                         }}
@@ -407,4 +406,4 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         )
     });
 
-export default Address
+export default AddressPicker
