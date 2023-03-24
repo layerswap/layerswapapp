@@ -24,13 +24,11 @@ import { useQueryState } from "../../../../context/query";
 import { useSettingsState } from "../../../../context/settings";
 import { isValidAddress } from "../../../../lib/addressValidator";
 import { CalculateMinAllowedAmount } from "../../../../lib/fees";
-import Address from "../../../Input/Address";
+import AddressInput from "../../../Input/Address/AddressPicker";
 import NetworkSettings from "../../../../lib/NetworkSettings";
 import shortenAddress from "../../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../../Models/ApiResponse";
-import { motion } from "framer-motion";
-import AvatarGroup from "../../../AvatarGroup";
 import RefuelIcon from "../../../icons/RefuelIcon";
 import ClickTooltip from "../../../Tooltips/ClickTooltip";
 import ToggleButton from "../../../buttons/toggleButton";
@@ -157,7 +155,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     return <>
         <Form className="h-full" >
-
             <Widget>
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
@@ -188,7 +185,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                     partnerImage={partnerImage}
                                     values={values} />)}
                                 place='inStep'>
-                                {(close, animaionCompleted) => (<Address
+                                {(close, animaionCompleted) => (<AddressInput
                                     close={close}
                                     canFocus={animaionCompleted}
                                     onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
@@ -259,6 +256,7 @@ type AddressButtonProps = {
     partnerImage: string;
     disabled: boolean;
 }
+
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
     return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full placeholder-gray-400 px-3.5 py-3">
         {isPartnerWallet && values.swapType !== SwapType.OffRamp &&

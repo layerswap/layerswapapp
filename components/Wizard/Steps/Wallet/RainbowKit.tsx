@@ -15,8 +15,8 @@ import { publicProvider } from 'wagmi/providers/public';
 import "@rainbow-me/rainbowkit/styles.css";
 
 import { mainnet, polygon, optimism, arbitrum, goerli, arbitrumGoerli } from 'wagmi/chains';
-
-
+import { WalletConnectConnector } from '@wagmi/core/connectors/walletConnect'
+ 
 const { chains, provider } = configureChains(
     [mainnet, polygon, optimism, arbitrum, goerli, arbitrumGoerli],
     [
