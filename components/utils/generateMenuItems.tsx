@@ -65,7 +65,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
                 (n.internal_name !== to?.baseObject?.internal_name && currencyDepositIsAvailable(nc, to?.baseObject))
                 : (n.internal_name !== from?.baseObject?.internal_name && currencyWithdrawalIsAvailable(nc, from?.baseObject))))
 
-    let networkIsAvailable;
+    let networkIsAvailable: (n: CryptoNetwork) => boolean;
     switch (swapType) {
         case SwapType.OnRamp:
             networkIsAvailable = networkIsAvailableInOnramp

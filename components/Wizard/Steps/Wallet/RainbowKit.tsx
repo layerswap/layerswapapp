@@ -20,7 +20,6 @@ import { WalletConnectConnector } from '@wagmi/core/connectors/walletConnect'
 const { chains, provider } = configureChains(
     [mainnet, polygon, optimism, arbitrum, goerli, arbitrumGoerli],
     [
-        alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_ID }),
         publicProvider()
     ]
 );

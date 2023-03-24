@@ -1,9 +1,11 @@
-import { XIcon } from "@heroicons/react/outline";
+import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef } from "react";
 import { FC, useState } from "react"
 import { MobileModalContent, modalHeight } from "./modalComponent";
 import useWindowDimensions from "../hooks/useWindowDimensions";
+import IconButton from "./buttons/iconButton";
+import { ReactPortal } from "./Wizard/Widget";
 
 export type slideOverPlace = 'inStep' | 'inModal' | 'inMenu'
 
@@ -25,12 +27,16 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
     const { width } = useWindowDimensions()
     const isMobile = width < 640
 
-    if (open && isMobile) {
-        document.body.style.overflow = 'hidden'
-    }
-    else {
-        document.body.style.overflow = ''
-    }
+    const bodyOverflowChanged = useRef<boolean>(open);
+    useEffect(()=>{
+        if (open) {
+            bodyOverflowChanged.current = true;
+            window.document.body.style.overflow = 'hidden'
+        }
+        else if (bodyOverflowChanged?.current){
+            window.document.body.style.overflow = ''
+        }
+    },[open])
 
     const mobileModalRef = useRef(null)
     const handleClose = () => {
@@ -93,31 +99,29 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                                         {subHeader}
                                     </div>
                                 </div>
-                                <button
-                                    type="button"
-                                    className="rounded-md hover:text-darkblue-200"
-                                    onClick={handleClose}
-                                >
-                                    <span className="sr-only">Close</span>
-                                    <XIcon className="h-7 w-7" aria-hidden="true" />
-                                </button>
+                                <IconButton onClick={handleClose} icon={
+                                    <X strokeWidth={3} />
+                                }>
+                                </IconButton>
                             </div>
                             <div className='text-primary-text relative items-center justify-center text-center h-full overflow-y-auto styled-scroll'>
                                 {children && children(handleClose, openAnimaionCompleted)}
                             </div>
-                            <div id="test" />
                         </div>
                     </motion.div>
                 }
             </AnimatePresence>
             <AnimatePresence>
                 {open && isMobile &&
-                    <MobileModalContent onAnimationCompleted={handleAnimationCompleted} modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} description={subHeader} className={moreClassNames}>
-                        {children && children(handleClose, openAnimaionCompleted)}
-                    </MobileModalContent>
+                    <ReactPortal>
+                        <MobileModalContent modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} className={moreClassNames}>
+                            {children && children(handleClose)}
+                        </MobileModalContent>
+                    </ReactPortal>
                 }
             </AnimatePresence>
         </>
     )
 })
+
 export default SlideOver;
