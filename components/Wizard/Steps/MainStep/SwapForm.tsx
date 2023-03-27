@@ -24,7 +24,6 @@ import { useQueryState } from "../../../../context/query";
 import { useSettingsState } from "../../../../context/settings";
 import { isValidAddress } from "../../../../lib/addressValidator";
 import { CalculateMinAllowedAmount } from "../../../../lib/fees";
-import AddressInput from "../../../Input/Address/AddressPicker";
 import NetworkSettings from "../../../../lib/NetworkSettings";
 import shortenAddress from "../../../utils/ShortenAddress";
 import useSWR from "swr";
@@ -33,6 +32,7 @@ import { motion, useCycle } from "framer-motion";
 import ClickTooltip from "../../../Tooltips/ClickTooltip";
 import ToggleButton from "../../../buttons/toggleButton";
 import { ArrowUpDown, Fuel } from 'lucide-react'
+import AddressInput from "../../../Input/Address"
 
 type Props = {
     isPartnerWallet: boolean,
@@ -48,10 +48,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     } = useFormikContext<SwapFormValues>();
     const { swapType, to } = values
     const settings = useSettingsState();
-
-    const layerswapApiClient = new LayerSwapApiClient()
-    const address_book_endpoint = `/address_book/recent`
-    const { data: address_book, mutate, isValidating } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher)
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
@@ -204,33 +200,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             <AmountField />
                         </div>
                         <div className="w-full mb-3.5 leading-4">
-                            <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
-                                {`To ${values?.to?.name || ''} address`}
-                            </label>
-                            <SlideOver
-                                header={`To ${values?.to?.name || ''} address`}
-                                modalHeight="large"
-                                opener={(open => <AddressButton
-                                    disabled={!values.to || !values.from}
-                                    isPartnerWallet={isPartnerWallet}
-                                    openAddressModal={open}
-                                    partnerImage={partnerImage}
-                                    values={values} />)}
-                                place='inStep'>
-                                {(close, animaionCompleted) => (<AddressInput
-                                    close={close}
-                                    canFocus={animaionCompleted}
-                                    onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
-                                    exchangeAccount={exchangeAccount}
-                                    loading={loadingDepositAddress}
-                                    disabled={lockAddress || (!values.to || !values.from) || loadingDepositAddress}
-                                    name={"destination_address"}
-                                    partnerImage={partnerImage}
-                                    displayPartner={isPartnerWallet}
-                                    partner={partner}
-                                    address_book={address_book?.data}
-                                />)}
-                            </SlideOver>
+                            <AddressInput />
                         </div>
                         <div className="w-full">
                             {

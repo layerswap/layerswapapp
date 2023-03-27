@@ -45,6 +45,8 @@ const Wizard: FC<Props> = ({ children }) => {
                   <div className={`flex flex-nowrap`}>
                      {children}
                   </div>
+                  <div id="wizard_slideover"></div>
+
                </AnimatePresence>
             </div>
          </div>

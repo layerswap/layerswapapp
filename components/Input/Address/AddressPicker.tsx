@@ -19,6 +19,11 @@ import { disconnect } from '@wagmi/core'
 import { metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet } from '@rainbow-me/rainbowkit/wallets';
 import { Wallet } from 'lucide-react'
 import makeBlockie from 'ethereum-blockies-base64';
+import { Partner } from "../../../Models/Partner";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
+import { isBlacklistedAddress } from "../../../lib/mainStepValidator";
+import shortenAddress from "../../utils/ShortenAddress";
+import RainbowKit from "../../Wizard/Steps/Wallet/RainbowKit";
 
 const wallets = [metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet]
 

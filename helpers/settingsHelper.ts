@@ -1,3 +1,5 @@
+import { SwapFormValues } from "../components/DTOs/SwapFormValues";
+import { SwapType } from "../lib/layerSwapApiClient";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { Exchange } from "../Models/Exchange";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
@@ -15,14 +17,20 @@ export function mapNetworkCurrencies(exchanges: Exchange[], networks: CryptoNetw
     })
 }
 
-export function getPartner(query: QueryParams, settings: LayerSwapSettings): { partner: Partner, displayPartner: boolean, partnerImage: string } | undefined {
-    if (!query.addressSource || !settings?.partners) return undefined
+export function getPartner(query: QueryParams, settings: LayerSwapSettings): { partner?: Partner, displayPartner: boolean, partnerImage?: string } {
+    if (!query.addressSource || !settings?.partners) return { displayPartner: false }
     const { discovery: { resource_storage_url } } = settings
     const partner = settings.partners?.find(p => p.internal_name?.toLowerCase() === query.addressSource?.toLowerCase())
-    if (!partner) return undefined
+    if (!partner) return { displayPartner: false }
     return {
         partner,
         displayPartner: !!query.destAddress && partner?.is_wallet,
         partnerImage: partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name}.png` : null
     }
+}
+
+export function getDepositeAddressEndpoint(swapFormData: SwapFormValues) {
+    if (!(swapFormData?.swapType === SwapType.OffRamp && swapFormData.currency && swapFormData.to))
+        return null;
+    return `/exchange_accounts/${swapFormData?.to?.baseObject?.internal_name}/deposit_address/${swapFormData?.currency?.baseObject?.asset}`
 }
