@@ -100,6 +100,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<Reward>>("GET", `/campaigns/${campaign}`);
     }
 
+    async SubmitRewardAddress(campaign: string, address: string): Promise<ApiResponse<any>> {
+        return await this.AuthenticatedRequest<ApiResponse<any>>("PUT", `/campaigns/${campaign}`, {address});
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
@@ -241,7 +245,7 @@ export type Reward = {
 }
 
 export type Leaderboard = {
-    user_id: number,
+    nickname: string,
     amount: number,
     position: number
 }

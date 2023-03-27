@@ -47,15 +47,15 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
     const desktopModalRef = useRef(null);
     const { key } = router.query;
     const bodyOverflowChanged = useRef<boolean>(showModal);
-    useEffect(()=>{
+    useEffect(() => {
         if (showModal) {
             bodyOverflowChanged.current = true;
             window.document.body.style.overflow = 'hidden'
         }
-        else if (bodyOverflowChanged?.current){
+        else if (bodyOverflowChanged?.current) {
             window.document.body.style.overflow = ''
         }
-    },[showModal])
+    }, [showModal])
 
     const closeModal = useCallback(
         (closeWithX?: boolean) => {
@@ -107,18 +107,16 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                         >
                             <div className={constructModalSize(modalSize)}>
                                 <div className={`${className} space-y-3 min-h-[80%] bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
-                                    <div className='flex justify-between space-x-8'>
+                                    <div className='flex items-center justify-between space-x-8'>
                                         <div className="text-lg text-left font-medium text-primary-text" >
                                             {title}
                                         </div>
-                                        <button
-                                            onClick={() => closeModal()}
-                                            type="button">
-                                            <IconButton icon={
+                                        <div >
+                                            <IconButton onClick={() => closeModal()} icon={
                                                 <X strokeWidth={3} />
                                             }>
                                             </IconButton>
-                                        </button>
+                                        </div>
                                     </div>
                                     {children}
                                 </div>

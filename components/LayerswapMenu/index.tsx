@@ -1,5 +1,5 @@
 import { Menu } from "@headlessui/react";
-import { BookOpen, ExternalLink, Link, MenuIcon } from "lucide-react";
+import { BookOpen, ExternalLink, Gift, Link, MenuIcon } from "lucide-react";
 import { Home, LogIn, LogOut, TableIcon, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback } from "react";
@@ -126,6 +126,11 @@ export default function () {
                                                     <Menu.Item>
                                                         <Item type={ItemType.link} pathname={"/exchanges"} icon={<Link className='h-4 w-4' />}>
                                                             Exchange Accounts
+                                                        </Item>
+                                                    </Menu.Item>
+                                                    <Menu.Item>
+                                                        <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
+                                                            Rewards
                                                         </Item>
                                                     </Menu.Item>
                                                     <hr className="horizontal-gradient" />
