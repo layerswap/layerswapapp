@@ -1,5 +1,5 @@
 import { ImmutableXClient } from "@imtbl/imx-sdk";
-import { Formik, FormikProps } from "formik";
+import { Formik, FormikProps, useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../../context/query";
 import { useSettingsState } from "../../../../context/settings";
@@ -22,6 +22,7 @@ import SwapForm from "./SwapForm";
 import { isValidAddress } from "../../../../lib/addressValidator";
 import NetworkSettings from "../../../../lib/NetworkSettings";
 import { useRouter } from "next/router";
+import useTestState from "../../../../hooks/useTestState";
 
 type Props = {
     OnSumbit: ({ values, swapId }: { values: SwapFormValues, swapId?: string }) => Promise<void>
@@ -39,11 +40,8 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
-
     let formValues = formikRef.current?.values;
-
     const settings = useSettingsState();
-    const { discovery: { resource_storage_url } } = settings || {}
     const query = useQueryState();
     const { updateSwapFormData, clearSwap, setDepositeAddressIsfromAccount } = useSwapDataUpdate()
 
@@ -122,16 +120,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
         }
     }, [updateSwapFormData, swap])
 
-    const destAddress: string = query.destAddress;
-
-    const partner = query?.addressSource ?
-        settings.partners.find(p => p.internal_name?.toLowerCase() === query?.addressSource?.toLowerCase())
-        : undefined
-
-    const isPartnerAddress = partner && destAddress;
-
-    const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
-
     const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType, settings, query)
 
     return <>
@@ -149,7 +137,9 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            <SwapForm loading={loading} resource_storage_url={resource_storage_url} isPartnerWallet={isPartnerWallet} partner={partner} />
+            <>
+                <SwapForm loading={loading} />
+            </>
         </Formik >
     </>
 }

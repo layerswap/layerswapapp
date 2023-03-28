@@ -35,12 +35,9 @@ import { ArrowUpDown, Fuel } from 'lucide-react'
 import AddressInput from "../../../Input/Address"
 
 type Props = {
-    isPartnerWallet: boolean,
-    partner?: Partner,
-    resource_storage_url: string,
     loading: boolean
 }
-const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, loading }) => {
+const SwapForm: FC<Props> = ({ loading }) => {
 
     const {
         values,
@@ -49,10 +46,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const { swapType, to } = values
     const settings = useSettingsState();
 
-    const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
-    const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
     const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
-    const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name}.png` : null
     const router = useRouter();
     const [loadingDepositAddress, setLoadingDepositAddress] = useState(false)
     const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
@@ -65,66 +59,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         && isValidAddress(values.destination_address, values.to?.baseObject)
         && ((query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
 
-    const closeExchangeConnect = (open) => {
-        setLoadingDepositAddress(open)
-        setOpenExchangeConnect(open)
-    }
-
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
     }
-
-    const handleSetExchangeDepositAddress = useCallback(async () => {
-        setLoadingDepositAddress(true)
-        const layerswapApiClient = new LayerSwapApiClient(router)
-        try {
-            const exchange_account = await layerswapApiClient.GetExchangeAccount(to?.baseObject.internal_name, 0)
-            setExchangeAccount(exchange_account.data)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(to?.baseObject.internal_name, values?.currency?.baseObject?.asset)
-            setFieldValue("destination_address", deposit_address.data)
-            setDepositeAddressIsfromAccount(true)
-            setLoadingDepositAddress(false)
-        }
-        catch (e) {
-            if (e?.response?.data?.error?.code === KnownwErrorCode.NOT_FOUND || e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS)
-                setOpenExchangeConnect(true)
-            else {
-                toast(e?.response?.data?.error?.message || e.message)
-                setLoadingDepositAddress(false)
-            }
-        }
-    }, [values])
-
-    const depositeAddressIsfromAccountRef = useRef(depositeAddressIsfromAccount);
-
-    useEffect(() => {
-        depositeAddressIsfromAccountRef.current = depositeAddressIsfromAccount
-        return () => depositeAddressIsfromAccountRef.current = null
-    }, [depositeAddressIsfromAccount])
-
-    const handleExchangeConnected = useCallback(async () => {
-        if (!to || !values.currency)
-            return
-        setLoadingDepositAddress(true)
-        try {
-            const layerswapApiClient = new LayerSwapApiClient(router)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(to?.baseObject?.internal_name, values?.currency?.baseObject?.asset)
-            setFieldValue("destination_address", deposit_address.data)
-            setDepositeAddressIsfromAccount(true)
-        }
-        catch (e) {
-            toast(e?.response?.data?.error?.message || e.message)
-        }
-        setLoadingDepositAddress(false)
-    }, [values])
-
-    useEffect(() => {
-        if (depositeAddressIsfromAccountRef.current)
-            handleExchangeConnected()
-        if (swapType !== SwapType.OffRamp && !values?.to?.baseObject?.currencies.find(c => c.asset === values?.currency?.baseObject?.asset)?.is_refuel_enabled) {
-            handleConfirmToggleChange(false)
-        }
-    }, [values.currency])
 
     useEffect(() => {
         if (swapType !== SwapType.OffRamp && values.refuel && values.amount && Number(values.amount) < minAllowedAmount) {
@@ -170,7 +107,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
 
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     return <>
-        <Form className="h-full" >
+        <Form className="h-full">
             <Widget>
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
@@ -231,17 +168,11 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                     </SwapButton>
                 </Widget.Footer>
             </Widget>
-            {swapType === SwapType.OffRamp &&
-                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
-                    {(close) => (
-                        (values?.to?.baseObject.authorization_flow) === "o_auth2" ?
-                            <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />
-                            : <ConnectApiKeyExchange exchange={to?.baseObject} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
-                    )}
-                </SlideOver>}
         </Form >
     </>
 }
+
+
 
 function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>, swapType: SwapType): string {
     return errors.from?.toString() || errors.to?.toString() || errors.amount || errors.destination_address || "Swap now"

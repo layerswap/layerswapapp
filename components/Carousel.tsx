@@ -85,6 +85,7 @@ const Carousel = forwardRef<CarouselRef, CarouselProps>((props, ref) => {
                 {children && React.Children.map(children, (child, index) => {
                     return (
                         <button
+                            key={index}
                             className={`${index === activeIndex ? "bg-primary" : "bg-primary-text"} w-3 h-3 m-3 rounded-full`}
                             onClick={() => {
                                 updateIndex(index);

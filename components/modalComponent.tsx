@@ -47,15 +47,15 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
     const desktopModalRef = useRef(null);
     const { key } = router.query;
     const bodyOverflowChanged = useRef<boolean>(showModal);
-    useEffect(()=>{
+    useEffect(() => {
         if (showModal) {
             bodyOverflowChanged.current = true;
             window.document.body.style.overflow = 'hidden'
         }
-        else if (bodyOverflowChanged?.current){
+        else if (bodyOverflowChanged?.current) {
             window.document.body.style.overflow = ''
         }
-    },[showModal])
+    }, [showModal])
 
     const closeModal = useCallback(
         (closeWithX?: boolean) => {
@@ -111,16 +111,13 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                                         <div className="text-lg text-left font-medium text-primary-text" >
                                             {title}
                                         </div>
-                                        <button
-                                            onClick={() => closeModal()}
-                                            type="button">
-                                            <IconButton icon={
-                                                <X strokeWidth={3} />
-                                            }>
-                                            </IconButton>
-                                        </button>
+                                        <IconButton onClick={() => closeModal()} type="button" icon={
+                                            <X strokeWidth={3} />
+                                        }>
+                                        </IconButton>
                                     </div>
                                     {children}
+                                    <div id="modal_slideover"></div>
                                 </div>
                             </div>
                         </motion.div>

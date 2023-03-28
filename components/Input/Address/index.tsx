@@ -4,7 +4,7 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import SlideOver from "../../SlideOver"
 import shortenAddress from "../../utils/ShortenAddress";
 import Image from 'next/image';
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import LayerSwapApiClient, { AddressBookItem, SwapType, UserExchangesData } from "../../../lib/layerSwapApiClient";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
@@ -13,7 +13,7 @@ import AddressPicker from "./AddressPicker";
 import OfframpAccountConnectStep from "../../OfframpAccountConnect";
 import ConnectApiKeyExchange from "../../connectApiKeyExchange";
 import { useRouter } from "next/router";
-import { useSwapDataUpdate } from "../../../context/swap";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import toast from "react-hot-toast";
 import { KnownwErrorCode } from "../../../Models/ApiError";
 import { isValidAddress } from "../../../lib/addressValidator";
@@ -31,6 +31,7 @@ const Address = () => {
     const router = useRouter();
     const [loadingDepositAddress, setLoadingDepositAddress] = useState(false)
     const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
+    const { depositeAddressIsfromAccount } = useSwapDataState()
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
     const layerswapApiClient = new LayerSwapApiClient()
 
@@ -38,7 +39,7 @@ const Address = () => {
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(
         address_book_endpoint,
         layerswapApiClient.fetcher,
-        { dedupingInterval: 60000 }
+        { dedupingInterval: 2 * 60 * 1000 }
     )
 
     const deposit_address_endpoint = getDepositeAddressEndpoint(values)
@@ -73,7 +74,7 @@ const Address = () => {
         setLoadingDepositAddress(open)
         setOpenExchangeConnect(open)
     }
-    
+
     const handleSetExchangeDepositAddress = useCallback(async () => {
         setLoadingDepositAddress(true)
         const layerswapApiClient = new LayerSwapApiClient(router)
@@ -94,6 +95,22 @@ const Address = () => {
             }
         }
     }, [values])
+
+
+    const depositeAddressIsfromAccountRef = useRef(depositeAddressIsfromAccount);
+
+    useEffect(() => {
+        depositeAddressIsfromAccountRef.current = depositeAddressIsfromAccount
+        return () => depositeAddressIsfromAccountRef.current = null
+    }, [depositeAddressIsfromAccount])
+
+    useEffect(() => {
+        if (depositeAddressIsfromAccountRef.current)
+            handleExchangeConnected()
+        if (values.swapType !== SwapType.OffRamp && !values?.to?.baseObject?.currencies.find(c => c.asset === values?.currency?.baseObject?.asset)?.is_refuel_enabled) {
+            setFieldValue('refuel', false)
+        }
+    }, [values.currency])
 
     const lockAddress =
         (values.destination_address && values.to)
