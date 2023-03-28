@@ -266,23 +266,21 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         }
                         {
                             !disabled && !inputValue && values?.swapType !== SwapType.OffRamp && values.to?.baseObject?.address_type === 'evm' &&
-                            <div className="grow">
-                                <RainbowKit>
-                                    <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700 hover:shadow-xl`}>
-                                        <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
-                                            <Wallet className="h-6 w-6 text-primary-text" />
+                            <RainbowKit>
+                                <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700 hover:shadow-xl`}>
+                                    <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
+                                        <Wallet className="h-6 w-6 text-primary-text" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="block text-sm font-medium">
+                                            Autofill from wallet
                                         </div>
-                                        <div className="flex flex-col">
-                                            <div className="block text-sm font-medium">
-                                                Autofill from wallet
-                                            </div>
-                                            <div className="text-gray-500">
-                                                Connect your wallet to fetch the address
-                                            </div>
+                                        <div className="text-gray-500">
+                                            Connect your wallet to fetch the address
                                         </div>
                                     </div>
-                                </RainbowKit>
-                            </div>
+                                </div>
+                            </RainbowKit>
                         }
                         {
                             values.swapType === SwapType.OffRamp && !inputAddressIsValid &&
@@ -383,12 +381,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         </div>
                                     </RadioGroup>
                                 </div>
-                            </div>
-                        }
-                        {
-                            !valid_addresses?.length && !inputValue && !validInputAddress &&
-                            <div className="text-center space-y-3">
-                                <p className="text-sm opacity-50">Recently used addresses will be shown here</p>
                             </div>
                         }
                     </div>

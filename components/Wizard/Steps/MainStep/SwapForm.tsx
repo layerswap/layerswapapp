@@ -186,18 +186,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             <div className="flex flex-col w-full">
                                 <SelectNetwork direction="from" label="From" />
                             </div>
-                            {
-                                swapType === SwapType.CrossChain && !valuesSwapperDisabled &&
-                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-15px)] top-[139px] sm:top-[112px] sm:rotate-90 z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary py-1.5 p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
-                                    <motion.div
-                                        animate={animate}
-                                        transition={{ duration: 0.3 }}
-                                        onTap={() => !valuesSwapperDisabled && cycle()}
-                                    >
-                                        <ArrowUpDown className="h-5" />
-                                    </motion.div>
-                                </button>
-                            }
                             <div className="flex flex-col w-full">
                                 <SelectNetwork direction="to" label="To" />
                             </div>
