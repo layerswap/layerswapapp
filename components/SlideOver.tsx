@@ -29,7 +29,7 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
 
     const bodyOverflowChanged = useRef<boolean>(open);
     useEffect(()=>{
-        if (open) {
+        if (open && isMobile) {
             bodyOverflowChanged.current = true;
             window.document.body.style.overflow = 'hidden'
         }

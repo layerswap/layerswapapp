@@ -34,7 +34,7 @@ function RewardsComponent() {
     const next = new Date(rewardsData?.next_airdrop_date)
     const now = new Date()
     const difference_in_days = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
-    const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600))) - (difference_in_days * 24)
+    const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
 
     const handleOpenTopModal = () => {
         setOpenTopModal(true)
@@ -56,7 +56,7 @@ function RewardsComponent() {
         try {
             setLoading(true)
             const layerswapApiClient = new LayerSwapApiClient();
-            const addressSubmit = await layerswapApiClient.SubmitRewardAddress('/campaigns/OPTIMISM2023', '0xE4Dc4bbDB1595f0255A05037F354c149cC5654B4')
+            const addressSubmit = await layerswapApiClient.SubmitRewardAddress('OPTIMISM2023', '0xE4Dc4bbDB1595f0255A05037F354c149cC5654B4')
             if (!addressSubmit.error) handleCloseRewardModal()
         }
         catch (error) {
@@ -123,7 +123,7 @@ function RewardsComponent() {
                                                             className="rounded-full object-contain" />
                                                     </div>
                                                     <p>
-                                                        {rewardsData?.user_reward.pending_amount}
+                                                        {rewardsData?.user_reward.pending_amount} <span className="text-base">{settings.campaigns[0].asset}</span>
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center space-x-1">
@@ -147,7 +147,7 @@ function RewardsComponent() {
                                                             className="rounded-full object-contain" />
                                                     </div>
                                                     <p>
-                                                        {rewardsData?.user_reward.total_amount}
+                                                        {rewardsData?.user_reward.total_amount} <span className="text-base">{settings.campaigns[0].asset}</span>
                                                     </p>
                                                 </div>
                                                 <p>
@@ -224,10 +224,10 @@ function RewardsComponent() {
                 </div>
                 <SlideOver imperativeOpener={[openRewardModal, setOpenRewardModal]} header='Claim your reward' place="inModal">
                     {() =>
-                        <div className="h-full grid grid-rows-8">
-                            <div className="w-full space-y-5 flex flex-col items-center row-start-3 row-span-2 ">
+                        <div className="h-full grid grid-rows-8 gap-5">
+                            <div className="w-full space-y-3 sm:space-y-5 flex flex-col items-center row-start-3 row-span-2 ">
                                 <Gift className="h-16 w-16 text-primary" />
-                                <BackgroundField header={<span className="flex justify-between"><span>Claimable Earnings</span><span>Next Airdrop</span></span>}>
+                                <BackgroundField header={<span className="flex justify-between"><span>Pending Earnings</span><span>Next Airdrop</span></span>}>
                                     <div className="flex justify-between w-full text-2xl text-white">
                                         <div className="flex items-center space-x-1">
                                             <div className="h-5 w-5 relative">
