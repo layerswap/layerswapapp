@@ -6,11 +6,6 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { classNames } from '../../utils/classNames'
 import { toast } from "react-hot-toast";
 import { Info } from "lucide-react";
-import KnownInternalNames from "../../../lib/knownIds";
-import { useAuthState } from "../../../context/authContext";
-import ExchangeSettings from "../../../lib/ExchangeSettings";
-import { useSettingsState } from "../../../context/settings";
-import { isValidAddress } from "../../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import updateQueryStringParam from "../../utils/updateQueryStringParam";
@@ -24,8 +19,11 @@ import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { isBlacklistedAddress } from "../../../lib/mainStepValidator";
 import shortenAddress from "../../utils/ShortenAddress";
 import RainbowKit from "../../Wizard/Steps/Wallet/RainbowKit";
-
-const wallets = [metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet]
+import { useAuthState } from "../../../context/authContext";
+import { useSettingsState } from "../../../context/settings";
+import { isValidAddress } from "../../../lib/addressValidator";
+import KnownInternalNames from "../../../lib/knownIds";
+import ExchangeSettings from "../../../lib/ExchangeSettings";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -77,6 +75,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 setFieldValue("destination_address", "")
             }
         });
+
+        const exchangeCurrency = values?.swapType === SwapType.OffRamp && values.to?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
 
         const handleUseDepositeAddress = async () => {
             try {
@@ -221,7 +221,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         </div>
                         {
                             validInputAddress &&
-                            <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-2 hover:border-darkblue-500 hover:shadow-xl`}>
+                            <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-500 transition duration-200 px-2 py-2 hover:border-darkblue-500 hover:shadow-xl`}>
                                 <div className='flex text-primary-text bg-darkblue-400 flex-row items-left rounded-md p-2'>
                                     <Image src={makeBlockie(validInputAddress)}
                                         alt="Project Logo"
@@ -247,7 +247,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             && authData?.access_token && values.to
                             && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
                             && !depositeAddressIsfromAccount &&
-                            <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
+                            <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-700 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:shadow-xl`}>
                                 <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
                                     <Wallet className="h-6 w-6 text-primary-text" />
                                 </div>
@@ -263,23 +263,21 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         }
                         {
                             !disabled && !inputValue && values?.swapType !== SwapType.OffRamp && values.to?.baseObject?.address_type === 'evm' &&
-                            <div className="grow">
-                                <RainbowKit>
-                                    <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
-                                        <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
-                                            <Wallet className="h-6 w-6 text-primary-text" />
+                            <RainbowKit>
+                                <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700 hover:shadow-xl`}>
+                                    <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
+                                        <Wallet className="h-6 w-6 text-primary-text" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="block text-sm font-medium">
+                                            Autofill from wallet
                                         </div>
-                                        <div className="flex flex-col">
-                                            <div className="block text-sm font-medium">
-                                                Autofill from wallet
-                                            </div>
-                                            <div className="text-gray-500">
-                                                Connect your wallet to fetch the address
-                                            </div>
+                                        <div className="text-gray-500">
+                                            Connect your wallet to fetch the address
                                         </div>
                                     </div>
-                                </RainbowKit>
-                            </div>
+                                </div>
+                            </RainbowKit>
                         }
                         {
                             values.swapType === SwapType.OffRamp && !inputAddressIsValid &&
@@ -347,7 +345,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                         return (
                                                             <RadioGroup.Description
                                                                 as="span"
-                                                                className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
+                                                                className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-300 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
                                                             >
                                                                 <div className='flex bg-darkblue-400 text-primary-text flex-row items-left  rounded-md p-2'>
                                                                     <Image src={makeBlockie(a.address)}
@@ -380,12 +378,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         </div>
                                     </RadioGroup>
                                 </div>
-                            </div>
-                        }
-                        {
-                            !valid_addresses?.length && !inputValue && !validInputAddress &&
-                            <div className="text-center space-y-3">
-                                <p className="text-sm opacity-50">Recently used addresses will be shown here</p>
                             </div>
                         }
                     </div>
