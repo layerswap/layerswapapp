@@ -7,7 +7,6 @@ import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import { Info } from "lucide-react";
-import { motion } from "framer-motion";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
 import ExchangeSettings from "../../lib/ExchangeSettings";
@@ -24,8 +23,6 @@ import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import { Wallet } from 'lucide-react'
 import makeBlockie from 'ethereum-blockies-base64';
-
-const wallets = [metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet]
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -66,9 +63,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
-        const resource_storage_url = settings.discovery.resource_storage_url
-        const { address, status, isConnected, isConnecting, isDisconnected, connector } = useAccount({
-            onConnect({ address, connector, isReconnected }) {
+        const { isConnected, isDisconnected, connector } = useAccount({
+            onConnect({ address }) {
                 setInputValue(address)
                 setAddressConfirmed(true)
                 setFieldValue("destination_address", address)
@@ -81,7 +77,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         });
 
         const exchangeCurrency = values?.swapType === SwapType.OffRamp && values.to?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
-        const networkDisplayName = settings?.networks?.find(n => n.internal_name === exchangeCurrency?.network)?.display_name
 
         const handleUseDepositeAddress = async () => {
             try {
