@@ -119,6 +119,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                                         </div>
                                     </div>
                                     {children}
+                                    <div id="modal_slideover" />
                                 </div>
                             </div>
                         </motion.div>

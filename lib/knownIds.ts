@@ -57,6 +57,9 @@ export default class KnownInternalNames {
         public static readonly BobaRinkeby: string = "BOBA_RINKEBY";
 
         public static readonly ZksyncMainnet: string = "ZKSYNC_MAINNET";
+        
+        public static readonly ZksyncEraMainnet: string = "ZKSYNCERA_MAINNET";
+
         public static readonly ZkspaceMainnet: string = "ZKSPACE_MAINNET";
 
         public static readonly ZksyncRinkeby: string = "ZKSYNC_RINKEBY";

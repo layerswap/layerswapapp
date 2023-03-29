@@ -44,10 +44,6 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const source_network = networks?.find(e => e.internal_name === source_network_internal_name)
     const input_tx_id = source_network?.transaction_explorer_template
 
-    let feeInUsd = ""
-    if (swap?.input_transaction)
-        feeInUsd = swap?.fee * swap?.input_transaction?.usd_price < 0.01 ? `0.01$<` : `(${truncateDecimals(swap?.fee * swap?.input_transaction?.usd_price, 2)}$)`
-
     useEffect(() => {
         (async () => {
             if (!id)
@@ -214,7 +210,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
                                     <span className="text-left">Layerswap Fee </span>
-                                    <span className='text-white font-normal'>{swap?.fee} {currency?.asset} {feeInUsd}</span>
+                                    <span className='text-white font-normal'>{swap?.fee} {currency?.asset}</span>
                                 </div>
                             </>
                         }
