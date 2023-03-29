@@ -34,6 +34,7 @@ import AvatarGroup from "../../../AvatarGroup";
 import ClickTooltip from "../../../Tooltips/ClickTooltip";
 import ToggleButton from "../../../buttons/toggleButton";
 import { ArrowLeftRight, ArrowUpDown, Fuel } from 'lucide-react'
+import { useAuthState } from "../../../../context/authContext";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -50,9 +51,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     } = useFormikContext<SwapFormValues>();
     const { swapType, to } = values
     const settings = useSettingsState();
-
+    const { authData } = useAuthState()
     const layerswapApiClient = new LayerSwapApiClient()
-    const address_book_endpoint = `/address_book/recent`
+    const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
     const { data: address_book, mutate, isValidating } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher)
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
@@ -184,7 +185,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                     : <Widget.Content>
                         <SwapOptionsToggle />
                         <div className='flex-col md:flex-row flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4'>
-                            
+
                             <div className="flex flex-col w-full">
                                 <SelectNetwork direction="from" label="From" />
                             </div>

@@ -33,8 +33,6 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
             errors.amount = `Max amount is ${maxAllowedAmount}`;
         }
         if (minAllowedAmount != undefined && amount < minAllowedAmount) {
-            console.log("minAllowedAmount", minAllowedAmount)
-            console.log("values", values)
             errors.amount = `Min amount is ${minAllowedAmount}`;
         }
         if (values.to) {
