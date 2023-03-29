@@ -52,7 +52,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const inputReference = useRef(null);
 
-        const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name) : a.networks?.some(e => values.to.baseObject.internal_name)) && isValidAddress(a.address, values.to.baseObject))
+        const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name === e) : a.networks?.some(n => values.to.baseObject.internal_name === n)) && isValidAddress(a.address, values.to.baseObject))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount, addressConfirmed } = useSwapDataState()

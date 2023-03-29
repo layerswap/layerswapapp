@@ -271,7 +271,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                 </Widget.Footer>
             </Widget>
             {swapType === SwapType.OffRamp &&
-                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
+                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep' header={`Connect ${values?.to?.baseObject?.display_name}`} >
                     {(close) => (
                         (values?.to?.baseObject.authorization_flow) === "o_auth2" ?
                             <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />
