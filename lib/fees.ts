@@ -92,9 +92,8 @@ export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, allNetwo
 
 export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[]) {
 
-    const { currency, from, to, swapType, refuel } = swapFormData || {}
+    const { currency, from, to, swapType } = swapFormData || {}
     if (!currency || !from || !to) return 0
-    const isRefuelEnabled = to?.baseObject?.currencies.find(c => c.asset === currency.baseObject.asset)?.is_refuel_enabled && refuel
 
     let minAmount = CalculateFee(swapFormData, allNetworks)
     if (from.baseObject.internal_name === KnownInternalNames.Exchanges.Coinbase && swapType === SwapType.OnRamp) {
@@ -103,9 +102,6 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
     }
     if (swapType === SwapType.OffRamp && to.baseObject.currencies.find(c => c.asset === currency.baseObject.asset).min_deposit_amount) {
         minAmount += to.baseObject.currencies.find(c => c.asset === currency.baseObject.asset).min_deposit_amount
-    }
-    if (swapType === SwapType.OffRamp && to.baseObject.currencies.find(c => c.asset === currency.baseObject.asset)?.min_deposit_amount) {
-        minAmount += to.baseObject.currencies.find(c => c.asset === currency.baseObject.asset)?.min_deposit_amount
     }
     const destinationNetwork = swapType === SwapType.OffRamp ? allNetworks.find(n => n.internal_name === to?.baseObject?.currencies.find(c => c.asset === currency?.baseObject?.asset && c.is_default)?.network) : to?.baseObject
     const destinationNetworkCurrency = destinationNetwork?.currencies?.find(c => c.asset === currency?.baseObject?.asset)
