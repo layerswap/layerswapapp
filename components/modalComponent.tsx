@@ -47,15 +47,15 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
     const desktopModalRef = useRef(null);
     const { key } = router.query;
     const bodyOverflowChanged = useRef<boolean>(showModal);
-    useEffect(()=>{
+    useEffect(() => {
         if (showModal) {
             bodyOverflowChanged.current = true;
             window.document.body.style.overflow = 'hidden'
         }
-        else if (bodyOverflowChanged?.current){
+        else if (bodyOverflowChanged?.current) {
             window.document.body.style.overflow = ''
         }
-    },[showModal])
+    }, [showModal])
 
     const closeModal = useCallback(
         (closeWithX?: boolean) => {
@@ -121,6 +121,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                                         </button>
                                     </div>
                                     {children}
+                                    <div id="modal_slideover" />
                                 </div>
                             </div>
                         </motion.div>
