@@ -165,7 +165,7 @@ const WithdrawExchangeStep: FC = () => {
             <AccountConnectStep hideHeader onDoNotConnect={() => setOpenCoinbaseConnectSlideover(false)} onAuthorized={() => { steAuthorized(true); setOpenCoinbaseConnectSlideover(false); }} stickyFooter={false} />
         </Modal>
         <Modal showModal={openCoinbase2FA} setShowModal={setOpenCoinbase2FA}>
-            <Coinbase2FA onSuccess={async () => setOpenCoinbase2FA(false)} />
+            <Coinbase2FA onSuccess={async () => setOpenCoinbase2FA(false)} footerStickiness={false} />
         </Modal>
         <Widget>
             {
