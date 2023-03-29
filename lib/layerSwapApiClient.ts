@@ -101,7 +101,7 @@ export default class LayerSwapApiClient {
     }
 
     async SubmitRewardAddress(campaign: string, address: string): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("PUT", `/campaigns/${campaign}/addresses`, {address});
+        return await this.AuthenticatedRequest<ApiResponse<any>>("PUT", `/campaigns/${campaign}/addresses`, { address });
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
@@ -236,6 +236,7 @@ export enum SwapStatusInNumbers {
 
 export type Reward = {
     user_reward: {
+        address: string,
         pending_amount: number,
         total_amount: number,
         position: number

@@ -151,17 +151,24 @@ function RewardsComponent() {
                                                     </p>
                                                 </div>
                                                 <p>
-                                                    {(settings.currencies.find(c => c.asset === settings.campaigns[0].asset).usd_price * rewardsData?.user_reward?.total_amount).toFixed(2)}$
+                                                    {(settings.currencies.find(c => c.asset === settings.campaigns[0].asset).usd_price * rewardsData?.user_reward?.total_amount).toFixed(2)} <span className="text-base">$</span>
                                                 </p>
                                             </div>
                                         </BackgroundField>
                                     </div>
                                 </div>
-                                <button type="button" onClick={handleOpenRewardModal} className="rounded-lg bg-[#cd031b] tracking-wide hover:opacity-80 transition duration-200 text-white text-lg w-full py-3">
-                                    Claim your reward
+                                <button disabled={!(rewardsData.user_reward.pending_amount > 0)} type="button" onClick={handleOpenRewardModal} className="rounded-lg bg-[#cd031b] tracking-wide hover:opacity-80 transition duration-200 text-white text-lg w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    {rewardsData.user_reward.address ? 'Edit your address' : 'Claim your reward'}
                                 </button>
                                 <div className="space-y-1">
-                                    <p className="font-bold text-lg text-center sm:text-left">Leaderboard</p>
+                                    <div className="flex items-center justify-between">
+                                        <p className="font-bold text-lg text-center sm:text-left">Leaderboard</p>
+                                        <div>
+                                            <button onClick={handleOpenTopModal} type="button" className="text-sm text-primary-text hover:text-primary-text/70 duration-200 transition">
+                                                See top 10
+                                            </button>
+                                        </div>
+                                    </div>
                                     <div className="bg-darkblue-700 border border-darkblue-700 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg">
                                         <div className="p-3">
                                             <div className="space-y-6">
@@ -190,11 +197,9 @@ function RewardsComponent() {
 
                                                 }
                                                 {rewardsData?.user_reward.position >= 4 &&
-                                                    <>
-                                                        {rewardsData.user_reward.position > 4 && < div className=" flex items-center justify-around  text-2xl text-primary-text">
-                                                            {[...Array(10)]?.map((user, index) => (
-                                                                <span key={index}>.</span>
-                                                            ))}
+                                                    <div className="!mt-0 !pt-0">
+                                                        {rewardsData.user_reward.position > 4 && < div className="text-2xl text-center leading-3 text-primary-text my-3">
+                                                            ...
                                                         </div>}
                                                         <div key={rewardsData.user_reward.position} className="items-center flex justify-between">
                                                             <div className="flex items-center">
@@ -208,13 +213,8 @@ function RewardsComponent() {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </>
+                                                    </div>
                                                 }
-                                                <div className="w-full flex justify-center">
-                                                    <button onClick={handleOpenTopModal} type="button" className="text-sm text-primary-text hover:text-primary-text/70 duration-200 transition">
-                                                        See top 10
-                                                    </button>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -285,13 +285,16 @@ function RewardsComponent() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="text-right flex items-center space-x-2">
-                                            <ClickTooltip text={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Id ad temporibus dolor praesentium magnam, autem iste molestiae animi, sed ex quisquam, voluptatibus facilis nostrum modi quod nihil! Quas, vel praesentium?"}>
-                                                <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-1 rounded'>
-                                                    <Trophy className="h-4 w-4" aria-hidden="true" />
-                                                </div>
-                                            </ClickTooltip>
-                                        </div>
+                                        {
+                                            user.position < 4 &&
+                                            <div className="text-right flex items-center space-x-2">
+                                                <ClickTooltip text={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Id ad temporibus dolor praesentium magnam, autem iste molestiae animi, sed ex quisquam, voluptatibus facilis nostrum modi quod nihil! Quas, vel praesentium?"}>
+                                                    <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-1 rounded'>
+                                                        <Trophy className="h-4 w-4" aria-hidden="true" />
+                                                    </div>
+                                                </ClickTooltip>
+                                            </div>
+                                        }
                                     </div>
                                 ))
                             }

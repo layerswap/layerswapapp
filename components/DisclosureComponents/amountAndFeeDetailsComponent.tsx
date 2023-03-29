@@ -1,5 +1,3 @@
-import { ChevronDown } from 'lucide-react'
-import { Disclosure } from "@headlessui/react";
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount, CaluclateRefuelAmount } from '../../lib/fees';
 import { SwapType } from '../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../context/settings';
@@ -7,15 +5,21 @@ import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
 import { truncateDecimals } from '../utils/RoundDecimals';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../Accordion';
+import Image from 'next/image';
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
-    const { networks, currencies } = useSettingsState()
+    const { networks, currencies, campaigns, discovery: { resource_storage_url } } = useSettingsState()
     const { currency, from, to, swapType } = values || {}
 
     let exchangeFee = swapType === SwapType.OnRamp && parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
     let fee = CalculateFee(values, networks);
     let receive_amount = CalculateReceiveAmount(values, networks, currencies);
+
+    const campaign = campaigns?.find(c => c.network_name === to?.baseObject?.internal_name)
+    const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
+    const feeinUsd = fee * currency?.baseObject?.usd_price
+    const reward = truncateDecimals(((feeinUsd * campaign?.percentage / 100) / campaignAsset?.usd_price), campaignAsset?.precision)
 
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
@@ -23,7 +27,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
 
     return (
         <>
-            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 px-3.5 py-3">
+            <div className="mx-auto relative w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 px-3.5 py-3 z-10">
                 <Accordion type="single" collapsible>
                     <AccordionItem value={'item-1'}>
                         <AccordionTrigger className="items-center flex w-full relative gap-1 rounded-lg text-left text-base font-medium">
@@ -89,6 +93,27 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                     </AccordionItem>
                 </Accordion>
             </div>
+            {campaign && <div className='w-full flex items-center justify-between rounded-b-lg bg-darkblue-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
+                <div className='flex items-center'>
+                    <p>OP Reward</p>
+                    <ClickTooltip text='Lorem Ipsum' />
+                </div>
+                <div className="flex items-center space-x-1">
+                    <span>+</span>
+                    <div className="h-5 w-5 relative">
+                        <Image
+                            src={`${resource_storage_url}/layerswap/currencies/${campaign?.asset?.toLowerCase()}.png`}
+                            alt="Project Logo"
+                            height="40"
+                            width="40"
+                            loading="eager"
+                            className="rounded-md object-contain" />
+                    </div>
+                    <p>
+                        ~{reward} {campaignAsset?.asset}
+                    </p>
+                </div>
+            </div>}
         </>
     )
 }
