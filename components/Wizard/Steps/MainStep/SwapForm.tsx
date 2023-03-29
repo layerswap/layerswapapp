@@ -62,7 +62,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name}.png` : null
     const router = useRouter();
     const [loadingDepositAddress, setLoadingDepositAddress] = useState(false)
-    const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
+    const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
     const [valuesSwapperDisabled, setValuesSwapperDisabled] = useState(true)
@@ -132,6 +132,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
             handleConfirmToggleChange(false)
         }
     }, [values.currency])
+
+    useEffect(() => {
+        setAddressConfirmed(false)
+    }, [values?.to])
 
     useEffect(() => {
         if (swapType !== SwapType.OffRamp && values.refuel && values.amount && Number(values.amount) < minAllowedAmount) {
@@ -267,7 +271,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                 </Widget.Footer>
             </Widget>
             {swapType === SwapType.OffRamp &&
-                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
+                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep' header={`Connect ${values?.to?.baseObject?.display_name}`} >
                     {(close) => (
                         (values?.to?.baseObject.authorization_flow) === "o_auth2" ?
                             <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />

@@ -31,7 +31,7 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
     const bodyOverflowChanged = useRef<boolean>(open);
     useEffect(() => {
         if (!isMobile) return
-        
+
         if (open) {
             bodyOverflowChanged.current = true;
             window.document.body.style.overflow = 'hidden'
@@ -54,19 +54,6 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
     const handleAnimationCompleted = useCallback((def) => {
         setOpenAnimationCompleted(def?.y === 0)
     }, [])
-    let heightControl = ''
-
-    switch (place) {
-        case 'inStep':
-            heightControl += " -mt-11";
-            break;
-        case 'inMenu':
-            heightControl += " pt-2";
-            break;
-        case 'inModal':
-            heightControl += " ";
-            break;
-    }
 
     useEffect(() => {
         imperativeOpener && setOpen(imperativeOpener[0])
@@ -82,36 +69,38 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
             <span>{opener && opener(handleOpen)}</span>
             <AnimatePresence>
                 {open && !isMobile &&
-                    <motion.div
-                        onAnimationComplete={handleAnimationCompleted}
-                        initial={!withoutEnterAnimation && { y: "100%" }}
-                        animate={{
-                            y: 0,
-                            transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
-                        }}
-                        exit={{
-                            y: "100%",
-                            transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
-                        }}
-                        className={`absolute inset-0 z-40 w-full ${heightControl} block`}>
-                        <div className={`relative z-40 flex flex-col rounded-t-2xl md:rounded-none bg-darkblue h-full space-y-3 py-4 ${!noPadding && 'px-6 sm:px-8'}`}>
-                            <div className={`flex items-center justify-between text-primary-text ${noPadding && 'px-6 sm:px-8'}`}>
-                                <div className="text-xl text-white font-semibold">
-                                    <p>{header}</p>
-                                    <div className="text-base text-primary-text font-medium leading-4">
-                                        {subHeader}
+                    <ReactPortal wrapperId={place === "inModal" ? "modal_slideover" : "wizard_slideover"}>
+                        <motion.div
+                            onAnimationComplete={handleAnimationCompleted}
+                            initial={!withoutEnterAnimation && { y: "100%" }}
+                            animate={{
+                                y: 0,
+                                transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
+                            }}
+                            exit={{
+                                y: "100%",
+                                transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
+                            }}
+                            className={`absolute inset-0 z-40 w-full hidden sm:block`}>
+                            <div className={`relative z-40 flex flex-col rounded-t-2xl md:rounded-none bg-darkblue h-full space-y-3 py-4 ${!noPadding ? 'px-6 sm:px-8' : ''}`}>
+                                <div className={`flex items-center justify-between text-primary-text ${noPadding ? 'px-6 sm:px-8' : ''}`}>
+                                    <div className="text-xl text-white font-semibold">
+                                        <p>{header}</p>
+                                        <div className="text-base text-primary-text font-medium leading-4">
+                                            {subHeader}
+                                        </div>
                                     </div>
+                                    <IconButton onClick={handleClose} icon={
+                                        <X strokeWidth={3} />
+                                    }>
+                                    </IconButton>
                                 </div>
-                                <IconButton onClick={handleClose} icon={
-                                    <X strokeWidth={3} />
-                                }>
-                                </IconButton>
+                                <div className='text-primary-text relative items-center justify-center text-center h-full overflow-y-auto styled-scroll'>
+                                    {children && children(handleClose, openAnimaionCompleted)}
+                                </div>
                             </div>
-                            <div className='text-primary-text relative items-center justify-center text-center h-full overflow-y-auto styled-scroll'>
-                                {children && children(handleClose, openAnimaionCompleted)}
-                            </div>
-                        </div>
-                    </motion.div>
+                        </motion.div>
+                    </ReactPortal>
                 }
             </AnimatePresence>
             <AnimatePresence>
