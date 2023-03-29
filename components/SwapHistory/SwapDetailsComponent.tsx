@@ -8,7 +8,7 @@ import shortenAddress from '../utils/ShortenAddress';
 import CopyButton from '../buttons/copyButton';
 import { SwapDetailsComponentSceleton } from '../Sceletons';
 import StatusIcon from './StatusIcons';
-import { ExternalLinkIcon } from '@heroicons/react/outline';
+import { ExternalLink } from 'lucide-react';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
 import { truncateDecimals } from '../utils/RoundDecimals';
@@ -43,10 +43,6 @@ const SwapDetails: FC<Props> = ({ id }) => {
 
     const source_network = networks?.find(e => e.internal_name === source_network_internal_name)
     const input_tx_id = source_network?.transaction_explorer_template
-
-    let feeInUsd = ""
-    if (swap?.input_transaction)
-        feeInUsd = swap?.fee * swap?.input_transaction?.usd_price < 0.01 ? `0.01$<` : `(${truncateDecimals(swap?.fee * swap?.input_transaction?.usd_price, 2)}$)`
 
     useEffect(() => {
         (async () => {
@@ -160,7 +156,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                         <div className='inline-flex items-center'>
                                             <div className='underline hover:no-underline flex items-center space-x-1'>
                                                 <a target={"_blank"} href={input_tx_id.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
-                                                <ExternalLinkIcon className='h-4' />
+                                                <ExternalLink className='h-4' />
                                             </div>
                                         </div>
                                     </span>
@@ -180,7 +176,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                                     :
                                                     <div className='underline hover:no-underline flex items-center space-x-1'>
                                                         <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
-                                                        <ExternalLinkIcon className='h-4' />
+                                                        <ExternalLink className='h-4' />
                                                     </div>
                                                 }
                                             </div>
@@ -214,7 +210,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
                                     <span className="text-left">Layerswap Fee </span>
-                                    <span className='text-white font-normal'>{swap?.fee} {currency?.asset} {feeInUsd}</span>
+                                    <span className='text-white font-normal'>{swap?.fee} {currency?.asset}</span>
                                 </div>
                             </>
                         }

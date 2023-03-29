@@ -1,5 +1,5 @@
-import { LinkIcon, SwitchHorizontalIcon } from '@heroicons/react/outline';
-import { CheckIcon, HomeIcon, ChatIcon, XIcon } from '@heroicons/react/solid';
+import { ArrowLeftRight } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
@@ -19,8 +19,6 @@ import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
-import WithdrawFromWallet from './Wallet/WithdrawFromWallet';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import RainbowKit from './Wallet/RainbowKit';
 import { mainnet, polygon, optimism, arbitrum, arbitrumGoerli, } from 'wagmi/chains';
 
@@ -114,7 +112,7 @@ const WithdrawNetworkStep: FC = () => {
                                         (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
                                         <BackgroundField header={'Send type'} withoutBorder>
                                             <div className='flex items-center space-x-2'>
-                                                <SwitchHorizontalIcon className='h-4 w-4' />
+                                                <ArrowLeftRight className='h-4 w-4' />
                                                 <p>
                                                     To Another Loopring L2 Account
                                                 </p>
@@ -200,7 +198,7 @@ const WithdrawNetworkStep: FC = () => {
                             </div>
                             <div className="flex flex-row text-white text-base space-x-2">
                                 <div className='basis-1/3'>
-                                    <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<XIcon className='h-5 w-5' />}>
+                                    <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
                                         <DoubleLineText
                                             colorStyle='mltln-text-dark'
                                             primaryText='Cancel'
@@ -210,7 +208,7 @@ const WithdrawNetworkStep: FC = () => {
                                     </SubmitButton>
                                 </div>
                                 <div className='basis-2/3'>
-                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<CheckIcon className="h-5 w-5" aria-hidden="true" />} >
+                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<Check className="h-5 w-5" aria-hidden="true" />} >
                                         <DoubleLineText
                                             colorStyle='mltln-text-light'
                                             primaryText='I did'

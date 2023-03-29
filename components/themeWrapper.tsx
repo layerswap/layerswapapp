@@ -1,4 +1,4 @@
-import { XIcon } from "@heroicons/react/outline";
+import { X } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
@@ -54,7 +54,7 @@ export default function ({ hideNavbar, children }: Props) {
                                     {icon}
                                     {message}
                                     {t.type !== 'loading' && (
-                                        <button onClick={() => toast.dismiss(t.id)}><XIcon className="h-5" /></button>
+                                        <button onClick={() => toast.dismiss(t.id)}><X className="h-5" /></button>
                                     )}
                                 </>
                             )}

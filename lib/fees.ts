@@ -113,5 +113,5 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
     const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(swapFormData, allNetworks, allCurrencies);
     minAmount += destinationNetworkCurrency?.base_fee + refuelAmountInSelectedCurrency
 
-    return roundDecimals(minAmount, currency.baseObject?.usd_price?.toFixed()?.length) || 0
+    return roundDecimals(minAmount * 1.2, currency.baseObject?.usd_price?.toFixed()?.length) || 0
 }
