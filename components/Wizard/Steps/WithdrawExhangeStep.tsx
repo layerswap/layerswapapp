@@ -11,7 +11,7 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import { Check, ArrowLeftRight, X } from 'lucide-react';
+import { Check, ArrowLeftRight, X, Link } from 'lucide-react';
 import Widget from '../Widget';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
@@ -28,10 +28,7 @@ import Coinbase2FA from '../../Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 import Modal from '../../modalComponent';
-import { ArrowDown, Link } from 'lucide-react';
-import AvatarGroup from '../../AvatarGroup';
-import ClickTooltip from '../../Tooltips/ClickTooltip';
-import { motion } from 'framer-motion';
+import { CryptoNetwork } from '../../../Models/CryptoNetwork';
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
@@ -48,6 +45,9 @@ const WithdrawExchangeStep: FC = () => {
     const [submitting, setSubmitting] = useState(false)
     const [loading, setLoading] = useState(false)
     const { source_exchange: source_exchange_internal_name, destination_network: destination_network_internal_name, source_network_asset: source_network_asset, destination_network_asset } = swap
+    const [selectedNetwork, setSelectedNetwork] = useState<CryptoNetwork>()
+    const [openNetworkSelect, setOpenNetworkSelect] = useState(false)
+    const [openDocSlideover, setOpenDocSlideover] = useState(false)
 
     const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
@@ -58,7 +58,10 @@ const WithdrawExchangeStep: FC = () => {
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
     }
-    const [openDocSlideover, setOpenDocSlideover] = useState(false)
+
+    const handleOpenNetworkSelect = () => {
+        setOpenNetworkSelect(true)
+    }
 
     useEffect(() => {
         setInterval(15000)
@@ -185,6 +188,24 @@ const WithdrawExchangeStep: FC = () => {
                                 </div>
                                 <div className={`mb-6 grid grid-cols-1 gap-5 `}>
                                     <div className='rounded-md bg-darkblue-700 border border-darkblue-300 divide-y divide-darkblue-300'>
+                                        <BackgroundField header={'Network'}>
+                                            {/* fix this */}
+                                            <div className="flex items-center">
+                                                <div className="flex-shrink-0 h-5 w-5 relative">
+                                                    {
+                                                        sourceNetworks &&
+                                                        <Image
+                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
+                                                            alt="From Logo"
+                                                            height="60"
+                                                            width="60"
+                                                            className="rounded-md object-contain"
+                                                        />
+                                                    }
+                                                </div>
+                                                <div className="mx-1 block">{destination_network_asset}</div>
+                                            </div>
+                                        </BackgroundField>
                                         <BackgroundField Copiable QRable toCopy={swap?.deposit_address} header={'Address'} withoutBorder>
                                             <div>
                                                 <p className='break-all text-white'>
@@ -345,6 +366,11 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget >
+        <SlideOver imperativeOpener={[openNetworkSelect, setOpenNetworkSelect]} place={'inStep'}>
+            {() => (
+                <></>
+            )}
+        </SlideOver>
         <SwapCancelModal onCancel={handleCancelSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
     </>
     )

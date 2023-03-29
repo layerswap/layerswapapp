@@ -17,8 +17,8 @@ export interface SelectProps<T> {
     placeholder: string;
     smallDropdown?: boolean;
     setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void;
-    lockNetwork: boolean;
-    lockExchange: boolean
+    lockNetwork?: boolean;
+    lockExchange?: boolean
 }
 
 export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false, lockNetwork, lockExchange }: SelectProps<T>) {
