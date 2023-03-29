@@ -19,7 +19,7 @@ import GuideLink from '../../../guideLink';
 import { useQueryState } from '../../../../context/query';
 import InternalApiClient from '../../../../lib/internalApiClient';
 import { useSettingsState } from '../../../../context/settings';
-import { ExclamationIcon } from '@heroicons/react/outline';
+import { AlertOctagon } from 'lucide-react';
 import ToggleButton from '../../../buttons/toggleButton';
 import { nameOf } from '../../../../lib/external/nameof';
 import { FormikProps } from 'formik';
@@ -112,10 +112,12 @@ const OffRampSwapConfirmationStep: FC = () => {
                         NetworkSettings.KnownSettings[from?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
                         <WarningMessage className='mb-4'>
                             <span>{NetworkSettings.KnownSettings[from?.baseObject?.internal_name]?.ConfirmationWarningMessage}.</span>
-                            {
-                                from?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
-                                <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how' place='inStep' />
-                            }
+                            <p>
+                                {
+                                    from?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
+                                    <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how' place='inStep' />
+                                }
+                            </p>
                         </WarningMessage>
                     }
                     <AddressDetails canEditAddress={true} />
@@ -132,7 +134,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                     <div className="mx-auto w-full rounded-lg font-normal">
                         <div className='flex justify-between mb-4 md:mb-8'>
                             <div className='flex items-center text-xs md:text-sm font-medium'>
-                                <ExclamationIcon className='h-6 w-6 mr-2' />
+                                <AlertOctagon className='h-6 w-6 mr-2' />
                                 I am the owner of this address
                             </div>
                             <div className='flex items-center space-x-4'>

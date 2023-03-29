@@ -125,7 +125,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const destAddress: string = query.destAddress;
 
     const partner = query?.addressSource ?
-        settings.partners.find(p => p.internal_name?.toLocaleLowerCase() === query?.addressSource?.toLocaleLowerCase())
+        settings.partners.find(p => p.internal_name?.toLowerCase() === query?.addressSource?.toLowerCase())
         : undefined
 
     const isPartnerAddress = partner && destAddress;

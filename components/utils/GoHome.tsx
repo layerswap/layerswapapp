@@ -1,7 +1,7 @@
 import { FC } from "react";
 import CopyButton from "../buttons/copyButton";
 import LayerSwapLogo from "../icons/layerSwapLogo";
-import { PaperClipIcon } from '@heroicons/react/outline'
+import { Paperclip } from 'lucide-react'
 import { renderToString } from 'react-dom/server'
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
@@ -34,7 +34,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
                             <hr className="horizontal-gradient" />
                             <ContextMenuPrimitive.ContextMenuItem className="dialog-content">
                                 <a href="https://layerswap.notion.site/layerswap/Layerswap-brand-guide-4b579a04a4c3477cad1c28f466749cf1" target='_blank' className='flex space-x-1 items-center px-4 py-2 rounded-b text-sm text-left w-full hover:bg-darkblue-300 whitespace-nowrap'>
-                                    <PaperClipIcon width={16} />
+                                    <Paperclip width={16} />
                                     <p>Brand Guidelines</p>
                                 </a>
                             </ContextMenuPrimitive.ContextMenuItem >

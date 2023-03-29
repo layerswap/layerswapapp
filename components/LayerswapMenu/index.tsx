@@ -1,16 +1,15 @@
 import { Menu } from "@headlessui/react";
-import { BookOpenIcon, ExternalLinkIcon, LinkIcon, MenuIcon } from "@heroicons/react/outline";
-import { HomeIcon, LoginIcon, LogoutIcon, TableIcon, UserIcon } from "@heroicons/react/solid";
+import { BookOpen, ExternalLink, Link, MenuIcon } from "lucide-react";
+import { Home, LogIn, LogOut, TableIcon, User } from "lucide-react";
 import { useRouter } from "next/router";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
 import { useMenuState } from "../../context/menu";
 import TokenService from "../../lib/TokenService";
 import { AnimatePresence, motion } from "framer-motion";
 import Item, { ItemType } from "./MenuItem";
 import { shortenEmail } from "../utils/ShortenAddress";
-import Modal from "../modalComponent";
-import { DocIframe } from "../docInIframe";
+import IconButton from "../buttons/iconButton";
 
 export default function () {
     const { email, userType } = useAuthState()
@@ -40,9 +39,12 @@ export default function () {
                 <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
                     {({ open }) => (
                         <>
-                            <div className="relative top-[3px]">
-                                <Menu.Button className="w-full rounded-md shadow-sm text-sm font-medium">
-                                    <MenuIcon className='h-7 w-7 cursor-pointer' />
+                            <div className="relative top-">
+                                <Menu.Button as='div'>
+                                    <IconButton icon={
+                                        <MenuIcon strokeWidth={3} />
+                                    }>
+                                    </IconButton>
                                 </Menu.Button>
                             </div>
                             <AnimatePresence>
@@ -58,13 +60,13 @@ export default function () {
                                     }}
                                     className="relative z-10 py-1">
                                     <Menu.Items
-                                        className="font-bold text-sm text-left border border-darkblue-200 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-darkblue ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                        className="font-bold text-sm text-left border border-darkblue-400 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-darkblue-700 ring-1 ring-black ring-opacity-5 focus:outline-none">
                                         <div className="relative z-30 py-1">
                                             {
                                                 userType == UserType.AuthenticatedUser ?
                                                     <>
                                                         <div className='font-light w-full text-left px-4 py-2 text-sm cursor-default flex items-center space-x-2'>
-                                                            <UserIcon className="h-4 w-4" />
+                                                            <User className="h-4 w-4" />
                                                             <span><UserEmail email={email} /></span>
                                                         </div>
                                                         <hr className="horizontal-gradient" />
@@ -74,13 +76,13 @@ export default function () {
                                                         {
                                                             router.pathname != '/' &&
                                                             <Menu.Item>
-                                                                <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4' />}>
+                                                                <Item type={ItemType.link} pathname={"/"} icon={<Home className='h-4 w-4' />}>
                                                                     Home
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
                                                         <Menu.Item>
-                                                            <Item type={ItemType.link} pathname='/auth' icon={<LoginIcon className='h-4 w-4' />}>
+                                                            <Item type={ItemType.link} pathname='/auth' icon={<LogIn className='h-4 w-4' />}>
                                                                 Login
                                                             </Item>
                                                         </Menu.Item>
@@ -94,12 +96,12 @@ export default function () {
                                                         }
                                                         <hr className="horizontal-gradient" />
                                                         <Menu.Item>
-                                                            <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpenIcon className='h-4 w-4' />} className="plausible-event-name=User+Docs">
+                                                            <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className='h-4 w-4' />} className="plausible-event-name=User+Docs">
                                                                 User Docs
                                                             </Item>
                                                         </Menu.Item>
                                                         <Menu.Item>
-                                                            <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLinkIcon className='h-4 w-4' />}>
+                                                            <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
                                                                 Roadmap
                                                             </Item>
                                                         </Menu.Item>
@@ -111,7 +113,7 @@ export default function () {
                                                     {
                                                         router.pathname != '/' &&
                                                         <Menu.Item>
-                                                            <Item type={ItemType.link} pathname={"/"} icon={<HomeIcon className='h-4 w-4' />}>
+                                                            <Item type={ItemType.link} pathname={"/"} icon={<Home className='h-4 w-4' />}>
                                                                 Home
                                                             </Item>
                                                         </Menu.Item>
@@ -122,24 +124,24 @@ export default function () {
                                                         </Item>
                                                     </Menu.Item>
                                                     <Menu.Item>
-                                                        <Item type={ItemType.link} pathname={"/exchanges"} icon={<LinkIcon className='h-4 w-4' />}>
+                                                        <Item type={ItemType.link} pathname={"/exchanges"} icon={<Link className='h-4 w-4' />}>
                                                             Exchange Accounts
                                                         </Item>
                                                     </Menu.Item>
                                                     <hr className="horizontal-gradient" />
                                                     <Menu.Item>
-                                                        <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpenIcon className='h-4 w-4' />} className="plausible-event-name=User+Docs">
+                                                        <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className='h-4 w-4' />} className="plausible-event-name=User+Docs">
                                                             User Docs
                                                         </Item>
                                                     </Menu.Item>
                                                     <Menu.Item>
-                                                        <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLinkIcon className='h-4 w-4' />}>
+                                                        <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
                                                             Roadmap
                                                         </Item>
                                                     </Menu.Item>
                                                     <hr className="horizontal-gradient" />
                                                     <Menu.Item>
-                                                        <Item type={ItemType.button} onClick={handleLogout} icon={<LogoutIcon className='h-4 w-4' />}>
+                                                        <Item type={ItemType.button} onClick={handleLogout} icon={<LogOut className='h-4 w-4' />}>
                                                             Sign Out
                                                         </Item>
                                                     </Menu.Item>

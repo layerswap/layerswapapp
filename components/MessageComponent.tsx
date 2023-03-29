@@ -1,7 +1,8 @@
+import CancelIcon from "./icons/CancelIcon";
 import DelayIcon from "./icons/DelayIcon";
 import FailIcon from "./icons/FailIcon";
 import SuccessIcon from "./icons/SuccessIcon";
-type iconStyle = 'red' | 'green' | 'yellow'
+type iconStyle = 'red' | 'green' | 'yellow' | 'gray'
 
 class MessageComponentProps {
     children: JSX.Element | JSX.Element[];
@@ -21,6 +22,9 @@ function constructIcons(icon: iconStyle) {
             break;
         case 'yellow':
             iconStyle = DelayIcon
+            break
+        case 'gray':
+            iconStyle = CancelIcon
             break
     }
     return iconStyle

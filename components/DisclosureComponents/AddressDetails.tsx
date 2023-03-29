@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ExternalLinkIcon, PencilAltIcon } from '@heroicons/react/outline'
+import { ChevronDown, ExternalLink } from 'lucide-react'
 import { Disclosure } from "@headlessui/react";
 import { useSwapDataState } from '../../context/swap';
 import Image from 'next/dist/client/image';
@@ -118,7 +118,7 @@ const NetworkAddress = ({ imgSrc, address, account_explorer_template, onClick }:
                                             <p className='text-base font-medium'> {shortenAddress(address)}</p>
                                     }
                                 </div>
-                                <ChevronDownIcon
+                                <ChevronDown
                                     className={`${open ? 'rotate-180 transform' : ''
                                         } h-4 w-4 text-primary-text`}
                                 />
@@ -127,13 +127,9 @@ const NetworkAddress = ({ imgSrc, address, account_explorer_template, onClick }:
                                 <>
                                     <div className="flex items-center flex-wrap">
                                         {account_explorer_template && <a className='m-1.5 flex cursor-pointer items-center hover:text-white' href={constructExplorerUrl(account_explorer_template, address)} target='_blank'  >
-                                            <ExternalLinkIcon className='h-4 w-4 mr-2' />
+                                            <ExternalLink className='h-4 w-4 mr-2' />
                                             <p className=''>View In Explorer</p>
                                         </a>}
-                                        <button disabled={!onClick} onClick={onClick} className="text-sm font-normal m-1.5 flex cursor-pointer items-center hover:text-white">
-                                            <PencilAltIcon className='inline-block h-4 w-4 mr-2' />
-                                            Edit Address
-                                        </button>
                                         <div className='cursor-pointer hover:text-white flex items-center m-1.5'>
                                             <CopyButton toCopy={address}>
                                                 <span className='text-sm font-normal'>Copy Full Address</span>

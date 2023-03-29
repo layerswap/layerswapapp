@@ -11,7 +11,7 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import { CheckIcon, SwitchHorizontalIcon, XIcon } from '@heroicons/react/solid';
+import { Check, ArrowLeftRight, X } from 'lucide-react';
 import Widget from '../Widget';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
@@ -28,7 +28,7 @@ import Coinbase2FA from '../../Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 import Modal from '../../modalComponent';
-import { ArrowDownIcon, LinkIcon } from '@heroicons/react/outline';
+import { ArrowDown, Link } from 'lucide-react';
 import AvatarGroup from '../../AvatarGroup';
 import ClickTooltip from '../../Tooltips/ClickTooltip';
 import { motion } from 'framer-motion';
@@ -74,7 +74,7 @@ const WithdrawExchangeStep: FC = () => {
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
-    const sourceIsCoinbase = swap.source_exchange?.toLocaleLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLocaleLowerCase()
+    const sourceIsCoinbase = swap.source_exchange?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()
 
     const handleCancelSwap = useCallback(() => {
         mutateSwap()
@@ -189,29 +189,35 @@ const WithdrawExchangeStep: FC = () => {
                                             <p className='break-all'>
                                                 {swap?.deposit_address}
                                             </p>
-                                            <ClickTooltip text={
-                                                <div>
-                                                    <span className='font-semibold text-primary-text text-sm'>
-                                                        Deposits will be detected on any one of these networks
-                                                    </span>
-                                                    <div className='flex flex-col space-y-1 mt-2'>
-                                                        {
-                                                            sourceNetworks.map(x => (
-                                                                <div key={x?.internal_name} className='flex flex-row items-center space-x-2 text-white bg-darkblue-500 rounded py-1 px-2'>
-                                                                    <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full' src={`${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`}></Image>
-                                                                    <span>{networks.find(n => n.internal_name === x?.internal_name).display_name}</span>
-                                                                </div>
-                                                            ))
-                                                        }
-                                                    </div>
+                                            {sourceNetworks.length === 1 ?
+                                                <div className='flex space-x-2 items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5 w-fit'>
+                                                    <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${sourceNetworks[0]?.internal_name.toLowerCase()}.png`}></Image>
+                                                    <span>Available on {sourceNetworks[0].display_name}</span>
                                                 </div>
-                                            }>
-                                                <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
-                                                    <AvatarGroup imageUrls={sourceNetworks?.map(x => `${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`)} />
-                                                    <span className='text-xs grow md:text-sm break-keep'>Available on {sourceNetworks.length} networks</span>
-                                                    <span><ArrowDownIcon className='h-4 md:h-5 bg-darkblue-700 text-primary-text ml-1 md:ml-2 rounded-full p-0.5' /></span>
-                                                </motion.div>
-                                            </ClickTooltip>
+                                                :
+                                                <ClickTooltip text={
+                                                    <div>
+                                                        <span className='font-semibold text-primary-text text-sm'>
+                                                            Deposits will be detected on any one of these networks
+                                                        </span>
+                                                        <div className='flex flex-col space-y-1 mt-2'>
+                                                            {
+                                                                sourceNetworks.map(x => (
+                                                                    <div key={x?.internal_name} className='flex flex-row items-center space-x-2 text-white bg-darkblue-500 rounded py-1 px-2'>
+                                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full' src={`${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`}></Image>
+                                                                        <span>{networks.find(n => n.internal_name === x?.internal_name).display_name}</span>
+                                                                    </div>
+                                                                ))
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                }>
+                                                    <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
+                                                        <AvatarGroup imageUrls={sourceNetworks?.map(x => `${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`)} />
+                                                        <span className='text-xs grow md:text-sm break-keep'>Available on {sourceNetworks.length} networks</span>
+                                                        <span><ArrowDown className='h-4 md:h-5 bg-darkblue-700 text-primary-text ml-1 md:ml-2 rounded-full p-0.5' /></span>
+                                                    </motion.div>
+                                                </ClickTooltip>}
                                         </div>
                                     </BackgroundField>
                                     <div className='flex space-x-4'>
@@ -226,7 +232,7 @@ const WithdrawExchangeStep: FC = () => {
                                                     {
                                                         destination_network_asset &&
                                                         <Image
-                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
+                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
                                                             alt="From Logo"
                                                             height="60"
                                                             width="60"
@@ -270,10 +276,10 @@ const WithdrawExchangeStep: FC = () => {
                                     sourceIsCoinbase &&
                                     <div className='mb-4'>
                                         {
-                                            authorized ? <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<SwitchHorizontalIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                            authorized ? <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                                 Transfer using Coinbase
                                             </SubmitButton> :
-                                                <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={openConnect} icon={<LinkIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                                <SubmitButton buttonStyle='outline' isDisabled={loading} isSubmitting={loading} onClick={openConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                                     Connect Coinbase
                                                 </SubmitButton>
                                         }
@@ -289,7 +295,7 @@ const WithdrawExchangeStep: FC = () => {
                                 </div>
                                 <div className="flex flex-row text-white text-base space-x-2">
                                     <div className='basis-1/3'>
-                                        <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<XIcon className='h-5 w-5' />}>
+                                        <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
                                             <DoubleLineText
                                                 colorStyle='mltln-text-dark'
                                                 primaryText='Cancel'
@@ -299,7 +305,7 @@ const WithdrawExchangeStep: FC = () => {
                                         </SubmitButton>
                                     </div>
                                     <div className='basis-2/3'>
-                                        <SubmitButton className='plausible-event-name=I+did+the+transfer' button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<CheckIcon className="h-5 w-5" aria-hidden="true" />} >
+                                        <SubmitButton className='plausible-event-name=I+did+the+transfer' button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<Check className="h-5 w-5" aria-hidden="true" />} >
                                             <DoubleLineText
                                                 colorStyle='mltln-text-light'
                                                 primaryText='I did'

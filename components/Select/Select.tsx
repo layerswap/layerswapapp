@@ -1,11 +1,13 @@
 import { Combobox, Listbox } from '@headlessui/react'
 import { useCallback, useState } from 'react'
 import Image from 'next/image'
-import { ExclamationCircleIcon, XIcon, ChevronDownIcon, CheckIcon } from '@heroicons/react/outline'
+import { AlertCircle, X, ChevronDown, Check, Info } from 'lucide-react'
 import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
 import SlideOver from '../SlideOver'
+import ClickTooltip from '../Tooltips/ClickTooltip'
+import toast from 'react-hot-toast'
 
 export interface SelectProps<T> {
     name: string;
@@ -14,10 +16,12 @@ export interface SelectProps<T> {
     disabled: boolean;
     placeholder: string;
     smallDropdown?: boolean;
-    setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void
+    setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void;
+    lockNetwork: boolean;
+    lockExchange: boolean
 }
 
-export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false }: SelectProps<T>) {
+export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false, lockNetwork, lockExchange }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
 
     function onChangeHandler(newValue: string) {
@@ -44,17 +48,17 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     onChange={handleComboboxChange}
                 >
                     {values.length > 0 && (
-                        <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500 scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded scrollbar-track:!bg-slate-500/[0.16] scrollbar-thumb:!bg-slate-500/50">
+                        <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto styled-scroll">
                             {values.map((item) => (
                                 <Combobox.Option
                                     key={item.id}
                                     value={item}
-                                    disabled={!item.isAvailable}
-                                    className={`flex text-left ${item.id === value?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
+                                    disabled={!item.isAvailable.value}
+                                    className={`flex text-left ${item.id === value?.id ? 'bg-darkblue-500' : 'bg-darkblue-700'} ${!item.isAvailable.value ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}  hover:bg-darkblue-500 select-none rounded-lg p-3`}
                                     onClick={item.id === value?.id ? () => setFieldValue(name, null) : () => handleSelect(item)}
                                 >
                                     {({ active, disabled }) => (
-                                        <>
+                                        <div onClick={() => item.isAvailable.disabledReason === DisabledReason.InsufficientLiquidity && toast(item.isAvailable.disabledReason)} className='flex items-center w-full justify-between'>
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-6 w-6 relative">
                                                     {item.imgSrc && <Image
@@ -65,21 +69,27 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                         loading="eager"
                                                         className="rounded-md object-contain" />}
                                                 </div>
+                                                <div className="ml-4 ">
+                                                    <p className='text-sm font-medium'>
+                                                        {item.name}
+                                                    </p>
+                                                </div>
                                             </div>
 
-                                            <div className="ml-4 flex-auto">
-                                                <p className='text-sm font-medium'>
-                                                    {item.name}
-                                                </p>
-                                            </div>
-                                            {item.id === value?.id &&
+
+                                            {item.id === value?.id && item.isAvailable.value &&
                                                 <div className='flex items-center'>
                                                     <div className="bg-darkblue-700 hover:bg-darkblue-600 rounded-md border border-darkblue-600 hover:border-darkblue-100 duration-200 transition p-0.5">
-                                                        <XIcon className='h-4 w-4' />
+                                                        <X className='h-4 w-4' />
                                                     </div>
                                                 </div>
                                             }
-                                        </>
+                                            {!item.isAvailable.value && !lockNetwork && !lockExchange &&
+                                                <div className='hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-0.5 rounded hover:cursor-pointer'>
+                                                    <Info className='h-4 text-primary-text' />
+                                                </div>
+                                            }
+                                        </div>
                                     )}
                                 </Combobox.Option>
                             ))}
@@ -88,8 +98,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
                     {values.length === 0 && (
                         <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
-                            <ExclamationCircleIcon
-                                type="outline"
+                            <AlertCircle
                                 name="exclamation-circle"
                                 className="mx-auto h-16 w-16 text-primary" />
                             <p className="mt-4 font-semibold">No 'items' found.</p>
@@ -118,17 +127,16 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 priority
                                                 height="40"
                                                 width="40"
-                                                layout="responsive"
                                                 className="rounded-md object-contain"
                                             />
                                         }
 
                                     </div>
-                                    <span className="ml-3 block truncate">{value.name}</span>
+                                    <span className="ml-3 block truncate text-white">{value.name}</span>
                                 </span>
 
                                 <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-primary-text">
-                                    <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
+                                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
                                 </span>
                             </>
                         }
@@ -138,7 +146,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                             {values.map((item) => (
                                 <Listbox.Option
                                     key={item.id}
-                                    disabled={!item.isAvailable}
+                                    disabled={!item.isAvailable.value}
                                     className={({ active, disabled }) =>
                                         styleOption(active, disabled)
                                     }
@@ -155,6 +163,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                 opacity: 0,
                                                 transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
                                             }}
+                                            onClick={() => item.isAvailable.disabledReason === DisabledReason.InsufficientLiquidity && toast(item.isAvailable.disabledReason)}
                                         >
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-6 w-6 relative">
@@ -169,7 +178,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                                     }
 
                                                 </div>
-                                                <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}                                                    >
+                                                <div className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}>
                                                     <div className={disabled ? 'inline group-hover:hidden' : null}>{item.name}</div>
                                                     <div className={disabled ? 'hidden group-hover:inline' : 'hidden'}>Disabled</div>
                                                 </div>
@@ -177,7 +186,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
                                             {selected ? (
                                                 <span className="text-white absolute inset-y-0 right-0 flex items-center px-4">
-                                                    <CheckIcon className="h-6 w-6" aria-hidden="true" />
+                                                    <Check className="h-6 w-6" aria-hidden="true" />
                                                 </span>
                                             ) : null}
                                         </motion.div>
@@ -229,7 +238,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                             </span>}
                     </span>
                     <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-white">
-                        <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
+                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
                     </span>
                 </button>
             </div>
@@ -242,11 +251,15 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
     )
 }
 
+export enum DisabledReason {
+    LockNetworkIsTrue = '',
+    InsufficientLiquidity = 'Temporarily disabled. Please check later.'
+}
 
 function styleOption(active: boolean, disabled: boolean) {
     let classNames = 'cursor-pointer select-none relative py-2 m-1.5 rounded-md px-3 pr-9 group';
     if (disabled) {
-        return 'text-gray-400 bg-gray-600 opacity-20 cursor-not-allowed ' + classNames;
+        return 'text-gray-400 bg-darkblue-100 opacity-20 cursor-not-allowed ' + classNames;
     }
     if (active) {
         return 'text-white bg-darkblue-300 ' + classNames;

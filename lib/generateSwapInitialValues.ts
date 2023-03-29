@@ -46,14 +46,13 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     const availableCurrencies = currencies
         .map(c => new SelectMenuItem<Currency>(c, c.asset, c.asset, 0, `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`))
 
-
     let initialAddress =
         destAddress && destination && isValidAddress(destAddress, destination?.baseObject) ? destAddress : "";
 
     let initialCurrency =
         amount && availableCurrencies.find(c => c.baseObject.asset == asset)
 
-    const result = { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: initialSwapType !== SwapType.OffRamp && initialAddress }
+    const result = { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: (initialSwapType !== SwapType.OffRamp && initialAddress) ? initialAddress : '' }
 
     switch (initialSwapType) {
         case SwapType.OnRamp:

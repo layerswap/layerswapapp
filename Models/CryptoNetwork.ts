@@ -2,11 +2,13 @@
 export class CryptoNetwork {
     display_name: string;
     internal_name: string;
+    native_currency: string;
+    fee_multiplier: number;
     transaction_explorer_template: string;
     status: "active" | "inactive" | string;
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
-    native_currency: string
+    address_type: "evm" | 'starknet' | 'solana' | 'osmosis'
 }
 
 export class NetworkCurrency {

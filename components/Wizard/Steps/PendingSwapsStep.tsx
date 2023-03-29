@@ -1,4 +1,4 @@
-import { ArrowRightIcon, ChevronRightIcon, ExternalLinkIcon, XIcon } from '@heroicons/react/outline';
+import { ArrowRight, ChevronRight, ExternalLink, X } from 'lucide-react';
 import { Dispatch, FC, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
@@ -25,7 +25,7 @@ export const CurrencyPendingSwapStep: FC = () => {
     const layerswapApiClient = new LayerSwapApiClient()
     const pending_swaps_endpoint = `/swaps?status=0`
     const { data: allPendingSwaps, isValidating, mutate } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher)
-    const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLocaleLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
+    const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
 
     useEffect(() => {
         if (pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
@@ -143,7 +143,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <p className='flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{swap?.destination_network_asset}</span></p>
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
+                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
                                                                         alt="Source Logo"
                                                                         height="60"
                                                                         width="60"
@@ -159,7 +159,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <div className="h-5 w-5 relative">
                                                                     {
                                                                         <Image
-                                                                            src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLocaleLowerCase()}.png`}
+                                                                            src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLowerCase()}.png`}
                                                                             alt="Source Logo"
                                                                             height="60"
                                                                             width="60"
@@ -169,12 +169,12 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 </div>
                                                                 <p className='font-normal md:font-medium'>{source?.display_name}</p>
                                                             </div>
-                                                            <ArrowRightIcon className='h-3 w-3 text-primary-text' />
+                                                            <ArrowRight className='h-3 w-3 text-primary-text' />
                                                             <div className='flex space-x-1 items-center'>
                                                                 <div className="h-5 w-5 relative">
                                                                     {
                                                                         <Image
-                                                                            src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLocaleLowerCase()}.png`}
+                                                                            src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
                                                                             alt="Source Logo"
                                                                             height="60"
                                                                             width="60"
@@ -191,7 +191,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <p className='md:hidden flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{swap?.destination_network_asset}</span></p>
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLocaleLowerCase()}.png`}
+                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
                                                                         alt="Source Logo"
                                                                         height="60"
                                                                         width="60"
@@ -206,7 +206,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                             <div className="text-white text-sm md:text-base">
                                                 <div className="flex flex-row text-white space-x-2">
                                                     <div className='basis-1/3'>
-                                                        <SubmitButton text_align="left" size="medium" buttonStyle="outline" onClick={() => { handleCancelSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<XIcon className='md:h-5 h-3' />}>
+                                                        <SubmitButton text_align="left" size="medium" buttonStyle="outline" onClick={() => { handleCancelSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<X className='md:h-5 h-3' />}>
                                                             <DoubleLineText
                                                                 colorStyle='mltln-text-dark'
                                                                 primaryText='Cancel'
@@ -216,7 +216,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                         </SubmitButton>
                                                     </div>
                                                     <div className='basis-2/3'>
-                                                        <SubmitButton button_align='right' size="medium" text_align="left" onClick={() => { handleCompleteSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<ExternalLinkIcon className='md:h-5 h-3' />}>
+                                                        <SubmitButton button_align='right' size="medium" text_align="left" onClick={() => { handleCompleteSwap(swap) }} isDisabled={false} isSubmitting={false} icon={<ExternalLink className='md:h-5 h-3' />}>
                                                             <DoubleLineText
                                                                 colorStyle='mltln-text-light'
                                                                 primaryText="Complete"

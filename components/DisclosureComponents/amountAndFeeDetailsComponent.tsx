@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from '@heroicons/react/outline'
+import { ChevronDown } from 'lucide-react'
 import { Disclosure } from "@headlessui/react";
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount, CaluclateRefuelAmount } from '../../lib/fees';
 import { SwapType } from '../../lib/layerSwapApiClient';
@@ -27,14 +27,14 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                     {({ open }) => (
                         <>
                             <Disclosure.Button className="items-center flex w-full relative justify-between rounded-lg text-left text-base font-medium">
-                                <span className="md:font-semibold text-sm md:text-base text-primary-text">You will receive</span>
+                                <span className="md:font-semibold text-sm md:text-base text-primary-text leading-8 md:leading-8">You will receive</span>
                                 <div className='flex items-center space-x-2'>
                                     <span className="text-sm md:text-base">
                                         {
                                             receive_amount ?
-                                                <span className="font-semibold md:font-bold text-right leading-4">
+                                                <div className="font-semibold md:font-bold text-right leading-4">
                                                     <p>
-                                                        {receive_amount.toFixed(currency?.baseObject?.precision)}
+                                                        {parseFloat(receive_amount.toFixed(currency?.baseObject?.precision))}
                                                         <span>
                                                             {
                                                                 ` ${currency?.baseObject?.asset || ""}`
@@ -47,11 +47,11 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                             + {refuel} {destination_native_currency}
                                                         </p>
                                                     }
-                                                </span>
+                                                </div>
                                                 : '-'
                                         }
                                     </span>
-                                    <ChevronDownIcon
+                                    <ChevronDown
                                         className={`${open ? 'rotate-180 transform' : ''
                                             } h-4 w-4 text-primary-text`}
                                     />
@@ -64,8 +64,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                             Layerswap Fee
                                         </label>
                                         <span className="text-right">
-                                            {fee.toFixed(currency?.baseObject?.precision)}
-                                            <span>  {currency?.baseObject?.asset} </span>
+                                            {parseFloat(fee.toFixed(currency?.baseObject?.precision))} {currency?.baseObject?.asset}
                                         </span>
                                     </div>
                                     {

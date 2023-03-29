@@ -7,7 +7,7 @@ import MessageComponent from '../../MessageComponent';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import GoHomeButton from '../../utils/GoHome';
 import { SwapItem } from '../../../lib/layerSwapApiClient';
-import { ChatIcon, HomeIcon } from '@heroicons/react/solid';
+import { MessageSquare, Home } from 'lucide-react';
 import { TrackEvent } from '../../../pages/_document';
 
 const FailedStep: FC = () => {
@@ -74,7 +74,7 @@ const Expired = ({ swap, onGetHelp }: Props) => {
         <MessageComponent.Buttons>
             <div className="flex flex-row text-white text-base space-x-2">
                 <div className='basis-1/3'>
-                    <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<ChatIcon className="h-5 w-5" aria-hidden="true" />}>
+                    <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
                         <DoubleLineText
                             colorStyle='mltln-text-dark'
                             primaryText='Support'
@@ -84,7 +84,7 @@ const Expired = ({ swap, onGetHelp }: Props) => {
                 </div>
                 <div className='basis-2/3'>
                     <GoHomeButton>
-                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                             <DoubleLineText
                                 colorStyle='mltln-text-dark'
                                 primaryText='Swap'
@@ -100,7 +100,7 @@ const Expired = ({ swap, onGetHelp }: Props) => {
 
 const Canceled = ({ swap, onGetHelp }: Props) => {
     return <MessageComponent>
-        <MessageComponent.Content icon='red'>
+        <MessageComponent.Content icon='gray'>
             <MessageComponent.Header>
                 Swap canceled
             </MessageComponent.Header>
@@ -118,7 +118,7 @@ const Canceled = ({ swap, onGetHelp }: Props) => {
         <MessageComponent.Buttons>
             <div className="flex flex-row text-white text-base space-x-2">
                 <div className='basis-1/3'>
-                    <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<ChatIcon className="h-5 w-5" aria-hidden="true" />}>
+                    <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
                         <DoubleLineText
                             colorStyle='mltln-text-dark'
                             primaryText='Support'
@@ -128,7 +128,7 @@ const Canceled = ({ swap, onGetHelp }: Props) => {
                 </div>
                 <div className='basis-2/3'>
                     <GoHomeButton>
-                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                        <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                             <DoubleLineText
                                 colorStyle='mltln-text-dark'
                                 primaryText='Swap'
@@ -165,7 +165,7 @@ const Failed = ({ swap, onGetHelp }: Props) => {
             <MessageComponent.Buttons>
                 <div className="flex flex-row text-white text-base space-x-2">
                     <div className='basis-1/3'>
-                        <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<ChatIcon className="h-5 w-5" aria-hidden="true" />}>
+                        <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
                             <DoubleLineText
                                 colorStyle='mltln-text-dark'
                                 primaryText='Support'
@@ -175,7 +175,7 @@ const Failed = ({ swap, onGetHelp }: Props) => {
                     </div>
                     <div className='basis-2/3'>
                         <GoHomeButton>
-                            <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<HomeIcon className="h-5 w-5" aria-hidden="true" />}>
+                            <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                                 <DoubleLineText
                                     colorStyle='mltln-text-dark'
                                     primaryText='Swap'

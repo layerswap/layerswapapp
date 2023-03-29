@@ -1,4 +1,4 @@
-export default function roundDecimals(value: number, decimals: number) {
+export function roundDecimals(value: number, decimals: number) {
     if (decimals === 1) {
         decimals = 0
     }

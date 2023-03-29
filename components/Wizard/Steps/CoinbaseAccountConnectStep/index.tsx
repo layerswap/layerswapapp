@@ -43,7 +43,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const exchange_internal_name = swap?.source_exchange || swapFormData?.from?.baseObject?.internal_name
     const asset_name = swap?.source_network_asset || swapFormData?.currency?.baseObject.asset
 
-    const exchange = exchanges.find(e => e.internal_name?.toLocaleLowerCase() === exchange_internal_name?.toLocaleLowerCase())
+    const exchange = exchanges.find(e => e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase())
     const currency = currencies?.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
 
     const { oauth_authorize_url } = exchange || {}
