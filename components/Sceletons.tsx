@@ -248,7 +248,7 @@ export const ExchangesComponentSceleton = () => {
 export const RewardsComponentSceleton = () => {
   return (
     <div className="space-y-5">
-      <div className="flex justify-center sm:justify-start">
+      <div className="flex justify-start">
         <div className="rounded-md w-48 bg-gray-500 h-[28px] animate-pulse" />
       </div>
       <div className=" bg-darkblue-700 divide-y divide-darkblue-300 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
@@ -278,7 +278,7 @@ export const RewardsComponentSceleton = () => {
         </button>
       </div>
       <div className="space-y-2">
-        <div className="flex justify-center sm:justify-start">
+        <div className="flex justify-start">
           <div className="rounded-md w-48 bg-gray-500 h-5 animate-pulse" />
         </div>
         <div className="bg-darkblue-700 border border-darkblue-700 hover:border-darkblue-500 transition duration-200 rounded-lg">

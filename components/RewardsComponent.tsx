@@ -124,10 +124,10 @@ function RewardsComponent() {
                                                 loading="eager"
                                                 className="rounded-md object-contain" />
                                         </div>
-                                        <p className="font-bold text-xl text-center sm:text-left block">Optimism Rewards</p>
+                                        <p className="font-bold text-xl text-left flex items-center">Optimism Rewards <ClickTooltip text={"Onboarding incentives that are earned by bridging to Optimism. For each transfer, you’ll receive ~80% of Layerswap service fee back."} /></p>
                                     </div>
                                     <div className=" bg-darkblue-700 divide-y divide-darkblue-300 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
-                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={""} /> </span><span className="flex items-center">Next Airdrop <ClickTooltip text={""} /></span></span>} withoutBorder>
+                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={"$OP tokens that will be airdropped in a 2-week period."} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                             <div className="flex justify-between w-full text-2xl">
                                                 <div className="flex items-center space-x-1">
                                                     <div className="h-5 w-5 relative">
@@ -151,7 +151,7 @@ function RewardsComponent() {
                                                 </div>
                                             </div>
                                         </BackgroundField>
-                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Total Earnings <ClickTooltip text={""} /></span><span>Current Value</span></span>} withoutBorder>
+                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Total Earnings <ClickTooltip text={"$OP tokens that you’ve earned so far (including Pending Earnings)."} /></span><span>Current Value</span></span>} withoutBorder>
                                             <div className="flex justify-between w-full text-slate-300 text-2xl">
                                                 <div className="flex items-center space-x-1">
                                                     <div className="h-5 w-5 relative">
@@ -175,17 +175,18 @@ function RewardsComponent() {
                                     </div>
                                 </div>
                                 <button disabled={!(rewardsData.user_reward.pending_amount > 0)} type="button" onClick={handleOpenRewardModal} className="rounded-lg bg-[#cd031b] tracking-wide hover:opacity-80 transition duration-200 text-white text-lg w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    {rewardsData.user_reward.address ? 'Edit your address' : 'Claim your reward'}
+                                    {rewardsData.user_reward.address ? 'Change address' : 'Claim your reward'}
                                 </button>
-                                <div className="space-y-1">
+                                <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <p className="font-bold text-lg text-center sm:text-left flex items-center">Leaderboard <ClickTooltip text={""} /></p>
+                                        <p className="font-bold text-lg text-left leading-4">Leaderboard</p>
                                         <div>
-                                            <button onClick={handleOpenTopModal} type="button" className="text-sm text-primary-text hover:text-primary-text/70 duration-200 transition">
+                                            <button onClick={handleOpenTopModal} type="button" className=" leading-4 text-lg text-primary-text hover:text-primary-text/70 duration-200 transition">
                                                 See top 10
                                             </button>
                                         </div>
                                     </div>
+                                    <p className="text-sm text-primary-text/70">Users with highest transaction volume are featured in the leaderboard and will earn additional rewards.</p>
                                     <div className="bg-darkblue-700 border border-darkblue-700 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg">
                                         <div className="p-3">
                                             <div className="space-y-6">
@@ -250,6 +251,7 @@ function RewardsComponent() {
                                             </div>
                                         </div>
                                     </div>
+                                    <p className="text-xs text-primary-text/70">Note: the nicknames are randomly generated for identification purposes.</p>
                                 </div>
                             </div>
                     }
