@@ -28,7 +28,7 @@ function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {
             defaultStyle += " py-4 px-4";
             break;
         case 'medium':
-            defaultStyle += " py-2 px-2 md:px-3";
+            defaultStyle += " py-3 px-2 md:px-3";
             break;
         case 'small':
             defaultStyle += " py-1 px-1";
