@@ -72,6 +72,23 @@ function RewardsComponent() {
         }
     }, [])
 
+    const leaderboardReward = (position: number) => {
+        let amount: number
+
+        switch (position) {
+            case 1:
+                amount = 300;
+                break;
+            case 2:
+                amount = 200;
+                break;
+            case 3:
+                amount = 100;
+                break;
+        }
+        return amount
+    }
+
     return (
         <>
             <div className='bg-darkblue px-6 sm:px-8 pb-6 sm:mb-10 sm:shadow-card rounded-lg sm:mx-24 text-white overflow-hidden relative min-h-[400px]'>
@@ -110,7 +127,7 @@ function RewardsComponent() {
                                         <p className="font-bold text-xl text-center sm:text-left block">Optimism Rewards</p>
                                     </div>
                                     <div className=" bg-darkblue-700 divide-y divide-darkblue-300 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
-                                        <BackgroundField header={<span className="flex justify-between"><span>Pending Earnings</span><span>Next Airdrop</span></span>} withoutBorder>
+                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={""} /> </span><span className="flex items-center">Next Airdrop <ClickTooltip text={""} /></span></span>} withoutBorder>
                                             <div className="flex justify-between w-full text-2xl">
                                                 <div className="flex items-center space-x-1">
                                                     <div className="h-5 w-5 relative">
@@ -134,7 +151,7 @@ function RewardsComponent() {
                                                 </div>
                                             </div>
                                         </BackgroundField>
-                                        <BackgroundField header={<span className="flex justify-between"><span>Total Earnings</span><span>Current Value</span></span>} withoutBorder>
+                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Total Earnings <ClickTooltip text={""} /></span><span>Current Value</span></span>} withoutBorder>
                                             <div className="flex justify-between w-full text-slate-300 text-2xl">
                                                 <div className="flex items-center space-x-1">
                                                     <div className="h-5 w-5 relative">
@@ -151,7 +168,7 @@ function RewardsComponent() {
                                                     </p>
                                                 </div>
                                                 <p>
-                                                    {(settings.currencies.find(c => c.asset === settings.campaigns[0].asset).usd_price * rewardsData?.user_reward?.total_amount).toFixed(2)} <span className="text-base">$</span>
+                                                    ${(settings.currencies.find(c => c.asset === settings.campaigns[0].asset).usd_price * rewardsData?.user_reward?.total_amount).toFixed(2)}
                                                 </p>
                                             </div>
                                         </BackgroundField>
@@ -162,7 +179,7 @@ function RewardsComponent() {
                                 </button>
                                 <div className="space-y-1">
                                     <div className="flex items-center justify-between">
-                                        <p className="font-bold text-lg text-center sm:text-left">Leaderboard</p>
+                                        <p className="font-bold text-lg text-center sm:text-left flex items-center">Leaderboard <ClickTooltip text={""} /></p>
                                         <div>
                                             <button onClick={handleOpenTopModal} type="button" className="text-sm text-primary-text hover:text-primary-text/70 duration-200 transition">
                                                 See top 10
@@ -186,7 +203,22 @@ function RewardsComponent() {
                                                                 </div>
                                                             </div>
                                                             <div className="text-right flex items-center space-x-2">
-                                                                <ClickTooltip text={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Id ad temporibus dolor praesentium magnam, autem iste molestiae animi, sed ex quisquam, voluptatibus facilis nostrum modi quod nihil! Quas, vel praesentium?"}>
+                                                                <ClickTooltip text={
+                                                                    <div className="flex items-center space-x-1">
+                                                                        <span>+</span>
+                                                                        <div className="h-3.5 w-3.5 relative">
+                                                                            <Image
+                                                                                src={`${resource_storage_url}/layerswap/currencies/${settings.campaigns[0].asset.toLowerCase()}.png`}
+                                                                                alt="Project Logo"
+                                                                                height="40"
+                                                                                width="40"
+                                                                                loading="eager"
+                                                                                className="rounded-full object-contain" />
+                                                                        </div>
+                                                                        <p>
+                                                                            <span>{leaderboardReward(user.position)} OP</span>
+                                                                        </p>
+                                                                    </div>}>
                                                                     <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-1 rounded'>
                                                                         <Trophy className="h-4 w-4" aria-hidden="true" />
                                                                     </div>
@@ -197,7 +229,7 @@ function RewardsComponent() {
 
                                                 }
                                                 {rewardsData?.user_reward.position >= 4 &&
-                                                    <div className="!mt-0 !pt-0">
+                                                    <div className={rewardsData.user_reward.position > 4 && "!mt-0 !pt-0"}>
                                                         {rewardsData.user_reward.position > 4 && < div className="text-2xl text-center leading-3 text-primary-text my-3">
                                                             ...
                                                         </div>}
@@ -288,7 +320,23 @@ function RewardsComponent() {
                                         {
                                             user.position < 4 &&
                                             <div className="text-right flex items-center space-x-2">
-                                                <ClickTooltip text={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Id ad temporibus dolor praesentium magnam, autem iste molestiae animi, sed ex quisquam, voluptatibus facilis nostrum modi quod nihil! Quas, vel praesentium?"}>
+                                                <ClickTooltip text={
+                                                    <div className="flex items-center space-x-1">
+                                                        <span>+</span>
+                                                        <div className="h-3.5 w-3.5 relative">
+                                                            <Image
+                                                                src={`${resource_storage_url}/layerswap/currencies/${settings.campaigns[0].asset.toLowerCase()}.png`}
+                                                                alt="Project Logo"
+                                                                height="40"
+                                                                width="40"
+                                                                loading="eager"
+                                                                className="rounded-full object-contain" />
+                                                        </div>
+                                                        <p>
+                                                            <span>{leaderboardReward(user.position)} OP</span>
+                                                        </p>
+                                                    </div>
+                                                }>
                                                     <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-1 rounded'>
                                                         <Trophy className="h-4 w-4" aria-hidden="true" />
                                                     </div>
