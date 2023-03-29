@@ -34,3 +34,11 @@ export function getDepositeAddressEndpoint(swapFormData: SwapFormValues) {
         return null;
     return `/exchange_accounts/${swapFormData?.to?.baseObject?.internal_name}/deposit_address/${swapFormData?.currency?.baseObject?.asset}`
 }
+
+export const canSwitchSourceAndDestination = (values: SwapFormValues) => {
+    const fromCurrency = values?.from?.baseObject.currencies.some(c => c.is_deposit_enabled && c.is_withdrawal_enabled)
+    const toCurrency = values?.to?.baseObject.currencies.some(c => c.is_deposit_enabled && c.is_withdrawal_enabled)
+    if ((values.from && !values.to && fromCurrency) || (values.to && !values.from && toCurrency)) return false
+    else if (values.from && values.to && fromCurrency && toCurrency) return false
+    else return true
+}

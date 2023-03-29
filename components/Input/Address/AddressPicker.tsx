@@ -76,8 +76,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(
             }
         });
 
-        const exchangeCurrency = values?.swapType === SwapType.OffRamp && values.to?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
-
         const handleUseDepositeAddress = async () => {
             try {
                 await onSetExchangeDepoisteAddress()

@@ -66,7 +66,6 @@ const CurrenciesField: FC = () => {
         else if (currency) {
             setFieldValue(name, null)
         }
-
     }, [from, to, currencies, exchanges, currency])
 
     useEffect(() => {

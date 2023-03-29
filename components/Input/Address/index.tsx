@@ -20,6 +20,7 @@ import { isValidAddress } from "../../../lib/addressValidator";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import useSWRMutation from 'swr/mutation'
+import { useAuthState } from "../../../context/authContext";
 
 const Address = () => {
 
@@ -33,9 +34,9 @@ const Address = () => {
     const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
+    const { authData } = useAuthState()
     const layerswapApiClient = new LayerSwapApiClient()
-
-    const address_book_endpoint = `/address_book/recent`
+    const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(
         address_book_endpoint,
         layerswapApiClient.fetcher,

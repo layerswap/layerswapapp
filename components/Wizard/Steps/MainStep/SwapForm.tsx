@@ -34,6 +34,7 @@ import ToggleButton from "../../../buttons/toggleButton";
 import AddressInput from "../../../Input/Address"
 import { ArrowLeftRight, ArrowUpDown, Fuel } from 'lucide-react'
 import { useAuthState } from "../../../../context/authContext";
+import { canSwitchSourceAndDestination } from "../../../../helpers/settingsHelper";
 
 type Props = {
     loading: boolean
@@ -47,25 +48,10 @@ const SwapForm: FC<Props> = ({ loading }) => {
     } = useFormikContext<SwapFormValues>();
     const { swapType, to } = values
     const settings = useSettingsState();
-    const { authData } = useAuthState()
-    const layerswapApiClient = new LayerSwapApiClient()
-    const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
-    const { data: address_book, mutate, isValidating } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
-    const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
-    const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
     const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
-    const router = useRouter();
-    const [loadingDepositAddress, setLoadingDepositAddress] = useState(false)
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
-    const { depositeAddressIsfromAccount } = useSwapDataState()
-    const query = useQueryState();
     const [valuesSwapperDisabled, setValuesSwapperDisabled] = useState(true)
-
-    const lockAddress =
-        (values.destination_address && values.to)
-        && isValidAddress(values.destination_address, values.to?.baseObject)
-        && ((query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
 
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
@@ -82,7 +68,6 @@ const SwapForm: FC<Props> = ({ loading }) => {
     }, [values.refuel])
 
     const exchangeRef = useRef(to?.id);
-
     useEffect(() => {
         if (swapType === SwapType.OffRamp && exchangeRef.current && exchangeRef.current !== to?.id) {
             setFieldValue("destination_address", '')
@@ -102,19 +87,13 @@ const SwapForm: FC<Props> = ({ loading }) => {
             setValues({ ...values, from: values.to, to: values.from }, true)
     }, [values])
 
-    const valuesSwapperFiltering = () => {
-        const fromCurrency = values?.from?.baseObject.currencies.some(c => c.is_deposit_enabled && c.is_withdrawal_enabled)
-        const toCurrency = values?.to?.baseObject.currencies.some(c => c.is_deposit_enabled && c.is_withdrawal_enabled)
-        if ((values.from && !values.to && fromCurrency) || (values.to && !values.from && toCurrency)) setValuesSwapperDisabled(false)
-        else if (values.from && values.to && fromCurrency && toCurrency) setValuesSwapperDisabled(false)
-        else setValuesSwapperDisabled(true)
-    }
     const [animate, cycle] = useCycle(
         { rotate: 0 },
         { rotate: 180 }
     );
+    
     useEffect(() => {
-        valuesSwapperFiltering()
+        setValuesSwapperDisabled(canSwitchSourceAndDestination(values))
     }, [values.from, values.to])
 
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
