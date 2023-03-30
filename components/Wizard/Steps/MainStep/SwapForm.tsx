@@ -29,11 +29,12 @@ import NetworkSettings from "../../../../lib/NetworkSettings";
 import shortenAddress from "../../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../../Models/ApiResponse";
-import { motion } from "framer-motion";
+import { motion, useCycle } from "framer-motion";
 import AvatarGroup from "../../../AvatarGroup";
 import ClickTooltip from "../../../Tooltips/ClickTooltip";
 import ToggleButton from "../../../buttons/toggleButton";
-import { Fuel } from 'lucide-react'
+import { ArrowLeftRight, ArrowUpDown, Fuel } from 'lucide-react'
+import { useAuthState } from "../../../../context/authContext";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -45,25 +46,26 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
 
     const {
         values,
+        setValues,
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
     const { swapType, to } = values
     const settings = useSettingsState();
-
+    const { authData } = useAuthState()
     const layerswapApiClient = new LayerSwapApiClient()
-    const address_book_endpoint = `/address_book/recent`
-    const { data: address_book, mutate, isValidating } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher)
+    const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
+    const { data: address_book, mutate, isValidating } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
-    const [openAddressModal, setOpenAddressModal] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
     const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
     const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name}.png` : null
     const router = useRouter();
     const [loadingDepositAddress, setLoadingDepositAddress] = useState(false)
-    const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
+    const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
+    const [valuesSwapperDisabled, setValuesSwapperDisabled] = useState(true)
 
     const lockAddress =
         (values.destination_address && values.to)
@@ -89,7 +91,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
             setFieldValue("destination_address", deposit_address.data)
             setDepositeAddressIsfromAccount(true)
             setLoadingDepositAddress(false)
-            setOpenAddressModal(false)
         }
         catch (e) {
             if (e?.response?.data?.error?.code === KnownwErrorCode.NOT_FOUND || e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS)
@@ -133,6 +134,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     }, [values.currency])
 
     useEffect(() => {
+        setAddressConfirmed(false)
+    }, [values?.to])
+
+    useEffect(() => {
         if (swapType !== SwapType.OffRamp && values.refuel && values.amount && Number(values.amount) < minAllowedAmount) {
             setFieldValue('amount', minAllowedAmount)
         }
@@ -154,6 +159,26 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
         }
     }, [values.refuel])
 
+    const valuesSwapper = useCallback(() => {
+        if (values.swapType === SwapType.CrossChain)
+            setValues({ ...values, from: values.to, to: values.from }, true)
+    }, [values])
+
+    const valuesSwapperFiltering = () => {
+        const fromCurrency = values?.from?.baseObject.currencies.some(c => c.is_deposit_enabled && c.is_withdrawal_enabled)
+        const toCurrency = values?.to?.baseObject.currencies.some(c => c.is_deposit_enabled && c.is_withdrawal_enabled)
+        if ((values.from && !values.to && fromCurrency) || (values.to && !values.from && toCurrency)) setValuesSwapperDisabled(false)
+        else if (values.from && values.to && fromCurrency && toCurrency) setValuesSwapperDisabled(false)
+        else setValuesSwapperDisabled(true)
+    }
+    const [animate, cycle] = useCycle(
+        { rotate: 0 },
+        { rotate: 180 }
+    );
+    useEffect(() => {
+        valuesSwapperFiltering()
+    }, [values.from, values.to])
+
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     return <>
         <Form className="h-full" >
@@ -164,9 +189,22 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                     : <Widget.Content>
                         <SwapOptionsToggle />
                         <div className='flex-col md:flex-row flex justify-between w-full md:space-x-4 space-y-4 md:space-y-0 mb-3.5 leading-4'>
+
                             <div className="flex flex-col w-full">
                                 <SelectNetwork direction="from" label="From" />
                             </div>
+                            {
+                                swapType === SwapType.CrossChain && !valuesSwapperDisabled &&
+                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[139px] sm:top-[110px] sm:rotate-90 z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary py-1.5 p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
+                                    <motion.div
+                                        animate={animate}
+                                        transition={{ duration: 0.3 }}
+                                        onTap={() => !valuesSwapperDisabled && cycle()}
+                                    >
+                                        <ArrowUpDown className="h-5" />
+                                    </motion.div>
+                                </button>
+                            }
                             <div className="flex flex-col w-full">
                                 <SelectNetwork direction="to" label="To" />
                             </div>
@@ -233,7 +271,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                 </Widget.Footer>
             </Widget>
             {swapType === SwapType.OffRamp &&
-                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep'>
+                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep' header={`Connect ${values?.to?.baseObject?.display_name}`} >
                     {(close) => (
                         (values?.to?.baseObject.authorization_flow) === "o_auth2" ?
                             <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />

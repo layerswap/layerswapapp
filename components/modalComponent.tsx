@@ -4,11 +4,9 @@ import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useQueryState } from '../context/query';
 import { useRouter } from 'next/router';
 import { forwardRef } from 'react';
-import { Root, Portal, Overlay, Content, Title, Close, } from '@radix-ui/react-dialog';
 import inIframe from './utils/inIframe';
-import { variants } from '../tailwind.config';
-import { ReactPortal } from './Wizard/Widget';
 import IconButton from './buttons/iconButton';
+import { ReactPortal } from './Wizard/Widget';
 
 type modalSize = 'small' | 'medium' | 'large';
 export type modalHeight = 'auto' | 'large';
@@ -48,6 +46,16 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
     const router = useRouter();
     const desktopModalRef = useRef(null);
     const { key } = router.query;
+    const bodyOverflowChanged = useRef<boolean>(showModal);
+    useEffect(() => {
+        if (showModal) {
+            bodyOverflowChanged.current = true;
+            window.document.body.style.overflow = 'hidden'
+        }
+        else if (bodyOverflowChanged?.current) {
+            window.document.body.style.overflow = ''
+        }
+    }, [showModal])
 
     const closeModal = useCallback(
         (closeWithX?: boolean) => {
@@ -64,65 +72,61 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
     return (
         <AnimatePresence>
             {showModal && (
-                <Root
-                    onOpenChange={closeModal}
-                    open={showModal}
-                >
-                    <Portal>
-                        <Overlay />
-                        <Content className={query?.addressSource}>
-                            <MobileModalContent className={className} showModal={showModal} setShowModal={setShowModal} title={title}>
-                                {children}
-                            </MobileModalContent>
-                            <motion.div
-                                key="backdrop"
-                                className="fixed inset-0  bg-black/60 bg-opacity-10 hidden sm:block"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                onClick={() => closeModal(closeWithX)}
-                            />
-                            <motion.div
-                                onAnimationComplete={onAnimationCompleted}
-                                ref={desktopModalRef}
-                                key="desktop-modal"
-                                className={`fixed inset-0 z-40 hidden min-h-screen items-center justify-center sm:flex`}
-                                initial={{ opacity: 0 }}
-                                animate={{
-                                    opacity: 1,
-                                    transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
-                                }}
-                                exit={{
-                                    opacity: 0,
-                                    transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
-                                }}
-                                onMouseDown={(e) => {
-                                    if (desktopModalRef.current === e.target) {
-                                        closeModal(closeWithX);
-                                    }
-                                }}
-                            >
-                                <div className={constructModalSize(modalSize)}>
-                                    <div className={`${className} space-y-3 min-h-[80%] bg-darkblue-900 py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
-                                        <div className='flex justify-between space-x-8'>
-                                            <Title className="text-lg text-left font-medium text-primary-text" >
-                                                {title}
-                                            </Title>
-                                            <Close
-                                                type="button">
-                                                <IconButton icon={
-                                                    <X strokeWidth={3}/>
-                                                }>
-                                                </IconButton>
-                                            </Close>
+                <ReactPortal>
+                    <div className={query?.addressSource}>
+                        <MobileModalContent className={className} showModal={showModal} setShowModal={setShowModal} title={title}>
+                            {children}
+                        </MobileModalContent>
+                        <motion.div
+                            key="backdrop"
+                            className="fixed inset-0  bg-black/60 bg-opacity-10 hidden sm:block"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => closeModal(closeWithX)}
+                        />
+                        <motion.div
+                            onAnimationComplete={onAnimationCompleted}
+                            ref={desktopModalRef}
+                            key="desktop-modal"
+                            className={`fixed inset-0 z-40 hidden min-h-screen items-center justify-center sm:flex`}
+                            initial={{ opacity: 0 }}
+                            animate={{
+                                opacity: 1,
+                                transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
+                            }}
+                            exit={{
+                                opacity: 0,
+                                transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
+                            }}
+                            onMouseDown={(e) => {
+                                if (desktopModalRef.current === e.target) {
+                                    closeModal(closeWithX);
+                                }
+                            }}
+                        >
+                            <div className={constructModalSize(modalSize)}>
+                                <div className={`${className} space-y-3 min-h-[80%] bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
+                                    <div className='flex justify-between space-x-8'>
+                                        <div className="text-lg text-left font-medium text-primary-text" >
+                                            {title}
                                         </div>
-                                        {children}
+                                        <button
+                                            onClick={() => closeModal()}
+                                            type="button">
+                                            <IconButton icon={
+                                                <X strokeWidth={3} />
+                                            }>
+                                            </IconButton>
+                                        </button>
                                     </div>
+                                    {children}
+                                    <div id="modal_slideover" />
                                 </div>
-                            </motion.div>
-                        </Content>
-                    </Portal>
-                </Root>
+                            </div>
+                        </motion.div>
+                    </div>
+                </ReactPortal>
             )}
         </AnimatePresence>
     );
@@ -210,41 +214,9 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 <div className={` ${className?.includes('bg-[#181c1f]') ? 'px-0 !pb-0' : 'px-5'}  inline-block max-w-screen-xl max-h-[calc(100vh-170px)] h-max w-full transform overflow-y-auto ${inIframe() && 'styled-scroll'}`}>
                     {children}
                 </div>
-                <div id='test' />
             </motion.div>
         </div>
     )
 })
-
-export const ModalFooter: FC = ({ children }) => {
-    const [height, setHeight] = useState(0)
-    const footerRef = useRef(null)
-
-    const handleAnimationEnd = (variant) => {
-        if (variant == "center") {
-            setHeight(footerRef?.current?.clientHeight)
-        }
-    }
-
-    return (
-        <ReactPortal wrapperId="test">
-            <motion.div
-                onAnimationComplete={handleAnimationEnd}
-                ref={footerRef}
-                transition={{
-                    duration: 0.15,
-                }}
-                custom={{ direction: "back" ? -1 : 1, width: 100 }}
-                variants={variants}
-                className={`text-white text-base 
-                 max-sm:fixed 
-                 max-sm:inset-x-0 
-                 max-sm:bottom-0
-                 max-sm:z-30 max-sm:bg-darkblue-900 max-sm:shadow-widget-footer max-sm:p-4 max-sm:px-6 max-sm:w-full`}>
-                {children}
-            </motion.div>
-        </ReactPortal>
-    )
-}
 
 export default Modal;

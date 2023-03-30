@@ -5,7 +5,7 @@ interface IconButtonProps extends Omit<ComponentProps<'button'>, 'color' | 'ref'
     icon?: React.ReactNode
 }
 
-const IconButton = forwardRef<HTMLButtonElement | HTMLAnchorElement, IconButtonProps>(({ className, icon, ...props }) => {
+const IconButton = forwardRef<HTMLButtonElement | HTMLAnchorElement, IconButtonProps>(({ className, icon, ...props }, ref) => {
     const theirProps = props as object;
 
     return (

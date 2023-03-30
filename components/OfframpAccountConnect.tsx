@@ -78,9 +78,6 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
                     <div className='flex flex-col self-center grow w-full'>
                         <div className='flex flex-col self-start w-full text-left'>
                             <div className='text-left space-y-1'>
-                                <p className='pt-2 text-lg md:text-xl text-white'>
-                                    Coinbase Connect
-                                </p>
                                 <p className='text-sm sm:text-base'>
                                     Allow Layerswap to read your Coinbase account's <span className='text-white'>email address.</span>
                                 </p>
