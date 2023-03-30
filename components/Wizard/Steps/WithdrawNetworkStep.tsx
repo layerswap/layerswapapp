@@ -125,7 +125,7 @@ const WithdrawNetworkStep: FC = () => {
                                         </p>
                                         {
                                             (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                                            <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-darkblue-100 rounded border-dashed'>
+                                            <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-darkblue-200 rounded border-dashed'>
                                                 <p>
                                                     You might get a warning that this is not an activated address. You can ignore it.
                                                 </p>

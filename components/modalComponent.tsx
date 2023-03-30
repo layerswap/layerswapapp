@@ -103,7 +103,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                                 }}
                             >
                                 <div className={constructModalSize(modalSize)}>
-                                    <div className={`${className} space-y-3 min-h-[80%] bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
+                                    <div className={`${className} space-y-3 min-h-[80%] bg-darkblue-900 py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
                                         <div className='flex justify-between space-x-8'>
                                             <Title className="text-lg text-left font-medium text-primary-text" >
                                                 {title}
@@ -171,7 +171,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${modalHeight === 'large' ? 'h-[80%]' : ''} group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue ${className} shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
+                className={`${modalHeight === 'large' ? 'h-[80%]' : ''} group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue-800 ${className} shadow-lg border-t border-darkblue-500 pb-6 sm:hidden`}
                 initial={{ y: "100%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
@@ -183,9 +183,9 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 dragConstraints={{ top: 0, bottom: 0 }}
                 onAnimationComplete={onAnimationCompleted}
             >
-                <div className='px-5 py-3 mb-4 rounded-t-2xl bg-darkblue  border-b border-darkblue-400'>
+                <div className='px-5 py-3 mb-4 rounded-t-2xl bg-darkblue-900  border-b border-darkblue-500'>
                     <div className='grid grid-cols-6 items-center'>
-                        <button ref={closeButtonRef} tabIndex={-1} className='text-base text-primary-text col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
+                        <button ref={closeButtonRef} tabIndex={-1} className='text-base text-primary col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
                             Close
                         </button>
                         {
@@ -240,7 +240,7 @@ export const ModalFooter: FC = ({ children }) => {
                  max-sm:fixed 
                  max-sm:inset-x-0 
                  max-sm:bottom-0
-                 max-sm:z-30 max-sm:bg-darkblue max-sm:shadow-widget-footer max-sm:p-4 max-sm:px-6 max-sm:w-full`}>
+                 max-sm:z-30 max-sm:bg-darkblue-900 max-sm:shadow-widget-footer max-sm:p-4 max-sm:px-6 max-sm:w-full`}>
                 {children}
             </motion.div>
         </ReactPortal>

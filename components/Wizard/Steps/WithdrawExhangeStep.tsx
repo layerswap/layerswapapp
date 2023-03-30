@@ -190,7 +190,7 @@ const WithdrawExchangeStep: FC = () => {
                                                 {swap?.deposit_address}
                                             </p>
                                             {sourceNetworks.length === 1 ?
-                                                <div className='flex space-x-2 items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5 w-fit'>
+                                                <div className='flex space-x-2 items-center bg-darkblue-500 px-2 py-1 rounded-md mt-1.5 w-fit'>
                                                     <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${sourceNetworks[0]?.internal_name.toLowerCase()}.png`}></Image>
                                                     <span>Available on {sourceNetworks[0].display_name}</span>
                                                 </div>
@@ -212,7 +212,7 @@ const WithdrawExchangeStep: FC = () => {
                                                         </div>
                                                     </div>
                                                 }>
-                                                    <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
+                                                    <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-500 px-2 py-1 rounded-md mt-1.5'>
                                                         <AvatarGroup imageUrls={sourceNetworks?.map(x => `${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`)} />
                                                         <span className='text-xs grow md:text-sm break-keep'>Available on {sourceNetworks.length} networks</span>
                                                         <span><ArrowDown className='h-4 md:h-5 bg-darkblue-700 text-primary-text ml-1 md:ml-2 rounded-full p-0.5' /></span>

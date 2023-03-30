@@ -211,7 +211,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     {
                                         inputValue &&
                                         <span className="inline-flex items-center mr-2">
-                                            <div className="text-xs flex items-center space-x-2 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
+                                            <div className="text-xs flex items-center space-x-2 md:ml-5 bg-darkblue-500 rounded-md border border-darkblue-500">
                                                 {
                                                     values?.to?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
                                                     <span className="inline-flex items-center mr-2">
@@ -222,7 +222,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                 }
                                                 <button
                                                     type="button"
-                                                    className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
+                                                    className="p-0.5 duration-200 transition  hover:bg-darkblue-400  rounded-md border border-darkblue-500 hover:border-darkblue-200"
                                                     onClick={handleRemoveDepositeAddress}
                                                 >
                                                     <div className="flex items-center px-2 text-sm py-1 font-semibold">
@@ -241,8 +241,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 </div>
                                 {
                                     validInputAddress &&
-                                    <div onClick={handleSetNewAddress} className={`mt-2 min-h-12 cursor-pointer space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-2 hover:border-darkblue-500 hover:shadow-xl`}>
-                                        <div className='flex text-primary-text bg-darkblue-400 flex-row items-left rounded-md p-2'>
+                                    <div onClick={handleSetNewAddress} className={`mt-2 min-h-12 cursor-pointer space-x-2 border border-darkblue-400 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-2 hover:border-darkblue-500 hover:shadow-xl`}>
+                                        <div className='flex text-primary-text bg-darkblue-500 flex-row items-left rounded-md p-2'>
                                             <Image src={makeBlockie(validInputAddress)}
                                                 alt="Project Logo"
                                                 height="20"
@@ -267,7 +267,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
                                     && !depositeAddressIsfromAccount &&
                                     <div onClick={handleUseDepositeAddress} className={`min-h-12 cursor-pointer mt-2 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
-                                        <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
+                                        <div className='flex text-primary-text flex-row items-left bg-darkblue-500 px-2 py-1 rounded-md'>
                                             <Wallet className="h-6 w-6 text-primary-text" />
                                         </div>
                                         <div className="flex flex-col">
@@ -285,7 +285,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     <div className="grow">
                                         <RainbowKit>
                                             <div className={`min-h-12 text-left mt-4 space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl`}>
-                                                <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
+                                                <div className='flex text-primary-text flex-row items-left bg-darkblue-500 px-2 py-1 rounded-md'>
                                                     <Wallet className="h-6 w-6 text-primary-text" />
                                                 </div>
                                                 <div className="flex flex-col">
@@ -372,7 +372,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                                 as="span"
                                                                 className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:-translate-y-0.5 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
                                                             >
-                                                                <div className='flex bg-darkblue-400 text-primary-text flex-row items-left  rounded-md p-2'>
+                                                                <div className='flex bg-darkblue-500 text-primary-text flex-row items-left  rounded-md p-2'>
                                                                     <Image src={makeBlockie(a.address)}
                                                                         alt="Project Logo"
                                                                         height="20"

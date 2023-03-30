@@ -22,7 +22,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, 
     const { destination_address, to } = swapFormData
 
     if (!destination_address)
-        return <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
+        return <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-300 bg-darkblue-700 p-2">
             <div className="flex items-center min-w-0 flex-1">
                 <SpinIcon className="animate-spin h-5 w-5" />
             </div>
@@ -39,7 +39,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, 
 
 const ExchangeAddress = ({ imgSrc, address }: { imgSrc: string, address: string }) => {
     return <>
-        <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
+        <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-300 bg-darkblue-700 p-2">
             <div className="flex items-center min-w-0 flex-1">
                 {
                     imgSrc &&
@@ -67,7 +67,7 @@ const ExchangeAddress = ({ imgSrc, address }: { imgSrc: string, address: string 
 
 const NetworkAddress = ({ imgSrc, address, account_explorer_template, onClick }: { imgSrc: string, address: string, account_explorer_template: string, onClick?: MouseEventHandler<HTMLButtonElement> | undefined; }) => {
     return <>
-        <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 p-2">
+        <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-300 bg-darkblue-700 p-2">
             <Disclosure>
                 {({ open }) => {
                     if (typeof window !== 'undefined') {

@@ -66,7 +66,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                                     onChange={e => {
                                         handleChange(e)
                                     }}
-                                    className="appearance-none block w-full bg-darkblue-700 text-white border border-darkblue-500 rounded-md py-3 px-4 mb-3 leading-tight focus:ring-0 focus:bg-darkblue-500 focus:border-darkblue-50 h-72 resize-none"
+                                    className="appearance-none block w-full bg-darkblue-700 text-white border border-darkblue-500 rounded-md py-3 px-4 mb-3 leading-tight focus:ring-0 focus:bg-darkblue-500 focus:border-darkblue-100 h-72 resize-none"
                                 />
                             </div>
                         </div>
