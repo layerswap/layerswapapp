@@ -177,7 +177,7 @@ export const SwapHistoryComponentSceleton = () => {
 
 export const SwapDetailsComponentSceleton = () => {
   return <div className="animate-pulse"><div className="w-full grid grid-flow-row">
-      <div className="rounded-md bg-darkblue w-full grid grid-flow-row">
+      <div className="rounded-md bg-darkblue-900 w-full grid grid-flow-row">
           <div className="items-center block text-base font-lighter leading-6 text-primary-text">
               <div className="flex justify-between items-baseline">
                   <div className="h-2 m-2 w-1/4 bg-slate-400 rounded col-span-1"></div>
