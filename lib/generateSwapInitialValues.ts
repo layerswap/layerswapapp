@@ -36,8 +36,8 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
     let availableExchanges = exchanges
         .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, 0, `${resource_storage_url}/layerswap/networks/${c.internal_name.toLowerCase()}.png`, true, false))
 
-    const source = initialSwapType === SwapType.OnRamp ? availableExchanges.find(x => (x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() || x.baseObject.internal_name.toUpperCase() == from?.toUpperCase()) && x.baseObject.currencies)
-        : availableNetworks.find(x => (x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() || x.baseObject.internal_name.toUpperCase() === from?.toUpperCase()) && x.isAvailable && !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp)
+    const source = initialSwapType === SwapType.OffRamp ? availableNetworks.find(x => (x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() || x.baseObject.internal_name.toUpperCase() === from?.toUpperCase()) && x.isAvailable && !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp)
+        : availableExchanges.find(x => (x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() || x.baseObject.internal_name.toUpperCase() == from?.toUpperCase()) && x.baseObject.currencies)
 
     const destination = initialSwapType === SwapType.OffRamp ? availableExchanges.find(x => (x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() || x.baseObject.internal_name.toUpperCase() === to?.toUpperCase()) && x.baseObject.currencies)
         : availableNetworks.find(x => (x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() || x.baseObject.internal_name.toUpperCase() === to?.toUpperCase()) && x.isAvailable && !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp)
