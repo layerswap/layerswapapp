@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useQueryState } from '../context/query';
 import { useInterval } from '../hooks/useInterval';
@@ -26,7 +26,6 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
     const { to, swapType } = values || {}
     const { oauth_connect_url } = (swapType === SwapType.OffRamp && to?.baseObject) || {}
     const [authWindow, setAuthWindow] = useState<Window>()
-    const [salon, setSalon] = useState(false)
     const [loading, setLoading] = useState(false)
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
 
@@ -45,7 +44,6 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
             //throws error when accessing href TODO research safe way
         }
         if (authWindowHref && authWindowHref?.indexOf(window.location.origin) !== -1) {
-            setSalon(true)
             authWindow?.close()
             await OnSuccess()
             setLoading(false)

@@ -20,6 +20,7 @@ const AuthWizard: FC = () => {
         await router.push(redirect?.toString() || '/')
         plausible(TrackEvent.SignedIn)
     }, [redirect]);
+    
     const GoBackToEmailStep = useCallback(() => goToStep(AuthStep.Email, "back"), [])
     const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
 

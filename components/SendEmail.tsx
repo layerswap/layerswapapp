@@ -96,7 +96,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                         <p className='text-xl text-white'>
                                                             Sign in with email
                                                         </p>
-                                                        <div className='bg-darkblue-500 hover:bg-darkblue-400 p-0.5 rounded-md duration-200 transition'>
+                                                        <div className='bg-darkblue-500 hover:bg-darkblue-500 p-0.5 rounded-md duration-200 transition'>
                                                             <ChevronDown
                                                                 className={`${open ? 'rotate-180 transform' : ''
                                                                     } h-5 text-primary-text`}
