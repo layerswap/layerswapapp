@@ -22,7 +22,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
 
     return (
         <>
-            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 px-3.5 py-3">
+            <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-300 bg-darkblue-700 px-3.5 py-3">
                 <Disclosure>
                     {({ open }) => (
                         <>

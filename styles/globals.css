@@ -27,7 +27,7 @@
 @layer base {
 
   body {
-    @apply bg-darkblue-900;
+    @apply bg-darkblue-950;
   }
 
   /* On iOS disabled inputs have default opacitiy */
@@ -51,6 +51,7 @@ iframe body {
   top: -5%;
   border-radius: 50%;
   z-index: -1;
+  opacity: 80%;
   background: theme('colors.primary.background');
 }
 
