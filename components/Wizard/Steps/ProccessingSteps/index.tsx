@@ -8,7 +8,6 @@ import { SwapWithdrawalStep } from '../../../../Models/Wizard';
 import shortenAddress from '../../../utils/ShortenAddress';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import Steps from '../StepsComponent';
-import Image from 'next/image';
 
 const ProcessingStep: FC = () => {
 
@@ -64,7 +63,7 @@ const ProcessingStep: FC = () => {
         {
             name: (status === 1 && 'Transfer confirmation') || (status === 2 && ' Waiting for the transfer to get confirmed') || (status === 3 && 'The trasnfer is confirmed'),
             status: (status === 2 && 'current') || (status === 3 && 'complete') || (status === 1 && 'upcoming'),
-            description: status! >= 2 ? <div>Confirmations: <span className='text-white'>{swap?.input_transaction?.confirmations ?? 0}</span>/{swap?.input_transaction?.max_confirmations}</div> : ""
+            description: status! >= 2 ? <div>Confirmations: <span className='text-white'>{((swap?.input_transaction?.confirmations >= swap?.input_transaction?.max_confirmations) ? swap?.input_transaction?.max_confirmations : swap?.input_transaction?.confirmations) ?? 0}</span>/{swap?.input_transaction?.max_confirmations}</div> : ""
         },
         {
             name: status === 3 ? 'Your assets are on their way' : 'Transfer of assets to your address',

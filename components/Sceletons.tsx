@@ -272,25 +272,25 @@ export const RewardsComponentSceleton = () => {
           </div>
         </BackgroundField>
       </div>
-      <div>
-        <button className="rounded-lg bg-[#cd031b] tracking-wide hover:opacity-80 transition duration-200 text-white text-lg w-full py-3">
-          Claim your reward
-        </button>
+    </div>
+  )
+}
+
+export const RewardsComponentLeaderboardSceleton = () => {
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-start">
+        <div className="rounded-md w-48 bg-gray-500 h-5 animate-pulse" />
       </div>
-      <div className="space-y-2">
-        <div className="flex justify-start">
-          <div className="rounded-md w-48 bg-gray-500 h-5 animate-pulse" />
-        </div>
-        <div className="bg-darkblue-700 border border-darkblue-700 hover:border-darkblue-500 transition duration-200 rounded-lg">
-          <div className="p-3">
-            <div className="space-y-6">
-              {[...Array(4)]?.map((user, index) => (
-                <div key={index} className="items-center flex justify-between">
-                  <div className="w-full h-4 rounded-md bg-gray-500 animate-pulse" />
-                </div>
-              ))
-              }
-            </div>
+      <div className="bg-darkblue-700 border border-darkblue-700 hover:border-darkblue-500 transition duration-200 rounded-lg">
+        <div className="p-3">
+          <div className="space-y-6">
+            {[...Array(4)]?.map((user, index) => (
+              <div key={index} className="items-center flex justify-between">
+                <div className="w-full h-4 rounded-md bg-gray-500 animate-pulse" />
+              </div>
+            ))
+            }
           </div>
         </div>
       </div>

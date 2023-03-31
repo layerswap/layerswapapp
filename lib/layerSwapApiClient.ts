@@ -96,12 +96,8 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/migrate`, null, { GuestAuthorization });
     }
 
-    async Rewards(campaign: string): Promise<ApiResponse<Reward>> {
-        return await this.AuthenticatedRequest<ApiResponse<Reward>>("GET", `/campaigns/${campaign}`);
-    }
-
-    async SubmitRewardAddress(campaign: string, address: string): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("PUT", `/campaigns/${campaign}/addresses`, { address });
+    async RewardLeaderboard(campaign: string): Promise<ApiResponse<any>> {
+        return await this.AuthenticatedRequest<ApiResponse<any>>("PUT", `/campaigns/${campaign}/leaderboard`);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
@@ -236,17 +232,27 @@ export enum SwapStatusInNumbers {
 
 export type Reward = {
     user_reward: {
-        address: string,
-        pending_amount: number,
+        period: string,
+        period_limit: number,
+        period_pending_amount: number,
         total_amount: number,
+        total_pending_amount: number,
         position: number
     },
     next_airdrop_date: string | Date,
-    leaderboard: Leaderboard[]
 }
 
 export type Leaderboard = {
-    nickname: string,
-    amount: number,
-    position: number
+    leaderboard: {
+        address: string,
+        amount: number,
+        position: number
+    }[],
+    leaderboard_budget: number
+}
+
+export type RewardPayout = {
+    date: string,
+    transaction_id: string,
+    amount: number
 }
