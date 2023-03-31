@@ -55,7 +55,7 @@ const Item =forwardRef<HTMLAnchorElement, MenuIemProps>(({ type, children, pathn
             :
             <button
                 onClick={onClick}
-                className={`px-4 py-2 hover:bg-darkblue-400 text-left whitespace-nowrap w-full flex items-center space-x-2 ${className}`}
+                className={`px-4 py-2 hover:bg-darkblue-500 text-left whitespace-nowrap w-full flex items-center space-x-2 ${className}`}
             >
                 {icon}
                 <span>{children}</span>
