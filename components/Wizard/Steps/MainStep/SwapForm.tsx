@@ -66,7 +66,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
     const [valuesSwapperDisabled, setValuesSwapperDisabled] = useState(true)
-
     const lockAddress =
         (values.destination_address && values.to)
         && isValidAddress(values.destination_address, values.to?.baseObject)

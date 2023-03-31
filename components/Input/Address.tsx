@@ -18,11 +18,11 @@ import { Partner } from "../../Models/Partner";
 import RainbowKit from "../Wizard/Steps/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
 import { disconnect } from '@wagmi/core'
-import { metaMaskWallet, rainbowWallet, imTokenWallet, argentWallet, walletConnectWallet, coinbaseWallet } from '@rainbow-me/rainbowkit/wallets';
 import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import { Wallet } from 'lucide-react'
 import makeBlockie from 'ethereum-blockies-base64';
+import { useAccountModal } from "@rainbow-me/rainbowkit";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -41,10 +41,9 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     address_book: AddressBookItem[]
 }
 
-
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
     ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, loading, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
-
+        const { openAccountModal } = useAccountModal();
         const {
             values,
             setFieldValue
@@ -55,15 +54,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name === e) : a.networks?.some(n => values.to.baseObject.internal_name === n)) && isValidAddress(a.address, values.to.baseObject))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
-        const { depositeAddressIsfromAccount, addressConfirmed } = useSwapDataState()
+        const { depositeAddressIsfromAccount } = useSwapDataState()
         const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
-        const [inputFocused, setInputFocused] = useState(false)
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
         const [validInputAddress, setValidInputAddress] = useState<string>()
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
-        const { isConnected, isDisconnected, connector } = useAccount({
+        const { isConnected, isDisconnected, connector, address: walletAddress } = useAccount({
             onConnect({ address }) {
                 setInputValue(address)
                 setAddressConfirmed(true)
@@ -76,7 +74,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             }
         });
 
-        const exchangeCurrency = values?.swapType === SwapType.OffRamp && values.to?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
+        useEffect(() => {
+            setInputValue(walletAddress)
+            setAddressConfirmed(true)
+            setFieldValue("destination_address", walletAddress)
+        }, [walletAddress])
 
         const handleUseDepositeAddress = async () => {
             try {
@@ -98,10 +100,15 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [values.destination_address])
 
         const handleRemoveDepositeAddress = useCallback(async () => {
-            setDepositeAddressIsfromAccount(false)
-            setFieldValue("destination_address", '')
-            disconnect()
-            setInputValue("")
+            if (!isConnected) {
+                setDepositeAddressIsfromAccount(false)
+                setFieldValue("destination_address", '')
+                disconnect()
+                setInputValue("")
+            }
+            else {
+                openAccountModal()
+            }
         }, [depositeAddressIsfromAccount, isConnected, connector, isDisconnected])
 
         const handleSelectAddress = useCallback((value: string) => {
@@ -130,13 +137,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 setValidInputAddress(inputValue)
             }
         }, [inputValue, inputAddressIsValid])
-
-        const handleInputFocus = () => {
-            setInputFocused(true)
-        }
-        const handleInputBlur = () => {
-            setInputFocused(false)
-        }
 
         const handleSetNewAddress = useCallback(() => {
             setAddressConfirmed(true)
@@ -168,8 +168,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         onChange={handleInputChange}
                                         value={inputValue}
                                         placeholder={placeholder}
-                                        onFocus={handleInputFocus}
-                                        onBlur={handleInputBlur}
                                         autoCorrect="off"
                                         type={"text"}
                                         disabled={disabled || isConnected}

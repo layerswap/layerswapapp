@@ -19,6 +19,7 @@ import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
+import TransferFromWallet from './Wallet/Transfer';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -147,7 +148,7 @@ const WithdrawNetworkStep: FC = () => {
                                         <span className='flex-none'>
                                             Learn how to send from
                                         </span>
-                                        <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep"/>
+                                        <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep" />
                                     </WarningMessage>
                                 }
                                 {
@@ -156,7 +157,7 @@ const WithdrawNetworkStep: FC = () => {
                                         <span className='flex-none'>
                                             Learn how to do
                                         </span>
-                                        <GuideLink text='Cross-Chain swap' userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/cross-chain' place="inStep"/>
+                                        <GuideLink text='Cross-Chain swap' userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/cross-chain' place="inStep" />
                                     </WarningMessage>
                                 }
                             </div>
@@ -164,63 +165,7 @@ const WithdrawNetworkStep: FC = () => {
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
-                    {
-                        !transferDone &&
-                        <>
-                            <div className="flex text-center mb-4 space-x-2">
-                                <div className='relative'>
-                                    <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                    <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                    <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
-                                </div>
-                                <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to send {destination_network_asset}</label>
-                            </div>
-                            <div className="flex flex-row text-white text-base space-x-2">
-                                <div className='basis-1/3'>
-                                    <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
-                                        <DoubleLineText
-                                            colorStyle='mltln-text-dark'
-                                            primaryText='Cancel'
-                                            secondarytext='the swap'
-                                            reversed={true}
-                                        />
-                                    </SubmitButton>
-                                </div>
-                                <div className='basis-2/3'>
-                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<Check className="h-5 w-5" aria-hidden="true" />} >
-                                        <DoubleLineText
-                                            colorStyle='mltln-text-light'
-                                            primaryText='I did'
-                                            secondarytext='the transfer'
-                                            reversed={true}
-                                        />
-                                    </SubmitButton>
-                                </div>
-                            </div>
-                        </>
-                    }
-                    {
-                        transferDone &&
-                        <SimpleTimer time={transferDoneTime} text={
-                            (remainingSeconds) => <>
-                                {`Transfers from ${source_network?.display_name} usually take less than 3 minutes`}
-                            </>}
-                        >
-                            <div className="flex text-center mb-4 space-x-2">
-                                <div className='relative'>
-                                    <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                    <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                    <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
-                                </div>
-                                <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text md:pr-10">Did the transfer but the swap is not completed yet?&nbsp;
-                                    <span onClick={() => {
-                                        boot();
-                                        show();
-                                        updateWithProps()
-                                    }} className="underline hover:no-underline cursor-pointer text-primary">Contact support</span></label>
-                            </div>
-                        </SimpleTimer>
-                    }
+                    <TransferFromWallet />
                 </Widget.Footer>
             </Widget>
             <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
