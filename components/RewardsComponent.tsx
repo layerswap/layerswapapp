@@ -168,7 +168,7 @@ function RewardsComponent() {
                                             <div className="bg-darkblue-700 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
                                                 <BackgroundField header='Daily Reward Claimed' withoutBorder>
                                                     <div className="flex flex-col w-full gap-2">
-                                                        <Progress value={periodRewardClaimed} />
+                                                        <Progress value={periodRewardClaimed === Infinity ? 0 : periodRewardClaimed} />
                                                         <div className="flex justify-between w-full font-semibold text-sm ">
                                                             <p className="text-primary">{rewards.user_reward.period_pending_amount} / {rewards.user_reward.period_limit} {settings.campaigns[0].asset}</p>
                                                             <p className="text-primary-text">Refreshes every day</p>
@@ -240,10 +240,10 @@ function RewardsComponent() {
                                             </div>
                                             <div className="flex flex-col">
                                                 <div className="block text-sm font-medium">
-                                                    Connect your wallet
+                                                    Claim your reward
                                                 </div>
                                                 <div className="text-gray-500">
-                                                    Connect your wallet to claim airdrop
+                                                    Connect your wallet to claim rewards
                                                 </div>
                                             </div>
                                         </div>
@@ -334,7 +334,6 @@ function RewardsComponent() {
                                                 }
                                             </div>
                                         </div>
-                                        <p className="text-xs text-primary-text/70">Note: the nicknames are randomly generated for identification purposes.</p>
                                     </div>
                                 )
                             }
