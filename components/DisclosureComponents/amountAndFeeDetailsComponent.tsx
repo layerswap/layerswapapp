@@ -17,6 +17,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     let receive_amount = CalculateReceiveAmount(values, networks, currencies);
 
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
+    const destinationNetworkCurrency = to?.baseObject?.currencies.find(c => c.asset === currency?.baseObject?.asset);
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
     const refuel = truncateDecimals(CaluclateRefuelAmount(values, networks, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
 
@@ -85,7 +86,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                             Estimated arrival
                                         </label>
                                         <span className="text-right">
-                                            ~1-2 minutes
+                                            {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : " ~1-2 minutes"}
                                         </span>
                                     </div>
                                 </>
