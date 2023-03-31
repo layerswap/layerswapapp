@@ -31,10 +31,10 @@ const AuthWizard: FC = () => {
     return (
         <TimerProvider>
             <Wizard>
-                <WizardItem StepName={AuthStep.Email} GoBack={handleGoBack}>
+                <WizardItem StepName={SwapCreateStep.Email} GoBack={handleGoBack}>
                     <EmailStep OnNext={GoToCodeStep} />
                 </WizardItem>
-                <WizardItem StepName={AuthStep.Code} GoBack={GoBackToEmailStep}>
+                <WizardItem StepName={SwapCreateStep.Code} GoBack={GoBackToEmailStep}>
                     <CodeStep OnNext={CodeOnNext} />
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.PendingSwaps}>

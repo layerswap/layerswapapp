@@ -21,6 +21,8 @@ export type LoginWizardSteps = {
 
 export enum SwapCreateStep {
     MainForm = "MainForm",
+    Email = "Email",
+    Code = "Code",
     PendingSwaps = "PendingSwaps",
     AuthorizeCoinbaseWithdrawal = "AuthorizeCoinbaseWithdrawal",
     OffRampOAuth = "OffRampOAuth",
