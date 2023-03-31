@@ -11,7 +11,7 @@ import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
 import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
-import { Check, ArrowLeftRight, X, Link } from 'lucide-react';
+import { Check, ArrowLeftRight, X, Link, Network } from 'lucide-react';
 import Widget from '../Widget';
 import SlideOver from '../../SlideOver';
 import { DocIframe } from '../../docInIframe';
@@ -28,13 +28,17 @@ import Coinbase2FA from '../../Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 import Modal from '../../modalComponent';
-import { CryptoNetwork } from '../../../Models/CryptoNetwork';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../Select/PrimitiveSelect';
+import QRCode from 'qrcode.react';
+import colors from 'tailwindcss/colors';
+import tailwindConfig from '../../../tailwind.config';
+import { Configs, usePersistedState } from '../../../hooks/usePersistedState';
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { exchanges, currencies, networks, discovery: { resource_storage_url } } = useSettingsState()
+    const { exchanges, networks, discovery: { resource_storage_url } } = useSettingsState()
     const { swap, codeRequested } = useSwapDataState()
     const { setInterval, setCodeRequested, mutateSwap } = useSwapDataUpdate()
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
@@ -45,22 +49,25 @@ const WithdrawExchangeStep: FC = () => {
     const [submitting, setSubmitting] = useState(false)
     const [loading, setLoading] = useState(false)
     const { source_exchange: source_exchange_internal_name, destination_network: destination_network_internal_name, source_network_asset: source_network_asset, destination_network_asset } = swap
-    const [selectedNetwork, setSelectedNetwork] = useState<CryptoNetwork>()
-    const [openNetworkSelect, setOpenNetworkSelect] = useState(false)
     const [openDocSlideover, setOpenDocSlideover] = useState(false)
+    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false, alreadyFamiliarWithMultipleNetworks: false }, 'configs')
+    const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
+    const [openNetworksNote, setOpenNetworksNote] = useState(!storageAlreadyFamiliar.alreadyFamiliarWithMultipleNetworks ? true : false)
 
     const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
     const source_network_currency = source_exchange?.currencies?.find(c => source_network_asset?.toUpperCase() === c?.asset?.toUpperCase() && c?.is_default)
 
-    const networkDisplayName = networks?.find(n => n.internal_name === source_network_currency?.network)?.display_name
-
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
     }
 
-    const handleOpenNetworkSelect = () => {
-        setOpenNetworkSelect(true)
+    const hanldeGuideModalClose = () => {
+        setOpenNetworksNote(false)
+        if (localAlreadyFamiliar && !storageAlreadyFamiliar.alreadyFamiliarWithMultipleNetworks) {
+            setStorageAlreadyFamiliar({ ...storageAlreadyFamiliar, alreadyFamiliarWithMultipleNetworks: true })
+        }
+
     }
 
     useEffect(() => {
@@ -153,10 +160,27 @@ const WithdrawExchangeStep: FC = () => {
         setOpenCoinbaseConnectSlideover(true)
     }
 
+    const handleToggleChange = () => {
+        setLocalAlreadyFamiliar(!localAlreadyFamiliar)
+    }
+
     const source_exchange_settings = ExchangeSettings.KnownSettings[source_exchange_internal_name]
 
     const availableNetworks = source_exchange?.currencies?.filter(c => c.asset === swap?.source_network_asset && networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
     const sourceNetworks = networks.filter(n => availableNetworks.includes(n.internal_name))
+
+    const defaultSourceNetwork = sourceNetworks.find(sn => sn.internal_name === source_network_currency.network)
+
+    const qrCode = (
+        <QRCode
+            className="p-4 bg-white rounded-lg"
+            value={swap?.deposit_address}
+            size={250}
+            bgColor={colors.white}
+            fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
+            level={"H"}
+        />
+    );
 
     return (<>
         <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inModal'>
@@ -188,58 +212,69 @@ const WithdrawExchangeStep: FC = () => {
                                 </div>
                                 <div className={`mb-6 grid grid-cols-1 gap-5 `}>
                                     <div className='rounded-md bg-darkblue-700 border border-darkblue-300 divide-y divide-darkblue-300'>
-                                        <BackgroundField header={'Network'}>
-                                            {/* fix this */}
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-5 w-5 relative">
-                                                    {
-                                                        sourceNetworks &&
-                                                        <Image
-                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
-                                                            alt="From Logo"
-                                                            height="60"
-                                                            width="60"
-                                                            className="rounded-md object-contain"
-                                                        />
-                                                    }
-                                                </div>
-                                                <div className="mx-1 block">{destination_network_asset}</div>
+                                        <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
+                                            <div className='flex items-center gap-1 text-sm'>
+                                                <span>Network:</span>
+                                                {sourceNetworks.length === 1 ?
+                                                    <div className='flex space-x-1 items-center w-fit'>
+                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${sourceNetworks[0]?.internal_name.toLowerCase()}.png`}></Image>
+                                                        <span>{sourceNetworks[0].display_name}</span>
+                                                    </div>
+                                                    :
+                                                    <Select>
+                                                        <SelectTrigger className="w-fit border-none !h-fit !p-0">
+                                                            <SelectValue placeholder={
+                                                                <div className="flex items-center">
+                                                                    <div className="flex-shrink-0 h-5 w-5 relative">
+                                                                        {
+                                                                            defaultSourceNetwork &&
+                                                                            <Image
+                                                                                src={`${resource_storage_url}/layerswap/networks/${defaultSourceNetwork?.internal_name?.toLowerCase()}.png`}
+                                                                                alt="From Logo"
+                                                                                height="60"
+                                                                                width="60"
+                                                                                className="rounded-md object-contain"
+                                                                            />
+                                                                        }
+                                                                    </div>
+                                                                    <div className="mx-1 block">{defaultSourceNetwork?.display_name}</div>
+                                                                </div>
+                                                            } />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectGroup>
+                                                                <SelectLabel>Networks</SelectLabel>
+                                                                {sourceNetworks.map(sn => (
+                                                                    <SelectItem key={sn.internal_name} value={sn.internal_name}>
+                                                                        <div className="flex items-center">
+                                                                            <div className="flex-shrink-0 h-5 w-5 relative">
+                                                                                {
+                                                                                    sn &&
+                                                                                    <Image
+                                                                                        src={`${resource_storage_url}/layerswap/networks/${sn?.internal_name?.toLowerCase()}.png`}
+                                                                                        alt="From Logo"
+                                                                                        height="60"
+                                                                                        width="60"
+                                                                                        className="rounded-md object-contain"
+                                                                                    />
+                                                                                }
+                                                                            </div>
+                                                                            <div className="mx-1 block">{sn?.display_name}</div>
+                                                                        </div>
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectGroup>
+                                                        </SelectContent>
+                                                    </Select>
+                                                }
                                             </div>
-                                        </BackgroundField>
-                                        <BackgroundField Copiable QRable toCopy={swap?.deposit_address} header={'Address'} withoutBorder>
+                                            {qrCode}
+                                        </div>
+                                        <BackgroundField Copiable toCopy={swap?.deposit_address} header={'Address'} withoutBorder>
                                             <div>
                                                 <p className='break-all text-white'>
                                                     {swap?.deposit_address}
                                                 </p>
-                                                {/* {sourceNetworks.length === 1 ?
-                                                    <div className='flex space-x-2 items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5 w-fit'>
-                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${sourceNetworks[0]?.internal_name.toLowerCase()}.png`}></Image>
-                                                        <span>Available on {sourceNetworks[0].display_name}</span>
-                                                    </div>
-                                                    :
-                                                    <ClickTooltip text={
-                                                        <div>
-                                                            <span className='font-semibold text-primary-text text-sm'>
-                                                                Deposits will be detected on any one of these networks
-                                                            </span>
-                                                            <div className='flex flex-col space-y-1 mt-2'>
-                                                                {
-                                                                    sourceNetworks.map(x => (
-                                                                        <div key={x?.internal_name} className='flex flex-row items-center space-x-2 text-white bg-darkblue-500 rounded py-1 px-2'>
-                                                                            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full' src={`${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`}></Image>
-                                                                            <span>{networks.find(n => n.internal_name === x?.internal_name).display_name}</span>
-                                                                        </div>
-                                                                    ))
-                                                                }
-                                                            </div>
-                                                        </div>
-                                                    }>
-                                                        <motion.div whileTap={{ scale: 1.05 }} className='flex flex-row items-center bg-darkblue-400 px-2 py-1 rounded-md mt-1.5'>
-                                                            <AvatarGroup imageUrls={sourceNetworks?.map(x => `${resource_storage_url}/layerswap/networks/${x?.internal_name.toLowerCase()}.png`)} />
-                                                            <span className='text-xs grow md:text-sm break-keep'>Available on {sourceNetworks.length} networks</span>
-                                                            <span><ArrowDownIcon className='h-4 md:h-5 bg-darkblue-700 text-primary-text ml-1 md:ml-2 rounded-full p-0.5' /></span>
-                                                        </motion.div>
-                                                    </ClickTooltip>} */}
                                             </div>
                                         </BackgroundField>
                                         <div className='flex divide-x divide-darkblue-300'>
@@ -366,11 +401,29 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget >
-        <SlideOver imperativeOpener={[openNetworkSelect, setOpenNetworkSelect]} place={'inStep'}>
-            {() => (
-                <></>
-            )}
-        </SlideOver>
+        <Modal modalSize='small' setShowModal={setOpenNetworksNote} showModal={openNetworksNote}>
+            <div className='rounded-md w-full h-full flex flex-col items-center justify-center space-y-6 text-center'>
+                <Network className='h-20 w-20 text-primary' />
+                <p className='text-white text-lg font-semibold'>You can receive {source_network_currency.asset} on multiple networks</p>
+                <p className='text-primary-text text-base'>If you're receiving from a network other than {defaultSourceNetwork?.display_name}, switch the network on the next screen.</p>
+                <div className="flex justify-center items-center mb-3">
+                    <input
+                        name="alreadyFamiliar"
+                        id='alreadyFamiliar'
+                        type="checkbox"
+                        className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
+                        onChange={handleToggleChange}
+                        checked={localAlreadyFamiliar}
+                    />
+                    <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
+                        Don't show me this again
+                    </label>
+                </div>
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
+                    Got it
+                </SubmitButton>
+            </div>
+        </Modal>
         <SwapCancelModal onCancel={handleCancelSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
     </>
     )

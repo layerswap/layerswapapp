@@ -6,7 +6,7 @@ import { useQueryState } from '../../../../context/query';
 import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { useInterval } from '../../../../hooks/useInterval';
-import { usePersistedState } from '../../../../hooks/usePersistedState';
+import { Configs, usePersistedState } from '../../../../hooks/usePersistedState';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 import { parseJwt } from '../../../../lib/jwtParser';
 import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwapApiClient';
@@ -16,7 +16,7 @@ import { ApiResponse } from '../../../../Models/ApiResponse';
 import { SwapCreateStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
-import SlideOver from '../../../SlideOver';
+import Modal from '../../../modalComponent';
 import Widget from '../../Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectGuideScreens';
 
@@ -32,12 +32,11 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const { setWithdrawManually } = useSwapDataUpdate()
     const { exchanges, currencies } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate()
-    const localStorageItemKey = "alreadyFamiliarWithCoinbaseConnect";
-    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<boolean>(false, localStorageItemKey)
+    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false, alreadyFamiliarWithMultipleNetworks: false }, 'configs')
     const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
-    const [openGuide, setOpenGuide] = useState(false)
+    const [openGuide, setOpenGuide] = useState(!storageAlreadyFamiliar.alreadyFamiliarWithCoinbaseConnect ? true : false)
 
-    const [carouselFinished, setCarouselFinished] = useState(storageAlreadyFamiliar)
+    const [carouselFinished, setCarouselFinished] = useState(storageAlreadyFamiliar.alreadyFamiliarWithCoinbaseConnect)
     const [authWindow, setAuthWindow] = useState<Window>()
     const [authorizedAmount, setAuthorizedAmount] = useState<number>()
 
@@ -117,17 +116,11 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
             return;
         } else {
             setOpenGuide(false)
-            if (localAlreadyFamiliar && !storageAlreadyFamiliar) {
-                setStorageAlreadyFamiliar(true)
+            if (localAlreadyFamiliar && !storageAlreadyFamiliar.alreadyFamiliarWithCoinbaseConnect) {
+                setStorageAlreadyFamiliar({ ...storageAlreadyFamiliar, alreadyFamiliarWithCoinbaseConnect: true })
             }
         }
     }
-
-    useEffect(() => {
-        if (!storageAlreadyFamiliar) {
-            setOpenGuide(true)
-        }
-    }, [])
 
     const exchange_name = exchange?.display_name
 
@@ -146,7 +139,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                 <Widget.Content>
                     {
                         !hideHeader &&
-                        <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
+                        <h3 className='mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold leading-6'>
                             Please connect your {exchange_name} account
                         </h3>
                     }
@@ -155,7 +148,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                         <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                     </div>
                     <div className="flex font-normal text-sm text-primary-text">
-                        <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
+                        <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your 2FA.</label>
                     </div>
                 </Widget.Content>
                 <Widget.Footer sticky={stickyFooter}>
@@ -167,49 +160,47 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                     </div>
                 </Widget.Footer>
             </Widget>
-            <SlideOver imperativeOpener={[openGuide, setOpenGuide]} place={'inStep'} withoutEnterAnimation>
-                    {() => (
-                        <div className="w-full space-y-3 h-full flex flex-col justify-between">
-                            {(swap || swapFormData) && <Carousel onLast={onCarouselLast} ref={carouselRef}>
-                                <CarouselItem width={100} >
-                                    <FirstScreen exchange_name={exchange_name} />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <SecondScreen />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <ThirdScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <FourthScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <LastScreen number minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                                </CarouselItem>
-                            </Carousel>}
-                            <div>
-                                <div className="flex items-center mb-3">
-                                    <input
-                                        name="alreadyFamiliar"
-                                        id='alreadyFamiliar'
-                                        type="checkbox"
-                                        className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
-                                        onChange={handleToggleChange}
-                                        checked={localAlreadyFamiliar}
-                                    />
-                                    <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
-                                        I'm already familiar with the process.
-                                    </label>
-                                </div>
-                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
-                                    {
-                                        carouselFinished ? "Got it" : "Next"
-                                    }
-                                </SubmitButton>
-                            </div>
+            <Modal showModal={openGuide} setShowModal={setOpenGuide} title='Coinbase Guide'>
+                <div className="w-full space-y-3 h-full flex flex-col justify-between">
+                    {(swap || swapFormData) && <Carousel onLast={onCarouselLast} ref={carouselRef}>
+                        <CarouselItem width={100} >
+                            <FirstScreen exchange_name={exchange_name} />
+                        </CarouselItem>
+                        <CarouselItem width={100}>
+                            <SecondScreen />
+                        </CarouselItem>
+                        <CarouselItem width={100}>
+                            <ThirdScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                        </CarouselItem>
+                        <CarouselItem width={100}>
+                            <FourthScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                        </CarouselItem>
+                        <CarouselItem width={100}>
+                            <LastScreen number minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                        </CarouselItem>
+                    </Carousel>}
+                    <div>
+                        <div className="flex items-center mb-3">
+                            <input
+                                name="alreadyFamiliar"
+                                id='alreadyFamiliar'
+                                type="checkbox"
+                                className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
+                                onChange={handleToggleChange}
+                                checked={localAlreadyFamiliar}
+                            />
+                            <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
+                                Don't show me this again
+                            </label>
                         </div>
-                    )}
-                </SlideOver>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
+                            {
+                                carouselFinished ? "Got it" : "Next"
+                            }
+                        </SubmitButton>
+                    </div>
+                </div>
+            </Modal>
         </>
     )
 }

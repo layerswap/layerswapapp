@@ -26,9 +26,9 @@ function constructIcons(messageType: messageType) {
 
 const WarningMessage: FC<Props> = (({ children, className, messageType = 'warning' }) => {
     return (
-        <div className={`flex-col w-full rounded-md ${messageType == 'warning' ? 'bg-yellow-400' : "bg-darkblue-600 text-white"} shadow-lg p-2 ${className}`}>
+        <div className={`flex-col w-full rounded-md ${messageType == 'warning' ? 'bg-yellow-400' : "bg-darkblue-700 text-white"} shadow-lg p-2 ${className}`}>
             <div className='flex items-center'>
-                <div className={`mr-2 hidden sm:inline p-2 rounded-lg ${messageType == 'warning' ? 'bg-yellow-500' : "bg-darkblue-700 text-white"}`}>
+                <div className={`mr-2 hidden sm:inline p-2 rounded-lg ${messageType == 'warning' ? 'bg-yellow-500' : "bg-darkblue-800 text-white"}`}>
                     {constructIcons(messageType)}
                 </div>
                 <div className={`text-xs sm:text-sm leading-5 ${messageType == 'warning' ? 'text-darkblue-600 font-semibold' : "text-white font-normal"}`}>

@@ -489,8 +489,7 @@ export const FourthScreen = ({ minimalAuthorizeAmount }) => {
 
 export const LastScreen = ({ minimalAuthorizeAmount, number }: { minimalAuthorizeAmount: number, number?: boolean }) => {
     return <>
-        <div className='whitespace-normal font-medium text-white mb-6 w-full'>{number && <span className='font-medium text-primary'>.05</span>} Please make sure to change the allowed amount to <span className='strong-highlight'>{minimalAuthorizeAmount}</span></div>
-        <div className='w-2/3 md:w-1/2'>
+        {number && <div className='whitespace-normal font-medium text-white mb-6 w-full'> <span className='font-medium text-primary'>.05</span> Make sure to change the allowed amount to <span className='strong-highlight'>{minimalAuthorizeAmount}</span></div>}        <div className='w-2/3 md:w-1/2'>
             <svg viewBox="0 0 447 484" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1743_2866)">
                     <rect x="3" width="407" height="844" rx="50" fill="url(#paint0_linear_1743_2866)" />

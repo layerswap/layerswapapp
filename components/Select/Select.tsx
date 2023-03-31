@@ -6,7 +6,6 @@ import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
 import SlideOver from '../SlideOver'
-import ClickTooltip from '../Tooltips/ClickTooltip'
 import toast from 'react-hot-toast'
 
 export interface SelectProps<T> {
