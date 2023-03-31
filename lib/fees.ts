@@ -38,6 +38,7 @@ export function CaluclateRefuelAmount(swapFormData: SwapFormValues, allNetworks:
 }
 export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]): number {
     const { currency, from, to, swapType } = swapFormData || {}
+    debugger
 
     if (!currency || !from || !to)
         return 0;
@@ -47,7 +48,6 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
 
     const sourceNetwork = swapType === SwapType.OnRamp ? allNetworks.find(n => n.internal_name === from?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)?.network) : from?.baseObject
     const sourceNetworkCurrency = sourceNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
-
     if (!destinationNetworkCurrency || !sourceNetworkCurrency)
         return 0
 

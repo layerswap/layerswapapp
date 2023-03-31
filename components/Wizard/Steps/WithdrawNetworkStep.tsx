@@ -77,8 +77,9 @@ const WithdrawNetworkStep: FC = () => {
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
     }
-    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[source_network_internal_name]?.UserGuideUrlForDesktop
-
+    const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
+    const userGuideUrlForDesktop = sourceNetworkSettings?.UserGuideUrlForDesktop
+    const sourceChainId = sourceNetworkSettings?.ChainId
     return (
         <>
             <Widget>
@@ -165,7 +166,10 @@ const WithdrawNetworkStep: FC = () => {
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
-                    <TransferFromWallet />
+                    {
+                        sourceChainId &&
+                        <TransferFromWallet chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount}/>
+                    }
                 </Widget.Footer>
             </Widget>
             <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
