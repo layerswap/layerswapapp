@@ -94,6 +94,11 @@ export default function () {
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
+                                                        <Menu.Item>
+                                                            <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
+                                                                Rewards
+                                                            </Item>
+                                                        </Menu.Item>
                                                         <hr className="horizontal-gradient" />
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className='h-4 w-4' />} className="plausible-event-name=User+Docs">

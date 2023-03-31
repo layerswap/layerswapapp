@@ -51,7 +51,7 @@ function RewardsComponent() {
     const difference_in_days = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
     const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
 
-    const network = networks.find(n => n.internal_name === settings.campaigns[0].network_name)
+    const network = networks.find(n => n.internal_name === settings?.campaigns[0]?.network_name)
     const periodRewardClaimed = (rewards?.user_reward?.period_limit / rewards?.user_reward?.period_pending_amount)
 
     const handleOpenTopModal = () => {
@@ -170,7 +170,7 @@ function RewardsComponent() {
                                                     <div className="flex flex-col w-full gap-2">
                                                         <Progress value={periodRewardClaimed === Infinity ? 0 : periodRewardClaimed} />
                                                         <div className="flex justify-between w-full font-semibold text-sm ">
-                                                            <p className="text-primary">{rewards.user_reward.period_pending_amount} / {rewards.user_reward.period_limit} {settings.campaigns[0].asset}</p>
+                                                            <div className="text-primary"><span className="text-white">{rewards.user_reward.period_pending_amount}</span> / {rewards.user_reward.period_limit} {settings.campaigns[0].asset}</div>
                                                             <p className="text-primary-text">Refreshes every day</p>
                                                         </div>
                                                     </div>
