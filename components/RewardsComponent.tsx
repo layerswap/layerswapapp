@@ -231,8 +231,21 @@ function RewardsComponent() {
                                 )
                                 :
                                 <div className="space-y-3">
-                                    <p className="font-bold text-xl text-left flex items-center">Lorem Ipsum </p>
-                                    <p className="text-primary-text text-base">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quam enim, natus recusandae, tempore consectetur exercitationem dolores, dolore suscipit veritatis odit laborum non temporibus ducimus aperiam? Molestiae culpa animi eligendi consequatur.</p>
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-1">
+                                            <div className="h-5 w-5 relative">
+                                                <Image
+                                                    src={`${resource_storage_url}/layerswap/networks/${network.internal_name?.toLowerCase()}.png`}
+                                                    alt="Project Logo"
+                                                    height="40"
+                                                    width="40"
+                                                    loading="eager"
+                                                    className="rounded-md object-contain" />
+                                            </div>
+                                            <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards </p>
+                                        </div>
+                                        <p className="text-primary-text text-base">Onboarding incentives that you can earn by transferring assets to {network?.display_name}. For each transaction, you’ll receive ~80% of Layerswap service fee back. The rewards are capped at 30 {settings.campaigns[0].asset} per day.</p>
+                                    </div>
                                     <RainbowKit>
                                         <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700 hover:shadow-xl`}>
                                             <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
@@ -258,11 +271,9 @@ function RewardsComponent() {
                                     <div className="space-y-1">
                                         <div className="flex items-center justify-between">
                                             <p className="font-bold text-lg text-left leading-4">Leaderboard</p>
-                                            <div>
-                                                <button onClick={handleOpenTopModal} type="button" className=" leading-4 text-lg text-primary-text hover:text-primary-text/70 duration-200 transition">
-                                                    See top 10
-                                                </button>
-                                            </div>
+                                            <button onClick={handleOpenTopModal} type="button" className=" leading-4 text-lg text-primary-text hover:text-primary-text/70 duration-200 transition">
+                                                See top 10
+                                            </button>
                                         </div>
                                         <p className="text-sm text-primary-text/70">Users with highest transaction volume are featured in the leaderboard and will earn additional rewards.</p>
                                         <div className="bg-darkblue-700 border border-darkblue-700 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg">
