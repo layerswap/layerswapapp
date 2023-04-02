@@ -1,18 +1,19 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Wallet } from "lucide-react"
 import { FC } from "react";
-import { useAccount, usePrepareContractWrite, usePrepareSendTransaction, useSwitchNetwork } from "wagmi";
+import { useAccount, useContractWrite, usePrepareContractWrite, usePrepareSendTransaction, useSendTransaction, useSwitchNetwork, useWaitForTransaction } from "wagmi";
 import SubmitButton from "../../../buttons/submitButton";
 import shortenAddress from "../../../utils/ShortenAddress";
-import { BigNumber, ethers, utils } from 'ethers';
+import ethers from 'ethers';
 
 type Props = {
     chainId: number,
     depositAddress: `0x${string}`,
+    asset: string,
     amount: number
 }
 
-const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount }) => {
+const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, asset }) => {
     const { isConnected, isDisconnected, connector, address } = useAccount();
     const { switchNetwork } = useSwitchNetwork({
         chainId: chainId,
@@ -21,28 +22,29 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount }) => {
     const handleChangeNetwork = (e: any) => {
         switchNetwork()
     }
+    const { config,
+        error: prepareError,
+        isError: isPrepareError
+    } = usePrepareSendTransaction({
+        request: {
+            to: depositAddress,
+            value: amount ? ethers.utils.parseEther(amount.toString()) : undefined,
+            chainId: chainId,
+        },
+    })
 
-    // const {
-    //     config,
-    //     error: prepareError,
-    //     isError: isPrepareError
-    // } = usePrepareContractWrite({
-    //     address: depositAddress,
-    //     functionName: 'sendToTwitterHandle',
-    //     enabled: Boolean(handle) && isConnected && numericAmount > 0,
-    //     overrides: {
-    //         value: numericAmount > 0 ? ethers.utils.parseEther((amountIsInUSD ? usdToAsset(numericAmount, usdPriceData.price) : numericAmount)?.toString()) : BigNumber.from(0),
-    //         gasLimit: BigNumber.from(1500000)
-    //     }
-    // });
+    const { data: transactionData, sendTransaction, error: writeError, isError: isWriteError, isLoading: isWriteLoading } = useSendTransaction(config)
+    const { isLoading: isTransactionPending, isSuccess } = useWaitForTransaction({
+        hash: transactionData?.hash,
+        onSuccess: (d) => {
+            alert("transfer done")
+        }
+    })
 
-    // const { data: writeData, write, error: writeError, isError: isWriteError, isLoading: isWriteLoading } = useContractWrite(config)
-    // const { isLoading: isTransactionPending, isSuccess, data } = useWaitForTransaction({
-    //     hash: writeData?.hash,
-    //     onSuccess: (d) => {
-    //         router.push(`/sent?txId=${d.transactionHash}&handle=${handle}&amount=${numericAmount}`);
-    //     }
-    // });
+    const handleTransfer = () => {
+        sendTransaction()
+    }
+
     return <>
         <ConnectButton.Custom>
             {({
@@ -89,10 +91,24 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount }) => {
                                     </button>
                             })()
                         }
+                        {
+                            (() => {
+                                if (connected && chain && chain.id === chainId)
+                                    return <button onClick={handleTransfer} type="button">
+                                        Transfer {amount}
+                                    </button>
+                            })()
+                        }
                     </div>
                 );
             }}
         </ConnectButton.Custom>
+        {(isWriteLoading || isTransactionPending) &&
+            <>{isWriteLoading ? 'Confirm transaction with your wallet' : (isTransactionPending ? 'Transaction in progress' : '')}</>
+        }
+        {(isPrepareError || isWriteError) && (
+            <>{(prepareError || writeError)?.message}</>
+        )}
     </>
 }
 export default TransferFromWallet
