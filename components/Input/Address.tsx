@@ -52,7 +52,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const inputReference = useRef(null);
 
-        const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name) : a.networks?.some(e => values.to.baseObject.internal_name)) && isValidAddress(a.address, values.to.baseObject))
+        const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name === e) : a.networks?.some(n => values.to.baseObject.internal_name === n)) && isValidAddress(a.address, values.to.baseObject))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount, addressConfirmed } = useSwapDataState()
@@ -182,7 +182,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     {
                                         inputValue &&
                                         <span className="inline-flex items-center mr-2">
-                                            <div className="text-xs flex items-center space-x-2 md:ml-5 bg-darkblue-400 rounded-md border border-darkblue-400">
+                                            <div className="text-xs flex items-center space-x-2 md:ml-5 bg-darkblue-500 rounded-md border border-darkblue-500">
                                                 {
                                                     values?.to?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
                                                     <span className="inline-flex items-center mr-2">
@@ -195,7 +195,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                     !disabled &&
                                                     <button
                                                         type="button"
-                                                        className="p-0.5 duration-200 transition  hover:bg-darkblue-300  rounded-md border border-darkblue-400 hover:border-darkblue-100"
+                                                        className="p-0.5 duration-200 transition  hover:bg-darkblue-400  rounded-md border border-darkblue-500 hover:border-darkblue-200"
                                                         onClick={handleRemoveDepositeAddress}
                                                     >
                                                         <div className="flex items-center px-2 text-sm py-1 font-semibold">
@@ -345,7 +345,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                                 as="span"
                                                                 className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-300 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
                                                             >
-                                                                <div className='flex bg-darkblue-400 text-primary-text flex-row items-left  rounded-md p-2'>
+                                                                <div className='flex bg-darkblue-500 text-primary-text flex-row items-left  rounded-md p-2'>
                                                                     <Image src={makeBlockie(a.address)}
                                                                         alt="Project Logo"
                                                                         height="20"

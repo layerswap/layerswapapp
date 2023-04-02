@@ -58,9 +58,9 @@ export default function () {
                                         opacity: 0,
                                         transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
                                     }}
-                                    className="relative z-10 py-1">
+                                    className="relative z-20 py-1">
                                     <Menu.Items
-                                        className="font-bold text-sm text-left border border-darkblue-400 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-darkblue-700 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                        className="font-bold text-sm text-left border border-darkblue-500 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-darkblue-700 ring-1 ring-black ring-opacity-5 focus:outline-none">
                                         <div className="relative z-30 py-1">
                                             {
                                                 userType == UserType.AuthenticatedUser ?

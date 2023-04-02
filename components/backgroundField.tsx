@@ -32,11 +32,11 @@ const BackgroundField: FC<Props> = (({ Copiable, toCopy, header, children, QRabl
                     <div className="space-x-2 flex self-start">
                         {
                             QRable &&
-                            <QRCodeModal qrUrl={toCopy?.toLocaleString()} iconHeight={17} iconWidth={17} className='p-1 bg-darkblue-200 rounded' />
+                            <QRCodeModal qrUrl={toCopy?.toLocaleString()} iconHeight={17} iconWidth={17} className='p-1 hover:text-white rounded' />
                         }
                         {
                             Copiable &&
-                            <CopyButton iconHeight={17} iconWidth={17} toCopy={toCopy} className='p-1 bg-darkblue-200 rounded' />
+                            <CopyButton iconHeight={17} iconWidth={17} toCopy={toCopy} className='p-1 hover:text-white rounded' />
                         }
                     </div>
                 </div>

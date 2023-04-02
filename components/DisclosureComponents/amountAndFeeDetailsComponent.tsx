@@ -22,6 +22,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const reward = truncateDecimals(((feeinUsd * campaign?.percentage / 100) / campaignAsset?.usd_price), campaignAsset?.precision)
 
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
+    const destinationNetworkCurrency = to?.baseObject?.currencies.find(c => c.asset === currency?.baseObject?.asset);
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
     const refuel = truncateDecimals(CaluclateRefuelAmount(values, networks, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
 
@@ -75,7 +76,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                             <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                         </label>
                                         <span className="text-right">
-                                            {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.baseObject?.asset}</>}
+                                            {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : " ~1-2 minutes"}
                                         </span>
                                     </div>
                                 }
