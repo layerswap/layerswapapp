@@ -168,7 +168,7 @@ const WithdrawNetworkStep: FC = () => {
                 <Widget.Footer>
                     {
                         sourceChainId &&
-                        <TransferFromWallet chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount}/>
+                        <TransferFromWallet asset={swap.source_network_asset} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount}/>
                     }
                 </Widget.Footer>
             </Widget>
