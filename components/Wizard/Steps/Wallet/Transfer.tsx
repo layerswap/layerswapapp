@@ -4,16 +4,18 @@ import { FC } from "react";
 import { useAccount, useContractWrite, usePrepareContractWrite, usePrepareSendTransaction, useSendTransaction, useSwitchNetwork, useWaitForTransaction } from "wagmi";
 import SubmitButton from "../../../buttons/submitButton";
 import shortenAddress from "../../../utils/ShortenAddress";
-import ethers from 'ethers';
+import { BigNumber, utils } from 'ethers';
+import { erc20ABI } from 'wagmi'
+
 
 type Props = {
     chainId: number,
     depositAddress: `0x${string}`,
-    asset: string,
+    tokenContractAddress: `0x${string}`,
     amount: number
 }
 
-const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, asset }) => {
+const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, tokenContractAddress }) => {
     const { isConnected, isDisconnected, connector, address } = useAccount();
     const { switchNetwork } = useSwitchNetwork({
         chainId: chainId,
@@ -22,27 +24,43 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, asset 
     const handleChangeNetwork = (e: any) => {
         switchNetwork()
     }
-    const { config,
+    // const { config,
+    //     error: prepareError,
+    //     isError: isPrepareError
+    // } = usePrepareSendTransaction({
+    //     request: {
+    //         to: depositAddress,
+    //         value: amount ? utils.parseEther(amount.toString()) : undefined,
+    //     },
+    //     chainId: chainId,
+    // })
+    const {
+        config,
         error: prepareError,
         isError: isPrepareError
-    } = usePrepareSendTransaction({
-        request: {
-            to: depositAddress,
-            value: amount ? ethers.utils.parseEther(amount.toString()) : undefined,
-            chainId: chainId,
-        },
-    })
+    } = usePrepareContractWrite({
+        address: "0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C",
+        abi: erc20ABI,
+        functionName: 'transfer',
+        enabled: isConnected,
+        args: [depositAddress, BigNumber.from(amount)],
+        overrides: {
+            gasLimit: BigNumber.from(1500000)
+        }
+    });
+    console.log("bn", BigNumber.from(amount))
+    console.log("eth", utils.parseEther(amount.toString()))
 
-    const { data: transactionData, sendTransaction, error: writeError, isError: isWriteError, isLoading: isWriteLoading } = useSendTransaction(config)
+    const { data: writeData, write, error: writeError, isError: isWriteError, isLoading: isWriteLoading } = useContractWrite(config)
     const { isLoading: isTransactionPending, isSuccess } = useWaitForTransaction({
-        hash: transactionData?.hash,
+        hash: writeData?.hash,
         onSuccess: (d) => {
             alert("transfer done")
         }
     })
 
     const handleTransfer = () => {
-        sendTransaction()
+        write()
     }
 
     return <>
@@ -51,6 +69,7 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, asset 
                 account,
                 chain,
                 openConnectModal,
+                openAccountModal,
                 mounted,
             }) => {
                 const ready = mounted;
@@ -72,13 +91,13 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, asset 
                         {(() => {
                             if (!connected) {
                                 return (
-                                    <SubmitButton text_align='center' isDisabled={false} isSubmitting={false} onClick={openConnectModal} buttonStyle='outline' size="medium" icon={<Wallet className="h-6 w-6" />} >
+                                    <SubmitButton text_align='center' isDisabled={false} isSubmitting={false} onClick={openConnectModal} buttonStyle='outline' size="medium">
                                         Connect wallet
                                     </SubmitButton>
                                 );
                             }
                             return (
-                                <span className='w-full cursor-pointer' onClick={openConnectModal} >
+                                <span className='w-full cursor-pointer block p-5 bg-darkblue-800 text-primary-text' onClick={openAccountModal} >
                                     {shortenAddress(account.address)}
                                 </span>
                             );
@@ -86,9 +105,9 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, asset 
                         {
                             (() => {
                                 if (chain && chain.id !== chainId)
-                                    return <button onClick={handleChangeNetwork} type="button">
+                                    return <SubmitButton text_align='center' isDisabled={false} isSubmitting={false} onClick={handleChangeNetwork} buttonStyle='outline' size="medium">
                                         Change network
-                                    </button>
+                                    </SubmitButton>
                             })()
                         }
                         {

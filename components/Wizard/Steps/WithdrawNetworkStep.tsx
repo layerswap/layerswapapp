@@ -35,7 +35,7 @@ const WithdrawNetworkStep: FC = () => {
     const goHome = useGoHome()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
-
+    const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
     useEffect(() => {
         setInterval(15000)
         return () => setInterval(0)
@@ -168,7 +168,7 @@ const WithdrawNetworkStep: FC = () => {
                 <Widget.Footer>
                     {
                         sourceChainId &&
-                        <TransferFromWallet asset={swap.source_network_asset} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount}/>
+                        <TransferFromWallet tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount} />
                     }
                 </Widget.Footer>
             </Widget>
