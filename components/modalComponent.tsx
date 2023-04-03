@@ -22,7 +22,8 @@ class ModalParams {
     modalSize?: modalSize = "large";
     modalHeight?: modalHeight = "auto";
     onAnimationCompleted?: (def: any) => void;
-    dismissible?: boolean
+    dismissible?: boolean;
+    openAnimationDelay?: number
 }
 
 function constructModalSize(size: modalSize) {
@@ -43,7 +44,7 @@ function constructModalSize(size: modalSize) {
     return defaultModalStyle
 }
 
-const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted, children, closeWithX, title, className, modalSize = 'large', dismissible = true }) => {
+const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted, children, closeWithX, title, className, modalSize = 'large', dismissible = true, openAnimationDelay = 0 }) => {
     const query = useQueryState()
     const router = useRouter();
     const desktopModalRef = useRef(null);
@@ -85,7 +86,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                             key="backdrop"
                             className="fixed inset-0  bg-black/60 bg-opacity-10 hidden sm:block"
                             initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
+                            animate={{ opacity: 1, transition: { delay: openAnimationDelay } }}
                             exit={{ opacity: 0 }}
                             onClick={() => closeModal(closeWithX)}
                         />
@@ -97,7 +98,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                             initial={{ opacity: 0 }}
                             animate={{
                                 opacity: 1,
-                                transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
+                                transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1], delay: openAnimationDelay },
                             }}
                             exit={{
                                 opacity: 0,

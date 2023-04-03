@@ -409,25 +409,25 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget >
-        <Modal modalSize='medium' setShowModal={setOpenAddressNote} showModal={openAddressNote} title={<span className='text-white'>Here's how it works</span>} dismissible={false}>
+        <Modal modalSize='medium' setShowModal={setOpenAddressNote} showModal={openAddressNote} title={<span className='text-white'>Here's how it works</span>} dismissible={false} openAnimationDelay={0.7}>
             <div className='rounded-md w-full h-full flex flex-col items-left justify-center space-y-4 text-left'>
                 <div className='space-y-5 text-base text-primary-text'>
                     <div className='space-y-3'>
                         <p><span className='text-primary'>.01</span> Copy the Deposit Address <span className='text-white'>({shortenAddress(swap?.deposit_address)})</span>, or scan the QR code</p>
-                        <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
-                            <Image src={firstGuidePic} className='w-full rounded-lg' alt={''} />
+                        <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
+                            <Image src={firstGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>
                     </div>
                     <div className='space-y-3'>
                         <p><span className='text-primary'>.02</span> Send <span className='text-white'>{source_network_currency?.asset}</span> to that address from <span className='text-white'>{source_exchange?.display_name}</span></p>
-                        <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
-                            <Image src={secondGuidePic} className='w-full rounded-lg' alt={''} />
+                        <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
+                            <Image src={secondGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>
                     </div>
                     <div className='space-y-3'>
                         <p><span className='text-primary'>.03</span> Make sure to send via one of the supported networks</p>
-                        <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
-                            <Image src={thirdGuidePic} className='w-full rounded-lg' alt={''} />
+                        <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
+                            <Image src={thirdGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>
                     </div>
                     <div className='space-y-3'>
