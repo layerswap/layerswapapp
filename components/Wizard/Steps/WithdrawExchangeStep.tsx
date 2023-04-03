@@ -432,8 +432,8 @@ const WithdrawExchangeStep: FC = () => {
                     </div>
                     <div className='space-y-3'>
                     <p><span className='text-primary'>.04</span> Your assets are bridged to the destination network, to the address that you provided at the first page</p>
-                        <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
-                            <Image src={fourthGuidePic} className='w-full rounded-lg' alt={''} />
+                        <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
+                            <Image src={fourthGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>
                     </div>
 
