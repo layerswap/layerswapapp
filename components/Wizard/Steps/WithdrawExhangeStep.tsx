@@ -52,11 +52,18 @@ const WithdrawExchangeStep: FC = () => {
     const [openDocSlideover, setOpenDocSlideover] = useState(false)
     let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false, alreadyFamiliarWithMultipleNetworks: false }, 'configs')
     const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
-    const [openNetworksNote, setOpenNetworksNote] = useState(!storageAlreadyFamiliar.alreadyFamiliarWithMultipleNetworks ? true : false)
 
     const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
     const source_network_currency = source_exchange?.currencies?.find(c => source_network_asset?.toUpperCase() === c?.asset?.toUpperCase() && c?.is_default)
+
+    const source_exchange_settings = ExchangeSettings.KnownSettings[source_exchange_internal_name]
+
+    const availableNetworks = source_exchange?.currencies?.filter(c => c.asset === swap?.source_network_asset && networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
+    const sourceNetworks = networks.filter(n => availableNetworks.includes(n.internal_name))
+    const defaultSourceNetwork = sourceNetworks.find(sn => sn.internal_name === source_network_currency.network)
+    const [openNetworksNote, setOpenNetworksNote] = useState((!storageAlreadyFamiliar.alreadyFamiliarWithMultipleNetworks ? true : false) && sourceNetworks.length > 1)
+    
 
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
@@ -164,13 +171,6 @@ const WithdrawExchangeStep: FC = () => {
         setLocalAlreadyFamiliar(!localAlreadyFamiliar)
     }
 
-    const source_exchange_settings = ExchangeSettings.KnownSettings[source_exchange_internal_name]
-
-    const availableNetworks = source_exchange?.currencies?.filter(c => c.asset === swap?.source_network_asset && networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
-    const sourceNetworks = networks.filter(n => availableNetworks.includes(n.internal_name))
-
-    const defaultSourceNetwork = sourceNetworks.find(sn => sn.internal_name === source_network_currency.network)
-
     const qrCode = (
         <QRCode
             className="p-4 bg-white rounded-lg"
@@ -213,13 +213,13 @@ const WithdrawExchangeStep: FC = () => {
                                     </p>
                                 </div>
                                 <div className={`mb-6 grid grid-cols-1 gap-5 `}>
-                                    <div className='rounded-md bg-darkblue-700 border border-darkblue-300 divide-y divide-darkblue-300'>
+                                    <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
                                         <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
                                             <div className='flex items-center gap-1 text-sm'>
                                                 <span>Network:</span>
                                                 {sourceNetworks.length === 1 ?
                                                     <div className='flex space-x-1 items-center w-fit'>
-                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-full ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${sourceNetworks[0]?.internal_name.toLowerCase()}.png`}></Image>
+                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${sourceNetworks[0]?.internal_name.toLowerCase()}.png`}></Image>
                                                         <span>{sourceNetworks[0].display_name}</span>
                                                     </div>
                                                     :
@@ -279,7 +279,7 @@ const WithdrawExchangeStep: FC = () => {
                                                 </p>
                                             </div>
                                         </BackgroundField>
-                                        <div className='flex divide-x divide-darkblue-300'>
+                                        <div className='flex divide-x divide-darkblue-500'>
                                             <BackgroundField Copiable toCopy={swap?.requested_amount} header={'Amount'} withoutBorder>
                                                 <p>
                                                     {swap?.requested_amount}
