@@ -248,29 +248,59 @@ export const ExchangesComponentSceleton = () => {
 export const RewardsComponentSceleton = () => {
   return (
     <div className="space-y-5">
-      <div className="flex justify-start">
-        <div className="rounded-md w-48 bg-gray-500 h-[28px] animate-pulse" />
+      <div className="space-y-2">
+        <div className="flex justify-start">
+          <div className="rounded-md w-48 bg-gray-500 h-[28px] animate-pulse" />
+        </div>
+        <div className=" bg-darkblue-700 divide-y divide-darkblue-300 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
+          <BackgroundField header={<span className="flex justify-between"><span>Pending Earnings</span><span>Next Airdrop</span></span>} withoutBorder>
+            <div className="flex justify-between w-full text-2xl">
+              <div className="flex items-center space-x-1">
+                <div className="w-32 h-6 rounded-md animate-pulse bg-gray-500" />
+              </div>
+              <div className="flex items-center space-x-1">
+                <Clock className="h-5" />
+                <div className="w-14 h-6 rounded-md animate-pulse bg-gray-500" />
+              </div>
+            </div>
+          </BackgroundField>
+          <BackgroundField header={<span className="flex justify-between"><span>Total Earnings</span><span>Current Value</span></span>} withoutBorder>
+            <div className="flex justify-between w-full text-slate-300 text-2xl">
+              <div className="flex items-center space-x-1">
+                <div className="w-40 h-6 rounded-md animate-pulse bg-gray-500" />
+              </div>
+              <div className="w-20 h-6 rounded-md animate-pulse bg-gray-500" />
+            </div>
+          </BackgroundField>
+        </div>
+        <div className="bg-darkblue-700 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
+          <BackgroundField header='Daily Reward Claimed' withoutBorder>
+            <div className="flex flex-col w-full gap-2">
+              <div className="rounded-full h-4 bg-gray-500 w-full animate-pulse" />
+              <div className="flex justify-between w-full font-semibold text-sm ">
+                <div className="rounded-md w-20 h-5 animate-pulse bg-gray-500" />
+                <div className="rounded-md w-32 h-5 animate-pulse bg-gray-500" />
+              </div>
+            </div>
+          </BackgroundField>
+        </div>
       </div>
-      <div className=" bg-darkblue-700 divide-y divide-darkblue-300 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
-        <BackgroundField header={<span className="flex justify-between"><span>Pending Earnings</span><span>Next Airdrop</span></span>} withoutBorder>
-          <div className="flex justify-between w-full text-2xl">
-            <div className="flex items-center space-x-1">
-              <div className="w-32 h-6 rounded-md animate-pulse bg-gray-500" />
-            </div>
-            <div className="flex items-center space-x-1">
-              <Clock className="h-5" />
-              <div className="w-14 h-6 rounded-md animate-pulse bg-gray-500" />
+      <div className="space-y-2">
+        <div className="flex justify-start">
+          <div className="rounded-md w-48 bg-gray-500 h-5 animate-pulse" />
+        </div>
+        <div className=" bg-darkblue-700 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
+          <div className="p-3">
+            <div className="space-y-6">
+              {[...Array(4)]?.map((user, index) => (
+                <div key={index} className="items-center flex justify-between">
+                  <div className="w-full h-4 rounded-md bg-gray-500 animate-pulse" />
+                </div>
+              ))
+              }
             </div>
           </div>
-        </BackgroundField>
-        <BackgroundField header={<span className="flex justify-between"><span>Total Earnings</span><span>Current Value</span></span>} withoutBorder>
-          <div className="flex justify-between w-full text-slate-300 text-2xl">
-            <div className="flex items-center space-x-1">
-              <div className="w-40 h-6 rounded-md animate-pulse bg-gray-500" />
-            </div>
-            <div className="w-20 h-6 rounded-md animate-pulse bg-gray-500" />
-          </div>
-        </BackgroundField>
+        </div>
       </div>
     </div>
   )

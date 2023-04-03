@@ -254,10 +254,10 @@ function RewardsComponent() {
                                             </div>
                                             <div className="flex flex-col">
                                                 <div className="block text-sm font-medium">
-                                                    Claim your reward
+                                                    Wallet Connect
                                                 </div>
                                                 <div className="text-gray-500">
-                                                    Connect your wallet to claim rewards
+                                                    Connect a wallet to check your balance
                                                 </div>
                                             </div>
                                         </div>
@@ -265,10 +265,10 @@ function RewardsComponent() {
                                 </div>
                             }
                             {
-
                                 (!leaderboard ?
                                     <RewardsComponentLeaderboardSceleton />
                                     :
+                                    leaderboard?.leaderboard?.length > 0 &&
                                     <div className="space-y-1">
                                         <div className="flex items-center justify-between">
                                             <p className="font-bold text-lg text-left leading-4">Leaderboard</p>
@@ -276,7 +276,7 @@ function RewardsComponent() {
                                                 See top 10
                                             </button>
                                         </div>
-                                        <p className="text-sm text-primary-text/70">Users with highest transaction volume are featured in the leaderboard and will earn additional rewards.</p>
+                                        <p className="text-sm text-primary-text/70">Users who earn the most rewards throughout the program will be featured here and will earn additional rewards.</p>
                                         <div className="bg-darkblue-700 border border-darkblue-700 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg">
                                             <div className="p-3">
                                                 {leaderboard?.leaderboard?.length > 0 ? <div className="space-y-6">
