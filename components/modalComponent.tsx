@@ -110,7 +110,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                             }}
                         >
                             <div className={constructModalSize(modalSize)}>
-                                <div className={`${className} space-y-3 min-h-[80%] max-h-[90vh] bg-darkblue-900 pt-6 pb-5 px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
+                                <div className={`${className} space-y-3 min-h-[80%] max-h-[90vh] overflow-y-auto styled-scroll bg-darkblue-900 pt-6 pb-5 px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
                                     <div className='flex justify-between items-center space-x-8'>
                                         <div className="text-lg text-left font-medium text-primary-text" >
                                             {title}
@@ -123,7 +123,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                                             </IconButton>
                                         }
                                     </div>
-                                    <div className='max-h-[75vh] overflow-y-auto styled-scroll'>
+                                    <div className=''>
                                         {children}
                                     </div>
                                     <div id="modal_slideover" />
