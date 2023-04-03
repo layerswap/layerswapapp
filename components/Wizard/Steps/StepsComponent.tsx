@@ -7,7 +7,7 @@ export default function Steps({ steps }) {
             <ol role="list" className="overflow-hidden">
                 {steps.map((step, stepIdx) => (
                     <li key={step.name} className={classNames(stepIdx !== steps.length - 1 ? 'pb-10' : '', 'relative')}>
-                        {step.status === 'complete' ? (
+                        {step?.status === 'complete' ? (
                             <>
                                 {stepIdx !== steps.length - 1 ? (
                                     <div className="absolute top-4 left-4 -ml-px mt-0.5 h-full w-0.5 bg-primary" aria-hidden="true" />
@@ -24,7 +24,7 @@ export default function Steps({ steps }) {
                                     </span>
                                 </div>
                             </>
-                        ) : step.status === 'current' ? (
+                        ) : step?.status === 'current' ? (
                             <>
                                 {stepIdx !== steps.length - 1 ? (
                                     <div className="absolute top-4 left-4 -ml-px mt-0.5 h-full w-0.5 bg-gray-300" aria-hidden="true" />
