@@ -6,6 +6,7 @@ import ClickTooltip from '../Tooltips/ClickTooltip';
 import { truncateDecimals } from '../utils/RoundDecimals';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../Accordion';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
@@ -28,10 +29,10 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
 
     return (
         <>
-            <div className="mx-auto relative w-full rounded-lg border border-darkblue-500 hover:border-darkblue-50 bg-darkblue-700 px-3.5 py-3 z-10">
+            <div className="mx-auto relative w-full rounded-lg border border-darkblue-500 hover:border-darkblue-300 bg-darkblue-700 px-3.5 py-3 z-[1] transition-all duration-200">
                 <Accordion type="single" collapsible>
                     <AccordionItem value={'item-1'}>
-                        <AccordionTrigger className="items-center flex w-full relative gap-1 rounded-lg text-left text-base font-medium">
+                        <AccordionTrigger className="items-center flex w-full relative gap-2 rounded-lg text-left text-base font-medium">
                             <span className="md:font-semibold text-sm md:text-base text-primary-text leading-8 md:leading-8 flex-1">You will receive</span>
                             <div className='flex items-center space-x-2'>
                                 <span className="text-sm md:text-base">
@@ -94,27 +95,38 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                     </AccordionItem>
                 </Accordion>
             </div>
-            {campaign && <div className='w-full flex items-center justify-between rounded-b-lg bg-darkblue-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
-                <div className='flex items-center'>
-                    <p>OP Reward</p>
-                    <ClickTooltip text='The amount of onboarding reward that you’ll be able to claim as a refund.' />
-                </div>
-                <div className="flex items-center space-x-1">
-                    <span>+</span>
-                    <div className="h-5 w-5 relative">
-                        <Image
-                            src={`${resource_storage_url}/layerswap/currencies/${campaign?.asset?.toLowerCase()}.png`}
-                            alt="Project Logo"
-                            height="40"
-                            width="40"
-                            loading="eager"
-                            className="rounded-md object-contain" />
+            {campaign &&
+                <motion.div
+                    initial={{ y: "-100%" }}
+                    animate={{
+                        y: 0,
+                        transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
+                    }}
+                    exit={{
+                        y: "-100%",
+                        transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
+                    }}
+                    className='w-full flex items-center justify-between rounded-b-lg bg-darkblue-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
+                    <div className='flex items-center'>
+                        <p>OP Reward</p>
+                        <ClickTooltip text='The amount of onboarding reward that you’ll be able to claim as a refund.' />
                     </div>
-                    <p>
-                        ~{reward} {campaignAsset?.asset}
-                    </p>
-                </div>
-            </div>}
+                    {reward > 0 && <div className="flex items-center space-x-1">
+                        <span>+</span>
+                        <div className="h-5 w-5 relative">
+                            <Image
+                                src={`${resource_storage_url}/layerswap/currencies/${campaign?.asset?.toLowerCase()}.png`}
+                                alt="Project Logo"
+                                height="40"
+                                width="40"
+                                loading="eager"
+                                className="rounded-md object-contain" />
+                        </div>
+                        <p>
+                            ~{reward} {campaignAsset?.asset}
+                        </p>
+                    </div>}
+                </motion.div>}
         </>
     )
 }

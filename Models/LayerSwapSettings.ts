@@ -20,6 +20,8 @@ export class LayerSwapSettings {
         name: string,
         asset: string,
         network_name: string,
-        percentage: number
+        percentage: number,
+        reward_limit_for_period: number,
+        reward_limit_period: string
     }[]
 };

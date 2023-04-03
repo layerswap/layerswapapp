@@ -19,6 +19,7 @@ import { useAccount } from "wagmi"
 import { disconnect } from '@wagmi/core'
 import RainbowKit from "./Wizard/Steps/Wallet/RainbowKit"
 import { Progress } from "./ProgressBar"
+import NetworkSettings from "../lib/NetworkSettings"
 
 function RewardsComponent() {
 
@@ -28,7 +29,7 @@ function RewardsComponent() {
     const [openTopModal, setOpenTopModal] = useState(false)
     const [address, setAddress] = useState('')
 
-    const { isConnected, isDisconnected, connector } = useAccount({
+    const { isConnected } = useAccount({
         onConnect({ address }) {
             setAddress(address)
         },
@@ -52,7 +53,7 @@ function RewardsComponent() {
     const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
 
     const network = networks.find(n => n.internal_name === settings?.campaigns[0]?.network_name)
-    const periodRewardClaimed = (rewards?.user_reward?.period_limit / rewards?.user_reward?.period_pending_amount)
+    const periodRewardClaimed = (settings.campaigns[0].reward_limit_for_period / rewards?.user_reward?.period_pending_amount)
 
     const handleOpenTopModal = () => {
         setOpenTopModal(true)
@@ -118,7 +119,7 @@ function RewardsComponent() {
                                                 </div>
                                                 <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards <ClickTooltip text={`Onboarding incentives that are earned by bridging to ${network?.display_name}. For each transfer, you’ll receive ~80% of Layerswap service fee back.`} /></p>
                                             </div>
-                                            <div className="bg-darkblue-700 divide-y divide-darkblue-300 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
+                                            <div className="bg-darkblue-700 divide-y divide-darkblue-500 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
                                                 <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${settings.campaigns[0].asset} tokens that will be airdropped in a 2-week period.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                                     <div className="flex justify-between w-full text-2xl">
                                                         <div className="flex items-center space-x-1">
@@ -170,7 +171,7 @@ function RewardsComponent() {
                                                     <div className="flex flex-col w-full gap-2">
                                                         <Progress value={periodRewardClaimed === Infinity ? 0 : periodRewardClaimed} />
                                                         <div className="flex justify-between w-full font-semibold text-sm ">
-                                                            <div className="text-primary"><span className="text-white">{rewards.user_reward.period_pending_amount}</span> / {rewards.user_reward.period_limit} {settings.campaigns[0].asset}</div>
+                                                            <div className="text-primary"><span className="text-white">{rewards.user_reward.period_pending_amount}</span> / {settings.campaigns[0].reward_limit_for_period} {settings.campaigns[0].asset}</div>
                                                             <p className="text-primary-text">Refreshes every day</p>
                                                         </div>
                                                     </div>
@@ -244,7 +245,7 @@ function RewardsComponent() {
                                             </div>
                                             <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards </p>
                                         </div>
-                                        <p className="text-primary-text text-base">Onboarding incentives that you can earn by transferring assets to {network?.display_name}. For each transaction, you’ll receive ~80% of Layerswap service fee back. The rewards are capped at 30 {settings.campaigns[0].asset} per day.</p>
+                                        <p className="text-primary-text text-base">Onboarding incentives that you can earn by transferring assets to {network?.display_name}. For each transaction, you’ll receive ~80% of Layerswap service fee back. The rewards are capped at {settings.campaigns[0].reward_limit_for_period} {settings.campaigns[0].asset} per day.</p>
                                     </div>
                                     <RainbowKit>
                                         <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700 hover:shadow-xl`}>
@@ -287,7 +288,7 @@ function RewardsComponent() {
                                                                     <div className="cols-start-2 flex items-center space-x-2">
                                                                         <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(user.address)} alt="" />
                                                                         <div>
-                                                                            <p className="text-sm font-bold text-white leading-3">{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</p>
+                                                                            <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
                                                                             <p className="mt-1 text-sm font-medium text-primary-text leading-3">{user.amount} {settings.campaigns[0].asset}</p>
                                                                         </div>
                                                                     </div>
@@ -364,7 +365,7 @@ function RewardsComponent() {
                                             <div className="cols-start-2 flex items-center space-x-2">
                                                 <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(user.address)} alt="" />
                                                 <div>
-                                                    <p className="text-sm font-bold text-white leading-3">{user?.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</p>
+                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{user.amount} {settings.campaigns[0].asset}</p>
                                                 </div>
                                             </div>

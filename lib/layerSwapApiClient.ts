@@ -232,8 +232,6 @@ export enum SwapStatusInNumbers {
 
 export type Reward = {
     user_reward: {
-        period: string,
-        period_limit: number,
         period_pending_amount: number,
         total_amount: number,
         total_pending_amount: number,

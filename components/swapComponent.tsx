@@ -40,7 +40,7 @@ const Swap: FC = () => {
           </UserExchangeProvider>
         </SwapDataProvider >
       </MenuProvider>
-      {/* <CampaignCard /> */}
+      <CampaignCard />
       {
         !embadded &&
         <IntroCard />
