@@ -19,11 +19,15 @@ import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
+import QRCode from 'qrcode.react';
+import colors from 'tailwindcss/colors';
+import tailwindConfig from '../../../tailwind.config';
+import Image from 'next/image';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks } = useSettingsState()
+    const { networks, discovery: {resource_storage_url} } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
@@ -78,6 +82,17 @@ const WithdrawNetworkStep: FC = () => {
     }
     const userGuideUrlForDesktop = NetworkSettings.KnownSettings[source_network_internal_name]?.UserGuideUrlForDesktop
 
+    const qrCode = (
+        <QRCode
+            className="p-4 bg-white rounded-lg"
+            value={swap?.deposit_address}
+            size={250}
+            bgColor={colors.white}
+            fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
+            level={"H"}
+        />
+    );
+
     return (
         <>
             <Widget>
@@ -93,7 +108,17 @@ const WithdrawNetworkStep: FC = () => {
                                 </p>
                             </div>
                             <div className='mb-6 grid grid-cols-1 gap-4'>
-                                <div className='rounded-md bg-darkblue-700 border border-darkblue-300 divide-y divide-darkblue-300'>
+                                <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
+                                    <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
+                                        <div className='flex items-center gap-1 text-sm'>
+                                            <span>Network:</span>
+                                            <div className='flex space-x-1 items-center w-fit'>
+                                                <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${source_network?.internal_name.toLowerCase()}.png`}></Image>
+                                                <span>{source_network?.display_name}</span>
+                                            </div>
+                                        </div>
+                                        {qrCode}
+                                    </div>
                                     {
                                         (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
                                         <BackgroundField header={'Send type'} withoutBorder>
@@ -105,7 +130,7 @@ const WithdrawNetworkStep: FC = () => {
                                             </div>
                                         </BackgroundField>
                                     }
-                                    <BackgroundField Copiable={true} QRable={true} toCopy={swap?.deposit_address} header={'Recipient'} withoutBorder>
+                                    <BackgroundField Copiable={true} toCopy={swap?.deposit_address} header={'Recipient'} withoutBorder>
                                         <div>
                                             <p className='break-all text-white'>
                                                 {swap?.deposit_address}
@@ -130,7 +155,7 @@ const WithdrawNetworkStep: FC = () => {
                                             </BackgroundField>
                                         </div>
                                     }
-                                    <div className='flex divide-x divide-darkblue-300'>
+                                    <div className='flex divide-x divide-darkblue-500'>
                                         <BackgroundField Copiable={true} toCopy={swap?.requested_amount} header={'Amount'} withoutBorder>
                                             <p>
                                                 {swap?.requested_amount}
