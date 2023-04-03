@@ -31,7 +31,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const { setWithdrawManually } = useSwapDataUpdate()
     const { networks, exchanges, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate()
-    let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false, alreadyFamiliarWithMultipleNetworks: false }, 'configs')
+    let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false, alreadyFamiliarWithAddressNote: false }, 'configs')
 
     const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect)
     const [authWindow, setAuthWindow] = useState<Window>()
