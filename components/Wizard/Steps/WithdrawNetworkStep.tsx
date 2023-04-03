@@ -306,7 +306,7 @@ const WithdrawNetworkStep: FC = () => {
                             </div>
                         </div>
                         <div className='space-y-3'>
-                            <p><span className='text-primary'>.02</span> Send <span className='text-white'>{swap?.destination_network_asset}</span> from <span className='text-white'>{source_network?.display_name}</span></p>
+                            <p><span className='text-primary'>.02</span> Send <span className='text-white'>{swap?.destination_network_asset}</span> to that address from your wallet</p>
                             <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
                                 <Image src={secondGuidePic} className='w-full rounded-lg' alt={''} />
                             </div>

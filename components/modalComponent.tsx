@@ -123,9 +123,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                                             </IconButton>
                                         }
                                     </div>
-                                    <div className=''>
-                                        {children}
-                                    </div>
+                                    {children}
                                     <div id="modal_slideover" />
                                 </div>
                             </div>

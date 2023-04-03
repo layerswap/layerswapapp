@@ -419,7 +419,7 @@ const WithdrawExchangeStep: FC = () => {
                         </div>
                     </div>
                     <div className='space-y-3'>
-                        <p><span className='text-primary'>.02</span> Send <span className='text-white'>{source_network_currency?.asset}</span> from <span className='text-white'>{source_exchange?.display_name}</span></p>
+                        <p><span className='text-primary'>.02</span> Send <span className='text-white'>{source_network_currency?.asset}</span> to that address from <span className='text-white'>{source_exchange?.display_name}</span></p>
                         <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
                             <Image src={secondGuidePic} className='w-full rounded-lg' alt={''} />
                         </div>
