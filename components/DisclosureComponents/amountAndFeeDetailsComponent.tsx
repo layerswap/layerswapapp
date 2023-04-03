@@ -108,7 +108,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                     }}
                     className='w-full flex items-center justify-between rounded-b-lg bg-darkblue-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
                     <div className='flex items-center'>
-                        <p>OP Reward</p>
+                        <p>{campaignAsset?.asset} Reward</p>
                         <ClickTooltip text='The amount of onboarding reward that you’ll be able to claim as a refund.' />
                     </div>
                     {reward > 0 && <div className="flex items-center space-x-1">
