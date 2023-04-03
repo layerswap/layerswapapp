@@ -292,7 +292,7 @@ function TransactionsHistory() {
                                 </div>
                                 {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
                                 <span className="flex items-center lg:hidden">
-                                  {<StatusIcon status={swap.status} />}
+                                  {swap && <StatusIcon status={swap.status} />}
                                   {/* {plan.from} - {plan.to} */}
                                 </span>
 
@@ -370,7 +370,7 @@ function TransactionsHistory() {
                                   'relative px-3 py-3.5 text-sm text-white hidden lg:table-cell group'
                                 )}
                               >
-                                {<StatusIcon status={swap.status} />}
+                                {swap && <StatusIcon status={swap.status} />}
 
                               </td>
                               <td

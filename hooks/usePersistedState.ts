@@ -5,7 +5,7 @@ type PersistedState<T> = [T, Dispatch<SetStateAction<T>>];
 
 export type Configs = {
   alreadyFamiliarWithCoinbaseConnect: boolean,
-  alreadyFamiliarWithMultipleNetworks: boolean
+  alreadyFamiliarWithAddressNote: boolean
 }
 
 function usePersistedState<T>(defaultValue: T, key: string, type: storageType = 'localStorage'): PersistedState<T> {

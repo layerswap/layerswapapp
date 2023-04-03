@@ -42,7 +42,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
                 network.currencies.some(nc => nc.asset === currency.asset && (nc.status === "active" || nc.status === "insufficient_liquidity") && nc.is_deposit_enabled))))
 
     const currencyDepositIsAvailable = ((currency: NetworkCurrency, network: CryptoNetwork) => currency.is_deposit_enabled
-        && (currency.status === "active" || currency.status === "insufficient_liquidity")
+        && (currency.status === "active" || currency?.status === "insufficient_liquidity")
         && (network ?
             network.currencies.some(nc => nc.asset === currency.asset && nc.status === "active" && nc.is_withdrawal_enabled)
             : networks.some(network =>
@@ -81,7 +81,7 @@ export const generateNetworkMenuItems = ({ values, networks, resource_storage_ur
     const shouldLockAllNetworks = destNetworkIsAvailable && lockNetwork;
     const networkDisabledReason = (network: CryptoNetwork) => {
         if (shouldLockAllNetworks) return { value: false, disabledReason: DisabledReason.LockNetworkIsTrue }
-        else if (!(direction === 'from' ? (network.status === 'active' || network.status === 'insufficient_liquidity') : (network.status == "active"))) return { value: false, disabledReason: DisabledReason.InsufficientLiquidity }
+        else if (!(direction === 'from' ? (network.status === 'active' || network?.status === 'insufficient_liquidity') : (network?.status == "active"))) return { value: false, disabledReason: DisabledReason.InsufficientLiquidity }
         else return { value: true, disabledReason: null }
     }
 

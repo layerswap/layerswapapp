@@ -21,7 +21,8 @@ class ModalParams {
     className?: string;
     modalSize?: modalSize = "large";
     modalHeight?: modalHeight = "auto";
-    onAnimationCompleted?: (def: any) => void
+    onAnimationCompleted?: (def: any) => void;
+    dismissible?: boolean
 }
 
 function constructModalSize(size: modalSize) {
@@ -42,7 +43,7 @@ function constructModalSize(size: modalSize) {
     return defaultModalStyle
 }
 
-const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted, children, closeWithX, title, className, modalSize = 'large' }) => {
+const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted, children, closeWithX, title, className, modalSize = 'large', dismissible = true }) => {
     const query = useQueryState()
     const router = useRouter();
     const desktopModalRef = useRef(null);
@@ -61,6 +62,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
 
     const closeModal = useCallback(
         (closeWithX?: boolean) => {
+            if (!dismissible) return
             if (closeWithX) {
                 return;
             } else if (key) {
@@ -76,7 +78,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
             {showModal && (
                 <ReactPortal>
                     <div className={query?.addressSource}>
-                        <MobileModalContent className={className} showModal={showModal} setShowModal={setShowModal} title={title}>
+                        <MobileModalContent className={className} showModal={showModal} setShowModal={setShowModal} title={title} dismissible={dismissible}>
                             {children}
                         </MobileModalContent>
                         <motion.div
@@ -108,15 +110,18 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                             }}
                         >
                             <div className={constructModalSize(modalSize)}>
-                                <div className={`${className} space-y-3 min-h-[80%] bg-darkblue-900 py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
+                                <div className={`${className} space-y-3 min-h-[80%] bg-darkblue-900 pt-6 pb-5 px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
                                     <div className='flex justify-between items-center space-x-8'>
                                         <div className="text-lg text-left font-medium text-primary-text" >
                                             {title}
                                         </div>
-                                        <IconButton onClick={() => closeModal()} icon={
-                                            <X strokeWidth={3} />
-                                        }>
-                                        </IconButton>
+                                        {
+                                            dismissible &&
+                                            <IconButton onClick={() => closeModal()} icon={
+                                                <X strokeWidth={3} />
+                                            }>
+                                            </IconButton>
+                                        }
                                     </div>
                                     {children}
                                     <div id="modal_slideover" />
@@ -130,7 +135,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
     );
 }
 
-export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, onAnimationCompleted, setShowModal, children, title, className, modalHeight, description }, topmostRef) => {
+export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, onAnimationCompleted, setShowModal, children, title, className, modalHeight, description, dismissible = true }, topmostRef) => {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 42 };
@@ -139,8 +144,8 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
         const offset = info.offset.y;
         const velocity = info.velocity.y;
         const height = mobileModalRef.current.getBoundingClientRect().height;
-        if (offset > height / 2 || velocity > 800) {
-            closeButtonRef.current.focus()
+        if ((offset > height / 2 || velocity > 800) && dismissible) {
+            closeButtonRef?.current?.focus()
             await controls.start({ y: "100%", transition: transitionProps });
             setShowModal(false);
         } else {
@@ -157,7 +162,9 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
         }
     }, [showModal]);
 
-    const handleCloseModal = () => setShowModal(false)
+    const handleCloseModal = () => {
+        if (dismissible) setShowModal(false)
+    }
     const closeButtonRef = useRef(null)
 
     return (
@@ -187,9 +194,12 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
             >
                 <div className='px-5 py-3 mb-4 rounded-t-2xl bg-darkblue-900  border-b border-darkblue-500'>
                     <div className='grid grid-cols-6 items-center'>
-                        <button ref={closeButtonRef} tabIndex={-1} className='text-base text-primary col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
-                            Close
-                        </button>
+                        {
+                            dismissible &&
+                            <button ref={closeButtonRef} tabIndex={-1} className='text-base text-primary col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
+                                Close
+                            </button>
+                        }
                         {
                             title ?
                                 <div tabIndex={-1} className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-white">

@@ -33,6 +33,7 @@ import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
 import { Configs, usePersistedState } from '../../../hooks/usePersistedState';
+import useWindowDimensions from '../../../hooks/useWindowDimensions';
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
@@ -50,8 +51,10 @@ const WithdrawExchangeStep: FC = () => {
     const [loading, setLoading] = useState(false)
     const { source_exchange: source_exchange_internal_name, destination_network: destination_network_internal_name, source_network_asset: source_network_asset, destination_network_asset } = swap
     const [openDocSlideover, setOpenDocSlideover] = useState(false)
-    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false, alreadyFamiliarWithMultipleNetworks: false }, 'configs')
+    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false, alreadyFamiliarWithAddressNote: false }, 'configs')
     const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
+    const [openAddressNote, setOpenAddressNote] = useState((!storageAlreadyFamiliar.alreadyFamiliarWithAddressNote ? true : false))
+    const { width } = useWindowDimensions()
 
     const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
@@ -62,19 +65,17 @@ const WithdrawExchangeStep: FC = () => {
     const availableNetworks = source_exchange?.currencies?.filter(c => c.asset === swap?.source_network_asset && networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
     const sourceNetworks = networks.filter(n => availableNetworks.includes(n.internal_name))
     const defaultSourceNetwork = sourceNetworks.find(sn => sn.internal_name === source_network_currency.network)
-    const [openNetworksNote, setOpenNetworksNote] = useState((!storageAlreadyFamiliar.alreadyFamiliarWithMultipleNetworks ? true : false) && sourceNetworks.length > 1)
-    
+
 
     const handleOpenModal = () => {
         setOpenCancelConfirmModal(true)
     }
 
     const hanldeGuideModalClose = () => {
-        setOpenNetworksNote(false)
-        if (localAlreadyFamiliar && !storageAlreadyFamiliar.alreadyFamiliarWithMultipleNetworks) {
-            setStorageAlreadyFamiliar({ ...storageAlreadyFamiliar, alreadyFamiliarWithMultipleNetworks: true })
+        setOpenAddressNote(false)
+        if (localAlreadyFamiliar && !storageAlreadyFamiliar.alreadyFamiliarWithAddressNote) {
+            setStorageAlreadyFamiliar({ ...storageAlreadyFamiliar, alreadyFamiliarWithAddressNote: true })
         }
-
     }
 
     useEffect(() => {
@@ -175,7 +176,7 @@ const WithdrawExchangeStep: FC = () => {
         <QRCode
             className="p-4 bg-white rounded-lg"
             value={swap?.deposit_address}
-            size={250}
+            size={width >= 640 ? 250 : 190}
             bgColor={colors.white}
             fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
             level={"H"}
@@ -403,27 +404,32 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget >
-        <Modal modalSize='small' setShowModal={setOpenNetworksNote} showModal={openNetworksNote}>
-            <div className='rounded-md w-full h-full flex flex-col items-center justify-center space-y-6 text-center'>
-                <Network className='h-20 w-20 text-primary' />
-                <p className='text-white text-lg font-semibold'>You can receive {source_network_currency.asset} on multiple networks</p>
-                <p className='text-primary-text text-base'>If you're receiving from a network other than {defaultSourceNetwork?.display_name}, switch the network on the next screen.</p>
-                <div className="flex justify-center items-center mb-3">
-                    <input
-                        name="alreadyFamiliar"
-                        id='alreadyFamiliar'
-                        type="checkbox"
-                        className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
-                        onChange={handleToggleChange}
-                        checked={localAlreadyFamiliar}
-                    />
-                    <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
-                        Don't show me this again
-                    </label>
+        <Modal modalSize='medium' setShowModal={setOpenAddressNote} showModal={openAddressNote} title={<span className='text-white'>Here's how it works</span>} dismissible={false}>
+            <div className='rounded-md w-full h-full flex flex-col items-left justify-center space-y-10 text-left'>
+                <div className='space-y-5 text-base text-primary-text'>
+                    <p><span className='text-primary'>.01</span> Copy the deposit address, or scan the QR code</p>
+                    <p><span className='text-primary'>.02</span> Send the assets from your exchange account or wallet to that address</p>
+                    <p><span className='text-primary'>.03</span> Wait for Layerswap to detect the deposit</p>
+                    <p><span className='text-primary'>.04</span> Your assets are bridged to the destination network, to the address that you provided at the first page.</p>
                 </div>
-                <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
-                    Got it
-                </SubmitButton>
+                <div className='space-y-3'>
+                    <div className="flex justify-left items-center">
+                        <input
+                            name="alreadyFamiliar"
+                            id='alreadyFamiliar'
+                            type="checkbox"
+                            className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
+                            onChange={handleToggleChange}
+                            checked={localAlreadyFamiliar}
+                        />
+                        <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
+                            Don't show me this again
+                        </label>
+                    </div>
+                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
+                        Got it
+                    </SubmitButton>
+                </div>
             </div>
         </Modal>
         <SwapCancelModal onCancel={handleCancelSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />

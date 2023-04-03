@@ -19,7 +19,7 @@ const CoinbaseInternalWithdrawal: FC = () => {
     const swapStatusStep = GetSwapStatusStep(swap)
 
     useEffect(() => {
-        if (swapStatusStep && swap.status != SwapStatus.UserTransferPending)
+        if (swapStatusStep && swap?.status != SwapStatus.UserTransferPending)
             goToStep(swapStatusStep)
     }, [swapStatusStep, swap])
 
