@@ -152,7 +152,7 @@ const WithdrawExchangeStep: FC = () => {
 
     const source_exchange_settings = ExchangeSettings.KnownSettings[source_exchange_internal_name]
 
-    const availableNetworks = source_exchange?.currencies?.filter(c => c.asset === swap?.source_network_asset && networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
+    const availableNetworks = source_exchange?.currencies?.filter(c => c.asset === swap?.source_network_asset && networks.find(n => n.internal_name === c.network)?.status === 'active').map(n => n.network)
     const sourceNetworks = networks.filter(n => availableNetworks.includes(n.internal_name))
 
     return (<>
