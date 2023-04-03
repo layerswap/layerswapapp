@@ -38,7 +38,6 @@ export function CaluclateRefuelAmount(swapFormData: SwapFormValues, allNetworks:
 }
 export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]): number {
     const { currency, from, to, swapType } = swapFormData || {}
-    debugger
 
     if (!currency || !from || !to)
         return 0;

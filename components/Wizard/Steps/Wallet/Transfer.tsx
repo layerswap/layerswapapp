@@ -1,5 +1,5 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Wallet } from "lucide-react"
+import { Wallet, X } from "lucide-react"
 import { FC } from "react";
 import { useAccount, useContractWrite, usePrepareContractWrite, usePrepareSendTransaction, useSendTransaction, useSwitchNetwork, useWaitForTransaction } from "wagmi";
 import SubmitButton from "../../../buttons/submitButton";
@@ -39,17 +39,15 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, tokenC
         error: prepareError,
         isError: isPrepareError
     } = usePrepareContractWrite({
-        address: "0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C",
+        address: tokenContractAddress || depositAddress,
         abi: erc20ABI,
         functionName: 'transfer',
         enabled: isConnected,
-        args: [depositAddress, BigNumber.from(amount)],
+        args: [depositAddress, utils.parseUnits(amount.toString(), 6)],
         overrides: {
             gasLimit: BigNumber.from(1500000)
         }
     });
-    console.log("bn", BigNumber.from(amount))
-    console.log("eth", utils.parseEther(amount.toString()))
 
     const { data: writeData, write, error: writeError, isError: isWriteError, isLoading: isWriteLoading } = useContractWrite(config)
     const { isLoading: isTransactionPending, isSuccess } = useWaitForTransaction({
@@ -91,33 +89,48 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, tokenC
                         {(() => {
                             if (!connected) {
                                 return (
-                                    <SubmitButton text_align='center' isDisabled={false} isSubmitting={false} onClick={openConnectModal} buttonStyle='outline' size="medium">
+                                    <SubmitButton text_align='center' isDisabled={false} isSubmitting={false} onClick={openConnectModal} buttonStyle='filled' size="medium">
                                         Connect wallet
                                     </SubmitButton>
                                 );
                             }
-                            return (
-                                <span className='w-full cursor-pointer block p-5 bg-darkblue-800 text-primary-text' onClick={openAccountModal} >
-                                    {shortenAddress(account.address)}
-                                </span>
-                            );
+                            return (<>
+                            </>);
                         })()}
                         {
                             (() => {
-                                if (chain && chain.id !== chainId)
-                                    return <SubmitButton text_align='center' isDisabled={false} isSubmitting={false} onClick={handleChangeNetwork} buttonStyle='outline' size="medium">
-                                        Change network
-                                    </SubmitButton>
+                                if (connected)
+                                    return <>
+                                        <div className="flex flex-row text-white text-base space-x-2">
+                                            <div className='basis-1/3'>
+                                                <SubmitButton onClick={openAccountModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline'>
+                                                    {shortenAddress(account.address)}
+                                                </SubmitButton>
+                                            </div>
+                                            {
+                                                (() => {
+                                                    if (chain && chain.id === chainId) {
+                                                        return <div className='basis-2/3'>
+                                                            <SubmitButton text_align='center' isDisabled={false} isSubmitting={false} onClick={handleTransfer} buttonStyle='filled' size="medium">
+                                                                Transfer {amount}
+                                                            </SubmitButton>
+                                                        </div>
+                                                    }
+                                                    else {
+                                                        return <div className='basis-2/3'>
+                                                            <SubmitButton text_align='center' isDisabled={false} isSubmitting={false} onClick={handleChangeNetwork} buttonStyle='filled' size="medium">
+                                                                Change network
+                                                            </SubmitButton>
+                                                        </div>
+                                                    }
+                                                })()
+                                            }
+
+                                        </div>
+                                    </>
                             })()
                         }
-                        {
-                            (() => {
-                                if (connected && chain && chain.id === chainId)
-                                    return <button onClick={handleTransfer} type="button">
-                                        Transfer {amount}
-                                    </button>
-                            })()
-                        }
+
                     </div>
                 );
             }}
