@@ -4,8 +4,9 @@ import { checkStorageIsAvailable, storageType } from '../helpers/storageAvailabl
 type PersistedState<T> = [T, Dispatch<SetStateAction<T>>];
 
 export type Configs = {
-  alreadyFamiliarWithCoinbaseConnect: boolean,
-  alreadyFamiliarWithAddressNote: boolean
+  alreadyFamiliarWithCoinbaseConnect?: boolean,
+  alreadyFamiliarWithExchangeWithdrawGuide?: boolean
+  alreadyFamiliarWithNetworkWithdrawGuide?: boolean
 }
 
 function usePersistedState<T>(defaultValue: T, key: string, type: storageType = 'localStorage'): PersistedState<T> {

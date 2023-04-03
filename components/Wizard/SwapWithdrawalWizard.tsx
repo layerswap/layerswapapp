@@ -8,7 +8,7 @@ import FailedStep from "./Steps/FailedStep";
 import SuccessfulStep from "./Steps/SuccessfulStep";
 import ImtblxWalletWithdrawStep from "./Steps/Wallet/ImtblxWalletWithdrawStep";
 import CoinbaseInternalWithdrawalStep from "./Steps/Wallet/CoinbaseInternalWithdrawalStep";
-import WithdrawExchangeStep from "./Steps/WithdrawExhangeStep";
+import WithdrawExchangeStep from "./Steps/WithdrawExchangeStep";
 import WithdrawNetworkStep from "./Steps/WithdrawNetworkStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";

@@ -23,11 +23,17 @@ import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
 import Image from 'next/image';
+import { Configs, usePersistedState } from '../../../hooks/usePersistedState';
+import useWindowDimensions from '../../../hooks/useWindowDimensions';
+import shortenAddress from '../../utils/ShortenAddress';
+import firstGuidePic from '../../../public/images/withdrawGuideImages/01.png'
+import secondGuidePic from '../../../public/images/withdrawGuideImages/02Network.png'
+import fourthGuidePic from '../../../public/images/withdrawGuideImages/04.png'
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks, discovery: {resource_storage_url} } = useSettingsState()
+    const { networks, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
@@ -36,8 +42,23 @@ const WithdrawNetworkStep: FC = () => {
     const { swap } = useSwapDataState()
     const { setInterval, cancelSwap } = useSwapDataUpdate()
     const goHome = useGoHome()
+    const { width } = useWindowDimensions()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
+    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithNetworkWithdrawGuide: false }, 'configs')
+    const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
+    const [openAddressNote, setOpenAddressNote] = useState((!storageAlreadyFamiliar.alreadyFamiliarWithNetworkWithdrawGuide ? true : false))
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+
+    const handleToggleChange = () => {
+        setLocalAlreadyFamiliar(!localAlreadyFamiliar)
+    }
+
+    const hanldeGuideModalClose = () => {
+        setOpenAddressNote(false)
+        if (localAlreadyFamiliar && !storageAlreadyFamiliar.alreadyFamiliarWithNetworkWithdrawGuide) {
+            setStorageAlreadyFamiliar({ ...storageAlreadyFamiliar, alreadyFamiliarWithNetworkWithdrawGuide: true })
+        }
+    }
 
     useEffect(() => {
         setInterval(15000)
@@ -86,7 +107,7 @@ const WithdrawNetworkStep: FC = () => {
         <QRCode
             className="p-4 bg-white rounded-lg"
             value={swap?.deposit_address}
-            size={250}
+            size={width >= 640 ? 250 : 190}
             bgColor={colors.white}
             fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
             level={"H"}
@@ -130,7 +151,7 @@ const WithdrawNetworkStep: FC = () => {
                                             </div>
                                         </BackgroundField>
                                     }
-                                    <BackgroundField Copiable={true} toCopy={swap?.deposit_address} header={'Recipient'} withoutBorder>
+                                    <BackgroundField Copiable={true} toCopy={swap?.deposit_address} header={'Deposit Address'} withoutBorder>
                                         <div>
                                             <p className='break-all text-white'>
                                                 {swap?.deposit_address}
@@ -271,6 +292,49 @@ const WithdrawNetworkStep: FC = () => {
                                 secondarytext='cancel'
                                 reversed={true}
                             />
+                        </SubmitButton>
+                    </div>
+                </div>
+            </Modal>
+            <Modal modalSize='medium' setShowModal={setOpenAddressNote} showModal={openAddressNote} title={<span className='text-white'>Here's how it works</span>} dismissible={false}>
+                <div className='rounded-md w-full h-full flex flex-col items-left justify-center space-y-4 text-left'>
+                    <div className='space-y-5 text-base text-primary-text'>
+                        <div className='space-y-3'>
+                            <p><span className='text-primary'>.01</span> Copy the Deposit Address <span className='text-white'>({shortenAddress(swap?.deposit_address)})</span>, or scan the QR code</p>
+                            <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
+                                <Image src={firstGuidePic} className='w-full rounded-lg' alt={''} />
+                            </div>
+                        </div>
+                        <div className='space-y-3'>
+                            <p><span className='text-primary'>.02</span> Send <span className='text-white'>{swap?.destination_network_asset}</span> from <span className='text-white'>{source_network?.display_name}</span></p>
+                            <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
+                                <Image src={secondGuidePic} className='w-full rounded-lg' alt={''} />
+                            </div>
+                        </div>
+                        <div className='space-y-3'>
+                            <p><span className='text-primary'>.03</span> Your assets are bridged to the destination network, to the address that you provided at the first page</p>
+                            <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
+                                <Image src={fourthGuidePic} className='w-full rounded-lg' alt={''} />
+                            </div>
+                        </div>
+
+                    </div>
+                    <div className='space-y-3'>
+                        <div className="flex justify-left items-center">
+                            <input
+                                name="alreadyFamiliar"
+                                id='alreadyFamiliar'
+                                type="checkbox"
+                                className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
+                                onChange={handleToggleChange}
+                                checked={localAlreadyFamiliar}
+                            />
+                            <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
+                                Don't show me this again
+                            </label>
+                        </div>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
+                            Got it
                         </SubmitButton>
                     </div>
                 </div>

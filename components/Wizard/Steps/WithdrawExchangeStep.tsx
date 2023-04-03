@@ -34,6 +34,11 @@ import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
 import { Configs, usePersistedState } from '../../../hooks/usePersistedState';
 import useWindowDimensions from '../../../hooks/useWindowDimensions';
+import shortenAddress from '../../utils/ShortenAddress';
+import firstGuidePic from '../../../public/images/withdrawGuideImages/01.png'
+import secondGuidePic from '../../../public/images/withdrawGuideImages/02Exchange.png'
+import thirdGuidePic from '../../../public/images/withdrawGuideImages/03.png'
+import fourthGuidePic from '../../../public/images/withdrawGuideImages/04.png'
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
@@ -51,9 +56,9 @@ const WithdrawExchangeStep: FC = () => {
     const [loading, setLoading] = useState(false)
     const { source_exchange: source_exchange_internal_name, destination_network: destination_network_internal_name, source_network_asset: source_network_asset, destination_network_asset } = swap
     const [openDocSlideover, setOpenDocSlideover] = useState(false)
-    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false, alreadyFamiliarWithAddressNote: false }, 'configs')
+    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithExchangeWithdrawGuide: false }, 'configs')
     const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
-    const [openAddressNote, setOpenAddressNote] = useState((!storageAlreadyFamiliar.alreadyFamiliarWithAddressNote ? true : false))
+    const [openAddressNote, setOpenAddressNote] = useState((!storageAlreadyFamiliar.alreadyFamiliarWithExchangeWithdrawGuide ? true : false))
     const { width } = useWindowDimensions()
 
     const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
@@ -73,8 +78,8 @@ const WithdrawExchangeStep: FC = () => {
 
     const hanldeGuideModalClose = () => {
         setOpenAddressNote(false)
-        if (localAlreadyFamiliar && !storageAlreadyFamiliar.alreadyFamiliarWithAddressNote) {
-            setStorageAlreadyFamiliar({ ...storageAlreadyFamiliar, alreadyFamiliarWithAddressNote: true })
+        if (localAlreadyFamiliar && !storageAlreadyFamiliar.alreadyFamiliarWithExchangeWithdrawGuide) {
+            setStorageAlreadyFamiliar({ ...storageAlreadyFamiliar, alreadyFamiliarWithExchangeWithdrawGuide: true })
         }
     }
 
@@ -273,7 +278,7 @@ const WithdrawExchangeStep: FC = () => {
                                             </div>
                                             {qrCode}
                                         </div>
-                                        <BackgroundField Copiable toCopy={swap?.deposit_address} header={'Address'} withoutBorder>
+                                        <BackgroundField Copiable toCopy={swap?.deposit_address} header={'Deposit Address'} withoutBorder>
                                             <div>
                                                 <p className='break-all text-white'>
                                                     {swap?.deposit_address}
@@ -405,12 +410,33 @@ const WithdrawExchangeStep: FC = () => {
             </Widget.Footer>
         </Widget >
         <Modal modalSize='medium' setShowModal={setOpenAddressNote} showModal={openAddressNote} title={<span className='text-white'>Here's how it works</span>} dismissible={false}>
-            <div className='rounded-md w-full h-full flex flex-col items-left justify-center space-y-10 text-left'>
+            <div className='rounded-md w-full h-full flex flex-col items-left justify-center space-y-4 text-left'>
                 <div className='space-y-5 text-base text-primary-text'>
-                    <p><span className='text-primary'>.01</span> Copy the deposit address, or scan the QR code</p>
-                    <p><span className='text-primary'>.02</span> Send the assets from your exchange account or wallet to that address</p>
-                    <p><span className='text-primary'>.03</span> Wait for Layerswap to detect the deposit</p>
-                    <p><span className='text-primary'>.04</span> Your assets are bridged to the destination network, to the address that you provided at the first page.</p>
+                    <div className='space-y-3'>
+                        <p><span className='text-primary'>.01</span> Copy the Deposit Address <span className='text-white'>({shortenAddress(swap?.deposit_address)})</span>, or scan the QR code</p>
+                        <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
+                            <Image src={firstGuidePic} className='w-full rounded-lg' alt={''} />
+                        </div>
+                    </div>
+                    <div className='space-y-3'>
+                        <p><span className='text-primary'>.02</span> Send <span className='text-white'>{source_network_currency?.asset}</span> from <span className='text-white'>{source_exchange?.display_name}</span></p>
+                        <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
+                            <Image src={secondGuidePic} className='w-full rounded-lg' alt={''} />
+                        </div>
+                    </div>
+                    <div className='space-y-3'>
+                        <p><span className='text-primary'>.03</span> Make sure to send via one of the supported networks</p>
+                        <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
+                            <Image src={thirdGuidePic} className='w-full rounded-lg' alt={''} />
+                        </div>
+                    </div>
+                    <div className='space-y-3'>
+                    <p><span className='text-primary'>.04</span> Your assets are bridged to the destination network, to the address that you provided at the first page</p>
+                        <div className='border-2 border-darkblue-400 rounded-lg p-2 bg-darkblue-500'>
+                            <Image src={fourthGuidePic} className='w-full rounded-lg' alt={''} />
+                        </div>
+                    </div>
+
                 </div>
                 <div className='space-y-3'>
                     <div className="flex justify-left items-center">
