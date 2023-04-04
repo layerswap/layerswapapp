@@ -20,18 +20,19 @@ import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
 import TransferFromWallet from './Wallet/Transfer';
+import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks } = useSettingsState()
+    const { networks, currencies } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
     const { swap } = useSwapDataState()
-    const { setInterval, cancelSwap } = useSwapDataUpdate()
+    const { setInterval, cancelSwap, mutateSwap } = useSwapDataUpdate()
     const goHome = useGoHome()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
@@ -74,9 +75,12 @@ const WithdrawNetworkStep: FC = () => {
         }
     }, [swap])
 
-    const handleOpenModal = () => {
-        setOpenCancelConfirmModal(true)
+    const onTRansactionComplete = async (trxId: string) => {
+        const layerSwapApiClient = new LayerSwapApiClient()
+        await layerSwapApiClient.ApplyNetworkInput(swap.id, trxId)
+        await mutateSwap()
     }
+
     const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
     const userGuideUrlForDesktop = sourceNetworkSettings?.UserGuideUrlForDesktop
     const sourceChainId = sourceNetworkSettings?.ChainId
@@ -167,8 +171,8 @@ const WithdrawNetworkStep: FC = () => {
                 </Widget.Content>
                 <Widget.Footer>
                     {
-                        sourceChainId &&
-                        <TransferFromWallet tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount} />
+                        sourceChainId && swap &&
+                        <TransferFromWallet onTransferComplete={onTRansactionComplete} tokenDecimals={sourceCurrency?.decimals} tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount} />
                     }
                 </Widget.Footer>
             </Widget>

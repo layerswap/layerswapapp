@@ -21,8 +21,8 @@ import { disconnect } from '@wagmi/core'
 import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import { Wallet } from 'lucide-react'
-import makeBlockie from 'ethereum-blockies-base64';
 import { useAccountModal } from "@rainbow-me/rainbowkit";
+import AddressIcon from "../AddressIcon";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -219,12 +219,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             validInputAddress &&
                             <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-500 transition duration-200 px-2 py-2 hover:border-darkblue-500 hover:shadow-xl`}>
                                 <div className='flex text-primary-text bg-darkblue-400 flex-row items-left rounded-md p-2'>
-                                    <Image src={makeBlockie(validInputAddress)}
-                                        alt="Project Logo"
-                                        height="20"
-                                        width="20"
-                                        className='rounded-sm'
-                                    />
+                                    <AddressIcon address={validInputAddress} size={25} />
                                 </div>
                                 <div className="flex flex-col grow">
                                     <div className="block text-md font-medium text-white">
@@ -344,12 +339,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                                 className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-300 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
                                                             >
                                                                 <div className='flex bg-darkblue-400 text-primary-text flex-row items-left  rounded-md p-2'>
-                                                                    <Image src={makeBlockie(a.address)}
-                                                                        alt="Project Logo"
-                                                                        height="20"
-                                                                        width="20"
-                                                                        className='rounded-sm'
-                                                                    />
+                                                                    <AddressIcon address={a.address} size={20} />
                                                                 </div>
                                                                 <div className="flex flex-col">
                                                                     <div className="block text-sm font-medium">

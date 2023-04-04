@@ -1,146 +1,188 @@
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Wallet, X } from "lucide-react"
-import { FC } from "react";
+import { AuthenticationStatus, ConnectButton } from "@rainbow-me/rainbowkit";
+import { FC, useCallback, useState } from "react";
 import { useAccount, useContractWrite, usePrepareContractWrite, usePrepareSendTransaction, useSendTransaction, useSwitchNetwork, useWaitForTransaction } from "wagmi";
 import SubmitButton from "../../../buttons/submitButton";
-import shortenAddress from "../../../utils/ShortenAddress";
-import { BigNumber, utils } from 'ethers';
+import { utils } from 'ethers';
 import { erc20ABI } from 'wagmi'
-
 
 type Props = {
     chainId: number,
     depositAddress: `0x${string}`,
     tokenContractAddress: `0x${string}`,
-    amount: number
+    amount: number,
+    tokenDecimals: number,
+    onTransferComplete: (transactionHash: string) => Promise<void>
 }
 
-const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, tokenContractAddress }) => {
+const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, tokenContractAddress, tokenDecimals, onTransferComplete }) => {
     const { isConnected, isDisconnected, connector, address } = useAccount();
-    const { switchNetwork } = useSwitchNetwork({
+    const { switchNetwork, error: changeNetworkError, isError: changeNetworkHasError, status } = useSwitchNetwork({
         chainId: chainId,
     });
 
-    const handleChangeNetwork = (e: any) => {
-        switchNetwork()
-    }
-    // const { config,
-    //     error: prepareError,
-    //     isError: isPrepareError
-    // } = usePrepareSendTransaction({
-    //     request: {
-    //         to: depositAddress,
-    //         value: amount ? utils.parseEther(amount.toString()) : undefined,
-    //     },
-    //     chainId: chainId,
-    // })
+    const [lodingOnComplete, setLoadingOnComplete] = useState<boolean>()
+
+    const { config: transactionConfig,
+        error: transactionPrepareError,
+        isLoading:prepareSendIsLoading,
+        isError: transactionPrepareHasError
+    } = usePrepareSendTransaction({
+        enabled: isConnected && !!!tokenContractAddress,
+        request: {
+            to: depositAddress,
+            value: amount ? utils.parseEther(amount.toString()) : undefined,
+        },
+        chainId: chainId,
+    })
+
+    const { data: transactionData, sendTransaction, error: transactionError, isError: transactionHasError, isLoading: transactionLoading } = useSendTransaction(transactionConfig)
+
     const {
         config,
         error: prepareError,
-        isError: isPrepareError
+        isError: isPrepareError,
+        isLoading:prepareContractisLoading
     } = usePrepareContractWrite({
-        address: tokenContractAddress || depositAddress,
+        address: tokenContractAddress,
         abi: erc20ABI,
         functionName: 'transfer',
-        enabled: isConnected,
-        args: [depositAddress, utils.parseUnits(amount.toString(), 6)],
-        overrides: {
-            gasLimit: BigNumber.from(1500000)
-        }
+        enabled: isConnected && !!tokenContractAddress,
+        args: [depositAddress, utils.parseUnits(amount.toString(), tokenDecimals)]
     });
 
     const { data: writeData, write, error: writeError, isError: isWriteError, isLoading: isWriteLoading } = useContractWrite(config)
     const { isLoading: isTransactionPending, isSuccess } = useWaitForTransaction({
-        hash: writeData?.hash,
-        onSuccess: (d) => {
-            alert("transfer done")
+        hash: writeData?.hash || transactionData?.hash,
+        onSuccess: async (trxRcpt) => {
+            setLoadingOnComplete(true)
+            await onTransferComplete(trxRcpt.transactionHash)
+            setLoadingOnComplete(false)
         }
     })
 
-    const handleTransfer = () => {
-        write()
-    }
+    const handleTransfer = useCallback(() => {
+        if (typeof write === 'function')
+            return write()
+        if (typeof sendTransaction === 'function')
+            return sendTransaction()
+    }, [write, sendTransaction])
+
+    const loading = isTransactionPending || transactionLoading || lodingOnComplete || prepareSendIsLoading || prepareContractisLoading;
+    const hasError = isPrepareError || isWriteError || transactionPrepareHasError || transactionHasError || changeNetworkHasError
+    const error = prepareError || writeError || transactionPrepareError || transactionError || changeNetworkError
+    const message = error?.["reason"] || getWalletMessage({ isWriteLoading, isTransactionPending, transactionLoading })
+    const buttonText = hasError ? 'Try again' : 'Transfer with wallet'
 
     return <>
+        {message && (
+            <p className="first-letter:capitalize p-2">{message}</p>
+        )}
         <ConnectButton.Custom>
-            {({
-                account,
-                chain,
-                openConnectModal,
-                openAccountModal,
-                mounted,
-            }) => {
-                const ready = mounted;
-                const connected =
-                    ready &&
-                    account &&
-                    chain
-                return (
-                    <div
-                        {...(!ready && {
-                            'aria-hidden': true,
-                            'style': {
-                                opacity: 0,
-                                pointerEvents: 'none',
-                                userSelect: 'none',
-                            },
-                        })}
-                    >
-                        {(() => {
-                            if (!connected) {
-                                return (
-                                    <SubmitButton text_align='center' isDisabled={false} isSubmitting={false} onClick={openConnectModal} buttonStyle='filled' size="medium">
-                                        Connect wallet
-                                    </SubmitButton>
-                                );
-                            }
-                            return (<>
-                            </>);
-                        })()}
-                        {
-                            (() => {
-                                if (connected)
-                                    return <>
-                                        <div className="flex flex-row text-white text-base space-x-2">
-                                            <div className='basis-1/3'>
-                                                <SubmitButton onClick={openAccountModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline'>
-                                                    {shortenAddress(account.address)}
-                                                </SubmitButton>
-                                            </div>
-                                            {
-                                                (() => {
-                                                    if (chain && chain.id === chainId) {
-                                                        return <div className='basis-2/3'>
-                                                            <SubmitButton text_align='center' isDisabled={false} isSubmitting={false} onClick={handleTransfer} buttonStyle='filled' size="medium">
-                                                                Transfer {amount}
-                                                            </SubmitButton>
-                                                        </div>
-                                                    }
-                                                    else {
-                                                        return <div className='basis-2/3'>
-                                                            <SubmitButton text_align='center' isDisabled={false} isSubmitting={false} onClick={handleChangeNetwork} buttonStyle='filled' size="medium">
-                                                                Change network
-                                                            </SubmitButton>
-                                                        </div>
-                                                    }
-                                                })()
-                                            }
-
-                                        </div>
-                                    </>
-                            })()
-                        }
-
-                    </div>
-                );
+            {(props) => {
+                return <TransferWithWalletButton
+                    {...props}
+                    loading={loading}
+                    chainId={chainId}
+                    chnageNetwork={switchNetwork}
+                    transfer={handleTransfer}>
+                    {buttonText}
+                </TransferWithWalletButton>
             }}
         </ConnectButton.Custom>
-        {(isWriteLoading || isTransactionPending) &&
-            <>{isWriteLoading ? 'Confirm transaction with your wallet' : (isTransactionPending ? 'Transaction in progress' : '')}</>
-        }
-        {(isPrepareError || isWriteError) && (
-            <>{(prepareError || writeError)?.message}</>
-        )}
     </>
 }
+
+type TransferWithWalletButtonProps = {
+    loading: boolean,
+    chainId: number,
+    chnageNetwork: () => void,
+    transfer: () => void,
+} & ConnectButtonChildRendererProps
+
+const TransferWithWalletButton: FC<TransferWithWalletButtonProps> = ({ account, mounted, chain, chainId, loading, openConnectModal, chnageNetwork, transfer, children }) => {
+
+    const connected = !!(mounted && account && chain)
+    const handlerType = getTransferWithWalletButtonHandlerType({ connected, connectedChainId: chain.id, chainId: chainId })
+
+    const clcikHandler = () => {
+        switch (handlerType) {
+            case ButtonHandler.Connect:
+                return openConnectModal()
+            case ButtonHandler.ChangeNetwork:
+                return chnageNetwork()
+            case ButtonHandler.Transfer:
+                return transfer()
+        }
+    }
+
+    return <div
+        {...(!mounted && {
+            'aria-hidden': true,
+            'style': {
+                opacity: 0,
+                pointerEvents: 'none',
+                userSelect: 'none',
+            },
+        })}
+    >
+        <div className="flex flex-row text-white text-base space-x-2">
+            <SubmitButton text_align='center' isDisabled={loading} isSubmitting={loading} onClick={clcikHandler} buttonStyle='filled' size="medium">
+                {children}
+            </SubmitButton>
+        </div>
+    </div>
+}
+
+const getWalletMessage = ({ isWriteLoading, transactionLoading, isTransactionPending }: { isWriteLoading: boolean, transactionLoading: boolean, isTransactionPending: boolean }): string => {
+    if (isWriteLoading || transactionLoading)
+        return 'Confirm transaction with your wallet'
+    else if (isTransactionPending)
+        return 'Transaction in progress'
+}
+
+enum ButtonHandler {
+    Connect,
+    ChangeNetwork,
+    Transfer
+}
+
+const getTransferWithWalletButtonHandlerType = ({ connected, connectedChainId, chainId }: { connected: boolean, connectedChainId: number, chainId: number }): ButtonHandler => {
+    if (!connected)
+        return ButtonHandler.Connect
+    else if (connectedChainId !== chainId)
+        return ButtonHandler.ChangeNetwork
+    else
+        return ButtonHandler.Transfer
+}
+
+type ConnectButtonChildRendererProps = {
+    account?: {
+        address: string;
+        balanceDecimals?: number;
+        balanceFormatted?: string;
+        balanceSymbol?: string;
+        displayBalance?: string;
+        displayName: string;
+        ensAvatar?: string;
+        ensName?: string;
+        hasPendingTransactions: boolean;
+    };
+    chain?: {
+        hasIcon: boolean;
+        iconUrl?: string;
+        iconBackground?: string;
+        id: number;
+        name?: string;
+        unsupported?: boolean;
+    };
+    mounted: boolean;
+    authenticationStatus?: AuthenticationStatus;
+    openAccountModal: () => void;
+    openChainModal: () => void;
+    openConnectModal: () => void;
+    accountModalOpen: boolean;
+    chainModalOpen: boolean;
+    connectModalOpen: boolean;
+}
+
 export default TransferFromWallet
