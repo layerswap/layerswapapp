@@ -7,7 +7,6 @@ import { forwardRef } from 'react';
 import inIframe from './utils/inIframe';
 import IconButton from './buttons/iconButton';
 import { ReactPortal } from './Wizard/Widget';
-import useWindowDimensions from '../hooks/useWindowDimensions';
 
 type modalSize = 'small' | 'medium' | 'large';
 export type modalHeight = 'auto' | 'large';
@@ -181,7 +180,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${modalHeight === 'large' ? 'h-[80%]' : ''} group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue-800 ${className} shadow-lg border-t border-darkblue-500 pb-6 sm:hidden`}
+                className={`${modalHeight === 'large' ? 'h-[80%]' : ''} group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue-900 ${className} shadow-lg border-t border-darkblue-500 pb-6 sm:hidden`}
                 initial={{ y: "100%" }}
                 animate={controls}
                 exit={{ y: "100%", transition: { delay: 0 } }}
@@ -193,7 +192,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 dragConstraints={{ top: 0, bottom: 0 }}
                 onAnimationComplete={onAnimationCompleted}
             >
-                <div className='px-5 py-3 mb-4 rounded-t-2xl bg-darkblue-900  border-b border-darkblue-500'>
+                <div className='px-5 py-3 mb-4 rounded-t-2xl bg-darkblue-950 border-b border-darkblue-500'>
                     <div className='grid grid-cols-6 items-center'>
                         {
                             dismissible &&
