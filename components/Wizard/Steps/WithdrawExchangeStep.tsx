@@ -58,7 +58,7 @@ const WithdrawExchangeStep: FC = () => {
     const [openDocSlideover, setOpenDocSlideover] = useState(false)
     let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithExchangeWithdrawGuide: false }, 'configs')
     const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
-    const [openAddressNote, setOpenAddressNote] = useState((!storageAlreadyFamiliar.alreadyFamiliarWithExchangeWithdrawGuide ? true : false))
+    const [openSwapGuide, setOpenSwapGuide] = useState(!storageAlreadyFamiliar.alreadyFamiliarWithExchangeWithdrawGuide ? true : false)
     const { width } = useWindowDimensions()
 
     const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
@@ -76,8 +76,12 @@ const WithdrawExchangeStep: FC = () => {
         setOpenCancelConfirmModal(true)
     }
 
+    const handleOpenSwapGuide = () => {
+        setOpenSwapGuide(true)
+    }
+
     const hanldeGuideModalClose = () => {
-        setOpenAddressNote(false)
+        setOpenSwapGuide(false)
         if (localAlreadyFamiliar && !storageAlreadyFamiliar.alreadyFamiliarWithExchangeWithdrawGuide) {
             setStorageAlreadyFamiliar({ ...storageAlreadyFamiliar, alreadyFamiliarWithExchangeWithdrawGuide: true })
         }
@@ -221,18 +225,18 @@ const WithdrawExchangeStep: FC = () => {
                                 <div className={`mb-6 grid grid-cols-1 gap-5 `}>
                                     <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
                                         <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
-                                            <div className='flex items-center gap-1 text-sm'>
+                                            <div className='flex items-center gap-1 text-sm my-2'>
                                                 <span>Network:</span>
                                                 {sourceNetworks.length === 1 ?
-                                                    <div className='flex space-x-1 items-center w-fit'>
+                                                    <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
                                                         <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${sourceNetworks[0]?.internal_name.toLowerCase()}.png`}></Image>
                                                         <span>{sourceNetworks[0].display_name}</span>
                                                     </div>
                                                     :
                                                     <Select>
-                                                        <SelectTrigger className="w-fit border-none !h-fit !p-0">
+                                                        <SelectTrigger className="w-fit border-none !text-white !font-semibold !h-fit !p-0">
                                                             <SelectValue placeholder={
-                                                                <div className="flex items-center">
+                                                                <div className="flex items-center text-white font-semibold">
                                                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                                                         {
                                                                             defaultSourceNetwork &&
@@ -327,6 +331,11 @@ const WithdrawExchangeStep: FC = () => {
                                             <GuideLink text={source_exchange?.display_name} userGuideUrl={source_exchange_settings.ExchangeWithdrawalGuideUrl} />
                                         </WarningMessage>
                                     }
+                                    <WarningMessage messageType='informing'>
+                                        <span className='flex-none'>
+                                            Open <button type='button' onClick={handleOpenSwapGuide} className='text-primary hover:text-primary-400'>Swap guide</button>
+                                        </span>
+                                    </WarningMessage>
                                 </div>
                             </div>
                         </div>
@@ -409,55 +418,58 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget >
-        <Modal modalSize='medium' setShowModal={setOpenAddressNote} showModal={openAddressNote} title={<span className='text-white'>Here's how it works</span>} dismissible={false} openAnimationDelay={0.7}>
-            <div className='rounded-md w-full h-full flex flex-col items-left justify-center space-y-4 text-left'>
-                <div className='space-y-5 text-base text-primary-text'>
-                    <div className='space-y-3'>
-                        <p><span className='text-primary'>.01</span> Copy the Deposit Address <span className='text-white'>({shortenAddress(swap?.deposit_address)})</span>, or scan the QR code</p>
-                        <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
-                            <Image src={firstGuidePic} className='w-full rounded-xl' alt={''} />
+        <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} header={<span className='text-white'>Here's how it works</span>} openAnimationDelay={0.7} dismissible={false} place={'inStep'}>
+            {() => (
+                <div className='rounded-md w-full flex flex-col items-left justify-center space-y-4 text-left'>
+                    <div className='space-y-5 text-base text-primary-text'>
+                        <p>To complete the swap, you need to manually send assets from your exchange account, to the Deposit Address generated by Layerswap.</p>
+                        <div className='space-y-3'>
+                            <p><span className='text-primary'>.01</span> Copy the Deposit Address <span className='text-white'>({shortenAddress(swap?.deposit_address)})</span>, or scan the QR code</p>
+                            <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
+                                <Image src={firstGuidePic} className='w-full rounded-xl' alt={''} />
+                            </div>
                         </div>
-                    </div>
-                    <div className='space-y-3'>
-                        <p><span className='text-primary'>.02</span> Send <span className='text-white'>{source_network_currency?.asset}</span> to that address from <span className='text-white'>{source_exchange?.display_name}</span></p>
-                        <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
-                            <Image src={secondGuidePic} className='w-full rounded-xl' alt={''} />
+                        <div className='space-y-3'>
+                            <p><span className='text-primary'>.02</span> Send <span className='text-white'>{source_network_currency?.asset}</span> to that address from <span className='text-white'>{source_exchange?.display_name}</span></p>
+                            <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
+                                <Image src={secondGuidePic} className='w-full rounded-xl' alt={''} />
+                            </div>
                         </div>
-                    </div>
-                    <div className='space-y-3'>
-                        <p><span className='text-primary'>.03</span> Make sure to send via one of the supported networks</p>
-                        <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
-                            <Image src={thirdGuidePic} className='w-full rounded-xl' alt={''} />
+                        <div className='space-y-3'>
+                            <p><span className='text-primary'>.03</span> Make sure to send via one of the supported networks</p>
+                            <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
+                                <Image src={thirdGuidePic} className='w-full rounded-xl' alt={''} />
+                            </div>
                         </div>
-                    </div>
-                    <div className='space-y-3'>
-                    <p><span className='text-primary'>.04</span> Your assets are bridged to the destination network, to the address that you provided at the first page</p>
-                        <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
-                            <Image src={fourthGuidePic} className='w-full rounded-xl' alt={''} />
+                        <div className='space-y-3'>
+                            <p><span className='text-primary'>.04</span> Your assets are bridged to the destination network, to the address that you provided at the first page</p>
+                            <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
+                                <Image src={fourthGuidePic} className='w-full rounded-xl' alt={''} />
+                            </div>
                         </div>
-                    </div>
 
-                </div>
-                <div className='space-y-3'>
-                    <div className="flex justify-left items-center">
-                        <input
-                            name="alreadyFamiliar"
-                            id='alreadyFamiliar'
-                            type="checkbox"
-                            className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
-                            onChange={handleToggleChange}
-                            checked={localAlreadyFamiliar}
-                        />
-                        <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
-                            Don't show me this again
-                        </label>
                     </div>
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
-                        Got it
-                    </SubmitButton>
+                    <div className='space-y-3'>
+                        <div className="flex justify-left items-center">
+                            <input
+                                name="alreadyFamiliar"
+                                id='alreadyFamiliar'
+                                type="checkbox"
+                                className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-300 text-priamry focus:ring-darkblue-600"
+                                onChange={handleToggleChange}
+                                checked={localAlreadyFamiliar}
+                            />
+                            <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
+                                Don't show me this again
+                            </label>
+                        </div>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
+                            Got it
+                        </SubmitButton>
+                    </div>
                 </div>
-            </div>
-        </Modal>
+            )}
+        </SlideOver>
         <SwapCancelModal onCancel={handleCancelSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
     </>
     )

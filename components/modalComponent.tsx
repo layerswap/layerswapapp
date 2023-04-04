@@ -136,10 +136,10 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
     );
 }
 
-export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, onAnimationCompleted, setShowModal, children, title, className, modalHeight, description, dismissible = true }, topmostRef) => {
+export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, onAnimationCompleted, setShowModal, children, title, className, modalHeight, description, dismissible = true, openAnimationDelay = 0 }, topmostRef) => {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
-    const transitionProps = { type: "spring", stiffness: 500, damping: 42 };
+    const transitionProps = { type: "spring", stiffness: 500, damping: 42, delay: openAnimationDelay };
 
     async function handleDragEnd(_, info) {
         const offset = info.offset.y;
@@ -147,7 +147,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
         const height = mobileModalRef.current.getBoundingClientRect().height;
         if ((offset > height / 2 || velocity > 800) && dismissible) {
             closeButtonRef?.current?.focus()
-            await controls.start({ y: "100%", transition: transitionProps });
+            await controls.start({ y: "100%", transition: transitionProps, });
             setShowModal(false);
         } else {
             controls.start({ y: 0, transition: transitionProps });
@@ -174,7 +174,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 key="backdrop"
                 className="fixed inset-0 z-20 bg-black/50 sm:hidden block overflow-auto"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                animate={{ opacity: 1, transition: { delay: openAnimationDelay } }}
                 exit={{ opacity: 0 }}
                 onClick={handleCloseModal}
             />
@@ -184,7 +184,7 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 className={`${modalHeight === 'large' ? 'h-[80%]' : ''} group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue-800 ${className} shadow-lg border-t border-darkblue-500 pb-6 sm:hidden`}
                 initial={{ y: "100%" }}
                 animate={controls}
-                exit={{ y: "100%" }}
+                exit={{ y: "100%", transition: { delay: 0 } }}
                 transition={transitionProps}
                 drag="y"
                 dragDirectionLock
