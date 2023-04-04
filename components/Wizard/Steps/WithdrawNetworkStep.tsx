@@ -188,9 +188,21 @@ const WithdrawNetworkStep: FC = () => {
                                             </p>
                                         </BackgroundField>
                                         <BackgroundField header={'Asset'} withoutBorder>
-                                            <p>
-                                                {destination_network_asset}
-                                            </p>
+                                            <div className="flex items-center">
+                                                <div className="flex-shrink-0 h-5 w-5 relative">
+                                                    {
+                                                        destination_network_asset &&
+                                                        <Image
+                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
+                                                            alt="From Logo"
+                                                            height="60"
+                                                            width="60"
+                                                            className="rounded-md object-contain"
+                                                        />
+                                                    }
+                                                </div>
+                                                <div className="mx-1 block">{destination_network_asset}</div>
+                                            </div>
                                         </BackgroundField>
                                     </div>
                                 </div>
