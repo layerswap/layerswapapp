@@ -51,6 +51,7 @@ function RewardsComponent() {
     const now = new Date()
     const difference_in_days = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
     const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
+    const period = new Date(settings?.campaigns[0]?.reward_limit_period).getDay()
 
     const network = networks.find(n => n.internal_name === settings?.campaigns[0]?.network_name)
     const periodRewardClaimed = (settings.campaigns[0].reward_limit_for_period / rewards?.user_reward?.period_pending_amount)
@@ -167,12 +168,12 @@ function RewardsComponent() {
                                                 </BackgroundField>
                                             </div>
                                             <div className="bg-darkblue-700 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
-                                                <BackgroundField header='Daily Reward Claimed' withoutBorder>
+                                                <BackgroundField header='Daily Reward Earned' withoutBorder>
                                                     <div className="flex flex-col w-full gap-2">
                                                         <Progress value={periodRewardClaimed === Infinity ? 0 : periodRewardClaimed} />
                                                         <div className="flex justify-between w-full font-semibold text-sm ">
                                                             <div className="text-primary"><span className="text-white">{rewards.user_reward.period_pending_amount}</span> / {settings.campaigns[0].reward_limit_for_period} {settings.campaigns[0].asset}</div>
-                                                            <p className="text-primary-text">Refreshes every day</p>
+                                                            <p className="text-primary-text">Refreshes every {period > 1 ? `${period} days` : 'day'}</p>
                                                         </div>
                                                     </div>
                                                 </BackgroundField>
@@ -200,7 +201,7 @@ function RewardsComponent() {
                                                                             </th>
                                                                         </tr>
                                                                     </thead>
-                                                                    <tbody className="divide-y divide-gray-700">
+                                                                    <tbody className="divide-y divide-darkblue-600">
                                                                         {payouts.map((payout) => (
                                                                             <tr key={payout.transaction_id}>
                                                                                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6 underline hover:no-underline">
