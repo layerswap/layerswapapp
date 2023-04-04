@@ -252,7 +252,7 @@ export const RewardsComponentSceleton = () => {
         <div className="flex justify-start">
           <div className="rounded-md w-48 bg-gray-500 h-[28px] animate-pulse" />
         </div>
-        <div className=" bg-darkblue-700 divide-y divide-darkblue-300 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
+        <div className=" bg-darkblue-700 divide-y divide-darkblue-500 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
           <BackgroundField header={<span className="flex justify-between"><span>Pending Earnings</span><span>Next Airdrop</span></span>} withoutBorder>
             <div className="flex justify-between w-full text-2xl">
               <div className="flex items-center space-x-1">

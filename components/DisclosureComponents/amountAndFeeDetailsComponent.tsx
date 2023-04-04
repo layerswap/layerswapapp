@@ -77,7 +77,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                             <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                         </label>
                                         <span className="text-right">
-                                            {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : " ~1-2 minutes"}
+                                            {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.baseObject?.asset}</>}
                                         </span>
                                     </div>
                                 }
@@ -87,7 +87,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         Estimated arrival
                                     </label>
                                     <span className="text-right">
-                                        ~1-2 minutes
+                                        {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : " ~1-2 minutes"}
                                     </span>
                                 </div>
                             </>
@@ -111,21 +111,24 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                         <p>{campaignAsset?.asset} Reward</p>
                         <ClickTooltip text='The amount of onboarding reward that you’ll be able to claim as a refund.' />
                     </div>
-                    {reward > 0 && <div className="flex items-center space-x-1">
-                        <span>+</span>
-                        <div className="h-5 w-5 relative">
-                            <Image
-                                src={`${resource_storage_url}/layerswap/currencies/${campaign?.asset?.toLowerCase()}.png`}
-                                alt="Project Logo"
-                                height="40"
-                                width="40"
-                                loading="eager"
-                                className="rounded-md object-contain" />
+                    {
+                        reward > 0 &&
+                        <div className="flex items-center space-x-1">
+                            <span>+</span>
+                            <div className="h-5 w-5 relative">
+                                <Image
+                                    src={`${resource_storage_url}/layerswap/currencies/${campaign?.asset?.toLowerCase()}.png`}
+                                    alt="Project Logo"
+                                    height="40"
+                                    width="40"
+                                    loading="eager"
+                                    className="rounded-md object-contain" />
+                            </div>
+                            <p>
+                                ~{reward} {campaignAsset?.asset}
+                            </p>
                         </div>
-                        <p>
-                            ~{reward} {campaignAsset?.asset}
-                        </p>
-                    </div>}
+                    }
                 </motion.div>}
         </>
     )

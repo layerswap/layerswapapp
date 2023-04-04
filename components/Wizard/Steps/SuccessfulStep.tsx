@@ -2,7 +2,7 @@ import { ExternalLink } from 'lucide-react';
 import { Home } from 'lucide-react';
 import { FC, useCallback } from 'react'
 import { useAuthState, UserType } from '../../../context/authContext';
-import { FormWizardProvider, useFormWizardaUpdate } from '../../../context/formWizardProvider';
+import { FormWizardProvider } from '../../../context/formWizardProvider';
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
 import { AuthStep } from '../../../Models/Wizard';
@@ -10,22 +10,29 @@ import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import GuestCard from '../../guestCard';
 import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
+import { truncateDecimals } from '../../utils/RoundDecimals';
+import Image from 'next/image';
 
 const SuccessfulStep: FC = () => {
-    const { networks } = useSettingsState()
+    const { networks, campaigns, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { swap } = useSwapDataState()
     const { userType } = useAuthState()
 
     const { destination_network: destination_network_internal_name } = swap
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
-
     const transaction_explorer_template = destination_network?.transaction_explorer_template
+    const currency = currencies.find(c => c.asset === swap?.source_network_asset)
 
     const handleViewInExplorer = useCallback(() => {
         if (!transaction_explorer_template)
             return
         window.open(transaction_explorer_template.replace("{0}", swap?.output_transaction?.transaction_id), '_blank')
     }, [transaction_explorer_template])
+
+    const campaign = campaigns?.find(c => c.network_name === swap?.destination_network)
+    const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
+    const feeinUsd = swap?.fee * currency?.usd_price
+    const reward = truncateDecimals(((feeinUsd * campaign?.percentage / 100) / campaignAsset?.usd_price), campaignAsset?.precision)
 
     return (
         <>
@@ -41,6 +48,21 @@ const SuccessfulStep: FC = () => {
                                 :
                                 <span>Your swap was successfully completed. Your assets are on their way to your exchange account.</span>
                         }
+                        <div className="flex justify-center items-center space-x-1">
+                            <span>+</span>
+                            <div className="h-5 w-5 relative">
+                                <Image
+                                    src={`${resource_storage_url}/layerswap/currencies/${campaign?.asset?.toLowerCase()}.png`}
+                                    alt="Project Logo"
+                                    height="40"
+                                    width="40"
+                                    loading="eager"
+                                    className="rounded-md object-contain" />
+                            </div>
+                            <p>
+                                ~{reward} {campaignAsset?.asset}
+                            </p>
+                        </div>
                     </MessageComponent.Description>
                     {
                         userType && userType != UserType.AuthenticatedUser &&
@@ -48,6 +70,7 @@ const SuccessfulStep: FC = () => {
                             <GuestCard />
                         </FormWizardProvider>
                     }
+
                 </MessageComponent.Content>
                 <MessageComponent.Buttons>
                     <div className="flex flex-row text-white text-base space-x-2">
