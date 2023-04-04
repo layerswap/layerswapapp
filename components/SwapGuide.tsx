@@ -35,17 +35,6 @@ const SwapGuide = ({ swap }: { swap: SwapItem }) => {
                         </div>
                     </div>}
                 </div>
-                <div>
-                    <p className='text-primary'>DONE</p>
-                    <ul className='list-disc ml-5'>
-                        <li>
-                            Assets are bridged by Layerswap
-                        </li>
-                        <li>
-                            To the address you provided at the first page
-                        </li>
-                    </ul>
-                </div>
             </div>
 
         </div>
