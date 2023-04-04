@@ -48,21 +48,6 @@ const SuccessfulStep: FC = () => {
                                 :
                                 <span>Your swap was successfully completed. Your assets are on their way to your exchange account.</span>
                         }
-                        <div className="flex justify-center items-center space-x-1">
-                            <span>+</span>
-                            <div className="h-5 w-5 relative">
-                                <Image
-                                    src={`${resource_storage_url}/layerswap/currencies/${campaign?.asset?.toLowerCase()}.png`}
-                                    alt="Project Logo"
-                                    height="40"
-                                    width="40"
-                                    loading="eager"
-                                    className="rounded-md object-contain" />
-                            </div>
-                            <p>
-                                ~{reward} {campaignAsset?.asset}
-                            </p>
-                        </div>
                     </MessageComponent.Description>
                     {
                         userType && userType != UserType.AuthenticatedUser &&

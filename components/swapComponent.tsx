@@ -11,7 +11,6 @@ import inIframe from './utils/inIframe';
 import { useAuthState, UserType } from '../context/authContext';
 import GuestCard from './guestCard';
 import { TimerProvider } from '../context/timerContext';
-import CampaignCard from './CampaignCard';
 
 
 const Swap: FC = () => {
@@ -40,7 +39,6 @@ const Swap: FC = () => {
           </UserExchangeProvider>
         </SwapDataProvider >
       </MenuProvider>
-      <CampaignCard />
       {
         !embadded &&
         <IntroCard />
