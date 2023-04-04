@@ -19,22 +19,24 @@ import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
+import TransferFromWallet from './Wallet/Transfer';
+import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks } = useSettingsState()
+    const { networks, currencies } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
     const { swap } = useSwapDataState()
-    const { setInterval, cancelSwap } = useSwapDataUpdate()
+    const { setInterval, cancelSwap, mutateSwap } = useSwapDataUpdate()
     const goHome = useGoHome()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
-
+    const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
     useEffect(() => {
         setInterval(15000)
         return () => setInterval(0)
@@ -73,11 +75,15 @@ const WithdrawNetworkStep: FC = () => {
         }
     }, [swap])
 
-    const handleOpenModal = () => {
-        setOpenCancelConfirmModal(true)
+    const onTRansactionComplete = async (trxId: string) => {
+        const layerSwapApiClient = new LayerSwapApiClient()
+        await layerSwapApiClient.ApplyNetworkInput(swap.id, trxId)
+        await mutateSwap()
     }
-    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[source_network_internal_name]?.UserGuideUrlForDesktop
 
+    const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
+    const userGuideUrlForDesktop = sourceNetworkSettings?.UserGuideUrlForDesktop
+    const sourceChainId = sourceNetworkSettings?.ChainId
     return (
         <>
             <Widget>
@@ -147,7 +153,7 @@ const WithdrawNetworkStep: FC = () => {
                                         <span className='flex-none'>
                                             Learn how to send from
                                         </span>
-                                        <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep"/>
+                                        <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep" />
                                     </WarningMessage>
                                 }
                                 {
@@ -156,7 +162,7 @@ const WithdrawNetworkStep: FC = () => {
                                         <span className='flex-none'>
                                             Learn how to do
                                         </span>
-                                        <GuideLink text='Cross-Chain swap' userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/cross-chain' place="inStep"/>
+                                        <GuideLink text='Cross-Chain swap' userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/cross-chain' place="inStep" />
                                     </WarningMessage>
                                 }
                             </div>
@@ -165,61 +171,8 @@ const WithdrawNetworkStep: FC = () => {
                 </Widget.Content>
                 <Widget.Footer>
                     {
-                        !transferDone &&
-                        <>
-                            <div className="flex text-center mb-4 space-x-2">
-                                <div className='relative'>
-                                    <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                    <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                    <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
-                                </div>
-                                <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to send {destination_network_asset}</label>
-                            </div>
-                            <div className="flex flex-row text-white text-base space-x-2">
-                                <div className='basis-1/3'>
-                                    <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
-                                        <DoubleLineText
-                                            colorStyle='mltln-text-dark'
-                                            primaryText='Cancel'
-                                            secondarytext='the swap'
-                                            reversed={true}
-                                        />
-                                    </SubmitButton>
-                                </div>
-                                <div className='basis-2/3'>
-                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<Check className="h-5 w-5" aria-hidden="true" />} >
-                                        <DoubleLineText
-                                            colorStyle='mltln-text-light'
-                                            primaryText='I did'
-                                            secondarytext='the transfer'
-                                            reversed={true}
-                                        />
-                                    </SubmitButton>
-                                </div>
-                            </div>
-                        </>
-                    }
-                    {
-                        transferDone &&
-                        <SimpleTimer time={transferDoneTime} text={
-                            (remainingSeconds) => <>
-                                {`Transfers from ${source_network?.display_name} usually take less than 3 minutes`}
-                            </>}
-                        >
-                            <div className="flex text-center mb-4 space-x-2">
-                                <div className='relative'>
-                                    <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                    <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                    <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
-                                </div>
-                                <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text md:pr-10">Did the transfer but the swap is not completed yet?&nbsp;
-                                    <span onClick={() => {
-                                        boot();
-                                        show();
-                                        updateWithProps()
-                                    }} className="underline hover:no-underline cursor-pointer text-primary">Contact support</span></label>
-                            </div>
-                        </SimpleTimer>
+                        sourceChainId && swap &&
+                        <TransferFromWallet onTransferComplete={onTRansactionComplete} tokenDecimals={sourceCurrency?.decimals} tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount} />
                     }
                 </Widget.Footer>
             </Widget>

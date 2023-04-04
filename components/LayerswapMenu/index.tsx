@@ -1,5 +1,5 @@
 import { Menu } from "@headlessui/react";
-import { BookOpen, ExternalLink, Link, MenuIcon } from "lucide-react";
+import { BookOpen, ExternalLink, Link, MenuIcon, Wallet } from "lucide-react";
 import { Home, LogIn, LogOut, TableIcon, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback } from "react";
@@ -8,14 +8,17 @@ import { useMenuState } from "../../context/menu";
 import TokenService from "../../lib/TokenService";
 import { AnimatePresence, motion } from "framer-motion";
 import Item, { ItemType } from "./MenuItem";
-import { shortenEmail } from "../utils/ShortenAddress";
+import shortenAddress, { shortenEmail } from "../utils/ShortenAddress";
 import IconButton from "../buttons/iconButton";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount } from "wagmi";
 
 export default function () {
     const { email, userType } = useAuthState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
     const { menuVisible } = useMenuState()
+    const { isConnected } = useAccount();
 
     const handleLogout = useCallback(() => {
         TokenService.removeAuthData()
@@ -63,6 +66,14 @@ export default function () {
                                         className="font-bold text-sm text-left border border-darkblue-400 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-darkblue-700 ring-1 ring-black ring-opacity-5 focus:outline-none">
                                         <div className="relative z-30 py-1">
                                             {
+                                                isConnected &&
+                                                <>
+                                                    <WalletAddress />
+                                                    <hr className="horizontal-gradient" />
+                                                </>
+                                            }
+                                            {
+
                                                 userType == UserType.AuthenticatedUser ?
                                                     <>
                                                         <div className='font-light w-full text-left px-4 py-2 text-sm cursor-default flex items-center space-x-2'>
@@ -73,6 +84,7 @@ export default function () {
                                                     </>
                                                     :
                                                     <>
+
                                                         {
                                                             router.pathname != '/' &&
                                                             <Menu.Item>
@@ -157,4 +169,18 @@ export default function () {
             }
         </span>
     </>
+}
+
+const WalletAddress = () => {
+    return <ConnectButton.Custom>
+        {({ account, mounted, chain, openAccountModal }) => {
+            if (mounted && account && chain)
+                return <button type="button" onClick={openAccountModal} className='font-light w-full text-left px-4 py-2 text-sm cursor-default flex items-center space-x-2'>
+                    <Wallet className="h-4 w-4" />
+                    <span>{shortenAddress(account.address)}</span>
+                </button>
+            else
+                return <></>
+        }}
+    </ConnectButton.Custom>
 }
