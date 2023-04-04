@@ -44,7 +44,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
             {
                 !values.some(v => v.isAvailable.value === true) && (lockNetwork || lockExchange) &&
                 <div className='text-xs text-left text-primary-text mb-2'>
-                    <Info className='h-3 w-3 inline-block mb-0.5' /> You’re currently accessing Layerswap through a link from a partner. In case you want to transact with other networks, please open layerswap.io in a separate tab.
+                    <Info className='h-3 w-3 inline-block mb-0.5' /> You’re accessing Layerswap from a partner’s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.
                 </div>
             }
             <div className="relative min-h-full items-center justify-center pt-0 text-center text-white">
