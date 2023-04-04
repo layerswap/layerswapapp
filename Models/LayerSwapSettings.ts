@@ -9,7 +9,6 @@ export class LayerSwapSettings {
     exchanges: Exchange[];
     networks: CryptoNetwork[];
     currencies: Currency[];
-    partners: Partner[];
     blacklisted_addresses: BlacklistedAddress[];
     discovery: {
         identity_url: string;
