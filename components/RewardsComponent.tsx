@@ -20,12 +20,13 @@ import { disconnect } from '@wagmi/core'
 import RainbowKit from "./Wizard/Steps/Wallet/RainbowKit"
 import { Progress } from "./ProgressBar"
 import NetworkSettings from "../lib/NetworkSettings"
+import { roundDecimals, truncateDecimals } from "./utils/RoundDecimals"
 
 function RewardsComponent() {
 
     const settings = useSettingsState()
     const router = useRouter();
-    const { discovery: { resource_storage_url }, networks } = settings || { discovery: {} }
+    const { discovery: { resource_storage_url }, networks, currencies } = settings || { discovery: {} }
     const [openTopModal, setOpenTopModal] = useState(false)
     const [address, setAddress] = useState('')
 
@@ -55,6 +56,7 @@ function RewardsComponent() {
 
     const network = networks.find(n => n.internal_name === settings?.campaigns[0]?.network_name)
     const periodRewardClaimed = (settings.campaigns[0].reward_limit_for_period / rewards?.user_reward?.period_pending_amount)
+    const campaignAsset = currencies.find(c => c?.asset === settings.campaigns[0]?.asset)
 
     const handleOpenTopModal = () => {
         setOpenTopModal(true)
@@ -216,7 +218,7 @@ function RewardsComponent() {
                                                             </div>
                                                         </div>
                                                         :
-                                                        <div className="h-28 flex justify-center flex-col items-center">
+                                                        <div className="h-20 flex justify-center flex-col items-center">
                                                             <p className="text-sm">
                                                                 Here you'll see your payouts
                                                             </p>
@@ -290,7 +292,7 @@ function RewardsComponent() {
                                                                         <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(user.address)} alt="" />
                                                                         <div>
                                                                             <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
-                                                                            <p className="mt-1 text-sm font-medium text-primary-text leading-3">{user.amount} {settings.campaigns[0].asset}</p>
+                                                                            <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings.campaigns[0].asset}</p>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -367,7 +369,7 @@ function RewardsComponent() {
                                                 <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(user.address)} alt="" />
                                                 <div>
                                                     <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
-                                                    <p className="mt-1 text-sm font-medium text-primary-text leading-3">{user.amount} {settings.campaigns[0].asset}</p>
+                                                    <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings.campaigns[0].asset}</p>
                                                 </div>
                                             </div>
                                         </div>
