@@ -17,6 +17,7 @@ type Props = {
     moreClassNames?: string;
     place: slideOverPlace;
     noPadding?: boolean;
+    hideHeader?: boolean;
     dismissible?: boolean;
     modalHeight?: modalHeight;
     withoutEnterAnimation?: boolean;
@@ -24,7 +25,7 @@ type Props = {
     imperativeOpener?: [isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>]
 }
 
-const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children, dismissible = true, subHeader, withoutEnterAnimation, openAnimationDelay = 0 }) => {
+const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, moreClassNames, place, noPadding, children, dismissible = true, subHeader, withoutEnterAnimation, openAnimationDelay = 0, hideHeader }) => {
     const [open, setOpen] = useState(imperativeOpener ? imperativeOpener?.[0] : false)
     const [openAnimaionCompleted, setOpenAnimationCompleted] = useState(false)
     const { width } = useWindowDimensions()
@@ -85,21 +86,23 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
                                 transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
                             }}
                             className={`absolute inset-0 z-40 w-full hidden sm:block`}>
-                            <div className={`relative z-40 flex flex-col rounded-t-2xl md:rounded-none bg-darkblue-900 h-full space-y-3 py-4`}>
-                                <div className={`flex items-center justify-between text-primary-text px-6 sm:px-8`}>
-                                    <div className="text-xl text-white font-semibold">
-                                        <p>{header}</p>
-                                        <div className="text-base text-primary-text font-medium leading-4">
-                                            {subHeader}
+                            <div className={`relative z-40 flex flex-col rounded-t-2xl md:rounded-none bg-darkblue-900 h-full space-y-3 py-6`}>
+                                {
+                                    !hideHeader && <div className={`flex items-center justify-between text-primary-text px-6 sm:px-8`}>
+                                        <div className="text-xl text-white font-semibold space-y-1">
+                                            <p>{header}</p>
+                                            <div className="text-lg text-primary-text font-normal leading-6">
+                                                {subHeader}
+                                            </div>
                                         </div>
+                                        {
+                                            dismissible && <IconButton onClick={handleClose} icon={
+                                                <X strokeWidth={3} />
+                                            }>
+                                            </IconButton>
+                                        }
                                     </div>
-                                    {
-                                        dismissible && <IconButton onClick={handleClose} icon={
-                                            <X strokeWidth={3} />
-                                        }>
-                                        </IconButton>
-                                    }
-                                </div>
+                                }
                                 <div className={`text-primary-text relative items-center justify-center text-center h-full overflow-y-auto styled-scroll ${!noPadding ? 'px-6 sm:px-8' : ''}`}>
                                     {children && children(handleClose, openAnimaionCompleted)}
                                 </div>
@@ -111,7 +114,7 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
             <AnimatePresence>
                 {open && isMobile &&
                     <ReactPortal>
-                        <MobileModalContent modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} dismissible={dismissible} className={moreClassNames} openAnimationDelay={openAnimationDelay}>
+                        <MobileModalContent modalHeight={modalHeight} ref={mobileModalRef} showModal={open} setShowModal={setOpen} title={header} description={subHeader} dismissible={dismissible} className={moreClassNames} openAnimationDelay={openAnimationDelay}>
                             {children && children(handleClose)}
                         </MobileModalContent>
                     </ReactPortal>
