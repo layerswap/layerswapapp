@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { useIntercom } from "react-use-intercom";
+import { useAuthState } from "../../context/authContext";
 import SubmitButton from "../buttons/submitButton";
 import CardContainer from "../cardContainer";
 import LayerSwapLogo from "../icons/layerSwapLogo";
@@ -5,6 +8,15 @@ import TwitterLogo from "../icons/TwitterLogo";
 import IntroCard from "../introCard";
 
 function MaintananceContent(props) {
+    const { email, userId } = useAuthState()
+    const { boot, show, update } = useIntercom()
+    const updateWithProps = () => update({ email: email, userId: userId })
+
+    useEffect(()=>{
+        boot()
+        updateWithProps()
+    },[])
+    
     const twitterLogo = <TwitterLogo className="text-white h-6 w-6" />
     return (
         <div className="flex items-stretch flex-col">
