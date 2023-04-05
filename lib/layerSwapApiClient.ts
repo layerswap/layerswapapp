@@ -96,6 +96,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/migrate`, null, { GuestAuthorization });
     }
 
+    async RewardLeaderboard(campaign: string): Promise<ApiResponse<any>> {
+        return await this.AuthenticatedRequest<ApiResponse<any>>("PUT", `/campaigns/${campaign}/leaderboard`);
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
@@ -224,4 +228,29 @@ export enum SwapStatusInNumbers {
     Delayed = 4,
     Cancelled = 5,
     SwapsWithoutCancelled = '0&status=1&status=2&status=3&status=4'
+}
+
+export type Reward = {
+    user_reward: {
+        period_pending_amount: number,
+        total_amount: number,
+        total_pending_amount: number,
+        position: number
+    },
+    next_airdrop_date: string | Date,
+}
+
+export type Leaderboard = {
+    leaderboard: {
+        address: string,
+        amount: number,
+        position: number
+    }[],
+    leaderboard_budget: number
+}
+
+export type RewardPayout = {
+    date: string,
+    transaction_id: string,
+    amount: number
 }
