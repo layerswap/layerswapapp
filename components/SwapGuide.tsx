@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import firstGuidePic from './../public/images/withdrawGuideImages/01.png'
 import secondNetworkGuidePic from './../public/images/withdrawGuideImages/02Network.png'
-import secondExchangeGuideGuidePic from './../public/images/withdrawGuideImages/02Network.png'
+import secondExchangeGuideGuidePic from './../public/images/withdrawGuideImages/02Exchange.png'
 import thirdGuidePic from './../public/images/withdrawGuideImages/03.png'
 import shortenAddress from './utils/ShortenAddress'
 import { SwapItem } from '../lib/layerSwapApiClient'
