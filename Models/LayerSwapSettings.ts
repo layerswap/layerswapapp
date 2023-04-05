@@ -15,4 +15,13 @@ export class LayerSwapSettings {
         resource_storage_url: string;
     }
     validSignatureisPresent?: boolean;
+    campaigns: {
+        name: string,
+        asset: string,
+        network_name: string,
+        percentage: number,
+        reward_limit_for_period: number,
+        reward_limit_period: number,
+        end_date: string
+    }[]
 };
