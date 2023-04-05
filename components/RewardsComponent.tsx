@@ -18,6 +18,7 @@ import { Progress } from "./ProgressBar"
 import NetworkSettings from "../lib/NetworkSettings"
 import { truncateDecimals } from "./utils/RoundDecimals"
 import HeaderWithMenu from "./HeaderWithMenu"
+import SubmitButton from "./buttons/submitButton";
 
 function RewardsComponent() {
 
@@ -89,7 +90,7 @@ function RewardsComponent() {
                                         <div className="space-y-5">
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-1">
-                                                    <div className="h-5 w-5 relative">
+                                                    <div className="h-7 w-7 relative">
                                                         <Image
                                                             src={`${resource_storage_url}/layerswap/networks/${network.internal_name?.toLowerCase()}.png`}
                                                             alt="Project Logo"
@@ -98,10 +99,10 @@ function RewardsComponent() {
                                                             loading="eager"
                                                             className="rounded-md object-contain" />
                                                     </div>
-                                                    <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards <ClickTooltip text={`Onboarding incentives that are earned by bridging to ${network?.display_name}. For each transfer, you’ll receive ~80% of Layerswap service fee back.`} /></p>
+                                                    <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards <ClickTooltip text={<span>Onboarding incentives that are earned by bridging to {network?.display_name}. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></span>} /></p>
                                                 </div>
                                                 <div className="bg-darkblue-700 divide-y divide-darkblue-500 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
-                                                    <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${settings.campaigns[0].asset} tokens that will be airdropped in a 2-week period.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
+                                                    <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${settings.campaigns[0].asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                                         <div className="flex justify-between w-full text-2xl">
                                                             <div className="flex items-center space-x-1">
                                                                 <div className="h-5 w-5 relative">
@@ -210,7 +211,7 @@ function RewardsComponent() {
                                     <div className="space-y-5">
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-1">
-                                                <div className="h-5 w-5 relative">
+                                                <div className="h-7 w-7 relative">
                                                     <Image
                                                         src={`${resource_storage_url}/layerswap/networks/${network.internal_name?.toLowerCase()}.png`}
                                                         alt="Project Logo"
@@ -221,23 +222,8 @@ function RewardsComponent() {
                                                 </div>
                                                 <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards </p>
                                             </div>
-                                            <p className="text-primary-text text-base">Onboarding incentives that you can earn by transferring assets to {network?.display_name}. For each transaction, you’ll receive {settings?.campaigns[0]?.percentage}% of Layerswap service fee back. <a className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></p>
+                                            <p className="text-primary-text text-base">Onboarding incentives that you can earn by transferring assets to {network?.display_name}. For each transaction, you’ll receive {settings?.campaigns[0]?.percentage}% of Layerswap service fee back. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></p>
                                         </div>
-                                        <RainbowKit>
-                                            <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700 hover:shadow-xl`}>
-                                                <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
-                                                    <Wallet className="h-6 w-6 text-primary-text" />
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <div className="block text-sm font-medium">
-                                                        Wallet Connect
-                                                    </div>
-                                                    <div className="text-gray-500">
-                                                        Connect a wallet to check your balance
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </RainbowKit>
                                     </div>
                                 }
                                 {
@@ -325,6 +311,11 @@ function RewardsComponent() {
                                         </div>
                                     )
                                 }
+                                <RainbowKit>
+                                    <SubmitButton isDisabled={false} isSubmitting={false} icon={<Wallet className="h-6 w-6 " />}>
+                                        Wallet Connect
+                                    </SubmitButton>
+                                </RainbowKit>
                             </div>
                             :
                             <div className="h-[364px] flex flex-col items-center justify-center space-y-4">
