@@ -42,6 +42,8 @@ function RewardsComponent() {
     const difference_in_days = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
     const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
     const period = new Date(settings?.campaigns[0]?.reward_limit_period).getDay()
+    const campaignEndDate = new Date(settings?.campaigns[0].end_date)
+    const isCampaignEnded = Math.round(((campaignEndDate.getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
     const network = networks.find(n => n.internal_name === settings?.campaigns[0]?.network_name)
     const periodRewardClaimed = (settings?.campaigns[0]?.reward_limit_for_period / rewards?.user_reward?.period_pending_amount)
@@ -78,7 +80,7 @@ function RewardsComponent() {
                 <div className="space-y-5">
                     <HeaderWithMenu goBack={handleGoBack} />
                     {
-                        settings?.campaigns?.length > 0 ?
+                        !isCampaignEnded ?
                             <div className="space-y-5 px-6 md:px-8">
                                 {isConnected ?
                                     (!rewards || !payouts ?
@@ -146,7 +148,7 @@ function RewardsComponent() {
                                                     </BackgroundField>
                                                 </div>
                                                 <div className="bg-darkblue-700 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
-                                                    <BackgroundField header='Daily Reward Earned' withoutBorder>
+                                                    <BackgroundField header='Weekly Reward Earned' withoutBorder>
                                                         <div className="flex flex-col w-full gap-2">
                                                             <Progress value={periodRewardClaimed === Infinity ? 0 : periodRewardClaimed} />
                                                             <div className="flex justify-between w-full font-semibold text-sm ">
