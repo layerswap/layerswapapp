@@ -225,14 +225,14 @@ function RewardsComponent() {
                                         <RewardsComponentLeaderboardSceleton />
                                         :
                                         leaderboard?.leaderboard?.length > 0 &&
-                                        <div className="space-y-1">
+                                        <div className="space-y-2">
                                             <div className="flex items-center justify-between">
-                                                <p className="font-bold  text-left leading-">Leaderboard</p>
-                                                <button onClick={handleOpenTopModal} type="button" className=" leading-4 text-lg text-primary-text hover:text-primary-text/70 duration-200 transition">
-                                                    See top 10
+                                                <p className="font-bold text-left leading-5">Leaderboard</p>
+                                                <button onClick={handleOpenTopModal} type="button" className=" leading-4 text-base text-primary underline hover:no-underline hover:text-primary/80">
+                                                    Top 10
                                                 </button>
                                             </div>
-                                            <p className="text-sm text-primary-text/70">Users who earn the most rewards throughout the program will be featured here and will earn additional rewards.</p>
+                                            <p className="text-sm text-primary-text">Users who earn the most throughout the program will be featured here, and will earn additional rewards.</p>
                                             <div className="bg-darkblue-700 border border-darkblue-700 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg">
                                                 <div className="p-3">
                                                     {leaderboard?.leaderboard?.length > 0 ? <div className="space-y-6">
