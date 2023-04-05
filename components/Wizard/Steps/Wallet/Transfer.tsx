@@ -1,8 +1,8 @@
 import { AuthenticationStatus, ConnectButton } from "@rainbow-me/rainbowkit";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { useAccount, useContractWrite, usePrepareContractWrite, usePrepareSendTransaction, useSendTransaction, useSwitchNetwork, useWaitForTransaction } from "wagmi";
 import SubmitButton from "../../../buttons/submitButton";
-import { utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import { erc20ABI } from 'wagmi'
 
 type Props = {
@@ -19,38 +19,41 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, tokenC
     const { switchNetwork, error: changeNetworkError, isError: changeNetworkHasError, status } = useSwitchNetwork({
         chainId: chainId,
     });
+    const [startTransfer, setStartTransfer] = useState(false)
 
     const [lodingOnComplete, setLoadingOnComplete] = useState<boolean>()
 
     const { config: transactionConfig,
         error: transactionPrepareError,
-        isLoading:prepareSendIsLoading,
-        isError: transactionPrepareHasError
+        isLoading: prepareSendIsLoading,
+        isError: transactionPrepareHasError,
+        isSuccess: prepareTransactionISuccess
     } = usePrepareSendTransaction({
         enabled: isConnected && !!!tokenContractAddress,
         request: {
             to: depositAddress,
             value: amount ? utils.parseEther(amount.toString()) : undefined,
+            gasLimit: BigNumber.from(1500000)
         },
         chainId: chainId,
     })
-
     const { data: transactionData, sendTransaction, error: transactionError, isError: transactionHasError, isLoading: transactionLoading } = useSendTransaction(transactionConfig)
 
     const {
         config,
         error: prepareError,
         isError: isPrepareError,
-        isLoading:prepareContractisLoading
+        isLoading: prepareContractisLoading,
+        isSuccess: prepareContractISuccess
     } = usePrepareContractWrite({
         address: tokenContractAddress,
         abi: erc20ABI,
         functionName: 'transfer',
         enabled: isConnected && !!tokenContractAddress,
-        args: [depositAddress, utils.parseUnits(amount.toString(), tokenDecimals)]
+        args: [depositAddress, utils.parseUnits(amount.toString(), tokenDecimals)],
     });
-
     const { data: writeData, write, error: writeError, isError: isWriteError, isLoading: isWriteLoading } = useContractWrite(config)
+
     const { isLoading: isTransactionPending, isSuccess } = useWaitForTransaction({
         hash: writeData?.hash || transactionData?.hash,
         onSuccess: async (trxRcpt) => {
@@ -59,6 +62,16 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, tokenC
             setLoadingOnComplete(false)
         }
     })
+    const { address:wagmiAddress } = useAccount()
+    // useEffect(() => {
+    //     if (isTransactionPending)
+    //         return
+    //     if(startTransfer && ())
+    //     if (typeof write === 'function')
+    //         return write()
+    //     if (typeof sendTransaction === 'function')
+    //         return sendTransaction()
+    // }, [write, sendTransaction, startTransfer, prepareTransactionISuccess, prepareContractISuccess, isTransactionPending])
 
     const handleTransfer = useCallback(() => {
         if (typeof write === 'function')
@@ -71,7 +84,7 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, tokenC
     const hasError = isPrepareError || isWriteError || transactionPrepareHasError || transactionHasError || changeNetworkHasError
     const error = prepareError || writeError || transactionPrepareError || transactionError || changeNetworkError
     const message = error?.["reason"] || getWalletMessage({ isWriteLoading, isTransactionPending, transactionLoading })
-    const buttonText = hasError ? 'Try again' : 'Transfer with wallet'
+    const buttonText = transactionHasError || changeNetworkHasError ? 'Try again' : 'Transfer with wallet'
 
     return <>
         {message && (
