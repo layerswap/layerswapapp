@@ -21,6 +21,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
     const feeinUsd = fee * currency?.baseObject?.usd_price
     const reward = truncateDecimals(((feeinUsd * campaign?.percentage / 100) / campaignAsset?.usd_price), campaignAsset?.precision)
+    const isCampaignEnded = Math.round(((new Date(campaign?.end_date).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
     const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
     const destinationNetworkCurrency = to?.baseObject?.currencies.find(c => c.asset === currency?.baseObject?.asset);
@@ -95,7 +96,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                     </AccordionItem>
                 </Accordion>
             </div>
-            {campaign &&
+            {campaign && !isCampaignEnded &&
                 <motion.div
                     initial={{ y: "-100%" }}
                     animate={{
