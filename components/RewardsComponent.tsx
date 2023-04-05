@@ -47,7 +47,7 @@ function RewardsComponent() {
     const isCampaignEnded = Math.round(((campaignEndDate.getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
     const network = networks.find(n => n.internal_name === settings?.campaigns[0]?.network_name)
-    const periodRewardClaimed = (settings?.campaigns[0]?.reward_limit_for_period / rewards?.user_reward?.period_pending_amount)
+    const periodRewardClaimed = (rewards?.user_reward?.period_pending_amount / settings?.campaigns[0]?.reward_limit_for_period) * 100
     const campaignAsset = currencies.find(c => c?.asset === settings.campaigns[0]?.asset)
 
     const handleOpenTopModal = () => {
@@ -88,7 +88,7 @@ function RewardsComponent() {
                                         <RewardsComponentSceleton />
                                         :
                                         <div className="space-y-5">
-                                            <div className="space-y-2">
+                                            <div className="space-y-4">
                                                 <div className="flex items-center gap-1">
                                                     <div className="h-7 w-7 relative">
                                                         <Image
