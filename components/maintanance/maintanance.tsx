@@ -17,6 +17,9 @@ function MaintananceContent(props) {
                         </p>
                         <span className="block xl:inline">We'll be back</span>{' '}
                         <span className="block text-primary xl:inline">in 2 hours <span className="block xl:inline text-xl">(17:00 UTC)</span></span>
+                        <p className="mt-4 text-primary-text">
+                            Any pending swap will be completed after maintanance.
+                        </p>
                     </h1>
                     <SubmitButton onClick={() => window.open('https://twitter.com/layerswap', '_blank')} icon={twitterLogo} isDisabled={false} isSubmitting={false}>Follow for updates</SubmitButton>
                 </div>
