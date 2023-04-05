@@ -10,9 +10,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import Item, { ItemType } from "./MenuItem";
 import { shortenEmail } from "../utils/ShortenAddress";
 import IconButton from "../buttons/iconButton";
+import { useSettingsState } from "../../context/settings";
 
 export default function () {
     const { email, userType } = useAuthState()
+    const { campaigns } = useSettingsState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
     const { menuVisible } = useMenuState()
@@ -94,7 +96,7 @@ export default function () {
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
-                                                        {router.pathname != '/rewards' &&
+                                                        {router.pathname != '/rewards' && campaigns.length > 0 &&
                                                             <Menu.Item>
                                                                 <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
                                                                     Rewards
@@ -135,7 +137,7 @@ export default function () {
                                                             Exchange Accounts
                                                         </Item>
                                                     </Menu.Item>
-                                                    {router.pathname != '/rewards' &&
+                                                    {router.pathname != '/rewards' && campaigns.length > 0 &&
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
                                                                 Rewards
