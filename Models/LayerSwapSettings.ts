@@ -22,7 +22,7 @@ export class LayerSwapSettings {
         network_name: string,
         percentage: number,
         reward_limit_for_period: number,
-        reward_limit_period: string,
+        reward_limit_period: number,
         end_date: string
     }[]
 };

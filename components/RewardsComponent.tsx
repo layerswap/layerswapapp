@@ -42,7 +42,7 @@ function RewardsComponent() {
     const now = new Date()
     const difference_in_days = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
     const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
-    const period = new Date(settings?.campaigns[0]?.reward_limit_period).getDay()
+    const period = settings?.campaigns[0]?.reward_limit_period
     const campaignEndDate = new Date(settings?.campaigns[0].end_date)
     const isCampaignEnded = Math.round(((campaignEndDate.getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
@@ -161,55 +161,49 @@ function RewardsComponent() {
                                                 </div>
 
                                             </div>
-                                            <div className="space-y-1">
-                                                <p className="font-bold text-lg text-left">Payouts</p>
-                                                <div className=" bg-darkblue-700 divide-y divide-darkblue-300 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
-                                                    {
-                                                        payouts.length > 0 ?
-                                                            <div className="inline-block min-w-full align-middle">
-                                                                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                                                                    <table className="min-w-full divide-y divide-darkblue-500">
-                                                                        <thead className="bg-darkblue-800/70">
-                                                                            <tr>
-                                                                                <th scope="col" className="py-3.5 pl-4 text-left text-sm font-semibold  sm:pl-6">
-                                                                                    Tx Id
-                                                                                </th>
-                                                                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold ">
-                                                                                    Amount
-                                                                                </th>
-                                                                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold ">
-                                                                                    Date
-                                                                                </th>
+                                            {
+                                                payouts.length > 0 &&
+                                                <div className="space-y-1">
+                                                    <p className="font-bold text-lg text-left">Payouts</p>
+                                                    <div className=" bg-darkblue-700 divide-y divide-darkblue-300 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
+                                                        <div className="inline-block min-w-full align-middle">
+                                                            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                                                                <table className="min-w-full divide-y divide-darkblue-500">
+                                                                    <thead className="bg-darkblue-800/70">
+                                                                        <tr>
+                                                                            <th scope="col" className="py-3.5 pl-4 text-left text-sm font-semibold  sm:pl-6">
+                                                                                Tx Id
+                                                                            </th>
+                                                                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold ">
+                                                                                Amount
+                                                                            </th>
+                                                                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold ">
+                                                                                Date
+                                                                            </th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody className="divide-y divide-darkblue-600">
+                                                                        {payouts.map((payout) => (
+                                                                            <tr key={payout.transaction_id}>
+                                                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6 underline hover:no-underline">
+                                                                                    <a target={"_blank"} href={network?.transaction_explorer_template?.replace("{0}", payout.transaction_id)}>{shortenAddress(payout.transaction_id)}</a>
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-100">{payout.amount}</td>
+                                                                                <td className="px-3 py-4 text-sm text-gray-100">{new Date(payout.date).toLocaleString()}</td>
                                                                             </tr>
-                                                                        </thead>
-                                                                        <tbody className="divide-y divide-darkblue-600">
-                                                                            {payouts.map((payout) => (
-                                                                                <tr key={payout.transaction_id}>
-                                                                                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6 underline hover:no-underline">
-                                                                                        <a target={"_blank"} href={network?.transaction_explorer_template?.replace("{0}", payout.transaction_id)}>{shortenAddress(payout.transaction_id)}</a>
-                                                                                    </td>
-                                                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-100">{payout.amount}</td>
-                                                                                    <td className="px-3 py-4 text-sm text-gray-100">{new Date(payout.date).toLocaleString()}</td>
-                                                                                </tr>
-                                                                            ))}
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
                                                             </div>
-                                                            :
-                                                            <div className="h-20 flex justify-center flex-col items-center">
-                                                                <p className="text-sm">
-                                                                    Here you'll see your payouts
-                                                                </p>
-                                                            </div>
-                                                    }
-                                                </div>
-                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>}
+
                                         </div>
                                     )
                                     :
                                     <div className="space-y-5">
-                                        <div className="space-y-1">
+                                        <div className="space-y-4">
                                             <div className="flex items-center gap-1">
                                                 <div className="h-7 w-7 relative">
                                                     <Image
@@ -222,7 +216,7 @@ function RewardsComponent() {
                                                 </div>
                                                 <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards </p>
                                             </div>
-                                            <p className="text-primary-text text-base">Onboarding incentives that you can earn by transferring assets to {network?.display_name}. For each transaction, you’ll receive {settings?.campaigns[0]?.percentage}% of Layerswap service fee back. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></p>
+                                            <p className="text-primary-text text-base">You can earn ${settings?.campaigns[0]?.asset} tokens by transferring assets to {network?.display_name}. For each transaction, you’ll receive {settings?.campaigns[0]?.percentage}% of Layerswap fee back. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></p>
                                         </div>
                                     </div>
                                 }
