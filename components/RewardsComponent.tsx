@@ -48,7 +48,7 @@ function RewardsComponent() {
 
     const network = networks.find(n => n.internal_name === settings?.campaigns[0]?.network_name)
     const periodRewardClaimed = (rewards?.user_reward?.period_pending_amount / settings?.campaigns[0]?.reward_limit_for_period) * 100
-    const campaignAsset = currencies.find(c => c?.asset === settings.campaigns[0]?.asset)
+    const campaignAsset = currencies.find(c => c?.asset === settings?.campaigns[0]?.asset)
 
     const handleOpenTopModal = () => {
         setOpenTopModal(true)
@@ -102,12 +102,12 @@ function RewardsComponent() {
                                                     <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards <ClickTooltip text={<span>Onboarding incentives that are earned by transferring to {network?.display_name}. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></span>} /></p>
                                                 </div>
                                                 <div className="bg-darkblue-700 divide-y divide-darkblue-500 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
-                                                    <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${settings.campaigns[0].asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
+                                                    <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${settings?.campaigns[0]?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                                         <div className="flex justify-between w-full text-2xl">
                                                             <div className="flex items-center space-x-1">
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings.campaigns[0].asset.toLowerCase()}.png`}
+                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset?.toLowerCase()}.png`}
                                                                         alt="Project Logo"
                                                                         height="40"
                                                                         width="40"
@@ -115,7 +115,7 @@ function RewardsComponent() {
                                                                         className="rounded-full object-contain" />
                                                                 </div>
                                                                 <p>
-                                                                    {rewards?.user_reward.total_pending_amount} <span className="text-base sm:text-2xl">{settings.campaigns[0].asset}</span>
+                                                                    {rewards?.user_reward.total_pending_amount} <span className="text-base sm:text-2xl">{settings?.campaigns[0]?.asset}</span>
                                                                 </p>
                                                             </div>
                                                             <div className="flex items-center space-x-1">
@@ -126,12 +126,12 @@ function RewardsComponent() {
                                                             </div>
                                                         </div>
                                                     </BackgroundField>
-                                                    <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Total Earnings <ClickTooltip text={`${settings.campaigns[0].asset} tokens that you’ve earned so far (including Pending Earnings).`} /></span><span>Current Value</span></span>} withoutBorder>
+                                                    <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Total Earnings <ClickTooltip text={`${settings?.campaigns[0]?.asset} tokens that you’ve earned so far (including Pending Earnings).`} /></span><span>Current Value</span></span>} withoutBorder>
                                                         <div className="flex justify-between w-full text-slate-300 text-2xl">
                                                             <div className="flex items-center space-x-1">
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings.campaigns[0].asset.toLowerCase()}.png`}
+                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset?.toLowerCase()}.png`}
                                                                         alt="Project Logo"
                                                                         height="40"
                                                                         width="40"
@@ -139,11 +139,11 @@ function RewardsComponent() {
                                                                         className="rounded-full object-contain" />
                                                                 </div>
                                                                 <p>
-                                                                    {rewards?.user_reward.total_amount} <span className="text-base sm:text-2xl">{settings.campaigns[0].asset}</span>
+                                                                    {rewards?.user_reward.total_amount} <span className="text-base sm:text-2xl">{settings?.campaigns[0]?.asset}</span>
                                                                 </p>
                                                             </div>
                                                             <p>
-                                                                ${(settings.currencies.find(c => c.asset === settings.campaigns[0].asset).usd_price * rewards?.user_reward?.total_amount).toFixed(2)}
+                                                                ${(settings?.currencies.find(c => c.asset === settings?.campaigns[0]?.asset).usd_price * rewards?.user_reward?.total_amount).toFixed(2)}
                                                             </p>
                                                         </div>
                                                     </BackgroundField>
@@ -240,12 +240,12 @@ function RewardsComponent() {
                                                             leaderboard?.leaderboard?.filter(u => u.position < 4).map(user => (
                                                                 <div key={user.position} className="items-center flex justify-between">
                                                                     <div className="flex items-center">
-                                                                        <p className="text-xl font-medium text-white w-6">{user.position}.</p>
+                                                                        <p className="text-xl font-medium text-white w-fit mr-1">{user.position}.</p>
                                                                         <div className="cols-start-2 flex items-center space-x-2">
                                                                             <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(user.address)} alt="" />
                                                                             <div>
                                                                                 <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
-                                                                                <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings.campaigns[0].asset}</p>
+                                                                                <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -255,7 +255,7 @@ function RewardsComponent() {
                                                                                 <span>+</span>
                                                                                 <div className="h-3.5 w-3.5 relative">
                                                                                     <Image
-                                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings.campaigns[0].asset.toLowerCase()}.png`}
+                                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset.toLowerCase()}.png`}
                                                                                         alt="Project Logo"
                                                                                         height="40"
                                                                                         width="40"
@@ -263,7 +263,7 @@ function RewardsComponent() {
                                                                                         className="rounded-full object-contain" />
                                                                                 </div>
                                                                                 <p>
-                                                                                    <span>{leaderboardReward(user.position)} {settings.campaigns[0].asset}</span>
+                                                                                    <span>{leaderboardReward(user.position)} {settings?.campaigns[0]?.asset}</span>
                                                                                 </p>
                                                                             </div>}>
                                                                             <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-1 rounded'>
@@ -282,12 +282,12 @@ function RewardsComponent() {
                                                                 </div>}
                                                                 <div key={rewards.user_reward.position} className="items-center flex justify-between">
                                                                     <div className="flex items-center">
-                                                                        <p className="text-xl font-medium text-white w-6">{rewards.user_reward.position}.</p>
+                                                                        <p className="text-xl font-medium text-white w-fit mr-1">{rewards.user_reward.position}.</p>
                                                                         <div className="cols-start-2 flex items-center space-x-2">
                                                                             <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(rewards.user_reward.total_amount.toString())} alt="" />
                                                                             <div>
                                                                                 <p className="text-sm font-bold text-primary leading-3">You</p>
-                                                                                <p className="mt-1 text-sm font-medium text-primary-text leading-3">{rewards.user_reward.total_amount} {settings.campaigns[0].asset}</p>
+                                                                                <p className="mt-1 text-sm font-medium text-primary-text leading-3">{rewards.user_reward.total_amount} {settings?.campaigns[0]?.asset}</p>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -327,12 +327,12 @@ function RewardsComponent() {
                                 leaderboard?.leaderboard?.map(user => (
                                     <div key={user.position} className="items-center flex justify-between">
                                         <div className="flex items-center">
-                                            <p className="text-xl font-medium text-white w-6">{user.position}.</p>
+                                            <p className="text-xl font-medium text-white w-fit mr-1">{user.position}.</p>
                                             <div className="cols-start-2 flex items-center space-x-2">
                                                 <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(user.address)} alt="" />
                                                 <div>
                                                     <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
-                                                    <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings.campaigns[0].asset}</p>
+                                                    <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -344,7 +344,7 @@ function RewardsComponent() {
                                                         <span>+</span>
                                                         <div className="h-3.5 w-3.5 relative">
                                                             <Image
-                                                                src={`${resource_storage_url}/layerswap/currencies/${settings.campaigns[0].asset.toLowerCase()}.png`}
+                                                                src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset.toLowerCase()}.png`}
                                                                 alt="Project Logo"
                                                                 height="40"
                                                                 width="40"
