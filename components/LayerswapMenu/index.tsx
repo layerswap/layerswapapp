@@ -96,7 +96,7 @@ export default function () {
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
-                                                        {router.pathname != '/rewards' && campaigns.length > 0 &&
+                                                        {router.pathname != '/rewards' && campaigns?.length > 0 &&
                                                             <Menu.Item>
                                                                 <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
                                                                     Rewards
@@ -137,7 +137,7 @@ export default function () {
                                                             Exchange Accounts
                                                         </Item>
                                                     </Menu.Item>
-                                                    {router.pathname != '/rewards' && campaigns.length > 0 &&
+                                                    {router.pathname != '/rewards' && campaigns?.length > 0 &&
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
                                                                 Rewards
