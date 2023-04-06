@@ -240,7 +240,7 @@ function RewardsComponent() {
                                                             leaderboard?.leaderboard?.filter(u => u.position < 4).map(user => (
                                                                 <div key={user.position} className="items-center flex justify-between">
                                                                     <div className="flex items-center">
-                                                                        <p className="text-xl font-medium text-white w-6">{user.position}.</p>
+                                                                        <p className="text-xl font-medium text-white w-fit mr-1">{user.position}.</p>
                                                                         <div className="cols-start-2 flex items-center space-x-2">
                                                                             <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(user.address)} alt="" />
                                                                             <div>
@@ -282,7 +282,7 @@ function RewardsComponent() {
                                                                 </div>}
                                                                 <div key={rewards.user_reward.position} className="items-center flex justify-between">
                                                                     <div className="flex items-center">
-                                                                        <p className="text-xl font-medium text-white w-6">{rewards.user_reward.position}.</p>
+                                                                        <p className="text-xl font-medium text-white w-fit mr-1">{rewards.user_reward.position}.</p>
                                                                         <div className="cols-start-2 flex items-center space-x-2">
                                                                             <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(rewards.user_reward.total_amount.toString())} alt="" />
                                                                             <div>
@@ -327,7 +327,7 @@ function RewardsComponent() {
                                 leaderboard?.leaderboard?.map(user => (
                                     <div key={user.position} className="items-center flex justify-between">
                                         <div className="flex items-center">
-                                            <p className="text-xl font-medium text-white w-6">{user.position}.</p>
+                                            <p className="text-xl font-medium text-white w-fit mr-1">{user.position}.</p>
                                             <div className="cols-start-2 flex items-center space-x-2">
                                                 <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(user.address)} alt="" />
                                                 <div>
