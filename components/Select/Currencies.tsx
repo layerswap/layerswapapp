@@ -23,15 +23,15 @@ const CurrenciesField: FC = () => {
         && to
         && from?.baseObject.currencies.some(fc =>
             fc.asset === c.asset
-            && (fc.status === "active" || fc.status === "insufficient_liquidity"))
+            && fc.status !== LayerStatus.inactive)
         && to.baseObject.currencies.some(tc =>
-            tc.asset === c.asset && (tc.status === "active" || tc.status === "insufficient_liquidity"))
+            tc.asset === c.asset && tc.status !== LayerStatus.inactive)
         && !(swapType === SwapType.OffRamp && (to as SelectMenuItem<Exchange>).baseObject.currencies.filter(ec => c.asset === ec.asset && ec.is_default).some(tc => tc.network === from.baseObject.internal_name))
         && !(swapType === SwapType.OnRamp && (from as SelectMenuItem<Exchange>).baseObject.currencies.filter(ec => c.asset === ec.asset && ec.is_default).some(fc => fc.network === to.baseObject.internal_name))
         , [from, to, swapType])
 
     const currencyDisabledReason = (currency: Currency) => {
-        if (!(from && to && from?.baseObject.currencies.find(fc => fc.asset === currency.asset).is_deposit_enabled && to.baseObject.currencies.find(tc => tc.asset === currency.asset).is_withdrawal_enabled)) return { value: false, disabledReason: DisabledReason.InsufficientLiquidity }
+        if (!(from && to && from?.baseObject.currencies.find(fc => fc.asset === currency.asset).is_deposit_enabled && to.baseObject.currencies.find(tc => tc.asset === currency.asset).is_withdrawal_enabled)) return { value: false, disabledReason: DisabledReason.Inactive }
         else return { value: true, disabledReason: null }
     }
 

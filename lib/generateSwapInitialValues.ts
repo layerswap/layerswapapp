@@ -40,7 +40,7 @@ export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwa
         : availableNetworks.find(x => (x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() || x.baseObject.internal_name.toUpperCase() === to?.toUpperCase()) && x.isAvailable && !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp)
 
     const source = initialSwapType === SwapType.OnRamp ? availableExchanges.find(x => (x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() || x.baseObject.internal_name.toUpperCase() == from?.toUpperCase()) && x.baseObject.currencies)
-        : availableNetworks.find(x => ((x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && destination?.baseObject?.internal_name?.toUpperCase() !== destNetwork.toUpperCase() && x.baseObject.currencies.some(c => c.is_deposit_enabled && (c.status === 'active' || c.status === "insufficient_liquidity"))) || x.baseObject.internal_name.toUpperCase() === from?.toUpperCase()) && x.isAvailable && !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp)
+        : availableNetworks.find(x => ((x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && destination?.baseObject?.internal_name?.toUpperCase() !== destNetwork.toUpperCase() && x.baseObject.currencies.some(c => c.is_deposit_enabled && c.status !== LayerStatus.inactive)) || x.baseObject.internal_name.toUpperCase() === from?.toUpperCase()) && x.isAvailable && !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp)
 
     const availableCurrencies = currencies
         .map(c => new SelectMenuItem<Currency>(c, c.asset, c.asset, 0, `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`))

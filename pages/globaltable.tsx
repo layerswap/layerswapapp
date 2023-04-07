@@ -80,7 +80,7 @@ export async function getStaticProps() {
     const { data: settings } = await apiClient.GetSettingsAsync()
     var networks: CryptoNetwork[] = [];
     var exchanges: Exchange[] = [];
-    networks = settings.networks.filter(n => n.status !== "inactive");
+    networks = settings.networks.filter(n => n.status !== LayerStatus.inactive);
     exchanges = settings.exchanges
 
     return {
