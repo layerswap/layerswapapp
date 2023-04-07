@@ -286,8 +286,8 @@ function RewardsComponent() {
                                                                         <div className="cols-start-2 flex items-center space-x-2">
                                                                             <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(rewards.user_reward.total_amount.toString())} alt="" />
                                                                             <div>
-                                                                                <p className="text-sm font-bold text-primary leading-3">You</p>
-                                                                                <p className="mt-1 text-sm font-medium text-primary-text leading-3">{rewards.user_reward.total_amount} {settings?.campaigns[0]?.asset}</p>
+                                                                                <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", address)}><span className="text-primary">You</span></a></div>
+                                                                                <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
                                                                             </div>
                                                                         </div>
                                                                     </div>
