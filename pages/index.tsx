@@ -50,7 +50,7 @@ export async function getServerSideProps(context) {
   const { data: settings } = await apiClient.GetSettingsAsync()
 
   settings.networks = settings.networks.filter(n => n.status !== LayerStatus.inactive);
-  settings.exchanges = mapNetworkCurrencies(settings.exchanges.filter(e => e.status === LayerStatus.active), settings.networks)
+  settings.exchanges = mapNetworkCurrencies(settings.exchanges.filter(e => e.status !== LayerStatus.inactive), settings.networks)
 
 
   const resource_storage_url = settings.discovery.resource_storage_url

@@ -34,7 +34,7 @@ export async function getServerSideProps(context) {
     settings.networks = settings.networks.filter((element) =>
         element.status !== LayerStatus.inactive)
 
-    settings.exchanges = settings.exchanges.filter(e => e.status === LayerStatus.active)
+    settings.exchanges = settings.exchanges.filter(e => e.status !== LayerStatus.inactive)
 
     const resource_storage_url = settings.discovery.resource_storage_url
     if (resource_storage_url[resource_storage_url.length - 1] === "/")
