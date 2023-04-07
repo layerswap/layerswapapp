@@ -217,7 +217,7 @@ const WithdrawNetworkStep: FC = () => {
                                 }
                                 <WarningMessage messageType='informing'>
                                     <span className='flex-none'>
-                                        Open <button type='button' onClick={handleOpenSwapGuide} className='text-primary hover:text=primary-400'>Swap guide</button>
+                                        <button type='button' onClick={handleOpenSwapGuide} className='hover:text-primary-400'>Read the swap guide again</button>
                                     </span>
                                 </WarningMessage>
                                 {
