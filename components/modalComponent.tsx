@@ -55,6 +55,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
         else if (bodyOverflowChanged?.current) {
             window.document.body.style.overflow = ''
         }
+        return () => { window.document.body.style.overflow = '' }
     }, [showModal])
 
     const closeModal = useCallback(
