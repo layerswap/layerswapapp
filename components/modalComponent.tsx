@@ -78,14 +78,14 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
             {showModal && (
                 <ReactPortal>
                     <div className={query?.addressSource}>
-                        <MobileModalContent className={className} showModal={showModal} setShowModal={setShowModal} title={title} dismissible={dismissible}>
+                        <MobileModalContent className={className} showModal={showModal} setShowModal={setShowModal} title={title}>
                             {children}
                         </MobileModalContent>
                         <motion.div
                             key="backdrop"
                             className="fixed inset-0  bg-black/60 bg-opacity-10 hidden sm:block"
                             initial={{ opacity: 0 }}
-                            animate={{ opacity: 1, transition: { delay: openAnimationDelay } }}
+                            animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => closeModal(closeWithX)}
                         />
@@ -97,7 +97,7 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                             initial={{ opacity: 0 }}
                             animate={{
                                 opacity: 1,
-                                transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1], delay: openAnimationDelay },
+                                transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
                             }}
                             exit={{
                                 opacity: 0,
@@ -110,20 +110,21 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                             }}
                         >
                             <div className={constructModalSize(modalSize)}>
-                                <div className={`${className} space-y-3 min-h-[80%] max-h-[90vh] overflow-y-auto styled-scroll bg-darkblue-900 pt-6 pb-5 px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
+                                <div className={`${className} space-y-3 min-h-[80%] max-h-[90vh] bg-darkblue-900 py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
                                     <div className='flex justify-between items-center space-x-8'>
                                         <div className="text-lg text-left font-medium text-primary-text" >
                                             {title}
                                         </div>
                                         {
-                                            dismissible &&
-                                            <IconButton onClick={() => closeModal()} icon={
+                                            dismissible && <IconButton onClick={() => closeModal()} icon={
                                                 <X strokeWidth={3} />
                                             }>
                                             </IconButton>
                                         }
                                     </div>
-                                    {children}
+                                    <div className='max-h-[75vh] overflow-y-auto styled-scroll'>
+                                        {children}
+                                    </div>
                                     <div id="modal_slideover" />
                                 </div>
                             </div>

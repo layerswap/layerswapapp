@@ -22,6 +22,9 @@ import SwapForm from "./SwapForm";
 import { isValidAddress } from "../../../../lib/addressValidator";
 import NetworkSettings from "../../../../lib/NetworkSettings";
 import { useRouter } from "next/router";
+import useSWR from "swr";
+import { ApiResponse } from "../../../../Models/ApiResponse";
+import { Partner } from "../../../../Models/Partner";
 
 type Props = {
     OnSumbit: ({ values, swapId }: { values: SwapFormValues, swapId?: string }) => Promise<void>
@@ -124,9 +127,9 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const destAddress: string = query.destAddress;
 
-    const partner = query?.addressSource ?
-        settings.partners.find(p => p.internal_name?.toLowerCase() === query?.addressSource?.toLowerCase())
-        : undefined
+    const layerswapApiClient = new LayerSwapApiClient()
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/settings/apps/${query?.addressSource}`, layerswapApiClient.fetcher)
+    const partner = query?.addressSource ? partnerData?.data : undefined
 
     const isPartnerAddress = partner && destAddress;
 

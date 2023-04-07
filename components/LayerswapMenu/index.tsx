@@ -1,5 +1,5 @@
 import { Menu } from "@headlessui/react";
-import { BookOpen, ExternalLink, Link, MenuIcon } from "lucide-react";
+import { BookOpen, ExternalLink, Gift, Link, MenuIcon } from "lucide-react";
 import { Home, LogIn, LogOut, TableIcon, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback } from "react";
@@ -10,9 +10,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import Item, { ItemType } from "./MenuItem";
 import { shortenEmail } from "../utils/ShortenAddress";
 import IconButton from "../buttons/iconButton";
+import { useSettingsState } from "../../context/settings";
 
 export default function () {
     const { email, userType } = useAuthState()
+    const { campaigns } = useSettingsState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
     const { menuVisible } = useMenuState()
@@ -94,6 +96,13 @@ export default function () {
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
+                                                        {router.pathname != '/rewards' && campaigns?.length > 0 &&
+                                                            <Menu.Item>
+                                                                <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
+                                                                    Rewards
+                                                                </Item>
+                                                            </Menu.Item>
+                                                        }
                                                         <hr className="horizontal-gradient" />
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className='h-4 w-4' />} className="plausible-event-name=User+Docs">
@@ -128,6 +137,13 @@ export default function () {
                                                             Exchange Accounts
                                                         </Item>
                                                     </Menu.Item>
+                                                    {router.pathname != '/rewards' && campaigns?.length > 0 &&
+                                                        <Menu.Item>
+                                                            <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
+                                                                Rewards
+                                                            </Item>
+                                                        </Menu.Item>
+                                                    }
                                                     <hr className="horizontal-gradient" />
                                                     <Menu.Item>
                                                         <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className='h-4 w-4' />} className="plausible-event-name=User+Docs">

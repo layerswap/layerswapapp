@@ -46,8 +46,18 @@ module.exports = {
         'fade-in-down': 'fade-in-down 0.5s ease-in',
         'fadein': 'fadein 4s',
         'slide-in': 'slide-in 300ms',
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
       },
       keyframes: {
+        "accordion-down": {
+          from: { height: 0 },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: 0 },
+        },
         'fade-in': {
           '0%': {
             opacity: '0',
@@ -146,6 +156,7 @@ module.exports = {
   plugins: [
     require("@tailwindcss/forms"),
     require("@tailwindcss/typography"),
+    require("tailwindcss-animate"),
     plugin(function ({ addVariant }) {
       // Add a `third` variant, ie. `third:pb-0`
       addVariant('scrollbar', '&::-webkit-scrollbar');
