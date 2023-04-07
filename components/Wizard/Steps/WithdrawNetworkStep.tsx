@@ -19,11 +19,23 @@ import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
+import QRCode from 'qrcode.react';
+import colors from 'tailwindcss/colors';
+import tailwindConfig from '../../../tailwind.config';
+import Image from 'next/image';
+import { Configs, usePersistedState } from '../../../hooks/usePersistedState';
+import useWindowDimensions from '../../../hooks/useWindowDimensions';
+import shortenAddress from '../../utils/ShortenAddress';
+import firstGuidePic from '../../../public/images/withdrawGuideImages/01.png'
+import secondGuidePic from '../../../public/images/withdrawGuideImages/02Network.png'
+import fourthGuidePic from '../../../public/images/withdrawGuideImages/04.png'
+import SlideOver from '../../SlideOver';
+import SwapGuide from '../../SwapGuide';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks } = useSettingsState()
+    const { networks, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
@@ -33,7 +45,25 @@ const WithdrawNetworkStep: FC = () => {
     const { setInterval, cancelSwap } = useSwapDataUpdate()
     const goHome = useGoHome()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
+    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithNetworkWithdrawGuide: false }, 'configs')
+    const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
+    const [openSwapGuide, setOpenSwapGuide] = useState((!storageAlreadyFamiliar.alreadyFamiliarWithNetworkWithdrawGuide ? true : false))
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+
+    const handleToggleChange = () => {
+        setLocalAlreadyFamiliar(!localAlreadyFamiliar)
+    }
+
+    const handleOpenSwapGuide = () => {
+        setOpenSwapGuide(true)
+    }
+
+    const hanldeGuideModalClose = () => {
+        setOpenSwapGuide(false)
+        if (localAlreadyFamiliar && !storageAlreadyFamiliar.alreadyFamiliarWithNetworkWithdrawGuide) {
+            setStorageAlreadyFamiliar({ ...storageAlreadyFamiliar, alreadyFamiliarWithNetworkWithdrawGuide: true })
+        }
+    }
 
     useEffect(() => {
         setInterval(15000)
@@ -78,6 +108,17 @@ const WithdrawNetworkStep: FC = () => {
     }
     const userGuideUrlForDesktop = NetworkSettings.KnownSettings[source_network_internal_name]?.UserGuideUrlForDesktop
 
+    const qrCode = (
+        <QRCode
+            className="p-4 bg-white rounded-lg"
+            value={swap?.deposit_address}
+            size={160}
+            bgColor={colors.white}
+            fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
+            level={"H"}
+        />
+    );
+
     return (
         <>
             <Widget>
@@ -93,53 +134,77 @@ const WithdrawNetworkStep: FC = () => {
                                 </p>
                             </div>
                             <div className='mb-6 grid grid-cols-1 gap-4'>
-                                {
-                                    (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                                    <BackgroundField header={'Send type'}>
-                                        <div className='flex items-center space-x-2'>
-                                            <ArrowLeftRight className='h-4 w-4' />
-                                            <p>
-                                                To Another Loopring L2 Account
-                                            </p>
+                                <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
+                                    <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
+                                        <div className='flex items-center gap-1 text-sm my-2'>
+                                            <span>Network:</span>
+                                            <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
+                                                <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${source_network?.internal_name.toLowerCase()}.png`}></Image>
+                                                <span>{source_network?.display_name}</span>
+                                            </div>
                                         </div>
-                                    </BackgroundField>
-                                }
-                                <BackgroundField Copiable={true} QRable={true} toCopy={swap?.deposit_address} header={'Recipient'}>
-                                    <div>
-                                        <p className='break-all'>
-                                            {swap?.deposit_address}
-                                        </p>
-                                        {
-                                            (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                                            <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-darkblue-200 rounded border-dashed'>
+                                        {qrCode}
+                                    </div>
+                                    {
+                                        (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
+                                        <BackgroundField header={'Send type'} withoutBorder>
+                                            <div className='flex items-center space-x-2'>
+                                                <ArrowLeftRight className='h-4 w-4' />
                                                 <p>
-                                                    You might get a warning that this is not an activated address. You can ignore it.
+                                                    To Another Loopring L2 Account
                                                 </p>
                                             </div>
-                                        }
-                                    </div>
-                                </BackgroundField>
-                                {
-                                    (source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli || source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet) &&
-                                    <div className='flex space-x-4'>
-                                        <BackgroundField header={'Address Type'}>
+                                        </BackgroundField>
+                                    }
+                                    <BackgroundField Copiable={true} toCopy={swap?.deposit_address} header={'Deposit Address'} withoutBorder>
+                                        <div>
+                                            <p className='break-all text-white'>
+                                                {swap?.deposit_address}
+                                            </p>
+                                            {
+                                                (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
+                                                <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-darkblue-100 rounded border-dashed'>
+                                                    <p>
+                                                        You might get a warning that this is not an activated address. You can ignore it.
+                                                    </p>
+                                                </div>
+                                            }
+                                        </div>
+                                    </BackgroundField>
+                                    {
+                                        (source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli || source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet) &&
+                                        <div className='flex space-x-4'>
+                                            <BackgroundField header={'Address Type'} withoutBorder>
+                                                <p>
+                                                    EOA Wallet
+                                                </p>
+                                            </BackgroundField>
+                                        </div>
+                                    }
+                                    <div className='flex divide-x divide-darkblue-500'>
+                                        <BackgroundField Copiable={true} toCopy={swap?.requested_amount} header={'Amount'} withoutBorder>
                                             <p>
-                                                EOA Wallet
+                                                {swap?.requested_amount}
                                             </p>
                                         </BackgroundField>
+                                        <BackgroundField header={'Asset'} withoutBorder>
+                                            <div className="flex items-center">
+                                                <div className="flex-shrink-0 h-5 w-5 relative">
+                                                    {
+                                                        destination_network_asset &&
+                                                        <Image
+                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
+                                                            alt="From Logo"
+                                                            height="60"
+                                                            width="60"
+                                                            className="rounded-md object-contain"
+                                                        />
+                                                    }
+                                                </div>
+                                                <div className="mx-1 block">{destination_network_asset}</div>
+                                            </div>
+                                        </BackgroundField>
                                     </div>
-                                }
-                                <div className='flex space-x-4'>
-                                    <BackgroundField Copiable={true} toCopy={swap?.requested_amount} header={'Amount'}>
-                                        <p>
-                                            {swap?.requested_amount}
-                                        </p>
-                                    </BackgroundField>
-                                    <BackgroundField header={'Asset'}>
-                                        <p>
-                                            {destination_network_asset}
-                                        </p>
-                                    </BackgroundField>
                                 </div>
                                 {
                                     userGuideUrlForDesktop &&
@@ -147,16 +212,21 @@ const WithdrawNetworkStep: FC = () => {
                                         <span className='flex-none'>
                                             Learn how to send from
                                         </span>
-                                        <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep"/>
+                                        <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep" />
                                     </WarningMessage>
                                 }
+                                <WarningMessage messageType='informing'>
+                                    <span className='flex-none'>
+                                        <button type='button' onClick={handleOpenSwapGuide} className='hover:text-primary-400'>Read the swap guide again</button>
+                                    </span>
+                                </WarningMessage>
                                 {
-                                    !swap?.destination_exchange &&
+                                    !swap?.destination_exchange && !userGuideUrlForDesktop &&
                                     <WarningMessage messageType='informing'>
                                         <span className='flex-none'>
                                             Learn how to do
                                         </span>
-                                        <GuideLink text='Cross-Chain swap' userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/cross-chain' place="inStep"/>
+                                        <GuideLink text='Cross-Chain swap' userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/cross-chain' place="inStep" />
                                     </WarningMessage>
                                 }
                             </div>
@@ -202,7 +272,7 @@ const WithdrawNetworkStep: FC = () => {
                     {
                         transferDone &&
                         <SimpleTimer time={transferDoneTime} text={
-                            (remainingSeconds) => <>
+                            () => <>
                                 {`Transfers from ${source_network?.display_name} usually take less than 3 minutes`}
                             </>}
                         >
@@ -248,6 +318,31 @@ const WithdrawNetworkStep: FC = () => {
                     </div>
                 </div>
             </Modal>
+            <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} dismissible={false} openAnimationDelay={0.7} place={'inStep'} hideHeader>
+                {() => (
+                    <div className='rounded-md w-full flex flex-col items-left justify-center space-y-4 text-left'>
+                        <SwapGuide swap={swap} />
+                        <div className='space-y-3'>
+                            <div className="flex justify-left items-center">
+                                <input
+                                    name="alreadyFamiliar"
+                                    id='alreadyFamiliar'
+                                    type="checkbox"
+                                    className="h-4 w-4 bg-darkblue-200 rounded border-darkblue-100 text-priamry focus:ring-darkblue-100"
+                                    onChange={handleToggleChange}
+                                    checked={localAlreadyFamiliar}
+                                />
+                                <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
+                                    Don't show me this again
+                                </label>
+                            </div>
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
+                                Got it
+                            </SubmitButton>
+                        </div>
+                    </div>
+                )}
+            </SlideOver>
         </>
     )
 }
