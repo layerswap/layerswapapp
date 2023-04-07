@@ -5,6 +5,7 @@ import { SettingsProvider } from '../context/settings'
 import UserExchanges from '../components/AccountConnect'
 import { MenuProvider } from '../context/menu'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
+import { LayerStatus } from '../Models/LayerStatus'
 
 export default function Home({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url

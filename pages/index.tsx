@@ -8,6 +8,7 @@ import MaintananceContent from '../components/maintanance/maintanance'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { validateSignature } from '../helpers/validateSignature'
 import { mapNetworkCurrencies } from '../helpers/settingsHelper'
+import { LayerStatus } from '../Models/LayerStatus'
 
 type IndexProps = {
   settings?: LayerSwapSettings,

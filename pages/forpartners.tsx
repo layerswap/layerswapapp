@@ -14,6 +14,7 @@ import { useRouter } from 'next/router'
 import { MenuProvider } from '../context/menu'
 import HeaderWithMenu from '../components/HeaderWithMenu'
 import { SettingsProvider } from '../context/settings'
+import { LayerStatus } from '../Models/LayerStatus'
 
 export default function ForPartners(props) {
     const router = useRouter();

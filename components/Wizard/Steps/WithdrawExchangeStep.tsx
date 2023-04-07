@@ -40,6 +40,7 @@ import secondGuidePic from '../../../public/images/withdrawGuideImages/02Exchang
 import thirdGuidePic from '../../../public/images/withdrawGuideImages/03.png'
 import fourthGuidePic from '../../../public/images/withdrawGuideImages/04.png'
 import SwapGuide from '../../SwapGuide';
+import { LayerStatus } from '../../../Models/LayerStatus';
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {

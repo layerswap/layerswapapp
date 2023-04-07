@@ -8,6 +8,7 @@ import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
 import { SwapType } from "./layerSwapApiClient";
 import NetworkSettings from "./NetworkSettings";
+import { LayerStatus } from "../Models/LayerStatus";
 
 export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams): SwapFormValues {
     const { destNetwork, destAddress, sourceExchangeName, products, selectedProduct, amount, asset, from, to } = queryParams

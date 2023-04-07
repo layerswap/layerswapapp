@@ -9,6 +9,7 @@ import { Exchange } from "../../Models/Exchange";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import Select, { DisabledReason } from "./Select";
 import { SelectMenuItem } from "./selectMenuItem";
+import { LayerStatus } from "../../Models/LayerStatus";
 
 const CurrenciesField: FC = () => {
     const {

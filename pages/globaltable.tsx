@@ -6,6 +6,7 @@ import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
 import { useRouter } from 'next/router'
 import { ArrowLeft } from 'lucide-react'
+import { LayerStatus } from '../Models/LayerStatus'
 
 export default function GlobalTable(props) {
     const router = useRouter();

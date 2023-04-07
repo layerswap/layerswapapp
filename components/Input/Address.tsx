@@ -22,6 +22,7 @@ import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import { Wallet } from 'lucide-react'
 import makeBlockie from 'ethereum-blockies-base64';
+import { LayerStatus } from "../../Models/LayerStatus";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;

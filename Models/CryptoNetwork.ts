@@ -1,3 +1,4 @@
+import { LayerStatus } from "./LayerStatus";
 
 export class CryptoNetwork {
     display_name: string;

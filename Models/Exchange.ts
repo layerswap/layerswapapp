@@ -1,4 +1,6 @@
 import { NetworkCurrency } from "./CryptoNetwork";
+import { LayerStatus } from "./LayerStatus";
+
 
 export class Exchange {
     display_name: string;
