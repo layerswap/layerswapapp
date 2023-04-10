@@ -70,7 +70,7 @@ const SlideOver: FC<Props> = (({ header, opener, modalHeight, imperativeOpener, 
 
     return (
         <>
-            <span>{opener && opener(handleOpen)}</span>
+            {opener && opener(handleOpen)}
             <AnimatePresence>
                 {open && !isMobile &&
                     <ReactPortal wrapperId={place === "inModal" ? "modal_slideover" : "wizard_slideover"}>

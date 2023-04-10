@@ -9,7 +9,6 @@ import { useSettingsState } from '../../../context/settings';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import BackgroundField from '../../backgroundField';
-import WarningMessage from '../../WarningMessage';
 import NetworkSettings from '../../../lib/NetworkSettings';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
@@ -24,13 +23,9 @@ import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
 import Image from 'next/image';
 import { Configs, usePersistedState } from '../../../hooks/usePersistedState';
-import useWindowDimensions from '../../../hooks/useWindowDimensions';
-import shortenAddress from '../../utils/ShortenAddress';
-import firstGuidePic from '../../../public/images/withdrawGuideImages/01.png'
-import secondGuidePic from '../../../public/images/withdrawGuideImages/02Network.png'
-import fourthGuidePic from '../../../public/images/withdrawGuideImages/04.png'
 import SlideOver from '../../SlideOver';
 import SwapGuide from '../../SwapGuide';
+import SecondaryButton from '../../buttons/secondaryButton';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -48,6 +43,7 @@ const WithdrawNetworkStep: FC = () => {
     let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithNetworkWithdrawGuide: false }, 'configs')
     const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
     const [openSwapGuide, setOpenSwapGuide] = useState((!storageAlreadyFamiliar.alreadyFamiliarWithNetworkWithdrawGuide ? true : false))
+    const [openAnimationGuide, setOpenAnimationGuide] = useState(0.7)
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
 
     const handleToggleChange = () => {
@@ -55,6 +51,7 @@ const WithdrawNetworkStep: FC = () => {
     }
 
     const handleOpenSwapGuide = () => {
+        setOpenAnimationGuide(0)
         setOpenSwapGuide(true)
     }
 
@@ -112,7 +109,7 @@ const WithdrawNetworkStep: FC = () => {
         <QRCode
             className="p-4 bg-white rounded-lg"
             value={swap?.deposit_address}
-            size={160}
+            size={120}
             bgColor={colors.white}
             fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
             level={"H"}
@@ -143,7 +140,11 @@ const WithdrawNetworkStep: FC = () => {
                                                 <span>{source_network?.display_name}</span>
                                             </div>
                                         </div>
-                                        {qrCode}
+                                        <div className='p-2 bg-white bg-opacity-20 rounded-xl'>
+                                            <div className='p-2 bg-white bg-opacity-40 rounded-lg'>
+                                                {qrCode}
+                                            </div>
+                                        </div>
                                     </div>
                                     {
                                         (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
@@ -207,27 +208,22 @@ const WithdrawNetworkStep: FC = () => {
                                     </div>
                                 </div>
                                 {
-                                    userGuideUrlForDesktop &&
-                                    <WarningMessage messageType='informing'>
-                                        <span className='flex-none'>
-                                            Learn how to send from
-                                        </span>
-                                        <GuideLink text='Loopring Web' userGuideUrl={userGuideUrlForDesktop} place="inStep" />
-                                    </WarningMessage>
-                                }
-                                <WarningMessage messageType='informing'>
-                                    <span className='flex-none'>
-                                        <button type='button' onClick={handleOpenSwapGuide} className='hover:text-primary-400'>Read the swap guide again</button>
-                                    </span>
-                                </WarningMessage>
-                                {
-                                    !swap?.destination_exchange && !userGuideUrlForDesktop &&
-                                    <WarningMessage messageType='informing'>
-                                        <span className='flex-none'>
-                                            Learn how to do
-                                        </span>
-                                        <GuideLink text='Cross-Chain swap' userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/cross-chain' place="inStep" />
-                                    </WarningMessage>
+                                    !swap?.destination_exchange ?
+                                        <div className='flex w-full items-center gap-2'>
+                                            {
+                                                userGuideUrlForDesktop ?
+                                                    <GuideLink button='Loopring Web guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop} place="inStep" />
+                                                    :
+                                                    <GuideLink button='Cross-Chain swap' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/cross-chain' place="inStep" />
+                                            }
+                                            <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
+                                                Swap guide
+                                            </SecondaryButton>
+                                        </div>
+                                        :
+                                        <SecondaryButton className='bg-darkblue-800 text-primary-text' onClick={handleOpenSwapGuide}>
+                                            Swap guide
+                                        </SecondaryButton>
                                 }
                             </div>
                         </div>
@@ -318,7 +314,7 @@ const WithdrawNetworkStep: FC = () => {
                     </div>
                 </div>
             </Modal>
-            <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} dismissible={false} openAnimationDelay={0.7} place={'inStep'} hideHeader>
+            <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} dismissible={false} openAnimationDelay={openAnimationGuide} place={'inStep'} hideHeader>
                 {() => (
                     <div className='rounded-md w-full flex flex-col items-left justify-center space-y-4 text-left'>
                         <SwapGuide swap={swap} />
