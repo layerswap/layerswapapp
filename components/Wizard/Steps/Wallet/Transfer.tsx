@@ -1,9 +1,20 @@
-import { AuthenticationStatus, ConnectButton } from "@rainbow-me/rainbowkit";
-import { FC, useCallback, useEffect, useState } from "react";
-import { useAccount, useContractWrite, usePrepareContractWrite, usePrepareSendTransaction, useSendTransaction, useSwitchNetwork, useWaitForTransaction } from "wagmi";
-import SubmitButton from "../../../buttons/submitButton";
-import { BigNumber, utils } from 'ethers';
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { FC, ReactNode, useCallback, useState } from "react";
+import {
+    useAccount,
+    useContractWrite,
+    usePrepareContractWrite,
+    usePrepareSendTransaction,
+    useSendTransaction,
+    useSwitchNetwork,
+    useWaitForTransaction,
+    useNetwork
+} from "wagmi";
+import { utils } from 'ethers';
 import { erc20ABI } from 'wagmi'
+import { ArrowUpDown, Wallet, RefreshCw } from "lucide-react";
+import SubmitButton from "../../../buttons/submitButton";
+import FailIcon from "../../../icons/FailIcon";
 
 type Props = {
     chainId: number,
@@ -11,179 +22,335 @@ type Props = {
     tokenContractAddress: `0x${string}`,
     amount: number,
     tokenDecimals: number,
-    onTransferComplete: (transactionHash: string) => Promise<void>
+    onTransferComplete: (transactionHash: string) => Promise<void>,
+    networkDisplayName: string
 }
 
-const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, tokenContractAddress, tokenDecimals, onTransferComplete }) => {
+const TransferFromWallet: FC<Props> = ({ networkDisplayName, chainId, depositAddress, amount, tokenContractAddress, tokenDecimals, onTransferComplete }) => {
     const { isConnected, isDisconnected, connector, address } = useAccount();
-    const { switchNetwork, error: changeNetworkError, isError: changeNetworkHasError, status } = useSwitchNetwork({
+    const networkChange = useSwitchNetwork({
         chainId: chainId,
     });
 
-    const [lodingOnComplete, setLoadingOnComplete] = useState<boolean>()
+    const { chain: activeChain } = useNetwork();
+    const [transactionDetected, setTransactionDetected] = useState<boolean>()
+    const [buttonClicked, setButtonClicked] = useState<boolean>()
 
-    const { config: transactionConfig,
-        error: transactionPrepareError,
-        isLoading: prepareSendIsLoading,
-        isError: transactionPrepareHasError,
-        isSuccess: prepareTransactionISuccess
-    } = usePrepareSendTransaction({
+    const sendTransactionPrepare = usePrepareSendTransaction({
         enabled: isConnected && !!!tokenContractAddress,
         request: {
             to: depositAddress,
             value: amount ? utils.parseEther(amount.toString()) : undefined,
-            gasLimit: BigNumber.from(1500000)
         },
         chainId: chainId,
     })
-    const { data: transactionData, sendTransaction, error: transactionError, isError: transactionHasError, isLoading: transactionLoading } = useSendTransaction(transactionConfig)
+    const transaction = useSendTransaction(sendTransactionPrepare?.config)
 
-    const {
-        config,
-        error: prepareError,
-        isError: isPrepareError,
-        isLoading: prepareContractisLoading,
-        isSuccess: prepareContractISuccess
-    } = usePrepareContractWrite({
+    const contractWritePrepare = usePrepareContractWrite({
         address: tokenContractAddress,
         abi: erc20ABI,
         functionName: 'transfer',
         enabled: isConnected && !!tokenContractAddress,
-        args: [depositAddress, utils.parseUnits(amount.toString(), tokenDecimals)],
+        args: [depositAddress, utils.parseUnits(amount.toString(), tokenDecimals)]
     });
-    const { data: writeData, write, error: writeError, isError: isWriteError, isLoading: isWriteLoading } = useContractWrite(config)
+    const contractWrite = useContractWrite(contractWritePrepare?.config)
 
-    const { isLoading: isTransactionPending, isSuccess } = useWaitForTransaction({
-        hash: writeData?.hash || transactionData?.hash,
+    const waitForTransaction = useWaitForTransaction({
+        hash: contractWrite?.data?.hash || transaction?.data?.hash,
         onSuccess: async (trxRcpt) => {
-            setLoadingOnComplete(true)
+            setTransactionDetected(false)
             await onTransferComplete(trxRcpt.transactionHash)
-            setLoadingOnComplete(false)
+            setTransactionDetected(true)
         }
     })
-    const handleTransfer = useCallback(() => {
-        if (typeof write === 'function')
-            return write()
-        if (typeof sendTransaction === 'function')
-            return sendTransaction()
-    }, [write, sendTransaction])
 
-    const loading = isTransactionPending || transactionLoading || lodingOnComplete || prepareSendIsLoading || prepareContractisLoading;
-    const hasError = isPrepareError || isWriteError || transactionPrepareHasError || transactionHasError || changeNetworkHasError
-    const error = prepareError || writeError || transactionPrepareError || transactionError || changeNetworkError
-    const message = error?.["reason"] || getWalletMessage({ isWriteLoading, isTransactionPending, transactionLoading })
-    const buttonText = transactionHasError || changeNetworkHasError ? 'Try again' : 'Transfer with wallet'
+    const handleTransfer = useCallback(() => {
+        if (typeof contractWrite?.write === 'function')
+            return contractWrite.write()
+        if (typeof transaction?.sendTransaction === 'function')
+            return transaction.sendTransaction()
+    }, [transaction, contractWrite])
+
+    const handleButtonClick = () => {
+        setButtonClicked(true)
+    }
+    const actionMessage = getActionsMessages({ networkChange, sendTransactionPrepare, transaction, contractWritePrepare, contractWrite, ButtonClicked: buttonClicked, waitForTransaction, Network: networkDisplayName, transactionDetected })
 
     return <>
-        {message && (
-            <p className="first-letter:capitalize p-2">{message}</p>
-        )}
-        <ConnectButton.Custom>
-            {(props) => {
-                return <TransferWithWalletButton
-                    {...props}
-                    loading={loading}
-                    chainId={chainId}
-                    chnageNetwork={switchNetwork}
-                    transfer={handleTransfer}>
-                    {buttonText}
-                </TransferWithWalletButton>
-            }}
-        </ConnectButton.Custom>
+        {
+            actionMessage?.Message &&
+            <div>
+                <WalletMessage status={actionMessage.Status} header={actionMessage.Message.Header} details={actionMessage.Message.Details} />
+            </div>
+        }
+        {
+            actionMessage?.ButtonText &&
+            <TransferWithWalletButton
+                chainId={chainId}
+                chnageNetwork={networkChange?.switchNetwork}
+                transfer={handleTransfer}
+                icon={actionMessage?.ButtonIcon}
+                onButtonClick={handleButtonClick}
+                refetchPrepareTransaction={sendTransactionPrepare?.refetch}
+                refetchPrepareContractWrite={contractWritePrepare?.refetch}
+                prepareIsError={sendTransactionPrepare?.isError || contractWritePrepare?.isError}
+            >
+                {actionMessage?.ButtonText}
+            </TransferWithWalletButton>
+        }
     </>
 }
 
+
 type TransferWithWalletButtonProps = {
-    loading: boolean,
     chainId: number,
     chnageNetwork: () => void,
     transfer: () => void,
-} & ConnectButtonChildRendererProps
+    icon?: ReactNode,
+    refetchPrepareTransaction: () => void,
+    refetchPrepareContractWrite: () => void,
+    onButtonClick: () => void,
+    prepareIsError: boolean
+}
+const TransferWithWalletButton: FC<TransferWithWalletButtonProps> = ({
+    refetchPrepareTransaction,
+    refetchPrepareContractWrite,
+    onButtonClick, icon,
+    chnageNetwork,
+    transfer,
+    prepareIsError,
+    chainId,
+    children }) => {
 
-const TransferWithWalletButton: FC<TransferWithWalletButtonProps> = ({ account, mounted, chain, chainId, loading, openConnectModal, chnageNetwork, transfer, children }) => {
+    const { isConnected, connector } = useAccount();
+    const { chain: activeChain } = useNetwork();
 
-    const connected = !!(mounted && account && chain)
-    const handlerType = getTransferWithWalletButtonHandlerType({ connected, connectedChainId: chain.id, chainId: chainId })
+    const handlerType = getTransferWithWalletButtonHandlerType({
+        prepareIsError,
+        connected: isConnected,
+        connectedChainId: activeChain?.id,
+        chainId: chainId
+    })
 
-    const clcikHandler = () => {
+    const { openConnectModal } = useConnectModal();
+
+    const clcikHandler = useCallback(() => {
+        onButtonClick()
         switch (handlerType) {
             case ButtonHandler.Connect:
                 return openConnectModal()
             case ButtonHandler.ChangeNetwork:
                 return chnageNetwork()
+            case ButtonHandler.RefetchPrepare:
+                return (() => { refetchPrepareTransaction(); refetchPrepareContractWrite() })()
             case ButtonHandler.Transfer:
                 return transfer()
         }
-    }
+    }, [handlerType, openConnectModal, chnageNetwork, transfer, onButtonClick])
 
-    return <div
-        {...(!mounted && {
-            'aria-hidden': true,
-            'style': {
-                opacity: 0,
-                pointerEvents: 'none',
-                userSelect: 'none',
-            },
-        })}
-    >
+    return <div>
         <div className="flex flex-row text-white text-base space-x-2">
-            <SubmitButton text_align='center' isDisabled={loading} isSubmitting={loading} onClick={clcikHandler} buttonStyle='filled' size="medium">
+            <SubmitButton icon={icon}
+                text_align='center'
+                isDisabled={false}
+                isSubmitting={false}
+                onClick={clcikHandler}
+                buttonStyle='filled'
+                size="medium">
                 {children}
             </SubmitButton>
         </div>
     </div>
 }
 
-const getWalletMessage = ({ isWriteLoading, transactionLoading, isTransactionPending }: { isWriteLoading: boolean, transactionLoading: boolean, isTransactionPending: boolean }): string => {
-    if (isWriteLoading || transactionLoading)
-        return 'Confirm transaction with your wallet'
-    else if (isTransactionPending)
-        return 'Transaction in progress'
+
+type ActionData = {
+    error: Error | null;
+    isError: boolean;
+    isLoading: boolean;
 }
+type GetActionsMessageProps = {
+    networkChange?: ActionData,
+    sendTransactionPrepare?: ActionData,
+    transaction?: ActionData,
+    contractWritePrepare?: ActionData,
+    contractWrite?: ActionData,
+    waitForTransaction?: ActionData,
+    transactionDetected: boolean,
+    Network?: string,
+    ButtonClicked?: boolean
+}
+type GetActionsMessageRes = {
+    ButtonText?: string;
+    Message?: {
+        Header?: string;
+        Details?: string;
+    }
+    ButtonIcon?: ReactNode,
+    Status?: 'error' | 'pending'
+}
+
+const getActionsMessages = ({ networkChange,
+    contractWrite,
+    transaction,
+    Network,
+    ButtonClicked,
+    waitForTransaction,
+    transactionDetected,
+    sendTransactionPrepare,
+    contractWritePrepare }: GetActionsMessageProps): GetActionsMessageRes => {
+    if (!ButtonClicked)
+        return {
+            ButtonText: "Send from wallet",
+            ButtonIcon: <Wallet />
+        }
+
+    if (networkChange?.isLoading) {
+        return {
+            ButtonText: 'Confirm in wallet',
+            Status: "pending",
+            ButtonIcon: <Wallet />,
+            Message: {
+                Header: 'Network switch required',
+                Details: 'Confirm switching the network with your wallet'
+            }
+        }
+    }
+
+    if (transaction?.isLoading || contractWrite?.isLoading) {
+        return {
+            ButtonText: 'Confirm in wallet',
+            Status: "pending",
+            ButtonIcon: <Wallet />,
+            Message: {
+                Header: 'Waiting for signature',
+                Details: 'Please sign the transction with your wallet'
+            }
+        }
+    }
+
+    if (networkChange.isError) {
+        return {
+            ButtonText: 'Try again',
+            Status: "error",
+            Message: {
+                Header: 'Network switch failed',
+                Details: `Please try again or switch your wallet network manually to ${Network}`
+            }
+        }
+    }
+
+    if (waitForTransaction?.isLoading || transactionDetected) {
+        return {
+            Status: "pending",
+            Message: {
+                Header: 'Transaction in progress',
+                Details: 'Your transaction is published'
+            }
+        }
+    }
+
+    if (contractWritePrepare?.isLoading || sendTransactionPrepare?.isLoading) {
+        return {
+            Status: "pending",
+            Message: {
+                Header: 'Preparing the transaction',
+                Details: 'Will be ready to sign in a couple of seconds'
+            }
+        }
+    }
+
+    if (contractWritePrepare.isError || sendTransactionPrepare.isError) {
+        const error = contractWritePrepare.error || sendTransactionPrepare.error
+        const error_code = error?.['code']
+        if (error_code === 'INSUFFICIENT_FUNDS' || error_code === 'UNPREDICTABLE_GAS_LIMIT') {
+            return {
+                ButtonText: "Try again",
+                Status: "error",
+                Message: {
+                    Header: 'Insufficient funds',
+                    Details: 'The balance of the connected wallet is not enough'
+                }
+            }
+        }
+    }
+
+    const isError = contractWritePrepare?.isError
+        || contractWritePrepare?.isError
+        || waitForTransaction?.isError
+        || transaction?.isError
+        || contractWrite?.isError
+
+    if (isError) {
+        const error = contractWritePrepare?.error
+            || contractWritePrepare?.error
+            || waitForTransaction?.error
+            || transaction?.error
+            || contractWrite?.error
+        return {
+            ButtonIcon: <RefreshCw />,
+            ButtonText: "Try again",
+            Status: "error",
+            Message: {
+                Header: 'Unexpected error',
+                Details: error.message
+            }
+        }
+    }
+    return {
+        ButtonText: "Send from wallet",
+        ButtonIcon: <Wallet />
+    }
+}
+
 
 enum ButtonHandler {
     Connect,
     ChangeNetwork,
+    RefetchPrepare,
     Transfer
 }
 
-const getTransferWithWalletButtonHandlerType = ({ connected, connectedChainId, chainId }: { connected: boolean, connectedChainId: number, chainId: number }): ButtonHandler => {
+const getTransferWithWalletButtonHandlerType = ({ prepareIsError, connected, connectedChainId, chainId }:
+    { prepareIsError: boolean, connected: boolean, connectedChainId: number, chainId: number }): ButtonHandler => {
+
     if (!connected)
         return ButtonHandler.Connect
     else if (connectedChainId !== chainId)
         return ButtonHandler.ChangeNetwork
+    else if (prepareIsError)
+        return ButtonHandler.RefetchPrepare
     else
         return ButtonHandler.Transfer
 }
-
-type ConnectButtonChildRendererProps = {
-    account?: {
-        address: string;
-        balanceDecimals?: number;
-        balanceFormatted?: string;
-        balanceSymbol?: string;
-        displayBalance?: string;
-        displayName: string;
-        ensAvatar?: string;
-        ensName?: string;
-        hasPendingTransactions: boolean;
-    };
-    chain?: {
-        hasIcon: boolean;
-        iconUrl?: string;
-        iconBackground?: string;
-        id: number;
-        name?: string;
-        unsupported?: boolean;
-    };
-    mounted: boolean;
-    authenticationStatus?: AuthenticationStatus;
-    openAccountModal: () => void;
-    openChainModal: () => void;
-    openConnectModal: () => void;
-    accountModalOpen: boolean;
-    chainModalOpen: boolean;
-    connectModalOpen: boolean;
+type WalletMessageProps = {
+    header: string;
+    details?: string;
+    status: 'pending' | 'error'
+}
+const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
+    return <div className="flex text-center mb-2 space-x-2">
+        <div className='relative'>
+            {
+                status === "error" ?
+                    <FailIcon className="relative top-0 left-0 w-6 h-6 md:w-7 md:h-7" />
+                    :
+                    <>
+                        <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                        <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                        <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
+                    </>
+            }
+        </div>
+        <p className="text-left space-y-1">
+            <h3 className="text-md font-semibold self-center text-white">
+                {header}
+            </h3>
+            <p className="text-xs text-primary-text break-all">
+                {details}
+            </p>
+        </p>
+    </div>
 }
 
 export default TransferFromWallet

@@ -62,11 +62,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const { authData } = useAuthState()
         const settings = useSettingsState()
         const { isConnected, isDisconnected, connector, address: walletAddress } = useAccount({
-            onConnect({ address }) {
-                setInputValue(address)
-                setAddressConfirmed(true)
-                setFieldValue("destination_address", address)
-            },
             onDisconnect() {
                 setInputValue("")
                 setAddressConfirmed(false)
@@ -75,10 +70,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         });
 
         useEffect(() => {
-            setInputValue(walletAddress)
-            setAddressConfirmed(true)
-            setFieldValue("destination_address", walletAddress)
-        }, [walletAddress])
+            if(values.swapType !== SwapType.OffRamp){
+                setInputValue(walletAddress)
+                setAddressConfirmed(true)
+                setFieldValue("destination_address", walletAddress)
+            }
+        }, [walletAddress, values.swapType])
 
         const handleUseDepositeAddress = async () => {
             try {
@@ -170,7 +167,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         placeholder={placeholder}
                                         autoCorrect="off"
                                         type={"text"}
-                                        disabled={disabled || isConnected}
+                                        disabled={disabled || !!(isConnected && values.destination_address)}
                                         name={name}
                                         id={name}
                                         ref={inputReference}

@@ -48,7 +48,7 @@ function App({ Component, pageProps }) {
   return (
     <IntercomProvider appId={INTERCOM_APP_ID}>
       <WagmiConfig client={wagmiClient}>
-        <RainbowKitProvider modalSize="compact" chains={chains} initialChain={mainnet} theme={theme}>
+        <RainbowKitProvider modalSize="compact" chains={chains} theme={theme}>
           <Component key={router.asPath} {...pageProps} />
         </RainbowKitProvider>
       </WagmiConfig>

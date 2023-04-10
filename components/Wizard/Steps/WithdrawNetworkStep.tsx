@@ -243,7 +243,9 @@ const WithdrawNetworkStep: FC = () => {
                 <Widget.Footer>
                     {
                         sourceChainId && swap &&
-                        <TransferFromWallet onTransferComplete={onTRansactionComplete} tokenDecimals={sourceCurrency?.decimals} tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount} />
+                        <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
+                            <TransferFromWallet networkDisplayName={source_network?.display_name} onTransferComplete={onTRansactionComplete} tokenDecimals={sourceCurrency?.decimals} tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount} />
+                        </div>
                     }
                 </Widget.Footer>
             </Widget>
