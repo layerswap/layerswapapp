@@ -18,7 +18,7 @@ const ProccessingWalletTransactionStep: FC = () => {
     const swapStatusStep = GetSwapStatusStep(swap)
 
     useEffect(() => {
-        if (swapStatusStep && !(swap.status == SwapStatus.UserTransferPending && swap.has_pending_deposit && !swap.input_transaction) && swap.status != SwapStatus.UserTransferPending)
+        if (swapStatusStep && !(swap?.status == SwapStatus.UserTransferPending && swap.has_pending_deposit && !swap.input_transaction) && swap.status != SwapStatus.UserTransferPending)
             goToStep(swapStatusStep)
     }, [swapStatusStep, swap])
 

@@ -134,7 +134,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
             Order: 10,
-            AccountExplorerTemplate: 'https://voyager.online/contract/{0}',
+            AccountExplorerTemplate: 'https://starkscan.co/contract/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
             AccountExplorerTemplate: 'https://goerli.voyager.online/contract/{0}'

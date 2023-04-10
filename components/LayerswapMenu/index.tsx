@@ -1,5 +1,5 @@
 import { Menu } from "@headlessui/react";
-import { BookOpen, ExternalLink, Link, MenuIcon, Wallet } from "lucide-react";
+import { BookOpen, ExternalLink, Gift, Link, MenuIcon, Wallet } from "lucide-react";
 import { Home, LogIn, LogOut, TableIcon, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback } from "react";
@@ -12,9 +12,11 @@ import shortenAddress, { shortenEmail } from "../utils/ShortenAddress";
 import IconButton from "../buttons/iconButton";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
+import { useSettingsState } from "../../context/settings";
 
 export default function () {
     const { email, userType } = useAuthState()
+    const { campaigns } = useSettingsState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
     const { menuVisible } = useMenuState()
@@ -61,9 +63,9 @@ export default function () {
                                         opacity: 0,
                                         transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
                                     }}
-                                    className="relative z-10 py-1">
+                                    className="relative z-20 py-1">
                                     <Menu.Items
-                                        className="font-bold text-sm text-left border border-darkblue-400 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-darkblue-700 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                        className="font-bold text-sm text-left border border-darkblue-500 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-darkblue-700 ring-1 ring-black ring-opacity-5 focus:outline-none">
                                         <div className="relative z-30 py-1">
                                             {
                                                 isConnected &&
@@ -106,6 +108,13 @@ export default function () {
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
+                                                        {router.pathname != '/rewards' && campaigns?.length > 0 &&
+                                                            <Menu.Item>
+                                                                <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
+                                                                    Rewards
+                                                                </Item>
+                                                            </Menu.Item>
+                                                        }
                                                         <hr className="horizontal-gradient" />
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className='h-4 w-4' />} className="plausible-event-name=User+Docs">
@@ -140,6 +149,13 @@ export default function () {
                                                             Exchange Accounts
                                                         </Item>
                                                     </Menu.Item>
+                                                    {router.pathname != '/rewards' && campaigns?.length > 0 &&
+                                                        <Menu.Item>
+                                                            <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
+                                                                Rewards
+                                                            </Item>
+                                                        </Menu.Item>
+                                                    }
                                                     <hr className="horizontal-gradient" />
                                                     <Menu.Item>
                                                         <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className='h-4 w-4' />} className="plausible-event-name=User+Docs">

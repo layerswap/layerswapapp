@@ -19,17 +19,18 @@ module.exports = {
       colors: {
         coinbase: { primary: '#4a6cee', diabled: '#192445' },
         darkblue: {
-          DEFAULT: '#0C1527',
-          '50': '#213869',
-          '100': '#203665',
-          '200': '#1D325D',
-          '300': '#1B2D55',
-          '400': '#18294E',
+          DEFAULT: '#111D36',
+          '50': '#313C9B',
+          '100': '#2E3B93',
+          '200': '#232A70',
+          '300': '#202965',
+          '400': '#1C2759',
           '500': '#162546',
           '600': '#14213E',
           '700': '#111D36',
           '800': '#0F192F',
-          '900': '#0C1527'
+          '900': '#0C1527',
+          '950': '#0B1123',
         },
       },
       transitionDuration: {
@@ -45,8 +46,18 @@ module.exports = {
         'fade-in-down': 'fade-in-down 0.5s ease-in',
         'fadein': 'fadein 4s',
         'slide-in': 'slide-in 300ms',
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
       },
       keyframes: {
+        "accordion-down": {
+          from: { height: 0 },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: 0 },
+        },
         'fade-in': {
           '0%': {
             opacity: '0',
@@ -145,6 +156,7 @@ module.exports = {
   plugins: [
     require("@tailwindcss/forms"),
     require("@tailwindcss/typography"),
+    require("tailwindcss-animate"),
     plugin(function ({ addVariant }) {
       // Add a `third` variant, ie. `third:pb-0`
       addVariant('scrollbar', '&::-webkit-scrollbar');

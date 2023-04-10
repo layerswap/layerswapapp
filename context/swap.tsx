@@ -9,6 +9,7 @@ import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import NetworkSettings from '../lib/NetworkSettings';
+import { Partner } from '../Models/Partner';
 
 const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawManually: false });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
@@ -47,14 +48,16 @@ export function SwapDataProvider({ children }) {
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
     const [swapId, setSwapId] = useState(router.query.swapId?.toString())
+    const query = useQueryState();
+    const settings = useSettingsState();
 
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}`
     const [interval, setInterval] = useState(0)
     const { data: swapResponse, mutate } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
-    const query = useQueryState();
-    const settings = useSettingsState();
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/settings/apps/${query?.addressSource}`, layerswapApiClient.fetcher)
+    const partner = query?.addressSource ? partnerData?.data : undefined
 
     useEffect(() => {
         setCodeRequested(false)
@@ -78,7 +81,7 @@ export function SwapDataProvider({ children }) {
             asset: currency.baseObject.asset,
             destination_address: formData.destination_address,
             // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
-            partner: settings.partners.find(p => p.is_enabled && p.internal_name?.toLowerCase() === query.addressSource?.toLowerCase())?.internal_name,
+            partner: partner?.internal_name,
             external_id: query.externalId,
         }
 

@@ -30,11 +30,12 @@ import shortenAddress from "../../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
-import AvatarGroup from "../../../AvatarGroup";
 import ClickTooltip from "../../../Tooltips/ClickTooltip";
 import ToggleButton from "../../../buttons/toggleButton";
-import { ArrowLeftRight, ArrowUpDown, Fuel } from 'lucide-react'
+import { ArrowUpDown, Fuel } from 'lucide-react'
 import { useAuthState } from "../../../../context/authContext";
+import WarningMessage from "../../../WarningMessage";
+import { NetworkCurrency } from "../../../../Models/CryptoNetwork";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -59,7 +60,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
     const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
-    const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name}.png` : null
+    const partnerImage = partner?.internal_name ? `${resource_storage_url}/layerswap/partners/${partner?.internal_name?.toLowerCase()}.png` : null
     const router = useRouter();
     const [loadingDepositAddress, setLoadingDepositAddress] = useState(false)
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
@@ -127,7 +128,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     useEffect(() => {
         if (depositeAddressIsfromAccountRef.current)
             handleExchangeConnected()
-        if (swapType !== SwapType.OffRamp && !values?.to?.baseObject?.currencies.find(c => c.asset === values?.currency?.baseObject?.asset)?.is_refuel_enabled) {
+        if (swapType !== SwapType.OffRamp && !getNetworkCurrency(values)?.is_refuel_enabled) {
             handleConfirmToggleChange(false)
         }
     }, [values.currency])
@@ -194,7 +195,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             </div>
                             {
                                 swapType === SwapType.CrossChain && !valuesSwapperDisabled &&
-                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[139px] sm:top-[108px] sm:rotate-90 z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary py-1.5 p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
+                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[139px] sm:top-[110px] sm:rotate-90 z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary py-1.5 p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
                                     <motion.div
                                         animate={animate}
                                         transition={{ duration: 0.3 }}
@@ -242,7 +243,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                         </div>
                         <div className="w-full">
                             {
-                                values?.swapType !== SwapType.OffRamp && values?.to?.baseObject.currencies.find(c => c.asset === values?.currency?.name)?.is_refuel_enabled &&
+                                values?.swapType !== SwapType.OffRamp && getNetworkCurrency(values)?.is_refuel_enabled &&
                                 <div className="flex items-center justify-between px-3.5 py-3 bg-darkblue-700 border border-darkblue-500 rounded-lg mb-4">
                                     <div className="flex items-center space-x-2">
                                         <Fuel className='h-8 w-8 text-primary' />
@@ -260,6 +261,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                 </div>
                             }
                             <AmountAndFeeDetails values={values} />
+                            {
+                                getNetworkCurrency(values)?.status == 'insufficient_liquidity' &&
+                                <WarningMessage messageType="warning" className="mt-4">
+                                    <>We're experiencing delays for transfers to {values?.to?.name}. Estimated arrival time can take up to 2 hours.</>
+                                </WarningMessage>
+                            }
                         </div>
                     </Widget.Content>
                 }
@@ -313,6 +320,10 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
                 (NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c")}
         </div>
     </button>
+}
+
+function getNetworkCurrency(formValues: SwapFormValues): NetworkCurrency | undefined {
+    return formValues?.to?.baseObject?.currencies.find(c => c.asset === formValues?.currency?.baseObject?.asset);
 }
 
 export default SwapForm

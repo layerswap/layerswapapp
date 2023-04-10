@@ -11,6 +11,9 @@ import matter from 'gray-matter';
 import { useRouter } from 'next/router';
 import HeaderWithMenu from '../../../components/HeaderWithMenu';
 import { MenuProvider } from '../../../context/menu';
+import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
+import LayerSwapAuthApiClient from '../../../lib/userAuthApiClient';
+import { SettingsProvider } from '../../../context/settings';
 
 const componentOverrides = {
     img: (props) => (
@@ -22,6 +25,7 @@ export default function UserGuide({
     frontmatter: { title, date, cover_image },
     fileName,
     mdxSource,
+    settings
 }) {
     const router = useRouter();
 
@@ -31,21 +35,23 @@ export default function UserGuide({
 
     return (
         <Layout>
-            <div className="bg-darkblue shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto max-w-3xl">
-                <Head>
-                    <title>{title}</title>
-                </Head>
-                <main>
-                    <MenuProvider>
-                        <HeaderWithMenu goBack={handleGoBack} />
-                    </MenuProvider>
-                    <div className="flex-col justify-center py-4 px-8 md:px-0 sm:px-6 lg:px-8">
-                        <div className="py-4 px-8 md:px-0 prose md:prose-xl text-primary-text">
-                            <MDXRemote {...mdxSource} components={componentOverrides} />
+            <SettingsProvider data={settings}>
+                <div className="bg-darkblue-900 shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto max-w-3xl">
+                    <Head>
+                        <title>{title}</title>
+                    </Head>
+                    <main>
+                        <MenuProvider>
+                            <HeaderWithMenu goBack={handleGoBack} />
+                        </MenuProvider>
+                        <div className="flex-col justify-center py-4 px-8 md:px-0 sm:px-6 lg:px-8">
+                            <div className="py-4 px-8 md:px-0 prose md:prose-xl text-primary-text">
+                                <MDXRemote {...mdxSource} components={componentOverrides} />
+                            </div>
                         </div>
-                    </div>
-                </main>
-            </div>
+                    </main>
+                </div>
+            </SettingsProvider>
         </Layout>
     )
 }
@@ -64,11 +70,21 @@ export async function getStaticProps({ params: { fileName } }) {
         },
     });
 
+    var apiClient = new LayerSwapApiClient();
+    const { data: settings } = await apiClient.GetSettingsAsync()
+
+    const resource_storage_url = settings.discovery.resource_storage_url
+    if (resource_storage_url[resource_storage_url.length - 1] === "/")
+        settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+
+    LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+
     return {
         props: {
             frontmatter,
             fileName,
             mdxSource,
+            settings
         },
     }
 }

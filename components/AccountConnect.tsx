@@ -133,7 +133,7 @@ function UserExchanges() {
 
     return (
         <>
-            <div className='bg-darkblue px-8 md:px-12 sm:shadow-card rounded-lg w-full text-white overflow-hidden relative min-h-[400px]'>
+            <div className='bg-darkblue-900 px-8 md:px-12 sm:shadow-card rounded-lg w-full text-white overflow-hidden relative min-h-[400px]'>
                 <div className="mt-3 flex items-center justify-between z-20" >
                     <div className="flex ">
                         <button onClick={handleGoBack} className="self-start md:mt-2">

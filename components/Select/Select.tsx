@@ -6,22 +6,22 @@ import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
 import SlideOver from '../SlideOver'
-import ClickTooltip from '../Tooltips/ClickTooltip'
 import toast from 'react-hot-toast'
 
 export interface SelectProps<T> {
     name: string;
+    header: string;
     value: SelectMenuItem<T>;
     values: SelectMenuItem<T>[];
     disabled: boolean;
     placeholder: string;
     smallDropdown?: boolean;
     setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void;
-    lockNetwork: boolean;
-    lockExchange: boolean
+    lockNetwork?: boolean;
+    lockExchange?: boolean
 }
 
-export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false, lockNetwork, lockExchange }: SelectProps<T>) {
+export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false, lockNetwork, lockExchange, header }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
 
     function onChangeHandler(newValue: string) {
@@ -41,6 +41,12 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
     const valueList = (
         <div className="relative inset-0 flex flex-col h-full">
+            {
+                !values.some(v => v.isAvailable.value === true) && (lockNetwork || lockExchange) &&
+                <div className='text-xs text-left text-primary-text mb-2'>
+                    <Info className='h-3 w-3 inline-block mb-0.5' /> You’re accessing Layerswap from a partner’s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.
+                </div>
+            }
             <div className="relative min-h-full items-center justify-center pt-0 text-center text-white">
                 <Combobox
                     as="div"
@@ -79,13 +85,13 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
                                             {item.id === value?.id && item.isAvailable.value &&
                                                 <div className='flex items-center'>
-                                                    <div className="bg-darkblue-700 hover:bg-darkblue-600 rounded-md border border-darkblue-600 hover:border-darkblue-100 duration-200 transition p-0.5">
+                                                    <div className="bg-darkblue-700 hover:bg-darkblue-600 rounded-md border border-darkblue-600 hover:border-darkblue-200 duration-200 transition p-0.5">
                                                         <X className='h-4 w-4' />
                                                     </div>
                                                 </div>
                                             }
                                             {!item.isAvailable.value && !lockNetwork && !lockExchange &&
-                                                <div className='hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-0.5 rounded hover:cursor-pointer'>
+                                                <div className='hover:bg-darkblue-400 active:ring-2 active:ring-gray-200 active:bg-darkblue-500 focus:outline-none cursor-default p-0.5 rounded hover:cursor-pointer'>
                                                     <Info className='h-4 text-primary-text' />
                                                 </div>
                                             }
@@ -113,8 +119,8 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
     if (smallDropdown)
         return (
             <Listbox disabled={disabled} value={value?.id} onChange={onChangeHandler}>
-                <div className="mt-1 relative">
-                    <Listbox.Button name={name} className="w-full py-0 pl-5 pr-12 border-transparent bg-transparent font-semibold rounded-md">
+                <div className="relative">
+                    <Listbox.Button name={name} className="w-full py-0 pl-3 md:pl-5 pr-10 border-transparent bg-transparent font-semibold rounded-md">
                         {
                             value &&
                             <>
@@ -135,7 +141,7 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                                     <span className="ml-3 block truncate text-white">{value.name}</span>
                                 </span>
 
-                                <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-primary-text">
+                                <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-white">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
                                 </span>
                             </>
@@ -242,8 +248,8 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     </span>
                 </button>
             </div>
-            <SlideOver imperativeOpener={[isOpen, setIsOpen]} place='inStep'>
-                {(close) => (
+            <SlideOver imperativeOpener={[isOpen, setIsOpen]} place='inStep' header={header}>
+                {() => (
                     valueList
                 )}
             </SlideOver>
@@ -259,10 +265,10 @@ export enum DisabledReason {
 function styleOption(active: boolean, disabled: boolean) {
     let classNames = 'cursor-pointer select-none relative py-2 m-1.5 rounded-md px-3 pr-9 group';
     if (disabled) {
-        return 'text-gray-400 bg-darkblue-100 opacity-20 cursor-not-allowed ' + classNames;
+        return 'text-gray-400 bg-darkblue-200 opacity-20 cursor-not-allowed ' + classNames;
     }
     if (active) {
-        return 'text-white bg-darkblue-300 ' + classNames;
+        return 'text-white bg-darkblue-400 ' + classNames;
     }
     else {
         return 'text-white ' + classNames;

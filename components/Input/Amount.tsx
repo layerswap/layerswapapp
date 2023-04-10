@@ -49,10 +49,10 @@ const AmountField = forwardRef((_, ref: any) => {
             precision={currency?.baseObject?.precision}
             className="rounded-r-none text-white"
         >
-            {from && to && currency && < div className="text-xs flex items-center space-x-2 ml-3 md:ml-5">
+            {from && to && currency && < div className="text-xs flex items-center space-x-1 md:space-x-2 ml-2 md:ml-5">
                 <button
                     type="button"
-                    className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md hidden md:block border border-darkblue-400 hover:border-darkblue-100"
+                    className="p-1.5 duration-200 transition bg-darkblue-500 hover:bg-darkblue-400 rounded-md border border-darkblue-400 hover:border-darkblue-200"
                     onClick={() => setFieldValue(name, minAllowedAmount)}
 
                 >
@@ -61,7 +61,7 @@ const AmountField = forwardRef((_, ref: any) => {
                 <button
                     type="button"
                     onClick={() => setFieldValue(name, maxAllowedAmount)}
-                    className="p-1.5 duration-200 transition bg-darkblue-400 hover:bg-darkblue-300 rounded-md border border-darkblue-400 hover:border-darkblue-100">
+                    className="p-1.5 duration-200 transition bg-darkblue-500 hover:bg-darkblue-400 rounded-md border border-darkblue-400 hover:border-darkblue-200">
                     MAX
                 </button>
             </div>}

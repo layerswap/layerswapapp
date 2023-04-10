@@ -22,19 +22,18 @@ function GuestCard() {
     const GoBackToEmailStep = useCallback(() => goToStep(AuthStep.Email, "back"), [])
     const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
 
-    const EmailOnNext = useCallback(async () => goToStep(AuthStep.Email), []);
-
     return (
         <div className='mt-10'>
             <Wizard>
                 <WizardItem StepName={AuthStep.Email} fitHeight>
-                    <div className={noToolBar ? `p-6 border border-darkblue-400 rounded-md` : "pt-6"}>
+                    <div className={noToolBar ? `p-6 border border-darkblue-500 rounded-md` : "pt-6"}>
                         <EmailStep OnNext={GoToCodeStep} disclosureLogin />
                     </div>
                 </WizardItem>
                 <WizardItem StepName={AuthStep.Code} GoBack={GoBackToEmailStep} fitHeight>
-                    <div className={noToolBar ? `p-6 border border-darkblue-400 rounded-md` : "pt-6"}>
-                        {goBack &&
+                    <div className={noToolBar ? `p-6 border border-darkblue-500 rounded-md` : "pt-6"}>
+                        {
+                            goBack &&
                             <button onClick={goBack} className="justify-self-start text-xs text-primary-text flex items-center hover:text-primary-text/70 cursor-pointer space-x-1" style={{ visibility: false ? 'hidden' : 'visible' }}>
                                 <ArrowLeft className='h-3' />
                                 <span>Edit email</span>

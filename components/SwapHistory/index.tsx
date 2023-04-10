@@ -14,10 +14,10 @@ import SubmitButton, { DoubleLineText } from "../buttons/submitButton"
 import CopyButton from "../buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "../Sceletons"
 import GoHomeButton from "../utils/GoHome"
-import StatusIcon, {  } from "./StatusIcons"
+import StatusIcon, { } from "./StatusIcons"
 import Modal from "../modalComponent"
 import toast from "react-hot-toast"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft } from 'lucide-react'
 import { useSwapDataUpdate } from "../../context/swap"
 import { SwapStatus } from "../../Models/SwapStatus"
 import FormattedDate from "../Common/FormattedDate";
@@ -25,6 +25,7 @@ import useWindowDimensions from "../../hooks/useWindowDimensions";
 import isGuid from "../utils/isGuid";
 import KnownInternalNames from "../../lib/knownIds";
 import ToggleButton from "../buttons/toggleButton";
+import IconButton from "../buttons/iconButton";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -133,12 +134,13 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className='bg-darkblue px-8 md:px-12 md:shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative h-full '>
+    <div className='bg-darkblue-900 px-8 md:px-12 md:shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative h-full '>
       <div className="mt-3 flex items-center justify-between z-20" >
-        <div className="flex ">
-          <button onClick={handleGoBack} className="self-start md:mt-2">
-            <ArrowLeft className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
-          </button>
+        <div className="flex">
+          <IconButton onClick={handleGoBack} className="text-primary-text" icon={
+            <ArrowLeft strokeWidth="3" />
+          }>
+          </IconButton>
           {userType == UserType.AuthenticatedUser &&
             <div className="hidden md:block ml-4">
               <p className="text-2xl font-bold relative">Account</p>
@@ -290,7 +292,7 @@ function TransactionsHistory() {
                                 </div>
                                 {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
                                 <span className="flex items-center lg:hidden">
-                                  {<StatusIcon status={swap.status} />}
+                                  {swap && <StatusIcon status={swap.status} />}
                                   {/* {plan.from} - {plan.to} */}
                                 </span>
 
@@ -368,7 +370,7 @@ function TransactionsHistory() {
                                   'relative px-3 py-3.5 text-sm text-white hidden lg:table-cell group'
                                 )}
                               >
-                                {<StatusIcon status={swap.status} />}
+                                {swap && <StatusIcon status={swap.status} />}
 
                               </td>
                               <td
@@ -420,7 +422,7 @@ function TransactionsHistory() {
                       </button>
                     }
                   </div>
-                  <Modal showModal={openSwapDetailsModal} setShowModal={setOpenSwapDetailsModal} title={<p className="text-2xl text-white font-semibold">Swap details</p>} modalSize='medium'>
+                  <Modal showModal={openSwapDetailsModal} setShowModal={setOpenSwapDetailsModal} title={<p className="text-white font-semibold">Swap details</p>} modalSize='medium'>
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {

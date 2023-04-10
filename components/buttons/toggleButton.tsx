@@ -22,7 +22,7 @@ const ToggleButton: FC<ToggleButtonProps> = ({ name, onChange, value }) => {
             <span className="sr-only">Use setting</span>
             <span
                 className={classNames(
-                    value ? 'translate-x-5 bg-white' : 'bg-darkblue-100 translate-x-0',
+                    value ? 'translate-x-5 bg-white' : 'bg-darkblue-200 translate-x-0',
                     'pointer-events-none relative inline-block h-5 w-5 rounded-full shadow transform ring-0 transition ease-in-out duration-200'
                 )}
             >

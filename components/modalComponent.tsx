@@ -20,7 +20,9 @@ class ModalParams {
     className?: string;
     modalSize?: modalSize = "large";
     modalHeight?: modalHeight = "auto";
-    onAnimationCompleted?: (def: any) => void
+    onAnimationCompleted?: (def: any) => void;
+    dismissible?: boolean;
+    openAnimationDelay?: number
 }
 
 function constructModalSize(size: modalSize) {
@@ -41,7 +43,7 @@ function constructModalSize(size: modalSize) {
     return defaultModalStyle
 }
 
-const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted, children, closeWithX, title, className, modalSize = 'large' }) => {
+const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted, children, closeWithX, title, className, modalSize = 'large', dismissible = true, openAnimationDelay = 0 }) => {
     const query = useQueryState()
     const router = useRouter();
     const desktopModalRef = useRef(null);
@@ -55,10 +57,12 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
         else if (bodyOverflowChanged?.current) {
             window.document.body.style.overflow = ''
         }
+        return () => { window.document.body.style.overflow = '' }
     }, [showModal])
 
     const closeModal = useCallback(
         (closeWithX?: boolean) => {
+            if (!dismissible) return
             if (closeWithX) {
                 return;
             } else if (key) {
@@ -106,21 +110,21 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
                             }}
                         >
                             <div className={constructModalSize(modalSize)}>
-                                <div className={`${className} space-y-3 min-h-[80%] bg-darkblue py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
-                                    <div className='flex justify-between space-x-8'>
+                                <div className={`${className} space-y-3 min-h-[80%] max-h-[90vh] bg-darkblue-900 py-6 md:py-8 px-6 md:px-8 transform overflow-hidden rounded-md align-middle shadow-xl`}>
+                                    <div className='flex justify-between items-center space-x-8'>
                                         <div className="text-lg text-left font-medium text-primary-text" >
                                             {title}
                                         </div>
-                                        <button
-                                            onClick={() => closeModal()}
-                                            type="button">
-                                            <IconButton icon={
+                                        {
+                                            dismissible && <IconButton onClick={() => closeModal()} icon={
                                                 <X strokeWidth={3} />
                                             }>
                                             </IconButton>
-                                        </button>
+                                        }
                                     </div>
-                                    {children}
+                                    <div className='max-h-[75vh] overflow-y-auto styled-scroll'>
+                                        {children}
+                                    </div>
                                     <div id="modal_slideover" />
                                 </div>
                             </div>
@@ -132,18 +136,18 @@ const Modal: FC<ModalParams> = ({ showModal, setShowModal, onAnimationCompleted,
     );
 }
 
-export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, onAnimationCompleted, setShowModal, children, title, className, modalHeight, description }, topmostRef) => {
+export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<ModalParams>>(({ showModal, onAnimationCompleted, setShowModal, children, title, className, modalHeight, description, dismissible = true, openAnimationDelay = 0 }, topmostRef) => {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
-    const transitionProps = { type: "spring", stiffness: 500, damping: 42 };
+    const transitionProps = { type: "spring", stiffness: 500, damping: 42, delay: openAnimationDelay };
 
     async function handleDragEnd(_, info) {
         const offset = info.offset.y;
         const velocity = info.velocity.y;
         const height = mobileModalRef.current.getBoundingClientRect().height;
-        if (offset > height / 2 || velocity > 800) {
-            closeButtonRef.current.focus()
-            await controls.start({ y: "100%", transition: transitionProps });
+        if ((offset > height / 2 || velocity > 800) && dismissible) {
+            closeButtonRef?.current?.focus()
+            await controls.start({ y: "100%", transition: transitionProps, });
             setShowModal(false);
         } else {
             controls.start({ y: 0, transition: transitionProps });
@@ -159,7 +163,9 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
         }
     }, [showModal]);
 
-    const handleCloseModal = () => setShowModal(false)
+    const handleCloseModal = () => {
+        if (dismissible) setShowModal(false)
+    }
     const closeButtonRef = useRef(null)
 
     return (
@@ -168,17 +174,17 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 key="backdrop"
                 className="fixed inset-0 z-20 bg-black/50 sm:hidden block overflow-auto"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                animate={{ opacity: 1, transition: { delay: openAnimationDelay } }}
                 exit={{ opacity: 0 }}
                 onClick={handleCloseModal}
             />
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${modalHeight === 'large' ? 'h-[80%]' : ''} group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue ${className} shadow-lg border-t border-darkblue-100 pb-6 sm:hidden`}
+                className={`${modalHeight === 'large' ? 'h-[80%]' : ''} group fixed overflow-x-auto space-y-1 inset-x-0 bottom-0 z-40 w-screen rounded-t-2xl cursor-grab active:cursor-grabbing bg-darkblue-900 ${className} shadow-lg border-t border-darkblue-500 pb-6 sm:hidden`}
                 initial={{ y: "100%" }}
                 animate={controls}
-                exit={{ y: "100%" }}
+                exit={{ y: "100%", transition: { delay: 0 } }}
                 transition={transitionProps}
                 drag="y"
                 dragDirectionLock
@@ -187,11 +193,14 @@ export const MobileModalContent = forwardRef<HTMLDivElement, PropsWithChildren<M
                 dragConstraints={{ top: 0, bottom: 0 }}
                 onAnimationComplete={onAnimationCompleted}
             >
-                <div className='px-5 py-3 mb-4 rounded-t-2xl bg-darkblue  border-b border-darkblue-400'>
+                <div className='px-5 py-3 mb-4 rounded-t-2xl bg-darkblue-950 border-b border-darkblue-500'>
                     <div className='grid grid-cols-6 items-center'>
-                        <button ref={closeButtonRef} tabIndex={-1} className='text-base text-primary-text col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
-                            Close
-                        </button>
+                        {
+                            dismissible &&
+                            <button ref={closeButtonRef} tabIndex={-1} className='text-base text-primary col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
+                                Close
+                            </button>
+                        }
                         {
                             title ?
                                 <div tabIndex={-1} className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-white">

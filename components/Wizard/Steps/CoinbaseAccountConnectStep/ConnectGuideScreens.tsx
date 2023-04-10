@@ -1,7 +1,7 @@
 export const FirstScreen = ({ exchange_name }) => {
     return <>
         <div className='whitespace-normal text-white font-normal mb-6'><span className='font-medium text-primary'>.01</span> After this guide, you’ll be redirected to  {exchange_name} to connect your account. You might be prompted to log in to the account first.</div>
-        <div className='w-full md:w-1/2'>
+        <div className='w-2/3 md:w-1/2'>
             <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1740_2402)">
                     <rect x="3" width="407" height="844" rx="50" fill="url(#paint0_linear_1740_2402)" />
@@ -96,7 +96,7 @@ export const FirstScreen = ({ exchange_name }) => {
 export const SecondScreen = () => {
     return <>
         <div className='whitespace-normal font-normal text-white mb-6'><span className='font-medium text-primary'>.02</span> When prompted to authorize Layerswap, click <span className='strong-highlight font-medium'>Change this amount</span></div>
-        <div className='w-full md:w-1/2'>
+        <div className='w-2/3 md:w-1/2'>
             <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1741_2568)">
                     <rect x="3" width="407" height="844" rx="50" fill="url(#paint0_linear_1741_2568)" />
@@ -181,7 +181,7 @@ export const SecondScreen = () => {
 export const ThirdScreen = ({ minimalAuthorizeAmount }) => {
     return <>
         <div className='whitespace-normal font-normal text-white mb-6 w-full'><span className='font-medium text-primary'>.03</span> Change the existing 1.0 value to <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click Save</div>
-        <div className='w-full md:w-1/2'>
+        <div className='w-2/3 md:w-1/2'>
             <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1740_1883)">
                     <rect x="3" width="407" height="844" rx="50" fill="url(#paint0_linear_1740_1883)" />
@@ -374,7 +374,7 @@ export const ThirdScreen = ({ minimalAuthorizeAmount }) => {
 export const FourthScreen = ({ minimalAuthorizeAmount }) => {
     return <>
         <div className='whitespace-normal font-normal text-white mb-6 w-full'><span className='font-medium text-primary'>.04</span> Please make sure that the allowed amount is <span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span> and click <span className='strong-highlight font-medium'>Authorize</span></div>
-        <div className='w-full md:w-1/2'>
+        <div className='w-2/3 md:w-1/2'>
             <svg viewBox="0 0 413 484" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1743_2570)">
                     <rect x="3" width="407" height="844" rx="50" fill="url(#paint0_linear_1743_2570)" />
@@ -487,10 +487,9 @@ export const FourthScreen = ({ minimalAuthorizeAmount }) => {
     </>
 }
 
-export const LastScreen = ({ minimalAuthorizeAmount }) => {
+export const LastScreen = ({ minimalAuthorizeAmount, number }: { minimalAuthorizeAmount: number, number?: boolean }) => {
     return <>
-        <div className='whitespace-normal font-medium text-white mb-6 w-full'><span className='font-medium text-primary'>.05</span> Please make sure to change the allowed amount to <span className='strong-highlight'>{minimalAuthorizeAmount}</span></div>
-        <div className='w-full md:w-1/2'>
+        {number && <div className='whitespace-normal font-medium text-white mb-6 w-full'> <span className='font-medium text-primary'>.05</span> Make sure to change the allowed amount to <span className='strong-highlight'>{minimalAuthorizeAmount}</span></div>}        <div className='w-2/3 md:w-1/2'>
             <svg viewBox="0 0 447 484" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1743_2866)">
                     <rect x="3" width="407" height="844" rx="50" fill="url(#paint0_linear_1743_2866)" />
