@@ -207,19 +207,16 @@ const WithdrawNetworkStep: FC = () => {
                                         </BackgroundField>
                                     </div>
                                 </div>
-                                {
-                                    !swap?.destination_exchange ?
-                                        <div className='flex w-full items-center gap-2'>
-                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop ?? 'https://docs.layerswap.io/user-docs/your-first-swap/cross-chain'} place="inStep" />
-                                            <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
-                                                How it works
-                                            </SecondaryButton>
-                                        </div>
-                                        :
-                                        <SecondaryButton className='bg-darkblue-800 text-primary-text' onClick={handleOpenSwapGuide}>
-                                            How it works
-                                        </SecondaryButton>
-                                }
+
+                                <div className='grid grid-cols-2 w-full items-center gap-2'>
+                                    {!swap?.destination_exchange &&
+                                        <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop ?? 'https://docs.layerswap.io/user-docs/your-first-swap/cross-chain'} place="inStep" />
+                                    }
+                                    <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
+                                        How it works
+                                    </SecondaryButton>
+                                </div>
+
                             </div>
                         </div>
                     </div>
