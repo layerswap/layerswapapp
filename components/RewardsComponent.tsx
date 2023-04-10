@@ -5,7 +5,6 @@ import Image from 'next/image'
 import BackgroundField from "./backgroundField";
 import { Clock, Gift, Trophy, Wallet } from "lucide-react"
 import LayerSwapApiClient, { Leaderboard, Reward, RewardPayout } from "../lib/layerSwapApiClient"
-import makeBlockie from "ethereum-blockies-base64"
 import { RewardsComponentLeaderboardSceleton, RewardsComponentSceleton } from "./Sceletons"
 import useSWR from "swr"
 import { ApiResponse } from "../Models/ApiResponse"
@@ -19,6 +18,7 @@ import NetworkSettings from "../lib/NetworkSettings"
 import { truncateDecimals } from "./utils/RoundDecimals"
 import HeaderWithMenu from "./HeaderWithMenu"
 import SubmitButton from "./buttons/submitButton";
+import AddressIcon from "./AddressIcon";
 
 function RewardsComponent() {
 
@@ -242,7 +242,7 @@ function RewardsComponent() {
                                                                     <div className="flex items-center">
                                                                         <p className="text-xl font-medium text-white w-fit mr-1">{user.position}.</p>
                                                                         <div className="cols-start-2 flex items-center space-x-2">
-                                                                            <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(user.address)} alt="" />
+                                                                            <AddressIcon address={user.address} size={25} />
                                                                             <div>
                                                                                 <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
                                                                                 <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
@@ -284,7 +284,7 @@ function RewardsComponent() {
                                                                     <div className="flex items-center">
                                                                         <p className="text-xl font-medium text-white w-fit mr-1">{rewards.user_reward.position}.</p>
                                                                         <div className="cols-start-2 flex items-center space-x-2">
-                                                                            <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(rewards.user_reward.total_amount.toString())} alt="" />
+                                                                            <AddressIcon address={rewards.user_reward.total_amount.toString()} size={25} />
                                                                             <div>
                                                                                 <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", address)}><span className="text-primary">You</span></a></div>
                                                                                 <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
@@ -329,7 +329,7 @@ function RewardsComponent() {
                                         <div className="flex items-center">
                                             <p className="text-xl font-medium text-white w-fit mr-1">{user.position}.</p>
                                             <div className="cols-start-2 flex items-center space-x-2">
-                                                <img className="flex-shrink-0 object-cover w-8 h-8 rounded-full border-2 border-darkblue-100" src={makeBlockie(user.address)} alt="" />
+                                                <AddressIcon address={user.address} size={25} />
                                                 <div>
                                                     <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
