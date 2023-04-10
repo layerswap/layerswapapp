@@ -19,7 +19,6 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, tokenC
     const { switchNetwork, error: changeNetworkError, isError: changeNetworkHasError, status } = useSwitchNetwork({
         chainId: chainId,
     });
-    const [startTransfer, setStartTransfer] = useState(false)
 
     const [lodingOnComplete, setLoadingOnComplete] = useState<boolean>()
 
@@ -62,17 +61,6 @@ const TransferFromWallet: FC<Props> = ({ chainId, depositAddress, amount, tokenC
             setLoadingOnComplete(false)
         }
     })
-    const { address:wagmiAddress } = useAccount()
-    // useEffect(() => {
-    //     if (isTransactionPending)
-    //         return
-    //     if(startTransfer && ())
-    //     if (typeof write === 'function')
-    //         return write()
-    //     if (typeof sendTransaction === 'function')
-    //         return sendTransaction()
-    // }, [write, sendTransaction, startTransfer, prepareTransactionISuccess, prepareContractISuccess, isTransactionPending])
-
     const handleTransfer = useCallback(() => {
         if (typeof write === 'function')
             return write()
