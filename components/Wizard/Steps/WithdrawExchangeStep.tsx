@@ -325,17 +325,14 @@ const WithdrawExchangeStep: FC = () => {
                                     }
                                     {source_exchange_settings?.ExchangeWithdrawalGuideUrl ?
                                         <div className='flex w-full items-center gap-2'>
-                                            {
-                                                source_exchange_settings?.ExchangeWithdrawalGuideUrl &&
-                                                <GuideLink button={`${source_exchange?.display_name} guide`} buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} place="inStep" />
-                                            }
+                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} place="inStep" />
                                             <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
-                                                Swap guide
+                                                How it works
                                             </SecondaryButton>
                                         </div>
                                         :
                                         <SecondaryButton className='bg-darkblue-800 text-primary-text' onClick={handleOpenSwapGuide}>
-                                            Swap guide
+                                            How it works
                                         </SecondaryButton>
                                     }
                                 </div>

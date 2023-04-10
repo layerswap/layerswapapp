@@ -210,19 +210,14 @@ const WithdrawNetworkStep: FC = () => {
                                 {
                                     !swap?.destination_exchange ?
                                         <div className='flex w-full items-center gap-2'>
-                                            {
-                                                userGuideUrlForDesktop ?
-                                                    <GuideLink button='Loopring Web guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop} place="inStep" />
-                                                    :
-                                                    <GuideLink button='Cross-Chain swap' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/cross-chain' place="inStep" />
-                                            }
+                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop ?? 'https://docs.layerswap.io/user-docs/your-first-swap/cross-chain'} place="inStep" />
                                             <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
-                                                Swap guide
+                                                How it works
                                             </SecondaryButton>
                                         </div>
                                         :
                                         <SecondaryButton className='bg-darkblue-800 text-primary-text' onClick={handleOpenSwapGuide}>
-                                            Swap guide
+                                            How it works
                                         </SecondaryButton>
                                 }
                             </div>
