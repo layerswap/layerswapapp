@@ -5,6 +5,7 @@ import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import CurrenciesField from "../Select/Currencies";
 import NumericInput from "./NumericInput";
+import SecondaryButton from "../buttons/secondaryButton";
 
 const AmountField = forwardRef((_, ref: any) => {
 
@@ -36,6 +37,14 @@ const AmountField = forwardRef((_, ref: any) => {
         </div>
     )
 
+    const handleSetMinAmount = () => {
+        setFieldValue(name, minAllowedAmount)
+    }
+
+    const handleSetMaxAmount = () => {
+        setFieldValue(name, maxAllowedAmount)
+    }
+
     return (<>
         <NumericInput
             label={amountLabel}
@@ -49,22 +58,16 @@ const AmountField = forwardRef((_, ref: any) => {
             precision={currency?.baseObject?.precision}
             className="rounded-r-none text-white"
         >
-            {from && to && currency && < div className="text-xs flex items-center space-x-1 md:space-x-2 ml-2 md:ml-5">
-                <button
-                    type="button"
-                    className="p-1.5 duration-200 transition bg-darkblue-500 hover:bg-darkblue-400 rounded-md border border-darkblue-400 hover:border-darkblue-200"
-                    onClick={() => setFieldValue(name, minAllowedAmount)}
-
-                >
-                    MIN
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setFieldValue(name, maxAllowedAmount)}
-                    className="p-1.5 duration-200 transition bg-darkblue-500 hover:bg-darkblue-400 rounded-md border border-darkblue-400 hover:border-darkblue-200">
-                    MAX
-                </button>
-            </div>}
+            {
+                from && to && currency && < div className="text-xs flex items-center space-x-1 md:space-x-2 ml-2 md:ml-5">
+                    <SecondaryButton onClick={handleSetMinAmount} size="xs" className="text-primary-text">
+                        MIN
+                    </SecondaryButton>
+                    <SecondaryButton onClick={handleSetMaxAmount} size="xs" className="text-primary-text">
+                        MAX
+                    </SecondaryButton>
+                </div>
+            }
             <CurrenciesField />
         </NumericInput>
     </>)
