@@ -82,8 +82,6 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         </span>
                                     </div>
                                 }
-                                {console.log(currency)}
-
                                 <div className="mt-2 flex flex-row items-baseline justify-between">
                                     <label className="block text-left">
                                         Estimated arrival
