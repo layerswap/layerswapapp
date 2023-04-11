@@ -97,7 +97,7 @@ const WithdrawNetworkStep: FC = () => {
 
     const qrCode = (
         <QRCode
-            className="p-4 bg-white rounded-lg"
+            className="p-2 bg-white rounded-md"
             value={swap?.deposit_address}
             size={120}
             bgColor={colors.white}
@@ -114,7 +114,7 @@ const WithdrawNetworkStep: FC = () => {
                         <div className='space-y-4'>
                             <div className="text-left">
                                 <p className="block text-md sm:text-lg font-medium text-white">
-                                    Send crypto to the provided address from {source_network?.display_name}
+                                    Send crypto to the deposit address in {source_network?.display_name}
                                 </p>
                                 <p className='text-sm sm:text-base'>
                                     The swap will be completed after the transfer is detected
@@ -130,8 +130,8 @@ const WithdrawNetworkStep: FC = () => {
                                                 <span>{source_network?.display_name}</span>
                                             </div>
                                         </div>
-                                        <div className='p-2 bg-white bg-opacity-20 rounded-xl'>
-                                            <div className='p-2 bg-white bg-opacity-40 rounded-lg'>
+                                        <div className='p-2 bg-white bg-opacity-30 rounded-xl'>
+                                            <div className='p-2 bg-white bg-opacity-70 rounded-lg'>
                                                 {qrCode}
                                             </div>
                                         </div>

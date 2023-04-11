@@ -169,7 +169,7 @@ const WithdrawExchangeStep: FC = () => {
 
     const qrCode = (
         <QRCode
-            className="p-4 bg-white rounded-lg"
+            className="p-2 bg-white rounded-md"
             value={swap?.deposit_address}
             size={120}
             bgColor={colors.white}
@@ -202,7 +202,7 @@ const WithdrawExchangeStep: FC = () => {
                             <div className='space-y-4'>
                                 <div className="text-left">
                                     <p className="block sm:text-lg font-medium text-white">
-                                        Send {asset?.name} to the provided address from {source_exchange?.display_name}
+                                        Send {asset?.name} to the deposit address from {source_exchange?.display_name}
                                     </p>
                                     <p className='text-sm sm:text-base'>
                                         The swap will be completed when your transfer is detected
@@ -266,8 +266,8 @@ const WithdrawExchangeStep: FC = () => {
                                                     </Select>
                                                 }
                                             </div>
-                                            <div className='p-2 bg-white bg-opacity-20 rounded-xl'>
-                                                <div className='p-2 bg-white bg-opacity-40 rounded-lg'>
+                                            <div className='p-2 bg-white bg-opacity-30 rounded-xl'>
+                                                <div className='p-2 bg-white bg-opacity-70 rounded-lg'>
                                                     {qrCode}
                                                 </div>
                                             </div>
