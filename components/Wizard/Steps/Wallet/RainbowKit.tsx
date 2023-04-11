@@ -14,11 +14,11 @@ import { publicProvider } from 'wagmi/providers/public';
 
 import "@rainbow-me/rainbowkit/styles.css";
 
-import { mainnet, polygon, optimism, arbitrum, goerli, arbitrumGoerli } from 'wagmi/chains';
+import { mainnet, polygon, optimism, arbitrum, goerli, arbitrumGoerli, aurora, auroraTestnet, avalanche, avalancheFuji, baseGoerli, boba, bronos, bronosTestnet, bsc, bscTestnet, canto, celo, celoAlfajores, crossbell, evmos, evmosTestnet, fantom, fantomTestnet, filecoin, filecoinCalibration, filecoinHyperspace, flare, flareTestnet, foundry, gnosis, gnosisChiado, hardhat, harmonyOne, iotex, iotexTestnet, localhost, metis, metisGoerli, moonbaseAlpha, moonbeam, moonriver, okc, optimismGoerli, polygonMumbai, polygonZkEvmTestnet, sepolia, shardeumSphinx, songbird, songbirdTestnet, taraxa, taraxaTestnet, telos, telosTestnet, zhejiang, zkSync, zkSyncTestnet } from 'wagmi/chains';
 
 
 const { chains, provider } = configureChains(
-    [mainnet, polygon, optimism, arbitrum, goerli, arbitrumGoerli],
+    [arbitrum, arbitrumGoerli, aurora, auroraTestnet, avalanche, avalancheFuji, baseGoerli, boba, bronos, bronosTestnet, bsc, bscTestnet, canto, celo, celoAlfajores, crossbell, evmos, evmosTestnet, fantom, fantomTestnet, filecoin, filecoinCalibration, filecoinHyperspace, flare, flareTestnet, foundry, gnosis, gnosisChiado, goerli, hardhat, harmonyOne, iotex, iotexTestnet, localhost, mainnet, metis, metisGoerli, moonbaseAlpha, moonbeam, moonriver, okc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, sepolia, shardeumSphinx, songbird, songbirdTestnet, taraxa, taraxaTestnet, telos, telosTestnet, zhejiang, zkSync, zkSyncTestnet],
     [
         publicProvider()
     ]

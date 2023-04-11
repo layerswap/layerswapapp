@@ -33,13 +33,8 @@ import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
 import { Configs, usePersistedState } from '../../../hooks/usePersistedState';
-import useWindowDimensions from '../../../hooks/useWindowDimensions';
-import shortenAddress from '../../utils/ShortenAddress';
-import firstGuidePic from '../../../public/images/withdrawGuideImages/01.png'
-import secondGuidePic from '../../../public/images/withdrawGuideImages/02Exchange.png'
-import thirdGuidePic from '../../../public/images/withdrawGuideImages/03.png'
-import fourthGuidePic from '../../../public/images/withdrawGuideImages/04.png'
 import SwapGuide from '../../SwapGuide';
+import SecondaryButton from '../../buttons/secondaryButton';
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
@@ -60,6 +55,7 @@ const WithdrawExchangeStep: FC = () => {
     let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithExchangeWithdrawGuide: false }, 'configs')
     const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
     const [openSwapGuide, setOpenSwapGuide] = useState(!storageAlreadyFamiliar.alreadyFamiliarWithExchangeWithdrawGuide ? true : false)
+    const [openAnimationGuide, setOpenAnimationGuide] = useState(0.7)
 
     const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
@@ -77,6 +73,7 @@ const WithdrawExchangeStep: FC = () => {
     }
 
     const handleOpenSwapGuide = () => {
+        setOpenAnimationGuide(0)
         setOpenSwapGuide(true)
     }
 
@@ -185,7 +182,7 @@ const WithdrawExchangeStep: FC = () => {
         <QRCode
             className="p-4 bg-white rounded-lg"
             value={swap?.deposit_address}
-            size={160}
+            size={120}
             bgColor={colors.white}
             fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
             level={"H"}
@@ -280,7 +277,11 @@ const WithdrawExchangeStep: FC = () => {
                                                     </Select>
                                                 }
                                             </div>
-                                            {qrCode}
+                                            <div className='p-2 bg-white bg-opacity-20 rounded-xl'>
+                                                <div className='p-2 bg-white bg-opacity-40 rounded-lg'>
+                                                    {qrCode}
+                                                </div>
+                                            </div>
                                         </div>
                                         <BackgroundField Copiable toCopy={swap?.deposit_address} header={'Deposit Address'} withoutBorder>
                                             <div>
@@ -322,20 +323,15 @@ const WithdrawExchangeStep: FC = () => {
                                             </span>
                                         </WarningMessage>
                                     }
-                                    {
-                                        source_exchange_settings?.ExchangeWithdrawalGuideUrl &&
-                                        <WarningMessage messageType='informing'>
-                                            <span className='flex-none'>
-                                                Learn how to send from
-                                            </span>
-                                            <GuideLink text={source_exchange?.display_name} userGuideUrl={source_exchange_settings.ExchangeWithdrawalGuideUrl} />
-                                        </WarningMessage>
-                                    }
-                                    <WarningMessage messageType='informing'>
-                                        <span className='flex-none'>
-                                        <button type='button' onClick={handleOpenSwapGuide} className='underline hover:text-primary-400'>Read the swap guide again</button>
-                                        </span>
-                                    </WarningMessage>
+                                    <div className='grid grid-cols-2 w-full items-center gap-2'>
+                                        {
+                                            source_exchange_settings?.ExchangeWithdrawalGuideUrl &&
+                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} place="inStep" />
+                                        }
+                                        <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
+                                            How it works
+                                        </SecondaryButton>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -418,7 +414,7 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget >
-        <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} openAnimationDelay={0.7} dismissible={false} place={'inStep'} hideHeader>
+        <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} openAnimationDelay={openAnimationGuide} dismissible={false} place={'inStep'} hideHeader>
             {() => (
                 <div className='rounded-md w-full flex flex-col items-left justify-center space-y-6 text-left'>
                     <SwapGuide swap={swap} />
