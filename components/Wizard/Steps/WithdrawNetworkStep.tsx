@@ -22,7 +22,6 @@ import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
 import Image from 'next/image';
-import { Configs, usePersistedState } from '../../../hooks/usePersistedState';
 import SlideOver from '../../SlideOver';
 import SwapGuide from '../../SwapGuide';
 import SecondaryButton from '../../buttons/secondaryButton';
@@ -40,26 +39,17 @@ const WithdrawNetworkStep: FC = () => {
     const { setInterval, cancelSwap } = useSwapDataUpdate()
     const goHome = useGoHome()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
-    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithNetworkWithdrawGuide: false }, 'configs')
-    const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
-    const [openSwapGuide, setOpenSwapGuide] = useState((!storageAlreadyFamiliar.alreadyFamiliarWithNetworkWithdrawGuide ? true : false))
-    const [openAnimationGuide, setOpenAnimationGuide] = useState(0.7)
+    const [openSwapGuide, setOpenSwapGuide] = useState(false)
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+    const asset = source_network?.currencies?.find(currency => currency?.asset === destination_network_asset)
 
-    const handleToggleChange = () => {
-        setLocalAlreadyFamiliar(!localAlreadyFamiliar)
-    }
 
     const handleOpenSwapGuide = () => {
-        setOpenAnimationGuide(0)
         setOpenSwapGuide(true)
     }
 
     const hanldeGuideModalClose = () => {
         setOpenSwapGuide(false)
-        if (localAlreadyFamiliar && !storageAlreadyFamiliar.alreadyFamiliarWithNetworkWithdrawGuide) {
-            setStorageAlreadyFamiliar({ ...storageAlreadyFamiliar, alreadyFamiliarWithNetworkWithdrawGuide: true })
-        }
     }
 
     useEffect(() => {
@@ -192,9 +182,9 @@ const WithdrawNetworkStep: FC = () => {
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-5 w-5 relative">
                                                     {
-                                                        destination_network_asset &&
+                                                        asset &&
                                                         <Image
-                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
+                                                            src={`${resource_storage_url}/layerswap/currencies/${asset?.name?.toLowerCase()}.png`}
                                                             alt="From Logo"
                                                             height="60"
                                                             width="60"
@@ -202,7 +192,7 @@ const WithdrawNetworkStep: FC = () => {
                                                         />
                                                     }
                                                 </div>
-                                                <div className="mx-1 block">{destination_network_asset}</div>
+                                                <div className="mx-1 block">{asset?.name}</div>
                                             </div>
                                         </BackgroundField>
                                     </div>
@@ -231,7 +221,7 @@ const WithdrawNetworkStep: FC = () => {
                                     <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
                                     <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
                                 </div>
-                                <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to send {destination_network_asset}</label>
+                                <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to send {asset?.name}</label>
                             </div>
                             <div className="flex flex-row text-white text-base space-x-2">
                                 <div className='basis-1/3'>
@@ -306,28 +296,13 @@ const WithdrawNetworkStep: FC = () => {
                     </div>
                 </div>
             </Modal>
-            <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} dismissible={false} openAnimationDelay={openAnimationGuide} place={'inStep'} hideHeader>
+            <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} place={'inStep'} header="📖 Here's how it works">
                 {() => (
                     <div className='rounded-md w-full flex flex-col items-left justify-center space-y-4 text-left'>
                         <SwapGuide swap={swap} />
-                        <div className='space-y-3'>
-                            <div className="flex justify-left items-center">
-                                <input
-                                    name="alreadyFamiliar"
-                                    id='alreadyFamiliar'
-                                    type="checkbox"
-                                    className="h-4 w-4 bg-darkblue-200 rounded border-darkblue-100 text-priamry focus:ring-darkblue-100"
-                                    onChange={handleToggleChange}
-                                    checked={localAlreadyFamiliar}
-                                />
-                                <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
-                                    Don't show me this again
-                                </label>
-                            </div>
-                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
-                                Got it
-                            </SubmitButton>
-                        </div>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
+                            Got it
+                        </SubmitButton>
                     </div>
                 )}
             </SlideOver>
