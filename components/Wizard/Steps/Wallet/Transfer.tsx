@@ -1,5 +1,5 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { FC, ReactNode, useCallback, useState } from "react";
+import { FC, ReactNode, useCallback, useEffect, useState } from "react";
 import {
     useAccount,
     useContractWrite,
@@ -23,7 +23,8 @@ type Props = {
     amount: number,
     tokenDecimals: number,
     onTransferComplete: (transactionHash: string) => Promise<void>,
-    networkDisplayName: string
+    networkDisplayName: string,
+    swapId: string;
 }
 
 const TransferFromWallet: FC<Props> = ({ networkDisplayName,
@@ -32,6 +33,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     amount,
     tokenContractAddress,
     tokenDecimals,
+    swapId,
     onTransferComplete
 }) => {
 
@@ -41,6 +43,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     });
 
     const [transactionDetected, setTransactionDetected] = useState<boolean>()
+    const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
     const [buttonClicked, setButtonClicked] = useState<boolean>()
     const transactionPrepareEnabled = isConnected && !!!tokenContractAddress
     const sendTransactionPrepare = usePrepareSendTransaction({
@@ -51,6 +54,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
         },
         chainId: chainId,
     })
+
     const transaction = useSendTransaction(sendTransactionPrepare?.config)
     const contractPrepareEnabled = isConnected && !!tokenContractAddress
     const contractWritePrepare = usePrepareContractWrite({
@@ -61,17 +65,29 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
         args: [depositAddress, utils.parseUnits(amount.toString(), tokenDecimals)]
     });
     const contractWrite = useContractWrite(contractWritePrepare?.config)
-    console.log("transactionPrepareEnabled", transactionPrepareEnabled)
-
 
     const waitForTransaction = useWaitForTransaction({
-        hash: contractWrite?.data?.hash || transaction?.data?.hash,
+        hash: contractWrite?.data?.hash || transaction?.data?.hash || savedTransactionHash as `0x${string}`,
         onSuccess: async (trxRcpt) => {
             setTransactionDetected(false)
             await onTransferComplete(trxRcpt.transactionHash)
             setTransactionDetected(true)
         }
     })
+
+    useEffect(() => {
+        const data: SwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
+        const hash = data?.[swapId]?.hash
+        if (hash)
+            setSavedTransactionHash(hash)
+    }, [swapId])
+
+    useEffect(() => {
+        if (contractWrite?.data?.hash || transaction?.data?.hash) {
+            const oldData = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
+            localStorage.setItem('swapTransactions', { ...oldData, [swapId]: { hash: contractWrite?.data?.hash || transaction?.data?.hash } })
+        }
+    }, [contractWrite?.data?.hash, transaction?.data?.hash, swapId])
 
     const handleTransfer = useCallback(() => {
         if (typeof contractWrite?.write === 'function')
@@ -186,6 +202,11 @@ const TransferWithWalletButton: FC<TransferWithWalletButtonProps> = ({
     </div>
 }
 
+type SwapTransactions = {
+    [key: string]: {
+        hash: string
+    }
+}
 
 type ActionData = {
     error: Error | null;
@@ -222,6 +243,17 @@ const getActionsMessages = ({ networkChange,
     transactionDetected,
     sendTransactionPrepare,
     contractWritePrepare }: GetActionsMessageProps): GetActionsMessageRes => {
+
+    if (waitForTransaction?.isLoading || transactionDetected) {
+        return {
+            Status: "pending",
+            Message: {
+                Header: 'Transaction in progress',
+                Details: 'Waiting for your transaction to be published'
+            }
+        }
+    }
+
     if (!ButtonClicked)
         return {
             ButtonText: "Send from wallet",
@@ -230,9 +262,7 @@ const getActionsMessages = ({ networkChange,
 
     if (networkChange?.isLoading) {
         return {
-            ButtonText: 'Confirm in wallet',
             Status: "pending",
-            ButtonIcon: <Wallet />,
             Message: {
                 Header: 'Network switch required',
                 Details: 'Confirm switching the network with your wallet'
@@ -242,11 +272,9 @@ const getActionsMessages = ({ networkChange,
 
     if (transaction?.isLoading || contractWrite?.isLoading) {
         return {
-            ButtonText: 'Confirm in wallet',
             Status: "pending",
-            ButtonIcon: <Wallet />,
             Message: {
-                Header: 'Waiting for signature',
+                Header: 'Confirm in wallet',
                 Details: 'Please sign the transction with your wallet'
             }
         }
@@ -263,15 +291,7 @@ const getActionsMessages = ({ networkChange,
         }
     }
 
-    if (waitForTransaction?.isLoading || transactionDetected) {
-        return {
-            Status: "pending",
-            Message: {
-                Header: 'Transaction in progress',
-                Details: 'Your transaction is published'
-            }
-        }
-    }
+
 
     if (contractWritePrepare?.isLoading || sendTransactionPrepare?.isLoading) {
         return {
@@ -296,6 +316,20 @@ const getActionsMessages = ({ networkChange,
                 }
             }
         }
+    }
+
+    if (transaction?.isError || contractWrite?.isError) {
+        const error = transaction?.error || contractWrite?.error
+        const error_code = error?.['code']
+        if (error_code === 4001)
+            return {
+                ButtonText: "Try again",
+                Status: "error",
+                Message: {
+                    Header: 'Transaction rejected',
+                    Details: 'You’ve rejected signing the transaction in your wallet. Hit Try again to open the prompt again'
+                }
+            }
     }
 
     const isError = contractWritePrepare?.isError
@@ -369,7 +403,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
             <h3 className="text-md font-semibold self-center text-white">
                 {header}
             </h3>
-            <p className="text-xs text-primary-text break-all">
+            <p className="text-sm text-primary-text">
                 {details}
             </p>
         </p>
