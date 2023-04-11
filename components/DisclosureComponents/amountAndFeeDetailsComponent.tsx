@@ -67,7 +67,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         Layerswap Fee
                                     </label>
                                     <span className="text-right">
-                                        {parseFloat(fee.toFixed(currency?.baseObject?.precision))} {destinationNetworkCurrency?.name}
+                                        {parseFloat(fee.toFixed(currency?.baseObject?.precision))} {currency?.name}
                                     </span>
                                 </div>
                                 {
@@ -78,10 +78,11 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                             <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                         </label>
                                         <span className="text-right">
-                                            {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {destinationNetworkCurrency?.name}</>}
+                                            {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.name}</>}
                                         </span>
                                     </div>
                                 }
+                                {console.log(currency)}
 
                                 <div className="mt-2 flex flex-row items-baseline justify-between">
                                     <label className="block text-left">

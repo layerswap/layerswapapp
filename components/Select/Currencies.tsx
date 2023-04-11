@@ -36,7 +36,7 @@ const CurrenciesField: FC = () => {
     }
 
     const currencyDisplayName = (c: Currency) => {
-        return swapType === SwapType.OnRamp ?  to?.baseObject?.currencies?.find(currency => currency?.asset === c?.asset)?.name : from?.baseObject?.currencies?.find(currency => currency?.asset === c?.asset)?.name 
+        return swapType === SwapType.OnRamp ? from?.baseObject?.currencies?.find(currency => currency?.asset === c?.asset)?.asset : from?.baseObject?.currencies?.find(currency => currency?.asset === c?.asset)?.name 
     }
 
     const mapCurranceToMenuItem = (c: Currency): SelectMenuItem<Currency> => ({
