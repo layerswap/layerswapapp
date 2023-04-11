@@ -10,7 +10,7 @@ import {
     useWaitForTransaction,
     useNetwork
 } from "wagmi";
-import { utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import { erc20ABI } from 'wagmi'
 import { ArrowUpDown, Wallet, RefreshCw } from "lucide-react";
 import SubmitButton from "../../../buttons/submitButton";
@@ -26,18 +26,25 @@ type Props = {
     networkDisplayName: string
 }
 
-const TransferFromWallet: FC<Props> = ({ networkDisplayName, chainId, depositAddress, amount, tokenContractAddress, tokenDecimals, onTransferComplete }) => {
+const TransferFromWallet: FC<Props> = ({ networkDisplayName,
+    chainId,
+    depositAddress,
+    amount,
+    tokenContractAddress,
+    tokenDecimals,
+    onTransferComplete
+}) => {
+
     const { isConnected, isDisconnected, connector, address } = useAccount();
     const networkChange = useSwitchNetwork({
         chainId: chainId,
     });
 
-    const { chain: activeChain } = useNetwork();
     const [transactionDetected, setTransactionDetected] = useState<boolean>()
     const [buttonClicked, setButtonClicked] = useState<boolean>()
-
+    const transactionPrepareEnabled = isConnected && !!!tokenContractAddress
     const sendTransactionPrepare = usePrepareSendTransaction({
-        enabled: isConnected && !!!tokenContractAddress,
+        enabled: transactionPrepareEnabled,
         request: {
             to: depositAddress,
             value: amount ? utils.parseEther(amount.toString()) : undefined,
@@ -45,15 +52,17 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName, chainId, depositAdd
         chainId: chainId,
     })
     const transaction = useSendTransaction(sendTransactionPrepare?.config)
-
+    const contractPrepareEnabled = isConnected && !!tokenContractAddress
     const contractWritePrepare = usePrepareContractWrite({
         address: tokenContractAddress,
         abi: erc20ABI,
         functionName: 'transfer',
-        enabled: isConnected && !!tokenContractAddress,
+        enabled: contractPrepareEnabled,
         args: [depositAddress, utils.parseUnits(amount.toString(), tokenDecimals)]
     });
     const contractWrite = useContractWrite(contractWritePrepare?.config)
+    console.log("transactionPrepareEnabled", transactionPrepareEnabled)
+
 
     const waitForTransaction = useWaitForTransaction({
         hash: contractWrite?.data?.hash || transaction?.data?.hash,
@@ -74,13 +83,26 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName, chainId, depositAdd
     const handleButtonClick = () => {
         setButtonClicked(true)
     }
-    const actionMessage = getActionsMessages({ networkChange, sendTransactionPrepare, transaction, contractWritePrepare, contractWrite, ButtonClicked: buttonClicked, waitForTransaction, Network: networkDisplayName, transactionDetected })
+    const actionMessage = getActionsMessages({
+        networkChange,
+        sendTransactionPrepare: transactionPrepareEnabled ? sendTransactionPrepare : null,
+        transaction,
+        contractWritePrepare: contractPrepareEnabled ? contractWritePrepare : null,
+        contractWrite,
+        ButtonClicked: buttonClicked,
+        waitForTransaction,
+        Network: networkDisplayName,
+        transactionDetected
+    })
 
     return <>
         {
             actionMessage?.Message &&
             <div>
-                <WalletMessage status={actionMessage.Status} header={actionMessage.Message.Header} details={actionMessage.Message.Details} />
+                <WalletMessage
+                    status={actionMessage.Status}
+                    header={actionMessage.Message.Header}
+                    details={actionMessage.Message.Details} />
             </div>
         }
         {
@@ -93,7 +115,8 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName, chainId, depositAdd
                 onButtonClick={handleButtonClick}
                 refetchPrepareTransaction={sendTransactionPrepare?.refetch}
                 refetchPrepareContractWrite={contractWritePrepare?.refetch}
-                prepareIsError={sendTransactionPrepare?.isError || contractWritePrepare?.isError}
+                prepareIsError={(sendTransactionPrepare?.isError && transactionPrepareEnabled)
+                    || (contractWritePrepare?.isError && contractPrepareEnabled)}
             >
                 {actionMessage?.ButtonText}
             </TransferWithWalletButton>
@@ -229,7 +252,7 @@ const getActionsMessages = ({ networkChange,
         }
     }
 
-    if (networkChange.isError) {
+    if (networkChange?.isError) {
         return {
             ButtonText: 'Try again',
             Status: "error",
@@ -260,8 +283,8 @@ const getActionsMessages = ({ networkChange,
         }
     }
 
-    if (contractWritePrepare.isError || sendTransactionPrepare.isError) {
-        const error = contractWritePrepare.error || sendTransactionPrepare.error
+    if (contractWritePrepare?.isError || sendTransactionPrepare?.isError) {
+        const error = contractWritePrepare?.error || sendTransactionPrepare?.error
         const error_code = error?.['code']
         if (error_code === 'INSUFFICIENT_FUNDS' || error_code === 'UNPREDICTABLE_GAS_LIMIT') {
             return {
@@ -276,14 +299,14 @@ const getActionsMessages = ({ networkChange,
     }
 
     const isError = contractWritePrepare?.isError
-        || contractWritePrepare?.isError
+        || sendTransactionPrepare?.isError
         || waitForTransaction?.isError
         || transaction?.isError
         || contractWrite?.isError
 
     if (isError) {
         const error = contractWritePrepare?.error
-            || contractWritePrepare?.error
+            || sendTransactionPrepare?.error
             || waitForTransaction?.error
             || transaction?.error
             || contractWrite?.error
