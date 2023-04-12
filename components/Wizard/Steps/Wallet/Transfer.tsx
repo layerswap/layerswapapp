@@ -399,14 +399,14 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
                     </>
             }
         </div>
-        <p className="text-left space-y-1">
-            <h3 className="text-md font-semibold self-center text-white">
+        <div className="text-left space-y-1">
+            <p className="text-md font-semibold self-center text-white">
                 {header}
-            </h3>
+            </p>
             <p className="text-sm text-primary-text">
                 {details}
             </p>
-        </p>
+        </div>
     </div>
 }
 
