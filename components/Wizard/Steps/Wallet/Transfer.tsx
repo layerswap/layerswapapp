@@ -340,8 +340,7 @@ const getActionsMessages = ({ networkChange,
         }
         if (error_code === 'NETWORK_ERROR') {
             return {
-                ButtonText: "Change network",
-                ButtonIcon: <Wallet />
+                ButtonText: `Switch to ${Network}`,
             }
         }
     }
@@ -384,8 +383,7 @@ const getActionsMessages = ({ networkChange,
 
     if (!chainIsCorrect) {
         return {
-            ButtonText: "Change network",
-            ButtonIcon: <Wallet />
+            ButtonText: `Switch to ${Network}`,
         }
     }
 
