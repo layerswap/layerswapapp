@@ -5,7 +5,6 @@ import { IntercomProvider } from 'react-use-intercom';
 
 const INTERCOM_APP_ID = 'h5zisg78'
 import "@rainbow-me/rainbowkit/styles.css";
-import { arbitrum, arbitrumGoerli, aurora, auroraTestnet, avalanche, avalancheFuji, baseGoerli, boba, bronos, bronosTestnet, bsc, bscTestnet, canto, celo, celoAlfajores, crossbell, evmos, evmosTestnet, fantom, fantomTestnet, filecoin, filecoinCalibration, filecoinHyperspace, flare, flareTestnet, foundry, gnosis, gnosisChiado, goerli, hardhat, harmonyOne, iotex, iotexTestnet, localhost, mainnet, metis, metisGoerli, moonbaseAlpha, moonbeam, moonriver, okc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, sepolia, shardeumSphinx, songbird, songbirdTestnet, taraxa, taraxaTestnet, telos, telosTestnet, zhejiang, zkSync, zkSyncTestnet } from 'wagmi/chains';
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
 import {
   darkTheme,
