@@ -325,7 +325,7 @@ const getActionsMessages = ({ networkChange,
 
     if (contractWritePrepare?.isError || sendTransactionPrepare?.isError) {
         const error = contractWritePrepare?.error || sendTransactionPrepare?.error
-        const error_code = error?.['code']
+        const error_code = error?.['code'] || error?.["name"]
         if (error_code === 'INSUFFICIENT_FUNDS'
             || error_code === 'UNPREDICTABLE_GAS_LIMIT'
             || (error_code === -32603 && error?.['data']?.['code'] === -32000)) {
@@ -338,7 +338,7 @@ const getActionsMessages = ({ networkChange,
                 }
             }
         }
-        if (error_code === 'NETWORK_ERROR') {
+        if (error_code === 'NETWORK_ERROR' || error_code === "ChainMismatchError") {
             return {
                 ButtonText: `Switch to ${Network}`,
             }
@@ -381,11 +381,6 @@ const getActionsMessages = ({ networkChange,
         }
     }
 
-    if (!chainIsCorrect) {
-        return {
-            ButtonText: `Switch to ${Network}`,
-        }
-    }
 
     return {
         ButtonText: "Send from wallet",
