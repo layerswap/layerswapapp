@@ -131,7 +131,8 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BNBChainMainnet] = {
             AccountExplorerTemplate: 'https://bscscan.com/address/{0}',
-            Refuel: true
+            Refuel: true,
+            ChainId: 56
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
             AccountExplorerTemplate: 'https://starkscan.co/contract/{0}',
