@@ -60,6 +60,9 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumRinkeby] = {
             ChainId: 421611,
         };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BNBChainMainnet] = {
+            ChainId: 56,
+        };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncMainnet] = {
             ChainId: 25,
             AccountExplorerTemplate: 'https://zkscan.io/explorer/accounts/{0}',

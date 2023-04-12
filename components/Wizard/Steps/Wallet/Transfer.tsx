@@ -42,6 +42,8 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
         chainId: chainId,
     });
 
+    const { chain: activeChain } = useNetwork();
+
     const [transactionDetected, setTransactionDetected] = useState<boolean>()
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
     const [buttonClicked, setButtonClicked] = useState<boolean>()
@@ -54,6 +56,9 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
         },
         chainId: chainId,
     })
+    useEffect(() => {
+        networkChange.reset()
+    }, [activeChain])
 
     const transaction = useSendTransaction(sendTransactionPrepare?.config)
     const contractPrepareEnabled = isConnected && !!tokenContractAddress
@@ -136,6 +141,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
         {
             actionMessage?.ButtonText &&
             <TransferWithWalletButton
+                activeChainId={activeChain?.id}
                 chainId={chainId}
                 chnageNetwork={networkChange?.switchNetwork}
                 transfer={handleTransfer}
@@ -161,6 +167,7 @@ type TransferWithWalletButtonProps = {
     refetchPrepareTransaction: () => void,
     refetchPrepareContractWrite: () => void,
     onButtonClick: () => void,
+    activeChainId: number;
     prepareIsError: boolean
 }
 const TransferWithWalletButton: FC<TransferWithWalletButtonProps> = ({
@@ -169,17 +176,16 @@ const TransferWithWalletButton: FC<TransferWithWalletButtonProps> = ({
     onButtonClick, icon,
     chnageNetwork,
     transfer,
+    activeChainId,
     prepareIsError,
     chainId,
     children }) => {
 
     const { isConnected, connector } = useAccount();
-    const { chain: activeChain } = useNetwork();
-
     const handlerType = getTransferWithWalletButtonHandlerType({
         prepareIsError,
         connected: isConnected,
-        connectedChainId: activeChain?.id,
+        connectedChainId: activeChainId,
         chainId: chainId
     })
 
