@@ -1,5 +1,5 @@
 import { Menu } from "@headlessui/react";
-import { BookOpen, ExternalLink, Gift, Link, MenuIcon, Wallet } from "lucide-react";
+import { BookOpen, ExternalLink, Gift, Link, MenuIcon, MessageCircle, Wallet } from "lucide-react";
 import { Home, LogIn, LogOut, TableIcon, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback } from "react";
@@ -13,14 +13,17 @@ import IconButton from "../buttons/iconButton";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { useSettingsState } from "../../context/settings";
+import { useIntercom } from "react-use-intercom";
 
 export default function () {
-    const { email, userType } = useAuthState()
+    const { email, userType, userId } = useAuthState()
     const { campaigns } = useSettingsState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
     const { menuVisible } = useMenuState()
     const { isConnected } = useAccount();
+    const { boot, show, update } = useIntercom()
+    const updateWithProps = () => update({ email: email, userId: userId })
 
     const handleLogout = useCallback(() => {
         TokenService.removeAuthData()
@@ -95,11 +98,7 @@ export default function () {
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
-                                                        <Menu.Item>
-                                                            <Item type={ItemType.link} pathname='/auth' icon={<LogIn className='h-4 w-4' />}>
-                                                                Login
-                                                            </Item>
-                                                        </Menu.Item>
+
                                                         {
                                                             userType == UserType.GuestUser &&
                                                             <Menu.Item>
@@ -115,6 +114,15 @@ export default function () {
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
+                                                        <Menu.Item>
+                                                            <Item type={ItemType.button} onClick={() => {
+                                                                boot();
+                                                                show();
+                                                                updateWithProps()
+                                                            }} icon={<MessageCircle className='h-4 w-4' strokeWidth={3} />}>
+                                                                Get Help
+                                                            </Item>
+                                                        </Menu.Item>
                                                         <hr className="horizontal-gradient" />
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className='h-4 w-4' />} className="plausible-event-name=User+Docs">
@@ -124,6 +132,12 @@ export default function () {
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
                                                                 Roadmap
+                                                            </Item>
+                                                        </Menu.Item>
+                                                        <hr className="horizontal-gradient" />
+                                                        <Menu.Item>
+                                                            <Item type={ItemType.link} pathname='/auth' icon={<LogIn className='h-4 w-4' />}>
+                                                                Login
                                                             </Item>
                                                         </Menu.Item>
                                                     </>

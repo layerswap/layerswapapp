@@ -3,7 +3,7 @@ import { useAuthState } from "../context/authContext"
 import IconButton from "./buttons/iconButton"
 import LayerswapMenu from "./LayerswapMenu"
 import GoHomeButton from "./utils/GoHome"
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, MessageCircle } from 'lucide-react'
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { useAccount } from "wagmi"
 import CoinbaseIcon from "./icons/Wallets/Coinbase"
@@ -32,6 +32,15 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
          </div>
          <div className="col-start-5 justify-self-end self-center flex items-center gap-5">
             <ConnectWallet />
+            <IconButton className="relative hidden md:inline" onClick={() => {
+               boot();
+               show();
+               updateWithProps()
+            }}
+               icon={
+                  <MessageCircle strokeWidth="3" />
+               }>
+            </IconButton>
             <LayerswapMenu />
          </div>
       </div>
@@ -44,19 +53,19 @@ const ConnectWallet = () => {
          const connected = !!(mounted && account && chain)
          const { connector } = useAccount()
          if (connected)
-         return <IconButton onClick={openAccountModal} icon={
-            <div className="font-bold grow flex space-x-2">
-               <div className="inline-flex items-center relative">
-                  <AddressIcon address={account.address} size={25} />
-                  {
-                     connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
-                        <WalletIcon connector={connector?.id} className="w-5 h-5 border-2 border-darkblue-600 rounded-full bg-primary-text" />
-                     </span>
-                  }
+            return <IconButton onClick={openAccountModal} icon={
+               <div className="font-bold grow flex space-x-2">
+                  <div className="inline-flex items-center relative">
+                     <AddressIcon address={account.address} size={25} />
+                     {
+                        connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                           <WalletIcon connector={connector?.id} className="w-5 h-5 border-2 border-darkblue-600 rounded-full bg-primary-text" />
+                        </span>
+                     }
+                  </div>
                </div>
-            </div>
-         }>
-         </IconButton>
+            }>
+            </IconButton>
          else
             return <></>
       }}
