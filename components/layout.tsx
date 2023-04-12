@@ -50,21 +50,21 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       <link rel="manifest" href="favicon/site.webmanifest" />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content="#111827" />
-      <meta name="description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
+      <meta name="description" content="Move crypto across exchanges, blockchains, and wallets." />
 
       {/* Facebook Meta Tags */}
       <meta property="og:url" content="https://www.layerswap.io/" />
       <meta property="og:type" content="website" />
-      <meta property="og:title" content="Layerswap - Accelerating L2 migration" />
-      <meta property="og:description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
+      <meta property="og:title" content="Layerswap" />
+      <meta property="og:description" content="Move crypto across exchanges, blockchains, and wallets." />
       <meta property="og:image" content="https://layerswap.io/opengraph.jpeg" />
 
       {/* Twitter Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta property="twitter:domain" content="layerswap.io" />
       <meta property="twitter:url" content="https://www.layerswap.io/" />
-      <meta name="twitter:title" content="Layerswap - Accelerating L2 migration" />
-      <meta name="twitter:description" content="Move crypto from Binance or Coinbase to Arbitrum and Optimism - save 10x on fees." />
+      <meta name="twitter:title" content="Layerswap" />
+      <meta name="twitter:description" content="Move crypto across exchanges, blockchains, and wallets." />
       <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpeg" />
     </Head>
     {
