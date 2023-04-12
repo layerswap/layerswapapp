@@ -76,16 +76,28 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     })
 
     useEffect(() => {
-        const data: SwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-        const hash = data?.[swapId]?.hash
-        if (hash)
-            setSavedTransactionHash(hash)
+        try {
+            const data: SwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
+            const hash = data?.[swapId]?.hash
+            if (hash)
+                setSavedTransactionHash(hash)
+        }
+        catch (e) {
+            //TODO log to logger
+            console.error(e.message)
+        }
     }, [swapId])
 
     useEffect(() => {
-        if (contractWrite?.data?.hash || transaction?.data?.hash) {
-            const oldData = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-            localStorage.setItem('swapTransactions', JSON.stringify({ ...oldData, [swapId]: { hash: contractWrite?.data?.hash || transaction?.data?.hash } }))
+        try {
+            if (contractWrite?.data?.hash || transaction?.data?.hash) {
+                const oldData = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
+                localStorage.setItem('swapTransactions', JSON.stringify({ ...oldData, [swapId]: { hash: contractWrite?.data?.hash || transaction?.data?.hash } }))
+            }
+        }
+        catch (e) {
+            //TODO log to logger
+            console.error(e.message)
         }
     }, [contractWrite?.data?.hash, transaction?.data?.hash, swapId])
 
