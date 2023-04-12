@@ -85,7 +85,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     useEffect(() => {
         if (contractWrite?.data?.hash || transaction?.data?.hash) {
             const oldData = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-            localStorage.setItem('swapTransactions', { ...oldData, [swapId]: { hash: contractWrite?.data?.hash || transaction?.data?.hash } })
+            localStorage.setItem('swapTransactions', JSON.stringify({ ...oldData, [swapId]: { hash: contractWrite?.data?.hash || transaction?.data?.hash } }))
         }
     }, [contractWrite?.data?.hash, transaction?.data?.hash, swapId])
 

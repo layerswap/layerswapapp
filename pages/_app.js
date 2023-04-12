@@ -13,11 +13,12 @@ import {
   RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
 
+import { supportedChains } from '../lib/chainConfigs';
 import { publicProvider } from 'wagmi/providers/public';
 
 function App({ Component, pageProps }) {
   const { chains, provider } = configureChains(
-    [arbitrum, arbitrumGoerli, aurora, auroraTestnet, avalanche, avalancheFuji, baseGoerli, boba, bronos, bronosTestnet, bsc, bscTestnet, canto, celo, celoAlfajores, crossbell, evmos, evmosTestnet, fantom, fantomTestnet, filecoin, filecoinCalibration, filecoinHyperspace, flare, flareTestnet, foundry, gnosis, gnosisChiado, goerli, hardhat, harmonyOne, iotex, iotexTestnet, localhost, mainnet, metis, metisGoerli, moonbaseAlpha, moonbeam, moonriver, okc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, sepolia, shardeumSphinx, songbird, songbirdTestnet, taraxa, taraxaTestnet, telos, telosTestnet, zhejiang, zkSync, zkSyncTestnet],
+    supportedChains,
     [
       publicProvider()
     ]

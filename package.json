@@ -49,7 +49,7 @@
     "tailwind-merge": "^1.11.0",
     "tailwindcss-animate": "^1.0.5",
     "uuid": "^9.0.0",
-    "wagmi": "^0.12.1"
+    "wagmi": "^0.12.10"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
