@@ -6,22 +6,22 @@ import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
 import SlideOver from '../SlideOver'
-import ClickTooltip from '../Tooltips/ClickTooltip'
 import toast from 'react-hot-toast'
 
 export interface SelectProps<T> {
     name: string;
+    header: string;
     value: SelectMenuItem<T>;
     values: SelectMenuItem<T>[];
     disabled: boolean;
     placeholder: string;
     smallDropdown?: boolean;
     setFieldValue: (field: string, value: SelectMenuItem<T>, shouldValidate?: boolean) => void;
-    lockNetwork: boolean;
-    lockExchange: boolean
+    lockNetwork?: boolean;
+    lockExchange?: boolean
 }
 
-export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false, lockNetwork, lockExchange }: SelectProps<T>) {
+export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false, lockNetwork, lockExchange, header }: SelectProps<T>) {
     const [isOpen, setIsOpen] = useState(false)
 
     function onChangeHandler(newValue: string) {
@@ -41,6 +41,12 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
 
     const valueList = (
         <div className="relative inset-0 flex flex-col h-full">
+            {
+                !values.some(v => v.isAvailable.value === true) && (lockNetwork || lockExchange) &&
+                <div className='text-xs text-left text-primary-text mb-2'>
+                    <Info className='h-3 w-3 inline-block mb-0.5' /> You’re accessing Layerswap from a partner’s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.
+                </div>
+            }
             <div className="relative min-h-full items-center justify-center pt-0 text-center text-white">
                 <Combobox
                     as="div"
@@ -242,8 +248,8 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     </span>
                 </button>
             </div>
-            <SlideOver imperativeOpener={[isOpen, setIsOpen]} place='inStep'>
-                {(close) => (
+            <SlideOver imperativeOpener={[isOpen, setIsOpen]} place='inStep' header={header}>
+                {() => (
                     valueList
                 )}
             </SlideOver>

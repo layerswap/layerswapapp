@@ -12,6 +12,7 @@ export class CryptoNetwork {
 }
 
 export class NetworkCurrency {
+    name: string;
     asset: string;
     status: "active" | "insufficient_liquidity";
     is_deposit_enabled: boolean;

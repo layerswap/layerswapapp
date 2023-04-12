@@ -1,6 +1,6 @@
 import FailedStep from "../components/Wizard/Steps/FailedStep";
 import SuccessfulStep from "../components/Wizard/Steps/SuccessfulStep";
-import WithdrawExchangeStep from "../components/Wizard/Steps/WithdrawExhangeStep";
+import WithdrawExchangeStep from "../components/Wizard/Steps/WithdrawExchangeStep";
 import { SwapWithdrawalStep, WizardStep } from "../Models/Wizard";
 
 const useSwapWithdrawal = () => {

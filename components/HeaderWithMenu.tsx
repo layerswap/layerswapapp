@@ -1,10 +1,16 @@
-import { MessageCircle } from "lucide-react"
 import { useIntercom } from "react-use-intercom"
 import { useAuthState } from "../context/authContext"
 import IconButton from "./buttons/iconButton"
 import LayerswapMenu from "./LayerswapMenu"
 import GoHomeButton from "./utils/GoHome"
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, MessageCircle } from 'lucide-react'
+import { ConnectButton } from "@rainbow-me/rainbowkit"
+import { useAccount } from "wagmi"
+import CoinbaseIcon from "./icons/Wallets/Coinbase"
+import MetaMaskIcon from "./icons/Wallets/MetaMask"
+import WalletConnectIcon from "./icons/Wallets/WalletConnect"
+import RainbowIcon from "./icons/Wallets/Rainbow"
+import AddressIcon from "./AddressIcon"
 
 function HeaderWithMenu({ goBack }: { goBack: () => void }) {
    const { email, userId } = useAuthState()
@@ -19,12 +25,14 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
                <ArrowLeft strokeWidth="3" />
             }>
             </IconButton>
+
          }
          <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden imxMarketplace:hidden md:hidden'>
             <GoHomeButton />
          </div>
          <div className="col-start-5 justify-self-end self-center flex items-center gap-5">
-            <IconButton className="relative" onClick={() => {
+            <ConnectWallet />
+            <IconButton className="relative hidden md:inline" onClick={() => {
                boot();
                show();
                updateWithProps()
@@ -38,4 +46,52 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
       </div>
    )
 }
+
+const ConnectWallet = () => {
+   return <ConnectButton.Custom>
+      {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
+         const connected = !!(mounted && account && chain)
+         const { connector } = useAccount()
+         if (connected)
+            return <IconButton onClick={openAccountModal} icon={
+               <div className="font-bold grow flex space-x-2">
+                  <div className="inline-flex items-center relative">
+                     <AddressIcon address={account.address} size={25} />
+                     {
+                        connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                           <WalletIcon connector={connector?.id} className="w-5 h-5 border-2 border-darkblue-600 rounded-full bg-primary-text" />
+                        </span>
+                     }
+                  </div>
+               </div>
+            }>
+            </IconButton>
+         else
+            return <></>
+      }}
+   </ConnectButton.Custom>
+}
+
+const WalletIcon = ({ connector, className }: { connector: string, className: string }) => {
+   switch (connector) {
+      case KnownKonnectors.MetaMask:
+         return <MetaMaskIcon className={className} />
+      case KnownKonnectors.Coinbase:
+         return <CoinbaseIcon className={className} />
+      case KnownKonnectors.WaletConnect:
+         return <WalletConnectIcon className={className} />
+      case KnownKonnectors.Rainbow:
+         return <RainbowIcon className={className} />
+      default:
+         return <></>
+   }
+}
+
+const KnownKonnectors = {
+   MetaMask: 'metaMask',
+   WaletConnect: 'waletConnect',
+   Coinbase: 'coinbase',
+   Rainbow: 'rainbow'
+}
+
 export default HeaderWithMenu

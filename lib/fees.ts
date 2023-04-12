@@ -47,7 +47,6 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
 
     const sourceNetwork = swapType === SwapType.OnRamp ? allNetworks.find(n => n.internal_name === from?.baseObject?.currencies.find(c => c.asset === currency.baseObject?.asset && c.is_default)?.network) : from?.baseObject
     const sourceNetworkCurrency = sourceNetwork?.currencies.find(c => c.asset === currency.baseObject?.asset)
-
     if (!destinationNetworkCurrency || !sourceNetworkCurrency)
         return 0
 

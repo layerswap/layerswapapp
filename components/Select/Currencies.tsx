@@ -35,12 +35,16 @@ const CurrenciesField: FC = () => {
         else return { value: true, disabledReason: null }
     }
 
+    const currencyDisplayName = (c: Currency) => {
+        return swapType === SwapType.OnRamp ? from?.baseObject?.currencies?.find(currency => currency?.asset === c?.asset)?.asset : from?.baseObject?.currencies?.find(currency => currency?.asset === c?.asset)?.name 
+    }
+
     const mapCurranceToMenuItem = (c: Currency): SelectMenuItem<Currency> => ({
         baseObject: c,
         id: c.asset,
-        name: c.asset,
+        name: currencyDisplayName(c),
         order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
-        imgSrc: `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`,
+        imgSrc: `${resource_storage_url}/layerswap/currencies/${currencyDisplayName(c).toLowerCase()}.png`,
         isAvailable: currencyDisabledReason(c),
         isDefault: false,
     })
