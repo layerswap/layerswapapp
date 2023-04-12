@@ -21,7 +21,8 @@ import { disconnect } from '@wagmi/core'
 import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import { Wallet } from 'lucide-react'
-import makeBlockie from 'ethereum-blockies-base64';
+import { useAccountModal } from "@rainbow-me/rainbowkit";
+import AddressIcon from "../AddressIcon";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -40,10 +41,9 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     address_book: AddressBookItem[]
 }
 
-
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
     ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, loading, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
-
+        const { openAccountModal } = useAccountModal();
         const {
             values,
             setFieldValue
@@ -54,20 +54,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name === e) : a.networks?.some(n => values.to.baseObject.internal_name === n)) && isValidAddress(a.address, values.to.baseObject))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
-        const { depositeAddressIsfromAccount, addressConfirmed } = useSwapDataState()
+        const { depositeAddressIsfromAccount } = useSwapDataState()
         const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
-        const [inputFocused, setInputFocused] = useState(false)
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
         const [validInputAddress, setValidInputAddress] = useState<string>()
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
-        const { isConnected, isDisconnected, connector } = useAccount({
-            onConnect({ address }) {
-                setInputValue(address)
-                setAddressConfirmed(true)
-                setFieldValue("destination_address", address)
-            },
+        const { isConnected, isDisconnected, connector, address: walletAddress } = useAccount({
             onDisconnect() {
                 setInputValue("")
                 setAddressConfirmed(false)
@@ -75,7 +69,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             }
         });
 
-        const exchangeCurrency = values?.swapType === SwapType.OffRamp && values.to?.baseObject?.currencies.find(ec => ec.asset === values.currency?.baseObject?.asset && ec.is_default)
+        useEffect(() => {
+            if(values.swapType !== SwapType.OffRamp && isValidAddress(walletAddress, values.to.baseObject)){
+                setInputValue(walletAddress)
+                setAddressConfirmed(true)
+                setFieldValue("destination_address", walletAddress)
+            }
+        }, [walletAddress, values.swapType])
 
         const handleUseDepositeAddress = async () => {
             try {
@@ -97,10 +97,15 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [values.destination_address])
 
         const handleRemoveDepositeAddress = useCallback(async () => {
-            setDepositeAddressIsfromAccount(false)
-            setFieldValue("destination_address", '')
-            disconnect()
-            setInputValue("")
+            if (!isConnected) {
+                setDepositeAddressIsfromAccount(false)
+                setFieldValue("destination_address", '')
+                disconnect()
+                setInputValue("")
+            }
+            else {
+                openAccountModal()
+            }
         }, [depositeAddressIsfromAccount, isConnected, connector, isDisconnected])
 
         const handleSelectAddress = useCallback((value: string) => {
@@ -129,13 +134,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 setValidInputAddress(inputValue)
             }
         }, [inputValue, inputAddressIsValid])
-
-        const handleInputFocus = () => {
-            setInputFocused(true)
-        }
-        const handleInputBlur = () => {
-            setInputFocused(false)
-        }
 
         const handleSetNewAddress = useCallback(() => {
             setAddressConfirmed(true)
@@ -167,11 +165,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         onChange={handleInputChange}
                                         value={inputValue}
                                         placeholder={placeholder}
-                                        onFocus={handleInputFocus}
-                                        onBlur={handleInputBlur}
                                         autoCorrect="off"
                                         type={"text"}
-                                        disabled={disabled || isConnected}
+                                        disabled={disabled || !!(isConnected && values.destination_address)}
                                         name={name}
                                         id={name}
                                         ref={inputReference}
@@ -220,12 +216,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             validInputAddress &&
                             <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-500 transition duration-200 px-2 py-2 hover:border-darkblue-500 hover:shadow-xl`}>
                                 <div className='flex text-primary-text bg-darkblue-400 flex-row items-left rounded-md p-2'>
-                                    <Image src={makeBlockie(validInputAddress)}
-                                        alt="Project Logo"
-                                        height="20"
-                                        width="20"
-                                        className='rounded-sm'
-                                    />
+                                    <AddressIcon address={validInputAddress} size={25} />
                                 </div>
                                 <div className="flex flex-col grow">
                                     <div className="block text-md font-medium text-white">
@@ -344,13 +335,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                                 as="span"
                                                                 className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-300 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
                                                             >
-                                                                <div className='flex bg-darkblue-500 text-primary-text flex-row items-left  rounded-md p-2'>
-                                                                    <Image src={makeBlockie(a.address)}
-                                                                        alt="Project Logo"
-                                                                        height="20"
-                                                                        width="20"
-                                                                        className='rounded-sm'
-                                                                    />
+                                                                <div className='flex bg-darkblue-400 text-primary-text flex-row items-left  rounded-md p-2'>
+                                                                    <AddressIcon address={a.address} size={20} />
                                                                 </div>
                                                                 <div className="flex flex-col">
                                                                     <div className="block text-sm font-medium">

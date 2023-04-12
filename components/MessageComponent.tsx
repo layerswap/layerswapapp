@@ -15,7 +15,7 @@ function constructIcons(icon: iconStyle) {
 
     switch (icon) {
         case 'red':
-            iconStyle = FailIcon;
+            iconStyle = <FailIcon/>;
             break;
         case 'green':
             iconStyle = SuccessIcon;

@@ -21,7 +21,7 @@ export function isValidAddress(address: string, network: CryptoNetwork | Exchang
     else if (network.internal_name.toLowerCase().startsWith("STARKNET".toLowerCase())) {
         return validateAndParseAddress(address);
     }
-    else if (network.internal_name === KnownInternalNames.Networks.Osmosis) {
+    else if (network.internal_name === KnownInternalNames.Networks.OsmosisMainnet) {
         if (/^(osmo1)?[a-z0-9]{38}$/.test(address)) {
             return true
         }

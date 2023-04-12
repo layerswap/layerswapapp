@@ -18,6 +18,8 @@ import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
+import TransferFromWallet from './Wallet/Transfer';
+import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
 import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
@@ -29,18 +31,19 @@ import SecondaryButton from '../../buttons/secondaryButton';
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks, discovery: { resource_storage_url } } = useSettingsState()
+    const { networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
     const { swap } = useSwapDataState()
-    const { setInterval, cancelSwap } = useSwapDataUpdate()
+    const { setInterval, cancelSwap, mutateSwap } = useSwapDataUpdate()
     const goHome = useGoHome()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
     const [openSwapGuide, setOpenSwapGuide] = useState(false)
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+    const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
     const asset = source_network?.currencies?.find(currency => currency?.asset === destination_network_asset)
 
 
@@ -51,7 +54,9 @@ const WithdrawNetworkStep: FC = () => {
     const hanldeGuideModalClose = () => {
         setOpenSwapGuide(false)
     }
-
+    const handleOpenModal = () => {
+        setOpenCancelConfirmModal(true)
+    }
     useEffect(() => {
         setInterval(15000)
         return () => setInterval(0)
@@ -90,10 +95,16 @@ const WithdrawNetworkStep: FC = () => {
         }
     }, [swap])
 
-    const handleOpenModal = () => {
-        setOpenCancelConfirmModal(true)
+    const onTRansactionComplete = async (trxId: string) => {
+        const layerSwapApiClient = new LayerSwapApiClient()
+        await layerSwapApiClient.ApplyNetworkInput(swap.id, trxId)
+        await mutateSwap()
     }
-    const userGuideUrlForDesktop = NetworkSettings.KnownSettings[source_network_internal_name]?.UserGuideUrlForDesktop
+
+    const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
+    const userGuideUrlForDesktop = sourceNetworkSettings?.UserGuideUrlForDesktop
+    const sourceChainId = sourceNetworkSettings?.ChainId
+    let canWithdrawWithWallet = !!sourceChainId;
 
     const qrCode = (
         <QRCode
@@ -197,23 +208,29 @@ const WithdrawNetworkStep: FC = () => {
                                         </BackgroundField>
                                     </div>
                                 </div>
-
-                                <div className='grid grid-cols-2 w-full items-center gap-2'>
-                                    {!swap?.destination_exchange &&
-                                        <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop ?? 'https://docs.layerswap.io/user-docs/your-first-swap/cross-chain'} place="inStep" />
-                                    }
-                                    <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
-                                        How it works
-                                    </SecondaryButton>
-                                </div>
-
+                                {
+                                    !canWithdrawWithWallet &&
+                                    <div className='grid grid-cols-2 w-full items-center gap-2'>
+                                        {!swap?.destination_exchange &&
+                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop ?? 'https://docs.layerswap.io/user-docs/your-first-swap/cross-chain'} place="inStep" />
+                                        }
+                                        <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
+                                            How it works
+                                        </SecondaryButton>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
                     {
-                        !transferDone &&
+                        canWithdrawWithWallet && swap &&
+                        <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
+                            <TransferFromWallet swapId={swap.id} networkDisplayName={source_network?.display_name} onTransferComplete={onTRansactionComplete} tokenDecimals={sourceCurrency?.decimals} tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount} />
+                        </div>
+                    }
+                    {!transferDone && !canWithdrawWithWallet &&
                         <>
                             <div className="flex text-center mb-4 space-x-2">
                                 <div className='relative'>
@@ -248,7 +265,7 @@ const WithdrawNetworkStep: FC = () => {
                         </>
                     }
                     {
-                        transferDone &&
+                        transferDone && !canWithdrawWithWallet &&
                         <SimpleTimer time={transferDoneTime} text={
                             () => <>
                                 {`Transfers from ${source_network?.display_name} usually take less than 3 minutes`}

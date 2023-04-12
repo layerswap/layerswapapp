@@ -69,7 +69,6 @@ const Expired = ({ swap, onGetHelp }: Props) => {
                         </>
                 }
             </MessageComponent.Description>
-
         </MessageComponent.Content>
         <MessageComponent.Buttons>
             <div className="flex flex-row text-white text-base space-x-2">
