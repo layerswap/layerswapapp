@@ -24,7 +24,7 @@ function App({ Component, pageProps }) {
   );
 
   const { connectors } = getDefaultWallets({
-    appName: 'My RainbowKit App',
+    appName: 'Layerswap',
     chains
   });
 
