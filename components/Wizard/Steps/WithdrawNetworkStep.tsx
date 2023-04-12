@@ -24,7 +24,6 @@ import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
 import Image from 'next/image';
-import { Configs, usePersistedState } from '../../../hooks/usePersistedState';
 import SlideOver from '../../SlideOver';
 import SwapGuide from '../../SwapGuide';
 import SecondaryButton from '../../buttons/secondaryButton';
@@ -42,29 +41,22 @@ const WithdrawNetworkStep: FC = () => {
     const { setInterval, cancelSwap, mutateSwap } = useSwapDataUpdate()
     const goHome = useGoHome()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
-    let [storageAlreadyFamiliar, setStorageAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithNetworkWithdrawGuide: false }, 'configs')
-    const [localAlreadyFamiliar, setLocalAlreadyFamiliar] = useState(false)
-    const [openSwapGuide, setOpenSwapGuide] = useState((!storageAlreadyFamiliar.alreadyFamiliarWithNetworkWithdrawGuide ? true : false))
-    const [openAnimationGuide, setOpenAnimationGuide] = useState(0.7)
+    const [openSwapGuide, setOpenSwapGuide] = useState(false)
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
+    const asset = source_network?.currencies?.find(currency => currency?.asset === destination_network_asset)
 
-    const handleToggleChange = () => {
-        setLocalAlreadyFamiliar(!localAlreadyFamiliar)
-    }
 
     const handleOpenSwapGuide = () => {
-        setOpenAnimationGuide(0)
         setOpenSwapGuide(true)
     }
 
     const hanldeGuideModalClose = () => {
         setOpenSwapGuide(false)
-        if (localAlreadyFamiliar && !storageAlreadyFamiliar.alreadyFamiliarWithNetworkWithdrawGuide) {
-            setStorageAlreadyFamiliar({ ...storageAlreadyFamiliar, alreadyFamiliarWithNetworkWithdrawGuide: true })
-        }
     }
-
+    const handleOpenModal = () => {
+        setOpenCancelConfirmModal(true)
+    }
     useEffect(() => {
         setInterval(15000)
         return () => setInterval(0)
@@ -114,7 +106,7 @@ const WithdrawNetworkStep: FC = () => {
     const sourceChainId = sourceNetworkSettings?.ChainId
     const qrCode = (
         <QRCode
-            className="p-4 bg-white rounded-lg"
+            className="p-2 bg-white rounded-md"
             value={swap?.deposit_address}
             size={120}
             bgColor={colors.white}
@@ -131,7 +123,7 @@ const WithdrawNetworkStep: FC = () => {
                         <div className='space-y-4'>
                             <div className="text-left">
                                 <p className="block text-md sm:text-lg font-medium text-white">
-                                    Send crypto to the provided address from {source_network?.display_name}
+                                    Send crypto to the deposit address in {source_network?.display_name}
                                 </p>
                                 <p className='text-sm sm:text-base'>
                                     The swap will be completed after the transfer is detected
@@ -147,8 +139,8 @@ const WithdrawNetworkStep: FC = () => {
                                                 <span>{source_network?.display_name}</span>
                                             </div>
                                         </div>
-                                        <div className='p-2 bg-white bg-opacity-20 rounded-xl'>
-                                            <div className='p-2 bg-white bg-opacity-40 rounded-lg'>
+                                        <div className='p-2 bg-white bg-opacity-30 rounded-xl'>
+                                            <div className='p-2 bg-white bg-opacity-70 rounded-lg'>
                                                 {qrCode}
                                             </div>
                                         </div>
@@ -199,9 +191,9 @@ const WithdrawNetworkStep: FC = () => {
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-5 w-5 relative">
                                                     {
-                                                        destination_network_asset &&
+                                                        asset &&
                                                         <Image
-                                                            src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
+                                                            src={`${resource_storage_url}/layerswap/currencies/${asset?.name?.toLowerCase()}.png`}
                                                             alt="From Logo"
                                                             height="60"
                                                             width="60"
@@ -209,7 +201,7 @@ const WithdrawNetworkStep: FC = () => {
                                                         />
                                                     }
                                                 </div>
-                                                <div className="mx-1 block">{destination_network_asset}</div>
+                                                <div className="mx-1 block">{asset?.name}</div>
                                             </div>
                                         </BackgroundField>
                                     </div>
@@ -234,6 +226,62 @@ const WithdrawNetworkStep: FC = () => {
                         <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
                             <TransferFromWallet swapId={swap.id} networkDisplayName={source_network?.display_name} onTransferComplete={onTRansactionComplete} tokenDecimals={sourceCurrency?.decimals} tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount} />
                         </div>
+                    }
+                    {!transferDone && !sourceChainId &&
+                        <>
+                            <div className="flex text-center mb-4 space-x-2">
+                                <div className='relative'>
+                                    <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
+                                </div>
+                                <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to send {asset?.name}</label>
+                            </div>
+                            <div className="flex flex-row text-white text-base space-x-2">
+                                <div className='basis-1/3'>
+                                    <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
+                                        <DoubleLineText
+                                            colorStyle='mltln-text-dark'
+                                            primaryText='Cancel'
+                                            secondarytext='the swap'
+                                            reversed={true}
+                                        />
+                                    </SubmitButton>
+                                </div>
+                                <div className='basis-2/3'>
+                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<Check className="h-5 w-5" aria-hidden="true" />} >
+                                        <DoubleLineText
+                                            colorStyle='mltln-text-light'
+                                            primaryText='I did'
+                                            secondarytext='the transfer'
+                                            reversed={true}
+                                        />
+                                    </SubmitButton>
+                                </div>
+                            </div>
+                        </>
+                    }
+                    {
+                        transferDone && !sourceChainId &&
+                        <SimpleTimer time={transferDoneTime} text={
+                            () => <>
+                                {`Transfers from ${source_network?.display_name} usually take less than 3 minutes`}
+                            </>}
+                        >
+                            <div className="flex text-center mb-4 space-x-2">
+                                <div className='relative'>
+                                    <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                    <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
+                                </div>
+                                <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text md:pr-10">Did the transfer but the swap is not completed yet?&nbsp;
+                                    <span onClick={() => {
+                                        boot();
+                                        show();
+                                        updateWithProps()
+                                    }} className="underline hover:no-underline cursor-pointer text-primary">Contact support</span></label>
+                            </div>
+                        </SimpleTimer>
                     }
                 </Widget.Footer>
             </Widget>
@@ -262,28 +310,13 @@ const WithdrawNetworkStep: FC = () => {
                     </div>
                 </div>
             </Modal>
-            <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} dismissible={false} openAnimationDelay={openAnimationGuide} place={'inStep'} hideHeader>
+            <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} place={'inStep'} header="📖 Here's how it works">
                 {() => (
                     <div className='rounded-md w-full flex flex-col items-left justify-center space-y-4 text-left'>
                         <SwapGuide swap={swap} />
-                        <div className='space-y-3'>
-                            <div className="flex justify-left items-center">
-                                <input
-                                    name="alreadyFamiliar"
-                                    id='alreadyFamiliar'
-                                    type="checkbox"
-                                    className="h-4 w-4 bg-darkblue-200 rounded border-darkblue-100 text-priamry focus:ring-darkblue-100"
-                                    onChange={handleToggleChange}
-                                    checked={localAlreadyFamiliar}
-                                />
-                                <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
-                                    Don't show me this again
-                                </label>
-                            </div>
-                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
-                                Got it
-                            </SubmitButton>
-                        </div>
+                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
+                            Got it
+                        </SubmitButton>
                     </div>
                 )}
             </SlideOver>

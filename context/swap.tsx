@@ -107,7 +107,7 @@ export function SwapDataProvider({ children }) {
 
         const swapId = swapResponse.data.swap_id;
         return swapId;
-    }, [])
+    }, [partner])
 
     const cancelSwap = useCallback(async (swapId: string) => {
         await layerswapApiClient.CancelSwapAsync(swapId)
