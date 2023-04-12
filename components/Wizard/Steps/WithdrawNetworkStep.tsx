@@ -104,6 +104,8 @@ const WithdrawNetworkStep: FC = () => {
     const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
     const userGuideUrlForDesktop = sourceNetworkSettings?.UserGuideUrlForDesktop
     const sourceChainId = sourceNetworkSettings?.ChainId
+    let canWithdrawWithWallet = !!sourceChainId;
+
     const qrCode = (
         <QRCode
             className="p-2 bg-white rounded-md"
@@ -206,28 +208,29 @@ const WithdrawNetworkStep: FC = () => {
                                         </BackgroundField>
                                     </div>
                                 </div>
-
-                                <div className='grid grid-cols-2 w-full items-center gap-2'>
-                                    {!swap?.destination_exchange &&
-                                        <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop ?? 'https://docs.layerswap.io/user-docs/your-first-swap/cross-chain'} place="inStep" />
-                                    }
-                                    <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
-                                        How it works
-                                    </SecondaryButton>
-                                </div>
-
+                                {
+                                    !canWithdrawWithWallet &&
+                                    <div className='grid grid-cols-2 w-full items-center gap-2'>
+                                        {!swap?.destination_exchange &&
+                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop ?? 'https://docs.layerswap.io/user-docs/your-first-swap/cross-chain'} place="inStep" />
+                                        }
+                                        <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
+                                            How it works
+                                        </SecondaryButton>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
                     {
-                        sourceChainId && swap &&
+                        canWithdrawWithWallet && swap &&
                         <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
                             <TransferFromWallet swapId={swap.id} networkDisplayName={source_network?.display_name} onTransferComplete={onTRansactionComplete} tokenDecimals={sourceCurrency?.decimals} tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount} />
                         </div>
                     }
-                    {!transferDone && !sourceChainId &&
+                    {!transferDone && !canWithdrawWithWallet &&
                         <>
                             <div className="flex text-center mb-4 space-x-2">
                                 <div className='relative'>
@@ -262,7 +265,7 @@ const WithdrawNetworkStep: FC = () => {
                         </>
                     }
                     {
-                        transferDone && !sourceChainId &&
+                        transferDone && !canWithdrawWithWallet &&
                         <SimpleTimer time={transferDoneTime} text={
                             () => <>
                                 {`Transfers from ${source_network?.display_name} usually take less than 3 minutes`}

@@ -70,7 +70,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         });
 
         useEffect(() => {
-            if(values.swapType !== SwapType.OffRamp){
+            if(values.swapType !== SwapType.OffRamp && isValidAddress(walletAddress, values.to.baseObject)){
                 setInputValue(walletAddress)
                 setAddressConfirmed(true)
                 setFieldValue("destination_address", walletAddress)
