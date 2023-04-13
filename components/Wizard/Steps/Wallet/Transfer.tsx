@@ -297,7 +297,7 @@ const getActionsMessages = ({ networkChange,
             Status: "pending",
             Message: {
                 Header: 'Confirm in wallet',
-                Details: 'Please sign the transction with your wallet'
+                Details: 'Please confirm the transaction in your wallet'
             }
         }
     }
@@ -354,7 +354,7 @@ const getActionsMessages = ({ networkChange,
                 Status: "error",
                 Message: {
                     Header: 'Transaction rejected',
-                    Details: 'You’ve rejected signing the transaction in your wallet. Hit Try again to open the prompt again'
+                    Details: `You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`
                 }
             }
     }
