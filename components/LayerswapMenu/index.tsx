@@ -172,6 +172,15 @@ export default function () {
                                                     }
                                                     <hr className="horizontal-gradient" />
                                                     <Menu.Item>
+                                                            <Item type={ItemType.button} onClick={() => {
+                                                                boot();
+                                                                show();
+                                                                updateWithProps()
+                                                            }} icon={<MessageCircle className='h-4 w-4' strokeWidth={3} />}>
+                                                                Get Help
+                                                            </Item>
+                                                        </Menu.Item>
+                                                    <Menu.Item>
                                                         <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className='h-4 w-4' />} className="plausible-event-name=User+Docs">
                                                             User Docs
                                                         </Item>
