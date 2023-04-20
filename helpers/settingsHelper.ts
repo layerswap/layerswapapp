@@ -94,7 +94,6 @@ type FilterSourceLayersArgs = {
 export function FilterSourceLayers({
     layers, destination
 }: FilterSourceLayersArgs): Layer[] {
-
     const IsAvailableForSomeLayer = (asset: string, source: Layer) =>
         layers.some(l => IsAvailableForLayer(asset, source, l))
 

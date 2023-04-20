@@ -175,52 +175,16 @@ function TransactionsHistory() {
                       <table className="w-full divide-y divide-darkblue-500">
                         <thead className="text-primary-text">
                           <tr>
-                            <th
-                              scope="col"
-                              className="hidden pr-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
-                            >
-                              Id
-                            </th>
                             <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold  sm:pl-6">
-                              <div className="hidden lg:block">
-                                From
-                              </div>
-                              <div className="block lg:hidden">
+                              <div className="block">
                                 Swap details
                               </div>
-                            </th>
-                            <th
-                              scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
-                            >
-                              To
                             </th>
                             <th
                               scope="col"
                               className="px-3 py-3.5 text-left text-sm font-semibold  "
                             >
                               Amount
-                            </th>
-                            <th
-                              scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
-                            >
-                              Transaction
-                            </th>
-                            <th
-                              scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
-                            >
-                              Status
-                            </th>
-                            <th
-                              scope="col"
-                              className="hidden px-3 py-3.5 text-left text-sm font-semibold  lg:table-cell"
-                            >
-                              Date
-                            </th>
-                            <th scope="col" className="hidden lg:table-cell relative py-3.5 pl-3 pr-4 sm:pr-6">
-                              <span className="sr-only">More</span>
                             </th>
                           </tr>
                         </thead>
@@ -243,18 +207,7 @@ function TransactionsHistory() {
                             const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
 
                             return <tr onClick={() => handleOpenSwapDetailsInMobile(swap)} key={swap.id}>
-                              <td
-                                className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'hidden pr-3 py-3.5 text-sm text-white lg:table-cell'
-                                )}
-                              >
-                                <div className='inline-flex items-center'>
-                                  <CopyButton iconClassName="text-primary-text" toCopy={swap.id}>
-                                    {shortenAddress(swap.id)}
-                                  </CopyButton>
-                                </div>
-                              </td>
+                             
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
@@ -273,9 +226,8 @@ function TransactionsHistory() {
                                       />
                                     }
                                   </div>
-                                  <div className="mx-1 hidden lg:block">{source.display_name}</div>
-                                  <ArrowRight className="h-4 w-4 lg:hidden mx-2" />
-                                  <div className="flex-shrink-0 h-5 w-5 relative block lg:hidden">
+                                  <ArrowRight className="h-4 w-4 mx-2" />
+                                  <div className="flex-shrink-0 h-5 w-5 relative block">
                                     {
                                       <Image
                                         src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
@@ -287,11 +239,11 @@ function TransactionsHistory() {
                                     }
                                   </div>
                                 </div>
-                                <div className="flex items-center text-white lg:hidden">
+                                <div className="flex items-center text-white">
                                   <FormattedDate date={swap.created_date} />
                                 </div>
                                 {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
-                                <span className="flex items-center lg:hidden">
+                                <span className="flex items-center">
                                   {swap && <StatusIcon status={swap.status} />}
                                   {/* {plan.from} - {plan.to} */}
                                 </span>
@@ -300,33 +252,10 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
-                                )}
-                              >
-                                <div className="flex items-center">
-                                  <div className="flex-shrink-0 h-5 w-5 relative">
-                                    {
-                                      <Image
-                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
-                                        alt="To Logo"
-                                        height="60"
-                                        width="60"
-                                        layout="responsive"
-                                        className="rounded-md object-contain"
-                                      />
-                                    }
-                                  </div>
-                                  <div className="ml-1">{destination.display_name}</div>
-                                </div>
-
-                              </td>
-                              <td
-                                className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-500',
                                   'px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
-                                <div className="flex justify-between items-center">
+                                <div className="flex justify-between items-center cursor-pointer" onClick={(e)=>{handleopenSwapDetails(swap);e.preventDefault()}}>
                                   <div className="">
                                     {
                                       swap?.status == 'completed' ?
@@ -340,62 +269,9 @@ function TransactionsHistory() {
                                     }
                                     <span className="ml-1">{swap.destination_network_asset}</span>
                                   </div>
-                                  <ChevronRight className="h-5 w-5 lg:hidden" />
-                                </div>
-                              </td>
-                              <td
-                                className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
-                                )}
-                              >
-                                {
-                                  swap?.output_transaction?.transaction_id ?
-                                    <>
-                                      {(swap?.output_transaction?.transaction_id && swap?.destination_exchange === KnownInternalNames.Exchanges.Coinbase && (isGuid(swap?.output_transaction?.transaction_id))) ?
-                                        <span><CopyButton toCopy={swap.output_transaction.transaction_id}>{shortenAddress(swap.output_transaction.transaction_id)}</CopyButton></span>
-                                        :
-                                        <div className='underline hover:no-underline flex items-center space-x-1'>
-                                          <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
-                                          <ExternalLink className='h-4' />
-                                        </div>
-                                      }
-                                    </>
-                                    : <>-</>
-                                }
-                              </td>
-                              <td
-                                className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'relative px-3 py-3.5 text-sm text-white hidden lg:table-cell group'
-                                )}
-                              >
-                                {swap && <StatusIcon status={swap.status} />}
-
-                              </td>
-                              <td
-                                className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
-                                )}
-                              >
-                                {(new Date(swap.created_date)).toLocaleString()}
-                              </td>
-                              <td
-                                className={classNames(
-                                  index === 0 ? '' : 'border-t border-transparent',
-                                  'hidden lg:table-cell relative py-3.5 pl-3 pr-4 sm:pr-6 text-right text-sm font-medium'
-                                )}
-                              >
-                                <button
-                                  type="button"
-                                  onClick={() => handleopenSwapDetails(swap)}
-                                  className="group text-white  relative w-full flex justify-center py-2 px-2 border-0 font-semibold rounded-md transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
-                                >
                                   <ChevronRight className="h-5 w-5" />
-                                </button>
-                                {index !== 0 ? <div className="absolute right-6 left-0 -top-px h-px bg-darkblue-500" /> : null}
-                              </td>
+                                </div>
+                              </td>                              
                             </tr>
                           })}
                         </tbody>
