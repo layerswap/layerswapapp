@@ -2,6 +2,7 @@ import { SwapType } from "../../lib/layerSwapApiClient";
 import { CryptoNetwork } from "../../Models/CryptoNetwork";
 import { Currency } from "../../Models/Currency";
 import { Exchange } from "../../Models/Exchange";
+import { Layer } from "../../Models/Layer";
 import { SelectMenuItem } from "../Select/selectMenuItem";
 
 
@@ -10,19 +11,6 @@ export type SwapFormValues =  {
   destination_address: string;
   currency?: SelectMenuItem<Currency>;
   refuel?: boolean;
-} & SwapFormProductsData
-
-
-export type SwapFormProductsData = {
-  swapType: SwapType.OffRamp;
-  from?: SelectMenuItem<CryptoNetwork>;
-  to?: SelectMenuItem<Exchange>;
-} | {
-  swapType: SwapType.OnRamp;
-  from?: SelectMenuItem<Exchange>;
-  to?: SelectMenuItem<CryptoNetwork>;
-} | {
-  swapType: SwapType.CrossChain;
-  from?: SelectMenuItem<CryptoNetwork>;
-  to?: SelectMenuItem<CryptoNetwork>;
+  from?: SelectMenuItem<Layer>;
+  to?: SelectMenuItem<Layer>;
 }

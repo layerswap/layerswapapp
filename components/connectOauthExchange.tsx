@@ -7,9 +7,10 @@ import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
 import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
+import { Layer } from '../Models/Layer';
 
 type Props = {
-    exchange: Exchange,
+    exchange: Layer & { isExchange: true },
     onClose: () => void
 }
 

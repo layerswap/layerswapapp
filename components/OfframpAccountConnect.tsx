@@ -23,8 +23,9 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
         values,
     } = useFormikContext<SwapFormValues>();
 
-    const { to, swapType } = values || {}
-    const { oauth_connect_url } = (swapType === SwapType.OffRamp && to?.baseObject) || {}
+    const { to } = values || {}
+    const destination = values?.to?.baseObject
+    const { oauth_connect_url } = (destination?.isExchange && destination) || {}
     const [authWindow, setAuthWindow] = useState<Window>()
     const [loading, setLoading] = useState(false)
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()

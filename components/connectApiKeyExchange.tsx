@@ -9,9 +9,10 @@ import { slideOverPlace } from './SlideOver';
 import WarningMessage from './WarningMessage';
 import { useRouter } from 'next/router';
 import GuideLink from './guideLink';
+import { Layer } from '../Models/Layer';
 
 type Props = {
-    exchange: Exchange,
+    exchange: Layer & { isExchange: true },
     onSuccess: () => Promise<void>,
     slideOverPlace?: slideOverPlace,
     stickyFooter?: boolean

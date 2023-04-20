@@ -58,7 +58,8 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 (async () => {
                     try {
                         let formValues = { ...temp_data.swap_data }
-                        if (temp_data?.swap_data?.swapType === SwapType.OffRamp) {
+                        const source = formValues?.from?.baseObject
+                        if (temp_data?.swap_data?.to?.baseObject?.isExchange) {
                             const layerswapApiClient = new LayerSwapApiClient(router)
                             const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, temp_data.swap_data?.currency?.baseObject?.asset)
                             formValues.destination_address = deposit_address?.data
@@ -67,7 +68,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                         clearTempData()
                         formikRef.current.setValues(formValues)
                         updateSwapFormData(formValues)
-                        if (formValues.swapType === SwapType.OnRamp) {
+                        if (source.isExchange) {
                             goToStep(SwapCreateStep.Confirm)
                         }
                     }
@@ -135,12 +136,14 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
-    const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType, settings, query)
+    const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(settings, query)
+    const source = formValues?.from?.baseObject
+    const destination = formValues?.to?.baseObject
 
     return <>
         <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
             {/* refactor this */}
-            {(close) => <ConnectImmutableX network={(formValues?.swapType === SwapType.OnRamp && formValues?.to || formValues?.swapType === SwapType.OffRamp && formValues?.from || formValues?.swapType === SwapType.CrossChain && (formValues?.to || formValues?.from))?.baseObject} onClose={close} />}
+            {(close) => <ConnectImmutableX network={((source?.isExchange && formValues?.to) || (destination?.isExchange && formValues?.from) || (!source?.isExchange && !destination?.isExchange) && (formValues?.to || formValues?.from))?.baseObject} onClose={close} />}
         </SlideOver>
         <SlideOver imperativeOpener={[connectNetworkiIsOpen, setConnectNetworkIsOpen]} place='inStep' header={`${networkToConnect?.DisplayName} connect`}>
             {() => <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}

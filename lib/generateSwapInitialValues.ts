@@ -8,72 +8,46 @@ import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
 import { SwapType } from "./layerSwapApiClient";
 import NetworkSettings from "./NetworkSettings";
+import { FilterDestinationLayers, FilterSourceLayers } from "../helpers/settingsHelper";
+import { GenerateCurrencyMenuItems, GenerateDestLayerMenuItems, GenerateSourceLayerMenuItems } from "../components/utils/generateMenuItems";
 
-export function generateSwapInitialValues(swapType: SwapType, settings: LayerSwapSettings, queryParams: QueryParams): SwapFormValues {
-    const { destNetwork, destAddress, sourceExchangeName, products, selectedProduct, amount, asset, from, to } = queryParams
+export function generateSwapInitialValues(settings: LayerSwapSettings, queryParams: QueryParams): SwapFormValues {
+    const { destNetwork, destAddress, sourceExchangeName, amount, asset, from, to } = queryParams
 
-    const { currencies, exchanges, networks, discovery: { resource_storage_url } } = settings || {}
+    const { currencies, discovery: { resource_storage_url }, layers } = settings || {}
 
-    const swapTypes = Object.values(SwapType);
+    const sourceLayer = layers.find(l => l.internal_name.toUpperCase() === from?.toUpperCase()
+        || l.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase())
 
-    const productsArray = products?.split(",")
-    const filteredProducts = products ? swapTypes?.filter(st => productsArray.some(p => st?.toLowerCase() === p?.toLowerCase())) : swapTypes
-    const selectedSwapType = filteredProducts.find(st => st?.toLowerCase() === selectedProduct?.toLowerCase())
+    const destinationLayer = layers.find(l => l.internal_name.toUpperCase() === to?.toUpperCase()
+        || l.internal_name.toUpperCase() === destNetwork?.toUpperCase())
 
-    let initialSwapType = (swapType || selectedSwapType || filteredProducts?.[0]) ?? SwapType.OnRamp;
+    const sourceItems = GenerateSourceLayerMenuItems({ layers, destination: destinationLayer, resource_storage_url })
+    const destinationItems = GenerateDestLayerMenuItems({ layers, source: sourceLayer, resource_storage_url })
+    const sourceValue = sourceLayer ? sourceItems.find(i => i.baseObject?.internal_name === sourceLayer?.internal_name) : null
+    const destinationValue = destinationLayer ? destinationItems.find(i => i.baseObject?.internal_name === destinationLayer?.internal_name) : null
 
-    const networkIsAvailable = (n: CryptoNetwork) => {
-        return initialSwapType === SwapType.OffRamp ?
-            n.currencies.some(nc => nc.status === "active" && nc.is_deposit_enabled && (exchanges.some(e => {
-                return e.currencies.some(ec => ec.asset === nc.asset)
-            })))
-            : n.currencies.some(nc => nc.status === "active" && nc.is_withdrawal_enabled && (exchanges.some(e => e.currencies.some(ec => ec.asset === nc.asset))))
-    }
-
-    const availableNetworks = networks.filter(networkIsAvailable)
-        .map(c => new SelectMenuItem<CryptoNetwork>(c, c.internal_name, c.display_name, 0, `${resource_storage_url}/layerswap/networks/${c.internal_name.toLowerCase()}.png`, c.status === "active", false))
-
-    let availableExchanges = exchanges
-        .map(c => new SelectMenuItem<Exchange>(c, c.internal_name, c.display_name, 0, `${resource_storage_url}/layerswap/networks/${c.internal_name.toLowerCase()}.png`, true, false))
-
-    const destination = initialSwapType === SwapType.OffRamp ? availableExchanges.find(x => (x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() || x.baseObject.internal_name.toUpperCase() === to?.toUpperCase()) && x.baseObject.currencies)
-        : availableNetworks.find(x => (x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() || x.baseObject.internal_name.toUpperCase() === to?.toUpperCase()) && x.isAvailable && !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.onramp)
-
-    const source = initialSwapType === SwapType.OnRamp ? availableExchanges.find(x => (x.baseObject.internal_name.toUpperCase() === sourceExchangeName?.toUpperCase() || x.baseObject.internal_name.toUpperCase() == from?.toUpperCase()) && x.baseObject.currencies)
-        : availableNetworks.find(x => ((x.baseObject.internal_name.toUpperCase() === destNetwork?.toUpperCase() && destination?.baseObject?.internal_name?.toUpperCase() !== destNetwork.toUpperCase() && x.baseObject.currencies.some(c => c.is_deposit_enabled && (c.status === 'active' || c.status === "insufficient_liquidity"))) || x.baseObject.internal_name.toUpperCase() === from?.toUpperCase()) && x.isAvailable && !NetworkSettings?.ForceDisable?.[x?.baseObject?.internal_name]?.offramp)
-
-    const availableCurrencies = currencies
-        .map(c => new SelectMenuItem<Currency>(c, c.asset, c.asset, 0, `${resource_storage_url}/layerswap/currencies/${c.asset.toLowerCase()}.png`))
+    const currencyItems = GenerateCurrencyMenuItems({
+        currencies,
+        source: sourceLayer,
+        destination: destinationLayer,
+        resource_storage_url
+    })
 
     let initialAddress =
-        destAddress && destination && isValidAddress(destAddress, destination?.baseObject) ? destAddress : "";
+        destAddress && destinationValue && isValidAddress(destAddress, destinationLayer) ? destAddress : "";
 
     let initialCurrency =
-        amount && availableCurrencies.find(c => c.baseObject.asset == asset)
+        amount && currencyItems.find(c => c.baseObject.asset == asset)
 
-    const result = { amount: initialCurrency ? amount : '', currency: initialCurrency, destination_address: (initialSwapType !== SwapType.OffRamp && initialAddress) ? initialAddress : '' }
-
-    switch (initialSwapType) {
-        case SwapType.OnRamp:
-            return {
-                ...result,
-                swapType: SwapType.OnRamp,
-                from: source as SelectMenuItem<Exchange>,
-                to: destination as SelectMenuItem<CryptoNetwork>
-            }
-        case SwapType.OffRamp:
-            return {
-                ...result,
-                swapType: SwapType.OffRamp,
-                from: source as SelectMenuItem<CryptoNetwork>,
-                to: destination as SelectMenuItem<Exchange>,
-            }
-        case SwapType.CrossChain:
-            return {
-                ...result,
-                swapType: SwapType.CrossChain,
-                from: source as SelectMenuItem<CryptoNetwork>,
-                to: destination as SelectMenuItem<CryptoNetwork>,
-            }
+    const result: SwapFormValues = {
+        from: sourceValue,
+        to: destinationValue,
+        amount: initialCurrency ? amount : '',
+        currency: initialCurrency,
+        destination_address: (!destinationLayer?.isExchange && initialAddress) ? initialAddress : '',
     }
+
+    return result
 }
+

@@ -7,26 +7,29 @@ import { truncateDecimals } from '../utils/RoundDecimals';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../Accordion';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { GetDefaultNetwork, GetNetworkCurrency } from '../../helpers/settingsHelper';
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
     const { networks, currencies, campaigns, discovery: { resource_storage_url } } = useSettingsState()
-    const { currency, from, to, swapType } = values || {}
+    const { currency, from, to } = values || {}
 
-    let exchangeFee = swapType === SwapType.OnRamp && parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
+    let exchangeFee = parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
     let fee = CalculateFee(values, networks);
     let receive_amount = CalculateReceiveAmount(values, networks, currencies);
-
+    const asset = currency?.baseObject?.asset
     const campaign = campaigns?.find(c => c.network_name === to?.baseObject?.internal_name)
     const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
     const feeinUsd = fee * currency?.baseObject?.usd_price
     const reward = truncateDecimals(((feeinUsd * campaign?.percentage / 100) / campaignAsset?.usd_price), campaignAsset?.precision)
     const isCampaignEnded = Math.round(((new Date(campaign?.end_date).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
-    const destination_native_currency = swapType !== SwapType.OffRamp && to?.baseObject?.native_currency
-    const destinationNetworkCurrency = to?.baseObject?.currencies.find(c => c.asset === currency?.baseObject?.asset);
+    const destination_native_currency = !to?.baseObject.isExchange
+        && GetDefaultNetwork(to?.baseObject, asset)?.native_currency
+
+    const destinationNetworkCurrency = GetNetworkCurrency(to?.baseObject, currency?.baseObject?.asset)
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
-    const refuel = truncateDecimals(CaluclateRefuelAmount(values, networks, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
+    const refuel = truncateDecimals(CaluclateRefuelAmount(values, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
 
     return (
         <>
@@ -71,7 +74,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                     </span>
                                 </div>
                                 {
-                                    swapType === SwapType.OnRamp &&
+                                    from?.baseObject?.isExchange &&
                                     <div className="mt-2 flex flex-row justify-between">
                                         <label className="flex items-center text-left grow">
                                             Exchange Fee

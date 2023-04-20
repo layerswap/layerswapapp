@@ -25,6 +25,7 @@ import { nameOf } from '../../../../lib/external/nameof';
 import { FormikProps } from 'formik';
 import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormValues';
 import { Exchange } from '../../../../Models/Exchange';
+import { Layer } from '../../../../Models/Layer';
 
 
 const OffRampSwapConfirmationStep: FC = () => {
@@ -46,7 +47,7 @@ const OffRampSwapConfirmationStep: FC = () => {
     const { data: deposite_address } = useSWR<ApiResponse<string>>((to && !destination_address) ? depositad_address_endpoint : null, layerswapApiClient.fetcher)
 
     const currentNetwork = swapFormData?.from?.baseObject;
-    const currentExchange = swapFormData?.to?.baseObject as Exchange;
+    const currentExchange = swapFormData?.to?.baseObject as Layer & { isExchange: true };
     const currentCurrency = swapFormData?.currency?.baseObject;
 
     useEffect(() => {
@@ -123,7 +124,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                     <AddressDetails canEditAddress={true} />
                 </SwapConfirmMainData>
                 {
-                    currentExchange.currencies.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network === currentNetwork.internal_name) &&
+                    currentExchange?.layer2Assets.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network_internal_name === currentNetwork.internal_name) &&
                     <WarningMessage messageType='informing'>
                         <span>You might be able transfer {currentCurrency.asset} from {currentNetwork.display_name} to {currentExchange.display_name} directly</span>
                     </WarningMessage>
