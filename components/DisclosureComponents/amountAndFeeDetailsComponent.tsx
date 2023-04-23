@@ -15,7 +15,9 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
 
     let exchangeFee = swapType === SwapType.OnRamp && parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
     let fee = CalculateFee(values, networks);
+    const parsedFee = parseFloat(fee.toFixed(currency?.baseObject?.precision))
     let receive_amount = CalculateReceiveAmount(values, networks, currencies);
+    const parsedReceiveAmount = parseFloat(receive_amount.toFixed(currency?.baseObject?.precision))
 
     const campaign = campaigns?.find(c => c.network_name === to?.baseObject?.internal_name)
     const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
@@ -27,6 +29,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const destinationNetworkCurrency = to?.baseObject?.currencies.find(c => c.asset === currency?.baseObject?.asset);
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
     const refuel = truncateDecimals(CaluclateRefuelAmount(values, networks, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
+    const currencyName = currency?.name || "-"
 
     return (
         <>
@@ -38,10 +41,10 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                             <div className='flex items-center space-x-2'>
                                 <span className="text-sm md:text-base">
                                     {
-                                        receive_amount ?
+                                        parsedReceiveAmount ?
                                             <div className="font-semibold md:font-bold text-right leading-4">
                                                 <p>
-                                                    {parseFloat(receive_amount.toFixed(currency?.baseObject?.precision))}
+                                                    <>{parsedReceiveAmount}</>
                                                     <span>
                                                         {
                                                             ` ${destinationNetworkCurrency?.name || ""}`
@@ -67,7 +70,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         Layerswap Fee
                                     </label>
                                     <span className="text-right">
-                                        {parseFloat(fee.toFixed(currency?.baseObject?.precision))} {currency?.name}
+                                        <>{parsedFee}</> <>{currencyName}</>
                                     </span>
                                 </div>
                                 {
