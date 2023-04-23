@@ -29,7 +29,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const destinationNetworkCurrency = to?.baseObject?.currencies.find(c => c.asset === currency?.baseObject?.asset);
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
     const refuel = truncateDecimals(CaluclateRefuelAmount(values, networks, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
-    const currencyName = currency?.name || "-"
+    const currencyName = currency?.name || " "
 
     return (
         <>
