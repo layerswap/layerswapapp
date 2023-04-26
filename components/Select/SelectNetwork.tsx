@@ -1,12 +1,12 @@
 import { Field, useFormikContext } from "formik";
-import { forwardRef } from "react";
+import { forwardRef, useCallback, useState } from "react";
 import { useQueryState } from "../../context/query";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { GenerateDestLayerMenuItems, GenerateSourceLayerMenuItems } from "../utils/generateMenuItems";
-import Select from "./Select";
-import { SelectMenuItem } from "./selectMenuItem";
+import { SelectMenuItem, SelectMenuItemGroup } from "./selectMenuItem";
 import { Layer } from "../../Models/Layer";
+import CommandSelectWrapper from "./CommandSelectWrapper";
 
 type Props = {
     direction: "from" | "to",
@@ -21,8 +21,9 @@ const SelectNetwork = forwardRef(({ direction, label }: Props, ref: any) => {
     const { from, to } = values
     const { lockNetwork, lockExchange } = useQueryState()
     const { discovery: { resource_storage_url }, layers } = useSettingsState();
+    const [showModal, setShowModal] = useState(false)
 
-    let menuItems: SelectMenuItem<Layer>[]
+    let menuItems: SelectMenuItemGroup[]
     let placeholder = "";
     if (direction === "from") {
         menuItems = GenerateSourceLayerMenuItems({
@@ -38,17 +39,29 @@ const SelectNetwork = forwardRef(({ direction, label }: Props, ref: any) => {
             layers,
             resource_storage_url
         })
-        placeholder = "Network";
+        placeholder = "Destination";
     }
 
     const value = direction === "from" ? from : to;
+
+    const handleSelect = useCallback((item: SelectMenuItem<Layer>) => {
+        setFieldValue(name, item, true)
+    }, [name])
+
     return (<>
         <label htmlFor={name} className="block font-semibold text-primary-text text-sm">
             {label}
         </label>
-        <div ref={ref} tabIndex={0} className={`mt-1.5 `}>
-            <Field name={name} placeholder={placeholder} values={menuItems} label={label} value={value} as={Select} setFieldValue={setFieldValue} lockExchange={lockExchange} lockNetwork={lockNetwork} header={`Swap ${direction === 'from' ? 'from' : 'to'}`} />
+        <div ref={ref} className={`mt-1.5 `}>
+            <CommandSelectWrapper
+                disabled={false}
+                placeholder={placeholder}
+                setValue={handleSelect}
+                value={value}
+                values={menuItems}
+            />
         </div>
     </>)
 });
+
 export default SelectNetwork

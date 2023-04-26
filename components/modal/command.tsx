@@ -1,11 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { DialogProps } from "@radix-ui/react-dialog"
 import { Command as CommandPrimitive } from "cmdk"
-import { Search } from "lucide-react"
 import { classNames } from "../utils/classNames"
-import { Leaflet } from "./leaflet"
 import Modal, { ModalProps } from "./modal"
 
 const Command = React.forwardRef<
@@ -115,7 +112,7 @@ const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={classNames(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-darkblue-700 aria-selected:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative cursor-pointer flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-darkblue-700 aria-selected:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}

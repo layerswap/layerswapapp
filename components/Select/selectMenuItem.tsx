@@ -25,7 +25,10 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         }
     }
 }
-
+export class SelectMenuItemGroup {
+    name: string;
+    items: ISelectMenuItem[];
+}
 export interface ISelectMenuItem {
     id: string;
     name: string;

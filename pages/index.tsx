@@ -30,6 +30,7 @@ export default function Home({ settings, inMaintanance }: InferGetServerSideProp
             <Swap />
           </SettingsProvider>
       }
+
     </Layout>
   )
 }

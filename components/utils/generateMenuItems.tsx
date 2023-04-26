@@ -5,7 +5,7 @@ import NetworkSettings from "../../lib/NetworkSettings"
 import { SortingByOrder } from "../../lib/sorting"
 import { Currency } from "../../Models/Currency"
 import { Layer } from "../../Models/Layer"
-import { SelectMenuItem } from "../Select/selectMenuItem"
+import { SelectMenuItem, SelectMenuItemGroup } from "../Select/selectMenuItem"
 
 
 type SourceLayerMenuGeneratorArgs = {
@@ -18,25 +18,10 @@ export const GenerateSourceLayerMenuItems = ({
     layers,
     destination,
     resource_storage_url
-}: SourceLayerMenuGeneratorArgs): SelectMenuItem<Layer>[] => {
-
+}: SourceLayerMenuGeneratorArgs): SelectMenuItemGroup[] => {
     const filteredLayers = FilterSourceLayers({ layers, destination })
-
-    const menuItems: SelectMenuItem<Layer>[] = filteredLayers.map(l => {
-        const menuItem: SelectMenuItem<Layer> = {
-            baseObject: l,
-            id: l.internal_name,
-            name: l.display_name,
-            //TODO network/exchange
-            order: ExchangeSettings.KnownSettings[l.internal_name]?.Order,
-            imgSrc: `${resource_storage_url}/layerswap/networks/${l.internal_name.toLowerCase()}.png`,
-            isAvailable: { value: true, disabledReason: null },
-            isDefault: false
-        }
-        return menuItem
-    }).sort(SortingByOrder);
-
-    return menuItems
+    const menuGroups = GenerateMenuGroups({layers:filteredLayers,resource_storage_url})
+    return menuGroups
 }
 
 type DestLayerMenuGeneratorArgs = {
@@ -48,27 +33,50 @@ export const GenerateDestLayerMenuItems = ({
     layers,
     source,
     resource_storage_url
-}: DestLayerMenuGeneratorArgs): SelectMenuItem<Layer>[] => {
-
+}: DestLayerMenuGeneratorArgs): SelectMenuItemGroup[] => {
     const filteredLayers = FilterDestinationLayers({ layers, source })
+    const menuGroups = GenerateMenuGroups({layers:filteredLayers,resource_storage_url})
+    return menuGroups
+}
 
-    const menuItems: SelectMenuItem<Layer>[] = filteredLayers.map(l => {
+type GenerateMenuGroupsArgs = {
+    layers: Layer[],
+    resource_storage_url: string
+}
+const GenerateMenuGroups = ({
+    layers,
+    resource_storage_url
+}:GenerateMenuGroupsArgs): SelectMenuItemGroup[]=>{
+    const exchangesGroup: SelectMenuItemGroup = {
+        items: [],
+        name: "Exchanges"
+    }
+    const networksGroup: SelectMenuItemGroup = {
+        items: [],
+        name: "Networks"
+    }
+    layers.forEach(l => {
         const menuItem: SelectMenuItem<Layer> = {
             baseObject: l,
             id: l.internal_name,
             name: l.display_name,
             //TODO network/exchange
-            order: l.isExchange ?
-                ExchangeSettings.KnownSettings[l.internal_name]?.Order
-                : NetworkSettings.KnownSettings[l.internal_name]?.Order,
+            order: ExchangeSettings.KnownSettings[l.internal_name]?.Order,
             imgSrc: `${resource_storage_url}/layerswap/networks/${l.internal_name.toLowerCase()}.png`,
             isAvailable: { value: true, disabledReason: null },
             isDefault: false
         }
-        return menuItem
-    }).sort(SortingByOrder);
+        if (l.isExchange) {
+            exchangesGroup.items.push(menuItem)
+        }
+        else {
+            networksGroup.items.push(menuItem)
+        }
+    })
+    exchangesGroup.items = exchangesGroup.items.sort(SortingByOrder)
+    networksGroup.items = networksGroup.items.sort(SortingByOrder)
 
-    return menuItems
+    return [exchangesGroup, networksGroup]
 }
 
 

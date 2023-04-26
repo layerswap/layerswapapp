@@ -1,10 +1,9 @@
-import { X } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import React, { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from "react";
 import { FC } from "react"
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { ReactPortal } from "../Wizard/Widget";
-import { Leaflet, LeafletHeight } from "./leaflet";
+import { Leaflet } from "./leaflet";
 
 type ModalHeight = 'full' | 'fit';
 
