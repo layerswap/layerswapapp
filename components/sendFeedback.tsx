@@ -53,25 +53,22 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
             }}
         >
             {({ handleChange, isValid, isSubmitting }) => (
-                <Form className='flex flex-col justify-between max-h-[600px]'>
-                    <div className='space-y-8 h-full'>
+                <Form className='flex flex-col justify-between'>
+                    <div className='space-y-4 h-full'>
+                        <p className='text-white font-semibold text-lg'>Send Feedback</p>
                         <p className='text-base text-left font-roboto text-primary-text font-light'>
                             Please help us shape the product, catch bugs, and prioritize features. Your feedback will go directly into our Telegram channel.
                         </p>
-                        <div className="flex flex-wrap">
-                            <div className="w-full">
-                                <textarea
-                                    id='Feedback'
-                                    name='Feedback'
-                                    onChange={e => {
-                                        handleChange(e)
-                                    }}
-                                    className="appearance-none block w-full bg-darkblue-700 text-white border border-darkblue-500 rounded-md py-3 px-4 mb-3 leading-tight focus:ring-0 focus:bg-darkblue-500 focus:border-darkblue-100 h-72 resize-none"
-                                />
-                            </div>
-                        </div>
                     </div>
-                    <div className="text-white text-sm space-y-4 flex flex-col">
+                    <div className="text-white text-sm space-y-4 flex flex-col pt-8">
+                        <textarea
+                            id='Feedback'
+                            name='Feedback'
+                            onChange={e => {
+                                handleChange(e)
+                            }}
+                            className="h-40 max-h-60 appearance-none block bg-darkblue-700 text-white border border-darkblue-500 rounded-md py-3 px-4 mb-3 leading-tight focus:ring-0 focus:bg-darkblue-500 focus:border-darkblue-100 "
+                        />
                         <button
                             type="button"
                             onClick={() => {
@@ -79,7 +76,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                                 show();
                                 updateWithProps()
                             }}
-                            className="text-center f disabled:text-primary-800 text-primary border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
+                            className="text-center disabled:text-primary-800 text-primary border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
                         >
                             Need help?
                         </button>

@@ -9,7 +9,6 @@ import { RewardsComponentLeaderboardSceleton, RewardsComponentSceleton } from ".
 import useSWR from "swr"
 import { ApiResponse } from "../Models/ApiResponse"
 import ClickTooltip from "./Tooltips/ClickTooltip"
-import Modal from "./modalComponent"
 import shortenAddress from "./utils/ShortenAddress"
 import { useAccount } from "wagmi"
 import RainbowKit from "./Wizard/Steps/Wallet/RainbowKit"
@@ -19,6 +18,7 @@ import { truncateDecimals } from "./utils/RoundDecimals"
 import HeaderWithMenu from "./HeaderWithMenu"
 import SubmitButton from "./buttons/submitButton";
 import AddressIcon from "./AddressIcon";
+import Modal from "./modal/modal";
 
 function RewardsComponent() {
 
@@ -319,7 +319,7 @@ function RewardsComponent() {
                     }
                 </div>
             </div >
-            <Modal modalSize="medium" title='Leaderboard' showModal={openTopModal} setShowModal={setOpenTopModal}>
+            <Modal header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} >
                 <div className="bg-darkblue-700 border border-darkblue-700 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg text-primary-text">
                     <div className="p-3">
                         <div className="space-y-6">
