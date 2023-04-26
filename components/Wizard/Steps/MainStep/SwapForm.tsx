@@ -253,7 +253,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                         </div>
                         <div className="w-full">
                             {
-                                !destination?.isExchange && GetNetworkCurrency(source, asset)?.is_refuel_enabled &&
+                                !destination?.isExchange && GetNetworkCurrency(destination, asset)?.is_refuel_enabled &&
                                 <div className="flex items-center justify-between px-3.5 py-3 bg-darkblue-700 border border-darkblue-500 rounded-lg mb-4">
                                     <div className="flex items-center space-x-2">
                                         <Fuel className='h-8 w-8 text-primary' />
