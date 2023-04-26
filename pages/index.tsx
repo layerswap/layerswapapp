@@ -18,6 +18,7 @@ type IndexProps = {
 
 export default function Home({ settings, inMaintanance }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+  settings.layers = ResolveLayers(settings.exchanges, settings.networks)
   return (
     <Layout>
       {
@@ -48,6 +49,9 @@ export async function getServerSideProps(context) {
 
   var apiClient = new LayerSwapApiClient();
   const { data: settings } = await apiClient.GetSettingsAsync()
+  settings.networks = settings.networks //.filter(n => n.status !== "inactive");
+  // settings.exchanges = mapNetworkCurrencies(settings.exchanges.filter(e => e.status === 'active'), settings.networks)
+  settings.exchanges = mapNetworkCurrencies(settings.exchanges, settings.networks)
 
   const resource_storage_url = settings.discovery.resource_storage_url
   if (resource_storage_url[resource_storage_url.length - 1] === "/")
@@ -58,9 +62,6 @@ export async function getServerSideProps(context) {
   if (!result.settings.networks.some(x => x.status === "active") || process.env.IN_MAINTANANCE == 'true') {
     result.inMaintanance = true;
   }
-  result.settings.layers = ResolveLayers(settings.exchanges, settings.networks)
-  settings.exchanges = null;
-  settings.networks = null;
   return {
     props: result,
   }
