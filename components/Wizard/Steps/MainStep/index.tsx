@@ -17,7 +17,7 @@ import KnownInternalNames from "../../../../lib/knownIds";
 import MainStepValidation from "../../../../lib/mainStepValidator";
 import { generateSwapInitialValues } from "../../../../lib/generateSwapInitialValues";
 import LayerSwapApiClient, { SwapType } from "../../../../lib/layerSwapApiClient";
-import SlideOver from "../../../SlideOver";
+import Modal from "../../../modal/modal";
 import SwapForm from "./SwapForm";
 import { isValidAddress } from "../../../../lib/addressValidator";
 import NetworkSettings from "../../../../lib/NetworkSettings";
@@ -35,8 +35,8 @@ type NetworkToConnect = {
 }
 const MainStep: FC<Props> = ({ OnSumbit }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
-    const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
-    const [connectNetworkiIsOpen, setConnectNetworkIsOpen] = useState(false);
+    const [showConnectImmutable, setShowConnectImmutable] = useState(false);
+    const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const { swapFormData, swap } = useSwapDataState()
     const router = useRouter();
@@ -93,7 +93,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[destination_internal_name].apiUri })
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
                 if (!isRegistered) {
-                    setConnectImmutableIsOpen(true)
+                    setShowConnectImmutable(true)
                     return
                 }
             } else if (destination_internal_name == KnownInternalNames.Networks.RhinoFiMainnet) {
@@ -101,7 +101,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 const isRegistered = await client.data?.isRegisteredOnDeversifi
                 if (!isRegistered) {
                     setNetworkToConnect({ DisplayName: values.to.baseObject.display_name, AppURL: NetworkSettings.RhinoFiSettings[destination_internal_name].appUri })
-                    setConnectNetworkIsOpen(true);
+                    setShowConnectNetworkModal(true);
                     return
                 }
             } else if (destination_internal_name == KnownInternalNames.Networks.DydxMainnet || destination_internal_name == KnownInternalNames.Networks.DydxGoerli) {
@@ -109,7 +109,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 const isRegistered = await client.data?.exists
                 if (!isRegistered) {
                     setNetworkToConnect({ DisplayName: values.to.baseObject.display_name, AppURL: NetworkSettings.DydxSettings[destination_internal_name].appUri })
-                    setConnectNetworkIsOpen(true);
+                    setShowConnectNetworkModal(true);
                     return
                 }
             }
@@ -138,13 +138,12 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType, settings, query)
 
     return <>
-        <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
-            {/* refactor this */}
-            {(close) => <ConnectImmutableX network={(formValues?.swapType === SwapType.OnRamp && formValues?.to || formValues?.swapType === SwapType.OffRamp && formValues?.from || formValues?.swapType === SwapType.CrossChain && (formValues?.to || formValues?.from))?.baseObject} onClose={close} />}
-        </SlideOver>
-        <SlideOver imperativeOpener={[connectNetworkiIsOpen, setConnectNetworkIsOpen]} place='inStep' header={`${networkToConnect?.DisplayName} connect`}>
-            {() => <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
-        </SlideOver>
+        <Modal show={showConnectImmutable} setShow={setShowConnectImmutable}  >
+            <ConnectImmutableX network={(formValues?.swapType === SwapType.OnRamp && formValues?.to || formValues?.swapType === SwapType.OffRamp && formValues?.from || formValues?.swapType === SwapType.CrossChain && (formValues?.to || formValues?.from))?.baseObject} onClose={close} />
+        </Modal>
+        <Modal show={showConnectNetworkModal} setShow={setShowConnectNetworkModal}  header={`${networkToConnect?.DisplayName} connect`}>
+            <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+        </Modal>
         <Formik
             innerRef={formikRef}
             initialValues={initialValues}

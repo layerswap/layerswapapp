@@ -13,7 +13,6 @@ import NetworkSettings from '../../../lib/NetworkSettings';
 import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import Widget from '../Widget';
-import Modal from '../../modalComponent';
 import { useGoHome } from '../../../hooks/useGoHome';
 import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
@@ -24,7 +23,7 @@ import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
 import Image from 'next/image';
-import SlideOver from '../../SlideOver';
+import Modal from '../../modal/modal';
 import SwapGuide from '../../SwapGuide';
 import SecondaryButton from '../../buttons/secondaryButton';
 
@@ -41,22 +40,11 @@ const WithdrawNetworkStep: FC = () => {
     const { setInterval, cancelSwap, mutateSwap } = useSwapDataUpdate()
     const goHome = useGoHome()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
-    const [openSwapGuide, setOpenSwapGuide] = useState(false)
+    const [showSwapGuide, setShowSwapGuide] = useState(false)
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
     const asset = source_network?.currencies?.find(currency => currency?.asset === destination_network_asset)
 
-
-    const handleOpenSwapGuide = () => {
-        setOpenSwapGuide(true)
-    }
-
-    const hanldeGuideModalClose = () => {
-        setOpenSwapGuide(false)
-    }
-    const handleOpenModal = () => {
-        setOpenCancelConfirmModal(true)
-    }
     useEffect(() => {
         setInterval(15000)
         return () => setInterval(0)
@@ -77,10 +65,7 @@ const WithdrawNetworkStep: FC = () => {
         setTransferDoneTime(Date.now() + estimatedTransferTimeInSeconds)
     }, [estimatedTransferTime])
 
-    const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
-    const handleClose = () => {
-        setOpenCancelConfirmModal(false)
-    }
+    const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false)
 
     const handleCancelConfirmed = useCallback(async () => {
         setLoadingSwapCancel(true)
@@ -212,9 +197,9 @@ const WithdrawNetworkStep: FC = () => {
                                     !canWithdrawWithWallet &&
                                     <div className='grid grid-cols-2 w-full items-center gap-2'>
                                         {!swap?.destination_exchange &&
-                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop ?? 'https://docs.layerswap.io/user-docs/your-first-swap/cross-chain'} place="inStep" />
+                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop ?? 'https://docs.layerswap.io/user-docs/your-first-swap/cross-chain'} />
                                         }
-                                        <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
+                                        <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={() => setShowSwapGuide(true)}>
                                             How it works
                                         </SecondaryButton>
                                     </div>
@@ -242,7 +227,7 @@ const WithdrawNetworkStep: FC = () => {
                             </div>
                             <div className="flex flex-row text-white text-base space-x-2">
                                 <div className='basis-1/3'>
-                                    <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
+                                    <SubmitButton onClick={() => setShowCancelConfirmModal(false)} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
                                         <DoubleLineText
                                             colorStyle='mltln-text-dark'
                                             primaryText='Cancel'
@@ -288,7 +273,7 @@ const WithdrawNetworkStep: FC = () => {
                     }
                 </Widget.Footer>
             </Widget>
-            <Modal showModal={openCancelConfirmModal} setShowModal={handleClose} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
+            <Modal show={showCancelConfirmModal} setShow={setShowCancelConfirmModal} header="Do NOT cancel if you have already sent crypto">
                 <div className='text-primary-text mb-4'></div>
                 <div className="flex flex-row text-white text-base space-x-2">
                     <div className='basis-1/2'>
@@ -302,7 +287,7 @@ const WithdrawNetworkStep: FC = () => {
                         </SubmitButton>
                     </div>
                     <div className='basis-1/2'>
-                        <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
+                        <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={() => setShowCancelConfirmModal(false)} size='medium'>
                             <DoubleLineText
                                 colorStyle='mltln-text-light'
                                 primaryText="Don't"
@@ -313,16 +298,14 @@ const WithdrawNetworkStep: FC = () => {
                     </div>
                 </div>
             </Modal>
-            <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} place={'inStep'} header="📖 Here's how it works">
-                {() => (
-                    <div className='rounded-md w-full flex flex-col items-left justify-center space-y-4 text-left'>
-                        <SwapGuide swap={swap} />
-                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
-                            Got it
-                        </SubmitButton>
-                    </div>
-                )}
-            </SlideOver>
+            <Modal setShow={setShowSwapGuide} show={showSwapGuide} header="📖 Here's how it works">
+                <div className='rounded-md w-full flex flex-col items-left justify-center space-y-4 text-left'>
+                    <SwapGuide swap={swap} />
+                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => setShowSwapGuide(false)}>
+                        Got it
+                    </SubmitButton>
+                </div>
+            </Modal>
         </>
     )
 }

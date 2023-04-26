@@ -1,9 +1,8 @@
-import { ArrowRight, ChevronRight, ExternalLink, X } from 'lucide-react';
+import { ArrowRight, ExternalLink, X } from 'lucide-react';
 import { Dispatch, FC, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import toast from 'react-hot-toast';
-import Modal from '../../modalComponent';
 import Widget from '../Widget';
 import LayerSwapApiClient, { SwapItem } from '../../../lib/layerSwapApiClient';
 import Image from 'next/image'
@@ -12,14 +11,13 @@ import { ApiResponse } from '../../../Models/ApiResponse';
 import { useSettingsState } from '../../../context/settings';
 import shortenAddress from '../../utils/ShortenAddress';
 import { useRouter } from 'next/router';
-import SpinIcon from '../../icons/spinIcon';
 import useCreateSwap from '../../../hooks/useCreateSwap';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { AuthStep } from '../../../Models/Wizard';
+import Modal from '../../modal/modal';
 
 export const CurrencyPendingSwapStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
-    const { exchanges, networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const { MainForm } = useCreateSwap()
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -90,7 +88,7 @@ type PendingSwapsComponentProps = {
 }
 
 export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingSwapsToCancel, header, description, onCancel, loading }) => {
-    const { exchanges, networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
+    const { exchanges, networks, discovery: { resource_storage_url } } = useSettingsState()
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
     const [swapToCancel, setSwapToCancel] = useState<SwapItem>()
     const router = useRouter();
@@ -270,7 +268,7 @@ export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCa
     }, [swapToCancel])
 
     return (
-        <Modal showModal={openCancelConfirmModal} setShowModal={setOpenCancelConfirmModal} title="Do NOT cancel if you have already sent crypto" modalSize='medium'>
+        <Modal show={openCancelConfirmModal} setShow={setOpenCancelConfirmModal} height='fit' header="Do NOT cancel if you have already sent crypto">
             <div className='text-primary-text mb-4'></div>
             <div className="flex flex-row text-white text-base space-x-2">
                 <div className='basis-1/2'>

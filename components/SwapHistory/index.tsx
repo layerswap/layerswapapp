@@ -15,17 +15,16 @@ import CopyButton from "../buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "../Sceletons"
 import GoHomeButton from "../utils/GoHome"
 import StatusIcon, { } from "./StatusIcons"
-import Modal from "../modalComponent"
 import toast from "react-hot-toast"
 import { ArrowLeft } from 'lucide-react'
 import { useSwapDataUpdate } from "../../context/swap"
 import { SwapStatus } from "../../Models/SwapStatus"
 import FormattedDate from "../Common/FormattedDate";
-import useWindowDimensions from "../../hooks/useWindowDimensions";
 import isGuid from "../utils/isGuid";
 import KnownInternalNames from "../../lib/knownIds";
 import ToggleButton from "../buttons/toggleButton";
 import IconButton from "../buttons/iconButton";
+import Modal from "../modal/modal";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -40,7 +39,6 @@ function TransactionsHistory() {
   const { email, userType } = useAuthState()
   const { cancelSwap } = useSwapDataUpdate()
   const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending
-  const { width } = useWindowDimensions()
   const [showCancelledSwaps, setShowCancelledSwaps] = useState(false)
   const [showToggleButton, setShowToggleButton] = useState(false)
 
@@ -120,13 +118,6 @@ function TransactionsHistory() {
   const handleopenSwapDetails = (swap: SwapItem) => {
     setSelectedSwap(swap)
     setOpenSwapDetailsModal(true)
-  }
-
-  const handleOpenSwapDetailsInMobile = (swap: SwapItem) => {
-    if (width < 1024) {
-      setSelectedSwap(swap)
-      setOpenSwapDetailsModal(true)
-    }
   }
 
   const handleToggleChange = (value: boolean) => {
@@ -242,7 +233,7 @@ function TransactionsHistory() {
 
                             const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
 
-                            return <tr onClick={() => handleOpenSwapDetailsInMobile(swap)} key={swap.id}>
+                            return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
@@ -422,7 +413,7 @@ function TransactionsHistory() {
                       </button>
                     }
                   </div>
-                  <Modal showModal={openSwapDetailsModal} setShowModal={setOpenSwapDetailsModal} title={<p className="text-white font-semibold">Swap details</p>} modalSize='medium'>
+                  <Modal show={openSwapDetailsModal} setShow={setOpenSwapDetailsModal} header={<p className="text-white font-semibold">Swap details</p>}>
                     <div>
                       <SwapDetails id={selectedSwap?.id} />
                       {

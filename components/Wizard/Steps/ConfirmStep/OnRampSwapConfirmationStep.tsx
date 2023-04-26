@@ -14,7 +14,6 @@ import { nameOf } from '../../../../lib/external/nameof';
 import SwapConfirmMainData from '../../../Common/SwapConfirmMainData';
 import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormValues';
 import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
-import Modal from '../../../modalComponent';
 import { useTimerState } from '../../../../context/timerContext';
 import Widget from '../../Widget';
 import WarningMessage from '../../../WarningMessage';
@@ -22,6 +21,7 @@ import KnownInternalNames from '../../../../lib/knownIds';
 import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import { Exchange } from '../../../../Models/Exchange';
+import Modal from '../../../modal/modal';
 
 const TIMER_SECONDS = 120
 
@@ -128,7 +128,7 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleWithdrawalTypeToggleChange = (value: boolean) => {
         setWithdrawalType(value)
     }
-    
+
     const currentNetwork = swapFormData?.to?.baseObject;
     const currentExchange = swapFormData?.from?.baseObject as Exchange;
     const currentCurrency = swapFormData?.currency?.baseObject;
@@ -165,14 +165,11 @@ const OnRampSwapConfirmationStep: FC = () => {
                 </div>
             </Widget.Footer>
             <Modal
-                showModal={editingAddress}
-                setShowModal={setEditingAddress}
-                title={
-                    <h4 className='text-lg text-white'>
-                        <Edit onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
-                        Editing your {swapFormData?.to?.name} wallet address</h4>
-                }
-            >
+                show={editingAddress}
+                setShow={setEditingAddress}
+                header={<h4 className='text-lg text-white'>
+                    <Edit onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
+                    Editing your {swapFormData?.to?.name} wallet address</h4>}>
                 <div className='grid grid-flow-row text-primary-text'>
                     <div>
                         <label htmlFor="address" className="block font-normal text-sm text-left">

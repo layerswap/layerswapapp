@@ -115,7 +115,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                             <p>
                                 {
                                     from?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
-                                    <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how' place='inStep' />
+                                    <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how'  />
                                 }
                             </p>
                         </WarningMessage>
