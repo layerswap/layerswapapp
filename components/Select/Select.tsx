@@ -5,7 +5,7 @@ import { AlertCircle, X, ChevronDown, Check, Info } from 'lucide-react'
 import { SelectMenuItem } from './selectMenuItem'
 import { classNames } from '../utils/classNames'
 import { AnimatePresence, motion } from "framer-motion";
-import SlideOver from '../SlideOver'
+import Modal from '../modal/modal'
 import toast from 'react-hot-toast'
 
 export interface SelectProps<T> {
@@ -22,18 +22,18 @@ export interface SelectProps<T> {
 }
 
 export default function Select<T>({ values, setFieldValue, name, value, placeholder, disabled, smallDropdown = false, lockNetwork, lockExchange, header }: SelectProps<T>) {
-    const [isOpen, setIsOpen] = useState(false)
+    const [showModal, setShowModal] = useState(false)
 
     function onChangeHandler(newValue: string) {
         setFieldValue(name, values.find(x => x.id === newValue), true);
     }
 
     function openModal() {
-        setIsOpen(true)
+        setShowModal(true)
     }
 
     const handleSelect = useCallback((item: SelectMenuItem<T>) => {
-        setIsOpen(false)
+        setShowModal(false)
         setFieldValue(name, item, true)
     }, [name])
 
@@ -248,11 +248,9 @@ export default function Select<T>({ values, setFieldValue, name, value, placehol
                     </span>
                 </button>
             </div>
-            <SlideOver imperativeOpener={[isOpen, setIsOpen]} place='inStep' header={header}>
-                {() => (
-                    valueList
-                )}
-            </SlideOver>
+            <Modal show={showModal} setShow={setShowModal}  header={header}>
+                {valueList}
+            </Modal>
         </>
     )
 }

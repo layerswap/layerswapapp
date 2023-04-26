@@ -13,7 +13,7 @@ import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import { Check, ArrowLeftRight, X, Link } from 'lucide-react';
 import Widget from '../Widget';
-import SlideOver from '../../SlideOver';
+import Modal from '../../modal/modal';
 import { DocIframe } from '../../docInIframe';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
@@ -27,7 +27,6 @@ import { KnownwErrorCode } from '../../../Models/ApiError';
 import Coinbase2FA from '../../Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
-import Modal from '../../modalComponent';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../Select/PrimitiveSelect';
 import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
@@ -42,16 +41,16 @@ const WithdrawExchangeStep: FC = () => {
     const { exchanges, networks, discovery: { resource_storage_url } } = useSettingsState()
     const { swap, codeRequested } = useSwapDataState()
     const { setInterval, setCodeRequested, mutateSwap } = useSwapDataUpdate()
-    const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
-    const [openCoinbaseConnectSlideover, setOpenCoinbaseConnectSlideover] = useState(false)
+    const [openCancelConfirmModal, setShowCancelConfirmModal] = useState(false)
+    const [showCoinbaseConnectModal, setShowCoinbaseConnectModal] = useState(false)
     const [openCoinbase2FA, setOpenCoinbase2FA] = useState(false)
     const { start: startTimer } = useTimerState()
     const [authorized, steAuthorized] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [loading, setLoading] = useState(false)
     const { source_exchange: source_exchange_internal_name, destination_network: destination_network_internal_name, source_network_asset: source_network_asset, destination_network_asset } = swap
-    const [openDocSlideover, setOpenDocSlideover] = useState(false)
-    const [openSwapGuide, setOpenSwapGuide] = useState(false)
+    const [showDocModal, setShowDocModal] = useState(false)
+    const [showSwapGuideModal, setShowSwapGuideModal] = useState(false)
 
     const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
@@ -63,19 +62,6 @@ const WithdrawExchangeStep: FC = () => {
     const sourceNetworks = networks.filter(n => availableNetworks.includes(n.internal_name))
     const defaultSourceNetwork = sourceNetworks.find(sn => sn.internal_name === source_network_currency.network)
     const asset = defaultSourceNetwork?.currencies?.find(currency => currency?.asset === destination_network_asset)
-
-
-    const handleOpenModal = () => {
-        setOpenCancelConfirmModal(true)
-    }
-
-    const handleOpenSwapGuide = () => {
-        setOpenSwapGuide(true)
-    }
-
-    const hanldeGuideModalClose = () => {
-        setOpenSwapGuide(false)
-    }
 
     useEffect(() => {
         setInterval(15000)
@@ -151,7 +137,7 @@ const WithdrawExchangeStep: FC = () => {
                 else if (e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS || e?.response?.data?.error?.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
                     steAuthorized(false)
                     setCodeRequested(false)
-                    setOpenCoinbaseConnectSlideover(true)
+                    setShowCoinbaseConnectModal(true)
                 }
                 else if (e?.response?.data?.error?.message) {
                     toast(e?.response?.data?.error?.message)
@@ -164,7 +150,7 @@ const WithdrawExchangeStep: FC = () => {
     }, [swap, destination_network, codeRequested])
 
     const openConnect = () => {
-        setOpenCoinbaseConnectSlideover(true)
+        setShowCoinbaseConnectModal(true)
     }
 
     const qrCode = (
@@ -179,17 +165,13 @@ const WithdrawExchangeStep: FC = () => {
     );
 
     return (<>
-        <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inModal'>
-            {(close) => (
-                <DocIframe onConfirm={() => close()} URl={source_exchange_settings.ExchangeWithdrawalGuideUrl} />
-            )}
-        </SlideOver>
-        <SlideOver imperativeOpener={[openCoinbaseConnectSlideover, setOpenCoinbaseConnectSlideover]} header={`Please connect your ${source_exchange?.display_name} account`} place='inStep' >
-            {() => (
-                <AccountConnectStep hideHeader onDoNotConnect={() => setOpenCoinbaseConnectSlideover(false)} onAuthorized={() => { steAuthorized(true); setOpenCoinbaseConnectSlideover(false); }} stickyFooter={false} />
-            )}
-        </SlideOver>
-        <Modal showModal={openCoinbase2FA} setShowModal={setOpenCoinbase2FA}>
+        <Modal show={showDocModal} setShow={setShowDocModal} >
+            <DocIframe onConfirm={() => setShowDocModal(false)} URl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} />
+        </Modal>
+        <Modal show={showCoinbaseConnectModal} setShow={setShowCoinbaseConnectModal} header={`Please connect your ${source_exchange?.display_name} account`}  >
+            <AccountConnectStep hideHeader onDoNotConnect={() => setShowCoinbaseConnectModal(false)} onAuthorized={() => { steAuthorized(true); setShowCoinbaseConnectModal(false); }} stickyFooter={false} />
+        </Modal>
+        <Modal show={openCoinbase2FA} setShow={setOpenCoinbase2FA}>
             <Coinbase2FA onSuccess={async () => setOpenCoinbase2FA(false)} footerStickiness={false} />
         </Modal>
         <Widget>
@@ -315,9 +297,9 @@ const WithdrawExchangeStep: FC = () => {
                                     <div className='grid grid-cols-2 w-full items-center gap-2'>
                                         {
                                             source_exchange_settings?.ExchangeWithdrawalGuideUrl &&
-                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} place="inStep" />
+                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} />
                                         }
-                                        <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
+                                        <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={() => setShowSwapGuideModal(true)}>
                                             How it works
                                         </SecondaryButton>
                                     </div>
@@ -355,65 +337,63 @@ const WithdrawExchangeStep: FC = () => {
                                 </div>
                                 <div className="flex flex-row text-white text-base space-x-2">
                                     <div className='basis-1/3'>
-                                        <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
-                                            <DoubleLineText
-                                                colorStyle='mltln-text-dark'
-                                                primaryText='Cancel'
-                                                secondarytext='the swap'
-                                                reversed={true}
-                                            />
-                                        </SubmitButton>
-                                    </div>
-                                    <div className='basis-2/3'>
-                                        <SubmitButton className='plausible-event-name=I+did+the+transfer' button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<Check className="h-5 w-5" aria-hidden="true" />} >
-                                            <DoubleLineText
-                                                colorStyle='mltln-text-light'
-                                                primaryText='I did'
-                                                secondarytext='the transfer'
-                                                reversed={true}
-                                            />
-                                        </SubmitButton>
-                                    </div>
+                                        <SubmitButton onClick={() => setShowCancelConfirmModal(true)} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
+                                        <DoubleLineText
+                                            colorStyle='mltln-text-dark'
+                                            primaryText='Cancel'
+                                            secondarytext='the swap'
+                                            reversed={true}
+                                        />
+                                    </SubmitButton>
                                 </div>
-                            </>
-                        }
-                        {
-                            transferDone &&
-                            <SimpleTimer time={transferDoneTime} text={
-                                (remainingSeconds) => <>
-                                    {`Transfers from ${source_exchange?.display_name} usually take less than 10 minutes`}
-                                </>}
-                            >
-                                <div className="flex text-center mb-4 space-x-2">
-                                    <div className='relative'>
-                                        <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                        <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                        <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
-                                    </div>
-                                    <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Did the transfer but the swap is not completed yet?&nbsp;
-                                        <span onClick={() => {
-                                            boot();
-                                            show();
-                                            updateWithProps()
-                                        }} className="underline hover:no-underline cursor-pointer text-primary">Contact support</span></label>
+                                <div className='basis-2/3'>
+                                    <SubmitButton className='plausible-event-name=I+did+the+transfer' button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<Check className="h-5 w-5" aria-hidden="true" />} >
+                                        <DoubleLineText
+                                            colorStyle='mltln-text-light'
+                                            primaryText='I did'
+                                            secondarytext='the transfer'
+                                            reversed={true}
+                                        />
+                                    </SubmitButton>
                                 </div>
-                            </SimpleTimer>
-                        }
+                            </div>
                     </>
                 }
-            </Widget.Footer>
-        </Widget >
-        <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} place={'inStep'} header="📖 Here's how it works">
-            {() => (
-                <div className='rounded-md w-full flex flex-col items-left justify-center space-y-6 text-left'>
-                    <SwapGuide swap={swap} />
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
-                        Got it
-                    </SubmitButton>
-                </div>
-            )}
-        </SlideOver>
-        <SwapCancelModal onCancel={handleCancelSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
+                {
+                    transferDone &&
+                    <SimpleTimer time={transferDoneTime} text={
+                        (remainingSeconds) => <>
+                            {`Transfers from ${source_exchange?.display_name} usually take less than 10 minutes`}
+                        </>}
+                    >
+                        <div className="flex text-center mb-4 space-x-2">
+                            <div className='relative'>
+                                <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
+                            </div>
+                            <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Did the transfer but the swap is not completed yet?&nbsp;
+                                <span onClick={() => {
+                                    boot();
+                                    show();
+                                    updateWithProps()
+                                }} className="underline hover:no-underline cursor-pointer text-primary">Contact support</span></label>
+                        </div>
+                    </SimpleTimer>
+                }
+            </>
+                }
+        </Widget.Footer>
+    </Widget >
+        <Modal height='full' show={showSwapGuideModal} setShow={setShowSwapGuideModal} header="📖 Here's how it works">
+            <div className='rounded-md w-full flex flex-col items-left justify-center space-y-6 text-left'>
+                <SwapGuide swap={swap} />
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => setShowSwapGuideModal(false)}>
+                    Got it
+                </SubmitButton>
+            </div>
+        </Modal>
+        <SwapCancelModal onCancel={handleCancelSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setShowCancelConfirmModal} />
     </>
     )
 }

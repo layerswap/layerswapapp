@@ -48,7 +48,7 @@ const Wizard: FC<Props> = ({ children }) => {
                </AnimatePresence>
             </div>
          </div>
-         <div id="wizard_slideover" />
+         <div id="wizard_root" />
       </div>
    </>
 }

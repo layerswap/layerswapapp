@@ -11,7 +11,7 @@ import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { Partner } from "../../../../Models/Partner";
 import Widget from "../../Widget";
 import AmountAndFeeDetails from "../../../DisclosureComponents/amountAndFeeDetailsComponent";
-import SlideOver from "../../../SlideOver";
+import Modal from "../../../modal/modal";
 import OfframpAccountConnectStep from "../../../OfframpAccountConnect";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
@@ -70,15 +70,11 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
     const [valuesSwapperDisabled, setValuesSwapperDisabled] = useState(true)
+    const [showAddressModal, setShowAddressModal] = useState(false);
     const lockAddress =
         (values.destination_address && values.to)
         && isValidAddress(values.destination_address, values.to?.baseObject)
         && ((query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
-
-    const closeExchangeConnect = (open) => {
-        setLoadingDepositAddress(open)
-        setOpenExchangeConnect(open)
-    }
 
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
@@ -200,7 +196,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
     return <>
         <Form className="h-full" >
-
             <Widget>
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
@@ -211,7 +206,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             </div>
                             {
                                 !source?.isExchange && !destination?.isExchange && !valuesSwapperDisabled &&
-                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[63px] sm:rotate-90 z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary py-1.5 p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
+                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[65px] z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary py-1.5 p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
                                     <motion.div
                                         animate={animate}
                                         transition={{ duration: 0.3 }}
@@ -232,19 +227,18 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                             <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
                                 {`To ${values?.to?.name || ''} address`}
                             </label>
-                            <SlideOver
+                            <AddressButton
+                                disabled={!values.to || !values.from}
+                                isPartnerWallet={isPartnerWallet}
+                                openAddressModal={() => setShowAddressModal(true)}
+                                partnerImage={partnerImage}
+                                values={values} />
+                            <Modal
                                 header={`To ${values?.to?.name || ''} address`}
-                                modalHeight="large"
-                                opener={(open => <AddressButton
-                                    disabled={!values.to || !values.from}
-                                    isPartnerWallet={isPartnerWallet}
-                                    openAddressModal={open}
-                                    partnerImage={partnerImage}
-                                    values={values} />)}
-                                place='inStep'>
-                                {(close, animaionCompleted) => (<Address
-                                    close={close}
-                                    canFocus={animaionCompleted}
+                                height="fit"
+                                show={showAddressModal} setShow={setShowAddressModal}>
+                                <Address
+                                    close={() => setShowAddressModal(false)}
                                     onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
                                     exchangeAccount={exchangeAccount}
                                     loading={loadingDepositAddress}
@@ -254,8 +248,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                                     isPartnerWallet={isPartnerWallet}
                                     partner={partner}
                                     address_book={address_book?.data}
-                                />)}
-                            </SlideOver>
+                                />
+                            </Modal>
                         </div>
                         <div className="w-full">
                             {
@@ -294,13 +288,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, resource_storage_url, l
                 </Widget.Footer>
             </Widget>
             {destination?.isExchange &&
-                <SlideOver imperativeOpener={[openExchangeConnect, closeExchangeConnect]} place='inStep' header={`Connect ${values?.to?.baseObject?.display_name}`} >
-                    {(close) => (
+                <Modal setShow={setOpenExchangeConnect} show={openExchangeConnect} header={`Connect ${values?.to?.baseObject?.display_name}`} >
+                    {
                         (destination?.authorization_flow) === "o_auth2" ?
-                            <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); close() }} />
-                            : <ConnectApiKeyExchange exchange={destination} onSuccess={async () => { handleExchangeConnected(); close() }} slideOverPlace='inStep' />
-                    )}
-                </SlideOver>}
+                            <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); setOpenExchangeConnect(false) }} />
+                            : <ConnectApiKeyExchange exchange={destination} onSuccess={async () => { handleExchangeConnected(); setOpenExchangeConnect(false) }} />
+                    }
+                </Modal>
+            }
         </Form >
     </>
 }

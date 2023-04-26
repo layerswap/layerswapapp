@@ -5,7 +5,6 @@ import LayerswapApiClient from '../lib/layerSwapApiClient';
 import ExchangeSettings from '../lib/ExchangeSettings';
 import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
-import { slideOverPlace } from './SlideOver';
 import WarningMessage from './WarningMessage';
 import { useRouter } from 'next/router';
 import GuideLink from './guideLink';
@@ -14,11 +13,10 @@ import { Layer } from '../Models/Layer';
 type Props = {
     exchange: Layer & { isExchange: true },
     onSuccess: () => Promise<void>,
-    slideOverPlace?: slideOverPlace,
     stickyFooter?: boolean
 }
 
-const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace, stickyFooter = true }) => {
+const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
@@ -123,7 +121,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
                                 <span className='flex-none'>
                                     Learn how to get
                                 </span>
-                                <GuideLink text="API Keys" userGuideUrl={userGuideURL} place={slideOverPlace} />
+                                <GuideLink text="API Keys" userGuideUrl={userGuideURL} />
                             </WarningMessage>
                         }
                     </div>
