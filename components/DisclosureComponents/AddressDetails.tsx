@@ -28,7 +28,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, 
             </div>
         </div>
 
-    return swapFormData?.swapType === SwapType.OffRamp ?
+    return swapFormData?.to?.baseObject?.isExchange ?
         <ExchangeAddress address={destination_address} imgSrc={to?.imgSrc} />
         : <NetworkAddress address={destination_address}
             imgSrc={to?.imgSrc}

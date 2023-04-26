@@ -33,12 +33,15 @@ module.exports = {
           '950': '#0B1123',
         },
       },
+      opacity: {
+        '35': '.35',
+      },
       transitionDuration: {
         '0': '0ms',
         '2000': '2000ms',
       },
-      opacity: {
-        '35': '.35',
+      transitionProperty: {
+        'height': 'height'
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',

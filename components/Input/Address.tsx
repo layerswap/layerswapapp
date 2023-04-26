@@ -23,6 +23,7 @@ import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import { Wallet } from 'lucide-react'
 import { useAccountModal } from "@rainbow-me/rainbowkit";
 import AddressIcon from "../AddressIcon";
+import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -50,8 +51,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         } = useFormikContext<SwapFormValues>();
 
         const inputReference = useRef(null);
-
-        const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name === e) : a.networks?.some(n => values.to.baseObject.internal_name === n)) && isValidAddress(a.address, values.to.baseObject))
+        const destination = values.to?.baseObject
+        const asset = values.currency?.baseObject?.asset
+        const destinationNetwork = GetDefaultNetwork(destination, asset)
+        const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination.internal_name === e) : a.networks?.some(n => destination.internal_name === n)) && isValidAddress(a.address, destination))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount } = useSwapDataState()
@@ -61,6 +64,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
+
         const { isConnected, isDisconnected, connector, address: walletAddress } = useAccount({
             onDisconnect() {
                 setInputValue("")
@@ -70,12 +74,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         });
 
         useEffect(() => {
-            if(values.swapType !== SwapType.OffRamp && isValidAddress(walletAddress, values.to.baseObject)){
+            if (!destination.isExchange && isValidAddress(walletAddress, destination)) {
                 setInputValue(walletAddress)
                 setAddressConfirmed(true)
                 setFieldValue("destination_address", walletAddress)
             }
-        }, [walletAddress, values.swapType])
+        }, [walletAddress, destination?.isExchange])
 
         const handleUseDepositeAddress = async () => {
             try {
@@ -114,13 +118,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             close()
         }, [close])
 
-        const inputAddressIsValid = isValidAddress(inputValue, values.to.baseObject)
 
+        const inputAddressIsValid = isValidAddress(inputValue, destination)
         let errorMessage = '';
-        if (inputValue && !isValidAddress(inputValue, values.to.baseObject)) {
+        if (inputValue && !isValidAddress(inputValue, destination)) {
             errorMessage = `Enter a valid ${values.to.name} address`
         }
-        else if (inputValue && values.swapType !== SwapType.OffRamp && isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, inputValue)) {
+        else if (inputValue && destination?.isExchange && isBlacklistedAddress(settings.blacklisted_addresses, destination, inputValue)) {
             errorMessage = `You can not transfer to this address`
         }
 
@@ -140,9 +144,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue("destination_address", validInputAddress)
             close()
         }, [validInputAddress])
-
-        const availableNetworks = values.swapType === SwapType.OffRamp && values.currency && values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network)?.status === 'active' && c.is_default).map(n => n.network)
-        const destinationNetwork = values.swapType === SwapType.OffRamp && settings.networks.find(n => availableNetworks && availableNetworks.includes(n.internal_name))
 
         return (<>
             <div className='w-full flex flex-col justify-between h-full text-primary-text'>
@@ -231,9 +232,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {
                             !disabled
                             && !inputValue
-                            && values?.swapType === SwapType.OffRamp
+                            && destination?.isExchange
                             && authData?.access_token && values.to
-                            && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
+                            && ExchangeSettings.KnownSettings[destination.internal_name]?.EnableDepositAddressConnect
                             && !depositeAddressIsfromAccount &&
                             <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-700 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:shadow-xl`}>
                                 <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
@@ -250,7 +251,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </div>
                         }
                         {
-                            !disabled && !inputValue && values?.swapType !== SwapType.OffRamp && values.to?.baseObject?.address_type === 'evm' &&
+                            !disabled && !inputValue && !destination?.isExchange && destinationNetwork?.address_type === 'evm' &&
                             <RainbowKit>
                                 <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700 hover:shadow-xl`}>
                                     <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
@@ -268,11 +269,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </RainbowKit>
                         }
                         {
-                            values.swapType === SwapType.OffRamp && !inputAddressIsValid &&
+                            destination?.isExchange && !inputAddressIsValid &&
                             <div className='text-left p-4 bg-darkblue-800 text-white rounded-lg border border-darkblue-500'>
                                 <div className="flex items-center">
                                     <Info className='h-5 w-5 text-primary-600 mr-3' />
-                                    <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.to.baseObject.display_name} deposit address</label>
+                                    <label className="block text-sm md:text-base font-medium leading-6">How to find your {destination.display_name} deposit address</label>
                                 </div>
                                 <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
                                     <li>Go to the Deposits page</li>

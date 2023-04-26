@@ -2,13 +2,11 @@ import { Field, useFormikContext } from "formik";
 import { forwardRef } from "react";
 import { useQueryState } from "../../context/query";
 import { useSettingsState } from "../../context/settings";
-import { SwapType } from "../../lib/layerSwapApiClient";
-import { CryptoNetwork } from "../../Models/CryptoNetwork";
-import { Exchange } from "../../Models/Exchange";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { generateExchangeMenuItems, generateNetworkMenuItems } from "../utils/generateMenuItems";
+import { GenerateDestLayerMenuItems, GenerateSourceLayerMenuItems } from "../utils/generateMenuItems";
 import Select from "./Select";
 import { SelectMenuItem } from "./selectMenuItem";
+import { Layer } from "../../Models/Layer";
 
 type Props = {
     direction: "from" | "to",
@@ -20,18 +18,26 @@ const SelectNetwork = forwardRef(({ direction, label }: Props, ref: any) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = direction
-    const { swapType, from, to } = values
-    const { lockNetwork, destNetwork, sourceExchangeName, lockExchange, from: source, to: destination } = useQueryState()
-    const { discovery: { resource_storage_url }, exchanges, networks } = useSettingsState();
+    const { from, to } = values
+    const { lockNetwork, lockExchange } = useQueryState()
+    const { discovery: { resource_storage_url }, layers } = useSettingsState();
 
-    let menuItems: SelectMenuItem<CryptoNetwork | Exchange>[]
+    let menuItems: SelectMenuItem<Layer>[]
     let placeholder = "";
-    if (direction === "from" ? (swapType === SwapType.OnRamp) : (swapType === SwapType.OffRamp)) {
-        menuItems = generateExchangeMenuItems({ exchanges, values, networks, resource_storage_url, sourceExchangeName, source, destination, lockExchange });
-        placeholder = "Exchange";
+    if (direction === "from") {
+        menuItems = GenerateSourceLayerMenuItems({
+            destination: to?.baseObject,
+            layers,
+            resource_storage_url
+        });
+        placeholder = "Source";
     }
     else {
-        menuItems = generateNetworkMenuItems({ values, networks, resource_storage_url, destNetwork, lockNetwork, direction, exchanges, source, destination })
+        menuItems = GenerateDestLayerMenuItems({
+            source: from?.baseObject,
+            layers,
+            resource_storage_url
+        })
         placeholder = "Network";
     }
 

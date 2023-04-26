@@ -22,6 +22,7 @@ import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import { Exchange } from '../../../../Models/Exchange';
 import Modal from '../../../modal/modal';
+import { Layer } from '../../../../Models/Layer';
 
 const TIMER_SECONDS = 120
 
@@ -130,7 +131,7 @@ const OnRampSwapConfirmationStep: FC = () => {
     }
 
     const currentNetwork = swapFormData?.to?.baseObject;
-    const currentExchange = swapFormData?.from?.baseObject as Exchange;
+    const currentExchange = swapFormData?.from?.baseObject as Layer & { isExchange: true };
     const currentCurrency = swapFormData?.currency?.baseObject;
 
     return (<>
@@ -140,7 +141,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
                 {
-                    currentExchange.currencies.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network === currentNetwork.internal_name) &&
+                    currentExchange?.layer2Assets.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network_internal_name === currentNetwork.internal_name) &&
                     <WarningMessage messageType='informing'>
                         <span>You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly</span>
                     </WarningMessage>

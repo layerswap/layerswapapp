@@ -6,6 +6,7 @@ import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { isValidAddress } from "./addressValidator";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "./fees";
 import { SwapType } from "./layerSwapApiClient";
+import { Layer } from "../Models/Layer";
 
 export default function MainStepValidation(settings: LayerSwapSettings): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
     return (values: SwapFormValues) => {
@@ -42,7 +43,7 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
             else if (!isValidAddress(values.destination_address, values.to.baseObject)) {
                 errors.destination_address = `Enter a valid ${values.to.name} address`;
             }
-            else if (values.swapType !== SwapType.OffRamp && isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, values.destination_address)) {
+            else if (!values.from?.baseObject?.isExchange && isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, values.destination_address)) {
                 errors.destination_address = `You can not transfer to this address`;
             }
         }
@@ -52,11 +53,14 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         if (Object.keys(errors).length === 0) return errors
 
         const errorsOrder: FormikErrors<SwapFormValues> = {
-            [values.swapType === SwapType.OnRamp ? "exchange" : "network"]: null
+            [values.from?.baseObject?.isExchange ? "exchange" : "network"]: null
         }
         return Object.assign(errorsOrder, errors);
     };
 }
-export function isBlacklistedAddress(blacklisted_addresses: BlacklistedAddress[], network: CryptoNetwork, address: string) {
-    return blacklisted_addresses?.some(ba => (!ba.network || ba.network === network?.internal_name) && ba.address?.toLowerCase() === address?.toLowerCase());
+export function isBlacklistedAddress(blacklisted_addresses: BlacklistedAddress[], network: Layer, address: string) {
+    return blacklisted_addresses?.some(ba =>
+        (!ba.network
+            || ba.network === network?.internal_name)
+        && ba.address?.toLowerCase() === address?.toLowerCase());
 }

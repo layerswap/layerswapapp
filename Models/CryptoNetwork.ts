@@ -5,7 +5,7 @@ export class CryptoNetwork {
     native_currency: string;
     fee_multiplier: number;
     transaction_explorer_template: string;
-    status: "active" | "inactive" | string;
+    status: "active" | "inactive" | 'insufficient_liquidity';
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
     address_type: "evm" | 'starknet' | 'solana' | 'osmosis'

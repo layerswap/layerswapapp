@@ -77,7 +77,7 @@ function RewardsComponent() {
 
     return (
         <>
-            <div className='bg-darkblue-900 pb-6 sm:mb-10 sm:shadow-card rounded-lg sm:mx-20 text-white overflow-hidden relative min-h-[400px]'>
+            <div className='bg-darkblue-900 pb-6 sm:mb-10 sm:shadow-card rounded-lg text-white overflow-hidden relative min-h-[400px]'>
                 <div className="space-y-5">
                     <HeaderWithMenu goBack={handleGoBack} />
                     {

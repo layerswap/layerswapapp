@@ -5,7 +5,6 @@ import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
 import LayerswapApiClient from "../lib/layerSwapApiClient"
 import Image from 'next/image'
-import { Exchange } from "../Models/Exchange"
 import ConnectApiKeyExchange from "./connectApiKeyExchange"
 import LayerswapMenu from "./LayerswapMenu"
 import SubmitButton from "./buttons/submitButton";
@@ -13,17 +12,17 @@ import { useAuthState } from "../context/authContext";
 import toast from "react-hot-toast";
 import shortenAddress, { shortenEmail } from "./utils/ShortenAddress";
 import { ExchangesComponentSceleton } from "./Sceletons";
-import ExchangeSettings from "../lib/ExchangeSettings";
 import KnownInternalNames from "../lib/knownIds";
 import GoHomeButton from "./utils/GoHome";
 import ClickTooltip from "./Tooltips/ClickTooltip";
 import ConnectOauthExchange from "./connectOauthExchange";
 import Modal from "./modal/modal";
+import { Layer } from "../Models/Layer";
 
-interface UserExchange extends Exchange {
+type UserExchange = {
     note?: string,
     is_connected: boolean
-}
+} & Layer & { isExchange: true }
 
 function UserExchanges() {
 
@@ -31,10 +30,10 @@ function UserExchanges() {
     const [userExchanges, setUserExchanges] = useState<UserExchange[]>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
-    const [exchangeToConnect, setExchangeToConnect] = useState<Exchange>()
-    const [exchangeLoading, setExchangeLoading] = useState<Exchange>()
+    const [exchangeToConnect, setExchangeToConnect] = useState<Layer & { isExchange: true }>()
+    const [exchangeLoading, setExchangeLoading] = useState<Layer & { isExchange: true }>()
     const { email } = useAuthState()
-    const [exchangeToDisconnect, setExchangeToDisconnect] = useState<Exchange>()
+    const [exchangeToDisconnect, setExchangeToDisconnect] = useState<Layer & { isExchange: true }>()
     const [openExchangeToConnectModal, setOpenExchangeToConnectModal] = useState(false)
     const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
@@ -64,14 +63,18 @@ function UserExchanges() {
                 return;
             }
 
-            const mappedExchanges = settings.exchanges.sort((x, y) => ExchangeSettings.KnownSettings[x.internal_name]?.Order - ExchangeSettings.KnownSettings[y.internal_name]?.Order).map(e => {
-                return {
-                    ...e,
-                    is_connected: userExchanges?.some(ue => ue.exchange === e.internal_name),
-                    note: userExchanges?.find(ue => ue.exchange === e.internal_name)?.note,
-                    authorization_flow: e?.authorization_flow
-                }
-            })
+            const mappedExchanges = settings
+                .layers
+                ?.filter(l => l.isExchange)
+                .map((e: Layer & { isExchange: true }) => {
+                    return {
+                        ...e,
+                        is_connected: userExchanges?.some(ue => ue.exchange === e.internal_name),
+                        note: userExchanges?.find(ue => ue.exchange === e.internal_name)?.note,
+                        authorization_flow: e?.authorization_flow
+                    }
+                })
+
             setUserExchanges(mappedExchanges)
         }
         catch (e) {
@@ -80,12 +83,12 @@ function UserExchanges() {
 
     }, [settings.exchanges])
 
-    const handleConnectExchange = (exchange: Exchange) => {
+    const handleConnectExchange = (exchange: Layer & { isExchange: true }) => {
         setExchangeToConnect(exchange)
         setOpenExchangeToConnectModal(true)
     }
 
-    const handleDisconnectExchange = useCallback(async (exchange: Exchange) => {
+    const handleDisconnectExchange = useCallback(async (exchange: Layer & { isExchange: true }) => {
         setExchangeLoading(exchange)
         try {
             const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
@@ -167,7 +170,7 @@ function UserExchanges() {
                                                 userExchanges.map((item) => (
 
                                                     item.authorization_flow !== 'none' &&
-                                                    
+
                                                     <Combobox.Option
                                                         key={item.internal_name}
                                                         value={item}

@@ -88,7 +88,7 @@ type PendingSwapsComponentProps = {
 }
 
 export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingSwapsToCancel, header, description, onCancel, loading }) => {
-    const { exchanges, networks, discovery: { resource_storage_url } } = useSettingsState()
+    const { layers, currencies, discovery: { resource_storage_url } } = useSettingsState()
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
     const [swapToCancel, setSwapToCancel] = useState<SwapItem>()
     const router = useRouter();
@@ -123,10 +123,11 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                 destination_exchange: destination_exchange_internal_name,
                                 destination_network_asset
                             } = swap
-
-                            const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
-                            const destination = destination_exchange_internal_name ? exchanges.find(e => e.internal_name === destination_exchange_internal_name) : networks.find(n => n.internal_name === destination_network_internal_name)
-
+                            
+                            const source_internal_name = source_exchange_internal_name || source_network_internal_name
+                            const destination_internal_name = destination_exchange_internal_name || destination_network_internal_name
+                            const source = layers.find(e => e.internal_name === source_internal_name)
+                            const destination = layers.find(e => e.internal_name === destination_internal_name)
 
                             return (
                                 <div key={swap.id}>
