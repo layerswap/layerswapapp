@@ -37,8 +37,6 @@ function UserExchanges() {
     const [openExchangeToConnectModal, setOpenExchangeToConnectModal] = useState(false)
     const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
 
-    const { discovery: { resource_storage_url } } = settings || { discovery: {} }
-
     useEffect(() => {
         (async () => {
             setLoading(true)
@@ -182,7 +180,7 @@ function UserExchanges() {
                                                             <div className="py-1 px-2 grid grid-cols-3 grid-rows-1 gap-3">
                                                                 <div className="flex items-center col-span-2 space-x-3">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/networks/${item.internal_name.toLowerCase()}.png`}
+                                                                        src={settings.resolveImgSrc(item)}
                                                                         alt="Exchange Logo"
                                                                         height="30"
                                                                         width="30"

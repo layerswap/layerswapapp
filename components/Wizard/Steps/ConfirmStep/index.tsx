@@ -11,7 +11,7 @@ const SwapConfirmationStep: FC = () => {
     if (!swapFormData)
         return <></>
 
-    return swapFormData.to?.baseObject?.isExchange? <OffRampSwapConfirmationStep /> : <OnRampSwapConfirmationStep />
+    return swapFormData.to?.isExchange? <OffRampSwapConfirmationStep /> : <OnRampSwapConfirmationStep />
 }
 
 export default SwapConfirmationStep;

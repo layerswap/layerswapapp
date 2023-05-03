@@ -25,6 +25,4 @@ export class LayerSwapSettings {
         reward_limit_period: number,
         end_date: string
     }[];
-
-    layers?: Layer[]
 };

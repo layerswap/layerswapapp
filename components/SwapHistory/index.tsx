@@ -8,10 +8,8 @@ import LayerswapMenu from "../LayerswapMenu"
 import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
 import { useAuthState, UserType } from "../../context/authContext"
-import shortenAddress from "../utils/ShortenAddress"
 import { classNames } from "../utils/classNames"
 import SubmitButton, { DoubleLineText } from "../buttons/submitButton"
-import CopyButton from "../buttons/copyButton"
 import { SwapHistoryComponentSceleton } from "../Sceletons"
 import GoHomeButton from "../utils/GoHome"
 import StatusIcon, { } from "./StatusIcons"
@@ -20,8 +18,6 @@ import { ArrowLeft } from 'lucide-react'
 import { useSwapDataUpdate } from "../../context/swap"
 import { SwapStatus } from "../../Models/SwapStatus"
 import FormattedDate from "../Common/FormattedDate";
-import isGuid from "../utils/isGuid";
-import KnownInternalNames from "../../lib/knownIds";
 import ToggleButton from "../buttons/toggleButton";
 import IconButton from "../buttons/iconButton";
 import Modal from "../modal/modal";
@@ -29,7 +25,7 @@ import Modal from "../modal/modal";
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const settings = useSettingsState()
-  const { exchanges, networks, discovery: { resource_storage_url } } = settings
+  const { exchanges, networks, resolveImgSrc } = settings
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapItem[]>()
   const [loading, setLoading] = useState(false)
@@ -198,7 +194,7 @@ function TransactionsHistory() {
                             const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
 
                             return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>
-                             
+
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
@@ -209,7 +205,7 @@ function TransactionsHistory() {
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     {
                                       <Image
-                                        src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLowerCase()}.png`}
+                                        src={resolveImgSrc(source)}
                                         alt="From Logo"
                                         height="60"
                                         width="60"
@@ -221,7 +217,7 @@ function TransactionsHistory() {
                                   <div className="flex-shrink-0 h-5 w-5 relative block">
                                     {
                                       <Image
-                                        src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
+                                        src={resolveImgSrc(destination)}
                                         alt="To Logo"
                                         height="60"
                                         width="60"
@@ -246,7 +242,7 @@ function TransactionsHistory() {
                                   'px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >
-                                <div className="flex justify-between items-center cursor-pointer" onClick={(e)=>{handleopenSwapDetails(swap);e.preventDefault()}}>
+                                <div className="flex justify-between items-center cursor-pointer" onClick={(e) => { handleopenSwapDetails(swap); e.preventDefault() }}>
                                   <div className="">
                                     {
                                       swap?.status == 'completed' ?
@@ -262,7 +258,7 @@ function TransactionsHistory() {
                                   </div>
                                   <ChevronRight className="h-5 w-5" />
                                 </div>
-                              </td>                              
+                              </td>
                             </tr>
                           })}
                         </tbody>

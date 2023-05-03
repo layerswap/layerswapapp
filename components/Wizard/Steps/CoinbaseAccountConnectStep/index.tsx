@@ -30,7 +30,7 @@ type Props = {
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap, swapFormData } = useSwapDataState()
     const { setWithdrawManually } = useSwapDataUpdate()
-    const { layers, currencies, discovery: { resource_storage_url } } = useSettingsState()
+    const { layers, currencies } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate()
     let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false }, 'configs')
 
@@ -40,8 +40,8 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
-    const exchange_internal_name = swap?.source_exchange || swapFormData?.from?.baseObject?.internal_name
-    const asset_name = swap?.source_network_asset || swapFormData?.currency?.baseObject.asset
+    const exchange_internal_name = swap?.source_exchange || swapFormData?.from?.internal_name
+    const asset_name = swap?.source_network_asset || swapFormData?.currency.asset
 
     const exchange = layers.find(e => e.isExchange && e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase()) as Layer & { isExchange: true }
     const currency = currencies?.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())

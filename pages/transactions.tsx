@@ -7,13 +7,16 @@ import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { SwapDataProvider } from '../context/swap'
 import TransactionsHistory from '../components/SwapHistory'
 import TransfersWrapper from '../components/SwapHistory/TransfersWrapper'
+import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
 
 export default function Transactions({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+  let appSettings = new LayerSwapAppSettings(settings)
+
   return (
     <div className='wide-page'>
       <Layout>
-        <SettingsProvider data={settings}>
+        <SettingsProvider data={appSettings}>
           <MenuProvider>
             <SwapDataProvider >
               <TransfersWrapper />

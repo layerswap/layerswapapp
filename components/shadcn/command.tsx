@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
 import { classNames } from "../utils/classNames"
-import Modal, { ModalProps } from "./modal"
+import Modal, { ModalProps } from "../modal/modal"
 
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
@@ -25,25 +25,37 @@ interface CommandModalProps extends ModalProps { }
 const CommandModal = ({ children, ...props }: CommandModalProps) => {
   return (
     <Modal {...props}>
-      <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-primary-text [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
-        {children}
-      </Command>
+      {
+        props.show &&
+        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-primary-text [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
+          {children}
+        </Command>
+      }
     </Modal>
   )
 }
+
+const CommandWrapper = React.forwardRef<
+  React.ElementRef<typeof Command>,
+  React.ComponentPropsWithoutRef<typeof Command>
+>(({ className, children, ...props }, ref) => (
+  <Command {...props} className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-primary-text [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
+    {children}
+  </Command>
+))
 
 const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
-  <div className="relative z-0 flex items-center mt-2 pb-2 pl-2 border-b border-darkblue-500" cmdk-input-wrapper="">
+  <div className="relative z-0 flex items-center mt-2 mb-2 pl-2 border-b border-darkblue-500" cmdk-input-wrapper="">
     <CommandPrimitive.Input placeholder=" " ref={ref} id="floating_standard"
       {...props} className={classNames(
-        "peer/draft placeholder:text-transparent border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-11 bg-transparent text-2xl outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+        "peer/draft placeholder:text-transparent border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-11 bg-transparent text-lg outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )} />
-    <span className="absolute left-1 font-thin animate-none peer-placeholder-shown/draft:animate-blinking text-2xl peer-focus/draft:invisible invisible peer-placeholder-shown/draft:visible">|</span>
-    <label htmlFor={props.id} className="absolute text-2xl text-primary-text duration-300 transform -translate-y-6 scale-50 top-3 -z-10 origin-[0] peer-placeholder-shown/draft:scale-100 peer-placeholder-shown/draft:translate-y-0 peer-placeholder-shown/draft:text-primary-text-muted">
+    <span className="absolute left-1 font-thin animate-none peer-placeholder-shown/draft:animate-blinking text-lg peer-focus/draft:invisible invisible peer-placeholder-shown/draft:visible">|</span>
+    <label htmlFor={props.id} className="absolute text-lg text-primary-text duration-300 transform -translate-y-6 scale-50 top-3 -z-10 origin-[0] peer-placeholder-shown/draft:scale-100 peer-placeholder-shown/draft:translate-y-0 peer-placeholder-shown/draft:text-primary-text-muted">
       {props.placeholder}
     </label>
   </div>
@@ -112,8 +124,9 @@ const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={classNames(
-      "relative cursor-pointer flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-darkblue-700 aria-selected:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
+      "relative cursor-pointer flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-darkblue-700 aria-selected:text-white",
+      className,
+      props.disabled && "opacity-30 cursor-not-allowed",
     )}
     {...props}
   />
@@ -139,7 +152,7 @@ CommandShortcut.displayName = "CommandShortcut"
 
 export {
   Command,
-  CommandModal,
+  CommandWrapper,
   CommandInput,
   CommandList,
   CommandEmpty,

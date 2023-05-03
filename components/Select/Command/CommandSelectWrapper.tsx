@@ -1,21 +1,24 @@
 import { useCallback, useState } from 'react'
 import Image from 'next/image'
 import {ChevronDown } from 'lucide-react'
-import { ISelectMenuItem, SelectMenuItem, SelectMenuItemGroup } from './selectMenuItem'
-import CommandSelect from './CommandSelect'
+import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
+import CommandSelect from './commandSelect'
 
 type CommandSelectWrapperProps = {
     setValue: (value: ISelectMenuItem) => void;
-    values: SelectMenuItemGroup[];
+    values: ISelectMenuItem[];
     value: ISelectMenuItem;
     placeholder: string;
+    searchHint: string;
     disabled: boolean
 }
+
 export default function CommandSelectWrapper<T>({
     setValue,
     value,
     disabled,
     placeholder,
+    searchHint,
     values
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
@@ -77,6 +80,7 @@ export default function CommandSelectWrapper<T>({
                 setValue={handleSelect}
                 show={showModal}
                 value={value}
+                searchHint={searchHint}
                 values={values}
             />
         </>

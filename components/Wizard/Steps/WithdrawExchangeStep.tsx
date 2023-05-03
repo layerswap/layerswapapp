@@ -27,7 +27,7 @@ import { KnownwErrorCode } from '../../../Models/ApiError';
 import Coinbase2FA from '../../Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../Select/PrimitiveSelect';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../shadcn/select';
 import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
@@ -38,7 +38,7 @@ const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { exchanges, networks, discovery: { resource_storage_url } } = useSettingsState()
+    const { exchanges, networks, resolveImgSrc} = useSettingsState()
     const { swap, codeRequested } = useSwapDataState()
     const { setInterval, setCodeRequested, mutateSwap } = useSwapDataUpdate()
     const [openCancelConfirmModal, setShowCancelConfirmModal] = useState(false)
@@ -197,7 +197,7 @@ const WithdrawExchangeStep: FC = () => {
                                                 <span>Network:</span>
                                                 {sourceNetworks.length === 1 ?
                                                     <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
-                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${sourceNetworks[0]?.internal_name.toLowerCase()}.png`}></Image>
+                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={resolveImgSrc(sourceNetworks[0])}></Image>
                                                         <span>{sourceNetworks[0].display_name}</span>
                                                     </div>
                                                     :
@@ -209,7 +209,7 @@ const WithdrawExchangeStep: FC = () => {
                                                                         {
                                                                             defaultSourceNetwork &&
                                                                             <Image
-                                                                                src={`${resource_storage_url}/layerswap/networks/${defaultSourceNetwork?.internal_name?.toLowerCase()}.png`}
+                                                                                src={resolveImgSrc(defaultSourceNetwork)}
                                                                                 alt="From Logo"
                                                                                 height="60"
                                                                                 width="60"
@@ -231,7 +231,7 @@ const WithdrawExchangeStep: FC = () => {
                                                                                 {
                                                                                     sn &&
                                                                                     <Image
-                                                                                        src={`${resource_storage_url}/layerswap/networks/${sn?.internal_name?.toLowerCase()}.png`}
+                                                                                        src={resolveImgSrc(sn)}
                                                                                         alt="From Logo"
                                                                                         height="60"
                                                                                         width="60"
@@ -273,7 +273,7 @@ const WithdrawExchangeStep: FC = () => {
                                                         {
                                                             asset?.name &&
                                                             <Image
-                                                                src={`${resource_storage_url}/layerswap/currencies/${asset?.name?.toLowerCase()}.png`}
+                                                                src={resolveImgSrc({asset: asset?.name})}
                                                                 alt="From Logo"
                                                                 height="60"
                                                                 width="60"

@@ -19,8 +19,6 @@ import Widget from '../../Widget';
 import WarningMessage from '../../../WarningMessage';
 import KnownInternalNames from '../../../../lib/knownIds';
 import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
-import { useSettingsState } from '../../../../context/settings';
-import { Exchange } from '../../../../Models/Exchange';
 import Modal from '../../../modal/modal';
 import { Layer } from '../../../../Models/Layer';
 
@@ -32,7 +30,6 @@ const OnRampSwapConfirmationStep: FC = () => {
     const { from, destination_address, to } = swapFormData || {}
     const formikRef = useRef<FormikProps<SwapConfirmationFormValues>>(null);
     const currentValues = formikRef?.current?.values;
-    const { discovery: { resource_storage_url } } = useSettingsState();
 
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
@@ -51,8 +48,8 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleAddressInputChange = useCallback((e) => {
         setAddressInputError("")
         setAddressInputValue(e?.target?.value)
-        if (!isValidAddress(e?.target?.value, to?.baseObject))
-            setAddressInputError(`Enter a valid ${to?.name} address`)
+        if (!isValidAddress(e?.target?.value, to))
+            setAddressInputError(`Enter a valid ${to?.display_name} address`)
     }, [to])
 
     const handleSubmit = useCallback(async (e: any) => {
@@ -63,10 +60,10 @@ const OnRampSwapConfirmationStep: FC = () => {
         try {
             if (!swap) {
                 const swapId = await createAndProcessSwap();
-                if (from?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
+                if (from?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
                     if (!withdrawManually) {
                         const layerswapApiClient = new LayerSwapApiClient()
-                        await layerswapApiClient.WithdrawFromExchange(swapId, from?.baseObject.internal_name)
+                        await layerswapApiClient.WithdrawFromExchange(swapId, from.internal_name)
                     }
                 }
                 return await router.push(`/swap/${swapId}`)
@@ -75,7 +72,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 const swapId = swap.id
                 if (!withdrawManually) {
                     const layerswapApiClient = new LayerSwapApiClient()
-                    await layerswapApiClient.WithdrawFromExchange(swapId, from?.baseObject.internal_name)
+                    await layerswapApiClient.WithdrawFromExchange(swapId, from.internal_name)
                 }
                 return await router.push(`/swap/${swapId}`)
             }
@@ -116,8 +113,8 @@ const OnRampSwapConfirmationStep: FC = () => {
     }
     const handleSaveAddress = useCallback(() => {
         setAddressInputError("")
-        if (!isValidAddress(addressInputValue, to?.baseObject)) {
-            setAddressInputError(`Enter a valid ${to.name} address`)
+        if (!isValidAddress(addressInputValue, to)) {
+            setAddressInputError(`Enter a valid ${to.display_name} address`)
             return;
         }
         updateSwapFormData({ ...swapFormData, destination_address: addressInputValue })
@@ -126,13 +123,10 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleConfirmToggleChange = (value: boolean) => {
         setAddressConfirmed(value)
     }
-    const handleWithdrawalTypeToggleChange = (value: boolean) => {
-        setWithdrawalType(value)
-    }
 
-    const currentNetwork = swapFormData?.to?.baseObject;
-    const currentExchange = swapFormData?.from?.baseObject as Layer & { isExchange: true };
-    const currentCurrency = swapFormData?.currency?.baseObject;
+    const currentNetwork = swapFormData?.to;
+    const currentExchange = swapFormData?.from as Layer & { isExchange: true };
+    const currentCurrency = swapFormData?.currency;
 
     return (<>
         <Widget>
@@ -141,7 +135,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
                 {
-                    currentExchange?.layer2Assets.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network_internal_name === currentNetwork.internal_name) &&
+                    currentExchange?.assets.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network_internal_name === currentNetwork.internal_name) &&
                     <WarningMessage messageType='informing'>
                         <span>You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly</span>
                     </WarningMessage>
@@ -170,7 +164,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 setShow={setEditingAddress}
                 header={<h4 className='text-lg text-white'>
                     <Edit onClick={handleStartEditingAddress} className='inline-block h-6 w-6 mr-1' />
-                    Editing your {swapFormData?.to?.name} wallet address</h4>}>
+                    Editing your {swapFormData?.to?.display_name} wallet address</h4>}>
                 <div className='grid grid-flow-row text-primary-text'>
                     <div>
                         <label htmlFor="address" className="block font-normal text-sm text-left">

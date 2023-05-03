@@ -78,14 +78,14 @@ export function SwapDataProvider({ children }) {
             source_network: null,
             destination_network: null,
             destination_exchange: null,
-            asset: currency.baseObject.asset,
+            asset: currency.asset,
             destination_address: formData.destination_address,
             // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
             partner: partner?.internal_name,
             external_id: query.externalId,
         }
-        const sourceLayer = from?.baseObject
-        const destinationLayer = to?.baseObject
+        const sourceLayer = from
+        const destinationLayer = to
 
         if(sourceLayer?.isExchange){
             data.source_exchange = sourceLayer?.internal_name;

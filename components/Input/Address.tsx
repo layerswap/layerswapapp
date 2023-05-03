@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { AddressBookItem, SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
+import { AddressBookItem, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
@@ -31,7 +31,6 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     name: string;
     children?: JSX.Element | JSX.Element[];
     ref?: any;
-    loading: boolean;
     onSetExchangeDepoisteAddress?: () => Promise<void>;
     exchangeAccount?: UserExchangesData;
     close: () => void,
@@ -43,7 +42,7 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
 }
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, loading, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
+    ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
         const { openAccountModal } = useAccountModal();
         const {
             values,
@@ -51,14 +50,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         } = useFormikContext<SwapFormValues>();
 
         const inputReference = useRef(null);
-        const destination = values.to?.baseObject
-        const asset = values.currency?.baseObject?.asset
+        const destination = values.to
+        const asset = values.currency?.asset
         const destinationNetwork = GetDefaultNetwork(destination, asset)
         const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination.internal_name === e) : a.networks?.some(n => destination.internal_name === n)) && isValidAddress(a.address, destination))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount } = useSwapDataState()
-        const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
+        const placeholder = NetworkSettings.KnownSettings[values?.to?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
         const [validInputAddress, setValidInputAddress] = useState<string>()
 
@@ -122,7 +121,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const inputAddressIsValid = isValidAddress(inputValue, destination)
         let errorMessage = '';
         if (inputValue && !isValidAddress(inputValue, destination)) {
-            errorMessage = `Enter a valid ${values.to.name} address`
+            errorMessage = `Enter a valid ${values.to.display_name} address`
         }
         else if (inputValue && destination?.isExchange && isBlacklistedAddress(settings.blacklisted_addresses, destination, inputValue)) {
             errorMessage = `You can not transfer to this address`
@@ -142,6 +141,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const handleSetNewAddress = useCallback(() => {
             setAddressConfirmed(true)
             setFieldValue("destination_address", validInputAddress)
+            debugger;
             close()
         }, [validInputAddress])
 
@@ -180,7 +180,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         <span className="inline-flex items-center mr-2">
                                             <div className="text-xs flex items-center space-x-2 md:ml-5 bg-darkblue-500 rounded-md border border-darkblue-500">
                                                 {
-                                                    values?.to?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
+                                                    values?.to?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
                                                     <span className="inline-flex items-center mr-2">
                                                         <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
                                                             {exchangeAccount?.note}
@@ -242,7 +242,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 </div>
                                 <div className="flex flex-col">
                                     <div className="block text-sm font-medium">
-                                        Autofill from {values?.to?.baseObject?.display_name}
+                                        Autofill from {values?.to?.display_name}
                                     </div>
                                     <div className="text-gray-500">
                                         Connect your account to fetch the address
@@ -281,13 +281,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         Select
                                         <span className="inline-block mx-1">
                                             <span className='flex gap-1 items-baseline text-sm '>
-                                                <Image src={`${settings.discovery.resource_storage_url}/layerswap/currencies/${values.currency.name.toLowerCase()}.png`}
+                                                <Image src={settings.resolveImgSrc(values.currency)}
                                                     alt="Project Logo"
                                                     height="15"
                                                     width="15"
                                                     className='rounded-sm'
                                                 />
-                                                <span className="text-white">{values.currency.name}</span>
+                                                <span className="text-white">{values.currency.asset}</span>
                                             </span>
                                         </span>
                                         as asset
@@ -296,7 +296,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         Select
                                         <span className="inline-block mx-1">
                                             <span className='flex gap-1 items-baseline text-sm '>
-                                                <Image src={`${settings.discovery.resource_storage_url}/layerswap/networks/${destinationNetwork.internal_name.toLowerCase()}.png`}
+                                                <Image src={settings.resolveImgSrc(destinationNetwork)}
                                                     alt="Project Logo"
                                                     height="15"
                                                     width="15"
@@ -370,9 +370,5 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         </>
         )
     });
-
-function GetIcon({ internal_name, resource_storage_url }) {
-    return `${resource_storage_url}/layerswap/networks/${internal_name.toLowerCase()}.png`;
-}
 
 export default Address

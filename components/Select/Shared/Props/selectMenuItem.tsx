@@ -1,4 +1,4 @@
-import { DisabledReason } from "./Select";
+import { DisabledReason } from "../../Popover/PopoverSelect";
 
 export class SelectMenuItem<T> implements ISelectMenuItem {
     id: string;
@@ -9,29 +9,29 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         value: boolean;
         disabledReason: DisabledReason | null
     };
+    group?: string;
     baseObject: T;
-    isDefault: boolean;
-
-    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, isEnabled: boolean = true, isDefault = false) {
+    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string) {
         this.baseObject = baseObject;
         this.id = id;
         this.name = name;
         this.order = order;
         this.imgSrc = imgSrc;
-        this.isDefault = isDefault;
+        this.group = group;
         this.isAvailable = {
             value: true,
             disabledReason: null
         }
     }
 }
-export class SelectMenuItemGroup {
-    name: string;
-    items: ISelectMenuItem[];
-}
+
 export interface ISelectMenuItem {
     id: string;
     name: string;
     imgSrc: string;
-    isDefault: boolean;
+    group?: string;
+    isAvailable: {
+        value: boolean;
+        disabledReason: DisabledReason | null
+    };
 }

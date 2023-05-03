@@ -1,11 +1,9 @@
 import { FormikErrors } from "formik";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { BlacklistedAddress } from "../Models/BlacklistedAddress";
-import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { isValidAddress } from "./addressValidator";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "./fees";
-import { SwapType } from "./layerSwapApiClient";
 import { Layer } from "../Models/Layer";
 
 export default function MainStepValidation(settings: LayerSwapSettings): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
@@ -38,12 +36,12 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         }
         if (values.to) {
             if (!values.destination_address) {
-                errors.destination_address = `Enter ${values.to.name} address`;
+                errors.destination_address = `Enter ${values.to.display_name} address`;
             }
-            else if (!isValidAddress(values.destination_address, values.to.baseObject)) {
-                errors.destination_address = `Enter a valid ${values.to.name} address`;
+            else if (!isValidAddress(values.destination_address, values.to)) {
+                errors.destination_address = `Enter a valid ${values.to.display_name} address`;
             }
-            else if (!values.from?.baseObject?.isExchange && isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, values.destination_address)) {
+            else if (!values.from?.isExchange && isBlacklistedAddress(settings.blacklisted_addresses, values.to, values.destination_address)) {
                 errors.destination_address = `You can not transfer to this address`;
             }
         }
@@ -53,7 +51,7 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         if (Object.keys(errors).length === 0) return errors
 
         const errorsOrder: FormikErrors<SwapFormValues> = {
-            [values.from?.baseObject?.isExchange ? "exchange" : "network"]: null
+            [values.from?.isExchange ? "exchange" : "network"]: null
         }
         return Object.assign(errorsOrder, errors);
     };

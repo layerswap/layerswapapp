@@ -14,6 +14,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { useSettingsState } from "../../context/settings";
 import { useIntercom } from "react-use-intercom";
+import ChatIcon from "../icons/ChatIcon";
 
 export default function () {
     const { email, userType, userId } = useAuthState()
@@ -119,7 +120,7 @@ export default function () {
                                                                 boot();
                                                                 show();
                                                                 updateWithProps()
-                                                            }} icon={<MessageCircle className='h-4 w-4' strokeWidth={3} />}>
+                                                            }} icon={<ChatIcon className='h-4 w-4' strokeWidth={2} />}>
                                                                 Get Help
                                                             </Item>
                                                         </Menu.Item>
@@ -176,7 +177,7 @@ export default function () {
                                                                 boot();
                                                                 show();
                                                                 updateWithProps()
-                                                            }} icon={<MessageCircle className='h-4 w-4' strokeWidth={3} />}>
+                                                            }} icon={<ChatIcon className='h-4 w-4' strokeWidth={2} />}>
                                                                 Get Help
                                                             </Item>
                                                         </Menu.Item>

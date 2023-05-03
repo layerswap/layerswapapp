@@ -14,6 +14,7 @@ import { MenuProvider } from '../../../context/menu';
 import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
 import LayerSwapAuthApiClient from '../../../lib/userAuthApiClient';
 import { SettingsProvider } from '../../../context/settings';
+import { LayerSwapAppSettings } from '../../../Models/LayerSwapAppSettings';
 
 const componentOverrides = {
     img: (props) => (
@@ -32,10 +33,11 @@ export default function UserGuide({
     const handleGoBack = useCallback(() => {
         router.back()
     }, [router])
+    let appSettings = new LayerSwapAppSettings(settings)
 
     return (
         <Layout>
-            <SettingsProvider data={settings}>
+            <SettingsProvider data={appSettings}>
                 <div className="bg-darkblue-900 shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container mx-auto max-w-3xl">
                     <Head>
                         <title>{title}</title>

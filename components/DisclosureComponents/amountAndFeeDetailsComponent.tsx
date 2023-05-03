@@ -1,5 +1,4 @@
 import { GetExchangeFee, CalculateFee, CalculateReceiveAmount, CaluclateRefuelAmount } from '../../lib/fees';
-import { SwapType } from '../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
@@ -11,23 +10,23 @@ import { GetDefaultNetwork, GetNetworkCurrency } from '../../helpers/settingsHel
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
-    const { networks, currencies, campaigns, discovery: { resource_storage_url } } = useSettingsState()
+    const { networks, currencies, campaigns, resolveImgSrc } = useSettingsState()
     const { currency, from, to } = values || {}
 
-    let exchangeFee = parseFloat(GetExchangeFee(currency?.baseObject?.asset, from?.baseObject).toFixed(currency?.baseObject?.precision))
+    let exchangeFee = parseFloat(GetExchangeFee(currency?.asset, from).toFixed(currency?.precision))
     let fee = CalculateFee(values, networks);
     let receive_amount = CalculateReceiveAmount(values, networks, currencies);
-    const asset = currency?.baseObject?.asset
-    const campaign = campaigns?.find(c => c.network_name === to?.baseObject?.internal_name)
+    const asset = currency?.asset
+    const campaign = campaigns?.find(c => c.network_name === to?.internal_name)
     const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
-    const feeinUsd = fee * currency?.baseObject?.usd_price
+    const feeinUsd = fee * currency?.usd_price
     const reward = truncateDecimals(((feeinUsd * campaign?.percentage / 100) / campaignAsset?.usd_price), campaignAsset?.precision)
     const isCampaignEnded = Math.round(((new Date(campaign?.end_date).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
-    const destination_native_currency = !to?.baseObject.isExchange
-        && GetDefaultNetwork(to?.baseObject, asset)?.native_currency
+    const destination_native_currency = !to?.isExchange
+        && GetDefaultNetwork(to, asset)?.native_currency
 
-    const destinationNetworkCurrency = GetNetworkCurrency(to?.baseObject, currency?.baseObject?.asset)
+    const destinationNetworkCurrency = GetNetworkCurrency(to, currency?.asset)
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
     const refuel = truncateDecimals(CaluclateRefuelAmount(values, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
 
@@ -44,7 +43,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         receive_amount ?
                                             <div className="font-semibold md:font-bold text-right leading-4">
                                                 <p>
-                                                    {parseFloat(receive_amount.toFixed(currency?.baseObject?.precision))}
+                                                    {parseFloat(receive_amount.toFixed(currency?.precision))}
                                                     <span>
                                                         {
                                                             ` ${destinationNetworkCurrency?.name || ""}`
@@ -70,18 +69,18 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         Layerswap Fee
                                     </label>
                                     <span className="text-right">
-                                        {parseFloat(fee.toFixed(currency?.baseObject?.precision))} {currency?.name}
+                                        {parseFloat(fee.toFixed(currency?.precision))} {currency?.asset}
                                     </span>
                                 </div>
                                 {
-                                    from?.baseObject?.isExchange &&
+                                    from?.isExchange &&
                                     <div className="mt-2 flex flex-row justify-between">
                                         <label className="flex items-center text-left grow">
                                             Exchange Fee
                                             <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                         </label>
                                         <span className="text-right">
-                                            {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.name}</>}
+                                            {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.asset}</>}
                                         </span>
                                     </div>
                                 }
@@ -120,7 +119,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                             <span>+</span>
                             <div className="h-5 w-5 relative">
                                 <Image
-                                    src={`${resource_storage_url}/layerswap/currencies/${campaign?.asset?.toLowerCase()}.png`}
+                                    src={resolveImgSrc(campaign)}
                                     alt="Project Logo"
                                     height="40"
                                     width="40"

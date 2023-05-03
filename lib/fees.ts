@@ -11,7 +11,7 @@ import { SwapType } from "./layerSwapApiClient";
 export function GetExchangeFee(asset?: string, layer?: Layer): number {
     if (!layer?.isExchange)
         return 0
-    return layer?.layer2Assets?.find(ec => ec.asset === asset)?.withdrawal_fee || 0
+    return layer?.assets?.find(ec => ec.asset === asset)?.withdrawal_fee || 0
 }
 export function CalculateMinimalAuthorizeAmount(usd_price: number, amount: number) {
     return Math.ceil((usd_price * amount) + (usd_price * amount * 0.02))
@@ -27,10 +27,10 @@ export function CaluclateRefuelAmount(
 
     if (!currency || !to || !refuelEnabled)
         return { refuelAmountInSelectedCurrency: 0, refuelAmountInNativeCurrency: 0 }
-    const destinationLayer = to?.baseObject
-    const destinationNetwork = GetDefaultNetwork(destinationLayer, currency?.baseObject?.asset)
+    const destinationLayer = to
+    const destinationNetwork = GetDefaultNetwork(destinationLayer, currency?.asset)
 
-    const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, currency.baseObject?.asset)
+    const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, currency?.asset)
     const destinationNetworkNativeAsset = allCurrencies?.find(c => c.asset == destinationNetwork.native_currency);
 
     if (!destinationNetworkCurrency || !destinationNetworkNativeAsset)
@@ -39,8 +39,8 @@ export function CaluclateRefuelAmount(
     let refuelAmountInSelectedCurrency = 0;
     let refuelAmountInNativeCurrency = 0;
 
-    if (!destinationLayer.isExchange && destinationNetworkCurrency.is_refuel_enabled && destinationNetwork.refuel_amount_in_usd > 0 && currency.baseObject.usd_price > 0 && destinationNetworkNativeAsset.usd_price > 0) {
-        refuelAmountInSelectedCurrency += destinationNetwork.refuel_amount_in_usd / currency.baseObject.usd_price;
+    if (!destinationLayer.isExchange && destinationNetworkCurrency.is_refuel_enabled && destinationNetwork.refuel_amount_in_usd > 0 && currency.usd_price > 0 && destinationNetworkNativeAsset.usd_price > 0) {
+        refuelAmountInSelectedCurrency += destinationNetwork.refuel_amount_in_usd / currency.usd_price;
         refuelAmountInNativeCurrency += destinationNetwork.refuel_amount_in_usd / destinationNetworkNativeAsset.usd_price;
     }
 
@@ -52,10 +52,10 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
     if (!currency || !from || !to)
         return 0;
 
-    const sourceLayer = from?.baseObject
-    const destinationLayer = to?.baseObject
-    const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, currency.baseObject?.asset)
-    const sourceNetworkCurrency = GetNetworkCurrency(sourceLayer, currency.baseObject?.asset)
+    const sourceLayer = from
+    const destinationLayer = to
+    const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, currency?.asset)
+    const sourceNetworkCurrency = GetNetworkCurrency(sourceLayer, currency?.asset)
     if (!destinationNetworkCurrency || !sourceNetworkCurrency)
         return 0
 
@@ -73,14 +73,14 @@ export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks
         let fee = CalculateFee(swapFormData, allNetworks);
         const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(swapFormData, allCurrencies)
         var result = amount - fee - refuelAmountInSelectedCurrency;
-        const sourceLayer = swapFormData?.from?.baseObject
+        const sourceLayer = swapFormData?.from
 
         if (sourceLayer?.isExchange && sourceLayer?.authorization_flow == "o_auth2") {
-            let exchangeFee = GetExchangeFee(swapFormData.currency?.baseObject?.asset, swapFormData.from?.baseObject);
+            let exchangeFee = GetExchangeFee(swapFormData.currency?.asset, swapFormData.from);
             result -= exchangeFee;
         }
 
-        return Number(result.toFixed(swapFormData.currency?.baseObject?.precision));
+        return Number(result.toFixed(swapFormData.currency?.precision));
     }
 
     return 0;
@@ -90,22 +90,22 @@ export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, allNetwo
     const { currency, from, to } = swapFormData || {}
 
     if (!currency || !from || !to) return 0
-    const destinationLayer = to?.baseObject
-    const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, currency.baseObject?.asset)
+    const destinationLayer = to
+    const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, currency?.asset)
     const maxAmount = destinationNetworkCurrency?.max_withdrawal_amount || 0
-    return roundDecimals(maxAmount, currency.baseObject?.usd_price?.toFixed()?.length) || 0
+    return roundDecimals(maxAmount, currency?.usd_price?.toFixed()?.length) || 0
 }
 
 export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[]) {
 
     const { currency, from, to } = swapFormData || {}
     if (!currency || !from || !to) return 0
-    const sourceLayer = from?.baseObject
-    const destinationLayer = to?.baseObject
-    const asset = currency?.baseObject?.asset
+    const sourceLayer = from
+    const destinationLayer = to
+    const asset = currency?.asset
 
     let minAmount = CalculateFee(swapFormData, allNetworks)
-    if (from.baseObject.internal_name === KnownInternalNames.Exchanges.Coinbase
+    if (from.internal_name === KnownInternalNames.Exchanges.Coinbase
         && sourceLayer.isExchange) {
         const exchangeAsset = GetDefaultAsset(sourceLayer, asset)
         minAmount += exchangeAsset?.withdrawal_fee || 0
@@ -120,5 +120,5 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
     const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(swapFormData, allCurrencies);
     minAmount += destinationNetworkCurrency?.base_fee + refuelAmountInSelectedCurrency
 
-    return roundDecimals(minAmount * 1.2, currency.baseObject?.usd_price?.toFixed()?.length) || 0
+    return roundDecimals(minAmount * 1.2, currency?.usd_price?.toFixed()?.length) || 0
 }

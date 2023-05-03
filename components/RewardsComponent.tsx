@@ -19,12 +19,13 @@ import HeaderWithMenu from "./HeaderWithMenu"
 import SubmitButton from "./buttons/submitButton";
 import AddressIcon from "./AddressIcon";
 import Modal from "./modal/modal";
+import { Layer } from "../Models/Layer";
 
 function RewardsComponent() {
 
     const settings = useSettingsState()
     const router = useRouter();
-    const { discovery: { resource_storage_url }, networks, currencies } = settings || { discovery: {} }
+    const { resolveImgSrc, networks, currencies } = settings || { discovery: {} }
     const [openTopModal, setOpenTopModal] = useState(false)
 
     const { isConnected, address } = useAccount();
@@ -92,7 +93,7 @@ function RewardsComponent() {
                                                 <div className="flex items-center gap-1">
                                                     <div className="h-7 w-7 relative">
                                                         <Image
-                                                            src={`${resource_storage_url}/layerswap/networks/${network.internal_name?.toLowerCase()}.png`}
+                                                            src={resolveImgSrc(network)}
                                                             alt="Project Logo"
                                                             height="40"
                                                             width="40"
@@ -107,7 +108,7 @@ function RewardsComponent() {
                                                             <div className="flex items-center space-x-1">
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset?.toLowerCase()}.png`}
+                                                                        src={resolveImgSrc(settings?.campaigns[0])}
                                                                         alt="Project Logo"
                                                                         height="40"
                                                                         width="40"
@@ -131,7 +132,7 @@ function RewardsComponent() {
                                                             <div className="flex items-center space-x-1">
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset?.toLowerCase()}.png`}
+                                                                        src={resolveImgSrc(settings?.campaigns[0])}
                                                                         alt="Project Logo"
                                                                         height="40"
                                                                         width="40"
@@ -207,7 +208,7 @@ function RewardsComponent() {
                                             <div className="flex items-center gap-1">
                                                 <div className="h-7 w-7 relative">
                                                     <Image
-                                                        src={`${resource_storage_url}/layerswap/networks/${network.internal_name?.toLowerCase()}.png`}
+                                                        src={resolveImgSrc(network)}
                                                         alt="Project Logo"
                                                         height="40"
                                                         width="40"
@@ -255,7 +256,7 @@ function RewardsComponent() {
                                                                                 <span>+</span>
                                                                                 <div className="h-3.5 w-3.5 relative">
                                                                                     <Image
-                                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset.toLowerCase()}.png`}
+                                                                                        src={resolveImgSrc(settings?.campaigns[0])}
                                                                                         alt="Project Logo"
                                                                                         height="40"
                                                                                         width="40"
@@ -344,7 +345,7 @@ function RewardsComponent() {
                                                         <span>+</span>
                                                         <div className="h-3.5 w-3.5 relative">
                                                             <Image
-                                                                src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset.toLowerCase()}.png`}
+                                                                src={resolveImgSrc(settings?.campaigns[0])}
                                                                 alt="Project Logo"
                                                                 height="40"
                                                                 width="40"

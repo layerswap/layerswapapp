@@ -14,6 +14,7 @@ const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
   useEffect(() => {
     const emptyParams = new QueryParams()
     if (query && Object.keys(emptyParams).some(key => query[key] !== undefined))
+      mapLegacyQueryParams(query)
       setData(query);
   }, [query])
 
@@ -22,6 +23,14 @@ const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
       {children}
     </QueryStateContext.Provider>
   );
+}
+
+function mapLegacyQueryParams(params: QueryParams)
+{
+  params.from = params.from ?? params.sourceExchangeName;
+  params.to = params.to ?? params.destNetwork;
+  params.lockFrom = params.lockFrom ?? params.lockExchange;
+  params.lockTo = params.lockTo ?? params.lockNetwork;
 }
 
 export function useQueryState() {

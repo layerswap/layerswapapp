@@ -13,7 +13,7 @@ type Props = {
 
 const SwapConfirmMainData: FC<Props> = ({ children }) => {
     const { swapFormData } = useSwapDataState()
-    const { networks, currencies } = useSettingsState()
+    const { networks, currencies, resolveImgSrc } = useSettingsState()
     const { amount, currency, from, to } = swapFormData || {}
     const receive_amount = CalculateReceiveAmount(swapFormData, networks, currencies)
 
@@ -29,9 +29,9 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
                             <div className="flex items-center">
                                 <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
                                     {
-                                        from?.imgSrc &&
+                                        resolveImgSrc(from) &&
                                         <Image
-                                            src={from?.imgSrc}
+                                            src={resolveImgSrc(from)}
                                             alt="From Logo"
                                             height="60"
                                             width="60"
@@ -39,7 +39,7 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
                                         />
                                     }
                                 </div>
-                                <div className="mx-1 text-white">{from?.name.toUpperCase()}</div>
+                                <div className="mx-1 text-white">{from?.display_name.toUpperCase()}</div>
                             </div>
                         </span>
                         <ArrowRight className='h-5 w-5 block md:hidden' />
@@ -47,9 +47,9 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
                             <div className="flex items-center">
                                 <div className="flex-shrink-0 ml-1 md:ml-5 h-5 w-5 relative">
                                     {
-                                        to?.imgSrc &&
+                                        resolveImgSrc(to) &&
                                         <Image
-                                            src={to?.imgSrc}
+                                            src={resolveImgSrc(to)}
                                             alt="Network Logo"
                                             height="60"
                                             width="60"
@@ -57,23 +57,23 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
                                         />
                                     }
                                 </div>
-                                <div className="ml-1 text-white">{to?.name.toUpperCase()}</div>
+                                <div className="ml-1 text-white">{to?.display_name.toUpperCase()}</div>
                             </div>
                         </span>
                     </div>
 
                     <div className="flex justify-between px-4 py-3 items-baseline">
                         <span className="text-left">Amount</span>
-                        <span className="text-white">{amount} {currency?.name}
+                        <span className="text-white">{amount} {currency?.asset}
                         </span>
                     </div>
                     <div className="flex justify-between bg-darkblue-700 rounded-md px-4 py-3 items-baseline">
                         <span className="text-left">Fee</span>
-                        <span className="text-white">{(Number(amount) - receive_amount).toFixed(currency?.baseObject?.precision)} {currency?.name}</span>
+                        <span className="text-white">{(Number(amount) - receive_amount).toFixed(currency?.precision)} {currency?.asset}</span>
                     </div>
                     <div className="flex justify-between px-4 py-3  items-baseline">
                         <span className="text-left">You will receive</span>
-                        <span className="text-white">{receive_amount} {currency?.name}</span>
+                        <span className="text-white">{receive_amount} {currency?.asset}</span>
                     </div>
                 </div>
             </div>

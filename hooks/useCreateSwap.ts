@@ -45,8 +45,8 @@ const useCreateSwap = () => {
             }
             const layerswapApiClient = new LayerswapApiClient(router);
             const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
-            const sourceLayer = values?.from?.baseObject
-            const asset = values.currency?.baseObject?.asset
+            const sourceLayer = values?.from
+            const asset = values.currency?.asset
             const hasSourcePendingSwaps = allPendingSwaps?.data?.some(s => s.source_network_asset?.toLowerCase() === asset?.toLowerCase() && swapId !== s.id)
             if (hasSourcePendingSwaps) {
                 return goToStep(SwapCreateStep.PendingSwaps)

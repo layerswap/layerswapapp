@@ -30,7 +30,7 @@ import SecondaryButton from '../../buttons/secondaryButton';
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks, currencies, discovery: { resource_storage_url } } = useSettingsState()
+    const { networks, resolveImgSrc} = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
@@ -122,7 +122,7 @@ const WithdrawNetworkStep: FC = () => {
                                         <div className='flex items-center gap-1 text-sm my-2'>
                                             <span>Network:</span>
                                             <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
-                                                <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${source_network?.internal_name.toLowerCase()}.png`}></Image>
+                                                <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={resolveImgSrc(source_network)}></Image>
                                                 <span>{source_network?.display_name}</span>
                                             </div>
                                         </div>
@@ -180,7 +180,7 @@ const WithdrawNetworkStep: FC = () => {
                                                     {
                                                         asset &&
                                                         <Image
-                                                            src={`${resource_storage_url}/layerswap/currencies/${asset?.name?.toLowerCase()}.png`}
+                                                            src={resolveImgSrc({asset: asset?.name})}
                                                             alt="From Logo"
                                                             height="60"
                                                             width="60"

@@ -23,7 +23,7 @@ export const CurrencyPendingSwapStep: FC = () => {
     const layerswapApiClient = new LayerSwapApiClient()
     const pending_swaps_endpoint = `/swaps?status=0`
     const { data: allPendingSwaps, isValidating, mutate } = useSWR<ApiResponse<SwapItem[]>>(pending_swaps_endpoint, layerswapApiClient.fetcher)
-    const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLowerCase() === swapFormData?.currency?.baseObject?.asset?.toLowerCase())
+    const pendingSwapsToCancel = allPendingSwaps?.data?.filter(s => s.source_network_asset?.toLowerCase() === swapFormData?.currency?.asset?.toLowerCase())
 
     useEffect(() => {
         if (pendingSwapsToCancel && pendingSwapsToCancel.length == 0 && !isValidating)
@@ -88,7 +88,7 @@ type PendingSwapsComponentProps = {
 }
 
 export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingSwapsToCancel, header, description, onCancel, loading }) => {
-    const { layers, currencies, discovery: { resource_storage_url } } = useSettingsState()
+    const { layers, resolveImgSrc } = useSettingsState()
     const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
     const [swapToCancel, setSwapToCancel] = useState<SwapItem>()
     const router = useRouter();
@@ -142,7 +142,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <p className='flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{swap?.destination_network_asset}</span></p>
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
+                                                                        src={resolveImgSrc({asset: destination_network_asset})}
                                                                         alt="Source Logo"
                                                                         height="60"
                                                                         width="60"
@@ -158,7 +158,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <div className="h-5 w-5 relative">
                                                                     {
                                                                         <Image
-                                                                            src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLowerCase()}.png`}
+                                                                            src={resolveImgSrc(source)}
                                                                             alt="Source Logo"
                                                                             height="60"
                                                                             width="60"
@@ -173,7 +173,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <div className="h-5 w-5 relative">
                                                                     {
                                                                         <Image
-                                                                            src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
+                                                                            src={resolveImgSrc(destination)}
                                                                             alt="Source Logo"
                                                                             height="60"
                                                                             width="60"
@@ -190,7 +190,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <p className='md:hidden flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{swap?.destination_network_asset}</span></p>
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${destination_network_asset.toLowerCase()}.png`}
+                                                                        src={resolveImgSrc({asset: destination_network_asset})}
                                                                         alt="Source Logo"
                                                                         height="60"
                                                                         width="60"

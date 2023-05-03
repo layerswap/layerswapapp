@@ -1,7 +1,5 @@
 import LayerSwapApiClient from '../../lib/layerSwapApiClient';
 import Layout from '../../components/layout';
-import fs from 'fs';
-import path from 'path';
 import { LayerSwapSettings } from '../../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
@@ -12,13 +10,15 @@ import { SettingsProvider } from '../../context/settings';
 import SwapWithdrawal from '../../components/SwapWithdrawal';
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient';
 import { validateSignature } from '../../helpers/validateSignature';
+import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings';
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+  let appSettings = new LayerSwapAppSettings(settings)
 
   return (
     <Layout>
-      <SettingsProvider data={settings}>
+      <SettingsProvider data={appSettings}>
         <MenuProvider>
           <SwapDataProvider >
             <UserExchangeProvider>

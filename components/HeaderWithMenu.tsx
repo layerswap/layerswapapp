@@ -3,7 +3,7 @@ import { useAuthState } from "../context/authContext"
 import IconButton from "./buttons/iconButton"
 import LayerswapMenu from "./LayerswapMenu"
 import GoHomeButton from "./utils/GoHome"
-import { ArrowLeft, MessageCircleIcon, WalletIcon as Wlt } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { useAccount } from "wagmi"
 import CoinbaseIcon from "./icons/Wallets/Coinbase"

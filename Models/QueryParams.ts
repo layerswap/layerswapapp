@@ -2,11 +2,9 @@
 export class QueryParams {
     from?: string = "";
     to?: string = "";
-    sourceExchangeName?: string = "";
-    destNetwork?: string = "";
     lockAddress?: boolean = false;
-    lockNetwork?: boolean = false;
-    lockExchange?: boolean = false;
+    lockFrom?: boolean = false;
+    lockTo?: boolean = false;
     destAddress?: string = "";
     addressSource?: string = "";
     coinbase_redirect?: string = "";
@@ -18,4 +16,10 @@ export class QueryParams {
     signature?: string = "";
     timestamp?: string = "";
     apiKey?: string = "";
+
+    // Obsolate
+    sourceExchangeName?: string = "";
+    destNetwork?: string = "";
+    lockNetwork?: boolean = false;
+    lockExchange?: boolean = false;
 }
