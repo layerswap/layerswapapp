@@ -6,6 +6,7 @@ type iconStyle = 'red' | 'green' | 'yellow' | 'gray'
 
 class MessageComponentProps {
     children: JSX.Element | JSX.Element[];
+    center?: boolean
     icon: iconStyle
 }
 
@@ -15,7 +16,7 @@ function constructIcons(icon: iconStyle) {
 
     switch (icon) {
         case 'red':
-            iconStyle = <FailIcon/>;
+            iconStyle = <FailIcon />;
             break;
         case 'green':
             iconStyle = SuccessIcon;
@@ -36,11 +37,23 @@ const MessageComponent = ({ children }) => {
     </div>
 }
 
-const Content = ({ children, icon }: MessageComponentProps) => {
-    return <div className='space-y-8'>
-        <div className='flex place-content-center'>{constructIcons(icon)}</div>
-        {children}
-    </div>
+const Content = ({ children, icon, center }: MessageComponentProps) => {
+    return (
+        center ?
+            <div className='flex flex-col self-center grow w-full'>
+                <div className='flex self-center grow w-full'>
+                    <div className='flex flex-col space-y-8 self-center w-full'>
+                        <div className='flex place-content-center'>{constructIcons(icon)}</div>
+                        {children}
+                    </div>
+                </div>
+            </div>
+            :
+            <div className='space-y-8'>
+                <div className='flex place-content-center'>{constructIcons(icon)}</div>
+                {children}
+            </div>
+    )
 }
 
 const Header = ({ children }) => {

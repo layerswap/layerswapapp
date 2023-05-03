@@ -20,6 +20,7 @@ export default function GuideLink({ userGuideUrl, text, button, buttonClassNames
                 className="bg-[#181c1f]"
                 header={text || button}
                 show={showGuide}
+                height="full"
                 setShow={setShowGuide}>
                 <DocIframe onConfirm={() => setShowGuide(false)} URl={userGuideUrl} />
             </Modal>

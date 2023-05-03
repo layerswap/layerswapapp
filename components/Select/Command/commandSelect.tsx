@@ -43,7 +43,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
     })
 
     return (
-        <Modal height='full' show={show} setShow={setShow} header={" "}>
+        <Modal height='full' show={show} setShow={setShow}>
             {show &&
                 <CommandWrapper>
                     {show && <>

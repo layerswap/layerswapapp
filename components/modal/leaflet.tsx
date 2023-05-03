@@ -1,7 +1,6 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useEffect, useRef } from 'react'
 import { motion, useAnimation } from "framer-motion";
 import { forwardRef } from 'react';
-import inIframe from '../utils/inIframe';
 
 export type LeafletHeight = 'fit' | 'full' | '90%';
 
@@ -75,12 +74,9 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-darkblue-950 border-t border-darkblue-500 rounded-t-2xl ' : ''}  space-y-5 pb-6`}>
                     <div className='px-5'>
                         <div className='grid grid-cols-6 items-center'>
-                            {
-                                title &&
-                                <button tabIndex={-1} className='text-base text-primary col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
-                                    Close
-                                </button>
-                            }
+                            <button tabIndex={-1} className='text-base text-primary col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
+                                Close
+                            </button>
                             {
                                 title ?
                                     <div tabIndex={-1} className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-white">
@@ -100,7 +96,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                             </div>
                         }
                     </div>
-                    <div className={`max-h-full overflow-y-auto styled-scroll px-5`}>
+                    <div className={`max-h-full overflow-y-auto styled-scroll px-5 h-full`}>
                         {children}
                     </div>
                 </div>

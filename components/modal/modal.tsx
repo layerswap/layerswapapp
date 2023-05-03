@@ -3,16 +3,15 @@ import React, { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from "r
 import { FC } from "react"
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { ReactPortal } from "../Wizard/Widget";
-import { Leaflet } from "./leaflet";
+import { Leaflet, LeafletHeight } from "./leaflet";
 
-type ModalHeight = 'full' | 'fit';
 
 export interface ModalProps {
     header?: ReactNode;
     subHeader?: string | JSX.Element
     children?: JSX.Element | JSX.Element[];
     className?: string;
-    height?: ModalHeight;
+    height?: LeafletHeight;
     show: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
 }

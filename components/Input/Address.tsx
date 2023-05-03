@@ -141,7 +141,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const handleSetNewAddress = useCallback(() => {
             setAddressConfirmed(true)
             setFieldValue("destination_address", validInputAddress)
-            debugger;
             close()
         }, [validInputAddress])
 
