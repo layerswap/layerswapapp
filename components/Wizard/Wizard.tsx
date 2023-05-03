@@ -38,7 +38,7 @@ const Wizard: FC<Props> = ({ children }) => {
          <div className='text-center text-xl text-darkblue-100'>
 
          </div>
-         <div className={noToolBar ? 'relative' : `relative px-6 md:px-8`}>
+         <div className={noToolBar ? 'relative' : `relative px-6 `}>
             <div className="flex items-start"
                ref={wrapper}>
                <AnimatePresence initial={false} custom={{ direction: moving === "forward" ? 1 : -1, width: wrapperWidth }}>

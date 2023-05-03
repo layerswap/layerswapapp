@@ -38,7 +38,7 @@ const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { exchanges, networks, resolveImgSrc} = useSettingsState()
+    const { exchanges, networks, resolveImgSrc } = useSettingsState()
     const { swap, codeRequested } = useSwapDataState()
     const { setInterval, setCodeRequested, mutateSwap } = useSwapDataUpdate()
     const [openCancelConfirmModal, setShowCancelConfirmModal] = useState(false)
@@ -183,11 +183,11 @@ const WithdrawExchangeStep: FC = () => {
                         <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text min-h-[420px]">
                             <div className='space-y-4'>
                                 <div className="text-left">
-                                    <p className="block sm:text-lg font-medium text-white">
-                                        Send {asset?.name} to the deposit address from {source_exchange?.display_name}
+                                    <p className="block font-medium text-white">
+                                        Send crypto to the deposit address
                                     </p>
-                                    <p className='text-sm sm:text-base'>
-                                        The swap will be completed when your transfer is detected
+                                    <p className='text-sm'>
+                                        The swap will be completed after the transfer is detected
                                     </p>
                                 </div>
                                 <div className={`mb-6 grid grid-cols-1 gap-5 `}>
@@ -273,7 +273,7 @@ const WithdrawExchangeStep: FC = () => {
                                                         {
                                                             asset?.name &&
                                                             <Image
-                                                                src={resolveImgSrc({asset: asset?.name})}
+                                                                src={resolveImgSrc({ asset: asset?.name })}
                                                                 alt="From Logo"
                                                                 height="60"
                                                                 width="60"
@@ -338,53 +338,53 @@ const WithdrawExchangeStep: FC = () => {
                                 <div className="flex flex-row text-white text-base space-x-2">
                                     <div className='basis-1/3'>
                                         <SubmitButton onClick={() => setShowCancelConfirmModal(true)} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
-                                        <DoubleLineText
-                                            colorStyle='mltln-text-dark'
-                                            primaryText='Cancel'
-                                            secondarytext='the swap'
-                                            reversed={true}
-                                        />
-                                    </SubmitButton>
+                                            <DoubleLineText
+                                                colorStyle='mltln-text-dark'
+                                                primaryText='Cancel'
+                                                secondarytext='the swap'
+                                                reversed={true}
+                                            />
+                                        </SubmitButton>
+                                    </div>
+                                    <div className='basis-2/3'>
+                                        <SubmitButton className='plausible-event-name=I+did+the+transfer' button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<Check className="h-5 w-5" aria-hidden="true" />} >
+                                            <DoubleLineText
+                                                colorStyle='mltln-text-light'
+                                                primaryText='I did'
+                                                secondarytext='the transfer'
+                                                reversed={true}
+                                            />
+                                        </SubmitButton>
+                                    </div>
                                 </div>
-                                <div className='basis-2/3'>
-                                    <SubmitButton className='plausible-event-name=I+did+the+transfer' button_align='right' text_align='left' isDisabled={false} isSubmitting={false} onClick={handleTransferDone} icon={<Check className="h-5 w-5" aria-hidden="true" />} >
-                                        <DoubleLineText
-                                            colorStyle='mltln-text-light'
-                                            primaryText='I did'
-                                            secondarytext='the transfer'
-                                            reversed={true}
-                                        />
-                                    </SubmitButton>
+                            </>
+                        }
+                        {
+                            transferDone &&
+                            <SimpleTimer time={transferDoneTime} text={
+                                (remainingSeconds) => <>
+                                    {`Transfers from ${source_exchange?.display_name} usually take less than 10 minutes`}
+                                </>}
+                            >
+                                <div className="flex text-center mb-4 space-x-2">
+                                    <div className='relative'>
+                                        <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                        <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
+                                        <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
+                                    </div>
+                                    <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Did the transfer but the swap is not completed yet?&nbsp;
+                                        <span onClick={() => {
+                                            boot();
+                                            show();
+                                            updateWithProps()
+                                        }} className="underline hover:no-underline cursor-pointer text-primary">Contact support</span></label>
                                 </div>
-                            </div>
+                            </SimpleTimer>
+                        }
                     </>
                 }
-                {
-                    transferDone &&
-                    <SimpleTimer time={transferDoneTime} text={
-                        (remainingSeconds) => <>
-                            {`Transfers from ${source_exchange?.display_name} usually take less than 10 minutes`}
-                        </>}
-                    >
-                        <div className="flex text-center mb-4 space-x-2">
-                            <div className='relative'>
-                                <div className='absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
-                                <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
-                            </div>
-                            <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Did the transfer but the swap is not completed yet?&nbsp;
-                                <span onClick={() => {
-                                    boot();
-                                    show();
-                                    updateWithProps()
-                                }} className="underline hover:no-underline cursor-pointer text-primary">Contact support</span></label>
-                        </div>
-                    </SimpleTimer>
-                }
-            </>
-                }
-        </Widget.Footer>
-    </Widget >
+            </Widget.Footer>
+        </Widget >
         <Modal height='full' show={showSwapGuideModal} setShow={setShowSwapGuideModal} header="📖 Here's how it works">
             <div className='rounded-md w-full flex flex-col items-left justify-center space-y-6 text-left'>
                 <SwapGuide swap={swap} />

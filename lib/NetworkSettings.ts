@@ -8,17 +8,34 @@ type NetworkItemSettings = {
     }
 }
 
-const destinationChainOrder = [
+const destinationOrder = [
     KnownInternalNames.Networks.StarkNetMainnet,
-    KnownInternalNames.Networks.ZksyncMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
-    KnownInternalNames.Networks.PolygonZkMainnet,
-    KnownInternalNames.Networks.ArbitrumMainnet,
     KnownInternalNames.Networks.ArbitrumNova,
+    KnownInternalNames.Networks.ZksyncMainnet,
+    KnownInternalNames.Networks.ArbitrumMainnet,
+    KnownInternalNames.Networks.OptimismMainnet,
+    KnownInternalNames.Networks.PolygonZkMainnet,
+    KnownInternalNames.Networks.EthereumMainnet,
+    KnownInternalNames.Networks.LoopringMainnet,
+    KnownInternalNames.Networks.BNBChainMainnet,
+    KnownInternalNames.Networks.ImmutableXMainnet,
+    KnownInternalNames.Networks.RhinoFiMainnet,
+    KnownInternalNames.Networks.OsmosisMainnet,
+    KnownInternalNames.Networks.ZkspaceMainnet,
+];
+
+const sourceOrder = [
+    KnownInternalNames.Networks.ArbitrumMainnet,
+    KnownInternalNames.Networks.EthereumMainnet,
+    KnownInternalNames.Networks.BNBChainMainnet,
+    KnownInternalNames.Networks.OptimismMainnet,
+    KnownInternalNames.Networks.PolygonMainnet,
+    KnownInternalNames.Networks.ArbitrumNova,
+    KnownInternalNames.Networks.PolygonZkMainnet,
+    KnownInternalNames.Networks.KCCMainnet,
     KnownInternalNames.Networks.LoopringMainnet,
     KnownInternalNames.Networks.ImmutableXMainnet,
-    KnownInternalNames.Networks.OptimismMainnet,
-    KnownInternalNames.Networks.OsmosisMainnet,
     KnownInternalNames.Networks.SolanaMainnet,
 ];
 
@@ -30,7 +47,8 @@ export default class NetworkSettings {
     ChainId?: number;
     EstimatedTransferTime?: number;
     AddressPlaceholder?: string;
-    Order?: number;
+    OrderInDestination?: number;
+    OrderInSource?: number;
     AccountExplorerTemplate?: string;
     Refuel?: boolean = false
 
@@ -199,8 +217,11 @@ export default class NetworkSettings {
         for (var k in NetworkSettings.KnownSettings) {
             let networkSetting = NetworkSettings.KnownSettings[k];
             if (networkSetting) {
-                let order = destinationChainOrder.indexOf(k);
-                networkSetting.Order = order < 0 ? 10000 : order;
+                let destOrder = destinationOrder.indexOf(k);
+                let srcOrder = sourceOrder.indexOf(k);
+                
+                networkSetting.OrderInDestination = destOrder < 0 ? 10000 : destOrder;
+                networkSetting.OrderInSource = srcOrder < 0 ? 10000 : srcOrder;
             }
         }
     }

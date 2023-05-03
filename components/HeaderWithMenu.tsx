@@ -20,14 +20,13 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
    const updateWithProps = () => update({ email: email, userId: userId })
 
    return (
-      <div className="w-full grid grid-cols-5 px-6 md:px-8 mt-3" >
+      <div className="w-full grid grid-cols-5 px-6 mt-3" >
          {
             goBack &&
             <IconButton onClick={goBack} icon={
                <ArrowLeft strokeWidth="3" />
             }>
             </IconButton>
-
          }
          <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden imxMarketplace:hidden md:hidden'>
             <GoHomeButton />

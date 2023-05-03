@@ -65,8 +65,8 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                         <AccordionContent className="text-sm text-primary-text font-normal">
                             <>
                                 <div className="mt-2 flex flex-row items-baseline justify-between">
-                                    <label className="inline-flex items-center text-left">
-                                        Layerswap Fee
+                                    <label className="inline-flex items-center text-left text-primary-text-placeholder">
+                                        Layerswap fee
                                     </label>
                                     <span className="text-right">
                                         {parseFloat(fee.toFixed(currency?.precision))} {currency?.asset}
@@ -75,7 +75,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                 {
                                     from?.isExchange &&
                                     <div className="mt-2 flex flex-row justify-between">
-                                        <label className="flex items-center text-left grow">
+                                        <label className="flex items-center text-left grow text-primary-text-placeholder">
                                             Exchange Fee
                                             <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                         </label>
@@ -85,7 +85,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                     </div>
                                 }
                                 <div className="mt-2 flex flex-row items-baseline justify-between">
-                                    <label className="block text-left">
+                                    <label className="block text-left text-primary-text-placeholder">
                                         Estimated arrival
                                     </label>
                                     <span className="text-right">
