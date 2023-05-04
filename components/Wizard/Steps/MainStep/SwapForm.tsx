@@ -200,13 +200,13 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             </div>
                             {
                                 !valuesSwapperDisabled &&
-                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[65px] z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary py-1.5 p-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
+                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[63px] z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary py-2 px-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
                                     <motion.div
                                         animate={animate}
                                         transition={{ duration: 0.3 }}
                                         onTap={() => !valuesSwapperDisabled && cycle()}
                                     >
-                                        <ArrowUpDown className="h-5" />
+                                        <ArrowUpDown className="h-4" />
                                     </motion.div>
                                 </button>
                             }
@@ -230,7 +230,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             <Modal
                                 header={`To ${values?.to?.display_name || ''} address`}
                                 height="fit"
-                                show={showAddressModal} setShow={setShowAddressModal}>
+                                show={showAddressModal} setShow={setShowAddressModal}
+                                className="min-h-[70%] bg-darkblue-950"
+                                >
                                 <Address
                                     close={() => setShowAddressModal(false)}
                                     onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}

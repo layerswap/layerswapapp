@@ -128,7 +128,7 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
                             </div>
                         </div>
                     </div>
-                    <div className='mb-4'>
+                    <div>
                         <a className='mb-2 flex text-sm items-center text-left underline hover:text-primary' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
                             Read more about Coinbase's OAuth API here
                             <ExternalLink className='ml-1 h-4 w-4'>

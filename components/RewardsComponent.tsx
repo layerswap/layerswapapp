@@ -79,6 +79,7 @@ function RewardsComponent() {
     return (
         <>
             <div className='bg-darkblue-900 pb-6 sm:mb-10 sm:shadow-card rounded-lg text-white overflow-hidden relative min-h-[400px]'>
+                <div id="wizard_root"></div>
                 <div className="space-y-5">
                     <HeaderWithMenu goBack={handleGoBack} />
                     {
@@ -321,6 +322,7 @@ function RewardsComponent() {
                 </div>
                 <div id="widget_root" />
             </div >
+
             <Modal height="fit" header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} >
                 <div className="bg-darkblue-700 border border-darkblue-700 mt-2 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg text-primary-text">
                     <div className="p-3">

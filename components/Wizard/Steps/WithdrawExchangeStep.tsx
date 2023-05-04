@@ -165,10 +165,10 @@ const WithdrawExchangeStep: FC = () => {
     );
 
     return (<>
-        <Modal show={showDocModal} setShow={setShowDocModal} >
+        <Modal height='full' show={showDocModal} setShow={setShowDocModal} >
             <DocIframe onConfirm={() => setShowDocModal(false)} URl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} />
         </Modal>
-        <Modal show={showCoinbaseConnectModal} setShow={setShowCoinbaseConnectModal} header={`Please connect your ${source_exchange?.display_name} account`}  >
+        <Modal height='full' show={showCoinbaseConnectModal} setShow={setShowCoinbaseConnectModal} header={`Connect your ${source_exchange?.display_name} account`}  >
             <AccountConnectStep hideHeader onDoNotConnect={() => setShowCoinbaseConnectModal(false)} onAuthorized={() => { steAuthorized(true); setShowCoinbaseConnectModal(false); }} stickyFooter={false} />
         </Modal>
         <Modal show={openCoinbase2FA} setShow={setOpenCoinbase2FA}>

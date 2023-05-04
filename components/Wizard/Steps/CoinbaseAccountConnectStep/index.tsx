@@ -126,7 +126,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     return (
         <Widget>
-            <Widget.Content>
+            <Widget.Content center>
                 {
                     !hideHeader &&
                     <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>

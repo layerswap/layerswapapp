@@ -92,7 +92,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
     return <>
         <Modal show={showInsufficientFundsModal} setShow={setShowInsufficientFundsModal} >
             <MessageComponent>
-                <MessageComponent.Content icon='red'>
+                <MessageComponent.Content center icon='red'>
                     <MessageComponent.Header>
                         Transfer failed
                     </MessageComponent.Header>
@@ -111,7 +111,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
         </Modal>
         <Modal show={showFundsOnHoldModal} setShow={setShowFundsOnHoldModal} >
             <MessageComponent>
-                <MessageComponent.Content icon='red'>
+                <MessageComponent.Content center icon='red'>
                     <MessageComponent.Header>
                         Transfer failed
                     </MessageComponent.Header>
