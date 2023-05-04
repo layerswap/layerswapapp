@@ -21,6 +21,7 @@ import FormattedDate from "../Common/FormattedDate";
 import ToggleButton from "../buttons/toggleButton";
 import IconButton from "../buttons/iconButton";
 import Modal from "../modal/modal";
+import HeaderWithMenu from "../HeaderWithMenu";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -121,51 +122,38 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className='bg-darkblue-900 px-8 md:px-12 md:shadow-card rounded-lg min-h-[500px] w-full overflow-hidden relative h-full '>
-      <div className="mt-3 flex items-center justify-between z-20" >
-        <div className="flex">
-          <IconButton onClick={handleGoBack} className="text-primary-text" icon={
-            <ArrowLeft strokeWidth="3" />
-          }>
-          </IconButton>
-          {userType == UserType.AuthenticatedUser &&
-            <div className="hidden md:block ml-4">
-              <p className="text-2xl font-bold relative">Account</p>
-              <span className="text-primary-text font-medium absolute">{email}</span>
-            </div>}
-        </div>
-
-        <div className='mx-auto px-4 overflow-hidden md:hidden'>
-          <div className="flex justify-center imxMarketplace:hidden">
-            <GoHomeButton />
-          </div>
-        </div>
-        <LayerswapMenu />
-      </div>
+    <div className='bg-darkblue-900 sm:shadow-card rounded-lg w-full text-white overflow-hidden relative min-h-[500px]'>
+      <HeaderWithMenu goBack={handleGoBack} />
       {
         page == 0 && loading ?
           <SwapHistoryComponentSceleton />
           : <>
             {
               swaps?.length > 0 ?
-                <div className="w-full flex flex-col justify-between h-full space-y-5 text-primary-text">
-                  <div className="mb-2">
-                    <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg">
-                      {showToggleButton && <div className="flex justify-end">
-                        <div className='flex space-x-2'>
-                          <p className='flex items-center text-xs md:text-sm font-medium'>
-                            Show cancelled swaps
-                          </p>
-                          <ToggleButton onChange={handleToggleChange} value={showCancelledSwaps} />
-                        </div>
-                      </div>}
+                <div className="w-full flex flex-col justify-between h-full px-6 space-y-5 text-primary-text">
+                  <div className="mt-4">
+                    {showToggleButton && <div className="flex justify-end mb-2">
+                      <div className='flex space-x-2'>
+                        <p className='flex items-center text-xs md:text-sm font-medium'>
+                          Show cancelled swaps
+                        </p>
+                        <ToggleButton onChange={handleToggleChange} value={showCancelledSwaps} />
+                      </div>
+                    </div>}
+                    <div className="max-h-[450px] styled-scroll overflow-y-scroll ">
                       <table className="w-full divide-y divide-darkblue-500">
                         <thead className="text-primary-text">
                           <tr>
-                            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold  sm:pl-6">
+                            <th scope="col" className="text-left text-sm font-semibold">
                               <div className="block">
                                 Swap details
                               </div>
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-3 py-3.5 text-left text-sm font-semibold  "
+                            >
+                              Status
                             </th>
                             <th
                               scope="col"
@@ -198,7 +186,7 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'relative px-3.5 pl-4 sm:pl-6 py-3.5 text-sm text-white table-cell'
+                                  'relative text-sm text-white table-cell'
                                 )}
                               >
                                 <div className="text-white flex items-center">
@@ -226,15 +214,17 @@ function TransactionsHistory() {
                                     }
                                   </div>
                                 </div>
-                                <div className="flex items-center text-white">
-                                  <FormattedDate date={swap.created_date} />
-                                </div>
                                 {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
+
+                              </td>
+                              <td   className={classNames(
+                                  index === 0 ? '' : 'border-t border-darkblue-500',
+                                  'relative text-sm table-cell'
+                                )}>
                                 <span className="flex items-center">
                                   {swap && <StatusIcon status={swap.status} />}
                                   {/* {plan.from} - {plan.to} */}
                                 </span>
-
                               </td>
                               <td
                                 className={classNames(
@@ -265,7 +255,7 @@ function TransactionsHistory() {
                       </table>
                     </div>
                   </div>
-                  <div className="text-white text-sm mt-auto flex justify-center">
+                  <div className="text-white text-sm flex justify-center">
                     {
                       !isLastPage &&
                       <button
@@ -285,8 +275,8 @@ function TransactionsHistory() {
                       </button>
                     }
                   </div>
-                  <Modal show={openSwapDetailsModal} setShow={setOpenSwapDetailsModal} header={<p className="text-white font-semibold">Swap details</p>}>
-                    <div>
+                  <Modal height="fit" show={openSwapDetailsModal} setShow={setOpenSwapDetailsModal} header="Swap details">
+                    <div className="mt-2">
                       <SwapDetails id={selectedSwap?.id} />
                       {
                         canCompleteCancelSwap &&
@@ -324,6 +314,7 @@ function TransactionsHistory() {
             }
           </>
       }
+      <div id="widget_root" />
     </div>
   )
 }
