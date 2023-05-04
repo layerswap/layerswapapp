@@ -1,4 +1,4 @@
-import { Edit, AlertOctagon } from 'lucide-react';
+import { Edit, AlertOctagon, Check } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useRef, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
@@ -145,8 +145,8 @@ const OnRampSwapConfirmationStep: FC = () => {
                 <div className="text-white text-sm">
                     <div className="mx-auto w-full rounded-lg font-normal">
                         <div className='flex justify-between mb-4 md:mb-8'>
-                            <div className='flex items-center text-xs md:text-sm font-medium'>
-                                <AlertOctagon className='h-6 w-6 mr-2' />
+                            <div className='flex items-center text-sm font-medium'>
+                                <Check className='h-6 w-6 mr-2' />
                                 I am the owner of this address
                             </div>
                             <div className='flex items-center space-x-4'>

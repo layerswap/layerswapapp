@@ -100,15 +100,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [values.destination_address])
 
         const handleRemoveDepositeAddress = useCallback(async () => {
-            if (!isConnected) {
-                setDepositeAddressIsfromAccount(false)
-                setFieldValue("destination_address", '')
-                disconnect()
-                setInputValue("")
-            }
-            else {
-                openAccountModal()
-            }
+            setDepositeAddressIsfromAccount(false)
+            setFieldValue("destination_address", '')
+            disconnect()
+            setInputValue("")
         }, [depositeAddressIsfromAccount, isConnected, connector, isDisconnected])
 
         const handleSelectAddress = useCallback((value: string) => {
@@ -194,10 +189,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                         onClick={handleRemoveDepositeAddress}
                                                     >
                                                         <div className="flex items-center px-2 text-sm py-1 font-semibold">
-                                                            {
-                                                                isConnected ? <>Disconnect</>
-                                                                    : <>Clear</>
-                                                            }
+                                                            Clear
                                                         </div>
                                                     </button>
                                                 }
