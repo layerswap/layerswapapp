@@ -301,7 +301,7 @@ input:disabled,
 textarea:disabled,
 input:disabled::placeholder,
 textarea:disabled::placeholder {
-  -webkit-text-fill-color: theme('colors.primary.text');
+  -webkit-text-fill-color: theme('colors.primary.text-placeholder');
   /* 1. sets text fill to 'primary-text': '#a4afc8' */
   opacity: 1;
   /* 2. correct opacity on iOS */

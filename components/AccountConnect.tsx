@@ -18,6 +18,7 @@ import ClickTooltip from "./Tooltips/ClickTooltip";
 import ConnectOauthExchange from "./connectOauthExchange";
 import Modal from "./modal/modal";
 import { Layer } from "../Models/Layer";
+import HeaderWithMenu from "./HeaderWithMenu";
 
 type UserExchange = {
     note?: string,
@@ -134,32 +135,19 @@ function UserExchanges() {
 
     return (
         <>
-            <div className='bg-darkblue-900 px-8 md:px-12 sm:shadow-card rounded-lg w-full text-white overflow-hidden relative min-h-[400px]'>
-                <div className="mt-3 flex items-center justify-between z-20" >
-                    <div className="flex ">
-                        <button onClick={handleGoBack} className="self-start md:mt-2">
-                            <ArrowLeft className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
-                        </button>
-                        <div className="hidden md:block ml-4">
-                            <p className="text-2xl font-bold relative">Account</p>
-                            <span className="text-primary-text font-medium absolute">{email}</span>
-                        </div>
-                    </div>
-
-                    <div className='mx-auto px-4 overflow-hidden md:hidden'>
-                        <div className="flex justify-center imxMarketplace:hidden">
-                            <GoHomeButton />
-                        </div>
-                    </div>
-                    <LayerswapMenu />
+            <div className='bg-darkblue-900 sm:shadow-card rounded-lg w-full text-white overflow-hidden relative min-h-[600px]'>
+                <HeaderWithMenu goBack={handleGoBack}></HeaderWithMenu>
+                <div className="hidden md:block px-6">
+                    <p className="text-2xl font-bold relative">Account</p>
+                    <span className="text-primary-text font-medium absolute">{email}</span>
                 </div>
-                <div className="relative mb-6 sm:mt-10 mt-4 inset-0 flex flex-col styled-scroll">
+                <div className="relative mb-6 px-6 mt-10 inset-0 flex flex-col styled-scroll">
                     <div className="relative min-h-full items-center justify-center text-center">
                         <Combobox
                             as="div"
                             className="transform transition-all"
                         >
-                            <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <Combobox.Options static className="border-0 grid grid-cols-1 gap-2">
                                 {
                                     loading ? <ExchangesComponentSceleton />
                                         :
@@ -231,14 +219,15 @@ function UserExchanges() {
                         </Combobox>
                     </div>
                 </div>
+                <div id="widget_root" />
             </div>
-            <Modal show={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} setShow={setOpenExchangeToConnectModal} header={`Connect ${exchangeToConnect?.display_name}`} >
+            <Modal height='fit' show={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} setShow={setOpenExchangeToConnectModal} header={`Connect ${exchangeToConnect?.display_name}`} >
                 <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
             </Modal>
-            <Modal show={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} setShow={setOpenExchangeToConnectModal} header={`Connect ${exchangeToConnect?.display_name}`}>
+            <Modal  show={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} setShow={setOpenExchangeToConnectModal} header={`Connect ${exchangeToConnect?.display_name}`}>
                 <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} stickyFooter={false} />
             </Modal>
-            <Modal show={openExchangeToDisconnectModal} setShow={setOpenExchangeToDisconnectModal} header={'Are you sure?'} >
+            <Modal height="fit" show={openExchangeToDisconnectModal} setShow={setOpenExchangeToDisconnectModal} header={'Are you sure?'} >
                 <div className="space-y-3">
                     <p className="text-slate-300 text-sm font-medium">
                         {

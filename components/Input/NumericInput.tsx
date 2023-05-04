@@ -53,7 +53,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     id={name}
                     ref={ref}
                     className={classNames(
-                        'disabled:cursor-not-allowed h-12 leading-4 bg-darkblue-700 focus:ring-primary focus:border-primary flex-grow block w-full min-w-0 rounded-md font-semibold placeholder-gray-400 border-0',
+                        'disabled:cursor-not-allowed h-12 leading-4 placeholder:text-primary-text-placeholder bg-darkblue-700 focus:ring-primary focus:border-primary flex-grow block w-full min-w-0 rounded-md font-semibold border-0',
                         className
                     )}
                     onChange={onChange ? onChange : e => {

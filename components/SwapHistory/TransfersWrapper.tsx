@@ -10,7 +10,7 @@ const TransfersWrapper: FC = () => {
     const { userType } = useAuthState()
 
     return (
-        <div className="md:mb-12">
+        <div className="">
             <TransactionsHistory />
             {
                 userType && userType != UserType.AuthenticatedUser &&

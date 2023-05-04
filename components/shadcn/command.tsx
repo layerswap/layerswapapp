@@ -48,14 +48,14 @@ const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
-  <div className="relative z-0 flex items-center mt-2 mb-2 pl-2 border-b border-darkblue-500" cmdk-input-wrapper="">
+  <div className="relative z-0 flex items-center mt-1 mb-2 pl-2 border-b border-darkblue-500" cmdk-input-wrapper="">
     <CommandPrimitive.Input placeholder=" " ref={ref} id="floating_standard"
       {...props} className={classNames(
         "peer/draft placeholder:text-transparent border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-11 bg-transparent text-lg outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )} />
     <span className="absolute left-1 font-thin animate-none peer-placeholder-shown/draft:animate-blinking text-lg peer-focus/draft:invisible invisible peer-placeholder-shown/draft:visible">|</span>
-    <label htmlFor={props.id} className="absolute text-lg text-primary-text duration-300 transform -translate-y-6 scale-50 top-3 -z-10 origin-[0] peer-placeholder-shown/draft:scale-100 peer-placeholder-shown/draft:translate-y-0 peer-placeholder-shown/draft:text-primary-text-muted">
+    <label htmlFor={props.id} className="absolute text-lg text-primary-text duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown/draft:scale-100 peer-placeholder-shown/draft:translate-y-0 peer-placeholder-shown/draft:text-primary-text-muted">
       {props.placeholder}
     </label>
   </div>
@@ -96,7 +96,7 @@ const CommandGroup = React.forwardRef<
   <CommandPrimitive.Group
     ref={ref}
     className={classNames(
-      "overflow-hidden p-1 text-white [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-primary-text",
+      "overflow-hidden p-1 py-1.5 text-white [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-primary-text",
       className
     )}
     {...props}

@@ -14,7 +14,6 @@ export default function Transactions({ settings }: InferGetServerSidePropsType<t
   let appSettings = new LayerSwapAppSettings(settings)
 
   return (
-    <div className='wide-page'>
       <Layout>
         <SettingsProvider data={appSettings}>
           <MenuProvider>
@@ -24,7 +23,6 @@ export default function Transactions({ settings }: InferGetServerSidePropsType<t
           </MenuProvider>
         </SettingsProvider>
       </Layout>
-    </div>
   )
 }
 

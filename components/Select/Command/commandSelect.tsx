@@ -19,6 +19,7 @@ export interface CommandSelectProps extends SelectProps {
     show: boolean;
     setShow: (value: boolean) => void;
     searchHint: string;
+    valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
 }
 
 export class SelectMenuItemGroup {
@@ -30,17 +31,10 @@ export class SelectMenuItemGroup {
     items: ISelectMenuItem[];
 }
 
-export default function CommandSelect({ values, value, setValue, show, setShow, searchHint }: CommandSelectProps) {
+export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
 
-    let groups: SelectMenuItemGroup[] = [];
-    values.forEach((v) => {
-        let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
-        group.items.push(v);
-        if (!groups.find(x => x.name == v.group)) {
-            groups.push(group);
-        }
-    })
+    let groups: SelectMenuItemGroup[] =  valueGrouper(values);
 
     return (
         <Modal height='full' show={show} setShow={setShow}>

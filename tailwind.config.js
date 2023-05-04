@@ -210,6 +210,7 @@ module.exports = {
               'background': '#3e1240',
               'text': '#abb5d1',
               'text-muted': '#56617B',
+              'text-placeholder': '#8C98C0',
               'buttonTextColor': '#ffffff',
               'logoColor': '#FF0093'
             },

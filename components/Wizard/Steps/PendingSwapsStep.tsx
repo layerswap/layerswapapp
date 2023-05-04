@@ -15,6 +15,7 @@ import useCreateSwap from '../../../hooks/useCreateSwap';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { AuthStep } from '../../../Models/Wizard';
 import Modal from '../../modal/modal';
+import WarningMessage from '../../WarningMessage';
 
 export const CurrencyPendingSwapStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
@@ -123,7 +124,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                 destination_exchange: destination_exchange_internal_name,
                                 destination_network_asset
                             } = swap
-                            
+
                             const source_internal_name = source_exchange_internal_name || source_network_internal_name
                             const destination_internal_name = destination_exchange_internal_name || destination_network_internal_name
                             const source = layers.find(e => e.internal_name === source_internal_name)
@@ -142,7 +143,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <p className='flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{swap?.destination_network_asset}</span></p>
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={resolveImgSrc({asset: destination_network_asset})}
+                                                                        src={resolveImgSrc({ asset: destination_network_asset })}
                                                                         alt="Source Logo"
                                                                         height="60"
                                                                         width="60"
@@ -190,7 +191,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
                                                                 <p className='md:hidden flex font-normal text-white'>{swap?.requested_amount} <span className='text-primary-text ml-1'>{swap?.destination_network_asset}</span></p>
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={resolveImgSrc({asset: destination_network_asset})}
+                                                                        src={resolveImgSrc({ asset: destination_network_asset })}
                                                                         alt="Source Logo"
                                                                         height="60"
                                                                         width="60"
@@ -269,18 +270,20 @@ export const SwapCancelModal: FC<SwapCancelModalProps> = ({ swapToCancel, openCa
     }, [swapToCancel])
 
     return (
-        <Modal show={openCancelConfirmModal} setShow={setOpenCancelConfirmModal} height='fit' header="Do NOT cancel if you have already sent crypto">
-            <div className='text-primary-text mb-4'></div>
-            <div className="flex flex-row text-white text-base space-x-2">
-                <div className='basis-1/2'>
-                    <SubmitButton className='plausible-event-name=Swap+canceled' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                        Cancel the swap
-                    </SubmitButton>
-                </div>
-                <div className='basis-1/2'>
-                    <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
-                        Don't cancel
-                    </SubmitButton>
+        <Modal show={openCancelConfirmModal} setShow={setOpenCancelConfirmModal} height='fit' header="Caution">
+            <WarningMessage className='mb-8 mt-4'>Do NOT cancel if you have already sent crypto</WarningMessage>
+            <div className='text-primary-text mb-4'>
+                <div className="flex flex-row text-white text-base space-x-2">
+                    <div className='basis-1/2'>
+                        <SubmitButton className='plausible-event-name=Swap+canceled' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
+                            Cancel the swap
+                        </SubmitButton>
+                    </div>
+                    <div className='basis-1/2'>
+                        <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={handleClose} size='medium'>
+                            Don't cancel
+                        </SubmitButton>
+                    </div>
                 </div>
             </div>
         </Modal>

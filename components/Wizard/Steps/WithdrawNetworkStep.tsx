@@ -26,11 +26,12 @@ import Image from 'next/image';
 import Modal from '../../modal/modal';
 import SwapGuide from '../../SwapGuide';
 import SecondaryButton from '../../buttons/secondaryButton';
+import WarningMessage from '../../WarningMessage';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks, resolveImgSrc} = useSettingsState()
+    const { networks, resolveImgSrc } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
@@ -109,10 +110,10 @@ const WithdrawNetworkStep: FC = () => {
                     <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                         <div className='space-y-4'>
                             <div className="text-left">
-                                <p className="block text-md sm:text-lg font-medium text-white">
-                                    Send crypto to the deposit address in {source_network?.display_name}
+                                <p className="block font-medium text-white">
+                                    Send crypto to the deposit address
                                 </p>
-                                <p className='text-sm sm:text-base'>
+                                <p className='text-sm'>
                                     The swap will be completed after the transfer is detected
                                 </p>
                             </div>
@@ -180,7 +181,7 @@ const WithdrawNetworkStep: FC = () => {
                                                     {
                                                         asset &&
                                                         <Image
-                                                            src={resolveImgSrc({asset: asset?.name})}
+                                                            src={resolveImgSrc({ asset: asset?.name })}
                                                             alt="From Logo"
                                                             height="60"
                                                             width="60"
@@ -274,27 +275,29 @@ const WithdrawNetworkStep: FC = () => {
                 </Widget.Footer>
             </Widget>
             <Modal show={showCancelConfirmModal} setShow={setShowCancelConfirmModal} header="Do NOT cancel if you have already sent crypto">
-                <div className='text-primary-text mb-4'></div>
-                <div className="flex flex-row text-white text-base space-x-2">
-                    <div className='basis-1/2'>
-                        <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
-                            <DoubleLineText
-                                colorStyle='mltln-text-dark'
-                                primaryText='Cancel the swap'
-                                secondarytext='and go to home'
-                                reversed={true}
-                            />
-                        </SubmitButton>
-                    </div>
-                    <div className='basis-1/2'>
-                        <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={() => setShowCancelConfirmModal(false)} size='medium'>
-                            <DoubleLineText
-                                colorStyle='mltln-text-light'
-                                primaryText="Don't"
-                                secondarytext='cancel'
-                                reversed={true}
-                            />
-                        </SubmitButton>
+                <WarningMessage className='mb-8 mt-4'>Do NOT cancel if you have already sent crypto</WarningMessage>
+                <div className='text-primary-text mb-4'>
+                    <div className="flex flex-row text-white text-base space-x-2">
+                        <div className='basis-1/2'>
+                            <SubmitButton text_align='left' isDisabled={loadingSwapCancel} isSubmitting={loadingSwapCancel} onClick={handleCancelConfirmed} buttonStyle='outline' size="medium" >
+                                <DoubleLineText
+                                    colorStyle='mltln-text-dark'
+                                    primaryText='Cancel the swap'
+                                    secondarytext='and go to home'
+                                    reversed={true}
+                                />
+                            </SubmitButton>
+                        </div>
+                        <div className='basis-1/2'>
+                            <SubmitButton button_align='right' text_align='left' isDisabled={loadingSwapCancel} isSubmitting={false} onClick={() => setShowCancelConfirmModal(false)} size='medium'>
+                                <DoubleLineText
+                                    colorStyle='mltln-text-light'
+                                    primaryText="Don't"
+                                    secondarytext='cancel'
+                                    reversed={true}
+                                />
+                            </SubmitButton>
+                        </div>
                     </div>
                 </div>
             </Modal>

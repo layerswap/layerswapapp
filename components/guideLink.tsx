@@ -18,6 +18,7 @@ export default function GuideLink({ userGuideUrl, text, button, buttonClassNames
             }
             <Modal
                 className="bg-[#181c1f]"
+                height="full"
                 header={text || button}
                 show={showGuide}
                 height="full"

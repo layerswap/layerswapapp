@@ -1,6 +1,9 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useEffect, useRef } from 'react'
 import { motion, useAnimation } from "framer-motion";
 import { forwardRef } from 'react';
+import inIframe from '../utils/inIframe';
+import IconButton from '../buttons/iconButton';
+import { X } from 'lucide-react';
 
 export type LeafletHeight = 'fit' | 'full' | '90%';
 
@@ -60,7 +63,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${height === 'full' ? 'h-full' : height === '90%' ? 'h-[90%]': ''} group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'cursor-grab active:cursor-grabbing rounded-t-2xl border-t border-darkblue-500' : ''}  bg-darkblue-900 ${className} shadow-lg`}
+                className={`${height === 'full' ? 'h-full' : height === '90%' ? 'h-[90%]' : ''} group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'cursor-grab active:cursor-grabbing rounded-t-2xl border-t border-darkblue-500' : ''}  bg-darkblue-900 ${className} shadow-lg`}
                 initial={{ y: "20%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
@@ -71,32 +74,17 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-darkblue-950 border-t border-darkblue-500 rounded-t-2xl ' : ''}  space-y-5 pb-6`}>
-                    <div className='px-5'>
-                        <div className='grid grid-cols-6 items-center'>
-                            <button tabIndex={-1} className='text-base text-primary col-start-1 justify-self-start hover:text-gray-700' onClick={handleCloseModal}>
-                                Close
-                            </button>
-                            {
-                                title ?
-                                    <div tabIndex={-1} className="text-center col-start-2 col-span-4 justify-self-center leading-5 font-medium text-white">
-                                        {title}
-                                    </div>
-                                    :
-                                    <div tabIndex={-1} className="rounded-t-4xl flex items-center col-start-2 col-span-4 justify-self-center">
-                                        <div className="-mr-1 h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:rotate-12" />
-                                        <div className="h-0.5 w-7 rounded-full bg-primary-text transition-all group-active:-rotate-12" />
-                                    </div>
-                            }
+                <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-darkblue-950 border-t border-darkblue-500 rounded-t-2xl ' : ''}  pb-6`}>
+                    <div className='px-6 flex justify-between items-center'>
+                        <div className="text-lg text-white font-semibold">
+                            <div>{title}</div>
                         </div>
-                        {
-                            description &&
-                            <div className='text-primary-text opacity-70 flex justify-center'>
-                                {description}
-                            </div>
-                        }
+                        <IconButton onClick={handleCloseModal} icon={
+                            <X strokeWidth={3} />
+                        }>
+                        </IconButton>
                     </div>
-                    <div className={`max-h-full overflow-y-auto styled-scroll px-5 h-full`}>
+                    <div className={`max-h-full overflow-y-auto styled-scroll px-6 h-full`}>
                         {children}
                     </div>
                 </div>
