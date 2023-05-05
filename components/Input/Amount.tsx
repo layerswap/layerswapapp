@@ -21,16 +21,6 @@ const AmountField = forwardRef((_, ref: any) => {
     const step = 1 / Math.pow(10, currency?.precision)
     const amountRef = useRef(ref)
 
-    const amountLabel = (
-        <div className="flex items-center space-x-2">
-            <p>Amount</p>
-            {from && to && amount &&
-                <div className="text-xs text-primary-text flex items-center space-x-1">
-                    (Min: {minAllowedAmount} - Max: {maxAllowedAmount})
-                </div>}
-        </div>
-    )
-
     const handleSetMinAmount = () => {
         setFieldValue(name, minAllowedAmount)
     }
@@ -41,7 +31,10 @@ const AmountField = forwardRef((_, ref: any) => {
 
     return (<>
         <NumericInput
-            label={amountLabel}
+            label={<AmountLabel detailsAvailable={!!(from && to && amount)}
+                maxAllowedAmount={maxAllowedAmount}
+                minAllowedAmount={minAllowedAmount}
+            />}
             disabled={!currency}
             placeholder={placeholder}
             min={minAllowedAmount}
@@ -66,4 +59,23 @@ const AmountField = forwardRef((_, ref: any) => {
         </NumericInput>
     </>)
 });
+type AmountLabelProps = {
+    detailsAvailable: boolean;
+    minAllowedAmount: number;
+    maxAllowedAmount: number;
+}
+const AmountLabel = ({
+    detailsAvailable,
+    minAllowedAmount,
+    maxAllowedAmount
+}: AmountLabelProps) => {
+    return <div className="flex items-center space-x-2">
+        <p>Amount</p>
+        {detailsAvailable &&
+            <div className="text-xs text-primary-text flex items-center space-x-1">
+                (Min: {minAllowedAmount} - Max: {maxAllowedAmount})
+            </div>}
+    </div>
+}
+
 export default AmountField
