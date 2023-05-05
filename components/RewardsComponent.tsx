@@ -323,7 +323,7 @@ function RewardsComponent() {
                 <div id="widget_root" />
             </div >
 
-            <Modal height="fit" header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} >
+            <Modal height="full" header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} >
                 <div className="bg-darkblue-700 border border-darkblue-700 mt-2 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg text-primary-text">
                     <div className="p-3">
                         <div className="space-y-6">

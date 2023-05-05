@@ -122,7 +122,7 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className='bg-darkblue-900 sm:shadow-card rounded-lg w-full text-white overflow-hidden relative min-h-[500px]'>
+    <div className='bg-darkblue-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[500px]'>
       <HeaderWithMenu goBack={handleGoBack} />
       {
         page == 0 && loading ?

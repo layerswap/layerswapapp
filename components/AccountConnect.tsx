@@ -135,7 +135,7 @@ function UserExchanges() {
 
     return (
         <>
-            <div className='bg-darkblue-900 sm:shadow-card rounded-lg w-full text-white overflow-hidden relative min-h-[600px]'>
+            <div className='bg-darkblue-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[600px]'>
                 <HeaderWithMenu goBack={handleGoBack}></HeaderWithMenu>
                 <div className="hidden md:block px-6">
                     <p className="text-2xl font-bold relative">Account</p>

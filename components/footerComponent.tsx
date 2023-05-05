@@ -62,7 +62,7 @@ export default function FooterComponent() {
             }
             show={openFeedbackModal}
             setShow={setOpenFeedbackModal} >
-            <div className="p-5 md:max-w-md">
+            <div className="p-0 md:p-5 md:max-w-md">
               <SendFeedback onSend={() => setOpenFeedbackModal(false)} />
             </div>
           </Popover>
