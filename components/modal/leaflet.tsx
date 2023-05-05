@@ -5,7 +5,7 @@ import inIframe from '../utils/inIframe';
 import IconButton from '../buttons/iconButton';
 import { X } from 'lucide-react';
 
-export type LeafletHeight = 'fit' | 'full' | '90%';
+export type LeafletHeight = 'fit' | 'full' | '80%';
 
 // Relative gives the div a relative position allowing the parent to put it inside a React Portal. Appwide makes it fixed, so it renders on top of the app.
 export type LeafletPosition = 'absolute' | 'fixed';
@@ -63,7 +63,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${height === 'full' ? 'h-full' : height === '90%' ? 'h-[90%]' : ''} group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'cursor-grab active:cursor-grabbing rounded-t-2xl border-t border-darkblue-500' : ''}  bg-darkblue-900 ${className} shadow-lg`}
+                className={`${height === 'full' ? 'h-full' : height === '80%' ? 'h-[80%]' : 'max-h-[80%]'} group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'cursor-grab active:cursor-grabbing rounded-t-2xl border-t border-darkblue-500' : ''}  bg-darkblue-900 ${className} shadow-lg`}
                 initial={{ y: "20%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
