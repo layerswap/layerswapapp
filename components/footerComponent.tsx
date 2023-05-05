@@ -47,7 +47,7 @@ export default function FooterComponent() {
 
   return (
     <footer>
-      <div className="max-w-xl mt-6 mx-auto space-y-6">
+      <div className="max-w-xs mt-6 space-y-6">
         <nav className="mt-4 flex flex-wrap flex-row gap-2" aria-label="Footer">
           {navigation.main.map((item) => (
             <a key={item.name} href={item.href} target={item.target} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 hover:cursor-pointer transition-all duration-200">
