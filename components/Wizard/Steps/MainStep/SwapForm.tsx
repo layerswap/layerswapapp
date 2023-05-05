@@ -172,8 +172,13 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                 ?.some(c => c.is_deposit_enabled
                     && c.is_withdrawal_enabled))
 
-        if ((source && !destination && sourceCurrencyIsAvailable)
-            || (destination && !source && destCurrencyIsAvailable)) setValuesSwapperDisabled(false)
+        if (query.lockTo || query.lockFrom) {
+            setValuesSwapperDisabled(true)
+        }
+        else if ((source && !destination && sourceCurrencyIsAvailable)
+            || (destination && !source && destCurrencyIsAvailable)) {
+            setValuesSwapperDisabled(false)
+        }
         else if (source && destination && sourceCurrencyIsAvailable && destCurrencyIsAvailable) setValuesSwapperDisabled(false)
         else setValuesSwapperDisabled(true)
     }
@@ -232,7 +237,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 height="fit"
                                 show={showAddressModal} setShow={setShowAddressModal}
                                 className="min-h-[70%] bg-darkblue-950"
-                                >
+                            >
                                 <Address
                                     close={() => setShowAddressModal(false)}
                                     onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
@@ -313,7 +318,7 @@ type AddressButtonProps = {
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
     const destination = values?.to
     return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-darkblue-700 border-darkblue-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
-        {isPartnerWallet && !destination.isExchange &&
+        {isPartnerWallet && !destination?.isExchange &&
             <div className="shrink-0 flex items-center pointer-events-none">
                 {
                     partnerImage &&
