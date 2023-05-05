@@ -85,7 +85,6 @@ export default class ExchangeSettings {
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/crypto.com",
             ExchangeApiKeyPageUrl: "https://crypto.com/exchange/user/settings/api-management",
             ExchangeWithdrawalPageUrl: "https://crypto.com/exchange/",
-            WithdrawalWarningMessage: "Only use Crypto.com 'Exchange' to do the transfer. Transfers done from the Crypto.com *App* will not be credited.",
         };
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.FtxCom] = {
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/ftx.com",

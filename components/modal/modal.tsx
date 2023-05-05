@@ -21,6 +21,13 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
 
     const mobileModalRef = useRef(null)
 
+    useEffect(() => {
+        if (isMobile && show) {
+            window.document.body.style.overflow = 'hidden'
+        }
+        return () => { window.document.body.style.overflow = '' }
+    }, [show])
+
     return (
         <>
             <AnimatePresence>
