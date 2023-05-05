@@ -63,7 +63,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${height === 'full' ? 'h-full' : height === '80%' ? 'h-[80%]' : 'max-h-[80%]'} group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'cursor-grab active:cursor-grabbing rounded-t-2xl border-t border-darkblue-500' : ''}  bg-darkblue-900 ${className} shadow-lg`}
+                className={`${height === 'full' ? 'h-full' : height === '80%' ? 'h-[80%]' : ''} group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'cursor-grab active:cursor-grabbing rounded-t-2xl border-t border-darkblue-500' : ''}  bg-darkblue-900 ${className} shadow-lg`}
                 initial={{ y: "20%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
