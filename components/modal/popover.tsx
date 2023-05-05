@@ -41,6 +41,7 @@ export default function Popover({
                     </PopoverPrimitive.Trigger>
                     <PopoverPrimitive.Content
                         sideOffset={4}
+                        onInteractOutside={()=> setShow(false)}
                         align={align}
                         className="z-20 animate-slide-up-fade items-center rounded-md bg-darkblue-900 border-2 border-darkblue-500 drop-shadow-lg"
                     >
