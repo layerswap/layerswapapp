@@ -4,8 +4,9 @@ import { Exchange } from "../Models/Exchange";
 import KnownInternalNames from "./knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
+import { Layer } from "../Models/Layer";
 
-export function isValidAddress(address: string, network: CryptoNetwork | Exchange): boolean {
+export function isValidAddress(address: string, network: Layer): boolean {
     if (network.internal_name === KnownInternalNames.Networks.RoninMainnet) {
         if (address.startsWith("ronin:")) {
             return isValidEtherAddress(address.replace("ronin:", "0x"));

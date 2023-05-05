@@ -5,13 +5,16 @@ import { SettingsProvider } from '../context/settings'
 import UserExchanges from '../components/AccountConnect'
 import { MenuProvider } from '../context/menu'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
+import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
 
 export default function Home({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+    let appSettings = new LayerSwapAppSettings(settings)
+
     return (
         <div className='wide-page'>
             <Layout>
-                <SettingsProvider data={settings}>
+                <SettingsProvider data={appSettings}>
                     <MenuProvider>
                         <UserExchanges />
                     </MenuProvider>

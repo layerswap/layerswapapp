@@ -16,11 +16,12 @@ export function DocIframe({ URl, onConfirm, className }: Props) {
 
     return (
         <div className="flex flex-col justify-between space-y-4 h-full">
+            {
+                loading && <DocInFrameSceleton />
+            }
             <div className='h-full'>
-                {
-                    loading && <DocInFrameSceleton />
-                }
-                <iframe onLoad={handleLoad} height="100%" allow="clipboard-write"  src={URl} className={`${loading ? 'invisible h-0 w-0' : `visible animate-fade-in-down ${className}`} h-full min-h-[calc(100vh-170px)] md:min-h-full border-0 self-center w-full sm:rounded-md`} />
+
+                <iframe onLoad={handleLoad} height="100%" allow="clipboard-write" src={URl} className={`${loading ? 'invisible h-0 w-0' : `visible animate-fade-in-down ${className}`} h-full md:min-h-full border-0 self-center w-full sm:rounded-md`} />
             </div>
             {
                 !loading &&
@@ -28,7 +29,7 @@ export function DocIframe({ URl, onConfirm, className }: Props) {
                     target="_blank"
                     href={URl}
                     onClick={onConfirm}
-                    className="shadowed-button hidden sm:flex justify-center items-center mt-3 group disabled:white disabled:bg-primary-600 disabled:cursor-not-allowed text-primary relative w-full font-semibold focus:outline-none"
+                    className="shadowed-button flex justify-center items-center mt-3 group disabled:white disabled:bg-primary-600 disabled:cursor-not-allowed text-primary relative w-full font-semibold focus:outline-none"
                 >
                     View in new tab
                     <ExternalLink className='ml-2 h-5 w-5' />

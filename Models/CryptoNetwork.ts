@@ -1,3 +1,4 @@
+import { LayerStatus } from "./Layer";
 
 export class CryptoNetwork {
     display_name: string;
@@ -5,7 +6,7 @@ export class CryptoNetwork {
     native_currency: string;
     fee_multiplier: number;
     transaction_explorer_template: string;
-    status: "active" | "inactive" | string;
+    status: LayerStatus;
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
     address_type: "evm" | 'starknet' | 'solana' | 'osmosis'
@@ -14,7 +15,7 @@ export class CryptoNetwork {
 export class NetworkCurrency {
     name: string;
     asset: string;
-    status: "active" | "insufficient_liquidity";
+    status: LayerStatus;
     is_deposit_enabled: boolean;
     is_withdrawal_enabled: boolean;
     is_refuel_enabled: boolean;

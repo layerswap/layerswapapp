@@ -27,6 +27,7 @@
     "bn.js": "^5.2.0",
     "class-variance-authority": "^0.4.0",
     "clsx": "^1.2.1",
+    "cmdk": "^0.2.0",
     "crypto-js": "^4.1.1",
     "ethers": "^5.7.2",
     "formik": "^2.2.9",

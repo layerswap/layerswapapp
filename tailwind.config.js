@@ -33,12 +33,15 @@ module.exports = {
           '950': '#0B1123',
         },
       },
+      opacity: {
+        '35': '.35',
+      },
       transitionDuration: {
         '0': '0ms',
         '2000': '2000ms',
       },
-      opacity: {
-        '35': '.35',
+      transitionProperty: {
+        'height': 'height'
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
@@ -48,6 +51,11 @@ module.exports = {
         'slide-in': 'slide-in 300ms',
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "blinking": "blink 1.1s step-end infinite",
+
+        // Tooltip
+        "slide-up-fade": "slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        "slide-down-fade": "slide-down-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
       },
       keyframes: {
         "accordion-down": {
@@ -57,6 +65,17 @@ module.exports = {
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
+        },
+        'blink': {
+          '0%': {
+            color: 'transparent',
+          },
+          '50%': {
+            color: 'white',
+          },
+          '100%': {
+            color: 'transparent',
+          },
         },
         'fade-in': {
           '0%': {
@@ -94,8 +113,16 @@ module.exports = {
           '100%': {
             transform: 'translateY(100%)',
           },
-        }
-
+          // Tooltip
+          "slide-up-fade": {
+            "0%": { opacity: 0, transform: "translateY(6px)" },
+            "100%": { opacity: 1, transform: "translateY(0)" },
+          },
+          "slide-down-fade": {
+            "0%": { opacity: 0, transform: "translateY(-6px)" },
+            "100%": { opacity: 1, transform: "translateY(0)" },
+          },
+        },
       },
       letterSpacing: {
         tightest: '-.075em',
@@ -182,6 +209,8 @@ module.exports = {
               '900': '#6e0040',
               'background': '#3e1240',
               'text': '#abb5d1',
+              'text-muted': '#56617B',
+              'text-placeholder': '#8C98C0',
               'buttonTextColor': '#ffffff',
               'logoColor': '#FF0093'
             },

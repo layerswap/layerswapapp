@@ -45,14 +45,16 @@ const useCreateSwap = () => {
             }
             const layerswapApiClient = new LayerswapApiClient(router);
             const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
-            const hasSourcePendingSwaps = allPendingSwaps?.data?.some(s => s.source_network_asset?.toLowerCase() === values.currency?.baseObject?.asset?.toLowerCase() && swapId !== s.id)
+            const sourceLayer = values?.from
+            const asset = values.currency?.asset
+            const hasSourcePendingSwaps = allPendingSwaps?.data?.some(s => s.source_network_asset?.toLowerCase() === asset?.toLowerCase() && swapId !== s.id)
             if (hasSourcePendingSwaps) {
                 return goToStep(SwapCreateStep.PendingSwaps)
             }
-            else if (values.swapType === SwapType.OnRamp && values?.from?.baseObject?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
+            else if (sourceLayer?.isExchange && sourceLayer?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
                 const layerswapApiClient = new LayerSwapApiClient(router)
                 try {
-                    const res = await layerswapApiClient.GetExchangeAccount(values?.from?.baseObject.internal_name, 1)
+                    const res = await layerswapApiClient.GetExchangeAccount(sourceLayer.internal_name, 1)
                     if (!res?.data) {
                         return goToStep(SwapCreateStep.AuthorizeCoinbaseWithdrawal)
                     }

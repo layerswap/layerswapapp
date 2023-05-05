@@ -13,7 +13,7 @@ import WarningMessage from '../../WarningMessage';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import { Check, ArrowLeftRight, X, Link } from 'lucide-react';
 import Widget from '../Widget';
-import SlideOver from '../../SlideOver';
+import Modal from '../../modal/modal';
 import { DocIframe } from '../../docInIframe';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
@@ -27,8 +27,7 @@ import { KnownwErrorCode } from '../../../Models/ApiError';
 import Coinbase2FA from '../../Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
-import Modal from '../../modalComponent';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../Select/PrimitiveSelect';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../shadcn/select';
 import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
@@ -39,19 +38,19 @@ const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { exchanges, networks, discovery: { resource_storage_url } } = useSettingsState()
+    const { exchanges, networks, resolveImgSrc } = useSettingsState()
     const { swap, codeRequested } = useSwapDataState()
     const { setInterval, setCodeRequested, mutateSwap } = useSwapDataUpdate()
-    const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
-    const [openCoinbaseConnectSlideover, setOpenCoinbaseConnectSlideover] = useState(false)
+    const [openCancelConfirmModal, setShowCancelConfirmModal] = useState(false)
+    const [showCoinbaseConnectModal, setShowCoinbaseConnectModal] = useState(false)
     const [openCoinbase2FA, setOpenCoinbase2FA] = useState(false)
     const { start: startTimer } = useTimerState()
     const [authorized, steAuthorized] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [loading, setLoading] = useState(false)
     const { source_exchange: source_exchange_internal_name, destination_network: destination_network_internal_name, source_network_asset: source_network_asset, destination_network_asset } = swap
-    const [openDocSlideover, setOpenDocSlideover] = useState(false)
-    const [openSwapGuide, setOpenSwapGuide] = useState(false)
+    const [showDocModal, setShowDocModal] = useState(false)
+    const [showSwapGuideModal, setShowSwapGuideModal] = useState(false)
 
     const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
@@ -63,19 +62,6 @@ const WithdrawExchangeStep: FC = () => {
     const sourceNetworks = networks.filter(n => availableNetworks.includes(n.internal_name))
     const defaultSourceNetwork = sourceNetworks.find(sn => sn.internal_name === source_network_currency.network)
     const asset = defaultSourceNetwork?.currencies?.find(currency => currency?.asset === destination_network_asset)
-
-
-    const handleOpenModal = () => {
-        setOpenCancelConfirmModal(true)
-    }
-
-    const handleOpenSwapGuide = () => {
-        setOpenSwapGuide(true)
-    }
-
-    const hanldeGuideModalClose = () => {
-        setOpenSwapGuide(false)
-    }
 
     useEffect(() => {
         setInterval(15000)
@@ -151,7 +137,7 @@ const WithdrawExchangeStep: FC = () => {
                 else if (e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS || e?.response?.data?.error?.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
                     steAuthorized(false)
                     setCodeRequested(false)
-                    setOpenCoinbaseConnectSlideover(true)
+                    setShowCoinbaseConnectModal(true)
                 }
                 else if (e?.response?.data?.error?.message) {
                     toast(e?.response?.data?.error?.message)
@@ -164,7 +150,7 @@ const WithdrawExchangeStep: FC = () => {
     }, [swap, destination_network, codeRequested])
 
     const openConnect = () => {
-        setOpenCoinbaseConnectSlideover(true)
+        setShowCoinbaseConnectModal(true)
     }
 
     const qrCode = (
@@ -179,17 +165,13 @@ const WithdrawExchangeStep: FC = () => {
     );
 
     return (<>
-        <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inModal'>
-            {(close) => (
-                <DocIframe onConfirm={() => close()} URl={source_exchange_settings.ExchangeWithdrawalGuideUrl} />
-            )}
-        </SlideOver>
-        <SlideOver imperativeOpener={[openCoinbaseConnectSlideover, setOpenCoinbaseConnectSlideover]} header={`Please connect your ${source_exchange?.display_name} account`} place='inStep' >
-            {() => (
-                <AccountConnectStep hideHeader onDoNotConnect={() => setOpenCoinbaseConnectSlideover(false)} onAuthorized={() => { steAuthorized(true); setOpenCoinbaseConnectSlideover(false); }} stickyFooter={false} />
-            )}
-        </SlideOver>
-        <Modal showModal={openCoinbase2FA} setShowModal={setOpenCoinbase2FA}>
+        <Modal height='full' show={showDocModal} setShow={setShowDocModal} >
+            <DocIframe onConfirm={() => setShowDocModal(false)} URl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} />
+        </Modal>
+        <Modal height='full' show={showCoinbaseConnectModal} setShow={setShowCoinbaseConnectModal} header={`Connect your ${source_exchange?.display_name} account`}  >
+            <AccountConnectStep hideHeader onDoNotConnect={() => setShowCoinbaseConnectModal(false)} onAuthorized={() => { steAuthorized(true); setShowCoinbaseConnectModal(false); }} stickyFooter={false} />
+        </Modal>
+        <Modal show={openCoinbase2FA} setShow={setOpenCoinbase2FA}>
             <Coinbase2FA onSuccess={async () => setOpenCoinbase2FA(false)} footerStickiness={false} />
         </Modal>
         <Widget>
@@ -201,11 +183,11 @@ const WithdrawExchangeStep: FC = () => {
                         <div className="w-full flex space-y-5 flex-col justify-between h-full text-primary-text min-h-[420px]">
                             <div className='space-y-4'>
                                 <div className="text-left">
-                                    <p className="block sm:text-lg font-medium text-white">
-                                        Send {asset?.name} to the deposit address from {source_exchange?.display_name}
+                                    <p className="block font-medium text-white">
+                                        Send crypto to the deposit address
                                     </p>
-                                    <p className='text-sm sm:text-base'>
-                                        The swap will be completed when your transfer is detected
+                                    <p className='text-sm'>
+                                        The swap will be completed after the transfer is detected
                                     </p>
                                 </div>
                                 <div className={`mb-6 grid grid-cols-1 gap-5 `}>
@@ -215,7 +197,7 @@ const WithdrawExchangeStep: FC = () => {
                                                 <span>Network:</span>
                                                 {sourceNetworks.length === 1 ?
                                                     <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
-                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={`${resource_storage_url}/layerswap/networks/${sourceNetworks[0]?.internal_name.toLowerCase()}.png`}></Image>
+                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={resolveImgSrc(sourceNetworks[0])}></Image>
                                                         <span>{sourceNetworks[0].display_name}</span>
                                                     </div>
                                                     :
@@ -227,7 +209,7 @@ const WithdrawExchangeStep: FC = () => {
                                                                         {
                                                                             defaultSourceNetwork &&
                                                                             <Image
-                                                                                src={`${resource_storage_url}/layerswap/networks/${defaultSourceNetwork?.internal_name?.toLowerCase()}.png`}
+                                                                                src={resolveImgSrc(defaultSourceNetwork)}
                                                                                 alt="From Logo"
                                                                                 height="60"
                                                                                 width="60"
@@ -249,7 +231,7 @@ const WithdrawExchangeStep: FC = () => {
                                                                                 {
                                                                                     sn &&
                                                                                     <Image
-                                                                                        src={`${resource_storage_url}/layerswap/networks/${sn?.internal_name?.toLowerCase()}.png`}
+                                                                                        src={resolveImgSrc(sn)}
                                                                                         alt="From Logo"
                                                                                         height="60"
                                                                                         width="60"
@@ -291,7 +273,7 @@ const WithdrawExchangeStep: FC = () => {
                                                         {
                                                             asset?.name &&
                                                             <Image
-                                                                src={`${resource_storage_url}/layerswap/currencies/${asset?.name?.toLowerCase()}.png`}
+                                                                src={resolveImgSrc({ asset: asset?.name })}
                                                                 alt="From Logo"
                                                                 height="60"
                                                                 width="60"
@@ -315,9 +297,9 @@ const WithdrawExchangeStep: FC = () => {
                                     <div className='grid grid-cols-2 w-full items-center gap-2'>
                                         {
                                             source_exchange_settings?.ExchangeWithdrawalGuideUrl &&
-                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} place="inStep" />
+                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} />
                                         }
-                                        <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={handleOpenSwapGuide}>
+                                        <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={() => setShowSwapGuideModal(true)}>
                                             How it works
                                         </SecondaryButton>
                                     </div>
@@ -355,7 +337,7 @@ const WithdrawExchangeStep: FC = () => {
                                 </div>
                                 <div className="flex flex-row text-white text-base space-x-2">
                                     <div className='basis-1/3'>
-                                        <SubmitButton onClick={handleOpenModal} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
+                                        <SubmitButton onClick={() => setShowCancelConfirmModal(true)} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<X className='h-5 w-5' />}>
                                             <DoubleLineText
                                                 colorStyle='mltln-text-dark'
                                                 primaryText='Cancel'
@@ -403,17 +385,15 @@ const WithdrawExchangeStep: FC = () => {
                 }
             </Widget.Footer>
         </Widget >
-        <SlideOver imperativeOpener={[openSwapGuide, setOpenSwapGuide]} place={'inStep'} header="📖 Here's how it works">
-            {() => (
-                <div className='rounded-md w-full flex flex-col items-left justify-center space-y-6 text-left'>
-                    <SwapGuide swap={swap} />
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={hanldeGuideModalClose}>
-                        Got it
-                    </SubmitButton>
-                </div>
-            )}
-        </SlideOver>
-        <SwapCancelModal onCancel={handleCancelSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
+        <Modal height='full' show={showSwapGuideModal} setShow={setShowSwapGuideModal} header="📖 Here's how it works">
+            <div className='rounded-md w-full flex flex-col items-left justify-center space-y-6 text-left'>
+                <SwapGuide swap={swap} />
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={() => setShowSwapGuideModal(false)}>
+                    Got it
+                </SubmitButton>
+            </div>
+        </Modal>
+        <SwapCancelModal onCancel={handleCancelSwap} swapToCancel={swap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setShowCancelConfirmModal} />
     </>
     )
 }

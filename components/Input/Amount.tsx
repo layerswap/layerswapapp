@@ -3,7 +3,7 @@ import { forwardRef, useEffect, useRef } from "react";
 import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import CurrenciesField from "../Select/Currencies";
+import CurrencyFormField from "./CurrencyFormField";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
 
@@ -14,17 +14,11 @@ const AmountField = forwardRef((_, ref: any) => {
     const { currency, from, to, amount } = values
     const name = "amount"
 
-    useEffect(() => {
-        if (amount) {
-            setFieldValue(name, minAllowedAmount)
-        }
-    }, [currency])
-
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
     const maxAllowedAmount = CalculateMaxAllowedAmount(values, networks);
 
     const placeholder = currency ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
-    const step = 1 / Math.pow(10, currency?.baseObject?.precision)
+    const step = 1 / Math.pow(10, currency?.precision)
     const amountRef = useRef(ref)
 
     const handleSetMinAmount = () => {
@@ -48,7 +42,7 @@ const AmountField = forwardRef((_, ref: any) => {
             step={isNaN(step) ? 0.01 : step}
             name={name}
             ref={amountRef}
-            precision={currency?.baseObject?.precision}
+            precision={currency?.precision}
             className="rounded-r-none text-white"
         >
             {
@@ -61,7 +55,7 @@ const AmountField = forwardRef((_, ref: any) => {
                     </SecondaryButton>
                 </div>
             }
-            <CurrenciesField />
+            <CurrencyFormField />
         </NumericInput>
     </>)
 });

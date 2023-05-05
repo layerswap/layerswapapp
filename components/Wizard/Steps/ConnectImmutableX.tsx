@@ -4,10 +4,10 @@ import { Link as LinkIcon } from 'lucide-react';
 import SubmitButton from '../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import NetworkSettings from '../../../lib/NetworkSettings';
-import { CryptoNetwork } from '../../../Models/CryptoNetwork';
+import { Layer } from '../../../Models/Layer';
 
 type Props = {
-    network: CryptoNetwork,
+    network: Layer,
     onClose: (address?: string) => void
 }
 

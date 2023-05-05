@@ -31,6 +31,8 @@ export default class KnownInternalNames {
         public static readonly BinanceUS: string = "BINANCEUS";
 
         public static readonly Blocktane: string = "BLOCKTANE";
+        
+        public static readonly MexcGlobal: string = "MEXC";
     }
 
     static Networks = class {
