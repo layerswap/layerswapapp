@@ -314,7 +314,7 @@ function TransactionsHistory() {
             }
           </>
       }
-      <div id="widget_root" />
+      <div data-name="widget_root" />
     </div>
   )
 }

@@ -48,7 +48,7 @@ const Wizard: FC<Props> = ({ children }) => {
                </AnimatePresence>
             </div>
          </div>
-         <div id="widget_root" />
+         <div data-name="widget_root" />
       </div>
    </>
 }

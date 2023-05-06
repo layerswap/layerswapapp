@@ -320,7 +320,7 @@ function RewardsComponent() {
                             </div>
                     }
                 </div>
-                <div id="widget_root" />
+                <div data-name="widget_root" />
             </div >
 
             <Modal height="full" header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} >

@@ -105,7 +105,7 @@ export default function ForPartners(props) {
                             </div>
                         </div>
                     </main>
-                    <div id="widget_root" />
+                    <div data-name="widget_root" />
                 </div>
             </SettingsProvider>
         </Layout>

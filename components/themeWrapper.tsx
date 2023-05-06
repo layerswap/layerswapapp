@@ -98,7 +98,7 @@ export default function ({ hideNavbar, children }: Props) {
                         </div>
                     </div>
                 </div>
-                <div id="offset-for-stickyness"></div>
+                <div data-name="offset-for-stickyness"></div>
             </div>
         </main>
     </div>

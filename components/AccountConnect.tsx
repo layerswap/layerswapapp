@@ -219,7 +219,7 @@ function UserExchanges() {
                         </Combobox>
                     </div>
                 </div>
-                <div id="widget_root" />
+                <div data-name="widget_root" />
             </div>
             <Modal height='fit' show={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} setShow={setOpenExchangeToConnectModal} header={`Connect ${exchangeToConnect?.display_name}`} >
                 <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />

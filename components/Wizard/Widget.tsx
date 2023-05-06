@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -94,17 +94,47 @@ Widget.Content = Content
 Widget.Footer = Footer
 
 export function ReactPortal({ children, wrapperId = "react-portal-wrapper" }) {
-    let element = document.getElementById(wrapperId);
-    // if element is not found with wrapperId,
-    // create and append to body
-    if (!element) {
-        element = createWrapperAndAppendToBody(wrapperId);
+    let [element, setElement] = useState<Element>();
+    if (element == null) {
+        let elements = document.querySelectorAll(`[data-name="${wrapperId}"]`);
+
+        // if element is not found with wrapperId,
+        // create and append to body
+        if (elements.length == 0) {
+            setElement(createWrapperAndAppendToBody(wrapperId));
+        }
+        else if (elements.length == 1) {
+            setElement(elements[0]);
+        }
     }
-    return createPortal(children, element);
+
+    // If there are multiple Root items, e.g. multiple widget_root items, find the closest one
+    const div = useCallback(node => {
+        if (node !== null && element == null) {
+            setElement(closest(node, `[data-name="${wrapperId}"]`));
+        }
+    }, [element]);
+
+    return <div data-name="vzgo" ref={div}>
+        {createPortal(children, element ?? document.querySelectorAll(`[data-name="${wrapperId}"]`)[0])}
+    </div>
 }
+
+/// Finds the closest element
+/// In contrast to default closest() method, also checks for non direct parents, traverses the full tree
+const closest = (currentElement, selector) => {
+    let returnElement
+
+    while (currentElement.parentNode && !returnElement) {
+        currentElement = currentElement.parentNode
+        returnElement = currentElement.querySelector(selector)
+    }
+    return returnElement
+}
+
 function createWrapperAndAppendToBody(wrapperId) {
     const wrapperElement = document.createElement('div');
-    wrapperElement.setAttribute("id", wrapperId);
+    wrapperElement.setAttribute("data-name", wrapperId);
     document.body.appendChild(wrapperElement);
     return wrapperElement;
 }
