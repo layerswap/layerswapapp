@@ -9,6 +9,7 @@ import shortenAddress from '../../../utils/ShortenAddress';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import Steps from '../StepsComponent';
 import WarningMessage from '../../../WarningMessage';
+import KnownInternalNames from '../../../../lib/knownIds';
 
 const ProcessingStep: FC = () => {
 
@@ -77,8 +78,15 @@ const ProcessingStep: FC = () => {
                         <ExternalLink className='h-4' />
                     </div>
                 </div>
-                :
-                <div>Estimated time: 20-60 minutes</div>
+                    :
+                    <div>
+                        {
+                            destination_network?.internal_name === KnownInternalNames.Networks.StarkNetMainnet ?
+                                <span>Estimated time: 20-60 minutes</span>
+                                :
+                                <span>Estimated time: 2 minutes</span>
+                        }
+                    </div>
         },
     ]
 
