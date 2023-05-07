@@ -35,6 +35,7 @@ import { ArrowUpDown, Fuel } from 'lucide-react'
 import { useAuthState } from "../../../../context/authContext";
 import WarningMessage from "../../../WarningMessage";
 import { GetDefaultNetwork, GetNetworkCurrency } from "../../../../helpers/settingsHelper";
+import KnownInternalNames from "../../../../lib/knownIds";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -276,6 +277,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
                                 <WarningMessage messageType="warning" className="mt-4">
                                     <span className="font-normal">We're experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
+                                </WarningMessage>
+                            }
+                            {
+                                GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet &&
+                                <WarningMessage messageType="warning" className="mt-4">
+                                    <span className="font-normal">{destination.display_name} network congestion. Transactions can take up to 1 hour.</span>
                                 </WarningMessage>
                             }
                         </div>

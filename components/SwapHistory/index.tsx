@@ -4,22 +4,17 @@ import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers } from "../../lib/lay
 import SpinIcon from "../icons/spinIcon"
 import { ArrowRight, ChevronRight, ExternalLink, RefreshCcw, X } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
-import LayerswapMenu from "../LayerswapMenu"
 import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
-import { useAuthState, UserType } from "../../context/authContext"
+import { useAuthState } from "../../context/authContext"
 import { classNames } from "../utils/classNames"
 import SubmitButton, { DoubleLineText } from "../buttons/submitButton"
 import { SwapHistoryComponentSceleton } from "../Sceletons"
-import GoHomeButton from "../utils/GoHome"
 import StatusIcon, { } from "./StatusIcons"
 import toast from "react-hot-toast"
-import { ArrowLeft } from 'lucide-react'
 import { useSwapDataUpdate } from "../../context/swap"
 import { SwapStatus } from "../../Models/SwapStatus"
-import FormattedDate from "../Common/FormattedDate";
 import ToggleButton from "../buttons/toggleButton";
-import IconButton from "../buttons/iconButton";
 import Modal from "../modal/modal";
 import HeaderWithMenu from "../HeaderWithMenu";
 
