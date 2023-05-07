@@ -105,9 +105,6 @@ const ProcessingStep: FC = () => {
             <div className='flex flex-col h-full justify-center'>
                 <Steps steps={progress} />
             </div>
-            <WarningMessage messageType='warning' className='mt-4'>
-                Starknet network congestion. Transactions can take up to 20-60 minutes.
-            </WarningMessage>
         </div>
     )
 }
