@@ -280,7 +280,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 </WarningMessage>
                             }
                             {
-                                GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet &&
+                                GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet &&
                                 <WarningMessage messageType="warning" className="mt-4">
                                     <span className="font-normal">{destination.display_name} network congestion. Transactions can take up to 1 hour.</span>
                                 </WarningMessage>
