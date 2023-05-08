@@ -24,11 +24,11 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         else if ((item as Partner).is_wallet != undefined){
             return `${this.discovery.resource_storage_url}/layerswap/partners/${(item as Partner)?.internal_name?.toLowerCase()}.png`
         }
-        else if ((item as any).internal_name != undefined) {
-            return `${this.discovery.resource_storage_url}/layerswap/networks/${(item as any).internal_name.toLowerCase()}.png`;
+        else if ((item as any)?.internal_name != undefined) {
+            return `${this.discovery.resource_storage_url}/layerswap/networks/${(item as any)?.internal_name?.toLowerCase()}.png`;
         }
-        else if ((item as any).asset != undefined) {
-            return `${this.discovery.resource_storage_url}/layerswap/currencies/${(item as any).asset.toLowerCase()}.png`;
+        else if ((item as any)?.asset != undefined) {
+            return `${this.discovery.resource_storage_url}/layerswap/currencies/${(item as any)?.asset?.toLowerCase()}.png`;
         }
     }
 
@@ -75,11 +75,11 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
     }
 
     static ResolveNetworkL2Assets(network: CryptoNetwork): BaseL2Asset[] {
-        return network.currencies.map(c => ({
+        return network?.currencies.map(c => ({
             asset: c.asset,
             status: c.status,
             is_default: true,
-            network_internal_name: network.internal_name,
+            network_internal_name: network?.internal_name,
             network: { ...network, currencies: [c] }
         }))
     }

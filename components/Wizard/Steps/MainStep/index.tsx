@@ -89,7 +89,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
-            const destination_internal_name = values.to.internal_name
+            const destination_internal_name = values?.to?.internal_name
             if (destination_internal_name == KnownInternalNames.Networks.ImmutableXMainnet || destination_internal_name == KnownInternalNames.Networks.ImmutableXGoerli) {
                 const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[destination_internal_name].apiUri })
                 const isRegistered = await client.isRegistered({ user: values.destination_address })

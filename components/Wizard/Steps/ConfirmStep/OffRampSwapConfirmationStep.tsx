@@ -67,7 +67,7 @@ const OffRampSwapConfirmationStep: FC = () => {
             if (!swap) {
                 if (query.addressSource === "imxMarketplace" && settings.validSignatureisPresent) {
                     try {
-                        const account = await layerswapApiClient.GetWhitelistedAddress(swapFormData.to.internal_name, query.destAddress)
+                        const account = await layerswapApiClient.GetWhitelistedAddress(swapFormData?.to?.internal_name, query.destAddress)
                     }
                     catch (e) {
                         //TODO handle account not found

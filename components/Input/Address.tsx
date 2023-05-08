@@ -53,7 +53,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const destination = values.to
         const asset = values.currency?.asset
         const destinationNetwork = GetDefaultNetwork(destination, asset)
-        const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination.internal_name === e) : a.networks?.some(n => destination.internal_name === n)) && isValidAddress(a.address, destination))
+        const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination?.internal_name === e) : a.networks?.some(n => destination?.internal_name === n)) && isValidAddress(a.address, destination))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount } = useSwapDataState()

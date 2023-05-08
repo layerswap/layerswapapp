@@ -54,7 +54,7 @@ const useCreateSwap = () => {
             else if (sourceLayer?.isExchange && sourceLayer?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
                 const layerswapApiClient = new LayerSwapApiClient(router)
                 try {
-                    const res = await layerswapApiClient.GetExchangeAccount(sourceLayer.internal_name, 1)
+                    const res = await layerswapApiClient.GetExchangeAccount(sourceLayer?.internal_name, 1)
                     if (!res?.data) {
                         return goToStep(SwapCreateStep.AuthorizeCoinbaseWithdrawal)
                     }
