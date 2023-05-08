@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { AddressBookItem, SwapType, UserExchangesData } from "../../lib/layerSwapApiClient";
+import { AddressBookItem, UserExchangesData } from "../../lib/layerSwapApiClient";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
@@ -23,6 +23,7 @@ import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import { Wallet } from 'lucide-react'
 import { useAccountModal } from "@rainbow-me/rainbowkit";
 import AddressIcon from "../AddressIcon";
+import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -30,7 +31,6 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     name: string;
     children?: JSX.Element | JSX.Element[];
     ref?: any;
-    loading: boolean;
     onSetExchangeDepoisteAddress?: () => Promise<void>;
     exchangeAccount?: UserExchangesData;
     close: () => void,
@@ -42,7 +42,7 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
 }
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, loading, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
+    ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
         const { openAccountModal } = useAccountModal();
         const {
             values,
@@ -50,17 +50,20 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         } = useFormikContext<SwapFormValues>();
 
         const inputReference = useRef(null);
-
-        const valid_addresses = address_book?.filter(a => (values.swapType === SwapType.OffRamp ? a.exchanges?.some(e => values.to.baseObject.internal_name === e) : a.networks?.some(n => values.to.baseObject.internal_name === n)) && isValidAddress(a.address, values.to.baseObject))
+        const destination = values.to
+        const asset = values.currency?.asset
+        const destinationNetwork = GetDefaultNetwork(destination, asset)
+        const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination?.internal_name === e) : a.networks?.some(n => destination?.internal_name === n)) && isValidAddress(a.address, destination))
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount } = useSwapDataState()
-        const placeholder = NetworkSettings.KnownSettings[values?.to?.baseObject?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
+        const placeholder = NetworkSettings.KnownSettings[values?.to?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
         const [validInputAddress, setValidInputAddress] = useState<string>()
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
+
         const { isConnected, isDisconnected, connector, address: walletAddress } = useAccount({
             onDisconnect() {
                 setInputValue("")
@@ -70,12 +73,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         });
 
         useEffect(() => {
-            if(values.swapType !== SwapType.OffRamp && isValidAddress(walletAddress, values.to.baseObject)){
+            if (!destination.isExchange && isValidAddress(walletAddress, destination)) {
                 setInputValue(walletAddress)
                 setAddressConfirmed(true)
                 setFieldValue("destination_address", walletAddress)
             }
-        }, [walletAddress, values.swapType])
+        }, [walletAddress, destination?.isExchange])
 
         const handleUseDepositeAddress = async () => {
             try {
@@ -97,15 +100,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [values.destination_address])
 
         const handleRemoveDepositeAddress = useCallback(async () => {
-            if (!isConnected) {
-                setDepositeAddressIsfromAccount(false)
-                setFieldValue("destination_address", '')
-                disconnect()
-                setInputValue("")
-            }
-            else {
-                openAccountModal()
-            }
+            setDepositeAddressIsfromAccount(false)
+            setFieldValue("destination_address", '')
+            disconnect()
+            setInputValue("")
         }, [depositeAddressIsfromAccount, isConnected, connector, isDisconnected])
 
         const handleSelectAddress = useCallback((value: string) => {
@@ -114,13 +112,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             close()
         }, [close])
 
-        const inputAddressIsValid = isValidAddress(inputValue, values.to.baseObject)
 
+        const inputAddressIsValid = isValidAddress(inputValue, destination)
         let errorMessage = '';
-        if (inputValue && !isValidAddress(inputValue, values.to.baseObject)) {
-            errorMessage = `Enter a valid ${values.to.name} address`
+        if (inputValue && !isValidAddress(inputValue, destination)) {
+            errorMessage = `Enter a valid ${values.to.display_name} address`
         }
-        else if (inputValue && values.swapType !== SwapType.OffRamp && isBlacklistedAddress(settings.blacklisted_addresses, values.to.baseObject, inputValue)) {
+        else if (inputValue && destination?.isExchange && isBlacklistedAddress(settings.blacklisted_addresses, destination, inputValue)) {
             errorMessage = `You can not transfer to this address`
         }
 
@@ -140,9 +138,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue("destination_address", validInputAddress)
             close()
         }, [validInputAddress])
-
-        const availableNetworks = values.swapType === SwapType.OffRamp && values.currency && values.to?.baseObject?.currencies?.filter(c => c.asset === values.currency.baseObject.asset && settings.networks.find(n => n.internal_name === c.network)?.status === 'active' && c.is_default).map(n => n.network)
-        const destinationNetwork = values.swapType === SwapType.OffRamp && settings.networks.find(n => availableNetworks && availableNetworks.includes(n.internal_name))
 
         return (<>
             <div className='w-full flex flex-col justify-between h-full text-primary-text'>
@@ -172,14 +167,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         id={name}
                                         ref={inputReference}
                                         tabIndex={0}
-                                        className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-darkblue-700 rounded-lg placeholder-primary-text truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
+                                        className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-darkblue-700 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
                                     />
                                     {
                                         inputValue &&
                                         <span className="inline-flex items-center mr-2">
                                             <div className="text-xs flex items-center space-x-2 md:ml-5 bg-darkblue-500 rounded-md border border-darkblue-500">
                                                 {
-                                                    values?.to?.baseObject?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
+                                                    values?.to?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
                                                     <span className="inline-flex items-center mr-2">
                                                         <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
                                                             {exchangeAccount?.note}
@@ -194,10 +189,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                         onClick={handleRemoveDepositeAddress}
                                                     >
                                                         <div className="flex items-center px-2 text-sm py-1 font-semibold">
-                                                            {
-                                                                isConnected ? <>Disconnect</>
-                                                                    : <>Clear</>
-                                                            }
+                                                            Clear
                                                         </div>
                                                     </button>
                                                 }
@@ -231,9 +223,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {
                             !disabled
                             && !inputValue
-                            && values?.swapType === SwapType.OffRamp
+                            && destination?.isExchange
                             && authData?.access_token && values.to
-                            && ExchangeSettings.KnownSettings[values.to.baseObject.internal_name]?.EnableDepositAddressConnect
+                            && ExchangeSettings.KnownSettings[destination.internal_name]?.EnableDepositAddressConnect
                             && !depositeAddressIsfromAccount &&
                             <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-700 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:shadow-xl`}>
                                 <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
@@ -241,7 +233,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 </div>
                                 <div className="flex flex-col">
                                     <div className="block text-sm font-medium">
-                                        Autofill from {values?.to?.baseObject?.display_name}
+                                        Autofill from {values?.to?.display_name}
                                     </div>
                                     <div className="text-gray-500">
                                         Connect your account to fetch the address
@@ -250,7 +242,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </div>
                         }
                         {
-                            !disabled && !inputValue && values?.swapType !== SwapType.OffRamp && values.to?.baseObject?.address_type === 'evm' &&
+                            !disabled && !inputValue && !destination?.isExchange && destinationNetwork?.address_type === 'evm' &&
                             <RainbowKit>
                                 <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700 hover:shadow-xl`}>
                                     <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
@@ -268,11 +260,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </RainbowKit>
                         }
                         {
-                            values.swapType === SwapType.OffRamp && !inputAddressIsValid &&
+                            destination?.isExchange && !inputAddressIsValid &&
                             <div className='text-left p-4 bg-darkblue-800 text-white rounded-lg border border-darkblue-500'>
                                 <div className="flex items-center">
                                     <Info className='h-5 w-5 text-primary-600 mr-3' />
-                                    <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.to.baseObject.display_name} deposit address</label>
+                                    <label className="block text-sm md:text-base font-medium leading-6">How to find your {destination.display_name} deposit address</label>
                                 </div>
                                 <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
                                     <li>Go to the Deposits page</li>
@@ -280,13 +272,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         Select
                                         <span className="inline-block mx-1">
                                             <span className='flex gap-1 items-baseline text-sm '>
-                                                <Image src={`${settings.discovery.resource_storage_url}/layerswap/currencies/${values.currency.name.toLowerCase()}.png`}
+                                                <Image src={settings.resolveImgSrc(values.currency)}
                                                     alt="Project Logo"
                                                     height="15"
                                                     width="15"
                                                     className='rounded-sm'
                                                 />
-                                                <span className="text-white">{values.currency.name}</span>
+                                                <span className="text-white">{values.currency.asset}</span>
                                             </span>
                                         </span>
                                         as asset
@@ -295,7 +287,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         Select
                                         <span className="inline-block mx-1">
                                             <span className='flex gap-1 items-baseline text-sm '>
-                                                <Image src={`${settings.discovery.resource_storage_url}/layerswap/networks/${destinationNetwork.internal_name.toLowerCase()}.png`}
+                                                <Image src={settings.resolveImgSrc(destinationNetwork)}
                                                     alt="Project Logo"
                                                     height="15"
                                                     width="15"
@@ -369,9 +361,5 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         </>
         )
     });
-
-function GetIcon({ internal_name, resource_storage_url }) {
-    return `${resource_storage_url}/layerswap/networks/${internal_name.toLowerCase()}.png`;
-}
 
 export default Address

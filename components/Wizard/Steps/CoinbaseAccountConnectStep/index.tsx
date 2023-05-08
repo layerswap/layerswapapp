@@ -18,6 +18,7 @@ import SubmitButton from '../../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
 import Widget from '../../Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectGuideScreens';
+import { Layer } from '../../../../Models/Layer';
 
 type Props = {
     onAuthorized: () => void,
@@ -29,7 +30,7 @@ type Props = {
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap, swapFormData } = useSwapDataState()
     const { setWithdrawManually } = useSwapDataUpdate()
-    const { networks, exchanges, currencies, discovery: { resource_storage_url } } = useSettingsState()
+    const { layers, currencies } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate()
     let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false }, 'configs')
 
@@ -39,10 +40,10 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
-    const exchange_internal_name = swap?.source_exchange || swapFormData?.from?.baseObject?.internal_name
-    const asset_name = swap?.source_network_asset || swapFormData?.currency?.baseObject.asset
+    const exchange_internal_name = swap?.source_exchange || swapFormData?.from?.internal_name
+    const asset_name = swap?.source_network_asset || swapFormData?.currency.asset
 
-    const exchange = exchanges.find(e => e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase())
+    const exchange = layers.find(e => e.isExchange && e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase()) as Layer & { isExchange: true }
     const currency = currencies?.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
 
     const { oauth_authorize_url } = exchange || {}
@@ -125,7 +126,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     return (
         <Widget>
-            <Widget.Content>
+            <Widget.Content center>
                 {
                     !hideHeader &&
                     <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>

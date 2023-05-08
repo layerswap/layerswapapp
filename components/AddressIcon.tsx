@@ -11,8 +11,10 @@ const AddressIcon: FC<Props> = ({ address, size }) => {
         if (address && ref.current) {
             ref.current.innerHTML = "";
             const iconElement = Jazzicon(size, parseInt(address.slice(2, 10), 16)) as HTMLElement
-            iconElement.style.display = 'block'
-            ref.current.appendChild(iconElement);
+            if(iconElement){
+                iconElement.style.display = 'block'
+                ref.current.appendChild(iconElement);
+            }
         }
     }, [address]);
 

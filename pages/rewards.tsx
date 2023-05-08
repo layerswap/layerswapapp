@@ -5,12 +5,17 @@ import { SettingsProvider } from '../context/settings'
 import { MenuProvider } from '../context/menu'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import RewardsComponent from '../components/RewardsComponent'
+import { Currency } from '../Models/Currency'
+import { Layer } from '../Models/Layer'
+import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
 
 export default function RewardsPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+    let appSettings = new LayerSwapAppSettings(settings)
+
     return (
         <Layout>
-            <SettingsProvider data={settings}>
+            <SettingsProvider data={appSettings}>
                 <MenuProvider>
                     <RewardsComponent />
                 </MenuProvider>
@@ -38,6 +43,7 @@ export async function getServerSideProps(context) {
         settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
     let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
+
 
     return {
         props: { settings, isOfframpEnabled },

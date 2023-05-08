@@ -11,10 +11,9 @@ import GuestCard from '../../guestCard';
 import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
 import { truncateDecimals } from '../../utils/RoundDecimals';
-import Image from 'next/image';
 
 const SuccessfulStep: FC = () => {
-    const { networks, campaigns, currencies, discovery: { resource_storage_url } } = useSettingsState()
+    const { networks, campaigns, currencies} = useSettingsState()
     const { swap } = useSwapDataState()
     const { userType } = useAuthState()
 

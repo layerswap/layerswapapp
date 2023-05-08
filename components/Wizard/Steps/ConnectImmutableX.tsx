@@ -4,10 +4,10 @@ import { Link as LinkIcon } from 'lucide-react';
 import SubmitButton from '../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import NetworkSettings from '../../../lib/NetworkSettings';
-import { CryptoNetwork } from '../../../Models/CryptoNetwork';
+import { Layer } from '../../../Models/Layer';
 
 type Props = {
-    network: CryptoNetwork,
+    network: Layer,
     onClose: (address?: string) => void
 }
 
@@ -18,7 +18,7 @@ const ConnectImmutableX: FC<Props> = ({ onClose, network }) => {
     async function onImmutableConnectClick() {
         try {
             setLoading(true)
-            const linkSdk = new Link(NetworkSettings.ImmutableXSettings[network.internal_name].linkUri);
+            const linkSdk = new Link(NetworkSettings.ImmutableXSettings[network?.internal_name].linkUri);
             var connected = await linkSdk.setup({});
             if (connected && connected.address)
                 onClose(connected.address)

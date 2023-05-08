@@ -17,7 +17,7 @@ import KnownInternalNames from "../../../../lib/knownIds";
 import MainStepValidation from "../../../../lib/mainStepValidator";
 import { generateSwapInitialValues } from "../../../../lib/generateSwapInitialValues";
 import LayerSwapApiClient, { SwapType } from "../../../../lib/layerSwapApiClient";
-import SlideOver from "../../../SlideOver";
+import Modal from "../../../modal/modal";
 import SwapForm from "./SwapForm";
 import { isValidAddress } from "../../../../lib/addressValidator";
 import NetworkSettings from "../../../../lib/NetworkSettings";
@@ -35,8 +35,8 @@ type NetworkToConnect = {
 }
 const MainStep: FC<Props> = ({ OnSumbit }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
-    const [connectImmutableIsOpen, setConnectImmutableIsOpen] = useState(false);
-    const [connectNetworkiIsOpen, setConnectNetworkIsOpen] = useState(false);
+    const [showConnectImmutable, setShowConnectImmutable] = useState(false);
+    const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const { swapFormData, swap } = useSwapDataState()
     const router = useRouter();
@@ -46,7 +46,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     let formValues = formikRef.current?.values;
 
     const settings = useSettingsState();
-    const { discovery: { resource_storage_url } } = settings || {}
+    const { resolveImgSrc } = settings || {}
     const query = useQueryState();
     const { updateSwapFormData, clearSwap, setDepositeAddressIsfromAccount } = useSwapDataUpdate()
 
@@ -58,16 +58,17 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 (async () => {
                     try {
                         let formValues = { ...temp_data.swap_data }
-                        if (temp_data?.swap_data?.swapType === SwapType.OffRamp) {
+                        const source = formValues?.from
+                        if (temp_data?.swap_data?.to?.isExchange) {
                             const layerswapApiClient = new LayerSwapApiClient(router)
-                            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, temp_data.swap_data?.currency?.baseObject?.asset)
+                            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, temp_data.swap_data?.currency?.asset)
                             formValues.destination_address = deposit_address?.data
                             setDepositeAddressIsfromAccount(true)
                         }
                         clearTempData()
                         formikRef.current.setValues(formValues)
                         updateSwapFormData(formValues)
-                        if (formValues.swapType === SwapType.OnRamp) {
+                        if (source.isExchange) {
                             goToStep(SwapCreateStep.Confirm)
                         }
                     }
@@ -88,28 +89,28 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
-            const destination_internal_name = values.to.baseObject.internal_name
+            const destination_internal_name = values?.to?.internal_name
             if (destination_internal_name == KnownInternalNames.Networks.ImmutableXMainnet || destination_internal_name == KnownInternalNames.Networks.ImmutableXGoerli) {
                 const client = await ImmutableXClient.build({ publicApiUrl: NetworkSettings.ImmutableXSettings[destination_internal_name].apiUri })
                 const isRegistered = await client.isRegistered({ user: values.destination_address })
                 if (!isRegistered) {
-                    setConnectImmutableIsOpen(true)
+                    setShowConnectImmutable(true)
                     return
                 }
             } else if (destination_internal_name == KnownInternalNames.Networks.RhinoFiMainnet) {
                 const client = await axios.get(`${NetworkSettings.RhinoFiSettings[destination_internal_name].apiUri}/${values.destination_address}`)
                 const isRegistered = await client.data?.isRegisteredOnDeversifi
                 if (!isRegistered) {
-                    setNetworkToConnect({ DisplayName: values.to.baseObject.display_name, AppURL: NetworkSettings.RhinoFiSettings[destination_internal_name].appUri })
-                    setConnectNetworkIsOpen(true);
+                    setNetworkToConnect({ DisplayName: values.to.display_name, AppURL: NetworkSettings.RhinoFiSettings[destination_internal_name].appUri })
+                    setShowConnectNetworkModal(true);
                     return
                 }
             } else if (destination_internal_name == KnownInternalNames.Networks.DydxMainnet || destination_internal_name == KnownInternalNames.Networks.DydxGoerli) {
                 const client = await axios.get(`${NetworkSettings.DydxSettings[destination_internal_name].apiUri}${values.destination_address}`)
                 const isRegistered = await client.data?.exists
                 if (!isRegistered) {
-                    setNetworkToConnect({ DisplayName: values.to.baseObject.display_name, AppURL: NetworkSettings.DydxSettings[destination_internal_name].appUri })
-                    setConnectNetworkIsOpen(true);
+                    setNetworkToConnect({ DisplayName: values.to.display_name, AppURL: NetworkSettings.DydxSettings[destination_internal_name].appUri })
+                    setShowConnectNetworkModal(true);
                     return
                 }
             }
@@ -135,16 +136,17 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
 
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
-    const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(formValues?.swapType, settings, query)
+    const initialValues: SwapFormValues = swapFormData || generateSwapInitialValues(settings, query)
+    const source = formValues?.from
+    const destination = formValues?.to
 
     return <>
-        <SlideOver imperativeOpener={[connectImmutableIsOpen, setConnectImmutableIsOpen]} place='inStep'>
-            {/* refactor this */}
-            {(close) => <ConnectImmutableX network={(formValues?.swapType === SwapType.OnRamp && formValues?.to || formValues?.swapType === SwapType.OffRamp && formValues?.from || formValues?.swapType === SwapType.CrossChain && (formValues?.to || formValues?.from))?.baseObject} onClose={close} />}
-        </SlideOver>
-        <SlideOver imperativeOpener={[connectNetworkiIsOpen, setConnectNetworkIsOpen]} place='inStep' header={`${networkToConnect?.DisplayName} connect`}>
-            {() => <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
-        </SlideOver>
+        <Modal show={showConnectImmutable} setShow={setShowConnectImmutable} >
+            <ConnectImmutableX network={((source?.isExchange && formValues?.to) || (destination?.isExchange && formValues?.from) || (!source?.isExchange && !destination?.isExchange) && (formValues?.to || formValues?.from))} onClose={close} />
+        </Modal>
+        <Modal show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
+            <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+        </Modal>
         <Formik
             innerRef={formikRef}
             initialValues={initialValues}
@@ -152,7 +154,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             validate={MainStepValidation(settings)}
             onSubmit={handleSubmit}
         >
-            <SwapForm loading={loading} resource_storage_url={resource_storage_url} isPartnerWallet={isPartnerWallet} partner={partner} />
+            <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />
         </Formik >
     </>
 }

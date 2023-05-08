@@ -10,7 +10,7 @@ import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
 import { DocIframe } from './docInIframe';
 import NumericInput from './Input/NumericInput';
-import SlideOver from './SlideOver';
+import Modal from './modal/modal';
 import TimerWithContext from './TimerComponent';
 import { classNames } from './utils/classNames';
 import Widget from './Wizard/Widget';
@@ -29,7 +29,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
     const { tempEmail, userLockedOut, guestAuthData, userType } = useAuthState();
     const { updateAuthData, setUserLockedOut } = useAuthDataUpdate()
     const [modalUrl, setModalUrl] = useState<string>(null);
-    const [openDocSlideover, setOpenDocSlideover] = useState(false)
+    const [showDocModal, setShowDocModal] = useState(false)
 
     const handleResendCode = useCallback(async () => {
         try {
@@ -53,7 +53,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
 
     const openDoc = (url: string) => {
         setModalUrl(url)
-        setOpenDocSlideover(true)
+        setShowDocModal(true)
     }
 
     const handleOpenTerms = () => openDoc('https://docs.layerswap.io/user-docs/information/terms-of-services')
@@ -62,11 +62,9 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
     const timerCountdown = userLockedOut ? 600 : 60
 
     return (<>
-        <SlideOver imperativeOpener={[openDocSlideover, setOpenDocSlideover]} place='inStep'>
-            {(close) => (
-                <DocIframe onConfirm={() => close()} URl={modalUrl} />
-            )}
-        </SlideOver>
+        <Modal height='full' show={showDocModal} setShow={setShowDocModal} >
+            <DocIframe onConfirm={() => close()} URl={modalUrl} />
+        </Modal>
         <Formik
             initialValues={initialValues}
             validateOnMount={true}

@@ -9,7 +9,6 @@ import { RewardsComponentLeaderboardSceleton, RewardsComponentSceleton } from ".
 import useSWR from "swr"
 import { ApiResponse } from "../Models/ApiResponse"
 import ClickTooltip from "./Tooltips/ClickTooltip"
-import Modal from "./modalComponent"
 import shortenAddress from "./utils/ShortenAddress"
 import { useAccount } from "wagmi"
 import RainbowKit from "./Wizard/Steps/Wallet/RainbowKit"
@@ -19,12 +18,14 @@ import { truncateDecimals } from "./utils/RoundDecimals"
 import HeaderWithMenu from "./HeaderWithMenu"
 import SubmitButton from "./buttons/submitButton";
 import AddressIcon from "./AddressIcon";
+import Modal from "./modal/modal";
+import { Layer } from "../Models/Layer";
 
 function RewardsComponent() {
 
     const settings = useSettingsState()
     const router = useRouter();
-    const { discovery: { resource_storage_url }, networks, currencies } = settings || { discovery: {} }
+    const { resolveImgSrc, networks, currencies } = settings || { discovery: {} }
     const [openTopModal, setOpenTopModal] = useState(false)
 
     const { isConnected, address } = useAccount();
@@ -77,7 +78,8 @@ function RewardsComponent() {
 
     return (
         <>
-            <div className='bg-darkblue-900 pb-6 sm:mb-10 sm:shadow-card rounded-lg sm:mx-20 text-white overflow-hidden relative min-h-[400px]'>
+            <div className='bg-darkblue-900 pb-6 sm:mb-10 sm:shadow-card rounded-lg text-white overflow-hidden relative min-h-[400px]'>
+                <div id="wizard_root"></div>
                 <div className="space-y-5">
                     <HeaderWithMenu goBack={handleGoBack} />
                     {
@@ -92,7 +94,7 @@ function RewardsComponent() {
                                                 <div className="flex items-center gap-1">
                                                     <div className="h-7 w-7 relative">
                                                         <Image
-                                                            src={`${resource_storage_url}/layerswap/networks/${network.internal_name?.toLowerCase()}.png`}
+                                                            src={resolveImgSrc(network)}
                                                             alt="Project Logo"
                                                             height="40"
                                                             width="40"
@@ -107,7 +109,7 @@ function RewardsComponent() {
                                                             <div className="flex items-center space-x-1">
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset?.toLowerCase()}.png`}
+                                                                        src={resolveImgSrc(settings?.campaigns[0])}
                                                                         alt="Project Logo"
                                                                         height="40"
                                                                         width="40"
@@ -131,7 +133,7 @@ function RewardsComponent() {
                                                             <div className="flex items-center space-x-1">
                                                                 <div className="h-5 w-5 relative">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset?.toLowerCase()}.png`}
+                                                                        src={resolveImgSrc(settings?.campaigns[0])}
                                                                         alt="Project Logo"
                                                                         height="40"
                                                                         width="40"
@@ -207,7 +209,7 @@ function RewardsComponent() {
                                             <div className="flex items-center gap-1">
                                                 <div className="h-7 w-7 relative">
                                                     <Image
-                                                        src={`${resource_storage_url}/layerswap/networks/${network.internal_name?.toLowerCase()}.png`}
+                                                        src={resolveImgSrc(network)}
                                                         alt="Project Logo"
                                                         height="40"
                                                         width="40"
@@ -244,7 +246,7 @@ function RewardsComponent() {
                                                                         <div className="cols-start-2 flex items-center space-x-2">
                                                                             <AddressIcon address={user.address} size={25} />
                                                                             <div>
-                                                                                <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
+                                                                                <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
                                                                                 <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
                                                                             </div>
                                                                         </div>
@@ -255,7 +257,7 @@ function RewardsComponent() {
                                                                                 <span>+</span>
                                                                                 <div className="h-3.5 w-3.5 relative">
                                                                                     <Image
-                                                                                        src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset.toLowerCase()}.png`}
+                                                                                        src={resolveImgSrc(settings?.campaigns[0])}
                                                                                         alt="Project Logo"
                                                                                         height="40"
                                                                                         width="40"
@@ -286,7 +288,7 @@ function RewardsComponent() {
                                                                         <div className="cols-start-2 flex items-center space-x-2">
                                                                             <AddressIcon address={rewards.user_reward.total_amount.toString()} size={25} />
                                                                             <div>
-                                                                                <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", address)}><span className="text-primary">You</span></a></div>
+                                                                                <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", address)}><span className="text-primary">You</span></a></div>
                                                                                 <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
                                                                             </div>
                                                                         </div>
@@ -318,9 +320,11 @@ function RewardsComponent() {
                             </div>
                     }
                 </div>
+                <div id="widget_root" />
             </div >
-            <Modal modalSize="medium" title='Leaderboard' showModal={openTopModal} setShowModal={setOpenTopModal}>
-                <div className="bg-darkblue-700 border border-darkblue-700 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg text-primary-text">
+
+            <Modal height="full" header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} >
+                <div className="bg-darkblue-700 border border-darkblue-700 mt-2 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg text-primary-text">
                     <div className="p-3">
                         <div className="space-y-6">
                             {
@@ -331,7 +335,7 @@ function RewardsComponent() {
                                             <div className="cols-start-2 flex items-center space-x-2">
                                                 <AddressIcon address={user.address} size={25} />
                                                 <div>
-                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
+                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
                                                 </div>
                                             </div>
@@ -344,7 +348,7 @@ function RewardsComponent() {
                                                         <span>+</span>
                                                         <div className="h-3.5 w-3.5 relative">
                                                             <Image
-                                                                src={`${resource_storage_url}/layerswap/currencies/${settings?.campaigns[0]?.asset.toLowerCase()}.png`}
+                                                                src={resolveImgSrc(settings?.campaigns[0])}
                                                                 alt="Project Logo"
                                                                 height="40"
                                                                 width="40"

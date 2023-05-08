@@ -12,7 +12,6 @@ import { SwapFormValues } from './DTOs/SwapFormValues';
 import { useFormikContext } from 'formik';
 import { SwapCreateStep } from '../Models/Wizard';
 import { useFormWizardaUpdate } from '../context/formWizardProvider';
-import { SwapType } from '../lib/layerSwapApiClient';
 
 type Props = {
     OnSuccess: () => Promise<void>,
@@ -23,8 +22,9 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
         values,
     } = useFormikContext<SwapFormValues>();
 
-    const { to, swapType } = values || {}
-    const { oauth_connect_url } = (swapType === SwapType.OffRamp && to?.baseObject) || {}
+    const { to } = values || {}
+    const destination = values?.to
+    const { oauth_connect_url } = (destination?.isExchange && destination) || {}
     const [authWindow, setAuthWindow] = useState<Window>()
     const [loading, setLoading] = useState(false)
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
@@ -74,69 +74,67 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
     return (
         <>
             <div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
-                <div className='flex flex-col self-center grow w-full'>
-                    <div className='flex flex-col self-center grow w-full'>
-                        <div className='flex flex-col self-start w-full text-left'>
-                            <div className='text-left space-y-1'>
-                                <p className='text-sm sm:text-base'>
-                                    Allow Layerswap to read your Coinbase account's <span className='text-white'>email address.</span>
-                                </p>
-                            </div>
-                            <div className="w-full color-white">
-                                <div className="flex justify-center items-center m-7 space-x-3">
-                                    <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
-                                        <Image
-                                            src="/images/coinbaseWhite.png"
-                                            alt="Exchange Logo"
-                                            height="40"
-                                            width="40"
-                                            layout="responsive"
-                                            className="object-contain rounded-md"
-                                        />
-                                    </div>
-                                    <ArrowLeftRight />
-                                    <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
-                                        <Image
-                                            src="/images/layerswapWhite.png"
-                                            alt="Layerswap Logo"
-                                            height="40"
-                                            width="40"
-                                            layout="responsive"
-                                            className="object-contain rounded-md"
-                                        />
-                                    </div>
+                <div className='flex flex-col self-center grow w-full mt-4'>
+                    <div className='flex flex-col self-start w-full text-left'>
+                        <div className='text-left space-y-1'>
+                            <p className='text-sm sm:text-base'>
+                                Allow Layerswap to read your Coinbase account's <span className='text-white'>email address.</span>
+                            </p>
+                        </div>
+                        <div className="w-full color-white">
+                            <div className="flex justify-center items-center m-7 space-x-3">
+                                <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
+                                    <Image
+                                        src="/images/coinbaseWhite.png"
+                                        alt="Exchange Logo"
+                                        height="40"
+                                        width="40"
+                                        layout="responsive"
+                                        className="object-contain rounded-md"
+                                    />
                                 </div>
-                            </div>
-                            <div className='font-normal space-y-4'>
-                                <div>
-                                    <div className='text-primary  uppercase'>
-                                        Why
-                                    </div>
-                                    <p>
-                                        We will send the tokens to the Coinbase account associated with that email address.
-                                    </p>
-                                </div>
-                                <div>
-                                    <div className='text-primary  uppercase'>
-                                        Note
-                                    </div>
-                                    <p>
-                                        <span className='font-semibold'>Only the email address</span> of your account will be read, no other permissions will be asked.
-                                    </p>
+                                <ArrowLeftRight />
+                                <div className="flex-shrink-0 w-16 border-2 rounded-md border-darkblue-500 relative">
+                                    <Image
+                                        src="/images/layerswapWhite.png"
+                                        alt="Layerswap Logo"
+                                        height="40"
+                                        width="40"
+                                        layout="responsive"
+                                        className="object-contain rounded-md"
+                                    />
                                 </div>
                             </div>
                         </div>
+                        <div className='font-normal space-y-4'>
+                            <div>
+                                <div className='text-primary  uppercase'>
+                                    Why
+                                </div>
+                                <p>
+                                    We will send the tokens to the Coinbase account associated with that email address.
+                                </p>
+                            </div>
+                            <div>
+                                <div className='text-primary  uppercase'>
+                                    Note
+                                </div>
+                                <p>
+                                    <span className='font-semibold'>Only the email address</span> of your account will be read, no other permissions will be asked.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div className='mb-4'>
-                        <a className='mb-2 flex text-sm items-center text-left underline hover:text-primary' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
-                            Read more about Coinbase's OAuth API here
-                            <ExternalLink className='ml-1 h-4 w-4'>
-                            </ExternalLink>
-                        </a>
-                        <SubmitButton  isDisabled={loading} isSubmitting={loading} onClick={handleConnect}>
-                            Connect
-                        </SubmitButton>
-                    </div>
+                </div>
+                <div>
+                    <a className='mb-2 flex text-sm items-center text-left underline hover:text-primary' href="https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/sign-in-with-coinbase" target="_blank">
+                        Read more about Coinbase's OAuth API here
+                        <ExternalLink className='ml-1 h-4 w-4'>
+                        </ExternalLink>
+                    </a>
+                    <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect}>
+                        Connect
+                    </SubmitButton>
                 </div>
             </div>
 

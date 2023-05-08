@@ -25,6 +25,7 @@ import { nameOf } from '../../../../lib/external/nameof';
 import { FormikProps } from 'formik';
 import { SwapConfirmationFormValues } from '../../../DTOs/SwapConfirmationFormValues';
 import { Exchange } from '../../../../Models/Exchange';
+import { Layer } from '../../../../Models/Layer';
 
 
 const OffRampSwapConfirmationStep: FC = () => {
@@ -42,12 +43,12 @@ const OffRampSwapConfirmationStep: FC = () => {
     const nameOfRightWallet = nameOf(currentValues, (r) => r.RightWallet)
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const depositad_address_endpoint = `/exchange_accounts/${to?.baseObject?.internal_name}/deposit_address/${currency?.baseObject?.asset?.toUpperCase()}`
+    const depositad_address_endpoint = `/exchange_accounts/${to?.internal_name}/deposit_address/${currency?.asset?.toUpperCase()}`
     const { data: deposite_address } = useSWR<ApiResponse<string>>((to && !destination_address) ? depositad_address_endpoint : null, layerswapApiClient.fetcher)
 
-    const currentNetwork = swapFormData?.from?.baseObject;
-    const currentExchange = swapFormData?.to?.baseObject as Exchange;
-    const currentCurrency = swapFormData?.currency?.baseObject;
+    const currentNetwork = swapFormData?.from;
+    const currentExchange = swapFormData?.to as Layer & { isExchange: true };
+    const currentCurrency = swapFormData?.currency;
 
     useEffect(() => {
         if (deposite_address?.data)
@@ -66,7 +67,7 @@ const OffRampSwapConfirmationStep: FC = () => {
             if (!swap) {
                 if (query.addressSource === "imxMarketplace" && settings.validSignatureisPresent) {
                     try {
-                        const account = await layerswapApiClient.GetWhitelistedAddress(swapFormData.to.baseObject.internal_name, query.destAddress)
+                        const account = await layerswapApiClient.GetWhitelistedAddress(swapFormData?.to?.internal_name, query.destAddress)
                     }
                     catch (e) {
                         //TODO handle account not found
@@ -109,13 +110,13 @@ const OffRampSwapConfirmationStep: FC = () => {
             <Widget.Content>
                 <SwapConfirmMainData>
                     {
-                        NetworkSettings.KnownSettings[from?.baseObject?.internal_name]?.ConfirmationWarningMessage &&
+                        NetworkSettings.KnownSettings[from?.internal_name]?.ConfirmationWarningMessage &&
                         <WarningMessage className='mb-4'>
-                            <span>{NetworkSettings.KnownSettings[from?.baseObject?.internal_name]?.ConfirmationWarningMessage}.</span>
+                            <span>{NetworkSettings.KnownSettings[from?.internal_name]?.ConfirmationWarningMessage}.</span>
                             <p>
                                 {
-                                    from?.baseObject?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
-                                    <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how' place='inStep' />
+                                    from?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
+                                    <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how'  />
                                 }
                             </p>
                         </WarningMessage>
@@ -123,7 +124,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                     <AddressDetails canEditAddress={true} />
                 </SwapConfirmMainData>
                 {
-                    currentExchange.currencies.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network === currentNetwork.internal_name) &&
+                    currentExchange?.assets.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network_internal_name === currentNetwork.internal_name) &&
                     <WarningMessage messageType='informing'>
                         <span>You might be able transfer {currentCurrency.asset} from {currentNetwork.display_name} to {currentExchange.display_name} directly</span>
                     </WarningMessage>

@@ -1,17 +1,16 @@
 import { useState } from "react"
-import { DocIframe } from "./docInIframe"
 import DiscordLogo from "./icons/DiscordLogo"
 import GitHubLogo from "./icons/GitHubLogo"
 import SubstackLogo from "./icons/SubstackLogo"
 import TwitterLogo from "./icons/TwitterLogo"
-import Modal from "./modalComponent"
 import SendFeedback from "./sendFeedback"
+import Popover from "./modal/popover"
 
 const navigation = {
   main: [
     { name: 'For Partners', href: '/forpartners', target: '_self' },
     { name: 'Privacy Policy', href: 'https://docs.layerswap.io/user-docs/information/privacy-policy', target: '_blank' },
-    { name: 'Terms of Service', href: 'https://docs.layerswap.io/user-docs/information/terms-of-services' , target: '_blank'},
+    { name: 'Terms of Service', href: 'https://docs.layerswap.io/user-docs/information/terms-of-services', target: '_blank' },
   ],
   social: [
     {
@@ -44,26 +43,29 @@ const navigation = {
 
 
 export default function FooterComponent() {
-  const [modalUrl, setModalUrl] = useState<string>(null);
   const [openFeedbackModal, setOpenFeedbackModal] = useState(false)
+
   return (
     <footer>
-      <div className="max-w-xl mt-6 mx-auto space-y-6">
+      <div className="max-w-xs mt-6 space-y-6">
         <nav className="mt-4 flex flex-wrap flex-row gap-2" aria-label="Footer">
           {navigation.main.map((item) => (
             <a key={item.name} href={item.href} target={item.target} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 hover:cursor-pointer transition-all duration-200">
               {item.name}
             </a>
           ))}
-          <button onClick={() => setOpenFeedbackModal(true)} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 transition-all duration-200">
-            Send Feedback
-          </button>
-          <Modal className="bg-[#181c1f] sm:!pb-6 !pb-0" showModal={modalUrl != null} setShowModal={() => setModalUrl(null)} >
-            <DocIframe URl={modalUrl} className='md:min-h-[calc(100vh-170px)]' />
-          </Modal>
-          <Modal title='Send Feedback' showModal={openFeedbackModal} setShowModal={setOpenFeedbackModal}>
-            <SendFeedback onSend={() => setOpenFeedbackModal(false)} />
-          </Modal>
+          <Popover
+            opener={
+              <button onClick={() => setOpenFeedbackModal(true)} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 transition-all duration-200">
+                Send Feedback
+              </button>
+            }
+            show={openFeedbackModal}
+            setShow={setOpenFeedbackModal} >
+            <div className="p-0 md:p-5 md:max-w-md">
+              <SendFeedback onSend={() => setOpenFeedbackModal(false)} />
+            </div>
+          </Popover>
         </nav>
         <div className="flex space-x-6">
           {navigation.social.map((item) => (

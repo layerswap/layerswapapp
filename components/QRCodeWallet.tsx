@@ -1,5 +1,4 @@
 import { FC, useState } from "react"
-import Modal from "./modalComponent"
 import QRCode from "qrcode.react";
 import { classNames } from "./utils/classNames";
 import { QrCode } from "lucide-react";
@@ -8,6 +7,7 @@ import shortenAddress from "./utils/ShortenAddress";
 import CopyButton from "./buttons/copyButton";
 import colors from "tailwindcss/colors";
 import tailwindConfig from "./../tailwind.config";
+import Modal from "./modal/modal";
 
 type QRCodeModalProps = {
     qrUrl: string;
@@ -40,7 +40,7 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconW
                     <QrCode className={iconClassName} width={iconWidth ? iconWidth : 16} height={iconHeight ? iconHeight : 16} />
                 </div>
             </div>
-            <Modal showModal={isOpen} setShowModal={setIsOpen} modalSize='medium'>
+            <Modal show={isOpen} setShow={setIsOpen}  >
                 <div className="flex flex-col justify-between items-center space-y-6 md:space-y-8 mt-6 md:mt-8">
                     <div>
                         {qrCode}

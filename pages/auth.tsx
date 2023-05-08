@@ -11,9 +11,12 @@ import { useEffect, useState } from 'react'
 import inIframe from '../components/utils/inIframe'
 import IntroCard from '../components/introCard'
 import { SwapDataProvider } from '../context/swap'
+import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
 
 export default function AuthPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+  let appSettings = new LayerSwapAppSettings(settings)
+
   const [embadded, setEmbadded] = useState<boolean>()
 
   useEffect(() => {
@@ -22,7 +25,7 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
 
   return (
     <Layout>
-      <SettingsProvider data={settings}>
+      <SettingsProvider data={appSettings}>
         <SwapDataProvider>
           <MenuProvider>
             <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>

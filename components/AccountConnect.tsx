@@ -5,7 +5,6 @@ import { Combobox } from "@headlessui/react"
 import { useSettingsState } from "../context/settings"
 import LayerswapApiClient from "../lib/layerSwapApiClient"
 import Image from 'next/image'
-import { Exchange } from "../Models/Exchange"
 import ConnectApiKeyExchange from "./connectApiKeyExchange"
 import LayerswapMenu from "./LayerswapMenu"
 import SubmitButton from "./buttons/submitButton";
@@ -13,17 +12,18 @@ import { useAuthState } from "../context/authContext";
 import toast from "react-hot-toast";
 import shortenAddress, { shortenEmail } from "./utils/ShortenAddress";
 import { ExchangesComponentSceleton } from "./Sceletons";
-import Modal from "./modalComponent";
-import ExchangeSettings from "../lib/ExchangeSettings";
 import KnownInternalNames from "../lib/knownIds";
 import GoHomeButton from "./utils/GoHome";
 import ClickTooltip from "./Tooltips/ClickTooltip";
 import ConnectOauthExchange from "./connectOauthExchange";
+import Modal from "./modal/modal";
+import { Layer } from "../Models/Layer";
+import HeaderWithMenu from "./HeaderWithMenu";
 
-interface UserExchange extends Exchange {
+type UserExchange = {
     note?: string,
     is_connected: boolean
-}
+} & Layer & { isExchange: true }
 
 function UserExchanges() {
 
@@ -31,14 +31,12 @@ function UserExchanges() {
     const [userExchanges, setUserExchanges] = useState<UserExchange[]>()
     const [loading, setLoading] = useState(false)
     const router = useRouter();
-    const [exchangeToConnect, setExchangeToConnect] = useState<Exchange>()
-    const [exchangeLoading, setExchangeLoading] = useState<Exchange>()
+    const [exchangeToConnect, setExchangeToConnect] = useState<Layer & { isExchange: true }>()
+    const [exchangeLoading, setExchangeLoading] = useState<Layer & { isExchange: true }>()
     const { email } = useAuthState()
-    const [exchangeToDisconnect, setExchangeToDisconnect] = useState<Exchange>()
+    const [exchangeToDisconnect, setExchangeToDisconnect] = useState<Layer & { isExchange: true }>()
     const [openExchangeToConnectModal, setOpenExchangeToConnectModal] = useState(false)
     const [openExchangeToDisconnectModal, setOpenExchangeToDisconnectModal] = useState(false)
-
-    const { discovery: { resource_storage_url } } = settings || { discovery: {} }
 
     useEffect(() => {
         (async () => {
@@ -64,14 +62,18 @@ function UserExchanges() {
                 return;
             }
 
-            const mappedExchanges = settings.exchanges.sort((x, y) => ExchangeSettings.KnownSettings[x.internal_name]?.Order - ExchangeSettings.KnownSettings[y.internal_name]?.Order).map(e => {
-                return {
-                    ...e,
-                    is_connected: userExchanges?.some(ue => ue.exchange === e.internal_name),
-                    note: userExchanges?.find(ue => ue.exchange === e.internal_name)?.note,
-                    authorization_flow: e?.authorization_flow
-                }
-            })
+            const mappedExchanges = settings
+                .layers
+                ?.filter(l => l.isExchange)
+                .map((e: Layer & { isExchange: true }) => {
+                    return {
+                        ...e,
+                        is_connected: userExchanges?.some(ue => ue.exchange === e.internal_name),
+                        note: userExchanges?.find(ue => ue.exchange === e.internal_name)?.note,
+                        authorization_flow: e?.authorization_flow
+                    }
+                })
+
             setUserExchanges(mappedExchanges)
         }
         catch (e) {
@@ -80,16 +82,16 @@ function UserExchanges() {
 
     }, [settings.exchanges])
 
-    const handleConnectExchange = (exchange: Exchange) => {
+    const handleConnectExchange = (exchange: Layer & { isExchange: true }) => {
         setExchangeToConnect(exchange)
         setOpenExchangeToConnectModal(true)
     }
 
-    const handleDisconnectExchange = useCallback(async (exchange: Exchange) => {
+    const handleDisconnectExchange = useCallback(async (exchange: Layer & { isExchange: true }) => {
         setExchangeLoading(exchange)
         try {
             const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
-            await layerswapApiClient.DeleteExchange(exchange.internal_name)
+            await layerswapApiClient.DeleteExchange(exchange?.internal_name)
             await getAndMapExchanges()
         }
         catch (e) {
@@ -133,32 +135,19 @@ function UserExchanges() {
 
     return (
         <>
-            <div className='bg-darkblue-900 px-8 md:px-12 sm:shadow-card rounded-lg w-full text-white overflow-hidden relative min-h-[400px]'>
-                <div className="mt-3 flex items-center justify-between z-20" >
-                    <div className="flex ">
-                        <button onClick={handleGoBack} className="self-start md:mt-2">
-                            <ArrowLeft className='h-5 w-5 text-primary-text hover:text-darkblue-500 cursor-pointer' />
-                        </button>
-                        <div className="hidden md:block ml-4">
-                            <p className="text-2xl font-bold relative">Account</p>
-                            <span className="text-primary-text font-medium absolute">{email}</span>
-                        </div>
-                    </div>
-
-                    <div className='mx-auto px-4 overflow-hidden md:hidden'>
-                        <div className="flex justify-center imxMarketplace:hidden">
-                            <GoHomeButton />
-                        </div>
-                    </div>
-                    <LayerswapMenu />
+            <div className='bg-darkblue-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[600px]'>
+                <HeaderWithMenu goBack={handleGoBack}></HeaderWithMenu>
+                <div className="hidden md:block px-6">
+                    <p className="text-2xl font-bold relative">Account</p>
+                    <span className="text-primary-text font-medium absolute">{email}</span>
                 </div>
-                <div className="relative mb-6 sm:mt-10 mt-4 inset-0 flex flex-col styled-scroll">
+                <div className="relative mb-6 px-6 mt-10 inset-0 flex flex-col styled-scroll">
                     <div className="relative min-h-full items-center justify-center text-center">
                         <Combobox
                             as="div"
                             className="transform transition-all"
                         >
-                            <Combobox.Options static className="border-0 grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <Combobox.Options static className="border-0 grid grid-cols-1 gap-2">
                                 {
                                     loading ? <ExchangesComponentSceleton />
                                         :
@@ -167,7 +156,7 @@ function UserExchanges() {
                                                 userExchanges.map((item) => (
 
                                                     item.authorization_flow !== 'none' &&
-                                                    
+
                                                     <Combobox.Option
                                                         key={item.internal_name}
                                                         value={item}
@@ -179,7 +168,7 @@ function UserExchanges() {
                                                             <div className="py-1 px-2 grid grid-cols-3 grid-rows-1 gap-3">
                                                                 <div className="flex items-center col-span-2 space-x-3">
                                                                     <Image
-                                                                        src={`${resource_storage_url}/layerswap/networks/${item.internal_name.toLowerCase()}.png`}
+                                                                        src={settings.resolveImgSrc(item)}
                                                                         alt="Exchange Logo"
                                                                         height="30"
                                                                         width="30"
@@ -230,14 +219,15 @@ function UserExchanges() {
                         </Combobox>
                     </div>
                 </div>
+                <div id="widget_root" />
             </div>
-            <Modal showModal={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
+            <Modal height='fit' show={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "o_auth2"} setShow={setOpenExchangeToConnectModal} header={`Connect ${exchangeToConnect?.display_name}`} >
                 <ConnectOauthExchange exchange={exchangeToConnect} onClose={handleExchangeConnected} />
             </Modal>
-            <Modal showModal={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} setShowModal={setOpenExchangeToConnectModal} title={`Connect ${exchangeToConnect?.display_name}`} >
-                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} slideOverPlace='inModal' stickyFooter={false} />
+            <Modal  show={openExchangeToConnectModal && exchangeToConnect?.authorization_flow === "api_credentials"} setShow={setOpenExchangeToConnectModal} header={`Connect ${exchangeToConnect?.display_name}`}>
+                <ConnectApiKeyExchange exchange={exchangeToConnect} onSuccess={handleExchangeConnected} stickyFooter={false} />
             </Modal>
-            <Modal showModal={openExchangeToDisconnectModal} setShowModal={setOpenExchangeToDisconnectModal} title={'Are you sure?'} modalSize='small'>
+            <Modal height="fit" show={openExchangeToDisconnectModal} setShow={setOpenExchangeToDisconnectModal} header={'Are you sure?'} >
                 <div className="space-y-3">
                     <p className="text-slate-300 text-sm font-medium">
                         {

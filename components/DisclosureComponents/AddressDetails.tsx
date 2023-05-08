@@ -8,6 +8,7 @@ import CopyButton from '../buttons/copyButton';
 import { SwapType } from '../../lib/layerSwapApiClient';
 import SpinIcon from '../icons/spinIcon';
 import NetworkSettings from '../../lib/NetworkSettings';
+import { useSettingsState } from '../../context/settings';
 
 export class AddressDetailsProps {
     onClickEditAddress?: MouseEventHandler<HTMLButtonElement> | undefined;
@@ -20,6 +21,7 @@ function constructExplorerUrl(account_explorer_template: string, address: string
 const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, canEditAddress }) => {
     const { swapFormData } = useSwapDataState()
     const { destination_address, to } = swapFormData
+    const { resolveImgSrc } = useSettingsState()
 
     if (!destination_address)
         return <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-300 bg-darkblue-700 p-2">
@@ -28,41 +30,11 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, 
             </div>
         </div>
 
-    return swapFormData?.swapType === SwapType.OffRamp ?
-        <ExchangeAddress address={destination_address} imgSrc={to?.imgSrc} />
-        : <NetworkAddress address={destination_address}
-            imgSrc={to?.imgSrc}
-            account_explorer_template={NetworkSettings.KnownSettings[to?.baseObject.internal_name]?.AccountExplorerTemplate}
+    return <NetworkAddress address={destination_address}
+            imgSrc={resolveImgSrc(to)}
+            account_explorer_template={NetworkSettings.KnownSettings[to?.internal_name]?.AccountExplorerTemplate}
             onClick={canEditAddress && onClick}
         />
-}
-
-const ExchangeAddress = ({ imgSrc, address }: { imgSrc: string, address: string }) => {
-    return <>
-        <div className="mx-auto w-full rounded-lg border border-darkblue-500 hover:border-darkblue-300 bg-darkblue-700 p-2">
-            <div className="flex items-center min-w-0 flex-1">
-                {
-                    imgSrc &&
-                    <div className="flex-shrink-0 h-5 w-5 mr-2 relative">
-                        <Image
-                            src={imgSrc}
-                            alt="Exchange Logo"
-                            height="60"
-                            width="60"
-                            className="rounded-md object-contain"
-                        />
-                    </div>
-                }
-                {
-                    <div className='flex min-w-0 flex-1 mr-1'>
-                        <span className='text-base font-medium break-all'>
-                            {address}
-                        </span>
-                    </div>
-                }
-            </div>
-        </div>
-    </>
 }
 
 const NetworkAddress = ({ imgSrc, address, account_explorer_template, onClick }: { imgSrc: string, address: string, account_explorer_template: string, onClick?: MouseEventHandler<HTMLButtonElement> | undefined; }) => {

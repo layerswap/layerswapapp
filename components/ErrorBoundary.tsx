@@ -71,6 +71,7 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
                                     </MessageComponent.Buttons>
                                 </MessageComponent>
                             </div>
+                            <div id="widget_root" />
                         </div>
                     </main>
                 </div>

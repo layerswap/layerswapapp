@@ -4,30 +4,31 @@ import { Exchange } from "../Models/Exchange";
 import KnownInternalNames from "./knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
+import { Layer } from "../Models/Layer";
 
-export function isValidAddress(address: string, network: CryptoNetwork | Exchange): boolean {
-    if (network.internal_name === KnownInternalNames.Networks.RoninMainnet) {
+export function isValidAddress(address: string, network: Layer): boolean {
+    if (network?.internal_name === KnownInternalNames.Networks.RoninMainnet) {
         if (address.startsWith("ronin:")) {
             return isValidEtherAddress(address.replace("ronin:", "0x"));
         }
         return false;
     }
-    else if (network.internal_name.toLowerCase().startsWith("ZKSYNC".toLowerCase())) {
+    else if (network?.internal_name.toLowerCase().startsWith("ZKSYNC".toLowerCase())) {
         if (address?.startsWith("zksync:")) {
             return isValidEtherAddress(address.replace("zksync:", ""));
         }
         return isValidEtherAddress(address);
     }
-    else if (network.internal_name.toLowerCase().startsWith("STARKNET".toLowerCase())) {
+    else if (network?.internal_name.toLowerCase().startsWith("STARKNET".toLowerCase())) {
         return validateAndParseAddress(address);
     }
-    else if (network.internal_name === KnownInternalNames.Networks.OsmosisMainnet) {
+    else if (network?.internal_name === KnownInternalNames.Networks.OsmosisMainnet) {
         if (/^(osmo1)?[a-z0-9]{38}$/.test(address)) {
             return true
         }
         return false
     }
-    else if (network.internal_name === KnownInternalNames.Networks.SolanaMainnet || network.internal_name === KnownInternalNames.Networks.SolanaTestnet) {
+    else if (network?.internal_name === KnownInternalNames.Networks.SolanaMainnet || network.internal_name === KnownInternalNames.Networks.SolanaTestnet) {
         try {
             let pubkey = new PublicKey(address)
             let isSolana = PublicKey.isOnCurve(pubkey.toBuffer())
@@ -36,7 +37,7 @@ export function isValidAddress(address: string, network: CryptoNetwork | Exchang
             return false
         }
     }
-    else if (network.internal_name === KnownInternalNames.Networks.SorareStage) {
+    else if (network?.internal_name === KnownInternalNames.Networks.SorareStage) {
         if (/^(0x)?[0-9a-f]{64}$/.test(address) || /^(0x)?[0-9A-F]{64}$/.test(address) || /^(0x)?[0-9a-f]{66}$/.test(address) || /^(0x)?[0-9A-F]{66}$/.test(address)) {
             return true;
         }

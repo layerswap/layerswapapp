@@ -11,7 +11,6 @@ import StatusIcon from './StatusIcons';
 import { ExternalLink } from 'lucide-react';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
-import { truncateDecimals } from '../utils/RoundDecimals';
 
 type Props = {
     id: string
@@ -22,7 +21,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const [loading, setLoading] = useState(false)
     const router = useRouter();
     const settings = useSettingsState()
-    const { currencies, exchanges, networks, discovery: { resource_storage_url } } = settings
+    const { currencies, exchanges, networks, resolveImgSrc } = settings
 
     const { source_exchange: source_exchange_internal_name,
         destination_network: destination_network_internal_name,
@@ -101,7 +100,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
                                             <Image
-                                                src={`${resource_storage_url}/layerswap/networks/${source?.internal_name?.toLowerCase()}.png`}
+                                                src={resolveImgSrc(source)}
                                                 alt="Exchange Logo"
                                                 height="60"
                                                 width="60"
@@ -123,7 +122,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
                                             <Image
-                                                src={`${resource_storage_url}/layerswap/networks/${destination?.internal_name?.toLowerCase()}.png`}
+                                                src={resolveImgSrc(destination)}
                                                 alt="Exchange Logo"
                                                 height="60"
                                                 width="60"

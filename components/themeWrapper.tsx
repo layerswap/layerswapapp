@@ -92,7 +92,7 @@ export default function ({ hideNavbar, children }: Props) {
                 </div>
                 {hideNavbar ?? <Navbar />}
                 <div className={loading ? "animate-pulse" : ""}>
-                    <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-2xl lg:wide-page:max-w-6xl">
+                    <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
                         <div className="flex flex-col w-full text-white">
                             {children}
                         </div>

@@ -78,25 +78,30 @@ export function SwapDataProvider({ children }) {
             source_network: null,
             destination_network: null,
             destination_exchange: null,
-            asset: currency.baseObject.asset,
+            asset: currency.asset,
             destination_address: formData.destination_address,
             // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
             partner: partner ? query?.addressSource : undefined,
             external_id: query.externalId,
         }
+        const sourceLayer = from
+        const destinationLayer = to
 
-        if (formData.swapType === SwapType.OnRamp) {
-            const destination_currency = formData?.to?.baseObject?.currencies?.find(c => c.asset === formData?.currency?.baseObject?.asset)
-            data.source_exchange = from?.id;
-            data.destination_network = to?.id;
-            data.refuel = refuel
+        if(sourceLayer?.isExchange){
+            data.source_exchange = sourceLayer?.internal_name;
         }
-        else if (formData.swapType === SwapType.OffRamp) {
-            data.source_network = from?.id;
-            data.destination_exchange = to?.id;
-        } else {
-            data.source_network = from?.id;
-            data.destination_network = to?.id
+        else{
+            data.source_network = sourceLayer?.internal_name;
+        }
+
+        if(destinationLayer?.isExchange){
+            data.destination_exchange = destinationLayer?.internal_name;
+        }
+        else{
+            data.destination_network = destinationLayer?.internal_name;
+        }
+
+        if(!destinationLayer?.isExchange){
             data.refuel = refuel
         }
 

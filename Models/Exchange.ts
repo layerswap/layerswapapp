@@ -1,4 +1,5 @@
 import { NetworkCurrency } from "./CryptoNetwork";
+import { LayerStatus } from "./Layer";
 
 export class Exchange {
     display_name: string;
@@ -7,7 +8,7 @@ export class Exchange {
     oauth_authorize_url: string;
     authorization_flow: "o_auth2" | "api_credentials" | 'none'
     currencies: (ExchangeCurrency & NetworkCurrency)[];
-    status: "active" | "inactive"
+    status: LayerStatus
 }
 
 export class ExchangeCurrency {
@@ -16,4 +17,5 @@ export class ExchangeCurrency {
     min_deposit_amount: number;
     network: string;
     is_default: boolean;
+    status: LayerStatus
 }

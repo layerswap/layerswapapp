@@ -5,19 +5,18 @@ import LayerswapApiClient from '../lib/layerSwapApiClient';
 import ExchangeSettings from '../lib/ExchangeSettings';
 import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
-import { slideOverPlace } from './SlideOver';
 import WarningMessage from './WarningMessage';
 import { useRouter } from 'next/router';
 import GuideLink from './guideLink';
+import { Layer } from '../Models/Layer';
 
 type Props = {
-    exchange: Exchange,
+    exchange: Layer & { isExchange: true },
     onSuccess: () => Promise<void>,
-    slideOverPlace?: slideOverPlace,
     stickyFooter?: boolean
 }
 
-const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace, stickyFooter = true }) => {
+const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
     const [key, setKey] = useState("")
     const [secret, setSecret] = useState("")
     const [loading, setLoading] = useState(false)
@@ -67,15 +66,15 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
             <div className='flex flex-col self-center grow w-full'>
                 <div className='flex flex-col self-center grow w-full'>
                     <div className="flex items-center">
-                        <h3 className="block sm:text-lg font-medium leading-6 text-white mb-2">
+                        <h3 className="block text-primary-text mt-2 mb-4">
                             Please enter
-                            {ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange.internal_name]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.display_name}</a> : <span className='mx-1'>{exchange?.display_name}</span>}
+                            {ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.display_name}</a> : <span className='mx-1'>{exchange?.display_name}</span>}
                             API keys
                         </h3>
                     </div>
-                    <div className='space-y-4'>
+                    <div className='space-y-3'>
                         <div>
-                            <label htmlFor="apiKey" className="block font-semibold text-sm">
+                            <label htmlFor="apiKey" className="block text-sm">
                                 API Key
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1">
@@ -93,7 +92,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
                             </div>
                         </div>
                         <div>
-                            <label htmlFor="apiSecret" className="block font-semibold text-sm">
+                            <label htmlFor="apiSecret" className="block text-sm">
                                 API Secret
                             </label>
                             <div className="relative rounded-md shadow-sm mt-1">
@@ -122,7 +121,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
                                 <span className='flex-none'>
                                     Learn how to get
                                 </span>
-                                <GuideLink text="API Keys" userGuideUrl={userGuideURL} place={slideOverPlace} />
+                                <GuideLink text="API Keys" userGuideUrl={userGuideURL} />
                             </WarningMessage>
                         }
                     </div>
@@ -132,9 +131,9 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess, slideOverPlace,
                 <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500 mb-5'>
                     <div className="flex items-center">
                         <Info className='h-5 w-5 text-primary-600 mr-3' />
-                        <label className="block text-sm md:text-base font-medium leading-6">We're requesting <span className='font-bold'>Read-Only</span> API Keys</label>
+                        <label className="block text-sm md:text-base">We're requesting <span className='font-medium'>Read-Only</span> API Keys</label>
                     </div>
-                    <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8">
+                    <ul className="list-disc font-light space-y-1 text-xs md:text-sm text-primary-text mt-2 ml-8">
                         <li>They <strong>DON'T</strong> allow us to place a trade or initiate a withdrawal</li>
                         <li>We use it to get your withdrawal history and match with our records</li>
                     </ul>
