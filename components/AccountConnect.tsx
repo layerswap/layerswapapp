@@ -91,7 +91,7 @@ function UserExchanges() {
         setExchangeLoading(exchange)
         try {
             const layerswapApiClient = new LayerswapApiClient(router, '/exchanges')
-            await layerswapApiClient.DeleteExchange(exchange.internal_name)
+            await layerswapApiClient.DeleteExchange(exchange?.internal_name)
             await getAndMapExchanges()
         }
         catch (e) {

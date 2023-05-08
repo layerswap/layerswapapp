@@ -81,9 +81,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const handleSetExchangeDepositAddress = useCallback(async () => {
         const layerswapApiClient = new LayerSwapApiClient(router)
         try {
-            const exchange_account = await layerswapApiClient.GetExchangeAccount(destination.internal_name, 0)
+            const exchange_account = await layerswapApiClient.GetExchangeAccount(destination?.internal_name, 0)
             setExchangeAccount(exchange_account.data)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(destination.internal_name, values?.currency?.asset)
+            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(destination?.internal_name, values?.currency?.asset)
             setFieldValue("destination_address", deposit_address.data)
             setDepositeAddressIsfromAccount(true)
         }
@@ -139,7 +139,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     useEffect(() => {
         if (destination?.isExchange != previouslySelectedDestination.current?.isExchange
-            || (destination?.isExchange && previouslySelectedDestination.current?.isExchange && destination.internal_name != previouslySelectedDestination.current?.internal_name)
+            || (destination?.isExchange && previouslySelectedDestination.current?.isExchange && destination?.internal_name != previouslySelectedDestination.current?.internal_name)
             || destination && !isValidAddress(values.destination_address, destination)) {
             setFieldValue("destination_address", '')
             setDepositeAddressIsfromAccount(false)

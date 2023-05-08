@@ -63,7 +63,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 if (from?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
                     if (!withdrawManually) {
                         const layerswapApiClient = new LayerSwapApiClient()
-                        await layerswapApiClient.WithdrawFromExchange(swapId, from.internal_name)
+                        await layerswapApiClient.WithdrawFromExchange(swapId, from?.internal_name)
                     }
                 }
                 return await router.push(`/swap/${swapId}`)
@@ -72,7 +72,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 const swapId = swap.id
                 if (!withdrawManually) {
                     const layerswapApiClient = new LayerSwapApiClient()
-                    await layerswapApiClient.WithdrawFromExchange(swapId, from.internal_name)
+                    await layerswapApiClient.WithdrawFromExchange(swapId, from?.internal_name)
                 }
                 return await router.push(`/swap/${swapId}`)
             }
@@ -135,7 +135,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                     <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
                 </SwapConfirmMainData>
                 {
-                    currentExchange?.assets.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network_internal_name === currentNetwork.internal_name) &&
+                    currentExchange?.assets.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network_internal_name === currentNetwork?.internal_name) &&
                     <WarningMessage messageType='informing'>
                         <span>You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly</span>
                     </WarningMessage>

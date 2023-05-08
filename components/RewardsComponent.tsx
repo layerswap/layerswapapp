@@ -246,7 +246,7 @@ function RewardsComponent() {
                                                                         <div className="cols-start-2 flex items-center space-x-2">
                                                                             <AddressIcon address={user.address} size={25} />
                                                                             <div>
-                                                                                <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
+                                                                                <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
                                                                                 <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
                                                                             </div>
                                                                         </div>
@@ -288,7 +288,7 @@ function RewardsComponent() {
                                                                         <div className="cols-start-2 flex items-center space-x-2">
                                                                             <AddressIcon address={rewards.user_reward.total_amount.toString()} size={25} />
                                                                             <div>
-                                                                                <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", address)}><span className="text-primary">You</span></a></div>
+                                                                                <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", address)}><span className="text-primary">You</span></a></div>
                                                                                 <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
                                                                             </div>
                                                                         </div>
@@ -335,7 +335,7 @@ function RewardsComponent() {
                                             <div className="cols-start-2 flex items-center space-x-2">
                                                 <AddressIcon address={user.address} size={25} />
                                                 <div>
-                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
+                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {settings?.campaigns[0]?.asset}</p>
                                                 </div>
                                             </div>

@@ -32,7 +32,7 @@ const AddressDetails: FC<AddressDetailsProps> = ({ onClickEditAddress: onClick, 
 
     return <NetworkAddress address={destination_address}
             imgSrc={resolveImgSrc(to)}
-            account_explorer_template={NetworkSettings.KnownSettings[to.internal_name]?.AccountExplorerTemplate}
+            account_explorer_template={NetworkSettings.KnownSettings[to?.internal_name]?.AccountExplorerTemplate}
             onClick={canEditAddress && onClick}
         />
 }

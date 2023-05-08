@@ -31,7 +31,7 @@ export function CaluclateRefuelAmount(
     const destinationNetwork = GetDefaultNetwork(destinationLayer, currency?.asset)
 
     const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, currency?.asset)
-    const destinationNetworkNativeAsset = allCurrencies?.find(c => c.asset == destinationNetwork.native_currency);
+    const destinationNetworkNativeAsset = allCurrencies?.find(c => c.asset == destinationNetwork?.native_currency);
 
     if (!destinationNetworkCurrency || !destinationNetworkNativeAsset)
         return { refuelAmountInSelectedCurrency: 0, refuelAmountInNativeCurrency: 0 }
