@@ -45,7 +45,13 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, lockFrom);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
-            let popularsGroup = new SelectMenuItemGroup({name: "Popular", items: [...groups[0].items.splice(0, 2), ...groups[1].items.splice(0, 2)]})
+            let popularsGroup = new SelectMenuItemGroup({
+                name: "Popular",
+                items: [
+                    ...groups[0].items.splice(0, 2),
+                    ...(groups?.[1]?.items.splice(0, 2) || [])
+                ]
+            })
             groups.unshift(popularsGroup);
             return groups;
         }
@@ -57,7 +63,10 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, lockTo);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
-            let popularsGroup = new SelectMenuItemGroup({name: "Popular", items: [...groups[0].items.splice(0, 4)]})
+            let popularsGroup = new SelectMenuItemGroup({
+                name: "Popular",
+                items: [...groups[0].items.splice(0, 4)]
+            })
             groups.unshift(popularsGroup);
             return groups;
         }
