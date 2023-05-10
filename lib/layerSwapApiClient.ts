@@ -132,8 +132,8 @@ export type DepositAddress = {
 }
 
 export enum DepositAddressSource {
-    Managed,
-    UserGenerated
+    UserGenerated = 0,
+    Managed = 1
 }
 
 type WhitelistedAddressesParams = {
