@@ -16,7 +16,16 @@ import Steps from '../StepsComponent';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
 
-const ImtblxWalletWithdrawStep: FC = () => {
+export const erc20TokenAddressByNetwork = {
+  "goerli-alpha":
+    "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+  "mainnet-alpha":
+    "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+}
+
+
+
+const StarknetWalletWithdrawStep: FC = () => {
     const [loading, setLoading] = useState(false)
     const [verified, setVerified] = useState<boolean>()
     const [txidApplied, setTxidApplied] = useState(false)
@@ -147,4 +156,4 @@ const ImtblxWalletWithdrawStep: FC = () => {
 }
 
 
-export default ImtblxWalletWithdrawStep;
+export default StarknetWalletWithdrawStep;
