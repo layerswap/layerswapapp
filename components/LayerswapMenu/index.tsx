@@ -12,13 +12,11 @@ import shortenAddress, { shortenEmail } from "../utils/ShortenAddress";
 import IconButton from "../buttons/iconButton";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
-import { useSettingsState } from "../../context/settings";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
 
 export default function () {
     const { email, userType, userId } = useAuthState()
-    const { campaigns } = useSettingsState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
     const { menuVisible } = useMenuState()
@@ -108,7 +106,7 @@ export default function () {
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
-                                                        {router.pathname != '/rewards' && campaigns?.length > 0 &&
+                                                        {router.pathname != '/rewards' &&
                                                             <Menu.Item>
                                                                 <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
                                                                     Rewards
@@ -164,7 +162,7 @@ export default function () {
                                                             Exchange Accounts
                                                         </Item>
                                                     </Menu.Item>
-                                                    {router.pathname != '/rewards' && campaigns?.length > 0 &&
+                                                    {router.pathname != '/rewards' &&
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
                                                                 Rewards
