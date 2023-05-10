@@ -87,7 +87,7 @@ function RewardsComponent() {
                         <HeaderWithMenu goBack={handleGoBack} />
                         {
                             !isCampaignEnded ?
-                                <div className="space-y-5 px-6 md:px-8">
+                                <div className="space-y-5 px-6">
                                     {isConnected ?
                                         (!rewards || !payouts ?
                                             <RewardsComponentSceleton />
