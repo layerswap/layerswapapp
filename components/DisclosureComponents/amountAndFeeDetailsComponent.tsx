@@ -7,10 +7,13 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '..
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { GetDefaultNetwork, GetNetworkCurrency } from '../../helpers/settingsHelper';
+import { ApiResponse } from '../../Models/ApiResponse';
+import LayerSwapApiClient, { Campaigns } from '../../lib/layerSwapApiClient';
+import useSWR from 'swr'
 
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
-    const { networks, currencies, campaigns, resolveImgSrc } = useSettingsState()
+    const { networks, currencies, resolveImgSrc } = useSettingsState()
     const { currency, from, to } = values || {}
 
     let exchangeFee = parseFloat(GetExchangeFee(currency?.asset, from).toFixed(currency?.precision))
@@ -18,7 +21,10 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const parsedFee = parseFloat(fee.toFixed(currency?.precision))
     let receive_amount = CalculateReceiveAmount(values, networks, currencies);
     const asset = currency?.asset
-    const campaign = campaigns?.find(c => c.network_name === to?.internal_name)
+    const apiClient = new LayerSwapApiClient()
+    //handle error case
+    const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaigns[]>>('/campaigns', apiClient.fetcher)
+    const campaign = campaignsData?.data?.find(c => c?.network === to?.internal_name)
     const parsedReceiveAmount = parseFloat(receive_amount.toFixed(currency?.precision))
 
     const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
