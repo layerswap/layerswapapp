@@ -104,7 +104,7 @@ const WithdrawNetworkStep: FC = () => {
     const qrCode = (
         <QRCode
             className="p-2 bg-white rounded-md"
-            value={swap?.deposit_address}
+            value={generatedDepositAddress}
             size={120}
             bgColor={colors.white}
             fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}

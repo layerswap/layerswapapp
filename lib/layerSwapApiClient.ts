@@ -175,7 +175,6 @@ export type SwapItem = {
     fee: number,
     status: SwapStatus,
     destination_address: string,
-    deposit_address: string,
     requested_amount: number,
     message: string,
     external_id: string,
