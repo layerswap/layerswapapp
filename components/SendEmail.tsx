@@ -34,25 +34,27 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
             const inputEmail = values.email;
             const layerswapApiClient = new LayerswapApiClient();
             const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
-            if (userType === UserType.GuestUser && allPendingSwaps?.data?.length > 0) {
-                goToStep(SwapCreateStep.PendingSwaps)
-            } else {
-                if (inputEmail != tempEmail || !codeRequested) {
+            //PENDING_SWAPS_CHECK
+            // if (userType === UserType.GuestUser && allPendingSwaps?.data?.length > 0) {
+            //     goToStep(SwapCreateStep.PendingSwaps)
+            // } else {
+                
+            // }
+            if (inputEmail != tempEmail || !codeRequested) {
 
-                    const apiClient = new LayerSwapAuthApiClient();
-                    const res = await apiClient.getCodeAsync(inputEmail)
-                    if (res.error)
-                        throw new Error(res.error)
-                    TokenService.setCodeNextTime(res?.data?.next)
-                    setCodeRequested(true);
-                    updateTempEmail(inputEmail)
-                    const next = new Date(res?.data?.next)
-                    const now = new Date()
-                    const miliseconds = next.getTime() - now.getTime()
-                    startTimer(Math.round((res?.data?.already_sent ? 60000 : miliseconds) / 1000))
-                }
-                onSend(inputEmail)
+                const apiClient = new LayerSwapAuthApiClient();
+                const res = await apiClient.getCodeAsync(inputEmail)
+                if (res.error)
+                    throw new Error(res.error)
+                TokenService.setCodeNextTime(res?.data?.next)
+                setCodeRequested(true);
+                updateTempEmail(inputEmail)
+                const next = new Date(res?.data?.next)
+                const now = new Date()
+                const miliseconds = next.getTime() - now.getTime()
+                startTimer(Math.round((res?.data?.already_sent ? 60000 : miliseconds) / 1000))
             }
+            onSend(inputEmail)
         }
         catch (error) {
             if (error.response?.data?.errors?.length > 0) {
