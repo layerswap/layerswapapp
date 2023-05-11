@@ -54,6 +54,9 @@
     "uuid": "^9.0.0",
     "wagmi": "^0.12.10"
   },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
     "@types/crypto-js": "^4.1.1",
