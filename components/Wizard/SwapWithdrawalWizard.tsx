@@ -15,6 +15,7 @@ import WizardItem from "./WizardItem";
 import { TimerProvider } from "../../context/timerContext";
 import ProccessingWalletTransactionStep from "./Steps/ProccessingSteps/ProccessingWalletTransactionStep";
 import ProcessingStep from "./Steps/ProccessingSteps";
+import StarknetWalletWithdrawStep from "./Steps/Wallet/StarknetWalletWithdraw";
 
 const SwapWithdrawalWizard: FC = () => {
     const router = useRouter();
@@ -41,6 +42,9 @@ const SwapWithdrawalWizard: FC = () => {
                 </WizardItem>
                 <WizardItem StepName={SwapWithdrawalStep.WithdrawFromImtblx} GoBack={handleGoBack} PositionPercent={90} >
                     <ImtblxWalletWithdrawStep />
+                </WizardItem>
+                <WizardItem StepName={SwapWithdrawalStep.WithdrawFromStarknet} GoBack={handleGoBack} PositionPercent={90} >
+                    <StarknetWalletWithdrawStep />
                 </WizardItem>
                 <WizardItem StepName={SwapWithdrawalStep.CoinbaseInternalWithdrawal} GoBack={GoBackToSelectWithdrawalTypeStep} PositionPercent={90} >
                     <CoinbaseInternalWithdrawalStep />
