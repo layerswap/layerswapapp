@@ -15,7 +15,7 @@ import { SwapStatus } from '../../../../Models/SwapStatus';
 import Steps from '../StepsComponent';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
-import { connect, disconnect } from "get-starknet"
+import { connect, disconnect, ConnectOptions } from "get-starknet"
 import { AccountInterface, Contract, Abi, number, uint256 } from 'starknet';
 import { utils } from "ethers"
 import Erc20Abi from "../../../../lib/abis/ERC20.json"
@@ -47,6 +47,7 @@ export function parseInputAmountToUint256(
 
 
 const StarknetWalletWithdrawStep: FC = () => {
+    
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const [account, setAccount] = useState<AccountInterface>()

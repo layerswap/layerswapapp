@@ -36,7 +36,7 @@
     "gray-matter": "^4.0.3",
     "js-sha3": "^0.8.0",
     "lucide-react": "^0.127.0",
-    "next": "^13.0.4",
+    "next": "^13.4.1",
     "next-mdx-remote": "^4.1.0",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
@@ -55,9 +55,6 @@
     "wagmi": "^0.12.10"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^2.2.0",
-    "svelte": "^3.59.1",
-    "svelte-preprocess": "^5.0.3",
     "@types/bn.js": "^5.1.0",
     "@types/crypto-js": "^4.1.1",
     "@types/node": "^16.11.7",
