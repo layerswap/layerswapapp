@@ -2,19 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
 
-const AuthStateContext = React.createContext<AuthState>(
-    {
-        authData: null,
-        codeRequested: null,
-        email: null,
-        guestAuthData: null,
-        tempEmail: null,
-        userId: null,
-        userLockedOut: null,
-        userType: null
-    }
-);
-const AuthDataUpdateContext = React.createContext<UpdateInterface>({});
+const AuthStateContext = React.createContext<AuthState>(null);
+const AuthDataUpdateContext = React.createContext<UpdateInterface>(null);
 
 type AuthState = {
     email: string,
@@ -28,12 +17,12 @@ type AuthState = {
 }
 
 export type UpdateInterface = {
-    updateTempEmail?: (email: string) => void,
-    updateAuthData?: (data: any) => void,
-    getAuthData?: () => (AuthData | undefined),
-    setCodeRequested?: (codeSubmitted: boolean) => void;
-    setUserLockedOut?: (value: boolean) => void;
-    setUserType?: (value: UserType) => void
+    updateTempEmail: (email: string) => void,
+    updateAuthData: (data: any) => void,
+    getAuthData: () => (AuthData | undefined),
+    setCodeRequested(codeSubmitted: boolean): void;
+    setUserLockedOut(value: boolean): void;
+    setUserType(value: UserType): void
 }
 
 export function AuthProvider({ children }) {

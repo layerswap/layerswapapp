@@ -3,19 +3,17 @@ import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
-import ImtblClient from '../../../../lib/imtbl';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
-import { useInterval } from '../../../../hooks/useInterval';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import shortenAddress from "../../../utils/ShortenAddress"
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import Steps from '../StepsComponent';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
-import { connect, disconnect, ConnectOptions } from "get-starknet"
+import { connect } from "get-starknet"
 import { AccountInterface, Contract, Abi, number, uint256 } from 'starknet';
 import { utils } from "ethers"
 import Erc20Abi from "../../../../lib/abis/ERC20.json"
@@ -24,17 +22,6 @@ import { ApiResponse } from '../../../../Models/ApiResponse';
 import useSWR from 'swr';
 import { useAuthState } from '../../../../context/authContext';
 
-export const erc20TokenAddressByNetwork = {
-    "goerli-alpha":
-        "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-    "mainnet-alpha":
-        "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-}
-
-export const getErc20TokenAddress = (network: PublicNetwork) =>
-    erc20TokenAddressByNetwork[network]
-
-export type PublicNetwork = keyof typeof erc20TokenAddressByNetwork
 function getUint256CalldataFromBN(bn: number.BigNumberish) {
     return { type: "struct" as const, ...uint256.bnToUint256(bn) }
 }
@@ -45,23 +32,23 @@ export function parseInputAmountToUint256(
     return getUint256CalldataFromBN(utils.parseUnits(input, decimals).toString())
 }
 
-
 const StarknetWalletWithdrawStep: FC = () => {
-    
+
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const [account, setAccount] = useState<AccountInterface>()
     const { userId } = useAuthState()
 
     const { swap } = useSwapDataState()
-    const { setInterval, mutateSwap } = useSwapDataUpdate()
+    const { mutateSwap } = useSwapDataUpdate()
     const { networks } = useSettingsState()
-    const { goToStep, setError } = useFormWizardaUpdate<SwapWithdrawalStep>()
+    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
 
     const { source_network: source_network_internal_name } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+    const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
+    
     const layerswapApiClient = new LayerSwapApiClient()
-
     const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher)
 
     const steps = [
@@ -81,14 +68,10 @@ const StarknetWalletWithdrawStep: FC = () => {
         try {
             if (!account) {
                 const res = await connect()
-                console.log("res", res)
-                debugger
                 setAccount(res?.account)
             }
         }
         catch (e) {
-            console.log(e)
-            debugger
             toast(e.message)
         }
         setLoading(false)
@@ -103,24 +86,24 @@ const StarknetWalletWithdrawStep: FC = () => {
 
             const erc20Contract = new Contract(
                 Erc20Abi,
-                getErc20TokenAddress('mainnet-alpha'),
+                sourceCurrency.contract_address,
                 account,
             )
 
             const watchDogContract = new Contract(
                 WatchDogAbi,
-                "0x056b277d1044208632456902079f19370e0be63b1a4745f04f96c8c652237dbc",
+                process.env.NEXT_PUBLIC_WATCHDOG_CONTRACT,
                 account,
             )
 
-            var call = erc20Contract.populate(
+            const call = erc20Contract.populate(
                 "transfer",
                 [managedDeposit.data.address,
                 parseInputAmountToUint256(swap.requested_amount.toString())]
                 ,
             );
 
-            var watch = watchDogContract.populate(
+            const watch = watchDogContract.populate(
                 "watch",
                 [userId],
             );
@@ -147,7 +130,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [account, swap, source_network, managedDeposit, userId])
+    }, [account, swap, source_network, managedDeposit, userId, sourceCurrency])
 
     return (
         <>
