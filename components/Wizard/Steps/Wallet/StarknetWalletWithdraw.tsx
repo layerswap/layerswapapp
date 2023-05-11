@@ -24,7 +24,6 @@ import { ApiResponse } from '../../../../Models/ApiResponse';
 import useSWR from 'swr';
 import { useAuthState } from '../../../../context/authContext';
 
-
 export const erc20TokenAddressByNetwork = {
     "goerli-alpha":
         "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
@@ -49,15 +48,12 @@ export function parseInputAmountToUint256(
 
 const StarknetWalletWithdrawStep: FC = () => {
     const [loading, setLoading] = useState(false)
-    const [verified, setVerified] = useState<boolean>()
-    const [txidApplied, setTxidApplied] = useState(false)
-    const [applyCount, setApplyCount] = useState(0)
     const [transferDone, setTransferDone] = useState<boolean>()
     const [account, setAccount] = useState<AccountInterface>()
     const { userId } = useAuthState()
 
     const { swap } = useSwapDataState()
-    const { setInterval } = useSwapDataUpdate()
+    const { setInterval, mutateSwap } = useSwapDataUpdate()
     const { networks } = useSettingsState()
     const { goToStep, setError } = useFormWizardaUpdate<SwapWithdrawalStep>()
 
@@ -68,13 +64,9 @@ const StarknetWalletWithdrawStep: FC = () => {
     const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher)
 
     const steps = [
-        { name: account ? `Connected to ${shortenAddress(account.address)}` : 'Connect wallet', description: 'Connect your ImmutableX wallet', href: '#', status: account ? 'complete' : 'current' },
-        { name: 'Transfer', description: "Initiate a transfer from your wallet to our address", href: '#', status: verified ? 'current' : 'upcoming' },
+        { name: account ? `Connected to ${shortenAddress(account.address)}` : 'Connect wallet', description: 'Connect your wallet', href: '#', status: account ? 'complete' : 'current' },
+        { name: 'Transfer', description: "Initiate a transfer from your wallet to our address", href: '#', status: account ? 'current' : 'upcoming' },
     ]
-
-    useEffect(() => {
-        return () => setInterval(0)
-    }, [])
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
@@ -129,12 +121,13 @@ const StarknetWalletWithdrawStep: FC = () => {
             );
 
             try {
-                const {  transaction_hash: transferTxHash } = await account.execute([call, watch]);
-                const layerSwapApiClient = new LayerSwapApiClient()
-                await layerSwapApiClient.ApplyNetworkInput(swap.id, transferTxHash)
+                const { transaction_hash: transferTxHash } = await account.execute([call, watch]);
                 if (transferTxHash) {
-                    await account.waitForTransaction(transferTxHash);
-                    setTxidApplied(true)
+                    const layerSwapApiClient = new LayerSwapApiClient()
+                    await layerSwapApiClient.ApplyNetworkInput(swap.id, transferTxHash)
+                    await mutateSwap()
+                    goToStep(SwapWithdrawalStep.SwapProcessing)
+                    setTransferDone(true)
                 }
                 else {
                     toast('Transfer failed or terminated')
@@ -143,21 +136,6 @@ const StarknetWalletWithdrawStep: FC = () => {
             catch (e) {
                 toast(e.message)
             }
-
-            // const imtblClient = new ImtblClient(source_network?.internal_name)
-            // const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
-            // const res = await imtblClient.Transfer(swap, source_currency)
-            // const transactionRes = res?.result?.[0]
-            // if (!transactionRes)
-            //     toast('Transfer failed or terminated')
-            // else if (transactionRes.status == "error") {
-            //     toast(transactionRes.message)
-            // }
-            // else if (transactionRes.status == "success") {
-            //     setTransactionId(transactionRes.txId.toString())
-            //     setTransferDone(true)
-            //     setInterval(2000)
-            // }
         }
         catch (e) {
             if (e?.message)
@@ -176,7 +154,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                         </h3>
                     </div>
                     <p className='leading-5'>
-                        We’ll help you to send crypto from your ImmutableX wallet
+                        We’ll help you to send crypto from your wallet
                     </p>
                 </div>
                 <Steps steps={steps} />
@@ -185,6 +163,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                         <span className='flex-none'>
                             Learn how to send from
                         </span>
+                        {/* TODO starknet wallet guide */}
                         <GuideLink text={source_network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
                     </WarningMessage>
                     {
@@ -194,7 +173,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                         </SubmitButton>
                     }
                     {
-                        account &&
+                        account && managedDeposit?.data?.address &&
                         <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
