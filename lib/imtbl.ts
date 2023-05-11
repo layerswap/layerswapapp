@@ -1,10 +1,8 @@
 import { ERC20TokenType, ETHTokenType, Link, LinkResults } from '@imtbl/imx-sdk'
 import { NetworkCurrency } from '../Models/CryptoNetwork'
 import KnownInternalNames from './knownIds'
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource, SwapItem } from './layerSwapApiClient'
+import { SwapItem } from './layerSwapApiClient'
 import NetworkSettings from './NetworkSettings'
-import { ApiResponse } from '../Models/ApiResponse'
-import useSWR from 'swr'
 
 export default class ImtblClient {
     link: Link
@@ -35,9 +33,7 @@ export default class ImtblClient {
         }
     }
 
-    async Transfer(swap: SwapItem, currency: NetworkCurrency) {
-        const layerswapApiClient = new LayerSwapApiClient()
-        const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${swap?.source_network}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
+    async Transfer(swap: SwapItem, currency: NetworkCurrency, deposit_address: string) {
 
         try {
             if (swap.source_network_asset === KnownInternalNames.Currencies.ETH) {
@@ -45,7 +41,7 @@ export default class ImtblClient {
                     {
                         type: ETHTokenType.ETH,
                         amount: swap.requested_amount.toString(),
-                        toAddress: generatedDeposit?.data?.address
+                        toAddress: deposit_address
                     }
                 ])
                 return res;
@@ -55,7 +51,7 @@ export default class ImtblClient {
                     {
                         type: ERC20TokenType.ERC20,
                         amount: swap.requested_amount.toString(),
-                        toAddress: generatedDeposit?.data?.address,
+                        toAddress: deposit_address,
                         tokenAddress: currency.contract_address?.toLowerCase(),
                         symbol: swap.source_network_asset
                     }
