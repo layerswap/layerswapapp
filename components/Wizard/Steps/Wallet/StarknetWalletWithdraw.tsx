@@ -80,10 +80,14 @@ const StarknetWalletWithdrawStep: FC = () => {
         try {
             if (!account) {
                 const res = await connect()
+                console.log("res", res)
+                debugger
                 setAccount(res?.account)
             }
         }
         catch (e) {
+            console.log(e)
+            debugger
             toast(e.message)
         }
         setLoading(false)
