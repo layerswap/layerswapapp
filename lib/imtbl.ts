@@ -33,14 +33,15 @@ export default class ImtblClient {
         }
     }
 
-    async Transfer(swap: SwapItem, currency: NetworkCurrency) {
+    async Transfer(swap: SwapItem, currency: NetworkCurrency, deposit_address: string) {
+
         try {
             if (swap.source_network_asset === KnownInternalNames.Currencies.ETH) {
                 const res = await this.link.transfer([
                     {
                         type: ETHTokenType.ETH,
                         amount: swap.requested_amount.toString(),
-                        toAddress: swap.deposit_address
+                        toAddress: deposit_address
                     }
                 ])
                 return res;
@@ -50,7 +51,7 @@ export default class ImtblClient {
                     {
                         type: ERC20TokenType.ERC20,
                         amount: swap.requested_amount.toString(),
-                        toAddress: swap.deposit_address,
+                        toAddress: deposit_address,
                         tokenAddress: currency.contract_address?.toLowerCase(),
                         symbol: swap.source_network_asset
                     }
