@@ -12,7 +12,7 @@ import {
 } from "wagmi";
 import { utils } from 'ethers';
 import { erc20ABI } from 'wagmi'
-import {  Wallet } from "lucide-react";
+import { Wallet } from "lucide-react";
 import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
 
