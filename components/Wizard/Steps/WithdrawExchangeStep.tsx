@@ -19,7 +19,7 @@ import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
 import Image from 'next/image'
 import { SwapCancelModal } from './PendingSwapsStep';
-import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from '../../../lib/layerSwapApiClient';
 import toast from 'react-hot-toast';
 import AccountConnectStep from './CoinbaseAccountConnectStep';
 import KnownInternalNames from '../../../lib/knownIds';
@@ -33,6 +33,8 @@ import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
 import SwapGuide from '../../SwapGuide';
 import SecondaryButton from '../../buttons/secondaryButton';
+import { ApiResponse } from '../../../Models/ApiResponse';
+import useSWR from 'swr';
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
@@ -62,6 +64,17 @@ const WithdrawExchangeStep: FC = () => {
     const sourceNetworks = networks.filter(n => availableNetworks.includes(n.internal_name))
     const defaultSourceNetwork = sourceNetworks.find(sn => sn.internal_name === source_network_currency.network)
     const asset = defaultSourceNetwork?.currencies?.find(currency => currency?.asset === destination_network_asset)
+
+    const layerswapApiClient = new LayerSwapApiClient()
+    const [selectedSourceNetwork, setSelectedSourceNetwork] = useState(defaultSourceNetwork)
+
+    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${selectedSourceNetwork?.internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
+    const generatedDepositAddress = generatedDeposit?.data?.address
+
+    const handleChangeSelectedNetwork = (n: string) => {
+        const network = networks.find(network => network.internal_name === n)
+        setSelectedSourceNetwork(network)
+    }
 
     useEffect(() => {
         setInterval(15000)
@@ -156,7 +169,7 @@ const WithdrawExchangeStep: FC = () => {
     const qrCode = (
         <QRCode
             className="p-2 bg-white rounded-md"
-            value={swap?.deposit_address}
+            value={generatedDepositAddress}
             size={120}
             bgColor={colors.white}
             fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
@@ -201,25 +214,9 @@ const WithdrawExchangeStep: FC = () => {
                                                         <span>{sourceNetworks[0].display_name}</span>
                                                     </div>
                                                     :
-                                                    <Select>
+                                                    <Select onValueChange={v => handleChangeSelectedNetwork(v)} defaultValue={defaultSourceNetwork?.internal_name}>
                                                         <SelectTrigger className="w-fit border-none !text-white !font-semibold !h-fit !p-0">
-                                                            <SelectValue placeholder={
-                                                                <div className="flex items-center text-white font-semibold">
-                                                                    <div className="flex-shrink-0 h-5 w-5 relative">
-                                                                        {
-                                                                            defaultSourceNetwork &&
-                                                                            <Image
-                                                                                src={resolveImgSrc(defaultSourceNetwork)}
-                                                                                alt="From Logo"
-                                                                                height="60"
-                                                                                width="60"
-                                                                                className="rounded-md object-contain"
-                                                                            />
-                                                                        }
-                                                                    </div>
-                                                                    <div className="mx-1 block">{defaultSourceNetwork?.display_name}</div>
-                                                                </div>
-                                                            } />
+                                                            <SelectValue />
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             <SelectGroup>
@@ -254,10 +251,10 @@ const WithdrawExchangeStep: FC = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <BackgroundField Copiable toCopy={swap?.deposit_address} header={'Deposit Address'} withoutBorder>
+                                        <BackgroundField Copiable toCopy={generatedDepositAddress} header={'Deposit Address'} withoutBorder>
                                             <div>
                                                 <p className='break-all text-white'>
-                                                    {swap?.deposit_address}
+                                                    {generatedDepositAddress}
                                                 </p>
                                             </div>
                                         </BackgroundField>

@@ -14,7 +14,7 @@ const SwapGuide = ({ swap }: { swap: SwapItem }) => {
                 <p className='text-base font-semibold text-white'>🪜 Steps</p>
                 <div className='space-y-5 text-base text-primary-text'>
                     <div className='space-y-3'>
-                        <p><span className='text-primary'>.01</span> Copy the Deposit Address <span className='text-white'>({shortenAddress(swap?.deposit_address)})</span>, or scan the QR code</p>
+                        <p><span className='text-primary'>.01</span> Copy the Deposit Address, or scan the QR code</p>
                         <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
                             <Image src={firstGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>
