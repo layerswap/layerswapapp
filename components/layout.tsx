@@ -57,7 +57,7 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       <meta property="og:type" content="website" />
       <meta property="og:title" content="Layerswap" />
       <meta property="og:description" content="Move crypto across exchanges, blockchains, and wallets." />
-      <meta property="og:image" content="https://layerswap.io/opengraph.jpeg" />
+      <meta property="og:image" content="https://layerswap.io/opengraph.jpg" />
 
       {/* Twitter Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -65,7 +65,7 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       <meta property="twitter:url" content="https://www.layerswap.io/" />
       <meta name="twitter:title" content="Layerswap" />
       <meta name="twitter:description" content="Move crypto across exchanges, blockchains, and wallets." />
-      <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpeg" />
+      <meta name="twitter:image" content="https://layerswap.io/opengraphtw.jpg" />
     </Head>
     {
       storageAvailable === true &&

@@ -7,6 +7,7 @@ import { Exchange } from "../Models/Exchange";
 import { Layer } from "../Models/Layer";
 import KnownInternalNames from "./knownIds";
 import { SwapType } from "./layerSwapApiClient";
+import NetworkSettings, { DepositType } from "./NetworkSettings";
 
 export function GetExchangeFee(asset?: string, layer?: Layer): number {
     if (!layer?.isExchange)
@@ -59,7 +60,14 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
     if (!destinationNetworkCurrency || !sourceNetworkCurrency)
         return 0
 
-    return (destinationNetworkCurrency.withdrawal_fee + sourceNetworkCurrency.deposit_fee + destinationNetworkCurrency.base_fee);
+    let baseFee = destinationNetworkCurrency.base_fee
+    let withdrawalFee = destinationNetworkCurrency.withdrawal_fee
+    let depoistFee = sourceNetworkCurrency.deposit_fee;
+    if (NetworkSettings.KnownSettings[sourceLayer.internal_name].DepositType === DepositType.Wallet)
+        depoistFee = 0
+
+
+    return (withdrawalFee + depoistFee + baseFee);
 }
 
 export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[]) {
