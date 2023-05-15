@@ -63,7 +63,7 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
     let baseFee = destinationNetworkCurrency.base_fee
     let withdrawalFee = destinationNetworkCurrency.withdrawal_fee
     let depoistFee = sourceNetworkCurrency.deposit_fee;
-    if (NetworkSettings.KnownSettings[sourceLayer.internal_name].DepositType === DepositType.Wallet)
+    if (NetworkSettings.KnownSettings[sourceLayer.internal_name]?.DepositType === DepositType.Wallet)
         depoistFee = 0
 
 
