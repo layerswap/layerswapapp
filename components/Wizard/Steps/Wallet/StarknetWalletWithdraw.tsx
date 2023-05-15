@@ -47,7 +47,7 @@ const StarknetWalletWithdrawStep: FC = () => {
     const { source_network: source_network_internal_name } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
-    
+
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher)
 
@@ -99,7 +99,7 @@ const StarknetWalletWithdrawStep: FC = () => {
             const call = erc20Contract.populate(
                 "transfer",
                 [managedDeposit.data.address,
-                parseInputAmountToUint256(swap.requested_amount.toString())]
+                parseInputAmountToUint256(swap.requested_amount.toString(), sourceCurrency.decimals)]
                 ,
             );
 
