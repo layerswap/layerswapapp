@@ -210,8 +210,8 @@ const WithdrawExchangeStep: FC = () => {
                                                 <span>Network:</span>
                                                 {sourceNetworks.length === 1 ?
                                                     <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
-                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={resolveImgSrc(sourceNetworks[0])}></Image>
-                                                        <span>{sourceNetworks[0].display_name}</span>
+                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={resolveImgSrc(sourceNetworks?.[0])}></Image>
+                                                        <span>{sourceNetworks?.[0].display_name}</span>
                                                     </div>
                                                     :
                                                     <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.internal_name}>

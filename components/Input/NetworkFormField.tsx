@@ -48,7 +48,7 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
             let popularsGroup = new SelectMenuItemGroup({
                 name: "Popular",
                 items: [
-                    ...groups[0].items.splice(0, 2),
+                    ...groups?.[0].items.splice(0, 2),
                     ...(groups?.[1]?.items.splice(0, 2) || [])
                 ]
             })
@@ -65,7 +65,7 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
             let popularsGroup = new SelectMenuItemGroup({
                 name: "Popular",
-                items: [...groups[0].items.splice(0, 4)]
+                items: [...groups?.[0]?.items?.splice(0, 4)]
             })
             groups.unshift(popularsGroup);
             return groups;

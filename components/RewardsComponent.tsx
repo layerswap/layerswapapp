@@ -33,10 +33,11 @@ function RewardsComponent() {
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaigns[]>>('/campaigns', apiClient.fetcher)
     const campaigns = campaignsData?.data
+    const comaign = campaigns?.[0]
 
-    const { data: rewardsData } = useSWR<ApiResponse<Reward>>((address && campaignsData) ? `/campaigns/${campaigns[0]?.id}/rewards/${address}` : null, apiClient.fetcher, { dedupingInterval: 60000 })
-    const { data: leaderboardData } = useSWR<ApiResponse<Leaderboard>>(campaignsData ? `/campaigns/${campaigns[0]?.id}/leaderboard` : null, apiClient.fetcher, { dedupingInterval: 60000 })
-    const { data: payoutsData } = useSWR<ApiResponse<RewardPayout[]>>((address && campaignsData) ? `/campaigns/${campaigns[0]?.id}/payouts/${address}` : null, apiClient.fetcher, { dedupingInterval: 60000 })
+    const { data: rewardsData } = useSWR<ApiResponse<Reward>>((address && campaignsData) ? `/campaigns/${comaign?.id}/rewards/${address}` : null, apiClient.fetcher, { dedupingInterval: 60000 })
+    const { data: leaderboardData } = useSWR<ApiResponse<Leaderboard>>(campaignsData ? `/campaigns/${comaign?.id}/leaderboard` : null, apiClient.fetcher, { dedupingInterval: 60000 })
+    const { data: payoutsData } = useSWR<ApiResponse<RewardPayout[]>>((address && campaignsData) ? `/campaigns/${comaign?.id}/payouts/${address}` : null, apiClient.fetcher, { dedupingInterval: 60000 })
 
     const rewards = rewardsData?.data
     const leaderboard = leaderboardData?.data
@@ -46,13 +47,13 @@ function RewardsComponent() {
     const now = new Date()
     const difference_in_days = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
     const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
-    const period = campaigns?.[0]?.reward_limit_period
-    const campaignEndDate = new Date(campaigns?.[0]?.end_date)
+    const period = comaign?.reward_limit_period
+    const campaignEndDate = new Date(comaign?.end_date)
     const isCampaignEnded = Math.round(((campaignEndDate.getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
-    const network = networks.find(n => n.internal_name === campaigns?.[0]?.network)
-    const periodRewardClaimed = (rewards?.user_reward?.period_pending_amount / campaigns?.[0]?.reward_limit_for_period) * 100
-    const campaignAsset = currencies.find(c => c?.asset === campaigns?.[0]?.asset)
+    const network = networks.find(n => n.internal_name === comaign?.network)
+    const periodRewardClaimed = (rewards?.user_reward?.period_pending_amount / comaign?.reward_limit_for_period) * 100
+    const campaignAsset = currencies.find(c => c?.asset === comaign?.asset)
 
     const handleOpenTopModal = () => {
         setOpenTopModal(true)
@@ -107,12 +108,12 @@ function RewardsComponent() {
                                                         <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards <ClickTooltip text={<span>Onboarding incentives that are earned by transferring to {network?.display_name}. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></span>} /></p>
                                                     </div>
                                                     <div className="bg-darkblue-700 divide-y divide-darkblue-500 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
-                                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${campaigns[0]?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
+                                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${comaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                                             <div className="flex justify-between w-full text-2xl">
                                                                 <div className="flex items-center space-x-1">
                                                                     <div className="h-5 w-5 relative">
                                                                         <Image
-                                                                            src={resolveImgSrc(campaigns[0])}
+                                                                            src={resolveImgSrc(comaign)}
                                                                             alt="Project Logo"
                                                                             height="40"
                                                                             width="40"
@@ -120,7 +121,7 @@ function RewardsComponent() {
                                                                             className="rounded-full object-contain" />
                                                                     </div>
                                                                     <p>
-                                                                        {rewards?.user_reward.total_pending_amount} <span className="text-base sm:text-2xl">{campaigns[0]?.asset}</span>
+                                                                        {rewards?.user_reward.total_pending_amount} <span className="text-base sm:text-2xl">{comaign?.asset}</span>
                                                                     </p>
                                                                 </div>
                                                                 <div className="flex items-center space-x-1">
@@ -131,12 +132,12 @@ function RewardsComponent() {
                                                                 </div>
                                                             </div>
                                                         </BackgroundField>
-                                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Total Earnings <ClickTooltip text={`${campaigns[0]?.asset} tokens that you’ve earned so far (including Pending Earnings).`} /></span><span>Current Value</span></span>} withoutBorder>
+                                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Total Earnings <ClickTooltip text={`${comaign?.asset} tokens that you’ve earned so far (including Pending Earnings).`} /></span><span>Current Value</span></span>} withoutBorder>
                                                             <div className="flex justify-between w-full text-slate-300 text-2xl">
                                                                 <div className="flex items-center space-x-1">
                                                                     <div className="h-5 w-5 relative">
                                                                         <Image
-                                                                            src={resolveImgSrc(campaigns[0])}
+                                                                            src={resolveImgSrc(comaign)}
                                                                             alt="Project Logo"
                                                                             height="40"
                                                                             width="40"
@@ -144,11 +145,11 @@ function RewardsComponent() {
                                                                             className="rounded-full object-contain" />
                                                                     </div>
                                                                     <p>
-                                                                        {rewards?.user_reward.total_amount} <span className="text-base sm:text-2xl">{campaigns[0]?.asset}</span>
+                                                                        {rewards?.user_reward.total_amount} <span className="text-base sm:text-2xl">{comaign?.asset}</span>
                                                                     </p>
                                                                 </div>
                                                                 <p>
-                                                                    ${(settings?.currencies.find(c => c.asset === campaigns[0]?.asset).usd_price * rewards?.user_reward?.total_amount).toFixed(2)}
+                                                                    ${(settings?.currencies.find(c => c.asset === comaign?.asset).usd_price * rewards?.user_reward?.total_amount).toFixed(2)}
                                                                 </p>
                                                             </div>
                                                         </BackgroundField>
@@ -158,7 +159,7 @@ function RewardsComponent() {
                                                             <div className="flex flex-col w-full gap-2">
                                                                 <Progress value={periodRewardClaimed === Infinity ? 0 : periodRewardClaimed} />
                                                                 <div className="flex justify-between w-full font-semibold text-sm ">
-                                                                    <div className="text-primary"><span className="text-white">{rewards.user_reward.period_pending_amount}</span> / {campaigns[0]?.reward_limit_for_period} {campaigns[0].asset}</div>
+                                                                    <div className="text-primary"><span className="text-white">{rewards.user_reward.period_pending_amount}</span> / {comaign?.reward_limit_for_period} {comaign?.asset}</div>
                                                                     <p className="text-primary-text">Refreshes every {period > 1 ? `${period} days` : 'day'}</p>
                                                                 </div>
                                                             </div>
@@ -221,7 +222,7 @@ function RewardsComponent() {
                                                     </div>
                                                     <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards </p>
                                                 </div>
-                                                <p className="text-primary-text text-base">You can earn ${campaigns[0]?.asset} tokens by transferring assets to {network?.display_name}. For each transaction, you’ll receive {campaigns[0]?.percentage}% of Layerswap fee back. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></p>
+                                                <p className="text-primary-text text-base">You can earn ${comaign?.asset} tokens by transferring assets to {network?.display_name}. For each transaction, you’ll receive {comaign?.percentage}% of Layerswap fee back. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></p>
                                             </div>
                                         </div>
                                     }
@@ -250,7 +251,7 @@ function RewardsComponent() {
                                                                                 <AddressIcon address={user.address} size={25} />
                                                                                 <div>
                                                                                     <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
-                                                                                    <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaigns[0]?.asset}</p>
+                                                                                    <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {comaign?.asset}</p>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -260,7 +261,7 @@ function RewardsComponent() {
                                                                                     <span>+</span>
                                                                                     <div className="h-3.5 w-3.5 relative">
                                                                                         <Image
-                                                                                            src={resolveImgSrc(campaigns[0])}
+                                                                                            src={resolveImgSrc(comaign)}
                                                                                             alt="Project Logo"
                                                                                             height="40"
                                                                                             width="40"
@@ -268,7 +269,7 @@ function RewardsComponent() {
                                                                                             className="rounded-full object-contain" />
                                                                                     </div>
                                                                                     <p>
-                                                                                        <span>{leaderboardReward(user.position)} {campaigns[0]?.asset}</span>
+                                                                                        <span>{leaderboardReward(user.position)} {comaign?.asset}</span>
                                                                                     </p>
                                                                                 </div>}>
                                                                                 <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-1 rounded'>
@@ -292,7 +293,7 @@ function RewardsComponent() {
                                                                                 <AddressIcon address={rewards.user_reward.total_amount.toString()} size={25} />
                                                                                 <div>
                                                                                     <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", address)}><span className="text-primary">You</span></a></div>
-                                                                                    <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, campaignAsset.precision)} {campaigns[0]?.asset}</p>
+                                                                                    <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, campaignAsset.precision)} {comaign?.asset}</p>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -343,7 +344,7 @@ function RewardsComponent() {
                                                 <AddressIcon address={user.address} size={25} />
                                                 <div>
                                                     <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
-                                                    <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaigns[0]?.asset}</p>
+                                                    <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {comaign?.asset}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -355,7 +356,7 @@ function RewardsComponent() {
                                                         <span>+</span>
                                                         <div className="h-3.5 w-3.5 relative">
                                                             <Image
-                                                                src={resolveImgSrc(campaigns[0])}
+                                                                src={resolveImgSrc(comaign)}
                                                                 alt="Project Logo"
                                                                 height="40"
                                                                 width="40"
@@ -363,7 +364,7 @@ function RewardsComponent() {
                                                                 className="rounded-full object-contain" />
                                                         </div>
                                                         <p>
-                                                            <span>{leaderboardReward(user.position)} {campaigns[0]?.asset}</span>
+                                                            <span>{leaderboardReward(user.position)} {comaign?.asset}</span>
                                                         </p>
                                                     </div>
                                                 }>
