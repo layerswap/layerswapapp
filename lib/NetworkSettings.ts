@@ -8,6 +8,11 @@ type NetworkItemSettings = {
     }
 }
 
+export enum DepositType {
+    Manual,
+    Wallet
+}
+
 const destinationOrder = [
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
@@ -51,7 +56,8 @@ export default class NetworkSettings {
     OrderInDestination?: number;
     OrderInSource?: number;
     AccountExplorerTemplate?: string;
-    Refuel?: boolean = false
+    Refuel?: boolean = false;
+    DepositType?: DepositType = DepositType.Manual
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
@@ -158,7 +164,8 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
             AccountExplorerTemplate: 'https://starkscan.co/contract/{0}',
-            ChainId: "0x534e5f4d41494e"
+            ChainId: "0x534e5f4d41494e",
+            DepositType: DepositType.Wallet
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
             AccountExplorerTemplate: 'https://goerli.voyager.online/contract/{0}',
