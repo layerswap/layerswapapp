@@ -29,6 +29,7 @@ import SecondaryButton from '../../buttons/secondaryButton';
 import WarningMessage from '../../WarningMessage';
 import { ApiResponse } from '../../../Models/ApiResponse';
 import useSWR from 'swr';
+import SwapInfo from '../../SwapInfo';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -127,6 +128,8 @@ const WithdrawNetworkStep: FC = () => {
                                 </p>
                             </div>
                             <div className='mb-6 grid grid-cols-1 gap-4'>
+                                <SwapInfo swap={swap} />
+
                                 <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
                                     <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
                                         <div className='flex items-center gap-1 text-sm my-2'>
