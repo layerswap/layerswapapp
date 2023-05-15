@@ -174,7 +174,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                             <span className='flex-none'>
                                 {
                                     source_network_internal_name === KnownInternalNames.Networks.StarkNetMainnet
-                                        ? <span>Please switch to Starknet Maionnet with your wallet</span>
+                                        ? <span>Please switch to Starknet Mainnet with your wallet</span>
                                         : <span>Please switch to Starknet Goerli with your wallet</span>
                                 }
                             </span>
