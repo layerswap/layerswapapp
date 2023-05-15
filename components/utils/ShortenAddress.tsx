@@ -16,7 +16,7 @@ export default function shortenAddress(address: string) {
 export const shortenEmail = (email = '') => {
     const [name, domain] = email.split('@');
     const { length: len } = name;
-    const maskedName = name[0] + '...' + name[len - 1];
+    const maskedName = name?.[0] + '...' + name[len - 1];
     const maskedEmail = maskedName + '@' + domain;
     return maskedEmail;
 };
