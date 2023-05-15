@@ -17,6 +17,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        white: '#F2F2F2F2',
         coinbase: { primary: '#4a6cee', diabled: '#192445' },
         darkblue: {
           DEFAULT: '#111D36',
