@@ -116,7 +116,7 @@ const StarknetWalletWithdrawStep: FC = () => {
             const call = erc20Contract.populate(
                 "transfer",
                 [managedDeposit.data.address,
-                parseInputAmountToUint256(swap.requested_amount.toString())]
+                parseInputAmountToUint256(swap.requested_amount.toString(), sourceCurrency.decimals)]
                 ,
             );
 

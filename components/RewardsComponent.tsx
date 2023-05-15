@@ -47,7 +47,7 @@ function RewardsComponent() {
     const difference_in_days = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
     const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
     const period = campaigns?.[0]?.reward_limit_period
-    const campaignEndDate = new Date(campaigns?.[0].end_date)
+    const campaignEndDate = new Date(campaigns?.[0]?.end_date)
     const isCampaignEnded = Math.round(((campaignEndDate.getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
     const network = networks.find(n => n.internal_name === campaigns?.[0]?.network)
@@ -363,7 +363,7 @@ function RewardsComponent() {
                                                                 className="rounded-full object-contain" />
                                                         </div>
                                                         <p>
-                                                            <span>{leaderboardReward(user.position)} OP</span>
+                                                            <span>{leaderboardReward(user.position)} {campaigns[0]?.asset}</span>
                                                         </p>
                                                     </div>
                                                 }>

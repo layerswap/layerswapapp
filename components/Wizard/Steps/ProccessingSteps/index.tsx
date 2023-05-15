@@ -8,6 +8,8 @@ import { SwapWithdrawalStep } from '../../../../Models/Wizard';
 import shortenAddress from '../../../utils/ShortenAddress';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import Steps from '../StepsComponent';
+import WarningMessage from '../../../WarningMessage';
+import KnownInternalNames from '../../../../lib/knownIds';
 
 const ProcessingStep: FC = () => {
 
@@ -69,13 +71,22 @@ const ProcessingStep: FC = () => {
             name: status === 3 ? 'Your assets are on their way' : 'Transfer of assets to your address',
             status: status < 3 ? 'upcoming' : 'current',
             description:
-                swap?.output_transaction && <div className='flex items-center space-x-1'>
+                swap?.output_transaction ? <div className='flex items-center space-x-1'>
                     <span>Destination Tx </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
                         <ExternalLink className='h-4' />
                     </div>
                 </div>
+                    :
+                    <div>
+                        {
+                            destination_network?.internal_name === KnownInternalNames.Networks.StarkNetMainnet ?
+                                <span>Estimated time: 20-60 minutes</span>
+                                :
+                                <span>Estimated time: 2 minutes</span>
+                        }
+                    </div>
         },
     ]
 

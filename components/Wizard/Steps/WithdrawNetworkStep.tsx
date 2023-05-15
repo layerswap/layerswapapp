@@ -47,7 +47,7 @@ const WithdrawNetworkStep: FC = () => {
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
     const asset = source_network?.currencies?.find(currency => currency?.asset === destination_network_asset)
-    
+
     const layerswapApiClient = new LayerSwapApiClient()
 
     const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
@@ -155,9 +155,14 @@ const WithdrawNetworkStep: FC = () => {
                                     }
                                     <BackgroundField Copiable={true} toCopy={generatedDepositAddress} header={'Deposit Address'} withoutBorder>
                                         <div>
-                                            <p className='break-all text-white'>
-                                                {generatedDepositAddress}
-                                            </p>
+                                            {
+                                                generatedDepositAddress ?
+                                                    <p className='break-all text-white'>
+                                                        {generatedDepositAddress}
+                                                    </p>
+                                                    :
+                                                    <div className='bg-gray-500 w-56 h-5 animate-pulse rounded-md' />
+                                            }
                                             {
                                                 (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
                                                 <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-darkblue-100 rounded border-dashed'>
@@ -222,7 +227,7 @@ const WithdrawNetworkStep: FC = () => {
                     {
                         canWithdrawWithWallet && swap && managedDepositAddress &&
                         <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
-                            <TransferFromWallet swapId={swap.id} networkDisplayName={source_network?.display_name} onTransferComplete={onTRansactionComplete} tokenDecimals={sourceCurrency?.decimals} tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId as number} depositAddress={managedDepositAddress as `0x${string}`} amount={swap.requested_amount} />
+                            <TransferFromWallet swapId={swap.id} networkDisplayName={source_network?.display_name} onTransferComplete={onTRansactionComplete} tokenDecimals={sourceCurrency?.decimals} tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId as number} depositAddress={generatedDepositAddress as `0x${string}`} amount={swap.requested_amount} />
                         </div>
                     }
                     {!transferDone && !canWithdrawWithWallet &&
