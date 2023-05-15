@@ -57,7 +57,7 @@ export function SwapDataProvider({ children }) {
     const { data: swapResponse, mutate } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?label=${query?.addressSource}`, layerswapApiClient.fetcher)
-    const partner = query?.addressSource && partnerData?.data?.labels.includes(query?.addressSource) ? partnerData?.data  : undefined
+    const partner = query?.addressSource && partnerData?.data?.labels?.includes(query?.addressSource) ? partnerData?.data  : undefined
 
     useEffect(() => {
         setCodeRequested(false)

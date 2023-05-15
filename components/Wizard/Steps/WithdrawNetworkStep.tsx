@@ -232,7 +232,7 @@ const WithdrawNetworkStep: FC = () => {
                                 networkDisplayName={source_network?.display_name}
                                 tokenDecimals={sourceCurrency?.decimals}
                                 tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`}
-                                chainId={sourceChainId}
+                                chainId={sourceChainId as number}
                                 generatedDepositAddress={generatedDepositAddress as `0x${string}`}
                                 managedDepositAddress={managedDepositAddress as `0x${string}`}
                                 userDestinationAddress={swap.destination_address as `0x${string}`}
