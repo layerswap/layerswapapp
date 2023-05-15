@@ -18,7 +18,7 @@ import toast from 'react-hot-toast';
 import GuideLink from '../../guideLink';
 import SimpleTimer from '../../Common/Timer';
 import TransferFromWallet from './Wallet/Transfer';
-import LayerSwapApiClient from '../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from '../../../lib/layerSwapApiClient';
 import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
@@ -27,6 +27,8 @@ import Modal from '../../modal/modal';
 import SwapGuide from '../../SwapGuide';
 import SecondaryButton from '../../buttons/secondaryButton';
 import WarningMessage from '../../WarningMessage';
+import { ApiResponse } from '../../../Models/ApiResponse';
+import useSWR from 'swr';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -45,6 +47,13 @@ const WithdrawNetworkStep: FC = () => {
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
     const asset = source_network?.currencies?.find(currency => currency?.asset === destination_network_asset)
+
+    const layerswapApiClient = new LayerSwapApiClient()
+
+    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
+    const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher)
+    const generatedDepositAddress = generatedDeposit?.data?.address
+    const managedDepositAddress = managedDeposit?.data?.address
 
     useEffect(() => {
         setInterval(15000)
@@ -95,7 +104,7 @@ const WithdrawNetworkStep: FC = () => {
     const qrCode = (
         <QRCode
             className="p-2 bg-white rounded-md"
-            value={swap?.deposit_address}
+            value={generatedDepositAddress}
             size={120}
             bgColor={colors.white}
             fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
@@ -127,8 +136,8 @@ const WithdrawNetworkStep: FC = () => {
                                                 <span>{source_network?.display_name}</span>
                                             </div>
                                         </div>
-                                        <div className='p-2 bg-white bg-opacity-30 rounded-xl'>
-                                            <div className='p-2 bg-white bg-opacity-70 rounded-lg'>
+                                        <div className='p-2 bg-white/30 bg-opacity-30 rounded-xl'>
+                                            <div className='p-2 bg-white/70 bg-opacity-70 rounded-lg'>
                                                 {qrCode}
                                             </div>
                                         </div>
@@ -144,11 +153,16 @@ const WithdrawNetworkStep: FC = () => {
                                             </div>
                                         </BackgroundField>
                                     }
-                                    <BackgroundField Copiable={true} toCopy={swap?.deposit_address} header={'Deposit Address'} withoutBorder>
+                                    <BackgroundField Copiable={true} toCopy={generatedDepositAddress} header={'Deposit Address'} withoutBorder>
                                         <div>
-                                            <p className='break-all text-white'>
-                                                {swap?.deposit_address}
-                                            </p>
+                                            {
+                                                generatedDepositAddress ?
+                                                    <p className='break-all text-white'>
+                                                        {generatedDepositAddress}
+                                                    </p>
+                                                    :
+                                                    <div className='bg-gray-500 w-56 h-5 animate-pulse rounded-md' />
+                                            }
                                             {
                                                 (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
                                                 <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-darkblue-100 rounded border-dashed'>
@@ -211,9 +225,18 @@ const WithdrawNetworkStep: FC = () => {
                 </Widget.Content>
                 <Widget.Footer>
                     {
-                        canWithdrawWithWallet && swap &&
+                        canWithdrawWithWallet && swap && generatedDepositAddress && managedDepositAddress &&
                         <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
-                            <TransferFromWallet swapId={swap.id} networkDisplayName={source_network?.display_name} onTransferComplete={onTRansactionComplete} tokenDecimals={sourceCurrency?.decimals} tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId} depositAddress={swap.deposit_address as `0x${string}`} amount={swap.requested_amount} />
+                            <TransferFromWallet
+                                swapId={swap.id}
+                                networkDisplayName={source_network?.display_name}
+                                tokenDecimals={sourceCurrency?.decimals}
+                                tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`}
+                                chainId={sourceChainId as number}
+                                generatedDepositAddress={generatedDepositAddress as `0x${string}`}
+                                managedDepositAddress={managedDepositAddress as `0x${string}`}
+                                userDestinationAddress={swap.destination_address as `0x${string}`}
+                                amount={swap.requested_amount} />
                         </div>
                     }
                     {!transferDone && !canWithdrawWithWallet &&

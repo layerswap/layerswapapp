@@ -24,9 +24,14 @@ const SwapWithdrawal: FC = () => {
 
     let initialStep: SwapWithdrawalStep;
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    if (sourceIsImmutableX && swap?.status === SwapStatus.UserTransferPending && !swap.has_pending_deposit) {
+    const sourceIsStarknet= swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
+    const userTransferIsPending = swap?.status === SwapStatus.UserTransferPending && !swap.has_pending_deposit
+    if (sourceIsImmutableX && userTransferIsPending) {
         const isImtblMarketplace = (query.signature && query.addressSource === "imxMarketplace")
         initialStep = isImtblMarketplace ? SwapWithdrawalStep.ProcessingWalletTransaction : SwapWithdrawalStep.WithdrawFromImtblx
+    }
+    else if(sourceIsStarknet && userTransferIsPending) {
+        initialStep = SwapWithdrawalStep.WithdrawFromStarknet
     }
     else {
         initialStep = GetSwapStatusStep(swap);

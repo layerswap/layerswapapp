@@ -49,6 +49,11 @@ const ProcessingStep: FC = () => {
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
 
+    const isStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
+        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
+        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
+        || swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
+
     const progress = [
         {
             name: status === 1 ? 'Detecting your transfer' : `Transfer from ${source_display_name} is completed`, status: status > 1 ? 'complete' : 'current', description: status > 1 ?
@@ -60,7 +65,7 @@ const ProcessingStep: FC = () => {
                     </div>
                 </div>
                 :
-                <span>Estimated time: <span className='text-white'>less than {swap?.source_exchange ? '10' : '3'} minutes</span></span>
+                <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
         },
         {
             name: (status === 1 && 'Transfer confirmation') || (status === 2 && ' Waiting for the transfer to get confirmed') || (status === 3 && 'The transfer is confirmed'),

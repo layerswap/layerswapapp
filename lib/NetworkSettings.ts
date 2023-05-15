@@ -28,6 +28,7 @@ const destinationOrder = [
 const sourceOrder = [
     KnownInternalNames.Networks.ArbitrumMainnet,
     KnownInternalNames.Networks.EthereumMainnet,
+    KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.BNBChainMainnet,
     KnownInternalNames.Networks.OptimismMainnet,
     KnownInternalNames.Networks.PolygonMainnet,
@@ -44,7 +45,7 @@ export default class NetworkSettings {
     UserGuideUrlForDesktop?: string;
     UserGuideUrlForMobile?: string;
     WithdrawalWarningMessage?: string;
-    ChainId?: number;
+    ChainId?: number | string;
     EstimatedTransferTime?: number;
     AddressPlaceholder?: string;
     OrderInDestination?: number;
@@ -157,9 +158,11 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
             AccountExplorerTemplate: 'https://starkscan.co/contract/{0}',
+            ChainId: "0x534e5f4d41494e"
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
-            AccountExplorerTemplate: 'https://goerli.voyager.online/contract/{0}'
+            AccountExplorerTemplate: 'https://goerli.voyager.online/contract/{0}',
+            ChainId: "0x534e5f474f45524c49"
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.CronosMainnet] = {
             AccountExplorerTemplate: 'https://cronoscan.com/address/{0}'
@@ -219,7 +222,7 @@ export default class NetworkSettings {
             if (networkSetting) {
                 let destOrder = destinationOrder.indexOf(k);
                 let srcOrder = sourceOrder.indexOf(k);
-                
+
                 networkSetting.OrderInDestination = destOrder < 0 ? 10000 : destOrder;
                 networkSetting.OrderInSource = srcOrder < 0 ? 10000 : srcOrder;
             }

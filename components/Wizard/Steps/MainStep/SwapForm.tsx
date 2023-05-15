@@ -62,7 +62,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
     const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
-    const partnerImage = partner?.internal_name ? settings.resolveImgSrc(partner) : null
+    const partnerImage = partner?.organization_name ? settings.resolveImgSrc(partner) : null
     const router = useRouter();
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()

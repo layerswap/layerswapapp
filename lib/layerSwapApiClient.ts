@@ -32,6 +32,7 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}`);
     }
 
+
     async GetPendingSwapsAsync(): Promise<ApiResponse<SwapItem[]>> {
         return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=0`);
     }
@@ -42,6 +43,10 @@ export default class LayerSwapApiClient {
 
     async GetSwapDetailsAsync(id: string): Promise<ApiResponse<SwapItem>> {
         return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}`);
+    }
+
+    async GetDepositAddress(network: string, source: DepositAddressSource): Promise<ApiResponse<DepositAddress>> {
+        return await this.AuthenticatedRequest<ApiResponse<DepositAddress>>("GET", `/swaps?network=${network }&source=${source}`);
     }
 
     async GetExchangeAccounts(): Promise<ApiResponse<UserExchangesData[]>> {
@@ -122,6 +127,14 @@ export default class LayerSwapApiClient {
     }
 }
 
+export type DepositAddress = {
+    address: string;
+}
+
+export enum DepositAddressSource {
+    UserGenerated = 0,
+    Managed = 1
+}
 
 type WhitelistedAddressesParams = {
     address: string,
@@ -162,7 +175,6 @@ export type SwapItem = {
     fee: number,
     status: SwapStatus,
     destination_address: string,
-    deposit_address: string,
     requested_amount: number,
     message: string,
     external_id: string,
@@ -228,6 +240,19 @@ export enum SwapStatusInNumbers {
     Delayed = 4,
     Cancelled = 5,
     SwapsWithoutCancelled = '0&status=1&status=2&status=3&status=4'
+}
+
+export type Campaigns = {
+    id: number,
+    name: string,
+    asset: string,
+    network: string,
+    percentage: number,
+    start_date: string,
+    end_date: string,
+    reward_limit_for_period: number,
+    min_payout_amount: number,
+    reward_limit_period: number
 }
 
 export type Reward = {

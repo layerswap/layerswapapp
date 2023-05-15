@@ -17,6 +17,7 @@ import { SwapStatus } from "../../Models/SwapStatus"
 import ToggleButton from "../buttons/toggleButton";
 import Modal from "../modal/modal";
 import HeaderWithMenu from "../HeaderWithMenu";
+import { SwapCancelModal } from "../Wizard/Steps/PendingSwapsStep";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -28,11 +29,10 @@ function TransactionsHistory() {
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
-  const { email, userType } = useAuthState()
-  const { cancelSwap } = useSwapDataUpdate()
   const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending
   const [showCancelledSwaps, setShowCancelledSwaps] = useState(false)
   const [showToggleButton, setShowToggleButton] = useState(false)
+  const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
 
   const PAGE_SIZE = 20
 
@@ -117,7 +117,7 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className='bg-darkblue-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[500px]'>
+    <div className='bg-darkblue-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[550px]'>
       <HeaderWithMenu goBack={handleGoBack} />
       {
         page == 0 && loading ?
@@ -135,7 +135,7 @@ function TransactionsHistory() {
                         <ToggleButton onChange={handleToggleChange} value={showCancelledSwaps} />
                       </div>
                     </div>}
-                    <div className="max-h-[450px] styled-scroll overflow-y-scroll ">
+                    <div className="max-h-[450px] styled-scroll overflow-y-auto ">
                       <table className="w-full divide-y divide-darkblue-500">
                         <thead className="text-primary-text">
                           <tr>
@@ -212,10 +212,10 @@ function TransactionsHistory() {
                                 {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
 
                               </td>
-                              <td   className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-500',
-                                  'relative text-sm table-cell'
-                                )}>
+                              <td className={classNames(
+                                index === 0 ? '' : 'border-t border-darkblue-500',
+                                'relative text-sm table-cell'
+                              )}>
                                 <span className="flex items-center">
                                   {swap && <StatusIcon status={swap.status} />}
                                   {/* {plan.from} - {plan.to} */}
@@ -278,7 +278,7 @@ function TransactionsHistory() {
                         <div className="text-white text-sm mt-6 space-y-3">
                           <div className="flex flex-row text-white text-base space-x-2">
                             <div className='basis-1/3'>
-                              <SubmitButton text_align="left" buttonStyle="outline" onClick={async () => { await cancelSwap(selectedSwap.id); router.reload() }} isDisabled={false} isSubmitting={false} icon={<X className='h-5 w-5' />}>
+                              <SubmitButton text_align="left" buttonStyle="outline" onClick={async () => setOpenCancelConfirmModal(true)} isDisabled={false} isSubmitting={false} icon={<X className='h-5 w-5' />}>
                                 <DoubleLineText
                                   colorStyle='mltln-text-dark'
                                   primaryText='Cancel'
@@ -302,6 +302,7 @@ function TransactionsHistory() {
                       }
                     </div>
                   </Modal>
+                  <SwapCancelModal onCancel={() => router.reload()} swapToCancel={selectedSwap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
                 </div>
                 : <div className="absolute top-1/2 right-0 text-center w-full">
                   There are no transactions for this account

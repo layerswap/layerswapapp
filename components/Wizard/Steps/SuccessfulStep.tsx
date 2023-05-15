@@ -10,28 +10,21 @@ import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import GuestCard from '../../guestCard';
 import MessageComponent from '../../MessageComponent';
 import GoHomeButton from '../../utils/GoHome';
-import { truncateDecimals } from '../../utils/RoundDecimals';
 
 const SuccessfulStep: FC = () => {
-    const { networks, campaigns, currencies} = useSettingsState()
+    const { networks } = useSettingsState()
     const { swap } = useSwapDataState()
     const { userType } = useAuthState()
 
     const { destination_network: destination_network_internal_name } = swap
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
     const transaction_explorer_template = destination_network?.transaction_explorer_template
-    const currency = currencies.find(c => c.asset === swap?.source_network_asset)
 
     const handleViewInExplorer = useCallback(() => {
         if (!transaction_explorer_template)
             return
         window.open(transaction_explorer_template.replace("{0}", swap?.output_transaction?.transaction_id), '_blank')
     }, [transaction_explorer_template])
-
-    const campaign = campaigns?.find(c => c.network_name === swap?.destination_network)
-    const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
-    const feeinUsd = swap?.fee * currency?.usd_price
-    const reward = truncateDecimals(((feeinUsd * campaign?.percentage / 100) / campaignAsset?.usd_price), campaignAsset?.precision)
 
     return (
         <>

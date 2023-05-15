@@ -56,8 +56,8 @@ export function SwapDataProvider({ children }) {
     const [interval, setInterval] = useState(0)
     const { data: swapResponse, mutate } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/settings/apps/${query?.addressSource}`, layerswapApiClient.fetcher)
-    const partner = query?.addressSource ? partnerData?.data : undefined
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?label=${query?.addressSource}`, layerswapApiClient.fetcher)
+    const partner = query?.addressSource && partnerData?.data?.labels?.includes(query?.addressSource) ? partnerData?.data  : undefined
 
     useEffect(() => {
         setCodeRequested(false)
@@ -81,7 +81,7 @@ export function SwapDataProvider({ children }) {
             asset: currency.asset,
             destination_address: formData.destination_address,
             // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
-            partner: partner?.internal_name,
+            partner: partner ? query?.addressSource : undefined,
             external_id: query.externalId,
         }
         const sourceLayer = from
