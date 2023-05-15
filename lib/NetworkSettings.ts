@@ -161,7 +161,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
             AccountExplorerTemplate: 'https://goerli.voyager.online/contract/{0}',
-            ChainId: "0x534e5f4d41494e"
+            ChainId: "0x534e5f474f45524c49"
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.CronosMainnet] = {
             AccountExplorerTemplate: 'https://cronoscan.com/address/{0}'

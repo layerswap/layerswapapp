@@ -1,4 +1,4 @@
-import { Link, ArrowLeftRight } from 'lucide-react';
+import { Link, ArrowLeftRight, UnlinkIcon } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
@@ -13,7 +13,7 @@ import { SwapStatus } from '../../../../Models/SwapStatus';
 import Steps from '../StepsComponent';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
-import { connect } from "get-starknet"
+import { connect, disconnect } from "get-starknet"
 import { AccountInterface, Contract, Abi, number, uint256 } from 'starknet';
 import { utils } from "ethers"
 import Erc20Abi from "../../../../lib/abis/ERC20.json"
@@ -52,9 +52,24 @@ const StarknetWalletWithdrawStep: FC = () => {
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher)
-
+    const handleDisconnect = async () => {
+        disconnect({ clearLastWallet: true })
+        setAccount(null)
+    }
     const steps = [
-        { name: account ? `Connected to ${shortenAddress(account.address)}` : 'Connect wallet', description: 'Connect your wallet', href: '#', status: account ? 'complete' : 'current' },
+        {
+            name: account ?
+                <span className='flex '>
+                    {`Connected to ${shortenAddress(account.address)}`}
+                    <span onClick={handleDisconnect} className='cursor-pointer ml-1 mt-0.5 bg-darkblue-400 rounded-md'>
+                        <UnlinkIcon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                </span>
+                : <span>Connect wallet</span>,
+            description: account ? 'Wallet connected' : 'Connect your wallet',
+            href: '#',
+            status: account ? 'complete' : 'current'
+        },
         { name: 'Transfer', description: "Initiate a transfer from your wallet to our address", href: '#', status: account ? 'current' : 'upcoming' },
     ]
     console.log("account.chainId", account?.chainId)
@@ -137,7 +152,7 @@ const StarknetWalletWithdrawStep: FC = () => {
 
     const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
     const sourceChainId = sourceNetworkSettings?.ChainId
-
+    console.log(sourceNetworkSettings?.ChainId)
     return (
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
@@ -173,9 +188,9 @@ const StarknetWalletWithdrawStep: FC = () => {
                         </SubmitButton>
                     }
                     {
-                        account 
-                        && managedDeposit?.data?.address 
-                        && sourceChainId === account?.chainId 
+                        account
+                        && managedDeposit?.data?.address
+                        && sourceChainId === account?.chainId
                         && <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
