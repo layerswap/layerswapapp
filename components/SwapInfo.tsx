@@ -1,12 +1,13 @@
 import Image from "next/image";
-import { SwapItem } from "../lib/layerSwapApiClient";
 import { useSettingsState } from "../context/settings";
-import { ArrowDown, ChevronDown } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import shortenAddress from "./utils/ShortenAddress";
 import { CalculateReceiveAmount } from "../lib/fees";
 import { useAccount } from "wagmi";
+import { useSwapDataState } from "../context/swap";
 
-const SwapInfo = ({ swap }: { swap: SwapItem }) => {
+const SwapInfo = () => {
+    const { swap } = useSwapDataState()
     const { resolveImgSrc, networks, currencies, layers } = useSettingsState()
     const { isConnected, address } = useAccount();
 
