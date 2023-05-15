@@ -214,7 +214,7 @@ const WithdrawExchangeStep: FC = () => {
                                                         <span>{sourceNetworks[0].display_name}</span>
                                                     </div>
                                                     :
-                                                    <Select onValueChange={v => handleChangeSelectedNetwork(v)} defaultValue={defaultSourceNetwork?.internal_name}>
+                                                    <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.internal_name}>
                                                         <SelectTrigger className="w-fit border-none !text-white !font-semibold !h-fit !p-0">
                                                             <SelectValue />
                                                         </SelectTrigger>
