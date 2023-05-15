@@ -28,7 +28,7 @@ function MaintananceContent(props) {
                             We're upgrading our systems and infrastructure to give you the best experience yet.
                         </p>
                         <span className="block xl:inline">We'll be back</span>{' '}
-                        <span className="block text-primary xl:inline">in 2 hours <span className="block xl:inline text-xl">(14:00 UTC)</span></span>
+                        <span className="block text-primary xl:inline">in 3.5 hours <span className="block xl:inline text-xl">(15:30 UTC)</span></span>
                         <p className="mt-4 text-primary-text">
                             Any pending swap will be completed after maintanance.
                         </p>
