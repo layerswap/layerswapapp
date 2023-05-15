@@ -506,7 +506,6 @@ const applyTransaction = async (swapId: string, trxId: string) => {
 type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
 const resolveError = (errorCode: string | number, innererrorCode?: string | number): ResolvedError => {
-    debugger
     if (errorCode === 'INSUFFICIENT_FUNDS'
         || errorCode === 'UNPREDICTABLE_GAS_LIMIT'
         || (errorCode === -32603 && innererrorCode === -32000))
