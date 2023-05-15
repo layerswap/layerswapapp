@@ -225,7 +225,7 @@ const WithdrawNetworkStep: FC = () => {
                 </Widget.Content>
                 <Widget.Footer>
                     {
-                        canWithdrawWithWallet && swap && generatedDepositAddress &&
+                        canWithdrawWithWallet && swap && generatedDepositAddress && managedDepositAddress &&
                         <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
                             <TransferFromWallet
                                 swapId={swap.id}
