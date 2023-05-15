@@ -136,8 +136,8 @@ const WithdrawNetworkStep: FC = () => {
                                                 <span>{source_network?.display_name}</span>
                                             </div>
                                         </div>
-                                        <div className='p-2 bg-white bg-opacity-30 rounded-xl'>
-                                            <div className='p-2 bg-white bg-opacity-70 rounded-lg'>
+                                        <div className='p-2 bg-white/30 bg-opacity-30 rounded-xl'>
+                                            <div className='p-2 bg-white/70 bg-opacity-70 rounded-lg'>
                                                 {qrCode}
                                             </div>
                                         </div>
@@ -227,7 +227,16 @@ const WithdrawNetworkStep: FC = () => {
                     {
                         canWithdrawWithWallet && swap && generatedDepositAddress &&
                         <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
-                            <TransferFromWallet swapId={swap.id} networkDisplayName={source_network?.display_name} onTransferComplete={onTRansactionComplete} tokenDecimals={sourceCurrency?.decimals} tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} chainId={sourceChainId as number} depositAddress={generatedDepositAddress as `0x${string}`} amount={swap.requested_amount} />
+                            <TransferFromWallet
+                                swapId={swap.id}
+                                networkDisplayName={source_network?.display_name}
+                                tokenDecimals={sourceCurrency?.decimals}
+                                tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`}
+                                chainId={sourceChainId as number}
+                                generatedDepositAddress={generatedDepositAddress as `0x${string}`}
+                                managedDepositAddress={managedDepositAddress as `0x${string}`}
+                                userDestinationAddress={swap.destination_address as `0x${string}`}
+                                amount={swap.requested_amount} />
                         </div>
                     }
                     {!transferDone && !canWithdrawWithWallet &&

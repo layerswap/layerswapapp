@@ -15,72 +15,45 @@ import { erc20ABI } from 'wagmi'
 import { Wallet } from "lucide-react";
 import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
+import LayerSwapApiClient from "../../../../lib/layerSwapApiClient";
+import { useSwapDataUpdate } from "../../../../context/swap";
 
 type Props = {
     chainId: number,
-    depositAddress: `0x${string}`,
+    generatedDepositAddress: `0x${string}`,
+    managedDepositAddress: `0x${string}`,
     tokenContractAddress: `0x${string}`,
+    userDestinationAddress: `0x${string}`,
     amount: number,
     tokenDecimals: number,
-    onTransferComplete: (transactionHash: string) => Promise<void>,
     networkDisplayName: string,
     swapId: string;
 }
 
 const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     chainId,
-    depositAddress,
+    generatedDepositAddress,
+    managedDepositAddress,
+    userDestinationAddress,
     amount,
     tokenContractAddress,
     tokenDecimals,
     swapId,
-    onTransferComplete
 }) => {
 
-    const { isConnected, isDisconnected, connector, address } = useAccount();
+    const { isConnected } = useAccount();
     const networkChange = useSwitchNetwork({
         chainId: chainId,
     });
 
     const { chain: activeChain } = useNetwork();
 
-    const [transactionDetected, setTransactionDetected] = useState<boolean>()
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
-    const [buttonClicked, setButtonClicked] = useState<boolean>()
-    const transactionPrepareEnabled = isConnected && !!!tokenContractAddress
-    const sendTransactionPrepare = usePrepareSendTransaction({
-        enabled: transactionPrepareEnabled,
-        request: {
-            to: depositAddress,
-            value: amount ? utils.parseEther(amount.toString()) : undefined,
-        },
-        chainId: chainId,
-    })
 
     useEffect(() => {
         if (activeChain?.id === chainId)
             networkChange.reset()
     }, [activeChain, chainId])
-
-    const transaction = useSendTransaction(sendTransactionPrepare?.config)
-    const contractPrepareEnabled = isConnected && !!tokenContractAddress
-    const contractWritePrepare = usePrepareContractWrite({
-        address: tokenContractAddress,
-        abi: erc20ABI,
-        functionName: 'transfer',
-        enabled: contractPrepareEnabled,
-        args: [depositAddress, utils.parseUnits(amount.toString(), tokenDecimals)]
-    });
-    const contractWrite = useContractWrite(contractWritePrepare?.config)
-
-    const waitForTransaction = useWaitForTransaction({
-        hash: contractWrite?.data?.hash || transaction?.data?.hash || savedTransactionHash as `0x${string}`,
-        onSuccess: async (trxRcpt) => {
-            setTransactionDetected(false)
-            await onTransferComplete(trxRcpt.transactionHash)
-            setTransactionDetected(true)
-        }
-    })
 
     useEffect(() => {
         try {
@@ -95,117 +68,380 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
         }
     }, [swapId])
 
+    if (!isConnected) {
+        return <ConnectWalletButton />
+    }
+    else if (activeChain?.id !== chainId) {
+        return <ChangeNetworkButton
+            chainId={chainId}
+            network={networkDisplayName}
+        />
+    }
+    else if (tokenContractAddress) {
+        return <TransferErc20Button
+            swapId={swapId}
+            amount={amount}
+            generatedDepositAddress={generatedDepositAddress}
+            managedDepositAddress={managedDepositAddress}
+            userDestinationAddress={userDestinationAddress}
+            savedTransactionHash={savedTransactionHash as `0x${string}`}
+            tokenContractAddress={tokenContractAddress}
+            tokenDecimals={tokenDecimals}
+        />
+    }
+    else {
+        return <TransferEthButton
+            swapId={swapId}
+            amount={amount}
+            generatedDepositAddress={generatedDepositAddress}
+            managedDepositAddress={managedDepositAddress}
+            userDestinationAddress={userDestinationAddress}
+            savedTransactionHash={savedTransactionHash as `0x${string}`}
+            chainId={chainId}
+        />
+    }
+}
+
+type BaseTransferButtonProps = {
+    swapId: string,
+    generatedDepositAddress: `0x${string}`,
+    managedDepositAddress: `0x${string}`,
+    userDestinationAddress: `0x${string}`,
+    amount: number,
+    savedTransactionHash: `0x${string}`,
+}
+
+type TransferETHButtonProps = BaseTransferButtonProps & {
+    chainId: number,
+}
+
+const TransferEthButton: FC<TransferETHButtonProps> = ({
+    generatedDepositAddress,
+    managedDepositAddress,
+    userDestinationAddress,
+    chainId,
+    amount,
+    savedTransactionHash,
+    swapId,
+}) => {
+    const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
+    const { mutateSwap } = useSwapDataUpdate()
+    const [buttonClicked, setButtonClicked] = useState(false)
+
+    const { address } = useAccount();
+
+    const depositAddress = userDestinationAddress === address ?
+        managedDepositAddress : generatedDepositAddress
+
+    const sendTransactionPrepare = usePrepareSendTransaction({
+        enabled: true,
+        request: {
+            to: depositAddress,
+            value: amount ? utils.parseEther(amount.toString()) : undefined,
+        },
+        chainId: chainId,
+    })
+    const transaction = useSendTransaction(sendTransactionPrepare?.config)
+
     useEffect(() => {
         try {
-            if (contractWrite?.data?.hash || transaction?.data?.hash) {
+            if (transaction?.data?.hash) {
                 const oldData = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-                localStorage.setItem('swapTransactions', JSON.stringify({ ...oldData, [swapId]: { hash: contractWrite?.data?.hash || transaction?.data?.hash } }))
+                localStorage.setItem('swapTransactions', JSON.stringify({ ...oldData, [swapId]: { hash: transaction?.data?.hash } }))
             }
         }
         catch (e) {
             //TODO log to logger
             console.error(e.message)
         }
-    }, [contractWrite?.data?.hash, transaction?.data?.hash, swapId])
+    }, [transaction?.data?.hash, swapId])
 
-    const handleTransfer = useCallback(() => {
-        if (typeof contractWrite?.write === 'function')
-            return contractWrite.write()
-        if (typeof transaction?.sendTransaction === 'function')
-            return transaction.sendTransaction()
-    }, [transaction, contractWrite])
-
-    const handleButtonClick = () => {
-        setButtonClicked(true)
-    }
-    const actionMessage = getActionsMessages({
-        networkChange,
-        sendTransactionPrepare: transactionPrepareEnabled ? sendTransactionPrepare : null,
-        transaction,
-        contractWritePrepare: contractPrepareEnabled ? contractWritePrepare : null,
-        contractWrite,
-        ButtonClicked: buttonClicked,
-        waitForTransaction,
-        Network: networkDisplayName,
-        chainIsCorrect: activeChain?.id === chainId,
-        transactionDetected
+    const waitForTransaction = useWaitForTransaction({
+        hash: transaction?.data?.hash || savedTransactionHash,
+        onSuccess: async (trxRcpt) => {
+            setApplyingTransaction(true)
+            await applyTransaction(swapId, trxRcpt.transactionHash)
+            await mutateSwap()
+            setApplyingTransaction(false)
+        }
     })
+
+    const clickHandler = useCallback(() => {
+        setButtonClicked(true)
+        return transaction?.sendTransaction && transaction?.sendTransaction()
+    }, [transaction])
+
+    const isError = [
+        sendTransactionPrepare,
+        transaction,
+        waitForTransaction
+    ].find(d => d.isError)
 
     return <>
         {
-            actionMessage?.Message &&
-            <WalletMessage
-                status={actionMessage.Status}
-                header={actionMessage.Message.Header}
-                details={actionMessage.Message.Details} />
+            buttonClicked &&
+            <TransactionMessage
+                prepare={sendTransactionPrepare}
+                transaction={transaction}
+                wait={waitForTransaction}
+                applyingTransaction={applyingTransaction}
+            />
         }
         {
-            actionMessage?.ButtonText &&
-            <TransferWithWalletButton
-                activeChainId={activeChain?.id}
-                chainId={chainId}
-                chnageNetwork={networkChange?.switchNetwork}
-                transfer={handleTransfer}
-                icon={actionMessage?.ButtonIcon}
-                onButtonClick={handleButtonClick}
-                refetchPrepareTransaction={sendTransactionPrepare?.refetch}
-                refetchPrepareContractWrite={contractWritePrepare?.refetch}
-                prepareIsError={(sendTransactionPrepare?.isError && transactionPrepareEnabled)
-                    || (contractWritePrepare?.isError && contractPrepareEnabled)}
+            !transaction.isLoading &&
+            <ButtonWrapper
+                clcikHandler={clickHandler}
+                icon={<Wallet />}
             >
-                {actionMessage?.ButtonText}
-            </TransferWithWalletButton>
+                {(isError && buttonClicked) ? <span>Try again</span>
+                    : <span>Send from wallet</span>}
+            </ButtonWrapper>
         }
     </>
 }
 
-
-type TransferWithWalletButtonProps = {
-    chainId: number,
-    chnageNetwork: () => void,
-    transfer: () => void,
-    icon?: ReactNode,
-    refetchPrepareTransaction: () => void,
-    refetchPrepareContractWrite: () => void,
-    onButtonClick: () => void,
-    activeChainId: number;
-    prepareIsError: boolean
+type TransferERC20ButtonProps = BaseTransferButtonProps & {
+    tokenContractAddress: `0x${string}`,
+    tokenDecimals: number,
 }
-const TransferWithWalletButton: FC<TransferWithWalletButtonProps> = ({
-    refetchPrepareTransaction,
-    refetchPrepareContractWrite,
-    onButtonClick, icon,
-    chnageNetwork,
-    transfer,
-    activeChainId,
-    prepareIsError,
-    chainId,
-    children }) => {
 
-    const { isConnected, connector } = useAccount();
-    const handlerType = getTransferWithWalletButtonHandlerType({
-        prepareIsError,
-        connected: isConnected,
-        connectedChainId: activeChainId,
-        chainId: chainId
+const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
+    generatedDepositAddress,
+    managedDepositAddress,
+    userDestinationAddress,
+    amount,
+    tokenContractAddress,
+    tokenDecimals,
+    savedTransactionHash,
+    swapId
+}) => {
+    const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
+    const { mutateSwap } = useSwapDataUpdate()
+    const { address } = useAccount();
+    const [buttonClicked, setButtonClicked] = useState(false)
+
+    const depositAddress = userDestinationAddress === address ?
+        managedDepositAddress : generatedDepositAddress
+
+    const contractWritePrepare = usePrepareContractWrite({
+        address: tokenContractAddress,
+        abi: erc20ABI,
+        functionName: 'transfer',
+        enabled: true,
+        args: [depositAddress, utils.parseUnits(amount.toString(), tokenDecimals)]
+    });
+    const contractWrite = useContractWrite(contractWritePrepare?.config)
+
+    useEffect(() => {
+        try {
+            if (contractWrite?.data?.hash) {
+                const oldData = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
+                localStorage.setItem('swapTransactions', JSON.stringify({ ...oldData, [swapId]: { hash: contractWrite?.data?.hash } }))
+            }
+        }
+        catch (e) {
+            //TODO log to logger
+            console.error(e.message)
+        }
+    }, [contractWrite?.data?.hash, swapId])
+
+    const clickHandler = useCallback(() => {
+        setButtonClicked(true)
+        return contractWrite?.write && contractWrite?.write()
+    }, [contractWrite])
+
+    const waitForTransaction = useWaitForTransaction({
+        hash: contractWrite?.data?.hash || savedTransactionHash,
+        onSuccess: async (trxRcpt) => {
+            setApplyingTransaction(true)
+            await applyTransaction(swapId, trxRcpt.transactionHash)
+            await mutateSwap()
+            setApplyingTransaction(false)
+        }
     })
 
+    const isError = [
+        contractWritePrepare,
+        waitForTransaction,
+        contractWrite
+    ].find(d => d.isError)
+
+    return <>
+        {
+            !contractWrite.isLoading && buttonClicked &&
+            <TransactionMessage
+                prepare={contractWritePrepare}
+                transaction={contractWrite}
+                wait={waitForTransaction}
+                applyingTransaction={applyingTransaction}
+            />
+        }
+        {
+            <ButtonWrapper
+                clcikHandler={clickHandler}
+                icon={<Wallet />}
+            >
+                {(isError && buttonClicked) ? <span>Try again</span>
+                    : <span>Send from wallet</span>}
+            </ButtonWrapper>
+        }
+    </>
+}
+
+type TransactionMessageProps = {
+    prepare: ActionData,
+    wait: ActionData,
+    transaction: ActionData,
+    applyingTransaction: boolean,
+}
+
+const TransactionMessage: FC<TransactionMessageProps> = ({
+    prepare, wait, transaction, applyingTransaction
+}) => {
+    const prepareErrorCode = prepare?.error?.['code'] || prepare?.error?.["name"]
+    const prepareInnerErrocCode = prepare?.error?.['data']?.['code']
+    const prepareResolvedError = resolveError(prepareErrorCode, prepareInnerErrocCode)
+
+    const transactionResolvedError = resolveError(transaction?.error?.['code'], transaction?.error?.['data']?.['code'])
+
+    const hasEror = prepare?.isError || transaction?.isError || wait?.isError
+
+    if (wait?.isLoading || applyingTransaction) {
+        return <TransactionInProgressMessage />
+    }
+    else if (transaction?.isLoading || applyingTransaction) {
+        return <ConfirmTransactionMessage />
+    }
+    else if (prepare?.isLoading) {
+        return <PreparingTransactionMessage />
+    }
+    else if (prepare?.isError && prepareResolvedError === "insufficient_funds") {
+        return <InsufficientFundsMessage />
+    }
+    else if (transaction?.isError && transactionResolvedError) {
+        return <TransactionRejectedMessage />
+    } else if (hasEror) {
+        const unexpectedError = prepare?.error || transaction?.error || wait?.error
+        return <UexpectedErrorMessage message={unexpectedError?.message} />
+    }
+    else return <></>
+}
+
+const PreparingTransactionMessage: FC = () => {
+    return <WalletMessage
+        status="pending"
+        header='Preparing the transaction'
+        details='Will be ready to sign in a couple of seconds' />
+}
+
+const ConfirmTransactionMessage: FC = () => {
+    return <WalletMessage
+        status="pending"
+        header='Confirm in wallet'
+        details='Please confirm the transaction in your wallet' />
+}
+
+const TransactionInProgressMessage: FC = () => {
+    return <WalletMessage
+        status="pending"
+        header='Transaction in progress'
+        details='Waiting for your transaction to be published' />
+}
+
+const InsufficientFundsMessage: FC = () => {
+    return <WalletMessage
+        status="error"
+        header='Insufficient funds'
+        details='The balance of the connected wallet is not enough' />
+}
+
+const TransactionRejectedMessage: FC = () => {
+    return <WalletMessage
+        status="error"
+        header='Transaction rejected'
+        details={`You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`} />
+}
+
+const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
+    return <WalletMessage
+        status="error"
+        header='Unexpected error'
+        details={message} />
+}
+
+const ConnectWalletButton: FC = ({ children }) => {
     const { openConnectModal } = useConnectModal();
 
-    const clcikHandler = useCallback(() => {
-        onButtonClick()
-        switch (handlerType) {
-            case ButtonHandler.Connect:
-                return openConnectModal()
-            case ButtonHandler.ChangeNetwork:
-                return chnageNetwork()
-            case ButtonHandler.RefetchPrepare:
-                return (() => { refetchPrepareTransaction(); refetchPrepareContractWrite() })()
-            case ButtonHandler.Transfer:
-                return transfer()
-        }
-    }, [handlerType, openConnectModal, chnageNetwork, transfer, onButtonClick])
+    const clickHandler = useCallback(() => {
+        return openConnectModal()
+    }, [openConnectModal])
 
+    return <ButtonWrapper
+        clcikHandler={clickHandler}
+        icon={<Wallet />}
+    >
+        Send from wallet
+    </ButtonWrapper>
+}
+
+const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
+    if (data.isLoading) {
+        return <WalletMessage
+            status="pending"
+            header='Network switch required'
+            details="Confirm switching the network with your wallet"
+        />
+    }
+    else if (data.isError) {
+        return <WalletMessage
+            status="error"
+            header='Network switch failed'
+            details={`Please try again or switch your wallet network manually to ${network}`}
+        />
+    }
+}
+
+const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId, network }) => {
+
+    const networkChange = useSwitchNetwork({
+        chainId: chainId,
+    });
+
+    const clickHandler = useCallback(() => {
+        return networkChange?.switchNetwork()
+    }, [networkChange])
+
+    return <>
+        {
+            <ChangeNetworkMessage
+                data={networkChange}
+                network={network}
+            />
+        }
+        {
+            !networkChange.isLoading &&
+            <ButtonWrapper
+                clcikHandler={clickHandler}
+                icon={<Wallet />}
+            >
+                {
+                    networkChange.isError ? <span>Try again</span>
+                        : <span>Send from wallet</span>
+                }
+            </ButtonWrapper>
+        }
+    </>
+}
+
+type ButtonWrapperProps = {
+    icon?: ReactNode,
+    clcikHandler: () => void,
+}
+const ButtonWrapper: FC<ButtonWrapperProps> = ({
+    icon,
+    clcikHandler,
+    children
+}) => {
     return <div>
         <div className="flex flex-row text-white text-base space-x-2">
             <SubmitButton icon={icon}
@@ -232,182 +468,7 @@ type ActionData = {
     isError: boolean;
     isLoading: boolean;
 }
-type GetActionsMessageProps = {
-    networkChange?: ActionData,
-    sendTransactionPrepare?: ActionData,
-    transaction?: ActionData,
-    contractWritePrepare?: ActionData,
-    contractWrite?: ActionData,
-    waitForTransaction?: ActionData,
-    transactionDetected: boolean,
-    Network?: string,
-    ButtonClicked?: boolean,
-    chainIsCorrect?: boolean
-}
-type GetActionsMessageRes = {
-    ButtonText?: string;
-    Message?: {
-        Header?: string;
-        Details?: string;
-    }
-    ButtonIcon?: ReactNode,
-    Status?: 'error' | 'pending'
-}
 
-const getActionsMessages = ({ networkChange,
-    contractWrite,
-    transaction,
-    Network,
-    ButtonClicked,
-    waitForTransaction,
-    transactionDetected,
-    sendTransactionPrepare,
-    chainIsCorrect,
-    contractWritePrepare }: GetActionsMessageProps): GetActionsMessageRes => {
-
-    if (waitForTransaction?.isLoading || transactionDetected) {
-        return {
-            Status: "pending",
-            Message: {
-                Header: 'Transaction in progress',
-                Details: 'Waiting for your transaction to be published'
-            }
-        }
-    }
-    if (!ButtonClicked)
-        return {
-            ButtonText: "Send from wallet",
-            ButtonIcon: <Wallet />
-        }
-
-
-
-    if (networkChange?.isLoading) {
-        return {
-            Status: "pending",
-            Message: {
-                Header: 'Network switch required',
-                Details: 'Confirm switching the network with your wallet'
-            }
-        }
-    }
-
-    if (transaction?.isLoading || contractWrite?.isLoading) {
-        return {
-            Status: "pending",
-            Message: {
-                Header: 'Confirm in wallet',
-                Details: 'Please confirm the transaction in your wallet'
-            }
-        }
-    }
-
-    if (networkChange?.isError) {
-        return {
-            ButtonText: 'Try again',
-            Status: "error",
-            Message: {
-                Header: 'Network switch failed',
-                Details: `Please try again or switch your wallet network manually to ${Network}`
-            }
-        }
-    }
-
-    if (contractWritePrepare?.isLoading || sendTransactionPrepare?.isLoading) {
-        return {
-            Status: "pending",
-            Message: {
-                Header: 'Preparing the transaction',
-                Details: 'Will be ready to sign in a couple of seconds'
-            }
-        }
-    }
-
-    if (contractWritePrepare?.isError || sendTransactionPrepare?.isError) {
-        const error = contractWritePrepare?.error || sendTransactionPrepare?.error
-        const error_code = error?.['code'] || error?.["name"]
-        if (error_code === 'INSUFFICIENT_FUNDS'
-            || error_code === 'UNPREDICTABLE_GAS_LIMIT'
-            || (error_code === -32603 && error?.['data']?.['code'] === -32000)) {
-            return {
-                ButtonText: "Try again",
-                Status: "error",
-                Message: {
-                    Header: 'Insufficient funds',
-                    Details: 'The balance of the connected wallet is not enough'
-                }
-            }
-        }
-        if (error_code === 'NETWORK_ERROR' || error_code === "ChainMismatchError") {
-            return {
-                ButtonText: `Switch to ${Network}`,
-            }
-        }
-    }
-
-    if (transaction?.isError || contractWrite?.isError) {
-        const error = transaction?.error || contractWrite?.error
-        const error_code = error?.['code']
-        if (error_code === 4001)
-            return {
-                ButtonText: "Try again",
-                Status: "error",
-                Message: {
-                    Header: 'Transaction rejected',
-                    Details: `You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`
-                }
-            }
-    }
-
-    const isError = contractWritePrepare?.isError
-        || sendTransactionPrepare?.isError
-        || waitForTransaction?.isError
-        || transaction?.isError
-        || contractWrite?.isError
-
-    if (isError) {
-        const error = contractWritePrepare?.error
-            || sendTransactionPrepare?.error
-            || waitForTransaction?.error
-            || transaction?.error
-            || contractWrite?.error
-        return {
-            ButtonText: "Try again",
-            Status: "error",
-            Message: {
-                Header: 'Unexpected error',
-                Details: error.message
-            }
-        }
-    }
-
-
-    return {
-        ButtonText: "Send from wallet",
-        ButtonIcon: <Wallet />
-    }
-}
-
-
-enum ButtonHandler {
-    Connect,
-    ChangeNetwork,
-    RefetchPrepare,
-    Transfer
-}
-
-const getTransferWithWalletButtonHandlerType = ({ prepareIsError, connected, connectedChainId, chainId }:
-    { prepareIsError: boolean, connected: boolean, connectedChainId: number, chainId: number }): ButtonHandler => {
-
-    if (!connected)
-        return ButtonHandler.Connect
-    else if (connectedChainId !== chainId)
-        return ButtonHandler.ChangeNetwork
-    else if (prepareIsError)
-        return ButtonHandler.RefetchPrepare
-    else
-        return ButtonHandler.Transfer
-}
 type WalletMessageProps = {
     header: string;
     details?: string;
@@ -436,6 +497,23 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
             </p>
         </div>
     </div>
+}
+
+const applyTransaction = async (swapId: string, trxId: string) => {
+    const layerSwapApiClient = new LayerSwapApiClient()
+    await layerSwapApiClient.ApplyNetworkInput(swapId, trxId)
+}
+type ResolvedError = "insufficient_funds" | "transaction_rejected"
+
+const resolveError = (errorCode: string | number, innererrorCode?: string | number): ResolvedError => {
+    debugger
+    if (errorCode === 'INSUFFICIENT_FUNDS'
+        || errorCode === 'UNPREDICTABLE_GAS_LIMIT'
+        || (errorCode === -32603 && innererrorCode === -32000))
+        return "insufficient_funds"
+    else if (errorCode === 4001) {
+        return "transaction_rejected"
+    }
 }
 
 export default TransferFromWallet
