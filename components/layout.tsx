@@ -57,7 +57,7 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
       <meta property="og:type" content="website" />
       <meta property="og:title" content="Layerswap" />
       <meta property="og:description" content="Move crypto across exchanges, blockchains, and wallets." />
-      <meta property="og:image" content="https://layerswap.io/opengraph.jpg" />
+      <meta property="og:image" content="https://layerswap.io/opengraph.jpg?v=2" />
 
       {/* Twitter Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
