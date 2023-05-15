@@ -15,14 +15,15 @@ import { erc20ABI } from 'wagmi'
 import { Wallet } from "lucide-react";
 import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
-import { error } from "console";
 import LayerSwapApiClient from "../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../context/swap";
 
 type Props = {
     chainId: number,
-    depositAddress: `0x${string}`,
+    generatedDepositAddress: `0x${string}`,
+    managedDepositAddress: `0x${string}`,
     tokenContractAddress: `0x${string}`,
+    userDestinationAddress: `0x${string}`,
     amount: number,
     tokenDecimals: number,
     networkDisplayName: string,
@@ -31,7 +32,9 @@ type Props = {
 
 const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     chainId,
-    depositAddress,
+    generatedDepositAddress,
+    managedDepositAddress,
+    userDestinationAddress,
     amount,
     tokenContractAddress,
     tokenDecimals,
@@ -78,7 +81,9 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
         return <TransferErc20Button
             swapId={swapId}
             amount={amount}
-            depositAddress={depositAddress}
+            generatedDepositAddress={generatedDepositAddress}
+            managedDepositAddress={managedDepositAddress}
+            userDestinationAddress={userDestinationAddress}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             tokenContractAddress={tokenContractAddress}
             tokenDecimals={tokenDecimals}
@@ -88,28 +93,20 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
         return <TransferEthButton
             swapId={swapId}
             amount={amount}
-            depositAddress={depositAddress}
+            generatedDepositAddress={generatedDepositAddress}
+            managedDepositAddress={managedDepositAddress}
+            userDestinationAddress={userDestinationAddress}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             chainId={chainId}
         />
     }
 }
 
-type TransferWithWalletButtonProps = {
-    chainId: number,
-    chnageNetwork: () => void,
-    transfer: () => void,
-    icon?: ReactNode,
-    refetchPrepareTransaction: () => void,
-    refetchPrepareContractWrite: () => void,
-    onButtonClick: () => void,
-    activeChainId: number;
-    prepareIsError: boolean
-}
-
 type BaseTransferButtonProps = {
     swapId: string,
-    depositAddress: `0x${string}`,
+    generatedDepositAddress: `0x${string}`,
+    managedDepositAddress: `0x${string}`,
+    userDestinationAddress: `0x${string}`,
     amount: number,
     savedTransactionHash: `0x${string}`,
 }
@@ -119,14 +116,21 @@ type TransferETHButtonProps = BaseTransferButtonProps & {
 }
 
 const TransferEthButton: FC<TransferETHButtonProps> = ({
+    generatedDepositAddress,
+    managedDepositAddress,
+    userDestinationAddress,
     chainId,
-    depositAddress,
     amount,
     savedTransactionHash,
     swapId,
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { mutateSwap } = useSwapDataUpdate()
+
+    const { address } = useAccount();
+
+    const depositAddress = userDestinationAddress === address ?
+        managedDepositAddress : generatedDepositAddress
 
     const sendTransactionPrepare = usePrepareSendTransaction({
         enabled: true,
@@ -181,6 +185,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
             />
         }
         {
+            !transaction.isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 icon={<Wallet />}
@@ -198,7 +203,9 @@ type TransferERC20ButtonProps = BaseTransferButtonProps & {
 }
 
 const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
-    depositAddress,
+    generatedDepositAddress,
+    managedDepositAddress,
+    userDestinationAddress,
     amount,
     tokenContractAddress,
     tokenDecimals,
@@ -207,6 +214,10 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { mutateSwap } = useSwapDataUpdate()
+    const { address } = useAccount();
+
+    const depositAddress = userDestinationAddress === address ?
+        managedDepositAddress : generatedDepositAddress
 
     const contractWritePrepare = usePrepareContractWrite({
         address: tokenContractAddress,
@@ -252,6 +263,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
 
     return <>
         {
+            !contractWrite.isLoading &&
             <TransactionMessage
                 prepare={contractWritePrepare}
                 transaction={contractWrite}
@@ -260,6 +272,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             />
         }
         {
+
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 icon={<Wallet />}
@@ -291,11 +304,8 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     if (wait?.isLoading || applyingTransaction) {
         return <TransactionInProgressMessage />
     }
-    else if (wait?.isLoading || applyingTransaction) {
-        return <TransactionInProgressMessage />
-    }
-    else if (transaction?.isLoading) {
-        return <TransactionInProgressMessage />
+    else if (transaction?.isLoading || applyingTransaction) {
+        return <ConfirmTransactionMessage />
     }
     else if (prepare?.isLoading) {
         return <PreparingTransactionMessage />
@@ -403,12 +413,18 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId
                 network={network}
             />
         }
-        <ButtonWrapper
-            clcikHandler={clickHandler}
-            icon={<Wallet />}
-        >
-            Send from wallet
-        </ButtonWrapper>
+        {
+            !networkChange.isLoading &&
+            <ButtonWrapper
+                clcikHandler={clickHandler}
+                icon={<Wallet />}
+            >
+                {
+                    networkChange.isError ? <span>Try again</span>
+                        : <span>Send from wallet</span>
+                }
+            </ButtonWrapper>
+        }
     </>
 }
 

@@ -47,7 +47,7 @@ const WithdrawNetworkStep: FC = () => {
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
     const asset = source_network?.currencies?.find(currency => currency?.asset === destination_network_asset)
-    
+
     const layerswapApiClient = new LayerSwapApiClient()
 
     const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
@@ -222,14 +222,16 @@ const WithdrawNetworkStep: FC = () => {
                     {
                         canWithdrawWithWallet && swap && generatedDepositAddress &&
                         <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
-                            <TransferFromWallet 
-                            swapId={swap.id} 
-                            networkDisplayName={source_network?.display_name} 
-                            tokenDecimals={sourceCurrency?.decimals} 
-                            tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} 
-                            chainId={sourceChainId} 
-                            depositAddress={generatedDepositAddress as `0x${string}`} 
-                            amount={swap.requested_amount} />
+                            <TransferFromWallet
+                                swapId={swap.id}
+                                networkDisplayName={source_network?.display_name}
+                                tokenDecimals={sourceCurrency?.decimals}
+                                tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`}
+                                chainId={sourceChainId}
+                                generatedDepositAddress={generatedDepositAddress as `0x${string}`}
+                                managedDepositAddress={managedDepositAddress as `0x${string}`}
+                                userDestinationAddress={swap.destination_address as `0x${string}`}
+                                amount={swap.requested_amount} />
                         </div>
                     }
                     {!transferDone && !canWithdrawWithWallet &&
