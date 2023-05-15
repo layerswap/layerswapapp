@@ -126,6 +126,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { mutateSwap } = useSwapDataUpdate()
+    const [buttonClicked, setButtonClicked] = useState(false)
 
     const { address } = useAccount();
 
@@ -166,7 +167,8 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     })
 
     const clickHandler = useCallback(() => {
-        return transaction?.sendTransaction()
+        setButtonClicked(true)
+        return transaction?.sendTransaction && transaction?.sendTransaction()
     }, [transaction])
 
     const isError = [
@@ -177,6 +179,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
 
     return <>
         {
+            buttonClicked &&
             <TransactionMessage
                 prepare={sendTransactionPrepare}
                 transaction={transaction}
@@ -190,7 +193,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
                 clcikHandler={clickHandler}
                 icon={<Wallet />}
             >
-                {isError ? <span>Try again</span>
+                {(isError && buttonClicked) ? <span>Try again</span>
                     : <span>Send from wallet</span>}
             </ButtonWrapper>
         }
@@ -215,6 +218,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { mutateSwap } = useSwapDataUpdate()
     const { address } = useAccount();
+    const [buttonClicked, setButtonClicked] = useState(false)
 
     const depositAddress = userDestinationAddress === address ?
         managedDepositAddress : generatedDepositAddress
@@ -242,7 +246,8 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     }, [contractWrite?.data?.hash, swapId])
 
     const clickHandler = useCallback(() => {
-        return contractWrite?.write()
+        setButtonClicked(true)
+        return contractWrite?.write && contractWrite?.write()
     }, [contractWrite])
 
     const waitForTransaction = useWaitForTransaction({
@@ -263,7 +268,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
 
     return <>
         {
-            !contractWrite.isLoading &&
+            !contractWrite.isLoading && buttonClicked &&
             <TransactionMessage
                 prepare={contractWritePrepare}
                 transaction={contractWrite}
@@ -272,12 +277,11 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             />
         }
         {
-
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 icon={<Wallet />}
             >
-                {isError ? <span>Try again</span>
+                {(isError && buttonClicked) ? <span>Try again</span>
                     : <span>Send from wallet</span>}
             </ButtonWrapper>
         }
@@ -295,9 +299,10 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     prepare, wait, transaction, applyingTransaction
 }) => {
     const prepareErrorCode = prepare?.error?.['code'] || prepare?.error?.["name"]
-    const prepareResolvedError = resolveError(prepareErrorCode)
+    const prepareInnerErrocCode = prepare?.error?.['data']?.['code']
+    const prepareResolvedError = resolveError(prepareErrorCode, prepareInnerErrocCode)
 
-    const transactionResolvedError = resolveError(transaction?.error?.['code'])
+    const transactionResolvedError = resolveError(transaction?.error?.['code'], transaction?.error?.['data']?.['code'])
 
     const hasEror = prepare?.isError || transaction?.isError || wait?.isError
 
@@ -500,10 +505,11 @@ const applyTransaction = async (swapId: string, trxId: string) => {
 }
 type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
-const resolveError = (errorCode: string | number): ResolvedError => {
+const resolveError = (errorCode: string | number, innererrorCode?: string | number): ResolvedError => {
+    debugger
     if (errorCode === 'INSUFFICIENT_FUNDS'
         || errorCode === 'UNPREDICTABLE_GAS_LIMIT'
-        || (errorCode === -32603 && errorCode?.['data']?.['code'] === -32000))
+        || (errorCode === -32603 && innererrorCode === -32000))
         return "insufficient_funds"
     else if (errorCode === 4001) {
         return "transaction_rejected"
