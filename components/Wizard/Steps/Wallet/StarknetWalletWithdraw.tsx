@@ -151,7 +151,7 @@ const StarknetWalletWithdrawStep: FC = () => {
 
     const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
     const sourceChainId = sourceNetworkSettings?.ChainId
-    console.log(sourceNetworkSettings?.ChainId)
+
     return (
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
