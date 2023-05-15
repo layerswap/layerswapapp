@@ -117,7 +117,7 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className='bg-darkblue-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[500px]'>
+    <div className='bg-darkblue-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[550px]'>
       <HeaderWithMenu goBack={handleGoBack} />
       {
         page == 0 && loading ?
@@ -135,7 +135,7 @@ function TransactionsHistory() {
                         <ToggleButton onChange={handleToggleChange} value={showCancelledSwaps} />
                       </div>
                     </div>}
-                    <div className="max-h-[450px] styled-scroll overflow-y-scroll ">
+                    <div className="max-h-[450px] styled-scroll overflow-y-auto ">
                       <table className="w-full divide-y divide-darkblue-500">
                         <thead className="text-primary-text">
                           <tr>

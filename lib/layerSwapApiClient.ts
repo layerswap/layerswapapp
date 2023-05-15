@@ -242,6 +242,19 @@ export enum SwapStatusInNumbers {
     SwapsWithoutCancelled = '0&status=1&status=2&status=3&status=4'
 }
 
+export type Campaigns = {
+    id: number,
+    name: string,
+    asset: string,
+    network: string,
+    percentage: number,
+    start_date: string,
+    end_date: string,
+    reward_limit_for_period: number,
+    min_payout_amount: number,
+    reward_limit_period: number
+}
+
 export type Reward = {
     user_reward: {
         period_pending_amount: number,

@@ -253,9 +253,14 @@ const WithdrawExchangeStep: FC = () => {
                                         </div>
                                         <BackgroundField Copiable toCopy={generatedDepositAddress} header={'Deposit Address'} withoutBorder>
                                             <div>
-                                                <p className='break-all text-white'>
-                                                    {generatedDepositAddress}
-                                                </p>
+                                                {
+                                                    generatedDepositAddress ?
+                                                        <p className='break-all text-white'>
+                                                            {generatedDepositAddress}
+                                                        </p>
+                                                        :
+                                                        <div className='bg-gray-500 w-56 h-5 animate-pulse rounded-md' />
+                                                }
                                             </div>
                                         </BackgroundField>
                                         <div className='flex divide-x divide-darkblue-500'>

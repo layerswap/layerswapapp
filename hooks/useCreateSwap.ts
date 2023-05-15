@@ -44,14 +44,16 @@ const useCreateSwap = () => {
                 }
             }
             const layerswapApiClient = new LayerswapApiClient(router);
-            const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
             const sourceLayer = values?.from
-            const asset = values.currency?.asset
-            const hasSourcePendingSwaps = allPendingSwaps?.data?.some(s => s.source_network_asset?.toLowerCase() === asset?.toLowerCase() && swapId !== s.id)
-            if (hasSourcePendingSwaps) {
-                return goToStep(SwapCreateStep.PendingSwaps)
-            }
-            else if (sourceLayer?.isExchange && sourceLayer?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
+            //PENDING_SWAPS_CHECK
+            // const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
+            // const asset = values.currency?.asset
+            // const hasSourcePendingSwaps = allPendingSwaps?.data?.some(s => s.source_network_asset?.toLowerCase() === asset?.toLowerCase() && swapId !== s.id)
+            // if (hasSourcePendingSwaps) {
+            //     return goToStep(SwapCreateStep.PendingSwaps)
+            // }
+            // else 
+            if (sourceLayer?.isExchange && sourceLayer?.internal_name.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
                 const layerswapApiClient = new LayerSwapApiClient(router)
                 try {
                     const res = await layerswapApiClient.GetExchangeAccount(sourceLayer?.internal_name, 1)
