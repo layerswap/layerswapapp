@@ -136,8 +136,8 @@ const WithdrawNetworkStep: FC = () => {
                                                 <span>{source_network?.display_name}</span>
                                             </div>
                                         </div>
-                                        <div className='p-2 bg-white bg-opacity-30 rounded-xl'>
-                                            <div className='p-2 bg-white bg-opacity-70 rounded-lg'>
+                                        <div className='p-2 bg-white/30 bg-opacity-30 rounded-xl'>
+                                            <div className='p-2 bg-white/70 bg-opacity-70 rounded-lg'>
                                                 {qrCode}
                                             </div>
                                         </div>
