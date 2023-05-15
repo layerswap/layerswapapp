@@ -363,7 +363,7 @@ function RewardsComponent() {
                                                                 className="rounded-full object-contain" />
                                                         </div>
                                                         <p>
-                                                            <span>{leaderboardReward(user.position)} OP</span>
+                                                            <span>{leaderboardReward(user.position)} {campaigns[0]?.asset}</span>
                                                         </p>
                                                     </div>
                                                 }>
