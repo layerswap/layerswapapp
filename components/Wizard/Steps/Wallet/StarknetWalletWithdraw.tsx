@@ -1,4 +1,4 @@
-import { Link, ArrowLeftRight, UnlinkIcon } from 'lucide-react';
+import { Link, ArrowLeftRight, UnlinkIcon, RefreshCwIcon } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../../Models/Wizard';
@@ -39,6 +39,8 @@ const StarknetWalletWithdrawStep: FC = () => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const [account, setAccount] = useState<AccountInterface>()
+    const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
+
     const { userId } = useAuthState()
 
     const { swap } = useSwapDataState()
@@ -49,6 +51,9 @@ const StarknetWalletWithdrawStep: FC = () => {
     const { source_network: source_network_internal_name } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
+
+    const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
+    const sourceChainId = sourceNetworkSettings?.ChainId
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher)
@@ -83,8 +88,13 @@ const StarknetWalletWithdrawStep: FC = () => {
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
-            if (!account) {
-                const res = await connect()
+            const res = await connect()
+            if(res?.account?.chainId !== sourceChainId){
+                setIsWrongNetwork(true)
+                disconnect()
+            }
+            else{
+                setIsWrongNetwork(false)
                 setAccount(res?.account)
             }
         }
@@ -92,7 +102,7 @@ const StarknetWalletWithdrawStep: FC = () => {
             toast(e.message)
         }
         setLoading(false)
-    }, [account])
+    }, [sourceChainId])
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)
@@ -149,8 +159,10 @@ const StarknetWalletWithdrawStep: FC = () => {
         setLoading(false)
     }, [account, swap, source_network, managedDeposit, userId, sourceCurrency])
 
-    const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
-    const sourceChainId = sourceNetworkSettings?.ChainId
+    const handleRefresh = async () => {
+        const res = await connect()
+        setAccount(res?.account)
+    }
 
     return (
         <>
@@ -169,13 +181,13 @@ const StarknetWalletWithdrawStep: FC = () => {
                 <div className='space-y-4'>
                     {
 
-                        account && sourceChainId !== account?.chainId &&
+                        isWrongNetwork &&
                         <WarningMessage messageType='warning'>
-                            <span className='flex-none'>
+                            <span className='flex'>
                                 {
                                     source_network_internal_name === KnownInternalNames.Networks.StarkNetMainnet
-                                        ? <span>Please switch to Starknet Mainnet with your wallet</span>
-                                        : <span>Please switch to Starknet Goerli with your wallet</span>
+                                        ? <span>Please switch to Starknet Mainnet with your wallet and click Connect again</span>
+                                        : <span>Please switch to Starknet Goerli with your wallet and click Connect again</span>
                                 }
                             </span>
                         </WarningMessage>
@@ -189,7 +201,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                     {
                         account
                         && managedDeposit?.data?.address
-                        && sourceChainId === account?.chainId
+                        && !isWrongNetwork
                         && <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
