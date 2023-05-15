@@ -225,7 +225,6 @@ const WithdrawNetworkStep: FC = () => {
                             <TransferFromWallet 
                             swapId={swap.id} 
                             networkDisplayName={source_network?.display_name} 
-                            onTransferComplete={onTRansactionComplete} 
                             tokenDecimals={sourceCurrency?.decimals} 
                             tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`} 
                             chainId={sourceChainId} 
