@@ -72,7 +72,6 @@ const StarknetWalletWithdrawStep: FC = () => {
         },
         { name: 'Transfer', description: "Initiate a transfer from your wallet to our address", href: '#', status: account ? 'current' : 'upcoming' },
     ]
-    console.log("account.chainId", account?.chainId)
 
     const swapStatusStep = GetSwapStatusStep(swap)
 
