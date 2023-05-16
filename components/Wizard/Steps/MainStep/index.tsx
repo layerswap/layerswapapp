@@ -101,7 +101,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 const client = await axios.get(`${NetworkSettings.RhinoFiSettings[destination_internal_name].apiUri}/${values.destination_address}`)
                 const isRegistered = await client.data?.isRegisteredOnDeversifi
                 if (!isRegistered) {
-                    setNetworkToConnect({ DisplayName: values.to.display_name, AppURL: NetworkSettings.RhinoFiSettings[destination_internal_name].appUri })
+                    setNetworkToConnect({ DisplayName: values.to?.display_name, AppURL: NetworkSettings.RhinoFiSettings[destination_internal_name].appUri })
                     setShowConnectNetworkModal(true);
                     return
                 }
@@ -109,7 +109,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                 const client = await axios.get(`${NetworkSettings.DydxSettings[destination_internal_name].apiUri}${values.destination_address}`)
                 const isRegistered = await client.data?.exists
                 if (!isRegistered) {
-                    setNetworkToConnect({ DisplayName: values.to.display_name, AppURL: NetworkSettings.DydxSettings[destination_internal_name].appUri })
+                    setNetworkToConnect({ DisplayName: values.to?.display_name, AppURL: NetworkSettings.DydxSettings[destination_internal_name].appUri })
                     setShowConnectNetworkModal(true);
                     return
                 }

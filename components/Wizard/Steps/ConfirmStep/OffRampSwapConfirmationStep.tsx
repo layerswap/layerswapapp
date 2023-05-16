@@ -126,7 +126,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                 {
                     currentExchange?.assets.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network_internal_name === currentNetwork.internal_name) &&
                     <WarningMessage messageType='informing'>
-                        <span>You might be able transfer {currentCurrency.asset} from {currentNetwork.display_name} to {currentExchange.display_name} directly</span>
+                        <span>You might be able transfer {currentCurrency.asset} from {currentNetwork?.display_name} to {currentExchange?.display_name} directly</span>
                     </WarningMessage>
                 }
             </Widget.Content>

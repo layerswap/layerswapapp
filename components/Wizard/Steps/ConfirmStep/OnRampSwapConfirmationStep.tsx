@@ -114,7 +114,7 @@ const OnRampSwapConfirmationStep: FC = () => {
     const handleSaveAddress = useCallback(() => {
         setAddressInputError("")
         if (!isValidAddress(addressInputValue, to)) {
-            setAddressInputError(`Enter a valid ${to.display_name} address`)
+            setAddressInputError(`Enter a valid ${to?.display_name} address`)
             return;
         }
         updateSwapFormData({ ...swapFormData, destination_address: addressInputValue })
@@ -137,7 +137,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                 {
                     currentExchange?.assets.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network_internal_name === currentNetwork?.internal_name) &&
                     <WarningMessage messageType='informing'>
-                        <span>You might be able transfer {currentCurrency.asset} from {currentExchange.display_name} to {currentNetwork.display_name} directly</span>
+                        <span>You might be able transfer {currentCurrency.asset} from {currentExchange?.display_name} to {currentNetwork?.display_name} directly</span>
                     </WarningMessage>
                 }
             </Widget.Content>
