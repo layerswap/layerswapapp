@@ -105,7 +105,7 @@ function RewardsComponent() {
                                                                 loading="eager"
                                                                 className="rounded-md object-contain" />
                                                         </div>
-                                                        <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards <ClickTooltip text={<span>Onboarding incentives that are earned by transferring to {network?.display_name}. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></span>} /></p>
+                                                        <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards <ClickTooltip text={<span>Onboarding incentives that are earned by transferring to {network?.display_name}. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></span>} /></p>
                                                     </div>
                                                     <div className="bg-darkblue-700 divide-y divide-darkblue-500 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
                                                         <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
@@ -220,7 +220,7 @@ function RewardsComponent() {
                                                             loading="eager"
                                                             className="rounded-md object-contain" />
                                                     </div>
-                                                    <p className="font-bold text-xl text-left flex items-center">{network.display_name} Rewards </p>
+                                                    <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards </p>
                                                 </div>
                                                 <p className="text-primary-text text-base">You can earn ${campaign?.asset} tokens by transferring assets to {network?.display_name}. For each transaction, you’ll receive {campaign?.percentage}% of Layerswap fee back. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></p>
                                             </div>
