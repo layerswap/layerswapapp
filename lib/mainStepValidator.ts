@@ -36,10 +36,10 @@ export default function MainStepValidation(settings: LayerSwapSettings): ((value
         }
         if (values.to) {
             if (!values.destination_address) {
-                errors.destination_address = `Enter ${values.to.display_name} address`;
+                errors.destination_address = `Enter ${values.to?.display_name} address`;
             }
             else if (!isValidAddress(values.destination_address, values.to)) {
-                errors.destination_address = `Enter a valid ${values.to.display_name} address`;
+                errors.destination_address = `Enter a valid ${values.to?.display_name} address`;
             }
             else if (!values.from?.isExchange && isBlacklistedAddress(settings.blacklisted_addresses, values.to, values.destination_address)) {
                 errors.destination_address = `You can not transfer to this address`;

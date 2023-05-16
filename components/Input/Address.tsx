@@ -116,7 +116,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const inputAddressIsValid = isValidAddress(inputValue, destination)
         let errorMessage = '';
         if (inputValue && !isValidAddress(inputValue, destination)) {
-            errorMessage = `Enter a valid ${values.to.display_name} address`
+            errorMessage = `Enter a valid ${values.to?.display_name} address`
         }
         else if (inputValue && destination?.isExchange && isBlacklistedAddress(settings.blacklisted_addresses, destination, inputValue)) {
             errorMessage = `You can not transfer to this address`
@@ -264,7 +264,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             <div className='text-left p-4 bg-darkblue-800 text-white rounded-lg border border-darkblue-500'>
                                 <div className="flex items-center">
                                     <Info className='h-5 w-5 text-primary-600 mr-3' />
-                                    <label className="block text-sm md:text-base font-medium leading-6">How to find your {destination.display_name} deposit address</label>
+                                    <label className="block text-sm md:text-base font-medium leading-6">How to find your {destination?.display_name} deposit address</label>
                                 </div>
                                 <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
                                     <li>Go to the Deposits page</li>
@@ -293,7 +293,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                     width="15"
                                                     className='rounded-sm'
                                                 />
-                                                <span className="text-white">{destinationNetwork.display_name}</span>
+                                                <span className="text-white">{destinationNetwork?.display_name}</span>
                                             </span>
                                         </span>
                                         as network
