@@ -93,7 +93,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                 goToStep(SwapCreateStep.Error)
                 setError({ Code: data.code, Step: SwapCreateStep.Confirm })
             }
-            else if (data?.code === KnownwErrorCode.BLACKLISTED_OR_DEPOSIT_ADDRESS) {
+            else if (data?.code === KnownwErrorCode.BLACKLISTED_ADDRESS) {
                 toast.error('You can’t transfer to that address. Please double check your wallet’s address and change it in the previous page.')
             }
             else if (data?.message)
