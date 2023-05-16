@@ -35,7 +35,6 @@ import SwapGuide from '../../SwapGuide';
 import SecondaryButton from '../../buttons/secondaryButton';
 import { ApiResponse } from '../../../Models/ApiResponse';
 import useSWR from 'swr';
-import SwapInfo from '../../SwapInfo';
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
@@ -205,7 +204,6 @@ const WithdrawExchangeStep: FC = () => {
                                     </p>
                                 </div>
                                 <div className={`mb-6 grid grid-cols-1 gap-5 `}>
-                                    <SwapInfo />
                                     <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
                                         <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
                                             <div className='flex items-center gap-1 text-sm my-2'>

@@ -21,7 +21,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             return "/images/logo_placeholder.png";
         }
         // Shitty way to check for partner
-        else if ((item as Partner).is_wallet != undefined){
+        else if ((item as Partner).is_wallet != undefined) {
             return `${this.discovery.resource_storage_url}/layerswap/partners/${(item as Partner)?.organization_name?.toLowerCase()}.png`
         }
         else if ((item as any)?.internal_name != undefined) {
@@ -42,7 +42,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             authorization_flow: e.authorization_flow,
             oauth_authorize_url: e.oauth_authorize_url,
             oauth_connect_url: e.oauth_connect_url,
-            assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks)
+            assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks),
         }))
         const networkLayers: Layer[] = networks.map((n): Layer =>
         ({
@@ -50,7 +50,8 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             internal_name: n.internal_name,
             display_name: n.display_name,
             status: n.status,
-            assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)
+            assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n),
+            native_currency: n.native_currency
         }))
         const result = exchangeLayers.concat(networkLayers)
         return result
@@ -69,7 +70,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
                 network_internal_name: exchangecurrency.network,
                 network: { ...network, currencies: [networkCurrencies] },
                 min_deposit_amount: exchangecurrency.min_deposit_amount,
-                withdrawal_fee: exchangecurrency.withdrawal_fee
+                withdrawal_fee: exchangecurrency.withdrawal_fee,
             }
         })
     }
@@ -80,7 +81,9 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             status: c.status,
             is_default: true,
             network_internal_name: network?.internal_name,
-            network: { ...network, currencies: [c] }
+            network: { ...network, currencies: [c] },
+            contract_address: c.contract_address,
+            decimals: c.decimals
         }))
     }
 }
