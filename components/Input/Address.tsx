@@ -17,13 +17,14 @@ import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
 import RainbowKit from "../Wizard/Steps/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
-import { disconnect } from '@wagmi/core'
+import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import { Wallet } from 'lucide-react'
 import { useAccountModal } from "@rainbow-me/rainbowkit";
 import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
+import { connect, disconnect as starknetDisconnect } from "get-starknet";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -43,7 +44,6 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
     ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
-        const { openAccountModal } = useAccountModal();
         const {
             values,
             setFieldValue
@@ -102,7 +102,16 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const handleRemoveDepositeAddress = useCallback(async () => {
             setDepositeAddressIsfromAccount(false)
             setFieldValue("destination_address", '')
-            disconnect()
+            try{
+                wagmiDisconnect()
+                console.log("disconnecting")
+                starknetDisconnect({ clearLastWallet: true })
+            }
+            catch(e){
+
+                console.log("error")
+                console.log(e)
+            }
             setInputValue("")
         }, [depositeAddressIsfromAccount, isConnected, connector, isDisconnected])
 
@@ -111,7 +120,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue("destination_address", value)
             close()
         }, [close])
-
 
         const inputAddressIsValid = isValidAddress(inputValue, destination)
         let errorMessage = '';
@@ -138,6 +146,17 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue("destination_address", validInputAddress)
             close()
         }, [validInputAddress])
+
+
+        const handleConnectStarknet = async ()=>{
+            const account = await connect()
+            setInputValue(account?.selectedAddress)
+            setAddressConfirmed(true)
+            setFieldValue("destination_address", account?.selectedAddress)
+        }
+
+        const destinationIsStarknet = destination.internal_name === KnownInternalNames.Networks.StarkNetGoerli
+            || destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
         return (<>
             <div className='w-full flex flex-col justify-between h-full text-primary-text'>
@@ -237,6 +256,22 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     </div>
                                     <div className="text-gray-500">
                                         Connect your account to fetch the address
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        {
+                            !disabled && !inputValue && destinationIsStarknet &&
+                            <div onClick={handleConnectStarknet} className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700 hover:shadow-xl`}>
+                                <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
+                                    <Wallet className="h-6 w-6 text-primary-text" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <div className="block text-sm font-medium">
+                                        Autofill from wallet
+                                    </div>
+                                    <div className="text-gray-500">
+                                        Connect your wallet to fetch the address
                                     </div>
                                 </div>
                             </div>
@@ -361,5 +396,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         </>
         )
     });
+
 
 export default Address

@@ -13,6 +13,9 @@ import RainbowIcon from "./icons/Wallets/Rainbow"
 import AddressIcon from "./AddressIcon"
 import WalletIcon from "./icons/WalletIcon"
 import ChatIcon from "./icons/ChatIcon"
+import { useEffect, useState } from "react"
+import { connect, StarknetWindowObject } from "get-starknet"
+import { getStarknet, } from "get-starknet-core"
 
 function HeaderWithMenu({ goBack }: { goBack: () => void }) {
    const { email, userId } = useAuthState()
@@ -32,7 +35,8 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
             <GoHomeButton />
          </div>
          <div className="col-start-5 justify-self-end self-center flex items-center gap-4">
-            <ConnectWallet />
+            <StarknetWallet />
+            <RainbowKitConnectWallet />
             <IconButton className="relative hidden md:inline" onClick={() => {
                boot();
                show();
@@ -49,12 +53,45 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
    )
 }
 
-const ConnectWallet = () => {
+const StarknetWallet = () => {
+
+   const [walletAddress, setWalletAddress] = useState("")
+
+   useEffect(() => {
+      (async () => {
+         const starknet = getStarknet()
+         const lastConnectedWallet = await starknet.getLastConnectedWallet()
+         console.log("lastConnectedWallet", lastConnectedWallet)
+         if (lastConnectedWallet) {
+            const account = await connect()
+            setWalletAddress(account.selectedAddress)
+            console.log(account.selectedAddress)
+         }
+      })()
+   }, [])
+
+   return walletAddress ? <IconButton onClick={() => { }} icon={
+      <div className="font-bold grow flex space-x-2">
+         <div className="inline-flex items-center relative">
+            <AddressIcon address={walletAddress} size={25} />
+            {
+               <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                  <ResolveWalletIcon connector="starknet" className="w-5 h-5 border-2 border-darkblue-600 rounded-full bg-primary-text" />
+               </span>
+            }
+         </div>
+      </div>
+   }>
+   </IconButton >
+      : <></>
+}
+
+const RainbowKitConnectWallet = () => {
    return <ConnectButton.Custom>
       {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
          const connected = !!(mounted && account && chain)
          const { connector } = useAccount()
-         return <IconButton onClick={()=> connected ? openAccountModal() : openConnectModal()} icon={
+         return <IconButton onClick={() => connected ? openAccountModal() : openConnectModal()} icon={
             connected ?
                <div className="font-bold grow flex space-x-2">
                   <div className="inline-flex items-center relative">
@@ -92,6 +129,7 @@ const KnownKonnectors = {
    MetaMask: 'metaMask',
    WaletConnect: 'waletConnect',
    Coinbase: 'coinbase',
+   Starknet: 'starknet',
    Rainbow: 'rainbow'
 }
 
