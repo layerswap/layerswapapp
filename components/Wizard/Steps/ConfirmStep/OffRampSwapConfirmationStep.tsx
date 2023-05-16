@@ -93,6 +93,9 @@ const OffRampSwapConfirmationStep: FC = () => {
                 goToStep(SwapCreateStep.Error)
                 setError({ Code: data.code, Step: SwapCreateStep.Confirm })
             }
+            else if (data?.code === KnownwErrorCode.BLACKLISTED_OR_DEPOSIT_ADDRESS) {
+                toast.error('You can’t transfer to that address. Please double check your wallet’s address and change it in the previous page.')
+            }
             else if (data?.message)
                 toast.error(data?.message)
             else if (error.message)
@@ -116,7 +119,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                             <p>
                                 {
                                     from?.internal_name == KnownInternalNames.Networks.LoopringMainnet &&
-                                    <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how'  />
+                                    <GuideLink userGuideUrl='https://docs.layerswap.io/user-docs/using-gamestop-wallet-to-transfer-to-cex' text='Learn how' />
                                 }
                             </p>
                         </WarningMessage>
