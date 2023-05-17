@@ -17,6 +17,9 @@ import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
 import LayerSwapApiClient, { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../context/swap";
+import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
+import ProcessingStep from "../ProccessingSteps";
+import { SwapWithdrawalStep } from "../../../../Models/Wizard";
 
 type Props = {
     chainId: number,
@@ -127,6 +130,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
     const [buttonClicked, setButtonClicked] = useState(false)
+    const { goToStep } = useFormWizardaUpdate()
 
     const { address } = useAccount();
 
@@ -161,6 +165,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
             setApplyingTransaction(true)
             await applyTransaction(swapId, trxRcpt.transactionHash, setSwapPublishedTx)
             await mutateSwap()
+            goToStep(SwapWithdrawalStep.SwapProcessing)
             setApplyingTransaction(false)
         }
     })
@@ -218,6 +223,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
     const { address } = useAccount();
     const [buttonClicked, setButtonClicked] = useState(false)
+    const { goToStep } = useFormWizardaUpdate()
 
     const depositAddress = userDestinationAddress === address ?
         managedDepositAddress : generatedDepositAddress
@@ -254,6 +260,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             setApplyingTransaction(true)
             await applyTransaction(swapId, trxRcpt.transactionHash, setSwapPublishedTx)
             await mutateSwap()
+            goToStep(SwapWithdrawalStep.SwapProcessing)
             setApplyingTransaction(false)
         }
     })
@@ -266,7 +273,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
 
     return <>
         {
-            !contractWrite.isLoading && buttonClicked &&
+            buttonClicked &&
             <TransactionMessage
                 prepare={contractWritePrepare}
                 transaction={contractWrite}
@@ -275,6 +282,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             />
         }
         {
+            !contractWrite.isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 icon={<Wallet />}
