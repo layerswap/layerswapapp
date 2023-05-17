@@ -36,7 +36,7 @@ const ProcessingStep: FC = () => {
     let status = 0
     switch (swap.status) {
         case SwapStatus.UserTransferPending:
-            if (swap.has_pending_deposit && !swap.input_transaction) status = 1
+            if (swap.has_sucessfull_published_tx && !swap.input_transaction) status = 1
             else if (swap.input_transaction) status = 2
             break
         case SwapStatus.LsTransferPending:

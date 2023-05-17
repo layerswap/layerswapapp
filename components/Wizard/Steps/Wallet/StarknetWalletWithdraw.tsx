@@ -5,7 +5,7 @@ import { SwapWithdrawalStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource, PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import shortenAddress from "../../../utils/ShortenAddress"
@@ -44,7 +44,7 @@ const StarknetWalletWithdrawStep: FC = () => {
     const { userId } = useAuthState()
 
     const { swap } = useSwapDataState()
-    const { mutateSwap } = useSwapDataUpdate()
+    const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
     const { networks } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
 
@@ -89,11 +89,11 @@ const StarknetWalletWithdrawStep: FC = () => {
         setLoading(true)
         try {
             const res = await connect()
-            if(res?.account?.chainId !== sourceChainId){
+            if (res?.account?.chainId !== sourceChainId) {
                 setIsWrongNetwork(true)
                 disconnect()
             }
-            else{
+            else {
                 setIsWrongNetwork(false)
                 setAccount(res?.account)
             }
@@ -138,8 +138,8 @@ const StarknetWalletWithdrawStep: FC = () => {
             try {
                 const { transaction_hash: transferTxHash } = await account.execute([call, watch]);
                 if (transferTxHash) {
-                    const layerSwapApiClient = new LayerSwapApiClient()
-                    await layerSwapApiClient.ApplyNetworkInput(swap.id, transferTxHash)
+                    setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transferTxHash);
+
                     await mutateSwap()
                     goToStep(SwapWithdrawalStep.SwapProcessing)
                     setTransferDone(true)
@@ -174,7 +174,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                         </h3>
                     </div>
                     <p className='leading-5'>
-                        We’ll help you to send crypto from your wallet
+                        We'll help you to send crypto from your wallet
                     </p>
                 </div>
                 <Steps steps={steps} />
