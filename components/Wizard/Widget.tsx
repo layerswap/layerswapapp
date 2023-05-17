@@ -115,7 +115,7 @@ export function ReactPortal({ children, wrapperId = "react-portal-wrapper" }) {
         }
     }, [element]);
 
-    return <div data-name="vzgo" ref={div}>
+    return <div ref={div}>
         {createPortal(children, element ?? document.querySelectorAll(`[data-name="${wrapperId}"]`)[0])}
     </div>
 }
