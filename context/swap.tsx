@@ -16,7 +16,7 @@ const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
     updateSwapFormData: (value: React.SetStateAction<SwapFormValues>) => void,
-    createAndProcessSwap: (TwoFACode?: string) => Promise<string>,
+    createAndProcessSwap: (swapFormData: SwapFormValues) => Promise<string>,
     //TODO this is stupid need to clean data in confirm step or even do not store it
     clearSwap: () => void,
     setCodeRequested(codeSubmitted: boolean): void;
@@ -57,7 +57,7 @@ export function SwapDataProvider({ children }) {
     const { data: swapResponse, mutate } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?label=${query?.addressSource}`, layerswapApiClient.fetcher)
-    const partner = query?.addressSource && partnerData?.data?.labels?.includes(query?.addressSource) ? partnerData?.data  : undefined
+    const partner = query?.addressSource && partnerData?.data?.labels?.includes(query?.addressSource) ? partnerData?.data : undefined
 
     useEffect(() => {
         setCodeRequested(false)
@@ -87,21 +87,21 @@ export function SwapDataProvider({ children }) {
         const sourceLayer = from
         const destinationLayer = to
 
-        if(sourceLayer?.isExchange){
+        if (sourceLayer?.isExchange) {
             data.source_exchange = sourceLayer?.internal_name;
         }
-        else{
+        else {
             data.source_network = sourceLayer?.internal_name;
         }
 
-        if(destinationLayer?.isExchange){
+        if (destinationLayer?.isExchange) {
             data.destination_exchange = destinationLayer?.internal_name;
         }
-        else{
+        else {
             data.destination_network = destinationLayer?.internal_name;
         }
 
-        if(!destinationLayer?.isExchange){
+        if (!destinationLayer?.isExchange) {
             data.refuel = refuel
         }
 
@@ -118,8 +118,7 @@ export function SwapDataProvider({ children }) {
         await layerswapApiClient.CancelSwapAsync(swapId)
     }, [router, swapFormData])
 
-
-    const createAndProcessSwap = useCallback(async (TwoFACode?: string) => {
+    const createAndProcessSwap = useCallback(async (swapFormData: SwapFormValues) => {
         const newSwapId = await createSwap(swapFormData, query, settings)
         setSwapId(newSwapId)
         return newSwapId

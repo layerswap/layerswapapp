@@ -29,7 +29,7 @@ const CreateSwap: FC = () => {
     return (
         <Wizard>
             <WizardItem StepName={SwapCreateStep.MainForm} PositionPercent={MainForm.positionPercent} key={SwapCreateStep.MainForm}>
-                <MainStep OnSumbit={MainForm.onNext} />
+                <MainStep />
             </WizardItem>
             <WizardItem StepName={SwapCreateStep.Email} GoBack={GoBackToMainStep} PositionPercent={Email.positionPercent} key={SwapCreateStep.Email}>
                 <EmailStep OnNext={Email.onNext} />

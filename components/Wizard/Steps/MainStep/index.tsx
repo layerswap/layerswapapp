@@ -25,15 +25,16 @@ import { useRouter } from "next/router";
 import useSWR from "swr";
 import { ApiResponse } from "../../../../Models/ApiResponse";
 import { Partner } from "../../../../Models/Partner";
+import InternalApiClient from "../../../../lib/internalApiClient";
+import TokenService from "../../../../lib/TokenService";
+import LayerSwapAuthApiClient from "../../../../lib/userAuthApiClient";
+import { UserType, useAuthDataUpdate } from "../../../../context/authContext";
 
-type Props = {
-    OnSumbit: ({ values, swapId }: { values: SwapFormValues, swapId?: string }) => Promise<void>
-}
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
-const MainStep: FC<Props> = ({ OnSumbit }) => {
+const MainStep: FC = () => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectImmutable, setShowConnectImmutable] = useState(false);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
@@ -42,13 +43,13 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
-
+    const { updateAuthData, setUserType } = useAuthDataUpdate()
     let formValues = formikRef.current?.values;
 
     const settings = useSettingsState();
     const { resolveImgSrc } = settings || {}
     const query = useQueryState();
-    const { updateSwapFormData, clearSwap, setDepositeAddressIsfromAccount } = useSwapDataUpdate()
+    const { updateSwapFormData, clearSwap, setDepositeAddressIsfromAccount, createAndProcessSwap } = useSwapDataUpdate()
 
     useEffect(() => {
         if (query.coinbase_redirect) {
@@ -118,19 +119,46 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             if (formikRef.current?.dirty) {
                 clearSwap()
             }
+
             updateSwapFormData(values)
-            await OnSumbit({ values, swapId: formikRef.current?.dirty ? null : swap?.id })
+
+            const accessToken = TokenService.getAuthData()?.access_token
+            if (!accessToken) {
+                try {
+                    var apiClient = new LayerSwapAuthApiClient();
+                    const res = await apiClient.guestConnectAsync()
+                    updateAuthData(res)
+                    setUserType(UserType.GuestUser)
+                }
+                catch (error) {
+                    toast.error(error.response?.data?.error || error.message)
+                    return;
+                }
+            }
+
+            if (query.addressSource === "imxMarketplace" && settings.validSignatureisPresent) {
+                try {
+                    const account = await layerswapApiClient.GetWhitelistedAddress(swapFormData?.to?.internal_name, query.destAddress)
+                }
+                catch (e) {
+                    //TODO handle account not found
+                    const internalApiClient = new InternalApiClient()
+                    await internalApiClient.VerifyWallet(window.location.search);
+                }
+            }
+            const swapId = await createAndProcessSwap(values);
+            await router.push(`/swap/${swapId}`)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [updateSwapFormData, swap])
+    }, [updateSwapFormData, swap, settings, query])
 
     const destAddress: string = query.destAddress;
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?label=${query?.addressSource}`, layerswapApiClient.fetcher)
-    const partner = query?.addressSource && partnerData?.data?.labels?.includes(query?.addressSource) ? partnerData?.data  : undefined
+    const partner = query?.addressSource && partnerData?.data?.labels?.includes(query?.addressSource) ? partnerData?.data : undefined
 
     const isPartnerAddress = partner && destAddress;
 
@@ -155,8 +183,9 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             onSubmit={handleSubmit}
         >
             <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />
-        </Formik >
+        </Formik>
     </>
 }
 
 export default MainStep
+
