@@ -104,7 +104,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue("destination_address", '')
             try{
                 wagmiDisconnect()
-                console.log("disconnecting")
                 starknetDisconnect({ clearLastWallet: true })
             }
             catch(e){
