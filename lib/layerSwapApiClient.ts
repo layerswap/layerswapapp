@@ -20,7 +20,8 @@ export default class LayerSwapApiClient {
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
     async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
-        return await axios.get(LayerSwapApiClient.apiBaseEndpoint + '/api/settings').then(res => res.data);
+        const version = process.env.NEXT_PUBLIC_API_VERSION
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${version}`).then(res => res.data);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {
@@ -46,7 +47,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetDepositAddress(network: string, source: DepositAddressSource): Promise<ApiResponse<DepositAddress>> {
-        return await this.AuthenticatedRequest<ApiResponse<DepositAddress>>("GET", `/swaps?network=${network }&source=${source}`);
+        return await this.AuthenticatedRequest<ApiResponse<DepositAddress>>("GET", `/swaps?network=${network}&source=${source}`);
     }
 
     async GetExchangeAccounts(): Promise<ApiResponse<UserExchangesData[]>> {
@@ -87,10 +88,6 @@ export default class LayerSwapApiClient {
 
     async CreateWhitelistedAddress(params: NetworkAccountParams): Promise<ApiResponse<void>> {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/whitelisted_addresses`, params);
-    }
-
-    async ApplyNetworkInput(swapId: string, deposit_id: string): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/pending_deposit`, { deposit_id });
     }
 
     async WithdrawFromExchange(swapId: string, exchange: string, twoFactorCode?: string): Promise<ApiResponse<void>> {
@@ -187,7 +184,7 @@ export type SwapItem = {
     destination_exchange: string,
     input_transaction?: Transaction,
     output_transaction?: Transaction,
-    has_pending_deposit: boolean,
+    has_sucessfull_published_tx: boolean;
 }
 
 export type AddressBookItem = {
@@ -205,6 +202,19 @@ type Transaction = {
     transaction_id: string,
     usd_value: number
     usd_price: number
+}
+
+
+export enum PublishedSwapTransactionStatus {
+    Pending,
+    Completed
+}
+
+export type PublishedSwapTransactions = {
+    [key: string]: {
+        hash: string,
+        status: PublishedSwapTransactionStatus
+    }
 }
 
 

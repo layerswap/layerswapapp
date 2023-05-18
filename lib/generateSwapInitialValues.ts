@@ -23,7 +23,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         destAddress && initialDestination && isValidAddress(destAddress, destinationLayer) ? destAddress : "";
 
     let initialCurrency =
-        amount && filteredCurrencies.find(c => c.asset == asset)
+        filteredCurrencies.find(c => c.asset?.toUpperCase() == asset?.toUpperCase())
 
     const result: SwapFormValues = {
         from: initialSource,

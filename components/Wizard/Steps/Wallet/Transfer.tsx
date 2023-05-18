@@ -15,8 +15,11 @@ import { erc20ABI } from 'wagmi'
 import { Wallet } from "lucide-react";
 import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
-import LayerSwapApiClient from "../../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../context/swap";
+import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
+import ProcessingStep from "../ProccessingSteps";
+import { SwapWithdrawalStep } from "../../../../Models/Wizard";
 
 type Props = {
     chainId: number,
@@ -57,7 +60,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
 
     useEffect(() => {
         try {
-            const data: SwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
+            const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
             const hash = data?.[swapId]?.hash
             if (hash)
                 setSavedTransactionHash(hash)
@@ -125,8 +128,9 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     swapId,
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
-    const { mutateSwap } = useSwapDataUpdate()
+    const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
     const [buttonClicked, setButtonClicked] = useState(false)
+    const { goToStep } = useFormWizardaUpdate()
 
     const { address } = useAccount();
 
@@ -146,8 +150,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     useEffect(() => {
         try {
             if (transaction?.data?.hash) {
-                const oldData = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-                localStorage.setItem('swapTransactions', JSON.stringify({ ...oldData, [swapId]: { hash: transaction?.data?.hash } }))
+                setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Pending, transaction?.data?.hash)
             }
         }
         catch (e) {
@@ -160,8 +163,8 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
         hash: transaction?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            await applyTransaction(swapId, trxRcpt.transactionHash)
-            await mutateSwap()
+            await applyTransaction(swapId, trxRcpt.transactionHash, setSwapPublishedTx)
+            goToStep(SwapWithdrawalStep.SwapProcessing)
             setApplyingTransaction(false)
         }
     })
@@ -177,6 +180,12 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
         waitForTransaction
     ].find(d => d.isError)
 
+    const isLoading = [
+        sendTransactionPrepare,
+        transaction,
+        waitForTransaction
+    ].find(d => d.isLoading)
+
     return <>
         {
             buttonClicked &&
@@ -188,7 +197,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
             />
         }
         {
-            !transaction.isLoading &&
+            !isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 icon={<Wallet />}
@@ -216,9 +225,10 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     swapId
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
-    const { mutateSwap } = useSwapDataUpdate()
+    const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
     const { address } = useAccount();
     const [buttonClicked, setButtonClicked] = useState(false)
+    const { goToStep } = useFormWizardaUpdate()
 
     const depositAddress = userDestinationAddress === address ?
         managedDepositAddress : generatedDepositAddress
@@ -235,8 +245,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     useEffect(() => {
         try {
             if (contractWrite?.data?.hash) {
-                const oldData = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-                localStorage.setItem('swapTransactions', JSON.stringify({ ...oldData, [swapId]: { hash: contractWrite?.data?.hash } }))
+                setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Pending, contractWrite?.data?.hash);
             }
         }
         catch (e) {
@@ -254,8 +263,8 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         hash: contractWrite?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            await applyTransaction(swapId, trxRcpt.transactionHash)
-            await mutateSwap()
+            await applyTransaction(swapId, trxRcpt.transactionHash, setSwapPublishedTx)
+            goToStep(SwapWithdrawalStep.SwapProcessing)
             setApplyingTransaction(false)
         }
     })
@@ -266,9 +275,15 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         contractWrite
     ].find(d => d.isError)
 
+    const isLoading = [
+        contractWritePrepare,
+        waitForTransaction,
+        contractWrite
+    ].find(d => d.isLoading)
+
     return <>
         {
-            !contractWrite.isLoading && buttonClicked &&
+            buttonClicked &&
             <TransactionMessage
                 prepare={contractWritePrepare}
                 transaction={contractWrite}
@@ -277,6 +292,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             />
         }
         {
+            !isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 icon={<Wallet />}
@@ -457,12 +473,6 @@ const ButtonWrapper: FC<ButtonWrapperProps> = ({
     </div>
 }
 
-type SwapTransactions = {
-    [key: string]: {
-        hash: string
-    }
-}
-
 type ActionData = {
     error: Error | null;
     isError: boolean;
@@ -499,9 +509,8 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
     </div>
 }
 
-const applyTransaction = async (swapId: string, trxId: string) => {
-    const layerSwapApiClient = new LayerSwapApiClient()
-    await layerSwapApiClient.ApplyNetworkInput(swapId, trxId)
+const applyTransaction = async (swapId: string, trxId: string, setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void) => {
+    setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxId);
 }
 type ResolvedError = "insufficient_funds" | "transaction_rejected"
 

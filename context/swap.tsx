@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';
@@ -27,6 +27,7 @@ type UpdateInterface = {
     setWalletAddress: (value: string) => void,
     setDepositeAddressIsfromAccount: (value: boolean) => void,
     setWithdrawManually: (value: boolean) => void
+    setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
 }
 
 type SwapData = {
@@ -55,6 +56,15 @@ export function SwapDataProvider({ children }) {
     const swap_details_endpoint = `/swaps/${swapId}`
     const [interval, setInterval] = useState(0)
     const { data: swapResponse, mutate } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
+
+    // Store pendingTransactionId in local storage, not the best solution
+    if (swapResponse?.data) {
+        const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
+        const txForSwap = data?.[swapId];
+        if (txForSwap && txForSwap.status == PublishedSwapTransactionStatus.Completed) {
+            swapResponse.data.has_sucessfull_published_tx = true;
+        }
+    }
 
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?label=${query?.addressSource}`, layerswapApiClient.fetcher)
     const partner = query?.addressSource && partnerData?.data?.labels?.includes(query?.addressSource) ? partnerData?.data : undefined
@@ -118,6 +128,17 @@ export function SwapDataProvider({ children }) {
         await layerswapApiClient.CancelSwapAsync(swapId)
     }, [router, swapFormData])
 
+    const setSwapPublishedTx = useCallback(async (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => {
+        const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
+        const txForSwap = data?.[swapId] ?? { hash: txHash, status: PublishedSwapTransactionStatus.Pending };
+        txForSwap.status = status;
+        data[swapId] = txForSwap;
+        localStorage.setItem('swapTransactions', JSON.stringify(data))
+        if (swapResponse?.data && txForSwap && txForSwap.status == PublishedSwapTransactionStatus.Completed) {
+            swapResponse.data.has_sucessfull_published_tx = true;
+        }
+    }, [swapId, swapResponse])
+
     const createAndProcessSwap = useCallback(async (swapFormData: SwapFormValues) => {
         const newSwapId = await createSwap(swapFormData, query, settings)
         setSwapId(newSwapId)
@@ -135,7 +156,8 @@ export function SwapDataProvider({ children }) {
         mutateSwap: mutate,
         setDepositeAddressIsfromAccount,
         setWalletAddress,
-        setWithdrawManually
+        setWithdrawManually,
+        setSwapPublishedTx
     };
 
     return (
