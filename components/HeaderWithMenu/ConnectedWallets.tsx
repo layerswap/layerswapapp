@@ -81,7 +81,7 @@ export const StarknetWallet = () => {
                         <p className="text-base font-medium text-primary-text">{truncateDecimals(balance, 6)} ETH</p>
                     </div>
                     <div className="grid grid-cols-2 w-full gap-2 text-xs font-medium">
-                        <button onClick={() => setCopied(walletAddress)} type="button" className="w-full py-2 flex flex-col items-center text-white bg-darkblue-500 rounded-md gap-1 transition duration-100 hover:scale-[1.03] hover:brightness-110 active:scale-95">
+                        <button onClick={() => setCopied(walletAddress)} type="button" className="w-full py-2 flex flex-col items-center text-white bg-darkblue-500 rounded gap-1 transition duration-100 hover:scale-[1.03] hover:brightness-110 active:scale-95">
                             {
                                 isCopied ?
                                     <Check className="h-4 w-4" />
@@ -90,7 +90,7 @@ export const StarknetWallet = () => {
                             }
                             <span>Copy Address</span>
                         </button>
-                        <button onClick={handleDisconnect} type="button" className="w-full py-2 flex flex-col items-center text-white bg-darkblue-500 rounded-md gap-1 transition duration-100 hover:scale-[1.03] hover:brightness-110 active:scale-95">
+                        <button onClick={handleDisconnect} type="button" className="w-full py-2 flex flex-col items-center text-white bg-darkblue-500 rounded gap-1 transition duration-100 hover:scale-[1.03] hover:brightness-110 active:scale-95">
                             <LogOut className="h-4 w-4" />
                             <span>Disconnect</span>
                         </button>
