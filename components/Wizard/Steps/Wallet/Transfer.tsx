@@ -164,7 +164,6 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
             await applyTransaction(swapId, trxRcpt.transactionHash, setSwapPublishedTx)
-            await mutateSwap()
             goToStep(SwapWithdrawalStep.SwapProcessing)
             setApplyingTransaction(false)
         }
@@ -181,6 +180,12 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
         waitForTransaction
     ].find(d => d.isError)
 
+    const isLoading = [
+        sendTransactionPrepare,
+        transaction,
+        waitForTransaction
+    ].find(d => d.isLoading)
+
     return <>
         {
             buttonClicked &&
@@ -192,7 +197,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
             />
         }
         {
-            !transaction.isLoading &&
+            !isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 icon={<Wallet />}
@@ -259,7 +264,6 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
             await applyTransaction(swapId, trxRcpt.transactionHash, setSwapPublishedTx)
-            await mutateSwap()
             goToStep(SwapWithdrawalStep.SwapProcessing)
             setApplyingTransaction(false)
         }
@@ -270,6 +274,12 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         waitForTransaction,
         contractWrite
     ].find(d => d.isError)
+
+    const isLoading = [
+        contractWritePrepare,
+        waitForTransaction,
+        contractWrite
+    ].find(d => d.isLoading)
 
     return <>
         {
@@ -282,7 +292,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             />
         }
         {
-            !contractWrite.isLoading &&
+            !isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 icon={<Wallet />}
