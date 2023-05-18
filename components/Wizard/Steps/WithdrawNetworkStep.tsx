@@ -29,11 +29,12 @@ import SecondaryButton from '../../buttons/secondaryButton';
 import WarningMessage from '../../WarningMessage';
 import { ApiResponse } from '../../../Models/ApiResponse';
 import useSWR from 'swr';
+import SwapInformation from '../../SwapInformation';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
     const [transferDoneTime, setTransferDoneTime] = useState<number>()
-    const { networks, resolveImgSrc } = useSettingsState()
+    const { layers, resolveImgSrc, currencies } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { email, userId } = useAuthState()
     const [loadingSwapCancel, setLoadingSwapCancel] = useState(false)
@@ -44,9 +45,11 @@ const WithdrawNetworkStep: FC = () => {
     const goHome = useGoHome()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
     const [showSwapGuide, setShowSwapGuide] = useState(false)
-    const source_network = networks.find(n => n.internal_name === source_network_internal_name)
-    const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
-    const asset = source_network?.currencies?.find(currency => currency?.asset === destination_network_asset)
+    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
+    const destination = layers.find(l => l.internal_name === (swap?.destination_exchange ?? swap?.destination_network))
+    const sourceCurrency = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
+    const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
+    const currency = currencies?.find(c => c.asset === asset.asset)
 
     const layerswapApiClient = new LayerSwapApiClient()
 
@@ -121,6 +124,15 @@ const WithdrawNetworkStep: FC = () => {
                                 </p>
                             </div>
                             <div className='mb-6 grid grid-cols-1 gap-4'>
+                                <SwapInformation
+                                    currency={currency}
+                                    source={source_network}
+                                    destination={destination}
+                                    requestedAmount={swap?.requested_amount}
+                                    destinationAddress={swap?.destination_address}
+                                    refuelAmount={swap?.refuel_amount}
+                                />
+
                                 <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
                                     <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
                                         <div className='flex items-center gap-1 text-sm my-2'>
@@ -189,7 +201,7 @@ const WithdrawNetworkStep: FC = () => {
                                                     {
                                                         asset &&
                                                         <Image
-                                                            src={resolveImgSrc({ asset: asset?.name })}
+                                                            src={resolveImgSrc({ asset: asset?.asset })}
                                                             alt="From Logo"
                                                             height="60"
                                                             width="60"
@@ -197,7 +209,7 @@ const WithdrawNetworkStep: FC = () => {
                                                         />
                                                     }
                                                 </div>
-                                                <div className="mx-1 block">{asset?.name}</div>
+                                                <div className="mx-1 block">{asset?.asset}</div>
                                             </div>
                                         </BackgroundField>
                                     </div>
@@ -241,7 +253,7 @@ const WithdrawNetworkStep: FC = () => {
                                     <div className='absolute top-2 left-2 w-2 h-2 md:w-3 md:h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
                                     <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
                                 </div>
-                                <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to send {asset?.name}</label>
+                                <label className="text-xs self-center md:text-sm sm:font-semibold text-primary-text">Waiting for you to send {asset?.asset}</label>
                             </div>
                             <div className="flex flex-row text-white text-base space-x-2">
                                 <div className='basis-1/3'>

@@ -16,6 +16,7 @@ type LayerData = ({
 } | {
     isExchange: false;
     assets?: BaseL2Asset[];
+    native_currency?: string;
 })
 
 export type BaseL2Asset = {
@@ -23,7 +24,9 @@ export type BaseL2Asset = {
     network_internal_name: string;
     network: CryptoNetwork;
     is_default: boolean;
-    status: LayerStatus
+    status: LayerStatus;
+    contract_address?: string;
+    decimals?: number
 }
 
 export type ExchangeL2Asset = {

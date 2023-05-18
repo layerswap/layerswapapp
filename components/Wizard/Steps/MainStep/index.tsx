@@ -19,7 +19,6 @@ import { generateSwapInitialValues } from "../../../../lib/generateSwapInitialVa
 import LayerSwapApiClient, { SwapType } from "../../../../lib/layerSwapApiClient";
 import Modal from "../../../modal/modal";
 import SwapForm from "./SwapForm";
-import { isValidAddress } from "../../../../lib/addressValidator";
 import NetworkSettings from "../../../../lib/NetworkSettings";
 import { useRouter } from "next/router";
 import useSWR from "swr";
@@ -47,7 +46,6 @@ const MainStep: FC = () => {
     let formValues = formikRef.current?.values;
 
     const settings = useSettingsState();
-    const { resolveImgSrc } = settings || {}
     const query = useQueryState();
     const { updateSwapFormData, clearSwap, setDepositeAddressIsfromAccount, createAndProcessSwap } = useSwapDataUpdate()
 
