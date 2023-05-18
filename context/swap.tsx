@@ -134,6 +134,9 @@ export function SwapDataProvider({ children }) {
         txForSwap.status = status;
         data[swapId] = txForSwap;
         localStorage.setItem('swapTransactions', JSON.stringify(data))
+        if (txForSwap && txForSwap.status == PublishedSwapTransactionStatus.Completed) {
+            swapResponse.data.has_sucessfull_published_tx = true;
+        }
     }, [swapId, swapFormData])
 
     const createAndProcessSwap = useCallback(async (TwoFACode?: string) => {
