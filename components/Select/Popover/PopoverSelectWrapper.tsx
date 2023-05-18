@@ -26,7 +26,7 @@ export default function PopoverSelectWrapper<T>({
     }, [])
 
     return (
-        <Popover open={showModal} onOpenChange={()=> setShowModal(!showModal)}>
+        <Popover open={showModal} onOpenChange={() => setShowModal(!showModal)}>
             <PopoverTrigger asChild>
                 {
                     value &&

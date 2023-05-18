@@ -5,14 +5,15 @@ import { FilterCurrencies, FilterDestinationLayers, FilterSourceLayers } from ".
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
-    const { destAddress, amount, asset, from, to } = queryParams
+    const { destAddress, amount, asset, from, to, lockAsset } = queryParams
     const { currencies, layers } = settings || {}
 
+    const lockedCurrency = lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : null
     const sourceLayer = layers.find(l => l.internal_name.toUpperCase() === from?.toUpperCase())
     const destinationLayer = layers.find(l => l.internal_name.toUpperCase() === to?.toUpperCase())
 
-    const sourceItems = FilterSourceLayers(layers, destinationLayer)
-    const destinationItems = FilterDestinationLayers(layers, sourceLayer)
+    const sourceItems = FilterSourceLayers(layers, destinationLayer, lockedCurrency)
+    const destinationItems = FilterDestinationLayers(layers, sourceLayer, lockedCurrency)
 
     const initialSource = sourceLayer ? sourceItems.find(i => i == sourceLayer) : null
     const initialDestination = destinationLayer ? destinationItems.find(i => i === destinationLayer) : null

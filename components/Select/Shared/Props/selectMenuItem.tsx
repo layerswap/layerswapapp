@@ -1,4 +1,4 @@
-import { DisabledReason } from "../../Popover/PopoverSelect";
+import { LayerDisabledReason } from "../../Popover/PopoverSelect";
 
 export class SelectMenuItem<T> implements ISelectMenuItem {
     id: string;
@@ -7,7 +7,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     imgSrc: string;
     isAvailable: {
         value: boolean;
-        disabledReason: DisabledReason | null
+        disabledReason: LayerDisabledReason | null
     };
     group?: string;
     baseObject: T;
@@ -32,6 +32,6 @@ export interface ISelectMenuItem {
     group?: string;
     isAvailable: {
         value: boolean;
-        disabledReason: DisabledReason | null
+        disabledReason: LayerDisabledReason | null
     };
 }
