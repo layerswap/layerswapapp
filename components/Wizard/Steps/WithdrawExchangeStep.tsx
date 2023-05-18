@@ -172,7 +172,7 @@ const WithdrawExchangeStep: FC = () => {
             value={generatedDepositAddress}
             size={120}
             bgColor={colors.white}
-            fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
+            fgColor={tailwindConfig.theme.extend.colors.secondary.DEFAULT}
             level={"H"}
         />
     );
@@ -204,13 +204,13 @@ const WithdrawExchangeStep: FC = () => {
                                     </p>
                                 </div>
                                 <div className={`mb-6 grid grid-cols-1 gap-5 `}>
-                                    <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
-                                        <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
+                                    <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
+                                        <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
                                             <div className='flex items-center gap-1 text-sm my-2'>
                                                 <span>Network:</span>
                                                 {sourceNetworks.length === 1 ?
                                                     <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
-                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={resolveImgSrc(sourceNetworks?.[0])}></Image>
+                                                        <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(sourceNetworks?.[0])}></Image>
                                                         <span>{sourceNetworks?.[0]?.display_name}</span>
                                                     </div>
                                                     :
@@ -263,7 +263,7 @@ const WithdrawExchangeStep: FC = () => {
                                                 }
                                             </div>
                                         </BackgroundField>
-                                        <div className='flex divide-x divide-darkblue-500'>
+                                        <div className='flex divide-x divide-secondary-500'>
                                             <BackgroundField Copiable toCopy={swap?.requested_amount} header={'Amount'} withoutBorder>
                                                 <p>
                                                     {swap?.requested_amount}
@@ -299,9 +299,9 @@ const WithdrawExchangeStep: FC = () => {
                                     <div className='grid grid-cols-2 w-full items-center gap-2'>
                                         {
                                             source_exchange_settings?.ExchangeWithdrawalGuideUrl &&
-                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} />
+                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-secondary-800 w-full text-primary-text' userGuideUrl={source_exchange_settings?.ExchangeWithdrawalGuideUrl} />
                                         }
-                                        <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={() => setShowSwapGuideModal(true)}>
+                                        <SecondaryButton className='bg-secondary-800 w-full text-primary-text' onClick={() => setShowSwapGuideModal(true)}>
                                             How it works
                                         </SecondaryButton>
                                     </div>

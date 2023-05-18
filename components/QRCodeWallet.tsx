@@ -24,7 +24,7 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconW
             value={qrUrl}
             size={250}
             bgColor={colors.white}
-            fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
+            fgColor={tailwindConfig.theme.extend.colors.secondary.DEFAULT}
             level={"H"}
         />
     );

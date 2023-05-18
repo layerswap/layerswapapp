@@ -201,7 +201,7 @@ module.exports = {
               'buttonTextColor': '#ffffff',
               'logoColor': '#FF0093'
             },
-            darkblue: {
+            secondary: {
               DEFAULT: '#111D36',
               '50': '#313C9B',
               '100': '#2E3B93',
@@ -241,7 +241,7 @@ module.exports = {
                 'buttonTextColor': '#000000',
                 'logoColor': '#ffffffff'
               },
-              darkblue: {
+              secondary: {
                 DEFAULT: '#111D36',
                 '50': '#313C9B',
                 '100': '#2E3B93',

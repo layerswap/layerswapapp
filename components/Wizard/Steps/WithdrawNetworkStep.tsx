@@ -101,7 +101,7 @@ const WithdrawNetworkStep: FC = () => {
             value={generatedDepositAddress}
             size={120}
             bgColor={colors.white}
-            fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
+            fgColor={tailwindConfig.theme.extend.colors.secondary.DEFAULT}
             level={"H"}
         />
     );
@@ -121,12 +121,12 @@ const WithdrawNetworkStep: FC = () => {
                                 </p>
                             </div>
                             <div className='mb-6 grid grid-cols-1 gap-4'>
-                                <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
-                                    <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
+                                <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
+                                    <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
                                         <div className='flex items-center gap-1 text-sm my-2'>
                                             <span>Network:</span>
                                             <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
-                                                <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-darkblue-600' src={resolveImgSrc(source_network)}></Image>
+                                                <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(source_network)}></Image>
                                                 <span>{source_network?.display_name}</span>
                                             </div>
                                         </div>
@@ -159,7 +159,7 @@ const WithdrawNetworkStep: FC = () => {
                                             }
                                             {
                                                 (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                                                <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-darkblue-100 rounded border-dashed'>
+                                                <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-secondary-100 rounded border-dashed'>
                                                     <p>
                                                         You might get a warning that this is not an activated address. You can ignore it.
                                                     </p>
@@ -177,7 +177,7 @@ const WithdrawNetworkStep: FC = () => {
                                             </BackgroundField>
                                         </div>
                                     }
-                                    <div className='flex divide-x divide-darkblue-500'>
+                                    <div className='flex divide-x divide-secondary-500'>
                                         <BackgroundField Copiable={true} toCopy={swap?.requested_amount} header={'Amount'} withoutBorder>
                                             <p>
                                                 {swap?.requested_amount}
@@ -206,9 +206,9 @@ const WithdrawNetworkStep: FC = () => {
                                     !canWithdrawWithWallet &&
                                     <div className='grid grid-cols-2 w-full items-center gap-2'>
                                         {!swap?.destination_exchange &&
-                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-darkblue-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop ?? 'https://docs.layerswap.io/user-docs/your-first-swap/cross-chain'} />
+                                            <GuideLink button='End-to-end guide' buttonClassNames='bg-secondary-800 w-full text-primary-text' userGuideUrl={userGuideUrlForDesktop ?? 'https://docs.layerswap.io/user-docs/your-first-swap/cross-chain'} />
                                         }
-                                        <SecondaryButton className='bg-darkblue-800 w-full text-primary-text' onClick={() => setShowSwapGuide(true)}>
+                                        <SecondaryButton className='bg-secondary-800 w-full text-primary-text' onClick={() => setShowSwapGuide(true)}>
                                             How it works
                                         </SecondaryButton>
                                     </div>
@@ -220,7 +220,7 @@ const WithdrawNetworkStep: FC = () => {
                 <Widget.Footer>
                     {
                         canWithdrawWithWallet && swap && generatedDepositAddress && managedDepositAddress &&
-                        <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
+                        <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
                             <TransferFromWallet
                                 swapId={swap.id}
                                 networkDisplayName={source_network?.display_name}

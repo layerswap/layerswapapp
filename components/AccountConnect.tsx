@@ -135,7 +135,7 @@ function UserExchanges() {
 
     return (
         <>
-            <div className='bg-darkblue-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[600px]'>
+            <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[600px]'>
                 <HeaderWithMenu goBack={handleGoBack}></HeaderWithMenu>
                 <div className="hidden md:block px-6">
                     <p className="text-2xl font-bold relative">Account</p>
@@ -161,7 +161,7 @@ function UserExchanges() {
                                                         key={item.internal_name}
                                                         value={item}
                                                         disabled={false}
-                                                        className={`bg-darkblue-700  select-none rounded-lg p-3`}
+                                                        className={`bg-secondary-700  select-none rounded-lg p-3`}
                                                         onClick={() => { }}
                                                     >
                                                         {({ active }) => (

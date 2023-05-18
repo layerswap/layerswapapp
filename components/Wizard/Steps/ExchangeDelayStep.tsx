@@ -13,7 +13,7 @@ const ExchangeDelay: FC = () => {
                 </MessageComponent.Header>
                 <MessageComponent.Description>
                     <p>This swap is being delayed by Coinbase. This usually means that the exchange needs additional verification.</p>
-                    <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500'>
+                    <div className='p-4 bg-secondary-700 text-white rounded-lg border border-secondary-500'>
                         <div className="flex items-center">
                             <Info className='h-5 w-5 text-primary-600 mr-3' />
                             <label className="block text-sm md:text-base font-medium leading-6">What to do?</label>

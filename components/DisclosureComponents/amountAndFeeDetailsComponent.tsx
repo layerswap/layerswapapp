@@ -42,7 +42,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
 
     return (
         <>
-            <div className="mx-auto relative w-full rounded-lg border border-darkblue-500 hover:border-darkblue-300 bg-darkblue-700 px-3.5 py-3 z-[1] transition-all duration-200">
+            <div className="mx-auto relative w-full rounded-lg border border-secondary-500 hover:border-secondary-300 bg-secondary-700 px-3.5 py-3 z-[1] transition-all duration-200">
                 <Accordion type="single" collapsible>
                     <AccordionItem value={'item-1'}>
                         <AccordionTrigger className="items-center flex w-full relative gap-2 rounded-lg text-left text-base font-medium">
@@ -118,7 +118,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                         y: "-100%",
                         transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
                     }}
-                    className='w-full flex items-center justify-between rounded-b-lg bg-darkblue-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
+                    className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
                     <div className='flex items-center'>
                         <p>Est. {campaignAsset?.asset} Reward</p>
                         <ClickTooltip text={<span>The amount of onboarding reward that you’ll earn. <a target='_blank' href='/rewards' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
