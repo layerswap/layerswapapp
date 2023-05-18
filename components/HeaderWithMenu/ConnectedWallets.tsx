@@ -18,12 +18,13 @@ import { Contract, uint256 } from "starknet"
 import Erc20Abi from "../../lib/abis/ERC20.json"
 import { BigNumber, utils } from "ethers"
 import { truncateDecimals } from "../utils/RoundDecimals"
+import Modal from "../modal/modal"
 
-export const StarknetWallet = () => {
-
+export const ConnectedWallets = () => {
+    const { isConnected, connector } = useAccount();
     const [account, setAccount] = useState<StarknetWindowObject>()
-    const [isCopied, setCopied] = useCopyClipboard()
     const [balance, setBalance] = useState(0)
+    const [showModal, setShowModal] = useState(false)
     const starknet = getStarknet()
     const walletAddress = account?.selectedAddress
 
@@ -51,6 +52,56 @@ export const StarknetWallet = () => {
         setAccount(null);
         disconnect({ clearLastWallet: true })
     }
+
+    if (isConnected && account) {
+        return (
+            <>
+                <IconButton onClick={() => setShowModal(true)} icon={
+                    <div className="relative">
+                        <WalletIcon className="h-6 w-6" strokeWidth="2" />
+                        {
+                            <span className="absolute -bottom-1.5 -left-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                                <Image width={16} height={16} src={account.icon} className=" border-2 border-darkblue-600 rounded-full bg-primary-text" alt={account.id} />
+                            </span>
+                        }
+                        {
+                            <span className="absolute -bottom-1.5 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                                <ResolveWalletIcon connector={connector?.id} className="w-4 h-4 border-2 border-darkblue-600 rounded-full bg-primary-text" />
+                            </span>
+                        }
+                    </div>
+                } />
+                <Modal header={'Connected wallets'} height="fit" show={showModal} setShow={setShowModal}>
+                    <div className="grid grid-cols-2 items-center place-items-center gap-5">
+                        <div className="bg-darkblue-700 rounded-lg border-2 border-darkblue-500 py-3 w-full flex justify-center items-center gap-4">
+                            <StarknetWallet walletAddress={walletAddress} account={account} balance={balance} handleDisconnect={handleDisconnect} />
+                            <p>
+                                {account.name}
+                            </p>
+                        </div>
+                        <div className="bg-darkblue-700 rounded-lg border-2 border-darkblue-500 py-3 w-full flex justify-center items-center gap-4">
+                            <RainbowKitConnectWallet />
+                            <p>
+                                {connector.name}
+                            </p>
+                        </div>
+
+                    </div>
+                </Modal>
+            </>
+        )
+    } else if (!isConnected && account) {
+        return <StarknetWallet walletAddress={walletAddress} account={account} balance={balance} handleDisconnect={handleDisconnect} />
+    } else if (isConnected && !account) {
+        return <RainbowKitConnectWallet />
+    } else if (!isConnected && !account) {
+        return <RainbowKitConnectWallet />
+    }
+
+}
+
+export const StarknetWallet = ({ walletAddress, account, balance, handleDisconnect }: { walletAddress: string, account: StarknetWindowObject, balance: number, handleDisconnect: () => void }) => {
+    const [isCopied, setCopied] = useCopyClipboard()
 
     return walletAddress ?
         <Dialog>
@@ -106,7 +157,7 @@ export const RainbowKitConnectWallet = () => {
         {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
             const connected = !!(mounted && account && chain)
             const { connector } = useAccount()
-            return <IconButton onClick={() => connected ? openAccountModal() : openConnectModal()} icon={
+            return <IconButton className="justify-self-center" onClick={() => connected ? openAccountModal() : openConnectModal()} icon={
                 connected ?
                     <div className="font-bold grow flex space-x-2">
                         <div className="inline-flex items-center relative">
