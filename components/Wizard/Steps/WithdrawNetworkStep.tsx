@@ -101,7 +101,7 @@ const WithdrawNetworkStep: FC = () => {
             value={generatedDepositAddress}
             size={120}
             bgColor={colors.white}
-            fgColor={tailwindConfig.theme.extend.colors.secondary.DEFAULT}
+            fgColor={'#000000'}
             level={"H"}
         />
     );
