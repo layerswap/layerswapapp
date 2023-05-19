@@ -1,7 +1,7 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
-import { FilterCurrencies, FilterDestinationLayers, FilterSourceLayers } from "../helpers/settingsHelper";
+import { FilterDestinationLayers, FilterSourceLayers } from "../helpers/settingsHelper";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
@@ -18,13 +18,11 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     const initialSource = sourceLayer ? sourceItems.find(i => i == sourceLayer) : null
     const initialDestination = destinationLayer ? destinationItems.find(i => i === destinationLayer) : null
 
-    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : FilterCurrencies(currencies, sourceLayer, destinationLayer);
-
     let initialAddress =
         destAddress && initialDestination && isValidAddress(destAddress, destinationLayer) ? destAddress : "";
 
     let initialCurrency =
-        filteredCurrencies.find(c => c.asset?.toUpperCase() == asset?.toUpperCase())
+        currencies.find(c => c.asset?.toUpperCase() == asset?.toUpperCase())
 
     let initialAmount = 
         (lockedCurrency && amount) || (initialCurrency ? amount : '')
