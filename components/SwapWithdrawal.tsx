@@ -18,7 +18,7 @@ const SwapWithdrawal: FC = () => {
     }, [])
 
     if (!swap)
-        return <div className={`pb-6 bg-darkblue-900 shadow-card rounded-lg w-full overflow-hidden relative animate-pulse h-[548px]`}>
+        return <div className={`pb-6 bg-secondary-900 shadow-card rounded-lg w-full overflow-hidden relative animate-pulse h-[548px]`}>
 
         </div>
 

@@ -67,7 +67,7 @@ export default function () {
                                     }}
                                     className="relative z-20 py-1">
                                     <Menu.Items
-                                        className="font-bold text-sm text-left border border-darkblue-500 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-darkblue-900 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                        className="font-bold text-sm text-left border border-secondary-500 origin-top-right absolute -right-7 mt-2 w-fit min-w-[150px] rounded-md shadow-lg bg-secondary-900 ring-1 ring-black ring-opacity-5 focus:outline-none">
                                         <div className="relative z-30 py-1">
                                             {
                                                 isConnected &&

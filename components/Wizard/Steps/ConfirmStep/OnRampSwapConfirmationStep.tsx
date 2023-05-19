@@ -182,7 +182,7 @@ const OnRampSwapConfirmationStep: FC = () => {
                                 type={"text"}
                                 name="destination_address"
                                 id="destination_address"
-                                className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-0 focus:border-primary block font-semibold w-full bg-darkblue-700 border-darkblue-500 border rounded-md truncate'}
+                                className={'disabled:cursor-not-allowed h-12 leading-4 focus:ring-0 focus:border-primary block font-semibold w-full bg-secondary-700 border-secondary-500 border rounded-md truncate'}
                             />
                             {
                                 addressInputError &&

@@ -39,7 +39,7 @@ export function GetDefaultAsset(layer: Layer, asset: string) {
         ?.find(a => a.is_default && a.asset === asset)
 }
 
-export function FilterSourceLayers(layers: Layer[], destination?: Layer): Layer[] {
+export function FilterSourceLayers(layers: Layer[], destination?: Layer, lockedCurrency?: Currency): Layer[] {
     const IsAvailableForSomeLayer = (asset: string, source: Layer) =>
         layers.some(l => IsAvailableForLayer(asset, source, l))
 
@@ -48,6 +48,7 @@ export function FilterSourceLayers(layers: Layer[], destination?: Layer): Layer[
 
         const layerHasAvailableL2 = l.assets.some(l2Asset =>
             l2Asset.is_default
+            && (!lockedCurrency || l2Asset?.asset === lockedCurrency?.asset)
             && (destination
                 ? IsAvailableForLayer(l2Asset.asset, l, destination)
                 : IsAvailableForSomeLayer(l2Asset.asset, l)))
@@ -88,7 +89,7 @@ const IsAvailableForLayer = (asset: string, source: Layer, destination: Layer) =
     return sourceASsetIsAvailable && destinationAssetIsAvailable
 }
 
-export function FilterDestinationLayers(layers: Layer[], source?: Layer): Layer[] {
+export function FilterDestinationLayers(layers: Layer[], source?: Layer, lockedCurrency?: Currency): Layer[] {
 
     const IsAvailableForSomeLayer = (asset: string, destination: Layer) =>
         layers.some(l => IsAvailableForLayer(asset, l, destination))
@@ -98,7 +99,9 @@ export function FilterDestinationLayers(layers: Layer[], source?: Layer): Layer[
             && source?.internal_name !== l.internal_name;
 
         const layerHasAvailableL2 = l.assets.some(l2Asset =>
-            l2Asset.is_default && (source ? IsAvailableForLayer(l2Asset.asset, source, l)
+            l2Asset.is_default 
+            && (!lockedCurrency || l2Asset?.asset === lockedCurrency?.asset)
+            && (source ? IsAvailableForLayer(l2Asset.asset, source, l)
                 : IsAvailableForSomeLayer(l2Asset.asset, l)))
 
         return isAvailable && layerHasAvailableL2
