@@ -99,6 +99,9 @@ const OnRampSwapConfirmationStep: FC = () => {
             else if (data.code === KnownwErrorCode.ACTIVE_SWAP_LIMIT_EXCEEDED) {
                 goToStep(SwapCreateStep.ActiveSwapLimit)
             }
+            else if (data?.code === KnownwErrorCode.BLACKLISTED_ADDRESS) {
+                toast.error('You can’t transfer to that address. Please double check your wallet’s address and change it in the previous page.')
+            }
             else {
                 toast.error(data.message)
             }

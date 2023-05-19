@@ -90,12 +90,6 @@ const WithdrawNetworkStep: FC = () => {
         }
     }, [swap])
 
-    const onTRansactionComplete = async (trxId: string) => {
-        const layerSwapApiClient = new LayerSwapApiClient()
-        await layerSwapApiClient.ApplyNetworkInput(swap.id, trxId)
-        await mutateSwap()
-    }
-
     const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
     const userGuideUrlForDesktop = sourceNetworkSettings?.UserGuideUrlForDesktop
     const sourceChainId = sourceNetworkSettings?.ChainId

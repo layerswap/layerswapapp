@@ -3,8 +3,9 @@ import { SwapStatus } from "../../Models/SwapStatus";
 import { SwapWithdrawalStep } from "../../Models/Wizard";
 
 export const GetSwapStatusStep = (swap: SwapItem): SwapWithdrawalStep => {
+
     const swapStatus = swap?.status;
-    if ((swapStatus == SwapStatus.UserTransferPending && (swap.has_pending_deposit || swap.input_transaction))
+    if ((swapStatus == SwapStatus.UserTransferPending && (swap.has_sucessfull_published_tx || swap.input_transaction))
         || (swapStatus == SwapStatus.LsTransferPending))
         return SwapWithdrawalStep.SwapProcessing
     else if (swapStatus == SwapStatus.UserTransferPending)
