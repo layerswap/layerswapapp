@@ -6,7 +6,7 @@ import SubmitButton from '../../../buttons/submitButton';
 import ImtblClient from '../../../../lib/imtbl';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource, PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import { useInterval } from '../../../../hooks/useInterval';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
@@ -26,8 +26,7 @@ const ImtblxWalletWithdrawStep: FC = () => {
     const [transactionId, setTransactionId] = useState<string>()
     const [transferDone, setTransferDone] = useState<boolean>()
     const { walletAddress, swap } = useSwapDataState()
-    const { setWalletAddress } = useSwapDataUpdate()
-    const { setInterval } = useSwapDataUpdate()
+    const { setWalletAddress, setInterval, setSwapPublishedTx } = useSwapDataUpdate()
     const { networks } = useSettingsState()
     const { goToStep, setError } = useFormWizardaUpdate<SwapWithdrawalStep>()
 
@@ -45,8 +44,7 @@ const ImtblxWalletWithdrawStep: FC = () => {
     const applyNetworkInput = useCallback(async () => {
         try {
             setApplyCount(old => old + 1)
-            const layerSwapApiClient = new LayerSwapApiClient()
-            await layerSwapApiClient.ApplyNetworkInput(swap.id, transactionId)
+            setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transactionId);
             setTxidApplied(true)
         }
         catch (e) {
