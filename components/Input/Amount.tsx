@@ -35,7 +35,7 @@ const AmountField = forwardRef((_, ref: any) => {
                 maxAllowedAmount={maxAllowedAmount}
                 minAllowedAmount={minAllowedAmount}
             />}
-            disabled={!(currency && to && from)}
+            disabled={!currency}
             placeholder={placeholder}
             min={minAllowedAmount}
             max={maxAllowedAmount}
