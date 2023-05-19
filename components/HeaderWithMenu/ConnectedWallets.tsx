@@ -63,20 +63,9 @@ export const ConnectedWallets = () => {
                     <WalletIcon className="h-6 w-6" strokeWidth="2" />
                 } />
                 <Modal header={'Connected wallets'} height="fit" show={showModal} setShow={setShowModal}>
-                    <div className="grid grid-cols-2 items-center place-items-center gap-5">
-                        <div className="bg-darkblue-700 rounded-lg border-2 border-darkblue-500 py-3 w-full flex justify-center items-center gap-4">
-                            <StarknetWallet walletAddress={walletAddress} account={account} balance={balance} handleDisconnect={handleDisconnect} />
-                            <p>
-                                {account.name}
-                            </p>
-                        </div>
-                        <div className="bg-darkblue-700 rounded-lg border-2 border-darkblue-500 py-3 w-full flex justify-center items-center gap-4">
-                            <RainbowKitConnectWallet />
-                            <p>
-                                {connector?.name}
-                            </p>
-                        </div>
-
+                    <div className="grid grid-cols-2 items-center place-items-center gap-5 mt-2">
+                        <StarknetWallet walletAddress={walletAddress} account={account} balance={balance} handleDisconnect={handleDisconnect} isButton />
+                        <RainbowKitConnectWallet isButton />
                     </div>
                 </Modal>
             </>
@@ -90,22 +79,39 @@ export const ConnectedWallets = () => {
     }
 }
 
-export const StarknetWallet = ({ walletAddress, account, balance, handleDisconnect }: { walletAddress: string, account: StarknetWindowObject, balance: number, handleDisconnect: () => void }) => {
+export const StarknetWallet = ({ walletAddress, account, balance, handleDisconnect, isButton }: { walletAddress: string, account: StarknetWindowObject, balance: number, handleDisconnect: () => void, isButton?: boolean }) => {
     const [isCopied, setCopied] = useCopyClipboard()
 
     return walletAddress ?
         <Dialog>
-            <DialogTrigger>
-                <div className="font-bold grow flex space-x-2 -mx-2 py-1.5 px-2 justify-self-start text-primary-text hover:bg-darkblue-500 hover:text-white focus:outline-none rounded-lg items-center">
-                    <div className="inline-flex items-center relative">
-                        <AddressIcon address={walletAddress} size={25} />
-                        {
-                            <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
-                                <Image width={20} height={20} src={account.icon} className="border-2 border-darkblue-600 rounded-full bg-primary-text" alt={account.id} />
-                            </span>
-                        }
-                    </div>
-                </div>
+            <DialogTrigger className="w-full h-full">
+                {
+                    isButton ?
+                        <div className="bg-darkblue-700 rounded-lg border-2 border-darkblue-500 hover:brightness-110 active:scale-90 transition duration-100 py-4 w-full flex justify-center items-center gap-4">
+                            <div className="inline-flex items-center relative">
+                                <AddressIcon address={walletAddress} size={25} />
+                                {
+                                    <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                                        <Image width={20} height={20} src={account.icon} className="border-2 border-darkblue-600 rounded-full bg-primary-text" alt={account.id} />
+                                    </span>
+                                }
+                            </div>
+                            <p>
+                                {account.name}
+                            </p>
+                        </div>
+                        :
+                        <div className="font-bold grow flex space-x-2 -mx-2 py-1.5 px-2 justify-self-start text-primary-text hover:bg-darkblue-500 hover:text-white focus:outline-none rounded-lg items-center">
+                            <div className="inline-flex items-center relative">
+                                <AddressIcon address={walletAddress} size={25} />
+                                {
+                                    <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                                        <Image width={20} height={20} src={account.icon} className="border-2 border-darkblue-600 rounded-full bg-primary-text" alt={account.id} />
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                }
             </DialogTrigger>
             <DialogContent>
                 <div className="flex flex-col items-center text-white gap-3">
@@ -142,26 +148,42 @@ export const StarknetWallet = ({ walletAddress, account, balance, handleDisconne
         : <></>
 }
 
-export const RainbowKitConnectWallet = () => {
+export const RainbowKitConnectWallet = ({ isButton }: { isButton?: boolean }) => {
     return <ConnectButton.Custom>
         {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
             const connected = !!(mounted && account && chain)
             const { connector } = useAccount()
-            return <IconButton className="justify-self-center" onClick={() => connected ? openAccountModal() : openConnectModal()} icon={
-                connected ?
-                    <div className="font-bold grow flex space-x-2">
-                        <div className="inline-flex items-center relative">
-                            <AddressIcon address={account.address} size={25} />
-                            {
-                                connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
-                                    <ResolveWalletIcon connector={connector?.id} className="w-5 h-5 border-2 border-darkblue-600 rounded-full bg-primary-text" />
-                                </span>
-                            }
-                        </div>
-                    </div>
-                    : <WalletIcon className="h-6 w-6" strokeWidth="2" />
-            }>
-            </IconButton>
+            return <button className="justify-self-center w-full" onClick={() => connected ? openAccountModal() : openConnectModal()} >
+                {
+                    connected ?
+                        isButton ?
+                            <div className="bg-darkblue-700 rounded-lg border-2 border-darkblue-500 hover:brightness-110 active:scale-90 transition duration-100 py-4 w-full flex justify-center items-center gap-4">
+                                <div className="inline-flex items-center relative">
+                                    <AddressIcon address={account.address} size={25} />
+                                    {
+                                        connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                                            <ResolveWalletIcon connector={connector?.id} className="w-5 h-5 border-2 border-darkblue-600 rounded-full bg-primary-text" />
+                                        </span>
+                                    }
+                                </div>
+                                <p>
+                                    {connector?.name}
+                                </p>
+                            </div>
+                            :
+                            <div className="font-bold grow flex space-x-2 -mx-2 py-1.5 px-2 justify-self-start text-primary-text hover:bg-darkblue-500 hover:text-white focus:outline-none rounded-lg items-center">
+                                <div className="inline-flex items-center relative">
+                                    <AddressIcon address={account.address} size={25} />
+                                    {
+                                        connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                                            <ResolveWalletIcon connector={connector?.id} className="w-5 h-5 border-2 border-darkblue-600 rounded-full bg-primary-text" />
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        : <WalletIcon className="h-6 w-6 text-primary-text" strokeWidth="2" />
+                }
+            </button>
         }}
     </ConnectButton.Custom>
 }
