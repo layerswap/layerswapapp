@@ -33,35 +33,35 @@ const SwapInformation: FC<SwapInfoProps> = ({ currency, source, destination, req
 
     return (
         <div>
-            <div className="bg-darkblue-700 rounded-md flex flex-col border border-darkblue-500 w-full relative z-10">
-                <div className="flex items-center justify-between w-full px-3 py-1.5 border-b border-darkblue-500">
+            <div className="bg-darkblue-700 rounded-lg flex flex-col border border-darkblue-500 w-full relative z-10">
+                <div className="flex items-center justify-between w-full px-3 py-2 border-b border-darkblue-500">
                     <div className="flex items-center gap-2">
                         <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={30} height={30} className="rounded-md" />
                         <div>
-                            <p className="text-primary-text leading-5">{sourceDisplayName}</p>
+                            <p className="text-primary-text text-xl leading-5">{sourceDisplayName}</p>
                             {
                                 isConnected && !source.isExchange &&
-                                <p className="text-xs text-primary-text">{shortenAddress(address)}</p>
+                                <p className="text-md text-primary-text">{shortenAddress(address)}</p>
                             }
                         </div>
                     </div>
                     <div className="flex flex-col font-light">
-                        <p className="text-white">{requestedAmount} {currency.asset}</p>
-                        <p className="text-primary-text text-xs flex justify-end">${requestedAmountInUsd}</p>
+                        <p className="text-white text-xl">{requestedAmount} {currency.asset}</p>
+                        <p className="text-primary-text text-md flex justify-end">${requestedAmountInUsd}</p>
                     </div>
                 </div>
                 <ArrowDown className="h-4 w-4 text-primary-text absolute top-[calc(50%-8px)] left-[calc(50%-8px)]" />
-                <div className="flex items-center justify-between w-full px-3 py-1.5">
+                <div className="flex items-center justify-between w-full px-3 py-2">
                     <div className="flex items-center gap-2">
                         <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={30} height={30} className="rounded-md" />
                         <div>
-                            <p className="text-primary-text leading-5">{destinationDisplayName}</p>
-                            <p className="text-xs text-primary-text">{shortenAddress(destinationAddress)}</p>
+                            <p className="text-primary-text text-xl leading-5">{destinationDisplayName}</p>
+                            <p className="text-sm text-primary-text">{shortenAddress(destinationAddress)}</p>
                         </div>
                     </div>
                     <div className="flex flex-col justify-end font-light">
-                        <p className="text-white">{receive_amount} {currency.asset}</p>
-                        <p className="text-primary-text text-xs flex justify-end">${receiveAmountInUsd}</p>
+                        <p className="text-white text-xl">{receive_amount} {currency.asset}</p>
+                        <p className="text-primary-text text-md flex justify-end">${receiveAmountInUsd}</p>
                     </div>
                 </div>
             </div>
