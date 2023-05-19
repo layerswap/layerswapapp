@@ -18,7 +18,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     const initialSource = sourceLayer ? sourceItems.find(i => i == sourceLayer) : null
     const initialDestination = destinationLayer ? destinationItems.find(i => i === destinationLayer) : null
 
-    const filteredCurrencies = FilterCurrencies(currencies, sourceLayer, destinationLayer);
+    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : FilterCurrencies(currencies, sourceLayer, destinationLayer);
 
     let initialAddress =
         destAddress && initialDestination && isValidAddress(destAddress, destinationLayer) ? destAddress : "";

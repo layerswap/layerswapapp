@@ -50,7 +50,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                             <div className='flex items-center space-x-2'>
                                 <span className="text-sm md:text-base">
                                     {
-                                        parsedReceiveAmount ?
+                                        from && to && parsedReceiveAmount ?
                                             <div className="font-semibold md:font-bold text-right leading-4">
                                                 <p>
                                                     <>{parsedReceiveAmount}</>

@@ -17,15 +17,17 @@ const CurrencyFormField: FC = () => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
+    const { resolveImgSrc, currencies } = useSettingsState();
     const name = "currency"
     const query = useQueryState()
-    const { resolveImgSrc, currencies } = useSettingsState();
-    const filteredCurrencies = FilterCurrencies(currencies, from, to)
+    const lockedCurrency = query?.lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === query?.asset?.toUpperCase()) : null
+
+    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : FilterCurrencies(currencies, from, to)
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies,
         from,
         resolveImgSrc,
-        query?.lockAsset
+        lockedCurrency
     )
 
     useEffect(() => {
@@ -45,21 +47,20 @@ const CurrencyFormField: FC = () => {
         else if (currency) {
             setFieldValue(name, null)
         }
-
     }, [from, to, currencies, currency, query])
 
     const value = currencyMenuItems.find(x => x.id == currency?.asset);
     const handleSelect = useCallback((item: SelectMenuItem<Currency>) => {
         setFieldValue(name, item.baseObject, true)
     }, [name])
-
+    console.log("currency value",value)
     return <PopoverSelectWrapper values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />;
 };
 
-export function GenerateCurrencyMenuItems(currencies: Currency[], source: Layer, resolveImgSrc: (item: Layer | Currency) => string, lock?: boolean): SelectMenuItem<Currency>[] {
+export function GenerateCurrencyMenuItems(currencies: Currency[], source: Layer, resolveImgSrc: (item: Layer | Currency) => string, lockedCurrency?: Currency): SelectMenuItem<Currency>[] {
 
     let currencyIsAvailable = () => {
-        if (lock) {
+        if (lockedCurrency) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
         else {
@@ -68,8 +69,8 @@ export function GenerateCurrencyMenuItems(currencies: Currency[], source: Layer,
     }
 
     return currencies.map(c => {
-        const sourceCurrency = GetNetworkCurrency(source, c.asset);
-        const displayName = source?.isExchange ? sourceCurrency?.asset : sourceCurrency?.name;
+        const sourceCurrency =  GetNetworkCurrency(source, c.asset);
+        const displayName = lockedCurrency?.asset ?? (source?.isExchange ? sourceCurrency?.asset : sourceCurrency?.name);
         return {
             baseObject: c,
             id: c.asset,
