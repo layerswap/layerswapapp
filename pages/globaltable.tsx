@@ -25,7 +25,7 @@ export default function GlobalTable(props) {
                         <div className="mt-3 flex items-center justify-between z-20" >
                             <div className="flex ">
                                 <button onClick={handleGoBack} className="self-start md:mt-2">
-                                    <ArrowLeft className='h-5 w-5 text-primary-text hover:text-darkblue-600 cursor-pointer' />
+                                    <ArrowLeft className='h-5 w-5 text-primary-text hover:text-secondary-600 cursor-pointer' />
                                 </button>
                             </div>
                         </div>
@@ -34,9 +34,9 @@ export default function GlobalTable(props) {
                                 <div className="overflow-x-auto styled-scroll">
                                     <div className="inline-block min-w-full py-2 align-middle">
                                         <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                                            <table className="min-w-full divide-y divide-darkblue-600 ">
-                                                <thead className="bg-darkblue-600">
-                                                    <tr className="divide-x divide-darkblue-600">
+                                            <table className="min-w-full divide-y divide-secondary-600 ">
+                                                <thead className="bg-secondary-600">
+                                                    <tr className="divide-x divide-secondary-600">
                                                         <th scope="col" className="py-3.5 pl-4 pr-4 text-left text-sm font-semibold sm:pl-6">
 
                                                         </th>
@@ -50,9 +50,9 @@ export default function GlobalTable(props) {
 
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-darkblue-600 bg-darkblue-500">
+                                                <tbody className="divide-y divide-secondary-600 bg-secondary-500">
                                                     {props?.exchanges.map((e) => (
-                                                        <tr key={e.id} className="divide-x divide-darkblue-600">
+                                                        <tr key={e.id} className="divide-x divide-secondary-600">
                                                             <td className="whitespace-nowrap py-4 pl-4 pr-4 text-sm font-semibold text-primary-text sm:pl-6">
                                                                 {e.display_name}
                                                             </td>

@@ -50,13 +50,13 @@ export default function FooterComponent() {
       <div className="max-w-xs mt-6 space-y-6">
         <nav className="mt-4 flex flex-wrap flex-row gap-2" aria-label="Footer">
           {navigation.main.map((item) => (
-            <a key={item.name} href={item.href} target={item.target} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 hover:cursor-pointer transition-all duration-200">
+            <a key={item.name} href={item.href} target={item.target} className="items-center rounded-lg border-secondary-500 border p-2 bg-secondary-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-secondary-800 hover:cursor-pointer transition-all duration-200">
               {item.name}
             </a>
           ))}
           <Popover
             opener={
-              <button onClick={() => setOpenFeedbackModal(true)} className="items-center rounded-lg border-darkblue-500 border p-2 bg-darkblue-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-darkblue-800 transition-all duration-200">
+              <button onClick={() => setOpenFeedbackModal(true)} className="items-center rounded-lg border-secondary-500 border p-2 bg-secondary-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-secondary-800 transition-all duration-200">
                 Send Feedback
               </button>
             }

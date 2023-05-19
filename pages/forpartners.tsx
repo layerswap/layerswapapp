@@ -25,7 +25,7 @@ export default function ForPartners(props) {
     return (
         <Layout>
             <SettingsProvider data={props.settings}>
-                <div className="bg-darkblue-900 shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container">
+                <div className="bg-secondary-900 shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container">
                     <Head>
                         <title>Layerswap Partners</title>
                     </Head>
@@ -43,8 +43,8 @@ export default function ForPartners(props) {
                                     <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                                         <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                                             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                                                <table className="min-w-full divide-y divide-darkblue-500">
-                                                    <thead className="bg-darkblue-500">
+                                                <table className="min-w-full divide-y divide-secondary-500">
+                                                    <thead className="bg-secondary-500">
                                                         <tr>
                                                             <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-primary-text sm:pl-6">
                                                                 Network Name
@@ -54,7 +54,7 @@ export default function ForPartners(props) {
                                                             </th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="divide-y divide-darkblue-700 bg-darkblue-600">
+                                                    <tbody className="divide-y divide-secondary-700 bg-secondary-600">
                                                         {props?.networks?.map((n) => (
                                                             <tr key={n.display_name}>
                                                                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">
@@ -76,8 +76,8 @@ export default function ForPartners(props) {
                                     <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                                         <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                                             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                                                <table className="min-w-full divide-y divide-darkblue-500">
-                                                    <thead className="bg-darkblue-500">
+                                                <table className="min-w-full divide-y divide-secondary-500">
+                                                    <thead className="bg-secondary-500">
                                                         <tr>
                                                             <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-primary-text sm:pl-6">
                                                                 Exchange Name
@@ -87,7 +87,7 @@ export default function ForPartners(props) {
                                                             </th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="divide-y divide-darkblue-700 bg-darkblue-600">
+                                                    <tbody className="divide-y divide-secondary-700 bg-secondary-600">
                                                         {props?.exchanges?.map((e) => (
                                                             <tr key={e.display_name}>
                                                                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">

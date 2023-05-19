@@ -132,7 +132,7 @@ export const PendingSwapsComponent: FC<PendingSwapsComponentProps> = ({ pendingS
 
                             return (
                                 <div key={swap.id}>
-                                    <div className='w-full mb-2 rounded-md px-3 py-3 shadow-sm border border-darkblue-500  bg-darkblue-700'>
+                                    <div className='w-full mb-2 rounded-md px-3 py-3 shadow-sm border border-secondary-500  bg-secondary-700'>
                                         <div className="items-center justify-between w-full space-y-2">
                                             <div className="items-center flex w-full md:space-x-3 py-1.5 text-left text-base font-medium">
                                                 <div className='space-y-1.5 md:space-y-1 grow'>

@@ -12,7 +12,7 @@ const AvatarGroup: FC<Props> = (({ imageUrls }) => {
           return (
             <Image
               key={x}
-              className="relative z-30 inline-block h-5 w-5 rounded-full ring-2 ring-darkblue-600"
+              className="relative z-30 inline-block h-5 w-5 rounded-full ring-2 ring-secondary-600"
               src={x}
               width="60"
               height={60}
