@@ -26,10 +26,13 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     let initialCurrency =
         filteredCurrencies.find(c => c.asset?.toUpperCase() == asset?.toUpperCase())
 
+    let initialAmount = 
+        (lockedCurrency && amount) || (initialCurrency ? amount : '')
+
     const result: SwapFormValues = {
         from: initialSource,
         to: initialDestination,
-        amount: initialCurrency ? amount : '',
+        amount: initialAmount,
         currency: initialCurrency,
         destination_address: (!destinationLayer?.isExchange && initialAddress) ? initialAddress : '',
     }

@@ -1,3 +1,4 @@
+import { CurrencyDisabledReason } from "../../../Input/CurrencyFormField";
 import { LayerDisabledReason } from "../../Popover/PopoverSelect";
 
 export class SelectMenuItem<T> implements ISelectMenuItem {
@@ -7,7 +8,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     imgSrc: string;
     isAvailable: {
         value: boolean;
-        disabledReason: LayerDisabledReason | null
+        disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
     };
     group?: string;
     baseObject: T;
@@ -32,6 +33,6 @@ export interface ISelectMenuItem {
     group?: string;
     isAvailable: {
         value: boolean;
-        disabledReason: LayerDisabledReason | null
+        disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
     };
 }

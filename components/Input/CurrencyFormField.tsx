@@ -61,7 +61,7 @@ export function GenerateCurrencyMenuItems(currencies: Currency[], source: Layer,
 
     let currencyIsAvailable = () => {
         if (lock) {
-            return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
+            return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
         else {
             return { value: true, disabledReason: null }
