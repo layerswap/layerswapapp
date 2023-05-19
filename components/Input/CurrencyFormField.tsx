@@ -2,7 +2,6 @@ import { Field, useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import PopoverSelect, { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import { FilterCurrencies, GetNetworkCurrency } from "../../helpers/settingsHelper";
 import { Currency } from "../../Models/Currency";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -30,10 +29,10 @@ const CurrencyFormField: FC = () => {
     )
 
     useEffect(() => {
-        if (!from || !to) {
-            setFieldValue(name, null)
-            return;
-        }
+        // if (!from || !to) {
+        //     setFieldValue(name, null)
+        //     return;
+        // }
 
         const currencyIsAvailable = currency && currencyMenuItems.some(c => c?.baseObject.asset === currency?.asset)
         if (currencyIsAvailable) return
@@ -54,7 +53,7 @@ const CurrencyFormField: FC = () => {
         setFieldValue(name, item.baseObject, true)
     }, [name])
 
-    return <PopoverSelectWrapper values={currencyMenuItems} value={value} setValue={handleSelect} />;
+    return <PopoverSelectWrapper values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />;
 };
 
 export function GenerateCurrencyMenuItems(currencies: Currency[], source: Layer, resolveImgSrc: (item: Layer | Currency) => string, lock?: boolean): SelectMenuItem<Currency>[] {
