@@ -53,7 +53,7 @@ const CurrencyFormField: FC = () => {
     const handleSelect = useCallback((item: SelectMenuItem<Currency>) => {
         setFieldValue(name, item.baseObject, true)
     }, [name])
-    console.log("currency value",value)
+
     return <PopoverSelectWrapper values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />;
 };
 
