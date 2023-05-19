@@ -31,9 +31,11 @@ export const ConnectedWallets = () => {
     useEffect(() => {
         (async () => {
             const lastConnectedWallet = await starknet.getLastConnectedWallet()
-
+            console.log(lastConnectedWallet)
             if (lastConnectedWallet) {
-                const res = await connect()
+                debugger
+                const res = await starknet.enable(lastConnectedWallet)
+                debugger
                 setAccount(res)
                 const erc20Contract = new Contract(
                     Erc20Abi,
@@ -82,7 +84,7 @@ export const ConnectedWallets = () => {
                         <div className="bg-darkblue-700 rounded-lg border-2 border-darkblue-500 py-3 w-full flex justify-center items-center gap-4">
                             <RainbowKitConnectWallet />
                             <p>
-                                {connector.name}
+                                {connector?.name}
                             </p>
                         </div>
 
@@ -97,7 +99,6 @@ export const ConnectedWallets = () => {
     } else if (!isConnected && !account) {
         return <RainbowKitConnectWallet />
     }
-
 }
 
 export const StarknetWallet = ({ walletAddress, account, balance, handleDisconnect }: { walletAddress: string, account: StarknetWindowObject, balance: number, handleDisconnect: () => void }) => {
