@@ -5,6 +5,7 @@ export class QueryParams {
     lockAddress?: boolean = false;
     lockFrom?: boolean = false;
     lockTo?: boolean = false;
+    lockAsset?: boolean = false;
     destAddress?: string = "";
     addressSource?: string = "";
     coinbase_redirect?: string = "";

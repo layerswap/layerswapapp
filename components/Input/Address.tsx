@@ -166,7 +166,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             <label htmlFor={name}>Address</label>
                             {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                             <div className="flex flex-wrap flex-col md:flex-row">
-                                <div className="relative flex grow rounded-lg shadow-sm mt-1.5 bg-darkblue-700 border-darkblue-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
+                                <div className="relative flex grow rounded-lg shadow-sm mt-1.5 bg-secondary-700 border-secondary-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
                                     {isPartnerWallet &&
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             {
@@ -186,12 +186,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         id={name}
                                         ref={inputReference}
                                         tabIndex={0}
-                                        className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-darkblue-700 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
+                                        className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-secondary-700 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
                                     />
                                     {
                                         inputValue &&
                                         <span className="inline-flex items-center mr-2">
-                                            <div className="text-xs flex items-center space-x-2 md:ml-5 bg-darkblue-500 rounded-md border border-darkblue-500">
+                                            <div className="text-xs flex items-center space-x-2 md:ml-5 bg-secondary-500 rounded-md border border-secondary-500">
                                                 {
                                                     values?.to?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
                                                     <span className="inline-flex items-center mr-2">
@@ -204,7 +204,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                     !disabled &&
                                                     <button
                                                         type="button"
-                                                        className="p-0.5 duration-200 transition  hover:bg-darkblue-400  rounded-md border border-darkblue-500 hover:border-darkblue-200"
+                                                        className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
                                                         onClick={handleRemoveDepositeAddress}
                                                     >
                                                         <div className="flex items-center px-2 text-sm py-1 font-semibold">
@@ -225,8 +225,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         </div>
                         {
                             validInputAddress &&
-                            <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-300 bg-darkblue-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-500 transition duration-200 px-2 py-2 hover:border-darkblue-500 hover:shadow-xl`}>
-                                <div className='flex text-primary-text bg-darkblue-400 flex-row items-left rounded-md p-2'>
+                            <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-300 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-500 transition duration-200 px-2 py-2 hover:border-secondary-500 hover:shadow-xl`}>
+                                <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                     <AddressIcon address={validInputAddress} size={25} />
                                 </div>
                                 <div className="flex flex-col grow">
@@ -246,8 +246,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             && authData?.access_token && values.to
                             && ExchangeSettings.KnownSettings[destination.internal_name]?.EnableDepositAddressConnect
                             && !depositeAddressIsfromAccount &&
-                            <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-700 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:shadow-xl`}>
-                                <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
+                            <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:shadow-xl`}>
+                                <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
                                     <WalletIcon className="h-6 w-6 text-primary-text" />
                                 </div>
                                 <div className="flex flex-col">
@@ -262,8 +262,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         }
                         {
                             !disabled && !inputValue && destinationIsStarknet &&
-                            <div onClick={handleConnectStarknet} className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700 hover:shadow-xl`}>
-                                <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
+                            <div onClick={handleConnectStarknet} className={`min-h-12 text-left space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
+                                <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
                                     <Wallet className="h-6 w-6 text-primary-text" />
                                 </div>
                                 <div className="flex flex-col">
@@ -279,8 +279,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {
                             !disabled && !inputValue && !destination?.isExchange && destinationNetwork?.address_type === 'evm' &&
                             <RainbowKit>
-                                <div className={`min-h-12 text-left space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:bg-darkblue-700 hover:shadow-xl`}>
-                                    <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
+                                <div className={`min-h-12 text-left space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
+                                    <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
                                         <Wallet className="h-6 w-6 text-primary-text" />
                                     </div>
                                     <div className="flex flex-col">
@@ -296,7 +296,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         }
                         {
                             destination?.isExchange && !inputAddressIsValid &&
-                            <div className='text-left p-4 bg-darkblue-800 text-white rounded-lg border border-darkblue-500'>
+                            <div className='text-left p-4 bg-secondary-800 text-white rounded-lg border border-secondary-500'>
                                 <div className="flex items-center">
                                     <Info className='h-5 w-5 text-primary-600 mr-3' />
                                     <label className="block text-sm md:text-base font-medium leading-6">How to find your {destination?.display_name} deposit address</label>
@@ -360,9 +360,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                         return (
                                                             <RadioGroup.Description
                                                                 as="span"
-                                                                className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-300 transition duration-200 px-2 py-1.5 border border-darkblue-900 hover:border-darkblue-500 hover:bg-darkblue-700/70 hover:shadow-xl ${checked && 'border-darkblue-700'}`}
+                                                                className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:bg-secondary-300 transition duration-200 px-2 py-1.5 border border-secondary-900 hover:border-secondary-500 hover:bg-secondary-700/70 hover:shadow-xl ${checked && 'border-secondary-700'}`}
                                                             >
-                                                                <div className='flex bg-darkblue-400 text-primary-text flex-row items-left  rounded-md p-2'>
+                                                                <div className='flex bg-secondary-400 text-primary-text flex-row items-left  rounded-md p-2'>
                                                                     <AddressIcon address={a.address} size={20} />
                                                                 </div>
                                                                 <div className="flex flex-col">

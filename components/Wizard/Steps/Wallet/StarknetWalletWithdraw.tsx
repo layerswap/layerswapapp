@@ -66,7 +66,7 @@ const StarknetWalletWithdrawStep: FC = () => {
             name: account ?
                 <span className='flex '>
                     {`Connected to ${shortenAddress(account.address)}`}
-                    <span onClick={handleDisconnect} className='cursor-pointer ml-1 mt-0.5 bg-darkblue-400 rounded-md'>
+                    <span onClick={handleDisconnect} className='cursor-pointer ml-1 mt-0.5 bg-secondary-400 rounded-md'>
                         <UnlinkIcon className="h-4 w-4" aria-hidden="true" />
                     </span>
                 </span>

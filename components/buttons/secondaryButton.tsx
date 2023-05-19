@@ -10,7 +10,7 @@ type SecondaryButtonProps = {
 
 const SecondaryButton: FC<SecondaryButtonProps> = ({ size = 'md', onClick, children, className }) => {
 
-    let defaultStyle = 'rounded-md duration-200 break-keep transition bg-darkblue-500 hover:bg-darkblue-400 border border-darkblue-400 hover:border-darkblue-200 font-semibold text-white shadow-sm cursor-pointer ' + className
+    let defaultStyle = 'rounded-md duration-200 break-keep transition bg-secondary-500 hover:bg-secondary-400 border border-secondary-400 hover:border-secondary-200 font-semibold text-white shadow-sm cursor-pointer ' + className
 
     switch (size) {
         case 'xs':
