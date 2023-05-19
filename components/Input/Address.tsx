@@ -25,6 +25,7 @@ import { useAccountModal } from "@rainbow-me/rainbowkit";
 import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import { connect, disconnect as starknetDisconnect } from "get-starknet";
+import WalletIcon from "../icons/WalletIcon";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -247,7 +248,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             && !depositeAddressIsfromAccount &&
                             <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-darkblue-500 bg-darkblue-700/70  flex text-sm rounded-md items-center w-full transform hover:bg-darkblue-700 transition duration-200 px-2 py-1.5 hover:border-darkblue-500 hover:shadow-xl`}>
                                 <div className='flex text-primary-text flex-row items-left bg-darkblue-400 px-2 py-1 rounded-md'>
-                                    <Wallet className="h-6 w-6 text-primary-text" />
+                                    <WalletIcon className="h-6 w-6 text-primary-text" />
                                 </div>
                                 <div className="flex flex-col">
                                     <div className="block text-sm font-medium">

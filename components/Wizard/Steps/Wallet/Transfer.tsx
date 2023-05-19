@@ -12,14 +12,13 @@ import {
 } from "wagmi";
 import { utils } from 'ethers';
 import { erc20ABI } from 'wagmi'
-import { Wallet } from "lucide-react";
 import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
-import LayerSwapApiClient, { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../lib/layerSwapApiClient";
+import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../context/swap";
 import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
-import ProcessingStep from "../ProccessingSteps";
 import { SwapWithdrawalStep } from "../../../../Models/Wizard";
+import WalletIcon from "../../../icons/WalletIcon";
 
 type Props = {
     chainId: number,
@@ -200,7 +199,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
             !isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
-                icon={<Wallet />}
+                icon={<WalletIcon />}
             >
                 {(isError && buttonClicked) ? <span>Try again</span>
                     : <span>Send from wallet</span>}
@@ -295,7 +294,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             !isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
-                icon={<Wallet />}
+                icon={<WalletIcon />}
             >
                 {(isError && buttonClicked) ? <span>Try again</span>
                     : <span>Send from wallet</span>}
@@ -394,7 +393,7 @@ const ConnectWalletButton: FC = ({ children }) => {
 
     return <ButtonWrapper
         clcikHandler={clickHandler}
-        icon={<Wallet />}
+        icon={<WalletIcon />}
     >
         Send from wallet
     </ButtonWrapper>
@@ -438,7 +437,7 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId
             !networkChange.isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
-                icon={<Wallet />}
+                icon={<WalletIcon />}
             >
                 {
                     networkChange.isError ? <span>Try again</span>

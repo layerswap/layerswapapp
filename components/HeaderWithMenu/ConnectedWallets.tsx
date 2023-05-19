@@ -1,6 +1,6 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { StarknetWindowObject, getStarknet } from "get-starknet-core"
-import { Check, Copy, LogOut, WalletIcon } from "lucide-react"
+import { Check, Copy, LogOut } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useAccount } from "wagmi"
 import AddressIcon from "../AddressIcon"
@@ -19,6 +19,7 @@ import Erc20Abi from "../../lib/abis/ERC20.json"
 import { BigNumber, utils } from "ethers"
 import { truncateDecimals } from "../utils/RoundDecimals"
 import Modal from "../modal/modal"
+import WalletIcon from "../icons/WalletIcon"
 
 export const ConnectedWallets = () => {
     const { isConnected, connector } = useAccount();
@@ -31,21 +32,21 @@ export const ConnectedWallets = () => {
     useEffect(() => {
         (async () => {
             const lastConnectedWallet = await starknet.getLastConnectedWallet()
-            console.log(lastConnectedWallet)
+            debugger
             if (lastConnectedWallet) {
-                debugger
                 const res = await starknet.enable(lastConnectedWallet)
-                debugger
                 setAccount(res)
-                const erc20Contract = new Contract(
-                    Erc20Abi,
-                    "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-                    res?.account,
-                )
-                const balanceResult = await erc20Contract.balanceOf(res?.account?.address)
-                const balanceInWei = BigNumber.from(uint256.uint256ToBN(balanceResult.balance as any).toString()).toString();
-                const formattedResult = utils.formatUnits(balanceInWei, 18);
-                setBalance(Number(formattedResult))
+                if (res) {
+                    const erc20Contract = new Contract(
+                        Erc20Abi,
+                        "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+                        res?.account,
+                    )
+                    const balanceResult = await erc20Contract.balanceOf(res?.account?.address)
+                    const balanceInWei = BigNumber.from(uint256.uint256ToBN(balanceResult.balance as any).toString()).toString();
+                    const formattedResult = utils.formatUnits(balanceInWei, 18);
+                    setBalance(Number(formattedResult))
+                }
             }
         })()
     }, [])
@@ -59,19 +60,7 @@ export const ConnectedWallets = () => {
         return (
             <>
                 <IconButton onClick={() => setShowModal(true)} icon={
-                    <div className="relative">
-                        <WalletIcon className="h-6 w-6" strokeWidth="2" />
-                        {
-                            <span className="absolute -bottom-1.5 -left-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
-                                <Image width={16} height={16} src={account.icon} className=" border-2 border-darkblue-600 rounded-full bg-primary-text" alt={account.id} />
-                            </span>
-                        }
-                        {
-                            <span className="absolute -bottom-1.5 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
-                                <ResolveWalletIcon connector={connector?.id} className="w-4 h-4 border-2 border-darkblue-600 rounded-full bg-primary-text" />
-                            </span>
-                        }
-                    </div>
+                    <WalletIcon className="h-6 w-6" strokeWidth="2" />
                 } />
                 <Modal header={'Connected wallets'} height="fit" show={showModal} setShow={setShowModal}>
                     <div className="grid grid-cols-2 items-center place-items-center gap-5">
