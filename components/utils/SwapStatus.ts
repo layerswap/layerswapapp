@@ -9,7 +9,7 @@ export const GetSwapStatusStep = (swap: SwapItem): SwapWithdrawalStep => {
         || (swapStatus == SwapStatus.LsTransferPending))
         return SwapWithdrawalStep.SwapProcessing
     else if (swapStatus == SwapStatus.UserTransferPending)
-        return swap.source_exchange ? SwapWithdrawalStep.Withdrawal : SwapWithdrawalStep.OffRampWithdrawal
+        return SwapWithdrawalStep.OffRampWithdrawal
     else if (swapStatus == SwapStatus.Completed)
         return SwapWithdrawalStep.Success
     else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)

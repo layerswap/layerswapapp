@@ -1,13 +1,14 @@
 import Image from "next/image";
-import { useSettingsState } from "../context/settings";
 import { ArrowDown, Fuel } from "lucide-react";
-import shortenAddress from "./utils/ShortenAddress";
-import { CalculateReceiveAmount } from "../lib/fees";
 import { useAccount } from "wagmi";
-import { Currency } from "../Models/Currency";
-import { Layer } from "../Models/Layer";
+
 import { FC } from "react";
-import { truncateDecimals } from "./utils/RoundDecimals";
+import { Currency } from "../../../Models/Currency";
+import { Layer } from "../../../Models/Layer";
+import { useSettingsState } from "../../../context/settings";
+import { CalculateReceiveAmount } from "../../../lib/fees";
+import { truncateDecimals } from "../../utils/RoundDecimals";
+import shortenAddress from "../../utils/ShortenAddress";
 
 type SwapInfoProps = {
     currency: Currency,
@@ -18,13 +19,21 @@ type SwapInfoProps = {
     refuelAmount?: number
 }
 
-const SwapInformation: FC<SwapInfoProps> = ({ currency, source, destination, requestedAmount, destinationAddress, refuelAmount }) => {
+const Summary: FC<SwapInfoProps> = ({ currency, source, destination, requestedAmount, destinationAddress, refuelAmount }) => {
     const { resolveImgSrc, networks, currencies } = useSettingsState()
     const { isConnected, address } = useAccount();
 
     const sourceDisplayName = source?.display_name
     const destinationDisplayName = destination?.display_name
-    let receive_amount = CalculateReceiveAmount({ amount: requestedAmount.toString(), destination_address: destinationAddress, currency: currency, from: source, to: destination }, networks, currencies);
+
+    let receive_amount = CalculateReceiveAmount({ 
+        amount: requestedAmount.toString(), 
+        destination_address: destinationAddress, 
+        currency: currency, 
+        from: source, 
+        to: destination 
+    }, networks, currencies);
+    debugger
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = (currency?.usd_price * receive_amount).toFixed(2)
     const nativeCurrency = refuelAmount && destination?.isExchange === false && currencies.find(c => c.asset === destination?.native_currency)
@@ -33,21 +42,21 @@ const SwapInformation: FC<SwapInfoProps> = ({ currency, source, destination, req
 
     return (
         <div>
-            <div className="bg-darkblue-700 rounded-lg flex flex-col border border-darkblue-500 w-full relative z-10">
+            <div className="bg-darkblue-700 font-normal rounded-lg flex flex-col border border-darkblue-500 w-full relative z-10">
                 <div className="flex items-center justify-between w-full px-3 py-2 border-b border-darkblue-500">
                     <div className="flex items-center gap-2">
                         <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={30} height={30} className="rounded-md" />
                         <div>
-                            <p className="text-primary-text text-xl leading-5">{sourceDisplayName}</p>
+                            <p className="text-primary-text text-lg leading-5">{sourceDisplayName}</p>
                             {
                                 isConnected && !source.isExchange &&
-                                <p className="text-md text-primary-text">{shortenAddress(address)}</p>
+                                <p className="text-sm text-primary-text">{shortenAddress(address)}</p>
                             }
                         </div>
                     </div>
-                    <div className="flex flex-col font-light">
-                        <p className="text-white text-xl">{requestedAmount} {currency.asset}</p>
-                        <p className="text-primary-text text-md flex justify-end">${requestedAmountInUsd}</p>
+                    <div className="flex flex-col">
+                        <p className="text-white text-lg">{requestedAmount} {currency.asset}</p>
+                        <p className="text-primary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>
                 </div>
                 <ArrowDown className="h-4 w-4 text-primary-text absolute top-[calc(50%-8px)] left-[calc(50%-8px)]" />
@@ -55,13 +64,13 @@ const SwapInformation: FC<SwapInfoProps> = ({ currency, source, destination, req
                     <div className="flex items-center gap-2">
                         <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={30} height={30} className="rounded-md" />
                         <div>
-                            <p className="text-primary-text text-xl leading-5">{destinationDisplayName}</p>
+                            <p className="text-primary-text text-lg leading-5">{destinationDisplayName}</p>
                             <p className="text-sm text-primary-text">{shortenAddress(destinationAddress)}</p>
                         </div>
                     </div>
-                    <div className="flex flex-col justify-end font-light">
-                        <p className="text-white text-xl">{receive_amount} {currency.asset}</p>
-                        <p className="text-primary-text text-md flex justify-end">${receiveAmountInUsd}</p>
+                    <div className="flex flex-col justify-end">
+                        <p className="text-white text-lg">{receive_amount} {currency.asset}</p>
+                        <p className="text-primary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
                     </div>
                 </div>
             </div>
@@ -73,7 +82,7 @@ const SwapInformation: FC<SwapInfoProps> = ({ currency, source, destination, req
                         <Fuel className='h-4 w-4 text-primary' />
                         <p>Refuel</p>
                     </div>
-                    <div className="text-white font-light ">
+                    <div className="text-white">
                         + {truncatedRefuelAmount} {nativeCurrency.asset}
                     </div>
                 </div>
@@ -82,4 +91,6 @@ const SwapInformation: FC<SwapInfoProps> = ({ currency, source, destination, req
     )
 }
 
-export default SwapInformation
+
+
+export default Summary
