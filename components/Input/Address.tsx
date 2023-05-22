@@ -152,7 +152,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const handleConnectStarknet = async () => {
             const account = await connect()
             setInputValue(account?.selectedAddress)
-            setIsStarknetWalletConnected(true)
+            setIsStarknetWalletConnected(account?.isConnected)
             setAddressConfirmed(true)
             setFieldValue("destination_address", account?.selectedAddress)
         }
