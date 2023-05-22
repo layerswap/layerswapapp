@@ -61,6 +61,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const placeholder = NetworkSettings.KnownSettings[values?.to?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
         const [validInputAddress, setValidInputAddress] = useState<string>()
+        const [isStarknetWalletConnected, setIsStarknetWalletConnected] = useState(false)
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
@@ -103,11 +104,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const handleRemoveDepositeAddress = useCallback(async () => {
             setDepositeAddressIsfromAccount(false)
             setFieldValue("destination_address", '')
-            try{
+            try {
                 wagmiDisconnect()
                 starknetDisconnect({ clearLastWallet: true })
             }
-            catch(e){
+            catch (e) {
 
                 console.log("error")
                 console.log(e)
@@ -148,9 +149,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [validInputAddress])
 
 
-        const handleConnectStarknet = async ()=>{
+        const handleConnectStarknet = async () => {
             const account = await connect()
             setInputValue(account?.selectedAddress)
+            setIsStarknetWalletConnected(true)
             setAddressConfirmed(true)
             setFieldValue("destination_address", account?.selectedAddress)
         }
@@ -181,7 +183,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         placeholder={placeholder}
                                         autoCorrect="off"
                                         type={"text"}
-                                        disabled={disabled || !!(isConnected && values.destination_address)}
+                                        disabled={disabled || !!(isConnected && values.destination_address) || !!(isStarknetWalletConnected && values.destination_address)}
                                         name={name}
                                         id={name}
                                         ref={inputReference}
