@@ -95,7 +95,7 @@ const WithdrawNetworkStep: FC = () => {
                                 {
                                     showTabsHeader &&
                                     <div className="flex space-x-3 w-full">
-                                        {tabs.map((tab) => (
+                                        {tabs.filter(t=>t.enabled).map((tab) => (
                                             <TabHeader
                                                 activeTabId={activeTabId}
                                                 onCLick={setActiveTabId}
