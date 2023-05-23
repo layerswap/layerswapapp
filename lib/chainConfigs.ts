@@ -58,14 +58,5 @@ export const arbitrumNova = {
   },
 }
 
-type StaronetChains = {
-  [key: string]: string
-}
-
-export const StarknetChainMappings: StaronetChains = {
-  "mainnet-alpha": "0x534e5f4d41494e",
-  "goerli-alpha": "0x534e5f474f45524c49"
-}
-
 export var supportedChains =
   [arbitrum, arbitrumGoerli, arbitrumNova, bsc, bscTestnet, goerli, mainnet, okc, kcc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet];

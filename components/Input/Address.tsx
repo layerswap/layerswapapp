@@ -26,7 +26,6 @@ import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import { connect, disconnect as starknetDisconnect } from "get-starknet";
 import WalletIcon from "../icons/WalletIcon";
-import { StarknetChainMappings } from "../../lib/chainConfigs";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -149,16 +148,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [validInputAddress])
 
         const destinationAsset = destination?.assets?.find(a => a.asset === asset)
-        let destinationChainId = null
-        if (destination?.isExchange === false) {
-            if (destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
-                || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet) {
-                destinationChainId = StarknetChainMappings[destinationAsset?.network?.chain_id]
-            }
-            else {
-                destinationChainId = destinationAsset?.network?.chain_id
-            }
-        }
+        const destinationChainId = destinationAsset?.network?.chain_id
 
         const handleConnectStarknet = useCallback(async () => {
             const res = await connect()
