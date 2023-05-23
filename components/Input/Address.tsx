@@ -63,17 +63,24 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
         const [validInputAddress, setValidInputAddress] = useState<string>()
         const [isStarknetWalletConnected, setIsStarknetWalletConnected] = useState(false)
+        const [autofilledWallet, setAutofilledWallet] = useState<'evm' | 'starknet'>()
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
 
-        const { isConnected, isDisconnected, connector, address: walletAddress } = useAccount({
+        const { isConnected: isRainbowKitConnected, isDisconnected, connector, address: walletAddress } = useAccount({
             onDisconnect() {
                 setInputValue("")
                 setAddressConfirmed(false)
                 setFieldValue("destination_address", "")
             }
         });
+
+        useEffect(() => {
+            if(isRainbowKitConnected && destinationNetwork?.address_type){
+                setAutofilledWallet('evm')
+            }
+        }, [isRainbowKitConnected, destinationNetwork?.address_type])
 
         useEffect(() => {
             if (!destination.isExchange && isValidAddress(walletAddress, destination)) {
@@ -106,14 +113,20 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setDepositeAddressIsfromAccount(false)
             setFieldValue("destination_address", '')
             try {
-                wagmiDisconnect()
-                starknetDisconnect({ clearLastWallet: true })
+                if (autofilledWallet === "starknet") {
+                    starknetDisconnect({ clearLastWallet: true })
+                    setIsStarknetWalletConnected(false)
+                    setWrongNetwork(false)
+                }
+                else if (autofilledWallet === "evm") {
+                    wagmiDisconnect()
+                }
             }
             catch (e) {
                 toast(e.message)
             }
             setInputValue("")
-        }, [depositeAddressIsfromAccount, isConnected, connector, isDisconnected])
+        }, [depositeAddressIsfromAccount, autofilledWallet])
 
         const handleSelectAddress = useCallback((value: string) => {
             setAddressConfirmed(true)
@@ -154,12 +167,17 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             const res = await connect()
             if (res?.account?.chainId != destinationChainId) {
                 setWrongNetwork(true)
+                starknetDisconnect({ clearLastWallet: true })
+                setIsStarknetWalletConnected(false)
+                setAutofilledWallet(null)
                 return
             }
+            setWrongNetwork(false)
             setInputValue(res?.account?.address)
             setIsStarknetWalletConnected(res?.isConnected)
             setAddressConfirmed(true)
             setFieldValue("destination_address", res?.account?.address)
+            setAutofilledWallet("starknet")
         }, [destinationChainId])
 
         const destinationIsStarknet = destination.internal_name === KnownInternalNames.Networks.StarkNetGoerli
@@ -188,7 +206,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         placeholder={placeholder}
                                         autoCorrect="off"
                                         type={"text"}
-                                        disabled={disabled || !!(isConnected && values.destination_address) || !!(isStarknetWalletConnected && values.destination_address)}
+                                        disabled={disabled || !!((isRainbowKitConnected || isStarknetWalletConnected) && values.destination_address) || !!(isStarknetWalletConnected && values.destination_address)}
                                         name={name}
                                         id={name}
                                         ref={inputReference}
