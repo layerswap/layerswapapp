@@ -26,6 +26,7 @@ import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import { connect, disconnect as starknetDisconnect } from "get-starknet";
 import WalletIcon from "../icons/WalletIcon";
+import { StarknetChainMappings } from "../../lib/chainConfigs";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -50,6 +51,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue
         } = useFormikContext<SwapFormValues>();
 
+        const [wrongNetwork, setWrongNetwork] = useState(false)
         const inputReference = useRef(null);
         const destination = values.to
         const asset = values.currency?.asset
@@ -148,14 +150,29 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             close()
         }, [validInputAddress])
 
-
-        const handleConnectStarknet = async () => {
-            const account = await connect()
-            setInputValue(account?.selectedAddress)
-            setIsStarknetWalletConnected(account?.isConnected)
-            setAddressConfirmed(true)
-            setFieldValue("destination_address", account?.selectedAddress)
+        const destinationAsset = destination?.assets?.find(a => a.asset === asset)
+        let destinationChainId = null
+        if (destination?.isExchange === false) {
+            if (destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
+                || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet) {
+                destinationChainId = StarknetChainMappings[destinationAsset?.network?.chain_id]
+            }
+            else {
+                destinationChainId = destinationAsset?.network?.chain_id
+            }
         }
+
+        const handleConnectStarknet = useCallback(async () => {
+            const res = await connect()
+            if (res?.account?.chainId != destinationChainId) {
+                setWrongNetwork(true)
+                return
+            }
+            setInputValue(res?.account?.address)
+            setIsStarknetWalletConnected(res?.isConnected)
+            setAddressConfirmed(true)
+            setFieldValue("destination_address", res?.account?.address)
+        }, [destinationChainId])
 
         const destinationIsStarknet = destination.internal_name === KnownInternalNames.Networks.StarkNetGoerli
             || destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet
@@ -219,8 +236,17 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     }
                                 </div>
                                 {errorMessage &&
-                                    <div className="basis-full text-xs text-primary h-3">
+                                    <div className="basis-full text-xs text-primary">
                                         {errorMessage}
+                                    </div>
+                                }
+                                {wrongNetwork && !inputValue &&
+                                    <div className="basis-full text-xs text-primary">
+                                        {
+                                            destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
+                                                ? <span>Please switch to Starknet Mainnet with your wallet and click Autofill again</span>
+                                                : <span>Please switch to Starknet Goerli with your wallet and click Autofill again</span>
+                                        }
                                     </div>
                                 }
                             </div>
@@ -264,7 +290,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         }
                         {
                             !disabled && !inputValue && destinationIsStarknet &&
-                            <div onClick={handleConnectStarknet} className={`min-h-12 text-left space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
+                            <div onClick={handleConnectStarknet} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                                 <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
                                     <Wallet className="h-6 w-6 text-primary-text" />
                                 </div>
