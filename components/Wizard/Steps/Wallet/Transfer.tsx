@@ -12,13 +12,13 @@ import {
 } from "wagmi";
 import { utils } from 'ethers';
 import { erc20ABI } from 'wagmi'
+import { Wallet } from "lucide-react";
 import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
 import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../context/swap";
 import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
 import { SwapWithdrawalStep } from "../../../../Models/Wizard";
-import WalletIcon from "../../../icons/WalletIcon";
 
 type Props = {
     chainId: number,
@@ -180,7 +180,6 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     ].find(d => d.isError)
 
     const isLoading = [
-        sendTransactionPrepare,
         transaction,
         waitForTransaction
     ].find(d => d.isLoading)
@@ -199,7 +198,8 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
             !isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
-                icon={<WalletIcon />}
+                disabled={sendTransactionPrepare?.isLoading || sendTransactionPrepare.status === "idle"}
+                icon={<Wallet />}
             >
                 {(isError && buttonClicked) ? <span>Try again</span>
                     : <span>Send from wallet</span>}
@@ -275,11 +275,10 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     ].find(d => d.isError)
 
     const isLoading = [
-        contractWritePrepare,
         waitForTransaction,
         contractWrite
     ].find(d => d.isLoading)
-
+    
     return <>
         {
             buttonClicked &&
@@ -294,7 +293,8 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             !isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
-                icon={<WalletIcon />}
+                disabled={contractWritePrepare?.isLoading || contractWritePrepare.status === "idle"}
+                icon={<Wallet />}
             >
                 {(isError && buttonClicked) ? <span>Try again</span>
                     : <span>Send from wallet</span>}
@@ -393,7 +393,7 @@ const ConnectWalletButton: FC = ({ children }) => {
 
     return <ButtonWrapper
         clcikHandler={clickHandler}
-        icon={<WalletIcon />}
+        icon={<Wallet />}
     >
         Send from wallet
     </ButtonWrapper>
@@ -437,7 +437,7 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId
             !networkChange.isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
-                icon={<WalletIcon />}
+                icon={<Wallet />}
             >
                 {
                     networkChange.isError ? <span>Try again</span>
@@ -451,17 +451,19 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId
 type ButtonWrapperProps = {
     icon?: ReactNode,
     clcikHandler: () => void,
+    disabled?: boolean
 }
 const ButtonWrapper: FC<ButtonWrapperProps> = ({
     icon,
     clcikHandler,
+    disabled,
     children
 }) => {
     return <div>
         <div className="flex flex-row text-white text-base space-x-2">
             <SubmitButton icon={icon}
                 text_align='center'
-                isDisabled={false}
+                isDisabled={disabled}
                 isSubmitting={false}
                 onClick={clcikHandler}
                 buttonStyle='filled'
