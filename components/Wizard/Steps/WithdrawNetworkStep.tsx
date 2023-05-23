@@ -89,7 +89,9 @@ const WithdrawNetworkStep: FC = () => {
                     <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                         <div className='space-y-4'>
                             <div className='mb-6 grid grid-cols-1 gap-4 space-y-4'>
-                                <SwapSummary />
+                                {
+                                    !isFiat && <SwapSummary />
+                                }
                                 {
                                     showTabsHeader &&
                                     <div className="flex space-x-3 w-full">
@@ -218,7 +220,7 @@ const ManualTransfer: FC = () => {
 const FiatTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const stripeSessionId = swap?.metadata?.['STRIPE:SessionId']
-    const stripeOnrampPromise = loadStripeOnramp("pk_test_51IyIfWHjqPBTLELC2xYpD2edOeDmi6Raq1HumHJ1gEA1rWLebJjzRj68NbS0NoxUbCd3EE0RAsV3LnMP1lpyCq2200J4tKR5qm");
+    const stripeOnrampPromise = loadStripeOnramp(process.env.NEXT_PUBLIC_STRIPE_SECRET);
 
     return <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
         <CryptoElements stripeOnramp={stripeOnrampPromise}>
