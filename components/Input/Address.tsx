@@ -111,9 +111,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 starknetDisconnect({ clearLastWallet: true })
             }
             catch (e) {
-
-                console.log("error")
-                console.log(e)
+                toast(e.message)
             }
             setInputValue("")
         }, [depositeAddressIsfromAccount, isConnected, connector, isDisconnected])
