@@ -75,14 +75,14 @@ const IsAvailableForLayer = (asset: string, source: Layer, destination: Layer) =
     const sourceASsetIsAvailable = sourceDefaultAsset
         .network
         .currencies
-        .some(c => c.asset === asset
+        .some(c => c?.asset === asset
             && (c.status !== 'inactive')
             && c.is_deposit_enabled)
 
     const destinationAssetIsAvailable = destinationDefaultAsset
         .network
         .currencies
-        .some(c => c.asset === asset
+        .some(c => c?.asset === asset
             && c.status !== 'inactive'
             && c.is_withdrawal_enabled)
 

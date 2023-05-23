@@ -1,4 +1,4 @@
-import { ArrowRight, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { FC, useEffect } from 'react'
 import { useFormWizardaUpdate, useFormWizardState } from '../../../../context/formWizardProvider';
 import { useSettingsState } from '../../../../context/settings';
@@ -8,8 +8,8 @@ import { SwapWithdrawalStep } from '../../../../Models/Wizard';
 import shortenAddress from '../../../utils/ShortenAddress';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import Steps from '../StepsComponent';
-import WarningMessage from '../../../WarningMessage';
 import KnownInternalNames from '../../../../lib/knownIds';
+import { SwapItem } from '../../../../lib/layerSwapApiClient';
 
 const ProcessingStep: FC = () => {
 
@@ -54,6 +54,14 @@ const ProcessingStep: FC = () => {
         || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
         || swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
 
+    const Confirmations = ({ swap, status }: { swap: SwapItem, status: number }) => {
+        if (swap?.input_transaction?.max_confirmations === 0) {
+            return <div>Confirmations: <span className='text-white'>{status === 2 ? swap?.input_transaction?.confirmations : 1}</span>/1</div>
+        } else {
+            return <div>Confirmations: <span className='text-white'>{((swap?.input_transaction?.confirmations >= swap?.input_transaction?.max_confirmations) ? swap?.input_transaction?.max_confirmations : swap?.input_transaction?.confirmations) ?? 0}</span>/{swap?.input_transaction?.max_confirmations}</div>
+        }
+    }
+
     const progress = [
         {
             name: status === 1 ? 'Detecting your transfer' : `Transfer from ${source_display_name} is completed`, status: status > 1 ? 'complete' : 'current', description: status > 1 ?
@@ -70,7 +78,7 @@ const ProcessingStep: FC = () => {
         {
             name: (status === 1 && 'Transfer confirmation') || (status === 2 && ' Waiting for the transfer to get confirmed') || (status === 3 && 'The transfer is confirmed'),
             status: (status === 2 && 'current') || (status === 3 && 'complete') || (status === 1 && 'upcoming'),
-            description: status! >= 2 ? <div>Confirmations: <span className='text-white'>{((swap?.input_transaction?.confirmations >= swap?.input_transaction?.max_confirmations) ? swap?.input_transaction?.max_confirmations : swap?.input_transaction?.confirmations) ?? 0}</span>/{swap?.input_transaction?.max_confirmations}</div> : ""
+            description: status! >= 2 ? <Confirmations swap={swap} status={status} /> : ""
         },
         {
             name: status === 3 ? 'Your assets are on their way' : 'Transfer of assets to your address',

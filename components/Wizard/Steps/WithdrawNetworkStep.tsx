@@ -92,8 +92,8 @@ const WithdrawNetworkStep: FC = () => {
 
     const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
     const userGuideUrlForDesktop = sourceNetworkSettings?.UserGuideUrlForDesktop
-    const sourceChainId = sourceNetworkSettings?.ChainId
-    let canWithdrawWithWallet = !!sourceChainId;
+    const sourceChainId = source_network?.chain_id || sourceNetworkSettings?.ChainId
+    let canWithdrawWithWallet = source_network.address_type === "evm" && !!sourceChainId;
 
     const qrCode = (
         <QRCode
@@ -226,7 +226,7 @@ const WithdrawNetworkStep: FC = () => {
                                 networkDisplayName={source_network?.display_name}
                                 tokenDecimals={sourceCurrency?.decimals}
                                 tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`}
-                                chainId={sourceChainId as number}
+                                chainId={Number(sourceChainId)}
                                 generatedDepositAddress={generatedDepositAddress as `0x${string}`}
                                 managedDepositAddress={managedDepositAddress as `0x${string}`}
                                 userDestinationAddress={swap.destination_address as `0x${string}`}

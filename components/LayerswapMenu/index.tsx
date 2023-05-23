@@ -14,6 +14,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
+import WalletIcon from "../icons/WalletIcon";
 
 export default function () {
     const { email, userType, userId } = useAuthState()
@@ -214,7 +215,7 @@ const WalletAddress = () => {
         {({ account, mounted, chain, openAccountModal }) => {
             if (mounted && account && chain)
                 return <button type="button" onClick={openAccountModal} className='font-light w-full text-left px-4 py-2 text-sm cursor-default flex items-center space-x-2'>
-                    <Wallet className="h-4 w-4" />
+                    <WalletIcon className="h-4 w-4" />
                     <span>{shortenAddress(account.address)}</span>
                 </button>
             else
