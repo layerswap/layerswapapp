@@ -21,8 +21,8 @@ import WatchDogAbi from "../../../../lib/abis/LSWATCHDOG.json"
 import { ApiResponse } from '../../../../Models/ApiResponse';
 import useSWR from 'swr';
 import { useAuthState } from '../../../../context/authContext';
-import NetworkSettings from '../../../../lib/NetworkSettings';
 import KnownInternalNames from '../../../../lib/knownIds';
+import { StarknetChainMappings } from '../../../../lib/chainConfigs';
 
 function getUint256CalldataFromBN(bn: number.BigNumberish) {
     return { type: "struct" as const, ...uint256.bnToUint256(bn) }
@@ -52,8 +52,7 @@ const StarknetWalletWithdrawStep: FC = () => {
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
 
-    const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
-    const sourceChainId = sourceNetworkSettings?.ChainId
+    const sourceChainId = StarknetChainMappings[source_network?.chain_id]
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher)

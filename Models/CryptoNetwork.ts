@@ -9,6 +9,7 @@ export class CryptoNetwork {
     status: LayerStatus;
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
+    chain_id: string;
     address_type: "evm" | 'starknet' | 'solana' | 'osmosis'
 }
 

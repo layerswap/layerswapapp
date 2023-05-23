@@ -1,8 +1,7 @@
-import { Dispatch, SetStateAction, ReactNode, useRef, useEffect } from "react";
+import { Dispatch, SetStateAction, ReactNode, useEffect } from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { Leaflet } from "./leaflet";
-import { ReactPortal } from "../Wizard/Widget";
 import { AnimatePresence } from "framer-motion";
 
 export default function Popover({
