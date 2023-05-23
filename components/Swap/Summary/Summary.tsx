@@ -33,7 +33,6 @@ const Summary: FC<SwapInfoProps> = ({ currency, source, destination, requestedAm
         from: source, 
         to: destination 
     }, networks, currencies);
-    debugger
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = (currency?.usd_price * receive_amount).toFixed(2)
     const nativeCurrency = refuelAmount && destination?.isExchange === false && currencies.find(c => c.asset === destination?.native_currency)

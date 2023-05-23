@@ -20,7 +20,6 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     let fee = CalculateFee(values, networks);
     const parsedFee = parseFloat(fee.toFixed(currency?.precision))
     let receive_amount = CalculateReceiveAmount(values, networks, currencies);
-    debugger
     const asset = currency?.asset
     const apiClient = new LayerSwapApiClient()
     //handle error case
