@@ -23,23 +23,28 @@ import useSWR from 'swr';
 import { motion } from 'framer-motion';
 import SwapSummary from '../../Swap/Summary/Index';
 
+export enum WithdrawType {
+    viaWallet = 'wallet',
+    Manually = 'manually'
+}
+
 const WithdrawNetworkStep: FC = () => {
 
     let tabs: Tab[] = [
         {
-            id: "wallet",
+            id: WithdrawType.viaWallet,
             label: "Via wallet",
             icon: <Wallet className='stroke-1 -ml-1' />,
             content: <>
                 <h1 className='text-xl text-white'>Wallet transfer</h1>
                 <p className='text-sm leading-6 mt-1'>
-                    Bank transfers, 
+                    Bank transfers,
                     also known as ACH payments, can take up to five business days. To pay via ACH, transfer funds using the following bank information.</p>
             </>,
             footer: <WalletTransfer />
         },
         {
-            id: "manually",
+            id: WithdrawType.Manually,
             label: "Manually",
             icon: <AlignLeft />,
             content: <ManualTransfer />
@@ -48,7 +53,7 @@ const WithdrawNetworkStep: FC = () => {
 
     const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { swap } = useSwapDataState()
-    const { setInterval} = useSwapDataUpdate()
+    const { setInterval } = useSwapDataUpdate()
 
     const [activeTabId, setActiveTabId] = useState(tabs[0].id);
 
@@ -74,7 +79,7 @@ const WithdrawNetworkStep: FC = () => {
                     <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                         <div className='space-y-4'>
                             <div className='mb-6 grid grid-cols-1 gap-4 space-y-4'>
-                                <SwapSummary/>
+                                <SwapSummary withdrawType={activeTab.id} />
                                 {
                                     <div className="flex space-x-3 w-full">
                                         {tabs.map((tab) => (

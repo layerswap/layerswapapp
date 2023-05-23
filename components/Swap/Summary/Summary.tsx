@@ -16,24 +16,19 @@ type SwapInfoProps = {
     destination: Layer;
     requestedAmount: number;
     destinationAddress: string;
-    refuelAmount?: number
+    refuelAmount?: number;
+    fee: number
 }
 
-const Summary: FC<SwapInfoProps> = ({ currency, source, destination, requestedAmount, destinationAddress, refuelAmount }) => {
+const Summary: FC<SwapInfoProps> = ({ currency, source, destination, requestedAmount, destinationAddress, refuelAmount, fee }) => {
     const { resolveImgSrc, networks, currencies } = useSettingsState()
     const { isConnected, address } = useAccount();
 
     const sourceDisplayName = source?.display_name
     const destinationDisplayName = destination?.display_name
 
-    let receive_amount = CalculateReceiveAmount({ 
-        amount: requestedAmount.toString(), 
-        destination_address: destinationAddress, 
-        currency: currency, 
-        from: source, 
-        to: destination 
-    }, networks, currencies);
-    debugger
+    let receive_amount = truncateDecimals(requestedAmount - fee, currency?.precision)
+
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = (currency?.usd_price * receive_amount).toFixed(2)
     const nativeCurrency = refuelAmount && destination?.isExchange === false && currencies.find(c => c.asset === destination?.native_currency)
