@@ -27,7 +27,6 @@ export enum SwapCreateStep {
     AuthorizeCoinbaseWithdrawal = "AuthorizeCoinbaseWithdrawal",
     OffRampOAuth = "OffRampOAuth",
     ApiKey = "ApiKey",
-    Confirm = "Confirm",
     TwoFactor = "TwoFactor",
     ActiveSwapLimit = 'ActiveSwapLimit',
     Error = "Error"

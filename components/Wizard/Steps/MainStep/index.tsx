@@ -67,9 +67,6 @@ const MainStep: FC = () => {
                         clearTempData()
                         formikRef.current.setValues(formValues)
                         updateSwapFormData(formValues)
-                        if (source.isExchange) {
-                            goToStep(SwapCreateStep.Confirm)
-                        }
                     }
                     catch (e) {
                         toast(e?.response?.data?.error?.message || e.message)

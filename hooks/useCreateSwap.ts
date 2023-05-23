@@ -2,7 +2,6 @@ import { useCallback } from "react";
 import CodeStep from "../components/Wizard/Steps/CodeStep";
 import EmailStep from "../components/Wizard/Steps/EmailStep";
 import MainStep from "../components/Wizard/Steps/MainStep/index";
-import SwapConfirmationStep from "../components/Wizard/Steps/ConfirmStep/OnRampSwapConfirmationStep";
 import { useFormWizardaUpdate } from "../context/formWizardProvider";
 import { useSwapDataState } from "../context/swap";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
@@ -45,16 +44,10 @@ const useCreateSwap = () => {
         Name: SwapCreateStep.AuthorizeCoinbaseWithdrawal,
         positionPercent: 60,
         onBack: useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), []),
-        onNext: useCallback(async () => goToStep(SwapCreateStep.Confirm), []),
-    }
-    const Confirm: WizardStep<SwapCreateStep> = {
-        Content: SwapConfirmationStep,
-        Name: SwapCreateStep.Confirm,
-        positionPercent: 60,
-        onBack: useCallback(() => goToStep(SwapCreateStep.MainForm, "back"), []),
+        onNext: useCallback(async () => goToStep(SwapCreateStep.MainForm), []),
     }
 
-    return { MainForm, Email, Code, Confirm, CoinbaseAuthorize }
+    return { MainForm, Email, Code, CoinbaseAuthorize }
 }
 
 export default useCreateSwap;
