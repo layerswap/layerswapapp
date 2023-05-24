@@ -59,7 +59,7 @@ const OnRampSwapConfirmationStep: FC = () => {
             return goToStep(SwapCreateStep.TwoFactor)
         try {
             if (!swap) {
-                const swapId = await createAndProcessSwap();
+                const swapId = await createAndProcessSwap(swapFormData);
                 if (from?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase.toLowerCase()) {
                     if (!withdrawManually) {
                         const layerswapApiClient = new LayerSwapApiClient()

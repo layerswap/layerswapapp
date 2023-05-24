@@ -75,7 +75,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                         await internalApiClient.VerifyWallet(window.location.search);
                     }
                 }
-                const swapId = await createAndProcessSwap();
+                const swapId = await createAndProcessSwap(swapFormData);
                 await router.push(`/swap/${swapId}`)
             }
             else {
