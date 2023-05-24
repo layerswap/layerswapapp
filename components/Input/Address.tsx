@@ -68,7 +68,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const [canAutofillStarknet, setCanAutofillStarknet] = useState(true)
         const starknet = getStarknet()
         const destinationIsStarknet = destination.internal_name === KnownInternalNames.Networks.StarkNetGoerli
-        || destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet
+            || destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
@@ -160,10 +160,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [inputValue, inputAddressIsValid])
 
         useEffect(() => {
-            (async () => {
-                const availableNetworks = await starknet.getAvailableWallets()
-                if (!(availableNetworks.length > 0)) setCanAutofillStarknet(false)
-            })()
+            if (destinationIsStarknet) {
+                (async () => {
+                    const availableNetworks = await starknet.getAvailableWallets()
+                    if (!(availableNetworks.length > 0)) setCanAutofillStarknet(false)
+                })()
+            }
         }, [destinationIsStarknet])
 
         const handleSetNewAddress = useCallback(() => {
