@@ -6,7 +6,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { getStarknet } from "get-starknet-core"
+import { StarknetWindowObject, getStarknet } from "get-starknet-core"
 import { Info } from "lucide-react";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
@@ -22,7 +22,6 @@ import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import { Wallet } from 'lucide-react'
-import { useAccountModal } from "@rainbow-me/rainbowkit";
 import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import { connect, disconnect as starknetDisconnect } from "get-starknet";
@@ -66,6 +65,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const [isStarknetWalletConnected, setIsStarknetWalletConnected] = useState(false)
         const [autofilledWallet, setAutofilledWallet] = useState<'evm' | 'starknet'>()
         const [canAutofillStarknet, setCanAutofillStarknet] = useState(true)
+        const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
         const starknet = getStarknet()
         const destinationIsStarknet = destination.internal_name === KnownInternalNames.Networks.StarkNetGoerli
             || destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet
@@ -187,6 +187,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 return
             }
             setWrongNetwork(false)
+            setStarknetAccount(res)
             setInputValue(res?.account?.address)
             setIsStarknetWalletConnected(res?.isConnected)
             setAddressConfirmed(true)
@@ -272,7 +273,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             validInputAddress &&
                             <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-300 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-500 transition duration-200 px-2 py-2 hover:border-secondary-500 hover:shadow-xl`}>
                                 <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
-                                    <AddressIcon address={validInputAddress} size={25} />
+                                    {
+                                        destinationIsStarknet && starknetAccount ?
+                                            <Image src={starknetAccount?.icon} alt={starknetAccount?.id} width={25} height={25} />
+                                            :
+                                            <AddressIcon address={validInputAddress} size={25} />
+                                    }
                                 </div>
                                 <div className="flex flex-col grow">
                                     <div className="block text-md font-medium text-white">
