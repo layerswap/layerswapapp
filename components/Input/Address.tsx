@@ -6,6 +6,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
+import { getStarknet } from "get-starknet-core"
 import { Info } from "lucide-react";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
@@ -64,11 +65,15 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const [validInputAddress, setValidInputAddress] = useState<string>()
         const [isStarknetWalletConnected, setIsStarknetWalletConnected] = useState(false)
         const [autofilledWallet, setAutofilledWallet] = useState<'evm' | 'starknet'>()
+        const [canAutofillStarknet, setCanAutofillStarknet] = useState(true)
+        const starknet = getStarknet()
+        const destinationIsStarknet = destination.internal_name === KnownInternalNames.Networks.StarkNetGoerli
+        || destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
 
-        const { isConnected: isRainbowKitConnected, isDisconnected, connector, address: walletAddress } = useAccount({
+        const { isConnected: isRainbowKitConnected, address: walletAddress } = useAccount({
             onDisconnect() {
                 setInputValue("")
                 setAddressConfirmed(false)
@@ -77,7 +82,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         });
 
         useEffect(() => {
-            if(isRainbowKitConnected && destinationNetwork?.address_type){
+            if (isRainbowKitConnected && destinationNetwork?.address_type) {
                 setAutofilledWallet('evm')
             }
         }, [isRainbowKitConnected, destinationNetwork?.address_type])
@@ -154,6 +159,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             }
         }, [inputValue, inputAddressIsValid])
 
+        useEffect(() => {
+            (async () => {
+                const availableNetworks = await starknet.getAvailableWallets()
+                if (!(availableNetworks.length > 0)) setCanAutofillStarknet(false)
+            })()
+        }, [destinationIsStarknet])
+
         const handleSetNewAddress = useCallback(() => {
             setAddressConfirmed(true)
             setFieldValue("destination_address", validInputAddress)
@@ -179,9 +191,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setFieldValue("destination_address", res?.account?.address)
             setAutofilledWallet("starknet")
         }, [destinationChainId])
-
-        const destinationIsStarknet = destination.internal_name === KnownInternalNames.Networks.StarkNetGoerli
-            || destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
         return (<>
             <div className='w-full flex flex-col justify-between h-full text-primary-text'>
@@ -295,7 +304,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </div>
                         }
                         {
-                            !disabled && !inputValue && destinationIsStarknet &&
+                            !disabled && !inputValue && destinationIsStarknet && canAutofillStarknet &&
                             <div onClick={handleConnectStarknet} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                                 <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
                                     <Wallet className="h-6 w-6 text-primary-text" />
