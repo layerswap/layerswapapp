@@ -5,7 +5,7 @@ import FooterComponent from './footerComponent';
 function IntroCard(props) {
     return (
         <CardContainer {...props} >
-            <div className="flex flex-col px-4 md:px-8 py-6 text-primary-text font-light">
+            <div className="flex flex-col px-6 py-6 text-primary-text font-light">
                 <div>
                     <h1 className="text-xl font-light text-white">About Layerswap</h1>
                     <p className="text-base mt-2">
