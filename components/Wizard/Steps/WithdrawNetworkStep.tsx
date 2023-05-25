@@ -1,5 +1,5 @@
 import { AlignLeft, ArrowLeftRight, Wallet } from 'lucide-react';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import { useFormWizardaUpdate } from '../../../context/formWizardProvider';
 import { SwapWithdrawalStep } from '../../../Models/Wizard';
@@ -13,7 +13,7 @@ import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import Widget from '../Widget';
 import { useGoHome } from '../../../hooks/useGoHome';
 import TransferFromWallet from './Wallet/Transfer';
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from '../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource, PublishedSwapTransactionStatus } from '../../../lib/layerSwapApiClient';
 import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
 import tailwindConfig from '../../../tailwind.config';
@@ -22,18 +22,30 @@ import { ApiResponse } from '../../../Models/ApiResponse';
 import useSWR from 'swr';
 import { motion } from 'framer-motion';
 import SwapSummary from '../../Swap/Summary/Index';
+import { StripeOnramp, loadStripeOnramp } from '@stripe/crypto';
 
 const WithdrawNetworkStep: FC = () => {
+
+    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
+    const { swap } = useSwapDataState()
+    const { layers, resolveImgSrc } = useSettingsState()
+    const { setInterval } = useSwapDataUpdate()
+
+    const source_internal_name = swap?.source_exchange ?? swap.source_network
+    const source = layers.find(n => n.internal_name === source_internal_name)
+
+    let isFiat = source.isExchange && source?.type === "fiat"
 
     let tabs: Tab[] = [
         {
             id: "wallet",
             label: "Via wallet",
-            icon: <Wallet className='stroke-1 -ml-1' />,
+            enabled: !swap?.source_exchange, //TODO handle other cases
+            icon: < Wallet className='stroke-1 -ml-1' />,
             content: <>
                 <h1 className='text-xl text-white'>Wallet transfer</h1>
                 <p className='text-sm leading-6 mt-1'>
-                    Bank transfers, 
+                    Bank transfers,
                     also known as ACH payments, can take up to five business days. To pay via ACH, transfer funds using the following bank information.</p>
             </>,
             footer: <WalletTransfer />
@@ -41,17 +53,20 @@ const WithdrawNetworkStep: FC = () => {
         {
             id: "manually",
             label: "Manually",
+            enabled: !isFiat,
             icon: <AlignLeft />,
             content: <ManualTransfer />
+        },
+        {
+            id: "stripe",
+            label: "Stripe",
+            enabled: isFiat,
+            icon: <AlignLeft />,
+            content: <FiatTransfer />
         }
     ];
 
-    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
-    const { swap } = useSwapDataState()
-    const { setInterval} = useSwapDataUpdate()
-
-    const [activeTabId, setActiveTabId] = useState(tabs[0].id);
-
+    const [activeTabId, setActiveTabId] = useState(tabs.find(t => t.enabled)?.id);
 
     useEffect(() => {
         setInterval(15000)
@@ -66,7 +81,7 @@ const WithdrawNetworkStep: FC = () => {
     }, [swapStatusStep])
 
     const activeTab = tabs.find(t => t.id === activeTabId)
-
+    const showTabsHeader = tabs?.filter(t => t.enabled)?.length > 1
     return (
         <>
             <Widget>
@@ -74,10 +89,13 @@ const WithdrawNetworkStep: FC = () => {
                     <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                         <div className='space-y-4'>
                             <div className='mb-6 grid grid-cols-1 gap-4 space-y-4'>
-                                <SwapSummary/>
                                 {
+                                    !isFiat && <SwapSummary />
+                                }
+                                {
+                                    showTabsHeader &&
                                     <div className="flex space-x-3 w-full">
-                                        {tabs.map((tab) => (
+                                        {tabs.filter(t=>t.enabled).map((tab) => (
                                             <TabHeader
                                                 activeTabId={activeTabId}
                                                 onCLick={setActiveTabId}
@@ -105,7 +123,6 @@ const WithdrawNetworkStep: FC = () => {
         </>
     )
 }
-
 
 const ManualTransfer: FC = () => {
     const { layers, resolveImgSrc } = useSettingsState()
@@ -200,6 +217,18 @@ const ManualTransfer: FC = () => {
     </div>
 }
 
+const FiatTransfer: FC = () => {
+    const { swap } = useSwapDataState()
+    const stripeSessionId = swap?.metadata?.['STRIPE:SessionId']
+    const stripeOnrampPromise = loadStripeOnramp(process.env.NEXT_PUBLIC_STRIPE_SECRET);
+
+    return <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
+        <CryptoElements stripeOnramp={stripeOnrampPromise}>
+            <OnrampElement clientSecret={stripeSessionId} swapId={swap?.id}/>
+        </CryptoElements>
+    </div>
+}
+
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
@@ -231,24 +260,9 @@ const WalletTransfer: FC = () => {
 
 }
 
-
-let tabs = [
-    {
-        id: "wallet",
-        label: "Via wallet",
-        icon: <Wallet className='stroke-1 -ml-1' />,
-        content: <WalletTransfer />
-    },
-    {
-        id: "manually",
-        label: "Manually",
-        icon: <AlignLeft />,
-        content: <ManualTransfer />
-    }
-];
-
 type Tab = {
     id: string,
+    enabled: boolean,
     label: string,
     icon: JSX.Element | JSX.Element[],
     content: JSX.Element | JSX.Element[],
@@ -284,41 +298,89 @@ const TabHeader: FC<TabHeaderProps> = ({ tab, onCLick, activeTabId }) => {
     </button>
 }
 
-function AnimatedTabs() {
-    let [activeTab, setActiveTab] = useState(tabs[0].id);
+const CryptoElementsContext = createContext(null);
+
+export const CryptoElements: FC<{ stripeOnramp: Promise<StripeOnramp> }> = ({
+    stripeOnramp,
+    children
+}) => {
+    const [ctx, setContext] = useState<{ onramp: StripeOnramp }>(() => ({ onramp: null }));
+
+    useEffect(() => {
+        let isMounted = true;
+
+        Promise.resolve(stripeOnramp).then((onramp) => {
+            if (onramp && isMounted) {
+                setContext((ctx) => (ctx.onramp ? ctx : { onramp }));
+            }
+        });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [stripeOnramp]);
 
     return (
-        <div className="flex space-x-3 w-full">
-            {tabs.map((tab) => (
-                <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`${activeTab === tab.id ? "bg-darkblue-600 text-primary-text" : "text-primary-text/50 hover:text-primary-text/70 bg-darkblue-800"
-                        } grow rounded-md text-left relative py-3 px-5 text-sm transition`}
-                    style={{
-                        WebkitTapHighlightColor: "transparent",
-                    }}
-                >
-                    {tab.icon}
-                    {activeTab === tab.id && (
-                        <motion.span
-                            layoutId="bubble"
-                            className="absolute inset-0 z-10 bg-darkblue-600 mix-blend-lighten border border-darkblue-100"
-                            style={{ borderRadius: '6px' }}
-                            transition={{ type: "spring", bounce: 0.1, duration: 0.3 }}
-                        />
-                    )}
-                    {tab.label}
-                </button>
-            ))}
-            {
-
-            }
-        </div>
+        <CryptoElementsContext.Provider value={ctx}>
+            {children}
+        </CryptoElementsContext.Provider>
     );
+};
+
+// React hook to get StripeOnramp from context
+export const useStripeOnramp = () => {
+    const context = useContext<{ onramp: StripeOnramp }>(CryptoElementsContext);
+    return context?.onramp;
+};
+type OnrampElementProps = {
+    clientSecret: string,
+    swapId: string,
 }
+// React element to render Onramp UI
+export const OnrampElement:FC<OnrampElementProps> = ({
+    clientSecret,
+    swapId,
+    ...props
+}) => {
+    const stripeOnramp = useStripeOnramp();
+    const onrampElementRef = useRef(null);
+    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
+    const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
 
+    useEffect(() => {
+        const containerRef = onrampElementRef.current;
+        if (containerRef) {
+            containerRef.innerHTML = '';
 
+            if (clientSecret && stripeOnramp && swapId) {
+                const session = stripeOnramp
+                    .createSession({
+                        clientSecret,
+                        appearance: {
+                            theme: "dark"
+                        },
+                    })
+                    .mount(containerRef)
+                const eventListener = async (e) => {
+                    let transactionStatus: PublishedSwapTransactionStatus
+                    if (e.payload.session.status === "fulfillment_complete")
+                        transactionStatus = PublishedSwapTransactionStatus.Completed
+                    else if (e.payload.session.status === "fulfillment_processing")
+                        transactionStatus = PublishedSwapTransactionStatus.Pending
+                    else {
+                        // TODO handle
+                        return
+                    }
+                    await setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, e.payload.session.id);
+                    goToStep(SwapWithdrawalStep.SwapProcessing)
+                }
+                session.addEventListener("onramp_session_updated", eventListener)
+            }
+        }
 
+    }, [clientSecret, stripeOnramp, swapId]);
+
+    return <div {...props} ref={onrampElementRef}></div>;
+};
 
 export default WithdrawNetworkStep;

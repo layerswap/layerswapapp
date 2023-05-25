@@ -188,6 +188,9 @@ export type SwapItem = {
     input_transaction?: Transaction,
     output_transaction?: Transaction,
     has_sucessfull_published_tx: boolean;
+    metadata?: {
+        'STRIPE:SessionId': string
+    }
 }
 
 export type AddressBookItem = {
