@@ -93,7 +93,7 @@ const WithdrawNetworkStep: FC = () => {
     const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
     const userGuideUrlForDesktop = sourceNetworkSettings?.UserGuideUrlForDesktop
     const sourceChainId = source_network?.chain_id || sourceNetworkSettings?.ChainId
-    let canWithdrawWithWallet = source_network.address_type === "evm" && !!sourceChainId;
+    let canWithdrawWithWallet = source_network.address_type === "evm" && !!sourceChainId && source_network?.internal_name !== KnownInternalNames.Networks.ZksyncMainnet;
 
     const qrCode = (
         <QRCode

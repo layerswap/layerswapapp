@@ -27,6 +27,7 @@ import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import { connect, disconnect as starknetDisconnect } from "get-starknet";
 import WalletIcon from "../icons/WalletIcon";
 import { Configs, usePersistedState } from "../../hooks/usePersistedState";
+import { NetworkAddressType } from "../../Models/CryptoNetwork";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -327,7 +328,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </div>
                         }
                         {
-                            !disabled && !inputValue && !destination?.isExchange && destinationNetwork?.address_type === 'evm' &&
+                            !disabled && !inputValue && !destination?.isExchange 
+                                && (destinationNetwork?.address_type === NetworkAddressType.evm || destinationNetwork?.address_type === NetworkAddressType.immutable_x)
+                                &&
                             <RainbowKit>
                                 <div className={`min-h-12 text-left space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                                     <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
