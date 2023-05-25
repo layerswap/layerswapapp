@@ -26,6 +26,7 @@ import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import { connect, disconnect as starknetDisconnect } from "get-starknet";
 import WalletIcon from "../icons/WalletIcon";
+import { Configs, usePersistedState } from "../../hooks/usePersistedState";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -62,13 +63,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const placeholder = NetworkSettings.KnownSettings[values?.to?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
         const [validInputAddress, setValidInputAddress] = useState<string>()
-        const [isStarknetWalletConnected, setIsStarknetWalletConnected] = useState(false)
         const [autofilledWallet, setAutofilledWallet] = useState<'evm' | 'starknet'>()
         const [canAutofillStarknet, setCanAutofillStarknet] = useState(true)
-        const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
         const starknet = getStarknet()
         const destinationIsStarknet = destination.internal_name === KnownInternalNames.Networks.StarkNetGoerli
             || destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet
+        let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({}, 'configs')
+        const starknetWallet = localConfigs?.connectedWallet
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
@@ -120,7 +121,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             try {
                 if (autofilledWallet === "starknet") {
                     starknetDisconnect({ clearLastWallet: true })
-                    setIsStarknetWalletConnected(false)
+                    setLocalConfigs({ ...localConfigs, connectedWallet: null })
                     setWrongNetwork(false)
                 }
                 else if (autofilledWallet === "evm") {
@@ -182,17 +183,15 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             if (res?.account?.chainId != destinationChainId) {
                 setWrongNetwork(true)
                 starknetDisconnect({ clearLastWallet: true })
-                setIsStarknetWalletConnected(false)
                 setAutofilledWallet(null)
                 return
             }
             setWrongNetwork(false)
-            setStarknetAccount(res)
             setInputValue(res?.account?.address)
-            setIsStarknetWalletConnected(res?.isConnected)
             setAddressConfirmed(true)
             setFieldValue("destination_address", res?.account?.address)
             setAutofilledWallet("starknet")
+            setLocalConfigs({ ...localConfigs, connectedWallet: { isConnected: res?.isConnected, address: res?.account?.address, icon: res?.icon } })
         }, [destinationChainId])
 
         return (<>
@@ -218,7 +217,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         placeholder={placeholder}
                                         autoCorrect="off"
                                         type={"text"}
-                                        disabled={disabled || !!((isRainbowKitConnected || isStarknetWalletConnected) && values.destination_address) || !!(isStarknetWalletConnected && values.destination_address)}
+                                        disabled={disabled || !!((isRainbowKitConnected || starknetWallet?.isConnected) && values.destination_address) || !!(starknetWallet?.isConnected && values.destination_address)}
                                         name={name}
                                         id={name}
                                         ref={inputReference}
@@ -274,8 +273,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-300 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-500 transition duration-200 px-2 py-2 hover:border-secondary-500 hover:shadow-xl`}>
                                 <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                     {
-                                        destinationIsStarknet && starknetAccount ?
-                                            <Image src={starknetAccount?.icon} alt={starknetAccount?.id} width={25} height={25} />
+                                        destinationIsStarknet && starknetWallet?.isConnected ?
+                                            <Image src={starknetWallet?.icon} alt={starknetWallet?.address} width={25} height={25} />
                                             :
                                             <AddressIcon address={validInputAddress} size={25} />
                                     }
