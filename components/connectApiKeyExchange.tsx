@@ -87,7 +87,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
                                     id="apiKey"
                                     onChange={handleKeyChange}
                                     className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-secondary-500 block
-                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-secondary-700 w-full font-semibold rounded-md placeholder-gray-400"
+                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-secondary-700 w-full font-semibold rounded-md placeholder-primary-text"
                                 />
                             </div>
                         </div>
@@ -105,7 +105,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
                                     id="apiSecret"
                                     onChange={handleSecretChange}
                                     className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-secondary-500 block
-                        placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-secondary-700 w-full font-semibold rounded-md placeholder-gray-400"
+                        placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-secondary-700 w-full font-semibold rounded-md placeholder-primary-text"
                                 />
                             </div>
                         </div>
