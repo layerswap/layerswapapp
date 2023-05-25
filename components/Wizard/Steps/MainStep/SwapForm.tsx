@@ -237,7 +237,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 header={`To ${values?.to?.display_name || ''} address`}
                                 height="fit"
                                 show={showAddressModal} setShow={setShowAddressModal}
-                                className="min-h-[70%] bg-secondary-950"
+                                className="min-h-[70%] bg-secondary-900"
                             >
                                 <Address
                                     close={() => setShowAddressModal(false)}
