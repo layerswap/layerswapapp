@@ -6,7 +6,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import { StarknetWindowObject, getStarknet } from "get-starknet-core"
+import { getStarknet } from "get-starknet-core"
 import { Info } from "lucide-react";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
@@ -90,7 +90,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [isRainbowKitConnected, destinationNetwork?.address_type])
 
         useEffect(() => {
-            if (!destination.isExchange && isValidAddress(walletAddress, destination)) {
+            if (!destination.isExchange && isValidAddress(walletAddress, destination) && !values?.destination_address) {
                 setInputValue(walletAddress)
                 setAddressConfirmed(true)
                 setFieldValue("destination_address", walletAddress)
