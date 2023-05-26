@@ -121,7 +121,7 @@ module.exports = {
         widest: '.1em',
       },
       boxShadow: {
-        'widget-footer': '-1px -28px 21px -6px var(--colors-secondary-700)',
+        'widget-footer': '-1px -28px 21px -6px rgb(var(--colors-secondary-900))',
         'card': '5px 5px 40px rgba(0, 0, 0, 0.2), 0px 0px 200px rgba(0, 0, 0, 0.43)',
       },
       typography: (theme) => ({
@@ -277,7 +277,7 @@ module.exports = {
                 '950': '#0F5960',
                 'background': '#007985',
                 'text': '#D1FBFF',
-                'text-placeholder': '#EAFAFC',
+                'text-placeholder': '#C6F2F6',
                 'buttonTextColor': '#000000',
                 'logoColor': '#ffffffff'
               },
