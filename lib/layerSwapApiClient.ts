@@ -213,6 +213,7 @@ type Transaction = {
 
 export enum PublishedSwapTransactionStatus {
     Pending,
+    Error,
     Completed
 }
 
