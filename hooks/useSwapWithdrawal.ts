@@ -5,11 +5,6 @@ import { SwapWithdrawalStep, WizardStep } from "../Models/Wizard";
 
 const useSwapWithdrawal = () => {
 
-    const Withdrawal: WizardStep<SwapWithdrawalStep> = {
-        Content: WithdrawExchangeStep,
-        Name: SwapWithdrawalStep.Withdrawal,
-        positionPercent: 90
-    }
     const Success: WizardStep<SwapWithdrawalStep> = {
         Content: SuccessfulStep,
         Name: SwapWithdrawalStep.Success,
@@ -21,7 +16,7 @@ const useSwapWithdrawal = () => {
         positionPercent: 100
     }
 
-    return { Withdrawal, Success, Failed }
+    return { Success, Failed }
 }
 
 export default useSwapWithdrawal;

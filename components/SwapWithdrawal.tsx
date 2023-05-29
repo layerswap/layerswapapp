@@ -7,6 +7,8 @@ import { SwapStatus } from "../Models/SwapStatus";
 import { SwapWithdrawalStep } from "../Models/Wizard";
 import { GetSwapStatusStep } from "./utils/SwapStatus";
 import SwapWithdrawalWizard from "./Wizard/SwapWithdrawalWizard";
+import { Widget } from "./Widget/Index";
+import Withdraw from "./Wizard/Steps/Withdraw/Index";
 
 const SwapWithdrawal: FC = () => {
     const { swap } = useSwapDataState()
@@ -22,27 +24,10 @@ const SwapWithdrawal: FC = () => {
 
         </div>
 
-    let initialStep: SwapWithdrawalStep;
-    const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const sourceIsStarknet= swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
-    const userTransferIsPending = swap?.status === SwapStatus.UserTransferPending && !swap.has_sucessfull_published_tx
-    if (sourceIsImmutableX && userTransferIsPending) {
-        const isImtblMarketplace = (query.signature && query.addressSource === "imxMarketplace")
-        initialStep = isImtblMarketplace ? SwapWithdrawalStep.ProcessingWalletTransaction : SwapWithdrawalStep.WithdrawFromImtblx
-    }
-    else if(sourceIsStarknet && userTransferIsPending) {
-        initialStep = SwapWithdrawalStep.WithdrawFromStarknet
-    }
-    else {
-        initialStep = GetSwapStatusStep(swap);
-    }
-
     const key = Object.keys(query).join("")
 
     return (
-        <FormWizardProvider initialStep={initialStep} initialLoading={true} key={key}>
-            <SwapWithdrawalWizard />
-        </FormWizardProvider>
+        <Withdraw key={key}/>
     )
 };
 

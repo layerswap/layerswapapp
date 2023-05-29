@@ -6,16 +6,16 @@ import ErrorStep from "./Steps/ErrorStep";
 import ExchangeDelay from "./Steps/ExchangeDelayStep";
 import FailedStep from "./Steps/FailedStep";
 import SuccessfulStep from "./Steps/SuccessfulStep";
-import ImtblxWalletWithdrawStep from "./Steps/Wallet/ImtblxWalletWithdrawStep";
-import CoinbaseInternalWithdrawalStep from "./Steps/Wallet/CoinbaseInternalWithdrawalStep";
+import ImtblxWalletWithdrawStep from "./Steps/Withdraw/Wallet/ImtblxWalletWithdrawStep";
+import CoinbaseInternalWithdrawalStep from "./Steps/Withdraw/Wallet/CoinbaseInternalWithdrawalStep";
 import WithdrawExchangeStep from "./Steps/WithdrawExchangeStep";
-import WithdrawNetworkStep from "./Steps/WithdrawNetworkStep";
+import WithdrawStep from "./Steps/Withdraw/Index";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 import { TimerProvider } from "../../context/timerContext";
 import ProccessingWalletTransactionStep from "./Steps/ProccessingSteps/ProccessingWalletTransactionStep";
 import ProcessingStep from "./Steps/ProccessingSteps";
-import StarknetWalletWithdrawStep from "./Steps/Wallet/StarknetWalletWithdraw";
+import StarknetWalletWithdrawStep from "./Steps/Withdraw/Wallet/StarknetWalletWithdraw";
 
 const SwapWithdrawalWizard: FC = () => {
     const router = useRouter();
@@ -38,7 +38,7 @@ const SwapWithdrawalWizard: FC = () => {
                     <WithdrawExchangeStep />
                 </WizardItem>
                 <WizardItem StepName={SwapWithdrawalStep.OffRampWithdrawal} PositionPercent={90} GoBack={handleGoBack}>
-                    <WithdrawNetworkStep />
+                    <WithdrawStep />
                 </WizardItem>
                 <WizardItem StepName={SwapWithdrawalStep.WithdrawFromImtblx} GoBack={handleGoBack} PositionPercent={90} >
                     <ImtblxWalletWithdrawStep />

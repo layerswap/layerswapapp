@@ -26,6 +26,5 @@ const SwapSummary: FC = () => {
         destinationAddress={swap?.destination_address}
         refuelAmount={swap?.refuel_amount}
     />
-
 }
 export default SwapSummary

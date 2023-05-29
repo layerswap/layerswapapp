@@ -12,7 +12,7 @@ import KnownInternalNames from '../../../lib/knownIds';
 import { GetSwapStatusStep } from '../../utils/SwapStatus';
 import Widget from '../Widget';
 import { useGoHome } from '../../../hooks/useGoHome';
-import TransferFromWallet from './Wallet/Transfer';
+import TransferFromWallet from './Withdraw/Wallet/Transfer';
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource, PublishedSwapTransactionStatus } from '../../../lib/layerSwapApiClient';
 import QRCode from 'qrcode.react';
 import colors from 'tailwindcss/colors';
