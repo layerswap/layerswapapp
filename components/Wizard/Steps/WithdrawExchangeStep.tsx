@@ -167,7 +167,7 @@ const WithdrawExchangeStep: FC = () => {
         setShowCoinbaseConnectModal(true)
     }
 
-    const EIP_681 = asset.contract_address ? `ethereum:${asset.contract_address}/transfer?address=${generatedDepositAddress}&uint256=${utils.parseUnits(swap?.requested_amount.toString(), asset.decimals)}` : `ethereum:${generatedDepositAddress}?value=${swap?.requested_amount * 1000000000000000000}`
+    const EIP_681 = asset.contract_address ? `ethereum:${asset.contract_address}@${selectedSourceNetwork.chain_id}/transfer?address=${generatedDepositAddress}&uint256=${utils.parseUnits(swap?.requested_amount.toString(), asset.decimals)}` : `ethereum:${generatedDepositAddress}@${selectedSourceNetwork.chain_id}?value=${swap?.requested_amount * 1000000000000000000}`
 
     const qrCode = (
         <QRCode
