@@ -40,8 +40,6 @@ const StarknetWalletWithdrawStep: FC = () => {
     const [account, setAccount] = useState<AccountInterface>()
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
-    const { userId } = useAuthState()
-
     const { swap } = useSwapDataState()
     const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
     const { networks } = useSettingsState()
@@ -49,7 +47,7 @@ const StarknetWalletWithdrawStep: FC = () => {
 
     const { source_network: source_network_internal_name } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
-    const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
+    const sourceCurrency = source_network.currencies.find(c => c.asset?.toLowerCase() === swap.source_network_asset?.toLowerCase())
 
     const sourceChainId = source_network?.chain_id
 
@@ -130,7 +128,7 @@ const StarknetWalletWithdrawStep: FC = () => {
 
             const watch = watchDogContract.populate(
                 "watch",
-                [userId],
+                [swap.id],
             );
 
             try {
@@ -155,7 +153,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [account, swap, source_network, managedDeposit, userId, sourceCurrency])
+    }, [account, swap, source_network, managedDeposit, sourceCurrency])
 
     const handleRefresh = async () => {
         const res = await connect()
