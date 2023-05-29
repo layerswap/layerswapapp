@@ -1,6 +1,6 @@
-import { SwapItem } from "../../lib/layerSwapApiClient";
+import { PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapItem } from "../../lib/layerSwapApiClient";
 import { SwapStatus } from "../../Models/SwapStatus";
-import { SwapWithdrawalStep } from "../../Models/Wizard";
+import { SwapStep, SwapWithdrawalStep } from "../../Models/Wizard";
 
 export const GetSwapStatusStep = (swap: SwapItem): SwapWithdrawalStep => {
 
@@ -17,4 +17,29 @@ export const GetSwapStatusStep = (swap: SwapItem): SwapWithdrawalStep => {
         return SwapWithdrawalStep.Failed
     else if (swapStatus == SwapStatus.UserTransferDelayed)
         return SwapWithdrawalStep.Delay
+}
+
+
+
+export const GetSwapStep = (swap: SwapItem): SwapStep => {
+
+    const swapStatus = swap?.status;
+
+    const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
+    const txForSwap = data?.[swap.id];
+
+    if (swapStatus == SwapStatus.Completed)
+        return SwapStep.Success;
+    else if (swapStatus == SwapStatus.Failed)
+        return SwapStep.Failed;
+    else if (swapStatus == SwapStatus.UserTransferDelayed)
+        return SwapStep.Delay;
+    else if (swapStatus == SwapStatus.LsTransferPending)
+        return SwapStep.LSTransferPending;
+    else if (swap.input_transaction && swapStatus == SwapStatus.UserTransferPending)
+        return SwapStep.TransactionDetected;
+    else if (txForSwap && !swap.input_transaction)
+        return SwapStep.TransactionDone;
+    else
+        return SwapStep.UserTransferPending
 }

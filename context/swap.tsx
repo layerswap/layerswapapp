@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapTransaction } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';
@@ -37,7 +37,8 @@ type SwapData = {
     addressConfirmed: boolean,
     depositeAddressIsfromAccount: boolean,
     walletAddress: string,
-    withdrawManually: boolean
+    withdrawManually: boolean,
+    swapTransaction: SwapTransaction
 }
 
 export function SwapDataProvider({ children }) {
@@ -57,14 +58,13 @@ export function SwapDataProvider({ children }) {
     const [interval, setInterval] = useState(0)
     const { data: swapResponse, mutate } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
-    // Store pendingTransactionId in local storage, not the best solution
-    if (swapResponse?.data) {
+    const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
+
+    useEffect(() => {
         const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
         const txForSwap = data?.[swapId];
-        if (txForSwap && txForSwap.status == PublishedSwapTransactionStatus.Completed) {
-            swapResponse.data.has_sucessfull_published_tx = true;
-        }
-    }
+        setSwapTransaction(txForSwap)
+    }, [swapId])
 
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?label=${query?.addressSource}`, layerswapApiClient.fetcher)
     const partner = query?.addressSource && partnerData?.data?.labels?.includes(query?.addressSource) ? partnerData?.data : undefined
@@ -134,9 +134,7 @@ export function SwapDataProvider({ children }) {
         txForSwap.status = status;
         data[swapId] = txForSwap;
         localStorage.setItem('swapTransactions', JSON.stringify(data))
-        if (swapResponse?.data && txForSwap && txForSwap.status == PublishedSwapTransactionStatus.Completed) {
-            swapResponse.data.has_sucessfull_published_tx = true;
-        }
+        setSwapTransaction(txForSwap)
     }, [swapId, swapResponse])
 
     const createAndProcessSwap = useCallback(async (swapFormData: SwapFormValues) => {
@@ -161,7 +159,7 @@ export function SwapDataProvider({ children }) {
     };
 
     return (
-        <SwapDataStateContext.Provider value={{ swapFormData, withdrawManually, depositeAddressIsfromAccount, swap: swapResponse?.data, codeRequested, addressConfirmed, walletAddress }}>
+        <SwapDataStateContext.Provider value={{ swapFormData, withdrawManually, depositeAddressIsfromAccount, swap: swapResponse?.data, codeRequested, addressConfirmed, walletAddress, swapTransaction }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>

@@ -1,22 +1,18 @@
 import { AlignLeft, Wallet } from 'lucide-react';
-import { FC, useEffect, useState } from 'react'
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import { SwapWithdrawalStep } from '../../../../Models/Wizard';
+import { FC, useState } from 'react'
+import { useSwapDataState } from '../../../../context/swap';
 import { useSettingsState } from '../../../../context/settings';
-import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import SwapSummary from '../../../Swap/Summary/Index';
 import WalletTransfer from './WalletTransfer';
 import ManualTransfer from './ManualTransfer';
 import FiatTransfer from './FiatTransfer';
 import { Tab, TabHeader } from '../../../Tabs/Index';
-import Processing from './Processing';
 import { Widget } from '../../../Widget/Index';
 
 const Withdraw: FC = () => {
 
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
-    const { setInterval } = useSwapDataUpdate()
 
     const source_internal_name = swap?.source_exchange ?? swap.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
@@ -55,67 +51,47 @@ const Withdraw: FC = () => {
 
     const [activeTabId, setActiveTabId] = useState(tabs.find(t => t.enabled)?.id);
 
-    useEffect(() => {
-        setInterval(15000)
-        return () => setInterval(0)
-    }, [])
-
-    const swapStatusStep = GetSwapStatusStep(swap)
     const activeTab = tabs.find(t => t.id === activeTabId)
     const showTabsHeader = tabs?.filter(t => t.enabled)?.length > 1
-    
+
     return (
         <>
-            <Widget>
-                <Widget.Content>
-                    <div className="w-full min-h-[422px] space-y-5 flex flex-col justify-between h-full text-primary-text">
-                        <div className='space-y-4'>
-                            <div className='mb-6 grid grid-cols-1 gap-4 space-y-4'>
+            <Widget.Content>
+                <div className="w-full min-h-[422px] space-y-5 flex flex-col justify-between h-full text-primary-text">
+                    <div className='space-y-4'>
+                        <div className='mb-6 grid grid-cols-1 gap-4 space-y-4'>
+                            {
+                                !isFiat && <SwapSummary />
+                            }
+                            {
+                                showTabsHeader &&
+                                <div className="flex space-x-3 w-full">
+                                    {tabs.filter(t => t.enabled).map((tab) => (
+                                        <TabHeader
+                                            activeTabId={activeTabId}
+                                            onCLick={setActiveTabId}
+                                            tab={tab}
+                                            key={tab.id}
+                                        />
+                                    ))}
+                                </div>
+                            }
+                            <span>
                                 {
-                                    !isFiat && <SwapSummary />
+                                    activeTab?.content
                                 }
-                                {
-                                    swapStatusStep === SwapWithdrawalStep.OffRampWithdrawal &&
-                                    <>
-                                        {
-                                            showTabsHeader &&
-                                            <div className="flex space-x-3 w-full">
-                                                {tabs.filter(t => t.enabled).map((tab) => (
-                                                    <TabHeader
-                                                        activeTabId={activeTabId}
-                                                        onCLick={setActiveTabId}
-                                                        tab={tab}
-                                                        key={tab.id}
-                                                    />
-                                                ))}
-                                            </div>
-                                        }
-                                        <span>
-                                            {
-                                                activeTab?.content
-                                            }
-                                        </span>
-                                    </>
-                                }
-                                {
-                                    swapStatusStep === SwapWithdrawalStep.SwapProcessing &&
-                                    <Processing />
-                                }
-                            </div>
+                            </span>
                         </div>
                     </div>
-                </Widget.Content>
-                <Widget.Footer>
-                    {
-                        swapStatusStep === SwapWithdrawalStep.OffRampWithdrawal &&
-                        activeTab?.footer
-                    }
-                </Widget.Footer>
-            </Widget>
+                </div>
+            </Widget.Content>
+            <Widget.Footer>
+                {
+                    activeTab?.footer
+                }
+            </Widget.Footer>
         </>
     )
 }
-
-
 
 export default Withdraw

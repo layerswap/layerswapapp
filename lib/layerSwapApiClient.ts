@@ -217,12 +217,14 @@ export enum PublishedSwapTransactionStatus {
 }
 
 export type PublishedSwapTransactions = {
-    [key: string]: {
-        hash: string,
-        status: PublishedSwapTransactionStatus
-    }
+    [key: string]: SwapTransaction
 }
 
+
+export type SwapTransaction = {
+    hash: string,
+    status: PublishedSwapTransactionStatus
+}
 
 export enum SwapType {
     OnRamp = "cex_to_network",

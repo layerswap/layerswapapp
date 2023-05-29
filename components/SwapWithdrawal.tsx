@@ -1,14 +1,7 @@
 import { FC, useEffect } from "react";
-import { FormWizardProvider } from "../context/formWizardProvider";
 import { useQueryState } from "../context/query";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
-import KnownInternalNames from "../lib/knownIds";
-import { SwapStatus } from "../Models/SwapStatus";
-import { SwapWithdrawalStep } from "../Models/Wizard";
-import { GetSwapStatusStep } from "./utils/SwapStatus";
-import SwapWithdrawalWizard from "./Wizard/SwapWithdrawalWizard";
-import { Widget } from "./Widget/Index";
-import Withdraw from "./Wizard/Steps/Withdraw/Index";
+import SwapDetails from "./Swap/Index";
 
 const SwapWithdrawal: FC = () => {
     const { swap } = useSwapDataState()
@@ -27,7 +20,7 @@ const SwapWithdrawal: FC = () => {
     const key = Object.keys(query).join("")
 
     return (
-        <Withdraw key={key}/>
+        <SwapDetails key={key}/>
     )
 };
 

@@ -32,6 +32,16 @@ export enum SwapCreateStep {
     Error = "Error"
 }
 
+export enum SwapStep {
+    UserTransferPending,
+    TransactionDone,
+    TransactionDetected,
+    LSTransferPending,
+    Success,
+    Failed,
+    Delay
+}
+
 export enum SwapWithdrawalStep {
     Withdrawal = "Withdrawal",
     CoinbaseManualWithdrawal = "CoinbaseManualWithdrawal",
