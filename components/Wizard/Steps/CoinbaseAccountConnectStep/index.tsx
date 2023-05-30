@@ -9,7 +9,7 @@ import { useInterval } from '../../../../hooks/useInterval';
 import { Configs, usePersistedState } from '../../../../hooks/usePersistedState';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 import { parseJwt } from '../../../../lib/jwtParser';
-import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { UserExchangesData, WithdrawType } from '../../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
 import { ApiResponse } from '../../../../Models/ApiResponse';
@@ -29,7 +29,7 @@ type Props = {
 
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap, swapFormData } = useSwapDataState()
-    const { setWithdrawManually } = useSwapDataUpdate()
+    const { setWithdrawType } = useSwapDataUpdate()
     const { layers, currencies } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate()
     let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false }, 'configs')
@@ -55,7 +55,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const { data: exchange_accounts } = useSWR<ApiResponse<UserExchangesData[]>>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
 
     const handleTransferMannually = useCallback(() => {
-        setWithdrawManually(true)
+        setWithdrawType('manually')
         onDoNotConnect()
     }, [])
 

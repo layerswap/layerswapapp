@@ -4,16 +4,11 @@ import { useSettingsState } from "../../../context/settings"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
-import LayerSwapApiClient, { Fee } from "../../../lib/layerSwapApiClient"
-import { WithdrawType } from "../../Wizard/Steps/WithdrawNetworkStep"
+import LayerSwapApiClient, { Fee, WithdrawType } from "../../../lib/layerSwapApiClient"
 
-type SummaryProps = {
-    withdrawType: string
-}
-
-const SwapSummary: FC<SummaryProps> = ({ withdrawType }) => {
+const SwapSummary: FC = () => {
     const { layers, currencies } = useSettingsState()
-    const { swap } = useSwapDataState()
+    const { swap, withdrawType } = useSwapDataState()
     const {
         source_network: source_network_internal_name,
         source_exchange: source_exchange_internal_name,
@@ -38,15 +33,20 @@ const SwapSummary: FC<SummaryProps> = ({ withdrawType }) => {
     const apiClient = new LayerSwapApiClient()
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], ([params]) => apiClient.GetFee(params), { dedupingInterval: 60000 })
 
-
     let fee: number
-    switch (withdrawType) {
-        case WithdrawType.viaWallet:
-            fee = feeData?.data[0].fee_amount;
-            break;
-        case WithdrawType.Manually:
-            fee = feeData?.data[1].fee_amount;
-            break;
+    if (swap?.fee) {
+        fee = swap?.fee
+    } else if (!swap?.fee && swap?.source_exchange) {
+        fee = feeData.data[1].fee_amount
+    } else {
+        switch (withdrawType) {
+            case 'wallet':
+                fee = feeData?.data[0].fee_amount;
+                break;
+            case 'manually':
+                fee = feeData?.data[1].fee_amount;
+                break;
+        }
     }
 
     return <Summary
