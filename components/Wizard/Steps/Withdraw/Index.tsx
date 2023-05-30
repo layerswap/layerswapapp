@@ -8,6 +8,7 @@ import ManualTransfer from './ManualTransfer';
 import FiatTransfer from './FiatTransfer';
 import { Tab, TabHeader } from '../../../Tabs/Index';
 import { Widget } from '../../../Widget/Index';
+import KnownInternalNames from '../../../../lib/knownIds';
 
 const Withdraw: FC = () => {
 
@@ -18,6 +19,8 @@ const Withdraw: FC = () => {
     const source = layers.find(n => n.internal_name === source_internal_name)
 
     let isFiat = source.isExchange && source?.type === "fiat"
+    const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
+    const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
 
     let tabs: Tab[] = [
         {
@@ -36,7 +39,7 @@ const Withdraw: FC = () => {
         {
             id: "manually",
             label: "Manually",
-            enabled: !isFiat,
+            enabled: !(isFiat || sourceIsStarknet || sourceIsImmutableX),
             icon: <AlignLeft />,
             content: <ManualTransfer />
         },

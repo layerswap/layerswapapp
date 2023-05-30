@@ -7,6 +7,8 @@ import { ApiResponse } from "../../../../Models/ApiResponse"
 import NetworkSettings from "../../../../lib/NetworkSettings"
 import useSWR from "swr"
 import KnownInternalNames from "../../../../lib/knownIds"
+import StarknetWalletWithdrawStep from "./Wallet/StarknetWalletWithdraw"
+import ImtblxWalletWithdrawStep from "./Wallet/ImtblxWalletWithdrawStep"
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
@@ -29,31 +31,9 @@ const WalletTransfer: FC = () => {
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
 
     if (sourceIsImmutableX)
-        return <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
-            <TransferFromWallet
-                swapId={swap.id}
-                networkDisplayName={source_network?.display_name}
-                tokenDecimals={sourceCurrency?.decimals}
-                tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`}
-                chainId={sourceChainId as number}
-                generatedDepositAddress={generatedDepositAddress as `0x${string}`}
-                managedDepositAddress={managedDepositAddress as `0x${string}`}
-                userDestinationAddress={swap.destination_address as `0x${string}`}
-                amount={swap.requested_amount} />
-        </div>
+        return <ImtblxWalletWithdrawStep/>
     else if (sourceIsStarknet)
-        return <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
-            <TransferFromWallet
-                swapId={swap.id}
-                networkDisplayName={source_network?.display_name}
-                tokenDecimals={sourceCurrency?.decimals}
-                tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`}
-                chainId={sourceChainId as number}
-                generatedDepositAddress={generatedDepositAddress as `0x${string}`}
-                managedDepositAddress={managedDepositAddress as `0x${string}`}
-                userDestinationAddress={swap.destination_address as `0x${string}`}
-                amount={swap.requested_amount} />
-        </div>
+        return <StarknetWalletWithdrawStep />
     else
         return <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
             <TransferFromWallet
