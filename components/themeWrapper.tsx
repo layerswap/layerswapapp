@@ -31,14 +31,12 @@ export default function ({ hideNavbar, children }: Props) {
     const { addressSource } = useQueryState()
 
     useEffect(() => {
-        if (addressSource) {
-            window.document.body.className = addressSource
-        }
+        if (addressSource) window.document.body.className = addressSource
 
         return () => { window.document.body.className = '' }
     }, [addressSource])
 
-    return <div className={` ${addressSource} styled-scroll`}>
+    return <div className='styled-scroll'>
         <div className="invisible imxMarketplace synquote"></div>
         <main className="styled-scroll">
             <div className="min-h-screen overflow-hidden relative font-robo">
