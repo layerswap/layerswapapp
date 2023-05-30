@@ -130,7 +130,7 @@ const StarknetWalletWithdrawStep: FC = () => {
 
             const watch = watchDogContract.populate(
                 "watch",
-                [userId],
+                [swap.sequence_number],
             );
 
             try {
