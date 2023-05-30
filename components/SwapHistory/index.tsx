@@ -117,7 +117,7 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className='bg-darkblue-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[550px]'>
+    <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[550px]'>
       <HeaderWithMenu goBack={handleGoBack} />
       {
         page == 0 && loading ?
@@ -136,7 +136,7 @@ function TransactionsHistory() {
                       </div>
                     </div>}
                     <div className="max-h-[450px] styled-scroll overflow-y-auto ">
-                      <table className="w-full divide-y divide-darkblue-500">
+                      <table className="w-full divide-y divide-secondary-500">
                         <thead className="text-primary-text">
                           <tr>
                             <th scope="col" className="text-left text-sm font-semibold">
@@ -180,7 +180,7 @@ function TransactionsHistory() {
 
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-500',
+                                  index === 0 ? '' : 'border-t border-secondary-500',
                                   'relative text-sm text-white table-cell'
                                 )}
                               >
@@ -209,11 +209,11 @@ function TransactionsHistory() {
                                     }
                                   </div>
                                 </div>
-                                {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-darkblue-500" /> : null}
+                                {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-secondary-500" /> : null}
 
                               </td>
                               <td className={classNames(
-                                index === 0 ? '' : 'border-t border-darkblue-500',
+                                index === 0 ? '' : 'border-t border-secondary-500',
                                 'relative text-sm table-cell'
                               )}>
                                 <span className="flex items-center">
@@ -223,7 +223,7 @@ function TransactionsHistory() {
                               </td>
                               <td
                                 className={classNames(
-                                  index === 0 ? '' : 'border-t border-darkblue-500',
+                                  index === 0 ? '' : 'border-t border-secondary-500',
                                   'px-3 py-3.5 text-sm text-white table-cell'
                                 )}
                               >

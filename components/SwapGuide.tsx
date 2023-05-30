@@ -15,19 +15,19 @@ const SwapGuide = ({ swap }: { swap: SwapItem }) => {
                 <div className='space-y-5 text-base text-primary-text'>
                     <div className='space-y-3'>
                         <p><span className='text-primary'>.01</span> Copy the Deposit Address, or scan the QR code</p>
-                        <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
+                        <div className='border-2 border-secondary-400 rounded-xl p-2 bg-secondary-500'>
                             <Image src={firstGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>
                     </div>
                     <div className='space-y-3'>
                         <p><span className='text-primary'>.02</span> Send <span className='text-white'>{swap?.destination_network_asset}</span> to that address from your {swap?.source_exchange ? 'exchange account' : 'wallet'}</p>
-                        <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
+                        <div className='border-2 border-secondary-400 rounded-xl p-2 bg-secondary-500'>
                             <Image src={swap?.source_exchange ? secondExchangeGuideGuidePic : secondNetworkGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>
                     </div>
                     {swap?.source_exchange && <div className='space-y-3'>
                         <p><span className='text-primary'>.03</span> Make sure to send via one of the supported networks</p>
-                        <div className='border-2 border-darkblue-400 rounded-xl p-2 bg-darkblue-500'>
+                        <div className='border-2 border-secondary-400 rounded-xl p-2 bg-secondary-500'>
                             <Image src={thirdGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>
                     </div>}

@@ -13,8 +13,6 @@ import Erc20Abi from "../../../../../lib/abis/ERC20.json"
 import WatchDogAbi from "../../../../../lib/abis/LSWATCHDOG.json"
 import { ApiResponse } from '../../../../../Models/ApiResponse';
 import useSWR from 'swr';
-import { useAuthState } from '../../../../../context/authContext';
-import NetworkSettings from '../../../../../lib/NetworkSettings';
 import KnownInternalNames from '../../../../../lib/knownIds';
 
 function getUint256CalldataFromBN(bn: number.BigNumberish) {
@@ -34,18 +32,15 @@ const StarknetWalletWithdrawStep: FC = () => {
     const [account, setAccount] = useState<AccountInterface>()
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
-    const { userId } = useAuthState()
-
     const { swap } = useSwapDataState()
     const { setSwapPublishedTx } = useSwapDataUpdate()
     const { networks } = useSettingsState()
 
     const { source_network: source_network_internal_name } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
-    const sourceCurrency = source_network.currencies.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
+    const sourceCurrency = source_network.currencies.find(c => c.asset?.toLowerCase() === swap.source_network_asset?.toLowerCase())
 
-    const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
-    const sourceChainId = sourceNetworkSettings?.ChainId
+    const sourceChainId = source_network?.chain_id
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher)
@@ -97,7 +92,7 @@ const StarknetWalletWithdrawStep: FC = () => {
 
             const watch = watchDogContract.populate(
                 "watch",
-                [userId],
+                [swap.id],
             );
 
             try {
@@ -119,7 +114,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [account, swap, source_network, managedDeposit, userId, sourceCurrency])
+    }, [account, swap, source_network, managedDeposit, sourceCurrency])
 
     return (
         <>

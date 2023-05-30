@@ -49,14 +49,18 @@ const SwapSummary: FC = () => {
         }
     }
 
-    return <Summary
-        currency={currency}
-        source={source_layer}
-        destination={destination_layer}
-        requestedAmount={swap?.requested_amount}
-        destinationAddress={swap?.destination_address}
-        refuelAmount={swap?.refuel_amount}
-        fee={fee}
-    />
+    return (
+        <>
+            <Summary
+                currency={currency}
+                source={source_layer}
+                destination={destination_layer}
+                requestedAmount={swap?.requested_amount}
+                destinationAddress={swap?.destination_address}
+                refuelAmount={swap?.refuel_amount}
+                fee={fee}
+            />
+        </>
+    )
 }
 export default SwapSummary

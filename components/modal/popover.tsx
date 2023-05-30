@@ -1,8 +1,7 @@
-import { Dispatch, SetStateAction, ReactNode, useRef, useEffect } from "react";
+import { Dispatch, SetStateAction, ReactNode, useEffect } from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { Leaflet } from "./leaflet";
-import { ReactPortal } from "../Wizard/Widget";
 import { AnimatePresence } from "framer-motion";
 
 export default function Popover({
@@ -43,7 +42,7 @@ export default function Popover({
                             sideOffset={4}
                             onInteractOutside={() => setShow(false)}
                             align={align}
-                            className="z-20 animate-slide-up-fade items-center rounded-md bg-darkblue-900 border-2 border-darkblue-500 drop-shadow-lg"
+                            className="z-20 animate-slide-up-fade items-center rounded-md bg-secondary-900 border-2 border-secondary-500 drop-shadow-lg"
                         >
                             {show && children}
                         </PopoverPrimitive.Content>

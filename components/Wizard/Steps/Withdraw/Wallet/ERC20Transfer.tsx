@@ -15,10 +15,9 @@ import { erc20ABI } from 'wagmi'
 import { Wallet } from "lucide-react";
 import SubmitButton from "../../../../buttons/submitButton";
 import FailIcon from "../../../../icons/FailIcon";
-import LayerSwapApiClient, { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
+import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../../context/swap";
 import { useFormWizardaUpdate } from "../../../../../context/formWizardProvider";
-import ProcessingStep from "../../ProccessingSteps";
 import { SwapWithdrawalStep } from "../../../../../Models/Wizard";
 import { toast } from "react-hot-toast";
 

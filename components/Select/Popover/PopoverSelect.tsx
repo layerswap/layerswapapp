@@ -1,10 +1,5 @@
-import { Listbox } from '@headlessui/react'
-import Image from 'next/image'
-import { classNames } from '../../utils/classNames'
-import { AnimatePresence, motion } from "framer-motion";
-import toast from 'react-hot-toast'
 import { SelectProps } from '../Shared/Props/SelectProps'
-import { Command, CommandItem, CommandList, CommandWrapper } from '../../shadcn/command';
+import { CommandItem, CommandList, CommandWrapper } from '../../shadcn/command';
 import SelectItem from '../Shared/SelectItem';
 
 export default function PopoverSelect({ values, value, setValue }: SelectProps) {
@@ -24,7 +19,7 @@ export default function PopoverSelect({ values, value, setValue }: SelectProps) 
     )
 }
 
-export enum DisabledReason {
+export enum LayerDisabledReason {
     LockNetworkIsTrue = '',
     InsufficientLiquidity = 'Temporarily disabled. Please check later.'
 }

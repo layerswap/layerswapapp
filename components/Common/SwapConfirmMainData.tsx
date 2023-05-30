@@ -24,7 +24,7 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
         <div className="w-full">
             <div className="rounded-md w-full mb-3">
                 <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-primary-text">
-                    <div className='flex-row flex justify-between bg-darkblue-700 rounded-md items-center px-4 py-3'>
+                    <div className='flex-row flex justify-between bg-secondary-700 rounded-md items-center px-4 py-3'>
                         <div className="flex items-center">
                             <div className="flex-shrink-0 h-5 w-5 relative">
                                 {
