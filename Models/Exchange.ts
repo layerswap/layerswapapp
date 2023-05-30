@@ -8,7 +8,8 @@ export class Exchange {
     oauth_authorize_url: string;
     authorization_flow: "o_auth2" | "api_credentials" | 'none'
     currencies: (ExchangeCurrency & NetworkCurrency)[];
-    status: LayerStatus
+    status: LayerStatus;
+    type: "cex" | "fiat"
 }
 
 export class ExchangeCurrency {

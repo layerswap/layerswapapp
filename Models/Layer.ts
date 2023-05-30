@@ -12,6 +12,7 @@ type LayerData = ({
     assets?: ExchangeL2Asset[];
     oauth_connect_url: string;
     oauth_authorize_url: string;
+    type: "cex" | "fiat"
     authorization_flow: "o_auth2" | "api_credentials" | 'none';
 } | {
     isExchange: false;

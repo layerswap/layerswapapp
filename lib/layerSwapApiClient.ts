@@ -192,6 +192,9 @@ export type SwapItem = {
     input_transaction?: Transaction,
     output_transaction?: Transaction,
     has_sucessfull_published_tx: boolean;
+    metadata?: {
+        'STRIPE:SessionId': string
+    }
 }
 
 export type AddressBookItem = {
@@ -229,16 +232,19 @@ type GetFeeParams = {
 
 export enum PublishedSwapTransactionStatus {
     Pending,
+    Error,
     Completed
 }
 
 export type PublishedSwapTransactions = {
-    [key: string]: {
-        hash: string,
-        status: PublishedSwapTransactionStatus
-    }
+    [key: string]: SwapTransaction
 }
 
+
+export type SwapTransaction = {
+    hash: string,
+    status: PublishedSwapTransactionStatus
+}
 
 export enum SwapType {
     OnRamp = "cex_to_network",

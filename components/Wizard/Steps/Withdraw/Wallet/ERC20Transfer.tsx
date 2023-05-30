@@ -13,13 +13,14 @@ import {
 import { utils } from 'ethers';
 import { erc20ABI } from 'wagmi'
 import { Wallet } from "lucide-react";
-import SubmitButton from "../../../buttons/submitButton";
-import FailIcon from "../../../icons/FailIcon";
-import LayerSwapApiClient, { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../lib/layerSwapApiClient";
-import { useSwapDataUpdate } from "../../../../context/swap";
-import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
-import ProcessingStep from "../ProccessingSteps";
-import { SwapWithdrawalStep } from "../../../../Models/Wizard";
+import SubmitButton from "../../../../buttons/submitButton";
+import FailIcon from "../../../../icons/FailIcon";
+import LayerSwapApiClient, { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
+import { useSwapDataUpdate } from "../../../../../context/swap";
+import { useFormWizardaUpdate } from "../../../../../context/formWizardProvider";
+import ProcessingStep from "../../ProccessingSteps";
+import { SwapWithdrawalStep } from "../../../../../Models/Wizard";
+import { toast } from "react-hot-toast";
 
 type Props = {
     chainId: number,
@@ -130,7 +131,6 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
     const [buttonClicked, setButtonClicked] = useState(false)
-    const { goToStep } = useFormWizardaUpdate()
 
     const { address } = useAccount();
 
@@ -164,13 +164,16 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
         hash: transaction?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            await applyTransaction(swapId, trxRcpt.transactionHash, setSwapPublishedTx)
-            goToStep(SwapWithdrawalStep.SwapProcessing)
+            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
             setApplyingTransaction(false)
+        },
+        onError: async (err) => {
+            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Error, "");
+            toast.error(err.message)
         }
     })
 
-    const clickHandler = useCallback(() => {
+    const clickHandler = useCallback(async () => {
         setButtonClicked(true)
         return transaction?.sendTransaction && transaction?.sendTransaction()
     }, [transaction])
@@ -206,9 +209,6 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
                 {(isError && buttonClicked) ? <span>Try again</span>
                     : <span>Send from wallet</span>}
             </ButtonWrapper>
-        }
-        {
-            isLoading && <>asdas</>
         }
     </>
 }
@@ -267,7 +267,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         hash: contractWrite?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            await applyTransaction(swapId, trxRcpt.transactionHash, setSwapPublishedTx)
+            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
             goToStep(SwapWithdrawalStep.SwapProcessing)
             setApplyingTransaction(false)
         }

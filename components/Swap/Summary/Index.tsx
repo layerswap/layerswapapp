@@ -58,6 +58,5 @@ const SwapSummary: FC<SummaryProps> = ({ withdrawType }) => {
         refuelAmount={swap?.refuel_amount}
         fee={fee}
     />
-
 }
 export default SwapSummary
