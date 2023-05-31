@@ -1,24 +1,23 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import useSWR from 'swr';
-import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
-import { useQueryState } from '../../../../context/query';
-import { useSettingsState } from '../../../../context/settings';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import { useInterval } from '../../../../hooks/useInterval';
-import { Configs, usePersistedState } from '../../../../hooks/usePersistedState';
-import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
-import { parseJwt } from '../../../../lib/jwtParser';
-import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwapApiClient';
-import { OpenLink } from '../../../../lib/openLink';
-import TokenService from '../../../../lib/TokenService';
-import { ApiResponse } from '../../../../Models/ApiResponse';
-import { SwapCreateStep } from '../../../../Models/Wizard';
-import SubmitButton from '../../../buttons/submitButton';
-import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
-import Widget from '../../Widget';
+import { useQueryState } from '../../../../../context/query';
+import { useSettingsState } from '../../../../../context/settings';
+import { useSwapDataState, useSwapDataUpdate } from '../../../../../context/swap';
+import { useInterval } from '../../../../../hooks/useInterval';
+import { Configs, usePersistedState } from '../../../../../hooks/usePersistedState';
+import { CalculateMinimalAuthorizeAmount } from '../../../../../lib/fees';
+import { parseJwt } from '../../../../../lib/jwtParser';
+import LayerSwapApiClient, { UserExchangesData } from '../../../../../lib/layerSwapApiClient';
+import { OpenLink } from '../../../../../lib/openLink';
+import TokenService from '../../../../../lib/TokenService';
+import { ApiResponse } from '../../../../../Models/ApiResponse';
+import { SwapCreateStep } from '../../../../../Models/Wizard';
+import SubmitButton from '../../../../buttons/submitButton';
+import Carousel, { CarouselItem, CarouselRef } from '../../../../Carousel';
+import Widget from '../../../Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectGuideScreens';
-import { Layer } from '../../../../Models/Layer';
+import { Layer } from '../../../../../Models/Layer';
 
 type Props = {
     onAuthorized: () => void,
@@ -28,10 +27,9 @@ type Props = {
 }
 
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
-    const { swap, swapFormData } = useSwapDataState()
+    const { swap } = useSwapDataState()
     const { setWithdrawManually } = useSwapDataUpdate()
     const { layers, currencies } = useSettingsState()
-    const { goToStep } = useFormWizardaUpdate()
     let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false }, 'configs')
 
     const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect)
@@ -40,15 +38,15 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
-    const exchange_internal_name = swap?.source_exchange || swapFormData?.from?.internal_name
-    const asset_name = swap?.source_network_asset || swapFormData?.currency.asset
+    const exchange_internal_name = swap?.source_exchange 
+    const asset_name = swap?.source_network_asset 
 
     const exchange = layers.find(e => e.isExchange && e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase()) as Layer & { isExchange: true }
     const currency = currencies?.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
 
     const { oauth_authorize_url } = exchange || {}
 
-    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount || swapFormData?.amount))
+    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount))
 
     const layerswapApiClient = new LayerSwapApiClient()
     const exchange_accounts_endpoint = `/exchange_accounts`
@@ -101,11 +99,9 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                 return;
             }
             const access_token = TokenService.getAuthData()?.access_token
-            if (!access_token)
-                goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ Type: 1, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, swap_data: swapFormData, swapId: swap?.id, query: query })
+            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, swapId: swap?.id, query: query })
             setAuthWindow(authWindow)
         }
         catch (e) {
@@ -140,7 +136,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                         </div>
                         :
                         <div className="w-full space-y-3">
-                            {(swap || swapFormData) && <Carousel onLast={onCarouselLast} ref={carouselRef}>
+                            {swap && <Carousel onLast={onCarouselLast} ref={carouselRef}>
                                 <CarouselItem width={100} >
                                     <FirstScreen exchange_name={exchange_name} />
                                 </CarouselItem>

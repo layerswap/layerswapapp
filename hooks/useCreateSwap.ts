@@ -7,7 +7,7 @@ import { useSwapDataState } from "../context/swap";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { SwapCreateStep, WizardStep } from "../Models/Wizard";
 import { useRouter } from "next/router";
-import AccountConnectStep from "../components/Wizard/Steps/CoinbaseAccountConnectStep";
+import AccountConnectStep from "../components/Wizard/Steps/Withdraw/Coinbase/Authorize";
 import { useAuthDataUpdate, UserType } from "../context/authContext";
 
 const useCreateSwap = () => {

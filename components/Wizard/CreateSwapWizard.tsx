@@ -10,8 +10,8 @@ import MainStep from "./Steps/MainStep/index";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 import { CurrencyPendingSwapStep } from "./Steps/PendingSwapsStep";
-import CoinbaseAccountConnectStep from "./Steps/CoinbaseAccountConnectStep";
-import Coinbase2FA from "../Coinbase2FA";
+import CoinbaseAccountConnectStep from "./Steps/Withdraw/Coinbase/Authorize";
+import Coinbase2FA from "./Steps/Withdraw/Coinbase/Coinbase2FA";
 import { useRouter } from "next/router";
 
 const CreateSwap: FC = () => {
