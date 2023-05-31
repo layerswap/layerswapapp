@@ -9,7 +9,7 @@ import SuccessfulStep from "./Steps/SuccessfulStep";
 import ImtblxWalletWithdrawStep from "./Steps/Withdraw/Wallet/ImtblxWalletWithdrawStep";
 import CoinbaseInternalWithdrawalStep from "./Steps/Withdraw/Wallet/CoinbaseInternalWithdrawalStep";
 import WithdrawExchangeStep from "./Steps/WithdrawExchangeStep";
-import WithdrawStep from "./Steps/Withdraw/Index";
+import WithdrawStep from "./Steps/Withdraw";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 import { TimerProvider } from "../../context/timerContext";

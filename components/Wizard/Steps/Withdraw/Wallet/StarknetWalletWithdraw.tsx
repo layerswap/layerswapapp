@@ -141,7 +141,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                     {
                         !account &&
                         <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Connect
+                            Connect wallet
                         </SubmitButton>
                     }
                     {
@@ -149,7 +149,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                         && managedDeposit?.data?.address
                         && !isWrongNetwork
                         && <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Transfer
+                            Send from wallet
                         </SubmitButton>
                     }
                 </div>

@@ -21,10 +21,10 @@ import Image from 'next/image'
 import { SwapCancelModal } from './PendingSwapsStep';
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from '../../../lib/layerSwapApiClient';
 import toast from 'react-hot-toast';
-import AccountConnectStep from './CoinbaseAccountConnectStep';
+import AccountConnectStep from './Withdraw/Coinbase/Authorize';
 import KnownInternalNames from '../../../lib/knownIds';
 import { KnownwErrorCode } from '../../../Models/ApiError';
-import Coinbase2FA from '../../Coinbase2FA';
+import Coinbase2FA from './Withdraw/Coinbase/Coinbase2FA';
 import { useTimerState } from '../../../context/timerContext';
 import SpinIcon from '../../icons/spinIcon';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../shadcn/select';

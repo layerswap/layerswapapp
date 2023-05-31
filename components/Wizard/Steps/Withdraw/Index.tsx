@@ -8,6 +8,8 @@ import ManualTransfer from './ManualTransfer';
 import FiatTransfer from './FiatTransfer';
 import { Tab, TabHeader } from '../../../Tabs/Index';
 import { Widget } from '../../../Widget/Index';
+import KnownInternalNames from '../../../../lib/knownIds';
+import Coinbase from './Coinbase';
 
 const Withdraw: FC = () => {
 
@@ -19,6 +21,12 @@ const Withdraw: FC = () => {
     const source = layers.find(n => n.internal_name === source_internal_name)
 
     let isFiat = source.isExchange && source?.type === "fiat"
+    const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
+        || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
+    const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+        || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+    const sourceIsCoinbase = swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
+        
 
     let tabs: Tab[] = [
         {
@@ -35,9 +43,22 @@ const Withdraw: FC = () => {
             footer: <WalletTransfer />
         },
         {
+            id: "coinbase",
+            label: "Automatic",
+            enabled: sourceIsCoinbase, //TODO handle other cases
+            icon: <Wallet className='stroke-1 -ml-1' />,
+            content: <>
+                <h1 className='text-xl text-white'>Wallet transfer</h1>
+                <p className='text-sm leading-6 mt-1'>
+                    Bank transfers,
+                    also known as ACH payments, can take up to five business days. To pay via ACH, transfer funds using the following bank information.</p>
+            </>,
+            footer: <Coinbase />
+        },
+        {
             id: "manually",
             label: "Manually",
-            enabled: !isFiat,
+            enabled: !(isFiat || sourceIsStarknet || sourceIsImmutableX),
             icon: <AlignLeft />,
             content: <ManualTransfer />
         },
