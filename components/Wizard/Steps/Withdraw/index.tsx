@@ -1,8 +1,8 @@
 import { AlignLeft, Wallet } from 'lucide-react';
-import { FC, useState } from 'react'
-import { useSwapDataState } from '../../../../context/swap';
+import { FC, useEffect, useState } from 'react'
+import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { useSettingsState } from '../../../../context/settings';
-import SwapSummary from '../../../Swap/Summary/Index';
+import SwapSummary from '../../../Swap/Summary';
 import WalletTransfer from './WalletTransfer';
 import ManualTransfer from './ManualTransfer';
 import FiatTransfer from './FiatTransfer';
@@ -14,6 +14,7 @@ import Coinbase from './Coinbase';
 const Withdraw: FC = () => {
 
     const { swap } = useSwapDataState()
+    const { setWithdrawType } = useSwapDataUpdate()
     const { layers } = useSettingsState()
 
     const source_internal_name = swap?.source_exchange ?? swap.source_network
@@ -74,6 +75,10 @@ const Withdraw: FC = () => {
 
     const activeTab = tabs.find(t => t.id === activeTabId)
     const showTabsHeader = tabs?.filter(t => t.enabled)?.length > 1
+
+    useEffect(() => {
+        setWithdrawType(activeTab.id)
+    }, [activeTab])
 
     return (
         <>

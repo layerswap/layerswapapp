@@ -1,11 +1,12 @@
 import { motion } from "framer-motion"
 import { FC } from "react"
 import { Tab } from "./Index"
+import { WithdrawType } from "../../lib/layerSwapApiClient"
 
 type HeaderProps = {
     tab: Tab,
     activeTabId: string,
-    onCLick: (id: string) => void
+    onCLick: (id: WithdrawType) => void
 }
 
 const Header: FC<HeaderProps> = ({ tab, onCLick, activeTabId }) => {

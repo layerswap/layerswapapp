@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapTransaction } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapTransaction, WithdrawType } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';
@@ -8,10 +8,10 @@ import { QueryParams } from '../Models/QueryParams';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
-import NetworkSettings from '../lib/NetworkSettings';
 import { Partner } from '../Models/Partner';
+import { SwapStatus } from '../Models/SwapStatus';
 
-const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawManually: false });
+const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
@@ -26,7 +26,7 @@ type UpdateInterface = {
     mutateSwap: KeyedMutator<ApiResponse<SwapItem>>
     setWalletAddress: (value: string) => void,
     setDepositeAddressIsfromAccount: (value: boolean) => void,
-    setWithdrawManually: (value: boolean) => void
+    setWithdrawType: (value: WithdrawType) => void
     setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
 }
 
@@ -37,7 +37,7 @@ type SwapData = {
     addressConfirmed: boolean,
     depositeAddressIsfromAccount: boolean,
     walletAddress: string,
-    withdrawManually: boolean,
+    withdrawType: WithdrawType,
     swapTransaction: SwapTransaction
 }
 
@@ -45,7 +45,7 @@ export function SwapDataProvider({ children }) {
     const [swapFormData, setSwapFormData] = useState<SwapFormValues>();
     const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
-    const [withdrawManually, setWithdrawManually] = useState<boolean>(false)
+    const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [walletAddress, setWalletAddress] = useState<string>()
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
@@ -154,12 +154,12 @@ export function SwapDataProvider({ children }) {
         mutateSwap: mutate,
         setDepositeAddressIsfromAccount,
         setWalletAddress,
-        setWithdrawManually,
+        setWithdrawType,
         setSwapPublishedTx
     };
 
     return (
-        <SwapDataStateContext.Provider value={{ swapFormData, withdrawManually, depositeAddressIsfromAccount, swap: swapResponse?.data, codeRequested, addressConfirmed, walletAddress, swapTransaction }}>
+        <SwapDataStateContext.Provider value={{ swapFormData, withdrawType, depositeAddressIsfromAccount, swap: swapResponse?.data, codeRequested, addressConfirmed, walletAddress, swapTransaction }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>
