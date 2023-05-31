@@ -223,38 +223,35 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                         <div className="mb-6 leading-4">
                             <AmountField />
                         </div>
-                        {
-                            !(query?.hideAddress && values?.destination_address) &&
-                            <div className="w-full mb-3.5 leading-4">
-                                <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
-                                    {`To ${values?.to?.display_name || ''} address`}
-                                </label>
-                                <AddressButton
-                                    disabled={!values.to || !values.from}
-                                    isPartnerWallet={isPartnerWallet}
-                                    openAddressModal={() => setShowAddressModal(true)}
+                        <div className="w-full mb-3.5 leading-4">
+                            <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
+                                {`To ${values?.to?.display_name || ''} address`}
+                            </label>
+                            <AddressButton
+                                disabled={!values.to || !values.from}
+                                isPartnerWallet={isPartnerWallet}
+                                openAddressModal={() => setShowAddressModal(true)}
+                                partnerImage={partnerImage}
+                                values={values} />
+                            <Modal
+                                header={`To ${values?.to?.display_name || ''} address`}
+                                height="fit"
+                                show={showAddressModal} setShow={setShowAddressModal}
+                                className="min-h-[70%]"
+                            >
+                                <Address
+                                    close={() => setShowAddressModal(false)}
+                                    onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
+                                    exchangeAccount={exchangeAccount}
+                                    disabled={lockAddress || (!values.to || !values.from)}
+                                    name={"destination_address"}
                                     partnerImage={partnerImage}
-                                    values={values} />
-                                <Modal
-                                    header={`To ${values?.to?.display_name || ''} address`}
-                                    height="fit"
-                                    show={showAddressModal} setShow={setShowAddressModal}
-                                    className="min-h-[70%]"
-                                >
-                                    <Address
-                                        close={() => setShowAddressModal(false)}
-                                        onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
-                                        exchangeAccount={exchangeAccount}
-                                        disabled={lockAddress || (!values.to || !values.from)}
-                                        name={"destination_address"}
-                                        partnerImage={partnerImage}
-                                        isPartnerWallet={isPartnerWallet}
-                                        partner={partner}
-                                        address_book={address_book?.data}
-                                    />
-                                </Modal>
-                            </div>
-                        }
+                                    isPartnerWallet={isPartnerWallet}
+                                    partner={partner}
+                                    address_book={address_book?.data}
+                                />
+                            </Modal>
+                        </div>
                         <div className="w-full">
                             {
                                 !destination?.isExchange && GetNetworkCurrency(destination, asset)?.is_refuel_enabled && !query?.hideRefuel &&
