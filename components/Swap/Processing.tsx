@@ -7,7 +7,7 @@ import shortenAddress from '../utils/ShortenAddress';
 import Steps from '../Wizard/Steps/StepsComponent';
 import KnownInternalNames from '../../lib/knownIds';
 import { Widget } from '../Widget/Index';
-import SwapSummary from './Summary/shmindex';
+import SwapSummary from './Summary';
 import { GetSwapStep } from '../utils/SwapStatus';
 import { SwapStep } from '../../Models/Wizard';
 

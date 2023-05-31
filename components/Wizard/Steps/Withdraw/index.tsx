@@ -2,7 +2,7 @@ import { AlignLeft, Wallet } from 'lucide-react';
 import { FC, useEffect, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { useSettingsState } from '../../../../context/settings';
-import SwapSummary from '../../../Swap/Summary/shmindex';
+import SwapSummary from '../../../Swap/Summary';
 import WalletTransfer from './WalletTransfer';
 import ManualTransfer from './ManualTransfer';
 import FiatTransfer from './FiatTransfer';

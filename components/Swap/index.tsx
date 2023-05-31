@@ -6,7 +6,7 @@ import { GetSwapStatusStep, GetSwapStep } from '../utils/SwapStatus';
 import { SwapStep, SwapWithdrawalStep } from '../../Models/Wizard';
 import Processing from './Processing';
 import Success from './Success';
-import Withdraw from '../Wizard/Steps/Withdraw/shmindex';
+import Withdraw from '../Wizard/Steps/Withdraw';
 
 
 const SwapDetails: FC = () => {
