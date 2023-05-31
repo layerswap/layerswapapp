@@ -27,7 +27,7 @@
 @layer base {
 
   body {
-    @apply bg-secondary-950;
+    @apply bg-secondary-900 sm:bg-secondary-950;
   }
 
   /* On iOS disabled inputs have default opacitiy */

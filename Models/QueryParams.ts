@@ -8,12 +8,13 @@ export class QueryParams {
     lockAsset?: boolean = false;
     destAddress?: string = "";
     addressSource?: string = "";
+    hideRefuel?: boolean = false;
+    hideAddress?: boolean = false;
+    hideTo?: boolean = false;
     coinbase_redirect?: string = "";
     asset?: string = "";
     amount?: string = "";
     externalId?: string = ""
-    products?: string = "";
-    selectedProduct?: string = "";
     signature?: string = "";
     timestamp?: string = "";
     apiKey?: string = "";
