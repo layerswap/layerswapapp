@@ -10,8 +10,6 @@ export type Layer = {
 type LayerData = ({
     isExchange: true;
     assets?: ExchangeL2Asset[];
-    oauth_connect_url: string;
-    oauth_authorize_url: string;
     authorization_flow: "o_auth2" | "api_credentials" | 'none';
 } | {
     isExchange: false;

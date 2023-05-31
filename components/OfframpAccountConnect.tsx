@@ -12,6 +12,8 @@ import { SwapFormValues } from './DTOs/SwapFormValues';
 import { useFormikContext } from 'formik';
 import { SwapCreateStep } from '../Models/Wizard';
 import { useFormWizardaUpdate } from '../context/formWizardProvider';
+import { useSettingsState } from '../context/settings';
+import KnownInternalNames from '../lib/knownIds';
 
 type Props = {
     OnSuccess: () => Promise<void>,
@@ -24,7 +26,10 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
 
     const { to } = values || {}
     const destination = values?.to
-    const { oauth_connect_url } = (destination?.isExchange && destination) || {}
+    const settings = useSettingsState()
+    const oauthProviders = settings?.discovery?.o_auth_providers
+    const coinbaseOauthProvider = oauthProviders?.find(p => p.provider === KnownInternalNames.Exchanges.Coinbase)
+    const { oauth_connect_url } = (destination?.isExchange && (coinbaseOauthProvider || {})) || {}
     const [authWindow, setAuthWindow] = useState<Window>()
     const [loading, setLoading] = useState(false)
     const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
