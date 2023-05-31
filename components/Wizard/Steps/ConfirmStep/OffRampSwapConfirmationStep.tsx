@@ -124,7 +124,7 @@ const OffRampSwapConfirmationStep: FC = () => {
                             </p>
                         </WarningMessage>
                     }
-                    <AddressDetails canEditAddress={true} />
+                    {!query?.hideAddress && <AddressDetails canEditAddress={true} />}
                 </SwapConfirmMainData>
                 {
                     currentExchange?.assets.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network_internal_name === currentNetwork.internal_name) &&
@@ -135,17 +135,20 @@ const OffRampSwapConfirmationStep: FC = () => {
             </Widget.Content>
             <Widget.Footer>
                 <div className="text-white text-sm">
-                    <div className="mx-auto w-full rounded-lg font-normal">
-                        <div className='flex justify-between mb-4 md:mb-8'>
-                            <div className='flex items-center text-xs md:text-sm font-medium'>
-                                <AlertOctagon className='h-6 w-6 mr-2' />
-                                I am the owner of this address
-                            </div>
-                            <div className='flex items-center space-x-4'>
-                                <ToggleButton name={nameOfRightWallet} onChange={handleToggleChange} value={addressConfirmed} />
+                    {
+                        !query?.hideAddress &&
+                        <div className="mx-auto w-full rounded-lg font-normal">
+                            <div className='flex justify-between mb-4 md:mb-8'>
+                                <div className='flex items-center text-xs md:text-sm font-medium'>
+                                    <AlertOctagon className='h-6 w-6 mr-2' />
+                                    I am the owner of this address
+                                </div>
+                                <div className='flex items-center space-x-4'>
+                                    <ToggleButton name={nameOfRightWallet} onChange={handleToggleChange} value={query?.hideAddress ? true : addressConfirmed} />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
                     <SubmitButton className='plausible-event-name=Swap+details+confirmed' type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
