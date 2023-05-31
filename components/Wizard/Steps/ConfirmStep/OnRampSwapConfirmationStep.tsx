@@ -1,6 +1,6 @@
-import { Edit, AlertOctagon, Check } from 'lucide-react';
+import { Edit, Check } from 'lucide-react';
 import { useRouter } from 'next/router';
-import { FC, useCallback, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import { SwapCreateStep } from '../../../../Models/Wizard';
@@ -21,6 +21,7 @@ import KnownInternalNames from '../../../../lib/knownIds';
 import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import Modal from '../../../modal/modal';
 import { Layer } from '../../../../Models/Layer';
+import { useQueryState } from '../../../../context/query';
 
 const TIMER_SECONDS = 120
 
@@ -38,7 +39,8 @@ const OnRampSwapConfirmationStep: FC = () => {
     const [editingAddress, setEditingAddress] = useState(false)
     const [addressInputValue, setAddressInputValue] = useState(destination_address)
     const [addressInputError, setAddressInputError] = useState("")
-    const [withdrawalType, setWithdrawalType] = useState(false)
+    const { hideAddress } = useQueryState();
+
 
     const { start: startTimer } = useTimerState()
     const router = useRouter();
@@ -109,7 +111,7 @@ const OnRampSwapConfirmationStep: FC = () => {
         setLoading(false)
         if (nextStep)
             goToStep(nextStep)
-    }, [from, swap, createAndProcessSwap, withdrawalType])
+    }, [from, swap, createAndProcessSwap])
 
     const handleClose = () => {
         setEditingAddress(false)
@@ -127,6 +129,10 @@ const OnRampSwapConfirmationStep: FC = () => {
         setAddressConfirmed(value)
     }
 
+    useEffect(() => {
+        if (hideAddress) setAddressConfirmed(true)
+    }, [])
+
     const currentNetwork = swapFormData?.to;
     const currentExchange = swapFormData?.from as Layer & { isExchange: true };
     const currentCurrency = swapFormData?.currency;
@@ -135,7 +141,7 @@ const OnRampSwapConfirmationStep: FC = () => {
         <Widget>
             <Widget.Content>
                 <SwapConfirmMainData>
-                    <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />
+                    {!hideAddress && <AddressDetails canEditAddress={!loading} onClickEditAddress={handleStartEditingAddress} />}
                 </SwapConfirmMainData>
                 {
                     currentExchange?.assets.filter(ec => ec.asset === currentCurrency.asset)?.some(ce => ce.network_internal_name === currentNetwork?.internal_name) &&
@@ -146,17 +152,20 @@ const OnRampSwapConfirmationStep: FC = () => {
             </Widget.Content>
             <Widget.Footer>
                 <div className="text-white text-sm">
-                    <div className="mx-auto w-full rounded-lg font-normal">
-                        <div className='flex justify-between mb-4 md:mb-8'>
-                            <div className='flex items-center text-sm font-medium'>
-                                <Check className='h-6 w-6 mr-2' />
-                                I am the owner of this address
-                            </div>
-                            <div className='flex items-center space-x-4'>
-                                <ToggleButton name={nameOfRightWallet} onChange={handleConfirmToggleChange} value={addressConfirmed} />
+                    {
+                        !hideAddress &&
+                        <div className="mx-auto w-full rounded-lg font-normal">
+                            <div className='flex justify-between mb-4 md:mb-8'>
+                                <div className='flex items-center text-sm font-medium'>
+                                    <Check className='h-6 w-6 mr-2' />
+                                    I am the owner of this address
+                                </div>
+                                <div className='flex items-center space-x-4'>
+                                    <ToggleButton name={nameOfRightWallet} onChange={handleConfirmToggleChange} value={hideAddress ? true : addressConfirmed} />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
                     <SubmitButton className='plausible-event-name=Swap+details+confirmed' type='submit' isDisabled={!addressConfirmed} isSubmitting={loading} onClick={handleSubmit}>
                         Confirm
                     </SubmitButton>
