@@ -8,8 +8,8 @@ import { QueryParams } from '../Models/QueryParams';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
-import NetworkSettings from '../lib/NetworkSettings';
 import { Partner } from '../Models/Partner';
+import { SwapStatus } from '../Models/SwapStatus';
 
 const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
