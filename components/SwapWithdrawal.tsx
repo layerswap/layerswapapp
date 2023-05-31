@@ -1,7 +1,7 @@
 import { FC, useEffect } from "react";
 import { useQueryState } from "../context/query";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
-import SwapDetails from "./Swap";
+import SwapDetails from "./Swap/shmindex";
 
 const SwapWithdrawal: FC = () => {
     const { swap } = useSwapDataState()

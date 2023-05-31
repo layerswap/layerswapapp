@@ -4,7 +4,7 @@ import { useSettingsState } from "../../../context/settings"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
-import LayerSwapApiClient, { Fee, WithdrawType } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { Fee } from "../../../lib/layerSwapApiClient"
 
 const SwapSummary: FC = () => {
     const { layers, currencies } = useSettingsState()
