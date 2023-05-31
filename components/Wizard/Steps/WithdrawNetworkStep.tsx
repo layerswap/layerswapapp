@@ -134,8 +134,8 @@ const ManualTransfer: FC = () => {
     const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
     const generatedDepositAddress = generatedDeposit?.data?.address
 
-    return <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
-        <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
+    return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
+        <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
             <div className='p-2 bg-white/30 bg-opacity-30 rounded-xl'>
                 <div className='p-2 bg-white/70 bg-opacity-70 rounded-lg'>
                     <QRCode
@@ -143,7 +143,7 @@ const ManualTransfer: FC = () => {
                         value={generatedDepositAddress}
                         size={120}
                         bgColor={colors.white}
-                        fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
+                        fgColor={tailwindConfig.theme.extend.colors.secondary.DEFAULT}
                         level={"H"}
                     />
                 </div>
@@ -172,7 +172,7 @@ const ManualTransfer: FC = () => {
                 }
                 {
                     (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                    <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-darkblue-100 rounded border-dashed'>
+                    <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-secondary-100 rounded border-dashed'>
                         <p>
                             You might get a warning that this is not an activated address. You can ignore it.
                         </p>
@@ -190,7 +190,7 @@ const ManualTransfer: FC = () => {
                 </BackgroundField>
             </div>
         }
-        <div className='flex divide-x divide-darkblue-500'>
+        <div className='flex divide-x divide-secondary-500'>
             <BackgroundField Copiable={true} toCopy={swap?.requested_amount} header={'Amount'} withoutBorder>
                 <p>
                     {swap?.requested_amount}
@@ -222,7 +222,7 @@ const FiatTransfer: FC = () => {
     const stripeSessionId = swap?.metadata?.['STRIPE:SessionId']
     const stripeOnrampPromise = loadStripeOnramp(process.env.NEXT_PUBLIC_STRIPE_SECRET);
 
-    return <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
+    return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
         <CryptoElements stripeOnramp={stripeOnrampPromise}>
             <OnrampElement clientSecret={stripeSessionId} swapId={swap?.id}/>
         </CryptoElements>
@@ -245,7 +245,7 @@ const WalletTransfer: FC = () => {
     const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
     const sourceChainId = sourceNetworkSettings?.ChainId
 
-    return <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
+    return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
         <TransferFromWallet
             swapId={swap.id}
             networkDisplayName={source_network?.display_name}
@@ -279,7 +279,7 @@ const TabHeader: FC<TabHeaderProps> = ({ tab, onCLick, activeTabId }) => {
     return <button
         key={tab.id}
         onClick={() => onCLick(tab.id)}
-        className={`${activeTabId === tab.id ? "bg-darkblue-600 text-primary-text" : "text-primary-text/50 hover:text-primary-text/70 bg-darkblue-800"
+        className={`${activeTabId === tab.id ? "bg-secondary-600 text-primary-text" : "text-primary-text/50 hover:text-primary-text/70 bg-secondary-800"
             } grow rounded-md text-left relative py-3 px-5 text-sm transition`}
         style={{
             WebkitTapHighlightColor: "transparent",
@@ -289,7 +289,7 @@ const TabHeader: FC<TabHeaderProps> = ({ tab, onCLick, activeTabId }) => {
         {activeTabId === tab.id && (
             <motion.span
                 layoutId="bubble"
-                className="absolute inset-0 z-10 bg-darkblue-600 mix-blend-lighten border border-darkblue-100"
+                className="absolute inset-0 z-10 bg-secondary-600 mix-blend-lighten border border-secondary-100"
                 style={{ borderRadius: '6px' }}
                 transition={{ type: "spring", bounce: 0.1, duration: 0.3 }}
             />

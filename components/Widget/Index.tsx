@@ -39,14 +39,14 @@ const Widget = ({ children }) => {
       : () => router.push("/")
 
    return <>
-      <div className={`bg-darkblue-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
+      <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
          <div className="relative">
-            <div className="overflow-hidden h-1 flex rounded-t-lg bg-darkblue-500">
+            <div className="overflow-hidden h-1 flex rounded-t-lg bg-secondary-500">
                <div className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
             </div>
          </div>
          <HeaderWithMenu goBack={handleBack} />
-         <div className='text-center text-xl text-darkblue-100'>
+         <div className='text-center text-xl text-secondary-100'>
          </div>
          <div className="relative px-6">
             <div className="flex items-start" ref={wrapper}>

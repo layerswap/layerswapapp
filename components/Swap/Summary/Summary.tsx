@@ -41,8 +41,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source, destination, requestedAm
 
     return (
         <div>
-            <div className="bg-darkblue-700 font-normal rounded-lg flex flex-col border border-darkblue-500 w-full relative z-10">
-                <div className="flex items-center justify-between w-full px-3 py-2 border-b border-darkblue-500">
+            <div className="bg-secondary-700 font-normal rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
+                <div className="flex items-center justify-between w-full px-3 py-2 border-b border-secondary-500">
                     <div className="flex items-center gap-2">
                         <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={30} height={30} className="rounded-md" />
                         <div>
@@ -76,7 +76,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source, destination, requestedAm
             {
                 refuelAmount &&
                 <div
-                    className='w-full flex items-center justify-between rounded-b-lg bg-darkblue-700 relative bottom-2 z-[1] pt-4 pb-2 px-3.5 text-right'>
+                    className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700 relative bottom-2 z-[1] pt-4 pb-2 px-3.5 text-right'>
                     <div className='flex items-center gap-2'>
                         <Fuel className='h-4 w-4 text-primary' />
                         <p>Refuel</p>

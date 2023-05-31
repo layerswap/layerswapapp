@@ -22,8 +22,8 @@ const ManualTransfer: FC = () => {
     const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
     const generatedDepositAddress = generatedDeposit?.data?.address
 
-    return <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
-        <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-darkblue-700 border bg-darkblue-700 flex flex-col items-center justify-center gap-2`}>
+    return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
+        <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
             <div className='p-2 bg-white/30 bg-opacity-30 rounded-xl'>
                 <div className='p-2 bg-white/70 bg-opacity-70 rounded-lg'>
                     <QRCode
@@ -31,7 +31,7 @@ const ManualTransfer: FC = () => {
                         value={generatedDepositAddress}
                         size={120}
                         bgColor={colors.white}
-                        fgColor={tailwindConfig.theme.extend.colors.darkblue.DEFAULT}
+                        fgColor="#000000"
                         level={"H"}
                     />
                 </div>
@@ -60,7 +60,7 @@ const ManualTransfer: FC = () => {
                 }
                 {
                     (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                    <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-darkblue-100 rounded border-dashed'>
+                    <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-secondary-100 rounded border-dashed'>
                         <p>
                             You might get a warning that this is not an activated address. You can ignore it.
                         </p>
@@ -78,7 +78,7 @@ const ManualTransfer: FC = () => {
                 </BackgroundField>
             </div>
         }
-        <div className='flex divide-x divide-darkblue-500'>
+        <div className='flex divide-x divide-secondary-500'>
             <BackgroundField Copiable={true} toCopy={swap?.requested_amount} header={'Amount'} withoutBorder>
                 <p>
                     {swap?.requested_amount}

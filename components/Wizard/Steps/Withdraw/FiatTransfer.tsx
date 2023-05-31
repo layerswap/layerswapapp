@@ -10,7 +10,7 @@ const FiatTransfer: FC = () => {
     const stripeSessionId = swap?.metadata?.['STRIPE:SessionId']
     const stripeOnrampPromise = loadStripeOnramp(process.env.NEXT_PUBLIC_STRIPE_SECRET);
 
-    return <div className='rounded-md bg-darkblue-700 border border-darkblue-500 divide-y divide-darkblue-500'>
+    return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
         <CryptoElements stripeOnramp={stripeOnrampPromise}>
             <OnrampElement clientSecret={stripeSessionId} swapId={swap?.id}/>
         </CryptoElements>

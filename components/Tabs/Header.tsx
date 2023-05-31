@@ -12,7 +12,7 @@ const Header: FC<HeaderProps> = ({ tab, onCLick, activeTabId }) => {
     return <button
         key={tab.id}
         onClick={() => onCLick(tab.id)}
-        className={`${activeTabId === tab.id ? "bg-darkblue-600 text-primary-text" : "text-primary-text/50 hover:text-primary-text/70 bg-darkblue-800"
+        className={`${activeTabId === tab.id ? "bg-secondary-600 text-primary-text" : "text-primary-text/50 hover:text-primary-text/70 bg-secondary-800"
             } grow rounded-md text-left relative py-3 px-5 text-sm transition`}
         style={{
             WebkitTapHighlightColor: "transparent",
@@ -22,7 +22,7 @@ const Header: FC<HeaderProps> = ({ tab, onCLick, activeTabId }) => {
         {activeTabId === tab.id && (
             <motion.span
                 layoutId="bubble"
-                className="absolute inset-0 z-10 bg-darkblue-600 mix-blend-lighten border border-darkblue-100"
+                className="absolute inset-0 z-10 bg-secondary-600 mix-blend-lighten border border-secondary-100"
                 style={{ borderRadius: '6px' }}
                 transition={{ type: "spring", bounce: 0.1, duration: 0.3 }}
             />

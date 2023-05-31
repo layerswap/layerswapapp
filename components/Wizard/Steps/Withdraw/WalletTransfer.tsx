@@ -35,7 +35,7 @@ const WalletTransfer: FC = () => {
     else if (sourceIsStarknet)
         return <StarknetWalletWithdrawStep />
     else
-        return <div className='border-darkblue-500 rounded-md border bg-darkblue-700 p-3'>
+        return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
             <TransferFromWallet
                 swapId={swap.id}
                 networkDisplayName={source_network?.display_name}
