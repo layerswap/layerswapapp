@@ -259,7 +259,7 @@ module.exports = {
           },
         },
         {
-          name: 'synquote',
+          name: 'ea7df14a1597407f9f755f05e25bab42',
           extend: {
             colors: {
               primary: {

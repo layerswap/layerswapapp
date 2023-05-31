@@ -37,7 +37,7 @@ export default function ({ hideNavbar, children }: Props) {
     }, [addressSource])
 
     return <div className='styled-scroll'>
-        <div className="invisible imxMarketplace synquote"></div>
+        <div className="invisible imxMarketplace ea7df14a1597407f9f755f05e25bab42"></div>
         <main className="styled-scroll">
             <div className="min-h-screen overflow-hidden relative font-robo">
                 <Toaster position="top-center" toastOptions={{
