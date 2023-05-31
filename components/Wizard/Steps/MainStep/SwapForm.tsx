@@ -224,7 +224,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             <AmountField />
                         </div>
                         {
-                            !query?.hideAddress &&
+                            !(query?.hideAddress && values?.destination_address) &&
                             <div className="w-full mb-3.5 leading-4">
                                 <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
                                     {`To ${values?.to?.display_name || ''} address`}
