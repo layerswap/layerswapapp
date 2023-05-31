@@ -63,7 +63,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${height === 'full' ? 'h-full' : height === '80%' ? 'h-[80%]' : ''} group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'cursor-grab active:cursor-grabbing rounded-t-2xl border-t border-darkblue-500' : ''}  bg-darkblue-900 ${className} shadow-lg`}
+                className={`${height === 'full' ? 'h-full' : height === '80%' ? 'h-[80%]' : ''} group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'cursor-grab active:cursor-grabbing rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${className} shadow-lg`}
                 initial={{ y: "20%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
@@ -74,7 +74,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-darkblue-950 border-t border-darkblue-500 rounded-t-2xl ' : ''}  pb-6`}>
+                <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''}  pb-6`}>
                     <div className='px-6 flex justify-between items-center'>
                         <div className="text-lg text-white font-semibold">
                             <div>{title}</div>

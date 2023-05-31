@@ -19,7 +19,7 @@
   }
   
   .styled-scroll {
-    @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-darkblue-500  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300  scrollbar-thumb:!bg-slate-500/50;
+    @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300  scrollbar-thumb:!bg-slate-500/50;
   }
   
 }
@@ -27,7 +27,7 @@
 @layer base {
 
   body {
-    @apply bg-darkblue-950;
+    @apply bg-secondary-900 sm:bg-secondary-950;
   }
 
   /* On iOS disabled inputs have default opacitiy */
@@ -96,7 +96,7 @@ hr.horizontal-gradient {
 
 .strong-highlight::after {
   /* Highlight color */
-  background-color: theme('colors.darkblue.200');
+  background-color: theme('colors.secondary.200');
   content: "";
   position: absolute;
   width: calc(100% + 8px);

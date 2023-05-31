@@ -190,7 +190,8 @@ export type SwapItem = {
     has_sucessfull_published_tx: boolean;
     metadata?: {
         'STRIPE:SessionId': string
-    }
+    },
+    sequence_number: number;
 }
 
 export type AddressBookItem = {
@@ -258,7 +259,7 @@ export enum SwapStatusInNumbers {
     Expired = 3,
     Delayed = 4,
     Cancelled = 5,
-    SwapsWithoutCancelled = '0&status=1&status=2&status=3&status=4'
+    SwapsWithoutCancelledAndExpired = '0&status=1&status=2&status=4'
 }
 
 export type Campaigns = {

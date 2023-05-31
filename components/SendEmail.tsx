@@ -98,7 +98,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                         <p className='text-xl text-white'>
                                                             Sign in with email
                                                         </p>
-                                                        <div className='bg-darkblue-500 hover:bg-darkblue-500 p-0.5 rounded-md duration-200 transition'>
+                                                        <div className='bg-secondary-500 hover:bg-secondary-500 p-0.5 rounded-md duration-200 transition'>
                                                             <ChevronDown
                                                                 className={`${open ? 'rotate-180 transform' : ''
                                                                     } h-5 text-primary-text`}
@@ -120,8 +120,8 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                                         placeholder="john@example.com"
                                                                         autoComplete="email"
                                                                         type="email"
-                                                                        className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-500 pr-42 block
-                                                   placeholder:text-primary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md"
+                                                                        className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-secondary-500 pr-42 block
+                                                   placeholder:text-primary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-secondary-700 w-full font-semibold rounded-md"
                                                                     />
                                                                 )}
                                                             </Field>
@@ -158,8 +158,8 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                         placeholder="john@example.com"
                                                         autoComplete="email"
                                                         type="email"
-                                                        className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-darkblue-500 pr-42 block
-                                                   placeholder:text-primary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md"
+                                                        className="h-12 pb-1 pt-0 text-white  focus:ring-primary focus:border-primary border-secondary-500 pr-42 block
+                                                   placeholder:text-primary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-secondary-700 w-full font-semibold rounded-md"
                                                     />
                                                 )}
                                             </Field>

@@ -17,16 +17,16 @@ export default class CurrencySettings {
 
 
         CurrencySettings.KnownSettings[KnownInternalNames.Currencies.LRC] = {
-            Order: 0,
+            Order: 3,
         };
         CurrencySettings.KnownSettings[KnownInternalNames.Currencies.ETH] = {
-            Order: 1,
+            Order: 0,
         };
         CurrencySettings.KnownSettings[KnownInternalNames.Currencies.USDC] = {
-            Order: 2,
+            Order: 1,
         };
         CurrencySettings.KnownSettings[KnownInternalNames.Currencies.USDT] = {
-            Order: 3,
+            Order: 2,
         };
         
     }

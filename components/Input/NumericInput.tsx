@@ -33,7 +33,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     {label}
                 </label>
             }
-            <div className="flex rounded-lg shadow-sm bg-darkblue-700 border-darkblue-500 border ">
+            <div className="flex rounded-lg shadow-sm bg-secondary-700 border-secondary-500 border ">
                 <input
                     {...field}
                     pattern={pattern ? pattern : "^[0-9]*[.,]?[0-9]*$"}
@@ -53,7 +53,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     id={name}
                     ref={ref}
                     className={classNames(
-                        'disabled:cursor-not-allowed h-12 leading-4 placeholder:text-primary-text-placeholder bg-darkblue-700 focus:ring-primary focus:border-primary flex-grow block w-full min-w-0 rounded-md font-semibold border-0',
+                        'disabled:cursor-not-allowed h-12 leading-4 placeholder:text-primary-text-placeholder bg-secondary-700 focus:ring-primary focus:border-primary flex-grow block w-full min-w-0 rounded-lg font-semibold border-0',
                         className
                     )}
                     onChange={onChange ? onChange : e => {

@@ -86,8 +86,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
                                     name="apiKey"
                                     id="apiKey"
                                     onChange={handleKeyChange}
-                                    className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
-                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
+                                    className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-secondary-500 block
+                         placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-secondary-700 w-full font-semibold rounded-md placeholder-primary-text"
                                 />
                             </div>
                         </div>
@@ -104,8 +104,8 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
                                     name="apiSecret"
                                     id="apiSecret"
                                     onChange={handleSecretChange}
-                                    className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-darkblue-500 block
-                        placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-darkblue-700 w-full font-semibold rounded-md placeholder-gray-400"
+                                    className="h-12 pb-1 pt-0 focus:ring-primary focus:border-primary border-secondary-500 block
+                        placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-secondary-700 w-full font-semibold rounded-md placeholder-primary-text"
                                 />
                             </div>
                         </div>
@@ -128,7 +128,7 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
                 </div>
             </div>
             <div className='mb-4'>
-                <div className='p-4 bg-darkblue-700 text-white rounded-lg border border-darkblue-500 mb-5'>
+                <div className='p-4 bg-secondary-700 text-white rounded-lg border border-secondary-500 mb-5'>
                     <div className="flex items-center">
                         <Info className='h-5 w-5 text-primary-600 mr-3' />
                         <label className="block text-sm md:text-base">We're requesting <span className='font-medium'>Read-Only</span> API Keys</label>

@@ -21,7 +21,7 @@ const BackgroundField: FC<Props> = (({ Copiable, toCopy, header, children, QRabl
                     <div className="animate-pulse w-full h-full mx-auto rotate-180 opacity-30 blur-lg filter" style={{ background: 'linear-gradient(90deg, #E42575 -0.55%, #A6335E 22.86%, #E42575 48.36%, #ED6EA3 73.33%, #E42575 99.34%)' }}></div>
                 </div>
             }
-            <div className={`w-full relative px-3 py-3 shadow-sm ${withoutBorder ? 'border-darkblue-700' : 'border-darkblue-500 rounded-md border bg-darkblue-700'}`}>
+            <div className={`w-full relative px-3 py-3 shadow-sm ${withoutBorder ? 'border-secondary-700' : 'border-secondary-500 rounded-md border bg-secondary-700'}`}>
                 {
                     header && <p className="block font-bold text-sm text-slate-300">
                         {header}

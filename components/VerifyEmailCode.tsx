@@ -129,8 +129,8 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                                 onChange={e => {
                                                     /^[0-9]*$/.test(e.target.value) && handleChange(e)
                                                 }}
-                                                className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-darkblue-500 block
-                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-700  w-full font-semibold rounded-md placeholder-gray-400"
+                                                className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-secondary-500 block
+                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-secondary-700  w-full font-semibold rounded-md placeholder-primary-text"
                                             />
                                         </div>
                                         <div className='col-start-4 col-span-2'>
@@ -177,8 +177,8 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                             onChange={e => {
                                                 /^[0-9]*$/.test(e.target.value) && handleChange(e)
                                             }}
-                                            className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-darkblue-500 block
-                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-darkblue-700  w-full font-semibold rounded-md placeholder-gray-400"
+                                            className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-secondary-500 block
+                                    placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-secondary-700  w-full font-semibold rounded-md placeholder-primary-text"
                                         />
                                         <span className="flex text-sm leading-6 items-center mt-1.5">
                                             <TimerWithContext isStarted={started} seconds={timerCountdown} waitingComponent={(remainingTime) => (

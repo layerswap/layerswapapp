@@ -131,7 +131,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                 }
                 {
                     alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect ?
-                        <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-darkblue-900 to-darkblue-700 h-100%`} style={{ width: '100%' }}>
+                        <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-secondary-900 to-secondary-700 h-100%`} style={{ width: '100%' }}>
                             <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                         </div>
                         :
@@ -163,7 +163,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                 <div>
                     {
                         alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect && carouselFinished ?
-                            <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-darkblue-500 hover:bg-darkblue-400 rounded-md border border-darkblue-500 hover:border-darkblue-200 w-full mb-3">
+                            <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-secondary-500 hover:bg-secondary-400 rounded-md border border-secondary-500 hover:border-secondary-200 w-full mb-3">
                                 Show me full guide
                             </button>
                             :
@@ -172,7 +172,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                                     name="alreadyFamiliar"
                                     id='alreadyFamiliar'
                                     type="checkbox"
-                                    className="h-4 w-4 bg-darkblue-600 rounded border-darkblue-400 text-priamry focus:ring-darkblue-600"
+                                    className="h-4 w-4 bg-secondary-600 rounded border-secondary-400 text-priamry focus:ring-secondary-600"
                                     onChange={() => handleToggleChange(true)}
                                     checked={alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect}
                                 />

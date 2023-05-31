@@ -10,7 +10,7 @@ import { FilterDestinationLayers, FilterSourceLayers } from "../../helpers/setti
 import { Currency } from "../../Models/Currency";
 import ExchangeSettings from "../../lib/ExchangeSettings";
 import { SortingByOrder } from "../../lib/sorting"
-import { DisabledReason } from "../Select/Popover/PopoverSelect";
+import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 
@@ -29,19 +29,20 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
     } = useFormikContext<SwapFormValues>();
     const name = direction
     const { from, to } = values
-    const { lockFrom, lockTo } = useQueryState()
-    const { resolveImgSrc, layers } = useSettingsState();
+    const { lockFrom, lockTo, asset, lockAsset } = useQueryState()
+    const { resolveImgSrc, layers, currencies } = useSettingsState();
 
     let placeholder = "";
     let searchHint = "";
     let filteredLayers: Layer[];
     let menuItems: SelectMenuItem<Layer>[];
+    const lockedCurrency = lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : null
 
     let valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        filteredLayers = FilterSourceLayers(layers, to);
+        filteredLayers = FilterSourceLayers(layers, to, lockedCurrency);
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, lockFrom);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
@@ -59,7 +60,7 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        filteredLayers = FilterDestinationLayers(layers, from);
+        filteredLayers = FilterDestinationLayers(layers, from, lockedCurrency);
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, lockTo);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
@@ -115,7 +116,7 @@ function GenerateMenuItems(layers: Layer[], resolveImgSrc: (item: Layer | Curren
 
     let layerIsAvailable = (layer: Layer) => {
         if (lock) {
-            return { value: false, disabledReason: DisabledReason.LockNetworkIsTrue }
+            return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
         else {
             return { value: true, disabledReason: null }

@@ -82,7 +82,7 @@ function RewardsComponent() {
 
     return (
         <>
-            <div className='bg-darkblue-900 pb-6 sm:mb-10 sm:shadow-card rounded-lg text-white overflow-hidden relative min-h-[400px]'>
+            <div className='bg-secondary-900 pb-6 sm:mb-10 sm:shadow-card rounded-lg text-white overflow-hidden relative min-h-[400px]'>
                 {!isLoading ?
                     <div className="space-y-5">
                         <HeaderWithMenu goBack={handleGoBack} />
@@ -107,7 +107,7 @@ function RewardsComponent() {
                                                         </div>
                                                         <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards <ClickTooltip text={<span>Onboarding incentives that are earned by transferring to {network?.display_name}. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></span>} /></p>
                                                     </div>
-                                                    <div className="bg-darkblue-700 divide-y divide-darkblue-500 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
+                                                    <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
                                                         <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                                             <div className="flex justify-between w-full text-2xl">
                                                                 <div className="flex items-center space-x-1">
@@ -154,7 +154,7 @@ function RewardsComponent() {
                                                             </div>
                                                         </BackgroundField>
                                                     </div>
-                                                    <div className="bg-darkblue-700 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
+                                                    <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
                                                         <BackgroundField header='Weekly Reward Earned' withoutBorder>
                                                             <div className="flex flex-col w-full gap-2">
                                                                 <Progress value={periodRewardClaimed === Infinity ? 0 : periodRewardClaimed} />
@@ -171,11 +171,11 @@ function RewardsComponent() {
                                                     payouts.length > 0 &&
                                                     <div className="space-y-1">
                                                         <p className="font-bold text-lg text-left">Payouts</p>
-                                                        <div className=" bg-darkblue-700 divide-y divide-darkblue-300 rounded-lg shadow-lg border border-darkblue-700 hover:border-darkblue-500 transition duration-200">
+                                                        <div className=" bg-secondary-700 divide-y divide-secondary-300 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
                                                             <div className="inline-block min-w-full align-middle">
                                                                 <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                                                                    <table className="min-w-full divide-y divide-darkblue-500">
-                                                                        <thead className="bg-darkblue-800/70">
+                                                                    <table className="min-w-full divide-y divide-secondary-500">
+                                                                        <thead className="bg-secondary-800/70">
                                                                             <tr>
                                                                                 <th scope="col" className="py-3.5 pl-4 text-left text-sm font-semibold  sm:pl-6">
                                                                                     Tx Id
@@ -188,7 +188,7 @@ function RewardsComponent() {
                                                                                 </th>
                                                                             </tr>
                                                                         </thead>
-                                                                        <tbody className="divide-y divide-darkblue-600">
+                                                                        <tbody className="divide-y divide-secondary-600">
                                                                             {payouts.map((payout) => (
                                                                                 <tr key={payout.transaction_id}>
                                                                                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6 underline hover:no-underline">
@@ -239,7 +239,7 @@ function RewardsComponent() {
                                                     </button>
                                                 </div>
                                                 <p className="text-sm text-primary-text">Users who earn the most throughout the program will be featured here, and will earn additional rewards.</p>
-                                                <div className="bg-darkblue-700 border border-darkblue-700 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg">
+                                                <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
                                                     <div className="p-3">
                                                         {leaderboard?.leaderboard?.length > 0 ? <div className="space-y-6">
                                                             {
@@ -272,7 +272,7 @@ function RewardsComponent() {
                                                                                         <span>{leaderboardReward(user.position)} {campaign?.asset}</span>
                                                                                     </p>
                                                                                 </div>}>
-                                                                                <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-1 rounded'>
+                                                                                <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-secondary-200 active:ring-2 active:ring-gray-200 active:bg-secondary-400 focus:outline-none cursor-default p-1 rounded'>
                                                                                     <Trophy className="h-4 w-4" aria-hidden="true" />
                                                                                 </div>
                                                                             </ClickTooltip>
@@ -332,7 +332,7 @@ function RewardsComponent() {
                 <div id="widget_root" />
             </div >
             <Modal height="full" header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} >
-                <div className="bg-darkblue-700 border border-darkblue-700 mt-2 hover:border-darkblue-500 transition duration-200 rounded-lg shadow-lg text-primary-text">
+                <div className="bg-secondary-700 border border-secondary-700 mt-2 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg text-primary-text">
                     <div className="p-3">
                         <div className="space-y-6">
                             {
@@ -368,7 +368,7 @@ function RewardsComponent() {
                                                         </p>
                                                     </div>
                                                 }>
-                                                    <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-darkblue-200 active:ring-2 active:ring-gray-200 active:bg-darkblue-400 focus:outline-none cursor-default p-1 rounded'>
+                                                    <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-secondary-200 active:ring-2 active:ring-gray-200 active:bg-secondary-400 focus:outline-none cursor-default p-1 rounded'>
                                                         <Trophy className="h-4 w-4" aria-hidden="true" />
                                                     </div>
                                                 </ClickTooltip>

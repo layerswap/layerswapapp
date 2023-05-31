@@ -173,7 +173,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                 ?.some(c => c.is_deposit_enabled
                     && c.is_withdrawal_enabled))
 
-        if (query.lockTo || query.lockFrom) {
+        if (query.lockTo || query.lockFrom || query.hideTo) {
             setValuesSwapperDisabled(true)
         }
         else if ((source && !destination && sourceCurrencyIsAvailable)
@@ -206,7 +206,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             </div>
                             {
                                 !valuesSwapperDisabled &&
-                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[63px] z-10 rounded-full bg-darkblue-900 ring-1 ring-darkblue-400 hover:ring-primary py-2 px-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
+                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[63px] z-10 rounded-full bg-secondary-900 ring-1 ring-secondary-400 hover:ring-primary py-2 px-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
                                     <motion.div
                                         animate={animate}
                                         transition={{ duration: 0.3 }}
@@ -216,46 +216,49 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                     </motion.div>
                                 </button>
                             }
-                            <div className="flex flex-col w-full">
+                            {!query?.hideTo && <div className="flex flex-col w-full">
                                 <NetworkFormField direction="to" label="To" />
-                            </div>
+                            </div>}
                         </div>
                         <div className="mb-6 leading-4">
                             <AmountField />
                         </div>
-                        <div className="w-full mb-3.5 leading-4">
-                            <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
-                                {`To ${values?.to?.display_name || ''} address`}
-                            </label>
-                            <AddressButton
-                                disabled={!values.to || !values.from}
-                                isPartnerWallet={isPartnerWallet}
-                                openAddressModal={() => setShowAddressModal(true)}
-                                partnerImage={partnerImage}
-                                values={values} />
-                            <Modal
-                                header={`To ${values?.to?.display_name || ''} address`}
-                                height="fit"
-                                show={showAddressModal} setShow={setShowAddressModal}
-                                className="min-h-[70%] bg-darkblue-950"
-                            >
-                                <Address
-                                    close={() => setShowAddressModal(false)}
-                                    onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
-                                    exchangeAccount={exchangeAccount}
-                                    disabled={lockAddress || (!values.to || !values.from)}
-                                    name={"destination_address"}
-                                    partnerImage={partnerImage}
+                        {
+                            !query?.hideAddress &&
+                            <div className="w-full mb-3.5 leading-4">
+                                <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
+                                    {`To ${values?.to?.display_name || ''} address`}
+                                </label>
+                                <AddressButton
+                                    disabled={!values.to || !values.from}
                                     isPartnerWallet={isPartnerWallet}
-                                    partner={partner}
-                                    address_book={address_book?.data}
-                                />
-                            </Modal>
-                        </div>
+                                    openAddressModal={() => setShowAddressModal(true)}
+                                    partnerImage={partnerImage}
+                                    values={values} />
+                                <Modal
+                                    header={`To ${values?.to?.display_name || ''} address`}
+                                    height="fit"
+                                    show={showAddressModal} setShow={setShowAddressModal}
+                                    className="min-h-[70%]"
+                                >
+                                    <Address
+                                        close={() => setShowAddressModal(false)}
+                                        onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
+                                        exchangeAccount={exchangeAccount}
+                                        disabled={lockAddress || (!values.to || !values.from)}
+                                        name={"destination_address"}
+                                        partnerImage={partnerImage}
+                                        isPartnerWallet={isPartnerWallet}
+                                        partner={partner}
+                                        address_book={address_book?.data}
+                                    />
+                                </Modal>
+                            </div>
+                        }
                         <div className="w-full">
                             {
-                                !destination?.isExchange && GetNetworkCurrency(destination, asset)?.is_refuel_enabled &&
-                                <div className="flex items-center justify-between px-3.5 py-3 bg-darkblue-700 border border-darkblue-500 rounded-lg mb-4">
+                                !destination?.isExchange && GetNetworkCurrency(destination, asset)?.is_refuel_enabled && !query?.hideRefuel &&
+                                <div className="flex items-center justify-between px-3.5 py-3 bg-secondary-700 border border-secondary-500 rounded-lg mb-4">
                                     <div className="flex items-center space-x-2">
                                         <Fuel className='h-8 w-8 text-primary' />
                                         <div>
@@ -324,7 +327,7 @@ type AddressButtonProps = {
 }
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
     const destination = values?.to
-    return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-darkblue-700 border-darkblue-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
+    return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
         {isPartnerWallet && !destination?.isExchange &&
             <div className="shrink-0 flex items-center pointer-events-none">
                 {
