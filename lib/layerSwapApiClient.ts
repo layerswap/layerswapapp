@@ -252,7 +252,7 @@ export enum SwapType {
     CrossChain = "network_to_network"
 }
 
-export type WithdrawType = 'wallet' | 'manually' | 'stripe'
+export type WithdrawType = 'wallet' | 'manually' | 'stripe' | 'coinbase'
 
 export type ConnectParams = {
     api_key: string,
