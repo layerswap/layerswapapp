@@ -28,7 +28,7 @@ type Props = {
 
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap } = useSwapDataState()
-    const { setWithdrawManually } = useSwapDataUpdate()
+    const { setWithdrawType } = useSwapDataUpdate()
     const { layers, currencies } = useSettingsState()
     let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false }, 'configs')
 
