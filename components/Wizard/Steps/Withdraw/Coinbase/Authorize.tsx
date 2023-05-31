@@ -28,7 +28,7 @@ type Props = {
 
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap } = useSwapDataState()
-    const { setWithdrawManually } = useSwapDataUpdate()
+    const { setWithdrawType } = useSwapDataUpdate()
     const { layers, currencies } = useSettingsState()
     let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false }, 'configs')
 
@@ -53,7 +53,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const { data: exchange_accounts } = useSWR<ApiResponse<UserExchangesData[]>>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
 
     const handleTransferMannually = useCallback(() => {
-        setWithdrawManually(true)
+        setWithdrawType('manually')
         onDoNotConnect()
     }, [])
 

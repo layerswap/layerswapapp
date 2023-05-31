@@ -8,7 +8,7 @@ import MessageComponent from '../MessageComponent';
 import SubmitButton, { DoubleLineText } from '../buttons/submitButton';
 import GoHomeButton from '../utils/GoHome';
 import { Widget } from '../Widget/Index';
-import SwapSummary from './Summary/Index';
+import SwapSummary from './Summary';
 
 
 const Success: FC = () => {

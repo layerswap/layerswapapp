@@ -102,6 +102,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<any>>("PUT", `/campaigns/${campaign}/leaderboard`);
     }
 
+    async GetFee(params: GetFeeParams): Promise<ApiResponse<any>> {
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", '/swaps/amount_settings', params);
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
@@ -210,6 +214,21 @@ type Transaction = {
     usd_price: number
 }
 
+export type Fee = {
+    min_amount: number,
+    max_amount: number,
+    fee_amount: number
+}
+
+type GetFeeParams = {
+    source_fiat_provider?: string,
+    source_exchange?: string,
+    source_network?: string,
+    destination_network?: string,
+    destination_exchange?: string,
+    asset: string,
+    refuel?: boolean
+}
 
 export enum PublishedSwapTransactionStatus {
     Pending,
@@ -232,6 +251,8 @@ export enum SwapType {
     OffRamp = "network_to_cex",
     CrossChain = "network_to_network"
 }
+
+export type WithdrawType = 'wallet' | 'manually' | 'stripe' | 'coinbase'
 
 export type ConnectParams = {
     api_key: string,
