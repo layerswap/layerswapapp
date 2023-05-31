@@ -13,9 +13,10 @@ const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
   
   useEffect(() => {
     const emptyParams = new QueryParams()
-    if (query && Object.keys(emptyParams).some(key => query[key] !== undefined))
+    if (query && Object.keys(emptyParams).some(key => query[key] !== undefined)){
       mapLegacyQueryParams(query)
       setData(query);
+    }
   }, [query])
 
   return (

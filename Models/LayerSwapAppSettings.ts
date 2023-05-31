@@ -40,8 +40,6 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             display_name: e.display_name,
             status: e.status,
             authorization_flow: e.authorization_flow,
-            oauth_authorize_url: e.oauth_authorize_url,
-            oauth_connect_url: e.oauth_connect_url,
             assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks)
         }))
         const networkLayers: Layer[] = networks.map((n): Layer =>

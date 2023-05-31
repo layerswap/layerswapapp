@@ -36,14 +36,14 @@ function App({ Component, pageProps }) {
   })
 
   const theme = darkTheme({
-    accentColor: '#E42575',
+    accentColor: 'rgb(var(--colors-primary-500))',
     accentColorForeground: 'white',
     borderRadius: 'small',
     fontStack: 'system',
     overlayBlur: 'small',
   })
 
-  theme.colors.modalBackground = '#0e1426'
+  theme.colors.modalBackground = 'rgb(var(--colors-secondary-900))'
 
   const router = useRouter()
   return (

@@ -19,6 +19,7 @@ import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
 import Widget from '../../Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectGuideScreens';
 import { Layer } from '../../../../Models/Layer';
+import KnownInternalNames from '../../../../lib/knownIds';
 
 type Props = {
     onAuthorized: () => void,
@@ -30,7 +31,7 @@ type Props = {
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap, swapFormData } = useSwapDataState()
     const { setWithdrawManually } = useSwapDataUpdate()
-    const { layers, currencies } = useSettingsState()
+    const { layers, currencies, discovery } = useSettingsState()
     const { goToStep } = useFormWizardaUpdate()
     let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false }, 'configs')
 
@@ -46,8 +47,10 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const exchange = layers.find(e => e.isExchange && e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase()) as Layer & { isExchange: true }
     const currency = currencies?.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
 
-    const { oauth_authorize_url } = exchange || {}
-
+    const oauthProviders = discovery?.o_auth_providers
+    const coinbaseOauthProvider = oauthProviders?.find(p => p.provider === KnownInternalNames.Exchanges.Coinbase)
+    const { oauth_authorize_url } = coinbaseOauthProvider || {}
+    
     const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount || swapFormData?.amount))
 
     const layerswapApiClient = new LayerSwapApiClient()

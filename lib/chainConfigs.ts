@@ -58,5 +58,29 @@ export const arbitrumNova = {
   },
 }
 
+
+export const avalanche = {
+  id: 43114,
+  name: 'Avalanche Mainnet',
+  network: 'avalanche',
+  nativeCurrency: { name: 'AVAX', symbol: 'AVAX', decimals: 6 },
+  rpcUrls: {
+    blast: {
+      http: ['https://ava-mainnet.public.blastapi.io/ext/bc/C/rpc'],
+      webSocket: ['wss://ava-mainnet.public.blastapi.io/ext/bc/C/ws'],
+    },
+    default: {
+      http: ['https://api.avax.network/ext/bc/C/rpc'],
+    },
+    public: {
+      http: ['https://api.avax.network/ext/bc/C/rpc'],
+    },
+  },
+  blockExplorers: {
+    default: { name: 'Snowtrace', url: 'https://snowtrace.io' },
+  }
+}
+
+
 export var supportedChains =
-  [arbitrum, arbitrumGoerli, arbitrumNova, bsc, bscTestnet, goerli, mainnet, okc, kcc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet];
+  [avalanche, arbitrum, arbitrumGoerli, arbitrumNova, bsc, bscTestnet, goerli, mainnet, okc, kcc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet];

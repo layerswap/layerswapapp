@@ -6,13 +6,11 @@ import { ArrowRight, ChevronRight, ExternalLink, RefreshCcw, X } from 'lucide-re
 import SwapDetails from "./SwapDetailsComponent"
 import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
-import { useAuthState } from "../../context/authContext"
 import { classNames } from "../utils/classNames"
 import SubmitButton, { DoubleLineText } from "../buttons/submitButton"
 import { SwapHistoryComponentSceleton } from "../Sceletons"
 import StatusIcon, { } from "./StatusIcons"
 import toast from "react-hot-toast"
-import { useSwapDataUpdate } from "../../context/swap"
 import { SwapStatus } from "../../Models/SwapStatus"
 import ToggleButton from "../buttons/toggleButton";
 import Modal from "../modal/modal";
@@ -30,7 +28,7 @@ function TransactionsHistory() {
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending
-  const [showCancelledSwaps, setShowCancelledSwaps] = useState(false)
+  const [showAllSwaps, setShowAllSwaps] = useState(false)
   const [showToggleButton, setShowToggleButton] = useState(false)
   const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
 
@@ -54,7 +52,7 @@ function TransactionsHistory() {
       setLoading(true)
       const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
 
-      if (showCancelledSwaps) {
+      if (showAllSwaps) {
         const { data, error } = await layerswapApiClient.GetSwapsAsync(1)
 
         if (error) {
@@ -71,7 +69,7 @@ function TransactionsHistory() {
 
       } else {
 
-        const { data, error } = await layerswapApiClient.GetSwapsAsync(1, SwapStatusInNumbers.SwapsWithoutCancelled)
+        const { data, error } = await layerswapApiClient.GetSwapsAsync(1, SwapStatusInNumbers.SwapsWithoutCancelledAndExpired)
 
         if (error) {
           toast.error(error.message);
@@ -85,7 +83,7 @@ function TransactionsHistory() {
         setLoading(false)
       }
     })()
-  }, [router.query, showCancelledSwaps])
+  }, [router.query, showAllSwaps])
 
   const handleLoadMore = useCallback(async () => {
     //TODO refactor page change
@@ -113,7 +111,7 @@ function TransactionsHistory() {
   }
 
   const handleToggleChange = (value: boolean) => {
-    setShowCancelledSwaps(value)
+    setShowAllSwaps(value)
   }
 
   return (
@@ -130,9 +128,9 @@ function TransactionsHistory() {
                     {showToggleButton && <div className="flex justify-end mb-2">
                       <div className='flex space-x-2'>
                         <p className='flex items-center text-xs md:text-sm font-medium'>
-                          Show cancelled swaps
+                          Show all swaps
                         </p>
-                        <ToggleButton onChange={handleToggleChange} value={showCancelledSwaps} />
+                        <ToggleButton onChange={handleToggleChange} value={showAllSwaps} />
                       </div>
                     </div>}
                     <div className="max-h-[450px] styled-scroll overflow-y-auto ">
