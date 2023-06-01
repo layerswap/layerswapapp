@@ -35,6 +35,7 @@ import SwapGuide from '../../SwapGuide';
 import SecondaryButton from '../../buttons/secondaryButton';
 import { ApiResponse } from '../../../Models/ApiResponse';
 import useSWR from 'swr';
+import { utils } from 'ethers';
 
 const TIMER_SECONDS = 120
 const WithdrawExchangeStep: FC = () => {
@@ -63,10 +64,10 @@ const WithdrawExchangeStep: FC = () => {
     const availableNetworks = source_exchange?.currencies?.filter(c => c.asset === swap?.source_network_asset && networks.find(n => n.internal_name === c.network).status === 'active').map(n => n.network)
     const sourceNetworks = networks.filter(n => availableNetworks.includes(n.internal_name))
     const defaultSourceNetwork = sourceNetworks.find(sn => sn.internal_name === source_network_currency.network)
-    const asset = defaultSourceNetwork?.currencies?.find(currency => currency?.asset === destination_network_asset)
+    const [selectedSourceNetwork, setSelectedSourceNetwork] = useState(defaultSourceNetwork)
+    const asset = selectedSourceNetwork?.currencies?.find(currency => currency?.asset === destination_network_asset)
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const [selectedSourceNetwork, setSelectedSourceNetwork] = useState(defaultSourceNetwork)
 
     const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${selectedSourceNetwork?.internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
     const generatedDepositAddress = generatedDeposit?.data?.address
