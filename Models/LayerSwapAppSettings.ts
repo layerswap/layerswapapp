@@ -48,6 +48,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             internal_name: n.internal_name,
             display_name: n.display_name,
             status: n.status,
+            average_completion_time: n.average_completion_time,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)
         }))
         const result = exchangeLayers.concat(networkLayers)

@@ -12,6 +12,7 @@ export class CryptoNetwork {
     display_name: string;
     internal_name: string;
     native_currency: string;
+    average_completion_time: string;
     fee_multiplier: number;
     transaction_explorer_template: string;
     status: LayerStatus;

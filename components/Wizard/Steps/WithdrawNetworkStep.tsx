@@ -29,6 +29,7 @@ import SecondaryButton from '../../buttons/secondaryButton';
 import WarningMessage from '../../WarningMessage';
 import { ApiResponse } from '../../../Models/ApiResponse';
 import useSWR from 'swr';
+import { utils } from 'ethers';
 
 const WithdrawNetworkStep: FC = () => {
     const [transferDone, setTransferDone] = useState(false)
@@ -95,10 +96,12 @@ const WithdrawNetworkStep: FC = () => {
     const sourceChainId = source_network?.chain_id || sourceNetworkSettings?.ChainId
     let canWithdrawWithWallet = source_network.address_type === "evm" && !!sourceChainId && source_network?.internal_name !== KnownInternalNames.Networks.ZksyncMainnet;
 
+    const EIP_681 = asset.contract_address ? `ethereum:${asset.contract_address}@${source_network.chain_id}/transfer?address=${generatedDepositAddress}&uint256=${utils.parseUnits(swap?.requested_amount.toString(), asset.decimals)}` : `ethereum:${generatedDepositAddress}@${source_network.chain_id}?value=${swap?.requested_amount * 1000000000000000000}`
+
     const qrCode = (
         <QRCode
             className="p-2 bg-white rounded-md"
-            value={generatedDepositAddress}
+            value={EIP_681}
             size={120}
             bgColor={colors.white}
             fgColor={'#000000'}

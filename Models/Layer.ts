@@ -14,6 +14,7 @@ type LayerData = ({
 } | {
     isExchange: false;
     assets?: BaseL2Asset[];
+    average_completion_time?: string
 })
 
 export type BaseL2Asset = {
