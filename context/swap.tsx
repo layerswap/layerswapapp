@@ -8,6 +8,7 @@ import { QueryParams } from '../Models/QueryParams';
 import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
+import NetworkSettings, { DepositType } from '../lib/NetworkSettings';
 import { Partner } from '../Models/Partner';
 import { SwapStatus } from '../Models/SwapStatus';
 
@@ -82,6 +83,9 @@ export function SwapDataProvider({ children }) {
         if (!to || !currency || !from)
             throw new Error("Form data is missing")
 
+        const sourceLayer = from
+        const destinationLayer = to
+
         const data: CreateSwapParams = {
             amount: formData.amount,
             source_exchange: null,
@@ -93,9 +97,8 @@ export function SwapDataProvider({ children }) {
             // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
             partner: partner ? query?.addressSource : undefined,
             external_id: query.externalId,
+            deposit_type: NetworkSettings.KnownSettings[sourceLayer?.internal_name]?.DepositType || DepositType.Manual
         }
-        const sourceLayer = from
-        const destinationLayer = to
 
         if (sourceLayer?.isExchange) {
             data.source_exchange = sourceLayer?.internal_name;

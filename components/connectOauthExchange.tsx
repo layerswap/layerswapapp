@@ -9,6 +9,8 @@ import { Exchange } from '../Models/Exchange';
 import SubmitButton from './buttons/submitButton';
 import { Layer } from '../Models/Layer';
 import WarningMessage from './WarningMessage';
+import { useSettingsState } from '../context/settings';
+import KnownInternalNames from '../lib/knownIds';
 
 type Props = {
     exchange: Layer & { isExchange: true },
@@ -19,7 +21,11 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
     const [loading, setLoading] = useState(false)
     const router = useRouter();
     const authWindowRef = useRef(null);
-    const { oauth_authorize_url } = exchange || {}
+
+    const settings = useSettingsState()
+    const oauthProviders = settings?.discovery?.o_auth_providers
+    const coinbaseOauthProvider = oauthProviders?.find(p => p.provider === KnownInternalNames.Exchanges.Coinbase)
+    const { oauth_authorize_url } = coinbaseOauthProvider || {}
 
     useEffect(() => {
         setLoading(false)

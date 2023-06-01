@@ -8,6 +8,7 @@ import { NextRouter } from "next/router";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
+import { DepositType } from "./NetworkSettings";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
@@ -167,7 +168,8 @@ export type CreateSwapParams = {
     destination_address: string,
     partner?: string,
     external_id?: string,
-    refuel?: boolean
+    refuel?: boolean,
+    deposit_type: DepositType,
 }
 
 export type SwapItem = {
