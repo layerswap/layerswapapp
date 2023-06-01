@@ -167,12 +167,10 @@ const WithdrawExchangeStep: FC = () => {
         setShowCoinbaseConnectModal(true)
     }
 
-    const EIP_681 = asset.contract_address ? `ethereum:${asset.contract_address}@${selectedSourceNetwork.chain_id}/transfer?address=${generatedDepositAddress}&uint256=${utils.parseUnits(swap?.requested_amount.toString(), asset.decimals)}` : `ethereum:${generatedDepositAddress}@${selectedSourceNetwork.chain_id}?value=${swap?.requested_amount * 1000000000000000000}`
-
     const qrCode = (
         <QRCode
             className="p-2 bg-white rounded-md"
-            value={EIP_681}
+            value={generatedDepositAddress}
             size={120}
             bgColor={colors.white}
             fgColor={'#000000'}
