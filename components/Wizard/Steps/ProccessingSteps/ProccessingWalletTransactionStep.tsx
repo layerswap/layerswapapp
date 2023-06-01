@@ -26,7 +26,7 @@ const ProccessingWalletTransactionStep: FC = () => {
         <>
             <div className="w-full py-12 grid grid-flow-row">
                 <div className='md:text-3xl text-lg font-bold text-white leading-6 text-center'>
-                    Waiting for the transfer
+                    Withdrawal pending
                 </div>
                 <div className='flex place-content-center mt-20 mb-16 md:mb-8'>
                     <div className='relative'>
@@ -37,7 +37,7 @@ const ProccessingWalletTransactionStep: FC = () => {
                 </div>
                 <div className="flex flex-col text-center place-content-center mt-1 text-lg font-lighter text-primary-text">
                     <p className="text-base font-medium space-y-6 text-primary-text text-center">
-                        Please confirm the transfer request with your wallet to complete the swap
+                        The withdrawal has been initiated, please don't close this screen.
                     </p>
                 </div>
             </div>
