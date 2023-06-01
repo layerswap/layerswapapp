@@ -15,7 +15,6 @@ import { SwapStatus } from "../../Models/SwapStatus"
 import ToggleButton from "../buttons/toggleButton";
 import Modal from "../modal/modal";
 import HeaderWithMenu from "../HeaderWithMenu";
-import { SwapCancelModal } from "../Wizard/Steps/PendingSwapsStep";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -300,7 +299,6 @@ function TransactionsHistory() {
                       }
                     </div>
                   </Modal>
-                  <SwapCancelModal onCancel={() => router.reload()} swapToCancel={selectedSwap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
                 </div>
                 : <div className="absolute top-1/2 right-0 text-center w-full">
                   There are no transactions for this account

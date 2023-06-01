@@ -1,39 +1,38 @@
 import { ImmutableXClient } from "@imtbl/imx-sdk";
 import { Formik, FormikProps } from "formik";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { useQueryState } from "../../../../context/query";
-import { useSettingsState } from "../../../../context/settings";
-import { SwapFormValues } from "../../../DTOs/SwapFormValues";
-import { useSwapDataState, useSwapDataUpdate } from "../../../../context/swap";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryState } from "../../../context/query";
+import { useSettingsState } from "../../../context/settings";
+import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import React from "react";
-import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
-import { SwapCreateStep } from "../../../../Models/Wizard";
 import axios from "axios";
-import ConnectImmutableX from "../ConnectImmutableX";
-import ConnectNetwork from "../../../ConnectNetwork";
+import ConnectImmutableX from "./ConnectImmutableX";
+import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
-import { clearTempData, getTempData } from "../../../../lib/openLink";
-import KnownInternalNames from "../../../../lib/knownIds";
-import MainStepValidation from "../../../../lib/mainStepValidator";
-import { generateSwapInitialValues } from "../../../../lib/generateSwapInitialValues";
-import LayerSwapApiClient, { SwapType } from "../../../../lib/layerSwapApiClient";
-import Modal from "../../../modal/modal";
-import SwapForm from "./SwapForm";
-import NetworkSettings from "../../../../lib/NetworkSettings";
+import { clearTempData, getTempData } from "../../../lib/openLink";
+import KnownInternalNames from "../../../lib/knownIds";
+import MainStepValidation from "../../../lib/mainStepValidator";
+import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
+import Modal from "../../modal/modal";
+import SwapForm from "./Form";
+import NetworkSettings from "../../../lib/NetworkSettings";
 import { useRouter } from "next/router";
 import useSWR from "swr";
-import { ApiResponse } from "../../../../Models/ApiResponse";
-import { Partner } from "../../../../Models/Partner";
-import InternalApiClient from "../../../../lib/internalApiClient";
-import TokenService from "../../../../lib/TokenService";
-import LayerSwapAuthApiClient from "../../../../lib/userAuthApiClient";
-import { UserType, useAuthDataUpdate } from "../../../../context/authContext";
+import { ApiResponse } from "../../../Models/ApiResponse";
+import { Partner } from "../../../Models/Partner";
+import InternalApiClient from "../../../lib/internalApiClient";
+import TokenService from "../../../lib/TokenService";
+import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
+import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
-const MainStep: FC = () => {
+
+export default function ()  {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectImmutable, setShowConnectImmutable] = useState(false);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
@@ -41,7 +40,6 @@ const MainStep: FC = () => {
     const { swapFormData, swap } = useSwapDataState()
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     let formValues = formikRef.current?.values;
 
@@ -181,6 +179,4 @@ const MainStep: FC = () => {
         </Formik>
     </>
 }
-
-export default MainStep
 

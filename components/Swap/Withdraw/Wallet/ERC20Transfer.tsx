@@ -13,13 +13,12 @@ import {
 import { utils } from 'ethers';
 import { erc20ABI } from 'wagmi'
 import { Wallet } from "lucide-react";
-import SubmitButton from "../../../../buttons/submitButton";
-import FailIcon from "../../../../icons/FailIcon";
-import LayerSwapApiClient, { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
-import { useSwapDataUpdate } from "../../../../../context/swap";
-import { useFormWizardaUpdate } from "../../../../../context/formWizardProvider";
-import ProcessingStep from "../../ProccessingSteps";
-import { SwapWithdrawalStep } from "../../../../../Models/Wizard";
+import SubmitButton from "../../../buttons/submitButton";
+import FailIcon from "../../../icons/FailIcon";
+import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../lib/layerSwapApiClient";
+import { useSwapDataUpdate } from "../../../../context/swap";
+import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
+import { SwapWithdrawalStep } from "../../../../Models/Wizard";
 import { toast } from "react-hot-toast";
 
 type Props = {
@@ -283,7 +282,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         waitForTransaction,
         contractWrite
     ].find(d => d.isLoading)
-    
+
     return <>
         {
             buttonClicked &&

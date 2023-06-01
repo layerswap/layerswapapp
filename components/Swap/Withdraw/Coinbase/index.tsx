@@ -1,15 +1,15 @@
 import { FC, useCallback, useEffect, useState } from 'react'
-import SubmitButton from '../../../../buttons/submitButton';
-import Modal from '../../../../modal/modal';
+import SubmitButton from '../../../buttons/submitButton';
+import Modal from '../../../modal/modal';
 import Authorize from './Authorize';
 import Coinbase2FA from './Coinbase2FA';
 import { ArrowLeftRight, Link } from 'lucide-react';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../../context/swap';
-import LayerSwapApiClient from '../../../../../lib/layerSwapApiClient';
-import { KnownwErrorCode } from '../../../../../Models/ApiError';
+import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
+import { KnownwErrorCode } from '../../../../Models/ApiError';
 import toast from 'react-hot-toast';
-import { useSettingsState } from '../../../../../context/settings';
-import { TimerProvider, useTimerState } from '../../../../../context/timerContext';
+import { useSettingsState } from '../../../../context/settings';
+import { TimerProvider, useTimerState } from '../../../../context/timerContext';
 import { useRouter } from 'next/router';
 const TIMER_SECONDS = 120
 

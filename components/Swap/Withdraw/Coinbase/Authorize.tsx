@@ -1,24 +1,24 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import useSWR from 'swr';
-import { useQueryState } from '../../../../../context/query';
-import { useSettingsState } from '../../../../../context/settings';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../../context/swap';
-import { useInterval } from '../../../../../hooks/useInterval';
-import { Configs, usePersistedState } from '../../../../../hooks/usePersistedState';
-import { CalculateMinimalAuthorizeAmount } from '../../../../../lib/fees';
-import { parseJwt } from '../../../../../lib/jwtParser';
-import LayerSwapApiClient, { UserExchangesData } from '../../../../../lib/layerSwapApiClient';
-import { OpenLink } from '../../../../../lib/openLink';
-import TokenService from '../../../../../lib/TokenService';
-import { ApiResponse } from '../../../../../Models/ApiResponse';
-import { SwapCreateStep } from '../../../../../Models/Wizard';
-import SubmitButton from '../../../../buttons/submitButton';
-import Carousel, { CarouselItem, CarouselRef } from '../../../../Carousel';
-import Widget from '../../../Widget';
+import { useQueryState } from '../../../../context/query';
+import { useSettingsState } from '../../../../context/settings';
+import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import { useInterval } from '../../../../hooks/useInterval';
+import { Configs, usePersistedState } from '../../../../hooks/usePersistedState';
+import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
+import { parseJwt } from '../../../../lib/jwtParser';
+import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwapApiClient';
+import { OpenLink } from '../../../../lib/openLink';
+import TokenService from '../../../../lib/TokenService';
+import { ApiResponse } from '../../../../Models/ApiResponse';
+import { SwapCreateStep } from '../../../../Models/Wizard';
+import SubmitButton from '../../../buttons/submitButton';
+import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
+import Widget from '../../../Wizard/Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectGuideScreens';
-import KnownInternalNames from '../../../../../lib/knownIds';
-import { Layer } from '../../../../../Models/Layer';
+import KnownInternalNames from '../../../../lib/knownIds';
+import { Layer } from '../../../../Models/Layer';
 
 
 type Props = {

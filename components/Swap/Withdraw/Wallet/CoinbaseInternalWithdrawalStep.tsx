@@ -1,13 +1,13 @@
 import { ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
-import { useFormWizardaUpdate } from '../../../../../context/formWizardProvider';
-import { SwapWithdrawalStep } from '../../../../../Models/Wizard';
-import SubmitButton from '../../../../buttons/submitButton';
-import { useSwapDataState } from '../../../../../context/swap';
+import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
+import { SwapWithdrawalStep } from '../../../../Models/Wizard';
+import SubmitButton from '../../../buttons/submitButton';
+import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient from '../../../../../lib/layerSwapApiClient';
-import { GetSwapStatusStep } from '../../../../utils/SwapStatus';
-import { SwapStatus } from '../../../../../Models/SwapStatus';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
+import { GetSwapStatusStep } from '../../../utils/SwapStatus';
+import { SwapStatus } from '../../../../Models/SwapStatus';
 
 
 const CoinbaseInternalWithdrawal: FC = () => {

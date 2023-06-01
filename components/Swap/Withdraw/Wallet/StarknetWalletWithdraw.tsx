@@ -1,21 +1,21 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
-import SubmitButton from '../../../../buttons/submitButton';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../../context/swap';
+import SubmitButton from '../../../buttons/submitButton';
+import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource, PublishedSwapTransactionStatus } from '../../../../../lib/layerSwapApiClient';
-import { useSettingsState } from '../../../../../context/settings';
-import WarningMessage from '../../../../WarningMessage';
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource, PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { useSettingsState } from '../../../../context/settings';
+import WarningMessage from '../../../WarningMessage';
 import { connect, disconnect } from "get-starknet"
 import { AccountInterface, Contract, Abi, number, uint256 } from 'starknet';
 import { utils } from "ethers"
-import Erc20Abi from "../../../../../lib/abis/ERC20.json"
-import WatchDogAbi from "../../../../../lib/abis/LSWATCHDOG.json"
-import { ApiResponse } from '../../../../../Models/ApiResponse';
+import Erc20Abi from "../../../../lib/abis/ERC20.json"
+import WatchDogAbi from "../../../../lib/abis/LSWATCHDOG.json"
+import { ApiResponse } from '../../../../Models/ApiResponse';
 import useSWR from 'swr';
-import { useAuthState } from '../../../../../context/authContext';
-import NetworkSettings from '../../../../../lib/NetworkSettings';
-import KnownInternalNames from '../../../../../lib/knownIds';
+import { useAuthState } from '../../../../context/authContext';
+import NetworkSettings from '../../../../lib/NetworkSettings';
+import KnownInternalNames from '../../../../lib/knownIds';
 
 function getUint256CalldataFromBN(bn: number.BigNumberish) {
     return { type: "struct" as const, ...uint256.bnToUint256(bn) }

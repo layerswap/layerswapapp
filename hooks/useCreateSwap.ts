@@ -1,13 +1,13 @@
 import { useCallback } from "react";
 import CodeStep from "../components/Wizard/Steps/CodeStep";
 import EmailStep from "../components/Wizard/Steps/EmailStep";
-import MainStep from "../components/Wizard/Steps/MainStep/index";
+import MainStep from "../components/Swap/Form/index";
 import { useFormWizardaUpdate } from "../context/formWizardProvider";
 import { useSwapDataState } from "../context/swap";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { SwapCreateStep, WizardStep } from "../Models/Wizard";
 import { useRouter } from "next/router";
-import AccountConnectStep from "../components/Wizard/Steps/Withdraw/Coinbase/Authorize";
+import AccountConnectStep from "../components/Swap/Withdraw/Coinbase/Authorize";
 import { useAuthDataUpdate, UserType } from "../context/authContext";
 
 const useCreateSwap = () => {

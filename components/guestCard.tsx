@@ -6,7 +6,6 @@ import { useFormWizardaUpdate, useFormWizardState } from '../context/formWizardP
 import { AuthStep } from '../Models/Wizard';
 import CodeStep from './Wizard/Steps/CodeStep';
 import EmailStep from './Wizard/Steps/EmailStep';
-import { AllPendingSwapStep } from './Wizard/Steps/PendingSwapsStep';
 import Wizard from './Wizard/Wizard';
 import WizardItem from './Wizard/WizardItem';
 
@@ -41,9 +40,6 @@ function GuestCard() {
                         }
                         <CodeStep OnNext={CodeOnNext} disclosureLogin />
                     </div>
-                </WizardItem>
-                <WizardItem StepName={AuthStep.PendingSwaps} fitHeight>
-                    <AllPendingSwapStep />
                 </WizardItem>
             </Wizard>
         </div>

@@ -1,5 +1,5 @@
 import { FC } from "react"
-import TransferFromWallet from "./Wallet/ERC20Transfer"
+import TransferFromWallet from "../../../Swap/Withdraw/Wallet/ERC20Transfer"
 import { useSwapDataState } from "../../../../context/swap"
 import { useSettingsState } from "../../../../context/settings"
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../../lib/layerSwapApiClient"
@@ -7,8 +7,8 @@ import { ApiResponse } from "../../../../Models/ApiResponse"
 import NetworkSettings from "../../../../lib/NetworkSettings"
 import useSWR from "swr"
 import KnownInternalNames from "../../../../lib/knownIds"
-import StarknetWalletWithdrawStep from "./Wallet/StarknetWalletWithdraw"
-import ImtblxWalletWithdrawStep from "./Wallet/ImtblxWalletWithdrawStep"
+import StarknetWalletWithdrawStep from "../../../Swap/Withdraw/Wallet/StarknetWalletWithdraw"
+import ImtblxWalletWithdrawStep from "../../../Swap/Withdraw/Wallet/ImtblxWalletWithdrawStep"
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()

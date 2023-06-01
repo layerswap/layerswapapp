@@ -9,7 +9,7 @@ import FiatTransfer from './FiatTransfer';
 import { Tab, TabHeader } from '../../../Tabs/Index';
 import { Widget } from '../../../Widget/Index';
 import KnownInternalNames from '../../../../lib/knownIds';
-import Coinbase from './Coinbase';
+import Coinbase from '../../../Swap/Withdraw/Coinbase';
 
 const Withdraw: FC = () => {
 

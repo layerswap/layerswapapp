@@ -4,7 +4,7 @@ import { useSettingsState } from '../../context/settings';
 import { useSwapDataState } from '../../context/swap';
 import { SwapStatus } from '../../Models/SwapStatus';
 import shortenAddress from '../utils/ShortenAddress';
-import Steps from '../Wizard/Steps/StepsComponent';
+import Steps from './StepsComponent';
 import KnownInternalNames from '../../lib/knownIds';
 import { Widget } from '../Widget/Index';
 import SwapSummary from './Summary';

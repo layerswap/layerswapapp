@@ -16,7 +16,7 @@ import { isValidAddress } from "../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
-import RainbowKit from "../Wizard/Steps/Withdraw/Wallet/RainbowKit";
+import RainbowKit from "../Swap/Withdraw/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
 import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import shortenAddress from "../utils/ShortenAddress";

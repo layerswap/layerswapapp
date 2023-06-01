@@ -1,9 +1,9 @@
 import { FC, createContext, useContext, useEffect, useRef, useState } from "react";
-import { useSwapDataState, useSwapDataUpdate } from "../../../../context/swap";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { StripeOnramp, loadStripeOnramp } from "@stripe/crypto";
-import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
-import { SwapWithdrawalStep } from "../../../../Models/Wizard";
-import { PublishedSwapTransactionStatus } from "../../../../lib/layerSwapApiClient";
+import { useFormWizardaUpdate } from "../../../context/formWizardProvider";
+import { SwapWithdrawalStep } from "../../../Models/Wizard";
+import { PublishedSwapTransactionStatus } from "../../../lib/layerSwapApiClient";
 
 const FiatTransfer: FC = () => {
     const { swap } = useSwapDataState()
