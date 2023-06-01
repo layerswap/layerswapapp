@@ -46,8 +46,22 @@ const ProcessingStep: FC = () => {
 
     const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
     const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
+    const destination_exchange = settings.exchanges?.find(e => e.internal_name === swap?.destination_exchange)
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
+
+    const AverageCompletionTime = () => {
+        const averageTimeString = (swap?.destination_exchange ?
+            settings.networks.find(n => n.internal_name === destination_exchange?.currencies.find(a => a?.asset === swap?.destination_network_asset && a?.is_default)?.network).average_completion_time
+            : destination_network?.average_completion_time)
+            || ''
+        const parts = averageTimeString?.split(":");
+        const averageTimeInMinutes = parts && parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + parseInt(parts[2]) / 60
+        if (averageTimeInMinutes <= 1) return <span>~{averageTimeInMinutes.toFixed()} minute</span>
+        else if (averageTimeInMinutes > 1) return <span>~{averageTimeInMinutes.toFixed()} minutes</span>
+        else if (averageTimeInMinutes >= 60) return <span>~1 hour</span>
+        else return <span>~1-2 minutes</span>
+    }
 
     const isStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
         || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
@@ -84,22 +98,16 @@ const ProcessingStep: FC = () => {
             name: status === 3 ? 'Your assets are on their way' : 'Transfer of assets to your address',
             status: status < 3 ? 'upcoming' : 'current',
             description:
-                swap?.output_transaction ? <div className='flex items-center space-x-1'>
-                    <span>Destination Tx </span>
-                    <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
-                        <ExternalLink className='h-4' />
+                swap?.output_transaction ?
+                    <div className='flex items-center space-x-1'>
+                        <span>Destination Tx </span>
+                        <div className='underline hover:no-underline flex items-center space-x-1'>
+                            <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                            <ExternalLink className='h-4' />
+                        </div>
                     </div>
-                </div>
                     :
-                    <div>
-                        {
-                            destination_network?.internal_name === KnownInternalNames.Networks.StarkNetMainnet ?
-                                <span>Estimated time: 20-60 minutes</span>
-                                :
-                                <span>Estimated time: 2 minutes</span>
-                        }
-                    </div>
+                    <div>Estimated time: <AverageCompletionTime /></div>
         },
     ]
 

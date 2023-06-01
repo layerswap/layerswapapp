@@ -194,6 +194,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
+
+    const averageTimeString = (values?.to?.isExchange === true ?
+        values?.to?.assets.find(a => a?.asset === values?.currency?.asset && a?.is_default)?.network.average_completion_time
+        : values?.to?.average_completion_time)
+        || ''
+    const parts = averageTimeString?.split(":");
+    const averageTimeInMinutes = parts && parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + parseInt(parts[2]) / 60
+
     return <>
         <Form className="h-full" >
             <Widget>
@@ -283,7 +291,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 </WarningMessage>
                             }
                             {
-                                GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet &&
+                                GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
                                 <WarningMessage messageType="warning" className="mt-4">
                                     <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
                                 </WarningMessage>
