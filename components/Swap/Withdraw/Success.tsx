@@ -1,20 +1,19 @@
 import { ExternalLink } from 'lucide-react';
 import { Home } from 'lucide-react';
 import { FC, useCallback } from 'react'
-import { useSettingsState } from '../../context/settings';
-import { useSwapDataState } from '../../context/swap';
-import { useAuthState } from '../../context/authContext';
-import MessageComponent from '../MessageComponent';
-import SubmitButton, { DoubleLineText } from '../buttons/submitButton';
-import GoHomeButton from '../utils/GoHome';
-import { Widget } from '../Widget/Index';
-import SwapSummary from './Summary';
+import { useSettingsState } from '../../../context/settings';
+import { useSwapDataState } from '../../../context/swap';
+import MessageComponent from '../../MessageComponent';
+import Widget from '../../Wizard/Widget';
+import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
+import GoHomeButton from '../../utils/GoHome';
+import SwapSummary from '../Summary';
+
 
 
 const Success: FC = () => {
     const { networks } = useSettingsState()
     const { swap } = useSwapDataState()
-    const { userType } = useAuthState()
 
     const { destination_network: destination_network_internal_name } = swap
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)

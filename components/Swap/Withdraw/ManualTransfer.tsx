@@ -1,16 +1,15 @@
 import { FC } from "react"
-import { useSettingsState } from "../../../../context/settings"
-import { useSwapDataState } from "../../../../context/swap"
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../../lib/layerSwapApiClient"
 import useSWR from "swr"
-import { ApiResponse } from "../../../../Models/ApiResponse"
 import QRCode from "qrcode.react"
 import colors from 'tailwindcss/colors';
-import tailwindConfig from "../../../../tailwind.config"
-import KnownInternalNames from "../../../../lib/knownIds"
-import BackgroundField from "../../../backgroundField"
 import { ArrowLeftRight } from "lucide-react"
 import Image from 'next/image';
+import { ApiResponse } from "../../../Models/ApiResponse";
+import { useSettingsState } from "../../../context/settings";
+import { useSwapDataState } from "../../../context/swap";
+import KnownInternalNames from "../../../lib/knownIds";
+import BackgroundField from "../../backgroundField";
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../lib/layerSwapApiClient";
 
 const ManualTransfer: FC = () => {
     const { layers, resolveImgSrc } = useSettingsState()

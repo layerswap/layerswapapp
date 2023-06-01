@@ -1,15 +1,16 @@
 import { AlignLeft, Wallet } from 'lucide-react';
 import { FC, useEffect, useState } from 'react'
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import { useSettingsState } from '../../../../context/settings';
-import SwapSummary from '../../../Swap/Summary';
 import WalletTransfer from './WalletTransfer';
 import ManualTransfer from './ManualTransfer';
 import FiatTransfer from './FiatTransfer';
-import { Tab, TabHeader } from '../../../Tabs/Index';
-import { Widget } from '../../../Widget/Index';
-import KnownInternalNames from '../../../../lib/knownIds';
-import Coinbase from '../../../Swap/Withdraw/Coinbase';
+import { useSettingsState } from '../../../context/settings';
+import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
+import KnownInternalNames from '../../../lib/knownIds';
+import { Tab, TabHeader } from '../../Tabs/Index';
+import Widget from '../../Wizard/Widget';
+import SwapSummary from '../Summary';
+import Coinbase from './Coinbase';
+
 
 const Withdraw: FC = () => {
 

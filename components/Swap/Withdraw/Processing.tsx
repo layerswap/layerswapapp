@@ -1,15 +1,15 @@
 import { ExternalLink } from 'lucide-react';
 import { FC } from 'react'
-import { useSettingsState } from '../../context/settings';
-import { useSwapDataState } from '../../context/swap';
-import { SwapStatus } from '../../Models/SwapStatus';
-import shortenAddress from '../utils/ShortenAddress';
-import Steps from './StepsComponent';
-import KnownInternalNames from '../../lib/knownIds';
-import { Widget } from '../Widget/Index';
-import SwapSummary from './Summary';
-import { GetSwapStep } from '../utils/SwapStatus';
-import { SwapStep } from '../../Models/Wizard';
+import { useSwapDataState } from '../../../context/swap';
+import { useSettingsState } from '../../../context/settings';
+import { GetSwapStep } from '../../utils/SwapStatus';
+import { SwapStep } from '../../../Models/Wizard';
+import KnownInternalNames from '../../../lib/knownIds';
+import Widget from '../../Wizard/Widget';
+import shortenAddress from '../../utils/ShortenAddress';
+import Steps from '../StepsComponent';
+import SwapSummary from '../Summary';
+
 
 const Processing: FC = () => {
 
