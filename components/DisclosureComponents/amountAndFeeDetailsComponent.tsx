@@ -40,10 +40,16 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const refuel = truncateDecimals(CaluclateRefuelAmount(values, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
     const currencyName = currency?.asset || " "
 
-    const averageTimeString = to?.isExchange === false && to?.average_completion_time || ''
-    const parts = averageTimeString?.split(":");
-    const averageTimeInMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + parseInt(parts[2])/60;
-    console.log(averageTimeInMinutes)
+    const AverageCompletionTime = () => {
+        const averageTimeString = to?.isExchange === true ? to?.assets.find(a => a?.asset === currency?.asset && a?.is_default)?.network?.average_completion_time : to?.average_completion_time || ''
+        const parts = averageTimeString?.split(":");
+        const averageTimeInMinutes = parts && parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + parseInt(parts[2]) / 60
+        if (averageTimeInMinutes <= 1) return <p>~{averageTimeInMinutes.toFixed()} minute</p>
+        else if (averageTimeInMinutes > 1) return <p>~{averageTimeInMinutes.toFixed()} minutes</p>
+        else if (averageTimeInMinutes >= 60) return <p>~1 hour</p>
+        else return <p>~1-2 minutes</p>
+    }
+
     return (
         <>
             <div className="mx-auto relative w-full rounded-lg border border-secondary-500 hover:border-secondary-300 bg-secondary-700 px-3.5 py-3 z-[1] transition-all duration-200">
@@ -103,7 +109,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         Estimated arrival
                                     </label>
                                     <span className="text-right">
-                                        {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : " ~1-2 minutes"}
+                                        {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : <AverageCompletionTime />}
                                     </span>
                                 </div>
                             </>
