@@ -10,7 +10,7 @@ import { GetDefaultNetwork, GetNetworkCurrency } from '../../helpers/settingsHel
 import { ApiResponse } from '../../Models/ApiResponse';
 import LayerSwapApiClient, { Campaigns } from '../../lib/layerSwapApiClient';
 import useSWR from 'swr'
-
+import AverageCompletionTime from '../Common/AverageCompletionTime';
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
     const { networks, currencies, resolveImgSrc } = useSettingsState()
@@ -40,15 +40,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const refuel = truncateDecimals(CaluclateRefuelAmount(values, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
     const currencyName = currency?.asset || " "
 
-    const AverageCompletionTime = () => {
-        const averageTimeString = to?.isExchange === true ? to?.assets.find(a => a?.asset === currency?.asset && a?.is_default)?.network?.average_completion_time : to?.average_completion_time || ''
-        const parts = averageTimeString?.split(":");
-        const averageTimeInMinutes = parts && parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + parseInt(parts[2]) / 60
-        if (averageTimeInMinutes <= 1) return <p>~{averageTimeInMinutes.toFixed()} minute</p>
-        else if (averageTimeInMinutes > 1) return <p>~{averageTimeInMinutes.toFixed()} minutes</p>
-        else if (averageTimeInMinutes >= 60) return <p>~1 hour</p>
-        else return <p>~1-2 minutes</p>
-    }
+    const destinationNetwork = GetDefaultNetwork(to, currency?.asset)
 
     return (
         <>
@@ -109,7 +101,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         Estimated arrival
                                     </label>
                                     <span className="text-right">
-                                        {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : <AverageCompletionTime />}
+                                        {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : <AverageCompletionTime destinationNetwork={destinationNetwork} />}
                                     </span>
                                 </div>
                             </>

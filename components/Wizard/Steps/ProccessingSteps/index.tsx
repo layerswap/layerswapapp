@@ -10,6 +10,8 @@ import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import Steps from '../StepsComponent';
 import { SwapItem } from '../../../../lib/layerSwapApiClient';
 import WarningMessage from '../../../WarningMessage';
+import { CryptoNetwork } from '../../../../Models/CryptoNetwork';
+import AverageCompletionTime from '../../../Common/AverageCompletionTime';
 
 const ProcessingStep: FC = () => {
 
@@ -46,22 +48,8 @@ const ProcessingStep: FC = () => {
 
     const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
     const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
-    const destination_exchange = settings.exchanges?.find(e => e.internal_name === swap?.destination_exchange)
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
-
-    const AverageCompletionTime = () => {
-        const averageTimeString = (swap?.destination_exchange ?
-            settings.networks.find(n => n.internal_name === destination_exchange?.currencies.find(a => a?.asset === swap?.destination_network_asset && a?.is_default)?.network).average_completion_time
-            : destination_network?.average_completion_time)
-            || ''
-        const parts = averageTimeString?.split(":");
-        const averageTimeInMinutes = parts && parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + parseInt(parts[2]) / 60
-        if (averageTimeInMinutes <= 1) return <span>~{averageTimeInMinutes.toFixed()} minute</span>
-        else if (averageTimeInMinutes > 1) return <span>~{averageTimeInMinutes.toFixed()} minutes</span>
-        else if (averageTimeInMinutes >= 60) return <span>~1 hour</span>
-        else return <span>~1-2 minutes</span>
-    }
 
     const Confirmations = ({ swap, status }: { swap: SwapItem, status: number }) => {
         if (swap?.input_transaction?.max_confirmations === 0) {
@@ -119,7 +107,7 @@ const ProcessingStep: FC = () => {
             </div>
             <WarningMessage messageType='informing'>
                 <span className='text-xs sm:text-sm space-x-1 text-primary'>
-                    <span className='text-primary-text'>Average completion time:</span> <AverageCompletionTime />
+                    <span className='text-primary-text'>Average completion time:</span> <AverageCompletionTime  destinationNetwork={destination_network}/>
                 </span>
             </WarningMessage>
         </div>
