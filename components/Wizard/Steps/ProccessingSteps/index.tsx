@@ -8,8 +8,8 @@ import { SwapWithdrawalStep } from '../../../../Models/Wizard';
 import shortenAddress from '../../../utils/ShortenAddress';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import Steps from '../StepsComponent';
-import KnownInternalNames from '../../../../lib/knownIds';
 import { SwapItem } from '../../../../lib/layerSwapApiClient';
+import WarningMessage from '../../../WarningMessage';
 
 const ProcessingStep: FC = () => {
 
@@ -63,11 +63,6 @@ const ProcessingStep: FC = () => {
         else return <span>~1-2 minutes</span>
     }
 
-    const isStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
-        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
-        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
-        || swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
-
     const Confirmations = ({ swap, status }: { swap: SwapItem, status: number }) => {
         if (swap?.input_transaction?.max_confirmations === 0) {
             return <div>Confirmations: <span className='text-white'>{status === 2 ? swap?.input_transaction?.confirmations : 1}</span>/1</div>
@@ -78,7 +73,7 @@ const ProcessingStep: FC = () => {
 
     const progress = [
         {
-            name: status === 1 ? 'Detecting your transfer' : `Transfer from ${source_display_name} is completed`, status: status > 1 ? 'complete' : 'current', description: status > 1 ?
+            name: status === 1 ? 'Detecting your transfer' : `Transfer from ${source_display_name} is completed`, status: status > 1 ? 'complete' : 'current', description: status > 1 &&
                 <div className='flex items-center space-x-1'>
                     <span>Source Tx </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
@@ -86,8 +81,6 @@ const ProcessingStep: FC = () => {
                         <ExternalLink className='h-4' />
                     </div>
                 </div>
-                :
-                <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
         },
         {
             name: (status === 1 && 'Transfer confirmation') || (status === 2 && ' Waiting for the transfer to get confirmed') || (status === 3 && 'The transfer is confirmed'),
@@ -98,24 +91,22 @@ const ProcessingStep: FC = () => {
             name: status === 3 ? 'Your assets are on their way' : 'Transfer of assets to your address',
             status: status < 3 ? 'upcoming' : 'current',
             description:
-                swap?.output_transaction ?
-                    <div className='flex items-center space-x-1'>
-                        <span>Destination Tx </span>
-                        <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
-                            <ExternalLink className='h-4' />
-                        </div>
+                swap?.output_transaction &&
+                <div className='flex items-center space-x-1'>
+                    <span>Destination Tx </span>
+                    <div className='underline hover:no-underline flex items-center space-x-1'>
+                        <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                        <ExternalLink className='h-4' />
                     </div>
-                    :
-                    <div>Estimated time: <AverageCompletionTime /></div>
+                </div>
         },
     ]
 
     if (!swap) return <></>
 
     return (
-        <div className="w-full flex flex-col h-full space-y-5">
-            <div className="text-left text-primary-text mt-4 space-y-2">
+        <div className="w-full flex flex-col h-full">
+            <div className="text-left text-primary-text mt-4 space-y-1">
                 <p className="block sm:text-lg font-medium text-white">
                     Transfer status
                 </p>
@@ -126,6 +117,11 @@ const ProcessingStep: FC = () => {
             <div className='flex flex-col h-full justify-center'>
                 <Steps steps={progress} />
             </div>
+            <WarningMessage messageType='informing'>
+                <span className='text-xs sm:text-sm space-x-1 text-primary'>
+                    <span className='text-primary-text'>Average completion time:</span> <AverageCompletionTime />
+                </span>
+            </WarningMessage>
         </div>
     )
 }
