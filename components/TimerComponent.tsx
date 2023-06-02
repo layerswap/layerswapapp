@@ -18,14 +18,14 @@ const TimerWithContext: FC<TimerProps> = (({ isStarted, waitingComponent, childr
     const minutesToDisplay = minutesRemaining % 60
 
     return (
-        <>
+        <span>
             {
                 started ?
                     waitingComponent(`${twoDigits(minutesToDisplay)}:${twoDigits(secondsToDisplay)}`)
                     :
                     children
             }
-        </>
+        </span>
     )
 })
 

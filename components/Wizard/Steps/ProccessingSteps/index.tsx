@@ -8,8 +8,10 @@ import { SwapWithdrawalStep } from '../../../../Models/Wizard';
 import shortenAddress from '../../../utils/ShortenAddress';
 import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import Steps from '../StepsComponent';
-import KnownInternalNames from '../../../../lib/knownIds';
 import { SwapItem } from '../../../../lib/layerSwapApiClient';
+import WarningMessage from '../../../WarningMessage';
+import { CryptoNetwork } from '../../../../Models/CryptoNetwork';
+import AverageCompletionTime from '../../../Common/AverageCompletionTime';
 
 const ProcessingStep: FC = () => {
 
@@ -46,27 +48,8 @@ const ProcessingStep: FC = () => {
 
     const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
     const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
-    const destination_exchange = settings.exchanges?.find(e => e.internal_name === swap?.destination_exchange)
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
-
-    const AverageCompletionTime = () => {
-        const averageTimeString = (swap?.destination_exchange ?
-            settings.networks.find(n => n.internal_name === destination_exchange?.currencies.find(a => a?.asset === swap?.destination_network_asset && a?.is_default)?.network).average_completion_time
-            : destination_network?.average_completion_time)
-            || ''
-        const parts = averageTimeString?.split(":");
-        const averageTimeInMinutes = parts && parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + parseInt(parts[2]) / 60
-        if (averageTimeInMinutes <= 1) return <span>~{averageTimeInMinutes.toFixed()} minute</span>
-        else if (averageTimeInMinutes > 1) return <span>~{averageTimeInMinutes.toFixed()} minutes</span>
-        else if (averageTimeInMinutes >= 60) return <span>~1 hour</span>
-        else return <span>~1-2 minutes</span>
-    }
-
-    const isStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
-        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
-        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
-        || swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
 
     const Confirmations = ({ swap, status }: { swap: SwapItem, status: number }) => {
         if (swap?.input_transaction?.max_confirmations === 0) {
@@ -78,7 +61,7 @@ const ProcessingStep: FC = () => {
 
     const progress = [
         {
-            name: status === 1 ? 'Detecting your transfer' : `Transfer from ${source_display_name} is completed`, status: status > 1 ? 'complete' : 'current', description: status > 1 ?
+            name: status === 1 ? 'Detecting your transfer' : `Transfer from ${source_display_name} is completed`, status: status > 1 ? 'complete' : 'current', description: status > 1 &&
                 <div className='flex items-center space-x-1'>
                     <span>Source Tx </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
@@ -86,8 +69,6 @@ const ProcessingStep: FC = () => {
                         <ExternalLink className='h-4' />
                     </div>
                 </div>
-                :
-                <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
         },
         {
             name: (status === 1 && 'Transfer confirmation') || (status === 2 && ' Waiting for the transfer to get confirmed') || (status === 3 && 'The transfer is confirmed'),
@@ -98,24 +79,22 @@ const ProcessingStep: FC = () => {
             name: status === 3 ? 'Your assets are on their way' : 'Transfer of assets to your address',
             status: status < 3 ? 'upcoming' : 'current',
             description:
-                swap?.output_transaction ?
-                    <div className='flex items-center space-x-1'>
-                        <span>Destination Tx </span>
-                        <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
-                            <ExternalLink className='h-4' />
-                        </div>
+                swap?.output_transaction &&
+                <div className='flex items-center space-x-1'>
+                    <span>Destination Tx </span>
+                    <div className='underline hover:no-underline flex items-center space-x-1'>
+                        <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                        <ExternalLink className='h-4' />
                     </div>
-                    :
-                    <div>Estimated time: <AverageCompletionTime /></div>
+                </div>
         },
     ]
 
     if (!swap) return <></>
 
     return (
-        <div className="w-full flex flex-col h-full space-y-5">
-            <div className="text-left text-primary-text mt-4 space-y-2">
+        <div className="w-full flex flex-col h-full">
+            <div className="text-left text-primary-text mt-4 space-y-1">
                 <p className="block sm:text-lg font-medium text-white">
                     Transfer status
                 </p>
@@ -126,6 +105,11 @@ const ProcessingStep: FC = () => {
             <div className='flex flex-col h-full justify-center'>
                 <Steps steps={progress} />
             </div>
+            <WarningMessage messageType='informing'>
+                <span className='text-xs sm:text-sm space-x-1 text-primary'>
+                    <span className='text-primary-text'>Average completion time:</span> <AverageCompletionTime  destinationNetwork={destination_network}/>
+                </span>
+            </WarningMessage>
         </div>
     )
 }
