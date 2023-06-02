@@ -96,12 +96,16 @@ const WithdrawNetworkStep: FC = () => {
     const sourceChainId = source_network?.chain_id || sourceNetworkSettings?.ChainId
     let canWithdrawWithWallet = source_network.address_type === "evm" && !!sourceChainId && source_network?.internal_name !== KnownInternalNames.Networks.ZksyncMainnet;
 
-    const EIP_681 = asset.contract_address ? `ethereum:${asset.contract_address}@${source_network.chain_id}/transfer?address=${generatedDepositAddress}&uint256=${utils.parseUnits(swap?.requested_amount.toString(), asset.decimals)}` : `ethereum:${generatedDepositAddress}@${source_network.chain_id}?value=${swap?.requested_amount * 1000000000000000000}`
+    const EIP_681 = asset.contract_address ?
+        `ethereum:${asset.contract_address}@${source_network.chain_id}/transfer?address=${generatedDepositAddress}&uint256=${utils.parseUnits(swap?.requested_amount.toString(), asset.decimals)}`
+        : `ethereum:${generatedDepositAddress}@${source_network.chain_id}?value=${swap?.requested_amount * 1000000000000000000}`
+
+    const qrData = canWithdrawWithWallet ? EIP_681 : generatedDepositAddress
 
     const qrCode = (
         <QRCode
             className="p-2 bg-white rounded-md"
-            value={EIP_681}
+            value={qrData}
             size={120}
             bgColor={colors.white}
             fgColor={'#000000'}
