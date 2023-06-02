@@ -136,7 +136,6 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     const depositAddress = userDestinationAddress === address ?
         managedDepositAddress : generatedDepositAddress
 
-    console.log("blah")
     const sendTransactionPrepare = usePrepareSendTransaction({
         enabled: true,
         request: {
@@ -400,7 +399,7 @@ const ConnectWalletButton: FC = ({ children }) => {
         clcikHandler={clickHandler}
         icon={<Wallet />}
     >
-        Send from wallet
+        Connect wallet
     </ButtonWrapper>
 }
 
