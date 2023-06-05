@@ -117,7 +117,7 @@ export default class NetworkSettings {
             ChainId: 42170,
             AccountExplorerTemplate: 'https://nova.arbiscan.io/address/{0}',
         };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumGoerly] = {
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumGoerli] = {
             ChainId: 421613,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismKovan] = {
