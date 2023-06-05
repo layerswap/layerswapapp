@@ -10,6 +10,11 @@ import { Tab, TabHeader } from '../../Tabs/Index';
 import Widget from '../../Wizard/Widget';
 import SwapSummary from '../Summary';
 import Coinbase from './Coinbase';
+import { useQueryState } from '../../../context/query';
+import External from './External';
+
+
+
 
 
 const Withdraw: FC = () => {
@@ -17,7 +22,7 @@ const Withdraw: FC = () => {
     const { swap } = useSwapDataState()
     const { setWithdrawType } = useSwapDataUpdate()
     const { layers } = useSettingsState()
-
+    const { addressSource, signature } = useQueryState()
     const source_internal_name = swap?.source_exchange ?? swap.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
 
@@ -27,50 +32,83 @@ const Withdraw: FC = () => {
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsCoinbase = swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
-        
 
-    let tabs: Tab[] = [
-        {
-            id: "wallet",
-            label: "Via wallet",
-            enabled: !swap?.source_exchange, //TODO handle other cases
+    const isImtblMarketplace = (signature && addressSource === "imxMarketplace")
+    const sourceIsSynquote = addressSource === "ea7df14a1597407f9f755f05e25bab42"
+
+    let tabs: Tab[] = []
+    // TODO refactor
+    if (isImtblMarketplace || sourceIsSynquote) {
+        tabs = [{
+            id: "external",
+            label: "Withdrawal pending",
+            enabled: true,
             icon: <Wallet className='stroke-1 -ml-1' />,
-            content: <>
-                <h1 className='text-xl text-white'>Wallet transfer</h1>
-                <p className='text-sm leading-6 mt-1'>
-                    Bank transfers,
-                    also known as ACH payments, can take up to five business days. To pay via ACH, transfer funds using the following bank information.</p>
-            </>,
-            footer: <WalletTransfer />
-        },
-        {
-            id: "coinbase",
-            label: "Automatic",
-            enabled: sourceIsCoinbase, //TODO handle other cases
-            icon: <Wallet className='stroke-1 -ml-1' />,
-            content: <>
-                <h1 className='text-xl text-white'>Wallet transfer</h1>
-                <p className='text-sm leading-6 mt-1'>
-                    Bank transfers,
-                    also known as ACH payments, can take up to five business days. To pay via ACH, transfer funds using the following bank information.</p>
-            </>,
-            footer: <Coinbase />
-        },
-        {
-            id: "manually",
-            label: "Manually",
-            enabled: !(isFiat || sourceIsStarknet || sourceIsImmutableX),
-            icon: <AlignLeft />,
-            content: <ManualTransfer />
-        },
-        {
+            content: <External/>
+        }]
+    }
+    else if (isFiat) {
+        tabs = [{
             id: "stripe",
             label: "Stripe",
-            enabled: isFiat,
+            enabled: true,
             icon: <AlignLeft />,
             content: <FiatTransfer />
-        }
-    ];
+        }]
+    }
+    else if (sourceIsStarknet || sourceIsImmutableX) {
+        tabs = [
+            {
+                id: "wallet",
+                label: "Via wallet",
+                enabled: true,
+                icon: <Wallet className='stroke-1 -ml-1' />,
+                content: <>
+                    <h1 className='text-xl text-white'>Wallet transfer</h1>
+                    <p className='text-sm leading-6 mt-1'>
+                        Bank transfers,
+                        also known as ACH payments, can take up to five business days. To pay via ACH, transfer funds using the following bank information.</p>
+                </>,
+                footer: <WalletTransfer />
+            }]
+    }
+    else {
+        tabs = [
+            {
+                id: "wallet",
+                label: "Via wallet",
+                enabled: !swap?.source_exchange,
+                icon: <Wallet className='stroke-1 -ml-1' />,
+                content: <>
+                    <h1 className='text-xl text-white'>Wallet transfer</h1>
+                    <p className='text-sm leading-6 mt-1'>
+                        Bank transfers,
+                        also known as ACH payments, can take up to five business days. To pay via ACH, transfer funds using the following bank information.</p>
+                </>,
+                footer: <WalletTransfer />
+            },
+            {
+                id: "coinbase",
+                label: "Automatic",
+                enabled: sourceIsCoinbase,
+                icon: <Wallet className='stroke-1 -ml-1' />,
+                content: <>
+                    <h1 className='text-xl text-white'>Wallet transfer</h1>
+                    <p className='text-sm leading-6 mt-1'>
+                        Bank transfers,
+                        also known as ACH payments, can take up to five business days. To pay via ACH, transfer funds using the following bank information.</p>
+                </>,
+                footer: <Coinbase />
+            },
+            {
+                id: "manually",
+                label: "Manually",
+                enabled: true,
+                icon: <AlignLeft />,
+                content: <ManualTransfer />
+            }
+        ];
+    }
 
     const [activeTabId, setActiveTabId] = useState(tabs.find(t => t.enabled)?.id);
 

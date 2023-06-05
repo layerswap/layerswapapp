@@ -50,6 +50,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         setValues,
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
+
     const { to: destination } = values
     const settings = useSettingsState();
     const source = values.from
@@ -195,7 +196,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
     return <>
-        <Form className="h-full" >
+        <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget>
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
@@ -292,7 +293,11 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                     </Widget.Content>
                 }
                 <Widget.Footer>
-                    <SwapButton className="plausible-event-name=Swap+initiated" type='submit' isDisabled={!isValid || loading} isSubmitting={isSubmitting || loading}>
+                    <SwapButton
+                        className="plausible-event-name=Swap+initiated"
+                        type='submit'
+                        isDisabled={!isValid || loading}
+                        isSubmitting={isSubmitting || loading}>
                         {displayErrorsOrSubmit(errors)}
                     </SwapButton>
                 </Widget.Footer>

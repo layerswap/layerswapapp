@@ -1,7 +1,7 @@
 import { FC, useEffect } from 'react'
 import { Widget } from '../Widget/Index';
 import { useSwapDataState, useSwapDataUpdate } from '../../context/swap';
-import { GetSwapStep } from '../utils/SwapStatus';
+import { GetSwapStep, ResolvePollingInterval } from '../utils/SwapStatus';
 import { AuthStep, SwapStep } from '../../Models/Wizard';
 import { FormWizardProvider } from '../../context/formWizardProvider';
 import GuestCard from '../guestCard';
@@ -18,10 +18,11 @@ const SwapDetails: FC = () => {
     const swapStep = GetSwapStep(swap)
     const { setInterval } = useSwapDataUpdate()
     const { userType } = useAuthState()
+
     useEffect(() => {
-        setInterval(15000)
+        setInterval(ResolvePollingInterval(swapStep))
         return () => setInterval(0)
-    }, [])
+    }, [swapStep])
 
     return (
         <>

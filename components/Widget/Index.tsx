@@ -2,41 +2,17 @@ import HeaderWithMenu from "../HeaderWithMenu"
 import { useRouter } from "next/router"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
-import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-let variants = {
-   enter: ({ direction, width }) => ({
-      x: direction * width,
-   }),
-   center: {
-      x: 0,
-      transition: {
-         when: "beforeChildren",
-      },
-   },
-   exit: ({ direction, width }) => ({
-      x: direction * -width,
-   }),
-};
+
 const Widget = ({ children }) => {
-   const [wrapperWidth, setWrapperWidth] = useState(1);
    const router = useRouter()
    const wrapper = useRef(null);
-   useEffect(() => {
-      function handleResize() {
-         if (wrapper.current !== null) {
-            setWrapperWidth(wrapper.current.offsetWidth);
-         }
-      }
-      window.addEventListener("resize", handleResize);
-      handleResize();
 
-      return () => window.removeEventListener("resize", handleResize);
-   }, []);
-
-   const handleBack = window?.['navigation']?.['canGoBack'] ?
+   const goBack = window?.['navigation']?.['canGoBack'] ?
       () => router.back()
       : () => router.push("/")
+
+   const handleBack = router.pathname === "/" ? null : goBack
 
    return <>
       <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>

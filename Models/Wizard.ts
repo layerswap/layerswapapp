@@ -34,9 +34,11 @@ export enum SwapCreateStep {
 
 export enum SwapStep {
     UserTransferPending,
+    
     TransactionDone,
     TransactionDetected,
     LSTransferPending,
+
     Success,
     Failed,
     Delay
