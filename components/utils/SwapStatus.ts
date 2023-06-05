@@ -30,7 +30,7 @@ export const GetSwapStep = (swap: SwapItem): SwapStep => {
 
     if (swapStatus == SwapStatus.Completed)
         return SwapStep.Success;
-    else if (swapStatus == SwapStatus.Failed)
+    else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
         return SwapStep.Failed;
     else if (swapStatus == SwapStatus.UserTransferDelayed)
         return SwapStep.Delay;

@@ -136,7 +136,6 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     const depositAddress = userDestinationAddress === address ?
         managedDepositAddress : generatedDepositAddress
 
-    console.log("blah")
     const sendTransactionPrepare = usePrepareSendTransaction({
         enabled: true,
         request: {
@@ -347,7 +346,6 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
 }
 
 const PreparingTransactionMessage: FC = () => {
-    console.log("preparing")
     return <WalletMessage
         status="pending"
         header='Preparing the transaction'

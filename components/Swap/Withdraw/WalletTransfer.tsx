@@ -1,14 +1,14 @@
 import { FC } from "react"
-import TransferFromWallet from "../../../Swap/Withdraw/Wallet/ERC20Transfer"
-import { useSwapDataState } from "../../../../context/swap"
-import { useSettingsState } from "../../../../context/settings"
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../../lib/layerSwapApiClient"
-import { ApiResponse } from "../../../../Models/ApiResponse"
-import NetworkSettings from "../../../../lib/NetworkSettings"
-import useSWR from "swr"
-import KnownInternalNames from "../../../../lib/knownIds"
-import StarknetWalletWithdrawStep from "../../../Swap/Withdraw/Wallet/StarknetWalletWithdraw"
-import ImtblxWalletWithdrawStep from "../../../Swap/Withdraw/Wallet/ImtblxWalletWithdrawStep"
+import { ApiResponse } from "../../../Models/ApiResponse"
+import { useSettingsState } from "../../../context/settings"
+import { useSwapDataState } from "../../../context/swap"
+import NetworkSettings from "../../../lib/NetworkSettings"
+import KnownInternalNames from "../../../lib/knownIds"
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../lib/layerSwapApiClient"
+import TransferFromWallet from "./Wallet/ERC20Transfer"
+import ImtblxWalletWithdrawStep from "./Wallet/ImtblxWalletWithdrawStep"
+import StarknetWalletWithdrawStep from "./Wallet/StarknetWalletWithdraw"
+import useSWR from 'swr'
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()

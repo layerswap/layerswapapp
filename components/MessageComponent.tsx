@@ -32,7 +32,7 @@ function constructIcons(icon: iconStyle) {
 }
 
 const MessageComponent = ({ children }) => {
-    return <div className="w-full flex flex-col h-full justify-between px-6 py-6 min-h-full">
+    return <div className="w-full flex flex-col h-full justify-between pt-6 min-h-full">
         {children}
     </div>
 }
