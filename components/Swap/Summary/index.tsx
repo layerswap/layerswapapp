@@ -37,7 +37,7 @@ const SwapSummary: FC = () => {
     if (swap?.fee) {
         fee = swap?.fee
     } else if (!swap?.fee && swap?.source_exchange) {
-        fee = feeData.data[1].fee_amount
+        fee = feeData?.data[1]?.fee_amount
     } else {
         switch (withdrawType) {
             case 'wallet':
@@ -49,11 +49,13 @@ const SwapSummary: FC = () => {
         }
     }
 
+    const requested_amount = feeData?.data[1]?.min_amount > swap?.requested_amount ? feeData?.data[1]?.min_amount : swap?.requested_amount
+
     return <Summary
         currency={currency}
         source={source_layer}
         destination={destination_layer}
-        requestedAmount={swap?.requested_amount}
+        requestedAmount={requested_amount}
         destinationAddress={swap?.destination_address}
         refuelAmount={swap?.refuel_amount}
         fee={fee}

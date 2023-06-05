@@ -1,5 +1,4 @@
 import { FC } from "react"
-import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import { useSettingsState } from "../../../context/settings"
 import { useSwapDataState } from "../../../context/swap"
@@ -9,6 +8,7 @@ import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../
 import TransferFromWallet from "./Wallet/ERC20Transfer"
 import ImtblxWalletWithdrawStep from "./Wallet/ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./Wallet/StarknetWalletWithdraw"
+import useSWR from 'swr'
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()

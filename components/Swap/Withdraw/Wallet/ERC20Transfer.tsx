@@ -346,7 +346,6 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
 }
 
 const PreparingTransactionMessage: FC = () => {
-    console.log("preparing")
     return <WalletMessage
         status="pending"
         header='Preparing the transaction'
