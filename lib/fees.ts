@@ -102,12 +102,15 @@ export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, balances
     let maxAmount = destinationNetworkCurrency?.max_withdrawal_amount || 0
 
     if (balances) {
-        let balancesTyped = JSON.parse(balances)
-        if (balancesTyped && balancesTyped[currency.asset]) {
-            maxAmount = Math.min(maxAmount, balancesTyped[currency.asset]);
+        try {
+            let balancesTyped = JSON.parse(balances)
+            if (balancesTyped && balancesTyped[currency.asset]) {
+                maxAmount = Math.min(maxAmount, balancesTyped[currency.asset]);
+            }
         }
+        // in case the query parameter had bad formatting just ignoe
+        catch { }
     }
-
     return roundDecimals(maxAmount, currency?.usd_price?.toFixed()?.length) || 0
 }
 
