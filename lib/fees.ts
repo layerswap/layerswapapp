@@ -94,16 +94,18 @@ export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks
     return 0;
 }
 
-export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, balances?: Map<string, number>) {
+export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, balances?: string) {
     const { currency, from, to } = swapFormData || {}
 
     if (!currency || !from || !to) return 0
     const destinationNetworkCurrency = GetNetworkCurrency(to, currency?.asset)
-    
     let maxAmount = destinationNetworkCurrency?.max_withdrawal_amount || 0
-    if (balances && balances[currency.asset])
-    {
-        maxAmount = Math.min(maxAmount, balances[currency.asset]);
+
+    if (balances) {
+        let balancesTyped = JSON.parse(balances)
+        if (balancesTyped && balancesTyped[currency.asset]) {
+            maxAmount = Math.min(maxAmount, balancesTyped[currency.asset]);
+        }
     }
 
     return roundDecimals(maxAmount, currency?.usd_price?.toFixed()?.length) || 0
