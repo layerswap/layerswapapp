@@ -19,6 +19,7 @@ export class QueryParams {
     signature?: string = "";
     timestamp?: string = "";
     apiKey?: string = "";
+    balances?: string = null;
 
     // Obsolate
     sourceExchangeName?: string = "";
