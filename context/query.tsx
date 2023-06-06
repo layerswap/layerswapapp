@@ -10,12 +10,13 @@ const QueryStateContext = React.createContext<QueryParams>(null);
 const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
 
   const [data, setData] = usePersistedState<QueryParams>(query, STORAGE_KEY, 'sessionStorage');
-  
+
   useEffect(() => {
     const emptyParams = new QueryParams()
-    if (query && Object.keys(emptyParams).some(key => query[key] !== undefined)){
+    if (query && Object.keys(emptyParams).some(key => query[key] !== undefined)) {
       mapLegacyQueryParams(query)
       setData(query);
+      query.balancesTyped = JSON.parse(query.balances)
     }
   }, [query])
 
@@ -26,8 +27,7 @@ const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
   );
 }
 
-function mapLegacyQueryParams(params: QueryParams)
-{
+function mapLegacyQueryParams(params: QueryParams) {
   params.from = params.from ?? params.sourceExchangeName;
   params.to = params.to ?? params.destNetwork;
   params.lockFrom = params.lockFrom ?? params.lockExchange;
