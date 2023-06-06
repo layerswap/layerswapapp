@@ -16,7 +16,10 @@ const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
     if (query && Object.keys(emptyParams).some(key => query[key] !== undefined)) {
       mapLegacyQueryParams(query)
       setData(query);
-      query.balancesTyped = JSON.parse(query.balances)
+
+      if (query.lockFrom && query.balances) {
+        query.balancesTyped = JSON.parse(query.balances)
+      }
     }
   }, [query])
 
