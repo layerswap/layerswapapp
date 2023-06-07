@@ -187,6 +187,7 @@ export type SwapItem = {
     input_transaction?: Transaction,
     output_transaction?: Transaction,
     has_sucessfull_published_tx: boolean;
+    has_pending_deposit: boolean;
     sequence_number: number;
 }
 
