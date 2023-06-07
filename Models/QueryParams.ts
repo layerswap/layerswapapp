@@ -10,6 +10,7 @@ export class QueryParams {
     addressSource?: string = "";
     hideRefuel?: boolean = false;
     hideAddress?: boolean = false;
+    hideFrom?: boolean = false;
     hideTo?: boolean = false;
     coinbase_redirect?: string = "";
     asset?: string = "";
@@ -18,6 +19,7 @@ export class QueryParams {
     signature?: string = "";
     timestamp?: string = "";
     apiKey?: string = "";
+    balances?: string = null;
 
     // Obsolate
     sourceExchangeName?: string = "";

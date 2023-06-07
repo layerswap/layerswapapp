@@ -1,6 +1,5 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-
 import Image from 'next/image';
 import SwapButton from "../../../buttons/swapButton";
 import React from "react";
@@ -173,7 +172,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                 ?.some(c => c.is_deposit_enabled
                     && c.is_withdrawal_enabled))
 
-        if (query.lockTo || query.lockFrom || query.hideTo) {
+        if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
             setValuesSwapperDisabled(true)
         }
         else if ((source && !destination && sourceCurrencyIsAvailable)
@@ -209,9 +208,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
                     : <Widget.Content>
                         <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
-                            <div className="flex flex-col w-full">
+                            {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
                                 <NetworkFormField direction="from" label="From" />
-                            </div>
+                            </div>}
                             {
                                 !valuesSwapperDisabled &&
                                 <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[63px] z-10 rounded-full bg-secondary-900 ring-1 ring-secondary-400 hover:ring-primary py-2 px-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
@@ -224,7 +223,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                     </motion.div>
                                 </button>
                             }
-                            {!query?.hideTo && <div className="flex flex-col w-full">
+                            {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
                                 <NetworkFormField direction="to" label="To" />
                             </div>}
                         </div>

@@ -43,7 +43,7 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         placeholder = "Source";
         searchHint = "Swap from";
         filteredLayers = FilterSourceLayers(layers, to, lockedCurrency);
-        menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, lockFrom);
+        menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, from && lockFrom);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
             let popularsGroup = new SelectMenuItemGroup({
@@ -61,7 +61,7 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         placeholder = "Destination";
         searchHint = "Swap to";
         filteredLayers = FilterDestinationLayers(layers, from, lockedCurrency);
-        menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, lockTo);
+        menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, to && lockTo);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
             let popularsGroup = new SelectMenuItemGroup({
