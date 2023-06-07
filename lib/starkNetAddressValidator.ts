@@ -1,17 +1,34 @@
 import BN from 'bn.js';
-
-const TWO = toBN(2);
-const MASK_251 = TWO.pow(toBN(251));
-const MASK_221 = TWO.pow(toBN(221));
+import{
+    constants,
+    getChecksumAddress,
+    number,
+    validateChecksumAddress,
+    validateAndParseAddress,
+  } from 'starknet';
 
 type BigNumberish = string | number | BN;
 
-export function validateAndParseAddress(address: string): boolean {
-    if (typeof address !== 'string') {
-        return false;
-    }
+export const normalizeAddress = (address: string) => getChecksumAddress(address)
 
-    if (!assertInRange(address, MASK_221, MASK_251)) {
+export const formatTruncatedAddress = (address: string) => {
+    const normalized = normalizeAddress(address)
+    const hex = normalized.slice(0, 2)
+    const start = normalized.slice(2, 6)
+    const end = normalized.slice(-4)
+    return `${hex}${start}…${end}`
+  }
+
+  export const formatFullAddress = (address: string) => {
+    const normalized = normalizeAddress(address)
+    const hex = normalized.slice(0, 2)
+    const rest = normalized.slice(2)
+    const parts = rest.match(/.{1,4}/g) || []
+    return `${hex} ${parts.join(" ")}`
+  }
+
+export function validateAddress(address: string): boolean {
+    if (typeof address !== 'string') {
         return false;
     }
 
@@ -21,8 +38,25 @@ export function validateAndParseAddress(address: string): boolean {
         return false;
     }
 
+    const parsedAddress = validateAndParseAddress(address)
+    
+    if (number.toBN(parsedAddress).eq(constants.ZERO)) {
+        return false;
+      }
+
+      if (isChecksumAddress(address) && !validateChecksumAddress(address)) {
+        return false
+      }
+
     return true;
 }
+
+const isChecksumAddress = (address: string) => {
+    if (/^0x[0-9a-f]{63,64}$/.test(address)) {
+      return false
+    }
+    return true
+  }
 
 function addAddressPadding(address: string): string {
     return addHexPrefix(removeHexPrefix(address).padStart(64, '0'));

@@ -2,7 +2,7 @@ import { keccak256 } from "js-sha3";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { Exchange } from "../Models/Exchange";
 import KnownInternalNames from "./knownIds";
-import { validateAndParseAddress } from "./starkNetAddressValidator";
+import { validateAddress as validateStarknetAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
 import { Layer } from "../Models/Layer";
 
@@ -20,7 +20,7 @@ export function isValidAddress(address: string, network: Layer): boolean {
         return isValidEtherAddress(address);
     }
     else if (network?.internal_name.toLowerCase().startsWith("STARKNET".toLowerCase())) {
-        return validateAndParseAddress(address);
+        return validateStarknetAddress(address);
     }
     else if (network?.internal_name === KnownInternalNames.Networks.OsmosisMainnet) {
         if (/^(osmo1)?[a-z0-9]{38}$/.test(address)) {
