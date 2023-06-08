@@ -1,12 +1,11 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { roundDecimals } from "../components/utils/RoundDecimals";
+import upperCaseKeys from "../components/utils/upperCaseKeys";
 import { GetDefaultAsset, GetDefaultNetwork, GetNetworkCurrency } from "../helpers/settingsHelper";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
-import { Exchange } from "../Models/Exchange";
 import { Layer } from "../Models/Layer";
 import KnownInternalNames from "./knownIds";
-import { SwapType } from "./layerSwapApiClient";
 import NetworkSettings, { DepositType } from "./NetworkSettings";
 
 export function GetExchangeFee(asset?: string, layer?: Layer): number {
@@ -103,7 +102,7 @@ export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, balances
 
     if (balances) {
         try {
-            let balancesTyped = JSON.parse(balances)
+            let balancesTyped = upperCaseKeys(JSON.parse(balances))
             if (balancesTyped && balancesTyped[currency.asset]) {
                 maxAmount = Math.min(maxAmount, balancesTyped[currency.asset]);
             }
