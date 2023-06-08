@@ -16,10 +16,9 @@ import { clearTempData, getTempData } from "../../../../lib/openLink";
 import KnownInternalNames from "../../../../lib/knownIds";
 import MainStepValidation from "../../../../lib/mainStepValidator";
 import { generateSwapInitialValues } from "../../../../lib/generateSwapInitialValues";
-import LayerSwapApiClient, { SwapType } from "../../../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../../../lib/layerSwapApiClient";
 import Modal from "../../../modal/modal";
 import SwapForm from "./SwapForm";
-import { isValidAddress } from "../../../../lib/addressValidator";
 import NetworkSettings from "../../../../lib/NetworkSettings";
 import { useRouter } from "next/router";
 import useSWR from "swr";
@@ -46,7 +45,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     let formValues = formikRef.current?.values;
 
     const settings = useSettingsState();
-    const { resolveImgSrc } = settings || {}
     const query = useQueryState();
     const { updateSwapFormData, clearSwap, setDepositeAddressIsfromAccount } = useSwapDataUpdate()
 
@@ -151,7 +149,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={MainStepValidation(settings)}
+            validate={MainStepValidation({ settings, query })}
             onSubmit={handleSubmit}
         >
             <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />

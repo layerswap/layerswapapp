@@ -5,13 +5,14 @@ import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { isValidAddress } from "./addressValidator";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "./fees";
 import { Layer } from "../Models/Layer";
+import { QueryParams } from "../Models/QueryParams";
 
-export default function MainStepValidation(settings: LayerSwapSettings): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
+export default function MainStepValidation({ settings, query }: { settings: LayerSwapSettings, query: QueryParams }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
     return (values: SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
         let minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
-        let maxAllowedAmount = CalculateMaxAllowedAmount(values);
+        let maxAllowedAmount = CalculateMaxAllowedAmount(values, query?.balances, minAllowedAmount);
 
         if (!values.from) {
             (errors.from as any) = 'Select source';

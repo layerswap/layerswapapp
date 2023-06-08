@@ -17,7 +17,7 @@ const AmountField = forwardRef((_, ref: any) => {
     const name = "amount"
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
-    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances);
+    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, minAllowedAmount);
 
     const placeholder = (currency && from && to) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.precision)
