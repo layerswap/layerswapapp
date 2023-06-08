@@ -12,7 +12,7 @@ export default function MainStepValidation({ settings, query }: { settings: Laye
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
         let minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
-        let maxAllowedAmount = CalculateMaxAllowedAmount(values, query?.balances);
+        let maxAllowedAmount = CalculateMaxAllowedAmount(values, query?.balances, minAllowedAmount);
 
         if (!values.from) {
             (errors.from as any) = 'Select source';

@@ -93,7 +93,7 @@ export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks
     return 0;
 }
 
-export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, balances?: string) {
+export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, balances?: string, minAllowedAmount?: number) {
     const { currency, from, to } = swapFormData || {}
 
     if (!currency || !from || !to) return 0
@@ -103,7 +103,7 @@ export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, balances
     if (balances) {
         try {
             let balancesTyped = upperCaseKeys(JSON.parse(balances))
-            if (balancesTyped && balancesTyped[currency.asset]) {
+            if (balancesTyped && balancesTyped[currency.asset] && balancesTyped[currency.asset] > minAllowedAmount) {
                 maxAmount = Math.min(maxAmount, balancesTyped[currency.asset]);
             }
         }
