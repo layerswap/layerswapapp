@@ -49,11 +49,6 @@ export default function () {
     }
 
     const navigation = {
-        main: [
-            { name: 'For Partners', href: '/forpartners', target: '_self' },
-            { name: 'Privacy Policy', href: 'https://docs.layerswap.io/user-docs/information/privacy-policy', target: '_blank' },
-            { name: 'Terms of Service', href: 'https://docs.layerswap.io/user-docs/information/terms-of-services', target: '_blank' },
-        ],
         social: [
             {
                 name: 'Twitter',
@@ -89,9 +84,9 @@ export default function () {
                     <button onClick={handleOpenTopModal} type="button" className="relative top-">
                         <MenuIcon strokeWidth={3} />
                     </button>
-                    <Modal height="full" show={openTopModal} setShow={setOpenTopModal}>
+                    <Modal height={`${userType == UserType.AuthenticatedUser || router.pathname == '/auth' ? "full" : "80%"}`} show={openTopModal} setShow={setOpenTopModal}>
                         <AnimatePresence>
-                            <div className="font-bold text-base text-left origin-top-right mt-2 focus:outline-none">
+                            <div className="font-bold text-sm font-medium text-left origin-top-right mt-2 focus:outline-none">
                                 <div className="relative z-30 py-1">
                                     {
                                         isConnected &&
@@ -110,26 +105,25 @@ export default function () {
                                             <>
                                                 {
                                                     router.pathname != '/' &&
-                                                    <a href="/" className="menu-link flex mb-2 relative items-center rounded p-1.5 hover:bg-slate-700">
-                                                        <Home className="h-6 w-6 mr-2" />
+                                                    <a href="/" className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white">
+                                                        <Home className="h-6 w-6 mr-4" />
                                                         <p>Home</p>
-                                                        <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                        <ChevronRight className="h-4 w-4 absolute right-0" />
                                                     </a>
                                                 }
-
                                                 {
                                                     userType == UserType.GuestUser &&
-                                                    <a href="/transactions" className="menu-link flex mb-2 relative items-center rounded p-1.5 hover:bg-slate-700">
-                                                        <TableIcon className="h-6 w-6 mr-2" />
+                                                    <a href="/transactions" className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white">
+                                                        <TableIcon className="h-6 w-6 mr-4" />
                                                         <p>Transfers</p>
-                                                        <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                        <ChevronRight className="h-4 w-4 absolute right-0" />
                                                     </a>
                                                 }
                                                 {router.pathname != '/rewards' &&
-                                                    <a href="/rewards" className="menu-link flex mb-2 relative items-center rounded p-1.5 hover:bg-slate-700">
-                                                        <Gift className="h-6 w-6 mr-2" />
+                                                    <a href="/rewards" className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white">
+                                                        <Gift className="h-6 w-6 mr-4" />
                                                         <p>Rewards</p>
-                                                        <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                        <ChevronRight className="h-4 w-4 absolute right-0" />
                                                     </a>
                                                 }
                                                 <button
@@ -139,36 +133,38 @@ export default function () {
                                                         show();
                                                         updateWithProps();
                                                     }}
-                                                    className="menu-button flex mb-2 items-center rounded p-1.5 hover:bg-slate-700 w-full"
+                                                    className="menu-link w-full flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white"
                                                 >
-                                                    <ChatIcon className="h-6 w-6 mr-2" strokeWidth={2} />
+                                                    <ChatIcon className="h-6 w-6 mr-4" strokeWidth={2} />
                                                     <p>Get Help</p>
-                                                    <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                    <ChevronRight className="h-4 w-4 absolute right-0" />
                                                 </button>
                                                 <hr className="horizontal-gradient" />
                                                 <a
                                                     href="https://docs.layerswap.io/"
                                                     target="_blank"
-                                                    className="menu-link flex mb-2 mt-2 relative items-center rounded p-1.5 hover:bg-slate-700"
+                                                    className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white"
                                                 >
-                                                    <BookOpen className="h-6 w-6 mr-2" />
+                                                    <BookOpen className="h-6 w-6 mr-4" />
                                                     <p>User Docs</p>
-                                                    <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                    <ChevronRight className="h-4 w-4 absolute right-0" />
                                                 </a>
                                                 <a
                                                     href="https://layerswap.frill.co/roadmap"
                                                     target="_blank"
-                                                    className="menu-link flex mb-2 relative items-center rounded p-1.5 hover:bg-slate-700"
+                                                    className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white"
                                                 >
-                                                    <ExternalLink className="h-6 w-6 mr-2" />
+                                                    <ExternalLink className="h-6 w-6 mr-4" />
                                                     <p>Roadmap</p>
-                                                    <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                    <ChevronRight className="h-4 w-4 absolute right-0" />
                                                 </a>
                                                 <hr className="horizontal-gradient" />
-                                                <a href="/auth" className="menu-link flex mb-2 mt-2 relative items-center rounded p-1.5 hover:bg-slate-700">
-                                                    <LogIn className="h-6 w-6 mr-2" />
+                                                <a
+                                                    href="/auth"
+                                                    className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white">
+                                                    <LogIn className="h-6 w-6 mr-4" />
                                                     <p>Login</p>
-                                                    <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                    <ChevronRight className="h-4 w-4 absolute right-0" />
                                                 </a>
                                             </>
                                     }
@@ -177,26 +173,34 @@ export default function () {
                                         <>
                                             {
                                                 router.pathname != '/' &&
-                                                <a href="/" className="menu-link flex mb-2 relative items-center rounded p-1.5 hover:bg-slate-700">
-                                                    <Home className="h-6 w-6 mr-2" />
+                                                <a
+                                                    href="/"
+                                                    className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white">
+                                                    <Home className="h-6 w-6 mr-4" />
                                                     <p>Home</p>
-                                                    <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                    <ChevronRight className="h-4 w-4 absolute right-0" />
                                                 </a>
                                             }
-                                            <a href="/transactions" className="menu-link flex mb-2 relative items-center rounded p-1.5 hover:bg-slate-700">
-                                                <TableIcon className="h-6 w-6 mr-2" />
+                                            <a
+                                                href="/transactions"
+                                                className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white">
+                                                <TableIcon className="h-6 w-6 mr-4" />
                                                 <p>Transfers</p>
-                                                <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                <ChevronRight className="h-4 w-4 absolute right-0" />
                                             </a>
-                                            <a href="/exchanges" className="menu-link flex mb-2 relative items-center rounded p-1.5 hover:bg-slate-700">
-                                                <Link className="h-6 w-6 mr-2" />
+                                            <a
+                                                href="/exchanges"
+                                                className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white">
+                                                <Link className="h-6 w-6 mr-4" />
                                                 <p>Exchange Accounts</p>
                                             </a>
                                             {router.pathname != '/rewards' &&
-                                                <a href="/rewards" className="menu-link flex mb-2 relative items-center rounded p-1.5 hover:bg-slate-700">
-                                                    <Gift className="h-6 w-6 mr-2" />
+                                                <a
+                                                    href="/rewards"
+                                                    className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white">
+                                                    <Gift className="h-6 w-6 mr-4" />
                                                     <p>Rewards</p>
-                                                    <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                    <ChevronRight className="h-4 w-4 absolute right-0" />
                                                 </a>
                                             }
                                             <hr className="horizontal-gradient" />
@@ -207,33 +211,37 @@ export default function () {
                                                     show();
                                                     updateWithProps();
                                                 }}
-                                                className="menu-button flex mb-2 rounded p-2 hover:bg-slate-700 w-full"
+                                                className="menu-link w-full flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white"
                                             >
-                                                <ChatIcon className="h-6 w-6 mr-2" strokeWidth={2} />
+                                                <ChatIcon className="h-6 w-6 mr-4" strokeWidth={2} />
                                                 <p>Get Help</p>
-                                                <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                <ChevronRight className="h-4 w-4 absolute right-0" />
                                             </button>
                                             <a
                                                 href="https://docs.layerswap.io/"
                                                 target="_blank"
-                                                className="menu-link flex mb-2 relative items-center rounded p-2 hover:bg-slate-700"
+                                                className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white"
                                             >
-                                                <BookOpen className="h-6 w-6 mr-2" />
+                                                <BookOpen className="h-6 w-6 mr-4" />
                                                 <p>User Docs</p>
-                                                <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                <ChevronRight className="h-4 w-4 absolute right-0" />
                                             </a>
                                             <a
                                                 href="https://layerswap.frill.co/roadmap"
                                                 target="_blank"
-                                                className="menu-link flex mb-2 relative items-center rounded p-2 hover:bg-slate-700"
+                                                className="menu-link flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white"
                                             >
-                                                <ExternalLink className="h-6 w-6 mr-2" />
+                                                <ExternalLink className="h-6 w-6 mr-4" />
                                                 <p>Roadmap</p>
-                                                <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                <ChevronRight className="h-4 w-4 absolute right-0" />
                                             </a>
                                             <hr className="horizontal-gradient" />
-                                            <button type="button" onClick={handleLogout} className="menu-button flex items-center mb-2 rounded p-2 hover:bg-slate-700 w-full">
-                                                <LogOut className="h-6 w-6 mr-2" />
+                                            <button
+                                                type="button"
+                                                onClick={handleLogout}
+                                                className="menu-link w-full flex mb-2 relative cursor-pointer flex select-none items-center rounded-sm px-2 py-2.5 outline-none hover:bg-secondary-700 hover:text-white"
+                                            >
+                                                <LogOut className="h-6 w-6 mr-4" />
                                                 <p>Sign Out</p>
                                                 {
                                                     userType == UserType.AuthenticatedUser &&
@@ -241,12 +249,12 @@ export default function () {
                                                         <UserEmail email={email} />
                                                     </span>
                                                 }
-                                                <ChevronRight className="h-3 w-3 absolute right-10" />
+                                                <ChevronRight className="h-4 w-4 absolute right-0" />
                                             </button>
                                         </>
                                     }
                                 </div>
-                                <div className="flex flex-col px-2 py-3 text-primary-text w-11/12 font-light absolute bottom-5">
+                                <div className="flex flex-col px-2 py-3 text-primary-text w-11/12 font-light absolute bottom-0">
                                     <div>
                                         <h1 className="text-xl font-light text-white">About Layerswap</h1>
                                         <p className="text-base mt-2">
