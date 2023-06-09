@@ -17,6 +17,7 @@ import DiscordLogo from "./../icons/DiscordLogo";
 import GitHubLogo from "./../icons/GitHubLogo";
 import SubstackLogo from "./../icons/SubstackLogo";
 import TwitterLogo from "./../icons/TwitterLogo";
+import useWindowDimensions from "../../hooks/useWindowDimensions";
 
 export default function () {
     const { email, userType, userId } = useAuthState();
@@ -27,6 +28,7 @@ export default function () {
     const { boot, show, update } = useIntercom();
     const updateWithProps = () => update({ email: email, userId: userId });
     const [openTopModal, setOpenTopModal] = useState(false);
+    const { isMobile, isDesktop } = useWindowDimensions()
 
     const handleLogout = useCallback(() => {
         TokenService.removeAuthData()
@@ -74,7 +76,7 @@ export default function () {
                 icon: (props) => SubstackLogo(props),
                 className: 'plausible-event-name=Substack'
             },
-        ],
+        ]
     }
 
     return <>
@@ -84,7 +86,7 @@ export default function () {
                     <button onClick={handleOpenTopModal} type="button" className="relative top-">
                         <MenuIcon strokeWidth={3} />
                     </button>
-                    <Modal height={`${userType == UserType.AuthenticatedUser || router.pathname == '/auth' ? "full" : "80%"}`} show={openTopModal} setShow={setOpenTopModal}>
+                    <Modal height={`${userType == UserType.AuthenticatedUser || router.pathname == '/auth' || isMobile ? "full" : "80%"}`} show={openTopModal} setShow={setOpenTopModal}>
                         <AnimatePresence>
                             <div className="font-bold text-sm font-medium text-left origin-top-right mt-2 focus:outline-none">
                                 <div className="relative z-30 py-1">
