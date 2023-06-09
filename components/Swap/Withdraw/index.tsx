@@ -12,10 +12,7 @@ import SwapSummary from '../Summary';
 import Coinbase from './Coinbase';
 import { useQueryState } from '../../../context/query';
 import External from './External';
-
-
-
-
+import { WithdrawType } from '../../../lib/layerSwapApiClient';
 
 const Withdraw: FC = () => {
 
@@ -40,7 +37,7 @@ const Withdraw: FC = () => {
     // TODO refactor
     if (isImtblMarketplace || sourceIsSynquote) {
         tabs = [{
-            id: "external",
+            id: WithdrawType.External,
             label: "Withdrawal pending",
             enabled: true,
             icon: <Wallet className='stroke-1 -ml-1' />,
@@ -49,7 +46,7 @@ const Withdraw: FC = () => {
     }
     else if (isFiat) {
         tabs = [{
-            id: "stripe",
+            id: WithdrawType.Stripe,
             label: "Stripe",
             enabled: true,
             icon: <AlignLeft />,
@@ -59,7 +56,7 @@ const Withdraw: FC = () => {
     else if (sourceIsStarknet || sourceIsImmutableX) {
         tabs = [
             {
-                id: "wallet",
+                id: WithdrawType.Wallet,
                 label: "Via wallet",
                 enabled: true,
                 icon: <Wallet className='stroke-1 -ml-1' />,
@@ -75,7 +72,7 @@ const Withdraw: FC = () => {
     else {
         tabs = [
             {
-                id: "wallet",
+                id: WithdrawType.Wallet,
                 label: "Via wallet",
                 enabled: !swap?.source_exchange,
                 icon: <Wallet className='stroke-1 -ml-1' />,
@@ -88,7 +85,7 @@ const Withdraw: FC = () => {
                 footer: <WalletTransfer />
             },
             {
-                id: "coinbase",
+                id: WithdrawType.Coinbase,
                 label: "Automatic",
                 enabled: sourceIsCoinbase,
                 icon: <Wallet className='stroke-1 -ml-1' />,
@@ -101,7 +98,7 @@ const Withdraw: FC = () => {
                 footer: <Coinbase />
             },
             {
-                id: "manually",
+                id: WithdrawType.Manually,
                 label: "Manually",
                 enabled: true,
                 icon: <AlignLeft />,

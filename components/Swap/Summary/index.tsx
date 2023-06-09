@@ -4,9 +4,11 @@ import { useSettingsState } from "../../../context/settings"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
-import LayerSwapApiClient, { Fee } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { Fee, WithdrawType } from "../../../lib/layerSwapApiClient"
+import { useAccount } from "wagmi"
 
 const SwapSummary: FC = () => {
+    const { isConnected, address } = useAccount()
     const { layers, currencies } = useSettingsState()
     const { swap, withdrawType } = useSwapDataState()
     const {
@@ -14,7 +16,8 @@ const SwapSummary: FC = () => {
         source_exchange: source_exchange_internal_name,
         destination_exchange: destination_exchange_internal_name,
         destination_network: destination_network_internal_name,
-        destination_network_asset
+        destination_network_asset,
+        destination_address
     } = swap
     const source_layer = layers.find(n => n.internal_name === (source_exchange_internal_name ?? source_network_internal_name))
     const destination_layer = layers.find(l => l.internal_name === (destination_exchange_internal_name ?? destination_network_internal_name))
@@ -38,15 +41,10 @@ const SwapSummary: FC = () => {
         fee = swap?.fee
     } else if (!swap?.fee && swap?.source_exchange) {
         fee = feeData?.data[1]?.fee_amount
+    } else if (withdrawType === WithdrawType.Wallet && (isConnected && address?.toLowerCase() === destination_address?.toLowerCase())) {
+        fee = feeData?.data[0].fee_amount;
     } else {
-        switch (withdrawType) {
-            case 'wallet':
-                fee = feeData?.data[0].fee_amount;
-                break;
-            case 'manually':
-                fee = feeData?.data[1].fee_amount;
-                break;
-        }
+        fee = feeData?.data[1].fee_amount;
     }
 
     const requested_amount = feeData?.data[1]?.min_amount > swap?.requested_amount ? feeData?.data[1]?.min_amount : swap?.requested_amount
