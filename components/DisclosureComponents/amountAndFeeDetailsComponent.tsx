@@ -10,7 +10,7 @@ import { GetDefaultNetwork, GetNetworkCurrency } from '../../helpers/settingsHel
 import { ApiResponse } from '../../Models/ApiResponse';
 import LayerSwapApiClient, { Campaigns } from '../../lib/layerSwapApiClient';
 import useSWR from 'swr'
-
+import AverageCompletionTime from '../Common/AverageCompletionTime';
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
     const { networks, currencies, resolveImgSrc } = useSettingsState()
@@ -39,6 +39,8 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
     const refuel = truncateDecimals(CaluclateRefuelAmount(values, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
     const currencyName = currency?.asset || " "
+
+    const destinationNetwork = GetDefaultNetwork(to, currency?.asset)
 
     return (
         <>
@@ -99,7 +101,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         Estimated arrival
                                     </label>
                                     <span className="text-right">
-                                        {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : " ~1-2 minutes"}
+                                        {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : <AverageCompletionTime destinationNetwork={destinationNetwork} />}
                                     </span>
                                 </div>
                             </>

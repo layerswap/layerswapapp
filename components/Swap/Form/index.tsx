@@ -172,7 +172,7 @@ export default function ()  {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={MainStepValidation(settings)}
+            validate={MainStepValidation({ settings, query })}
             onSubmit={handleSubmit}
         >
             <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />

@@ -2,7 +2,7 @@ import { Menu } from "@headlessui/react";
 import { BookOpen, ExternalLink, Gift, Link, MenuIcon, MessageCircle, Wallet } from "lucide-react";
 import { Home, LogIn, LogOut, TableIcon, User } from "lucide-react";
 import { useRouter } from "next/router";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
 import { useMenuState } from "../../context/menu";
 import TokenService from "../../lib/TokenService";
@@ -15,6 +15,7 @@ import { useAccount } from "wagmi";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
 import WalletIcon from "../icons/WalletIcon";
+import inIframe from "../utils/inIframe";
 
 export default function () {
     const { email, userType, userId } = useAuthState()
@@ -23,6 +24,12 @@ export default function () {
     const { menuVisible } = useMenuState()
     const { isConnected } = useAccount();
     const { boot, show, update } = useIntercom()
+    const [embedded, setEmbedded] = useState<boolean>()
+
+    useEffect(() => {
+        setEmbedded(inIframe())
+    }, [])
+
     const updateWithProps = () => update({ email: email, userId: userId })
 
     const handleLogout = useCallback(() => {
@@ -107,7 +114,7 @@ export default function () {
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
-                                                        {router.pathname != '/rewards' &&
+                                                        {!embedded && router.pathname != '/rewards' &&
                                                             <Menu.Item>
                                                                 <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
                                                                     Rewards
@@ -129,11 +136,15 @@ export default function () {
                                                                 User Docs
                                                             </Item>
                                                         </Menu.Item>
-                                                        <Menu.Item>
-                                                            <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
-                                                                Roadmap
-                                                            </Item>
-                                                        </Menu.Item>
+                                                        {
+                                                            !embedded &&
+                                                            <Menu.Item>
+                                                                <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
+                                                                    Roadmap
+                                                                </Item>
+                                                            </Menu.Item>
+                                                        }
+
                                                         <hr className="horizontal-gradient" />
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname='/auth' icon={<LogIn className='h-4 w-4' />}>
@@ -163,7 +174,7 @@ export default function () {
                                                             Exchange Accounts
                                                         </Item>
                                                     </Menu.Item>
-                                                    {router.pathname != '/rewards' &&
+                                                    {!embedded && router.pathname != '/rewards' &&
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
                                                                 Rewards
@@ -172,24 +183,27 @@ export default function () {
                                                     }
                                                     <hr className="horizontal-gradient" />
                                                     <Menu.Item>
-                                                            <Item type={ItemType.button} onClick={() => {
-                                                                boot();
-                                                                show();
-                                                                updateWithProps()
-                                                            }} icon={<ChatIcon className='h-4 w-4' strokeWidth={2} />}>
-                                                                Get Help
-                                                            </Item>
-                                                        </Menu.Item>
+                                                        <Item type={ItemType.button} onClick={() => {
+                                                            boot();
+                                                            show();
+                                                            updateWithProps()
+                                                        }} icon={<ChatIcon className='h-4 w-4' strokeWidth={2} />}>
+                                                            Get Help
+                                                        </Item>
+                                                    </Menu.Item>
                                                     <Menu.Item>
                                                         <Item type={ItemType.link} pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className='h-4 w-4' />} className="plausible-event-name=User+Docs">
                                                             User Docs
                                                         </Item>
                                                     </Menu.Item>
-                                                    <Menu.Item>
-                                                        <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
-                                                            Roadmap
-                                                        </Item>
-                                                    </Menu.Item>
+                                                    {
+                                                        !embedded &&
+                                                        <Menu.Item>
+                                                            <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
+                                                                Roadmap
+                                                            </Item>
+                                                        </Menu.Item>
+                                                    }
                                                     <hr className="horizontal-gradient" />
                                                     <Menu.Item>
                                                         <Item type={ItemType.button} onClick={handleLogout} icon={<LogOut className='h-4 w-4' />}>

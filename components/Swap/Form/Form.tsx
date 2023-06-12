@@ -1,6 +1,5 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-
 import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
 import React from "react";
@@ -74,6 +73,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         (values.destination_address && values.to)
         && isValidAddress(values.destination_address, values.to)
         && ((query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
+
+
+    const actionDisplayName = query?.actionButtonText || "Swap now"
 
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
@@ -174,7 +176,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                 ?.some(c => c.is_deposit_enabled
                     && c.is_withdrawal_enabled))
 
-        if (query.lockTo || query.lockFrom || query.hideTo) {
+        if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
             setValuesSwapperDisabled(true)
         }
         else if ((source && !destination && sourceCurrencyIsAvailable)
@@ -195,6 +197,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
+
+    const averageTimeString = (values?.to?.isExchange === true ?
+        values?.to?.assets.find(a => a?.asset === values?.currency?.asset && a?.is_default)?.network.average_completion_time
+        : values?.to?.average_completion_time)
+        || ''
+    const parts = averageTimeString?.split(":");
+    const averageTimeInMinutes = parts && parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + parseInt(parts[2]) / 60
+
     return <>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget>
@@ -202,9 +212,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
                     : <Widget.Content>
                         <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
-                            <div className="flex flex-col w-full">
+                            {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
                                 <NetworkFormField direction="from" label="From" />
-                            </div>
+                            </div>}
                             {
                                 !valuesSwapperDisabled &&
                                 <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[63px] z-10 rounded-full bg-secondary-900 ring-1 ring-secondary-400 hover:ring-primary py-2 px-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
@@ -217,7 +227,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                     </motion.div>
                                 </button>
                             }
-                            {!query?.hideTo && <div className="flex flex-col w-full">
+                            {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
                                 <NetworkFormField direction="to" label="To" />
                             </div>}
                         </div>
@@ -284,7 +294,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 </WarningMessage>
                             }
                             {
-                                GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet &&
+                                GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
                                 <WarningMessage messageType="warning" className="mt-4">
                                     <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
                                 </WarningMessage>
@@ -298,7 +308,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                         type='submit'
                         isDisabled={!isValid || loading}
                         isSubmitting={isSubmitting || loading}>
-                        {displayErrorsOrSubmit(errors)}
+                        {ActionText(errors, actionDisplayName)}
                     </SwapButton>
                 </Widget.Footer>
             </Widget>
@@ -315,8 +325,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     </>
 }
 
-function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
-    return errors.from?.toString() || errors.to?.toString() || errors.amount || errors.destination_address || "Swap now"
+function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {
+    return errors.from?.toString()
+        || errors.to?.toString()
+        || errors.amount
+        || errors.destination_address
+        || (actionDisplayName)
 }
 
 const TruncatedAdrress = ({ address }: { address: string }) => {

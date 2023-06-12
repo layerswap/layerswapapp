@@ -328,9 +328,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </div>
                         }
                         {
-                            !disabled && !inputValue && !destination?.isExchange 
-                                && (destinationNetwork?.address_type === NetworkAddressType.evm || destinationNetwork?.address_type === NetworkAddressType.immutable_x)
-                                &&
+                            !disabled && !inputValue && !destination?.isExchange
+                            && (destinationNetwork?.address_type === NetworkAddressType.evm || destinationNetwork?.address_type === NetworkAddressType.immutable_x)
+                            &&
                             <RainbowKit>
                                 <div className={`min-h-12 text-left space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                                     <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
@@ -393,54 +393,52 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             !disabled && valid_addresses?.length > 0 && !inputValue &&
                             <div className="text-left">
                                 <label className="">Recently used</label>
-                                <div>
-                                    <RadioGroup disabled={disabled} value={values.destination_address} onChange={handleSelectAddress}>
-                                        <div className="rounded-md overflow-y-auto styled-scroll">
-                                            {valid_addresses?.map((a, index) => (
-                                                <RadioGroup.Option
-                                                    key={a.address}
-                                                    value={a.address}
-                                                    disabled={disabled}
-                                                    className={({ checked, disabled }) =>
-                                                        classNames(
-                                                            disabled ? ' cursor-not-allowed ' : ' cursor-pointer ',
-                                                            'relative flex focus:outline-none mt-2 mb-3  '
-                                                        )
-                                                    }
-                                                >
-                                                    {({ active, checked }) => {
-                                                        const difference_in_days = Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24)))
-                                                        return (
-                                                            <RadioGroup.Description
-                                                                as="span"
-                                                                className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:bg-secondary-300 transition duration-200 px-2 py-1.5 border border-secondary-900 hover:border-secondary-500 hover:bg-secondary-700/70 hover:shadow-xl ${checked && 'border-secondary-700'}`}
-                                                            >
-                                                                <div className='flex bg-secondary-400 text-primary-text flex-row items-left  rounded-md p-2'>
-                                                                    <AddressIcon address={a.address} size={20} />
+                                <RadioGroup disabled={disabled} value={values.destination_address} onChange={handleSelectAddress}>
+                                    <div className="rounded-md overflow-y-auto styled-scroll max-h-[300px]">
+                                        {valid_addresses?.map((a) => (
+                                            <RadioGroup.Option
+                                                key={a.address}
+                                                value={a.address}
+                                                disabled={disabled}
+                                                className={({ disabled }) =>
+                                                    classNames(
+                                                        disabled ? ' cursor-not-allowed ' : ' cursor-pointer ',
+                                                        'relative flex focus:outline-none mt-2 mb-3  '
+                                                    )
+                                                }
+                                            >
+                                                {({ checked }) => {
+                                                    const difference_in_days = Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24)))
+                                                    return (
+                                                        <RadioGroup.Description
+                                                            as="span"
+                                                            className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:bg-secondary-300 transition duration-200 px-2 py-1.5 border border-secondary-900 hover:border-secondary-500 hover:bg-secondary-700/70 hover:shadow-xl ${checked && 'border-secondary-700'}`}
+                                                        >
+                                                            <div className='flex bg-secondary-400 text-primary-text flex-row items-left  rounded-md p-2'>
+                                                                <AddressIcon address={a.address} size={20} />
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <div className="block text-sm font-medium">
+                                                                    {shortenAddress(a.address)}
                                                                 </div>
-                                                                <div className="flex flex-col">
-                                                                    <div className="block text-sm font-medium">
-                                                                        {shortenAddress(a.address)}
-                                                                    </div>
-                                                                    <div className="text-gray-500">
-                                                                        {
-                                                                            difference_in_days === 0 ?
-                                                                                <>Used today</>
-                                                                                :
-                                                                                (difference_in_days > 1 ?
-                                                                                    <>Used {difference_in_days} days ago</>
-                                                                                    : <>Used yesterday</>)
-                                                                        }
-                                                                    </div>
+                                                                <div className="text-gray-500">
+                                                                    {
+                                                                        difference_in_days === 0 ?
+                                                                            <>Used today</>
+                                                                            :
+                                                                            (difference_in_days > 1 ?
+                                                                                <>Used {difference_in_days} days ago</>
+                                                                                : <>Used yesterday</>)
+                                                                    }
                                                                 </div>
-                                                            </RadioGroup.Description>
-                                                        )
-                                                    }}
-                                                </RadioGroup.Option>
-                                            ))}
-                                        </div>
-                                    </RadioGroup>
-                                </div>
+                                                            </div>
+                                                        </RadioGroup.Description>
+                                                    )
+                                                }}
+                                            </RadioGroup.Option>
+                                        ))}
+                                    </div>
+                                </RadioGroup>
                             </div>
                         }
                     </div>

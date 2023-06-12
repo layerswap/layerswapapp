@@ -8,21 +8,20 @@ export default function Salon() {
 
     useEffect(() => {
         const temp_data = getTempData()
-        const five_minutes_before = new Date(new Date().setMinutes(-5))
-        if (new Date(temp_data?.date) >= five_minutes_before) {
-            if (temp_data.swap_id) {
-                clearTempData()
-                router.push({
-                    pathname: `/swap/${temp_data.swap_id}`,
-                    query: { ...(temp_data?.query || {}), coinbase_redirect: true }
-                })
-            }
-            else {
-                router.push({
-                    pathname: "/",
-                    query: { ...(temp_data?.query || {}), coinbase_redirect: true }
-                })
-            }
+        if (!temp_data)
+            return
+        if (temp_data.swap_id) {
+            clearTempData()
+            router.push({
+                pathname: `/swap/${temp_data.swap_id}`,
+                query: { ...(temp_data?.query || {}), coinbase_redirect: true }
+            })
+        }
+        else {
+            router.push({
+                pathname: "/",
+                query: { ...(temp_data?.query || {}), coinbase_redirect: true }
+            })
         }
     }, [])
 

@@ -1,5 +1,7 @@
 ///Doe to typechecking please always set default values in this class
 export class QueryParams {
+    coinbase_redirect?: string = "";
+
     from?: string = "";
     to?: string = "";
     lockAddress?: boolean = false;
@@ -10,15 +12,18 @@ export class QueryParams {
     addressSource?: string = "";
     hideRefuel?: boolean = false;
     hideAddress?: boolean = false;
+    hideFrom?: boolean = false;
     hideTo?: boolean = false;
-    coinbase_redirect?: string = "";
     asset?: string = "";
     amount?: string = "";
     externalId?: string = ""
     signature?: string = "";
     timestamp?: string = "";
     apiKey?: string = "";
-
+    balances?: string = null;
+    account?: string = "";
+    actionButtonText?: string = "";
+    
     // Obsolate
     sourceExchangeName?: string = "";
     destNetwork?: string = "";

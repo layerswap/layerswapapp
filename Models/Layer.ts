@@ -16,6 +16,7 @@ type LayerData = ({
     isExchange: false;
     assets?: BaseL2Asset[];
     native_currency?: string;
+    average_completion_time?: string
 })
 
 export type BaseL2Asset = {

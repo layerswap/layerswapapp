@@ -46,7 +46,7 @@ export default class KnownInternalNames {
 
         public static readonly ArbitrumRinkeby: string = "ARBITRUM_RINKEBY";
 
-        public static readonly ArbitrumGoerly: string = "ARBITRUM_GOERLI";
+        public static readonly ArbitrumGoerli: string = "ARBITRUM_GOERLI";
 
         public static readonly OptimismMainnet: string = "OPTIMISM_MAINNET";
 

@@ -13,10 +13,10 @@ import { TimerProvider } from '../context/timerContext';
 import SwapForm from "./Swap/Form"
 
 const Swap: FC = () => {
-  const [embadded, setEmbadded] = useState<boolean>()
+  const [embedded, setEmbedded] = useState<boolean>()
   const { userType } = useAuthState()
   useEffect(() => {
-    setEmbadded(inIframe())
+    setEmbedded(inIframe())
   }, [])
 
   return (
@@ -29,7 +29,7 @@ const Swap: FC = () => {
                 <SwapForm />
               </FormWizardProvider>
               {
-                !embadded && userType && userType != UserType.AuthenticatedUser &&
+                !embedded && userType && userType != UserType.AuthenticatedUser &&
                 <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu>
                   <GuestCard />
                 </FormWizardProvider>
@@ -39,7 +39,7 @@ const Swap: FC = () => {
         </SwapDataProvider >
       </MenuProvider>
       {
-        !embadded &&
+        !embedded &&
         <IntroCard />
       }
     </div >

@@ -197,6 +197,7 @@ export type SwapItem = {
     metadata?: {
         'STRIPE:SessionId': string
     },
+    has_pending_deposit: boolean;
     sequence_number: number;
 }
 

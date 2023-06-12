@@ -339,7 +339,9 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     else if (transaction?.isError && transactionResolvedError) {
         return <TransactionRejectedMessage />
     } else if (hasEror) {
-        const unexpectedError = prepare?.error || transaction?.error || wait?.error
+        const unexpectedError = prepare?.error
+            || transaction?.error?.['data']?.message || transaction?.error
+            || wait?.error
         return <UexpectedErrorMessage message={unexpectedError?.message} />
     }
     else return <></>
@@ -521,7 +523,7 @@ type ResolvedError = "insufficient_funds" | "transaction_rejected"
 const resolveError = (errorCode: string | number, innererrorCode?: string | number): ResolvedError => {
     if (errorCode === 'INSUFFICIENT_FUNDS'
         || errorCode === 'UNPREDICTABLE_GAS_LIMIT'
-        || (errorCode === -32603 && innererrorCode === -32000))
+        || (errorCode === -32603 && (innererrorCode === -32000 || 3)))
         return "insufficient_funds"
     else if (errorCode === 4001) {
         return "transaction_rejected"
