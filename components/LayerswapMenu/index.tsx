@@ -24,10 +24,10 @@ export default function () {
     const { menuVisible } = useMenuState()
     const { isConnected } = useAccount();
     const { boot, show, update } = useIntercom()
-    const [embadded, setEmbadded] = useState<boolean>()
+    const [embedded, setEmbedded] = useState<boolean>()
 
     useEffect(() => {
-        setEmbadded(inIframe())
+        setEmbedded(inIframe())
     }, [])
 
     const updateWithProps = () => update({ email: email, userId: userId })
@@ -114,7 +114,7 @@ export default function () {
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
-                                                        {!embadded && router.pathname != '/rewards' &&
+                                                        {!embedded && router.pathname != '/rewards' &&
                                                             <Menu.Item>
                                                                 <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
                                                                     Rewards
@@ -137,7 +137,7 @@ export default function () {
                                                             </Item>
                                                         </Menu.Item>
                                                         {
-                                                            !embadded &&
+                                                            !embedded &&
                                                             <Menu.Item>
                                                                 <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
                                                                     Roadmap
@@ -174,7 +174,7 @@ export default function () {
                                                             Exchange Accounts
                                                         </Item>
                                                     </Menu.Item>
-                                                    {!embadded && router.pathname != '/rewards' &&
+                                                    {!embedded && router.pathname != '/rewards' &&
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
                                                                 Rewards
@@ -197,7 +197,7 @@ export default function () {
                                                         </Item>
                                                     </Menu.Item>
                                                     {
-                                                        !embadded &&
+                                                        !embedded &&
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
                                                                 Roadmap

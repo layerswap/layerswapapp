@@ -4,10 +4,10 @@ import Navbar from "./navbar";
 import inIframe from "./utils/inIframe";
 
 function NoCookies(props) {
-    const [embadded, setEmbadded] = useState<boolean>()
+    const [embedded, setEmbedded] = useState<boolean>()
 
     useEffect(() => {
-        setEmbadded(inIframe())
+        setEmbedded(inIframe())
     }, [])
 
     return (
@@ -26,13 +26,13 @@ function NoCookies(props) {
                                         Sorry, but it seems you have disabled cookies.
                                     </p>
                                     {
-                                        embadded === true &&
+                                        embedded === true &&
                                         <a href="https://layerswap.io/" className="bg-primary text-primary-buttonTextColor py-3 px-3 border border-primary disabled:border-primary-900 shadowed-button items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 ease-in-out">
                                             Try on Layerswap
                                         </a>
                                     }
                                     {
-                                        embadded === false &&
+                                        embedded === false &&
                                         <p>
                                             Please enable cookies in your browser and try again.
                                         </p>
