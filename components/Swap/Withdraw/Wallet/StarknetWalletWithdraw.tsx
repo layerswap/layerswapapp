@@ -48,12 +48,13 @@ const StarknetWalletWithdrawStep: FC = () => {
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher)
-    
+
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
             const res = await connect()
-            if (res?.account?.chainId !== sourceChainId) {
+            const connectedChainId = res?.account?.chainId
+            if (connectedChainId && connectedChainId !== sourceChainId) {
                 setIsWrongNetwork(true)
                 disconnect()
             }
@@ -139,20 +140,44 @@ const StarknetWalletWithdrawStep: FC = () => {
                     }
                     {
                         !account &&
-                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Connect wallet
-                        </SubmitButton>
+                        <div className="flex flex-row
+                         text-white text-base space-x-2">
+                            <SubmitButton
+                                isDisabled={loading}
+                                isSubmitting={loading}
+                                onClick={handleConnect}
+                                icon={
+                                    <Link
+                                        className="h-5 w-5 ml-2"
+                                        aria-hidden="true"
+                                    />
+                                } >
+                                Connect wallet
+                            </SubmitButton>
+                        </div>
                     }
                     {
                         account
                         && managedDeposit?.data?.address
                         && !isWrongNetwork
-                        && <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Send from wallet
-                        </SubmitButton>
+                        && <div className="flex flex-row
+                        text-white text-base space-x-2">
+                            <SubmitButton
+                                isDisabled={loading || transferDone}
+                                isSubmitting={loading || transferDone}
+                                onClick={handleTransfer}
+                                icon={
+                                    <ArrowLeftRight
+                                        className="h-5 w-5 ml-2"
+                                        aria-hidden="true"
+                                    />
+                                } >
+                                Send from wallet
+                            </SubmitButton>
+                        </div>
                     }
                 </div>
-            </div>
+            </div >
         </>
     )
 }

@@ -1,13 +1,13 @@
 import { FC } from "react"
-import { ApiResponse } from "../../../Models/ApiResponse"
-import { useSettingsState } from "../../../context/settings"
-import { useSwapDataState } from "../../../context/swap"
-import NetworkSettings from "../../../lib/NetworkSettings"
-import KnownInternalNames from "../../../lib/knownIds"
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../lib/layerSwapApiClient"
-import TransferFromWallet from "./Wallet/ERC20Transfer"
-import ImtblxWalletWithdrawStep from "./Wallet/ImtblxWalletWithdrawStep"
-import StarknetWalletWithdrawStep from "./Wallet/StarknetWalletWithdraw"
+import { ApiResponse } from "../../../../Models/ApiResponse"
+import { useSettingsState } from "../../../../context/settings"
+import { useSwapDataState } from "../../../../context/swap"
+import NetworkSettings from "../../../../lib/NetworkSettings"
+import KnownInternalNames from "../../../../lib/knownIds"
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../../lib/layerSwapApiClient"
+import TransferFromWallet from "./ERC20Transfer"
+import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
+import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import useSWR from 'swr'
 
 const WalletTransfer: FC = () => {
@@ -31,22 +31,32 @@ const WalletTransfer: FC = () => {
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
 
     if (sourceIsImmutableX)
-        return <ImtblxWalletWithdrawStep/>
+        return <Wrapper>
+            <ImtblxWalletWithdrawStep />
+        </Wrapper>
     else if (sourceIsStarknet)
-        return <StarknetWalletWithdrawStep />
-    else
-        return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
-            <TransferFromWallet
-                swapId={swap.id}
-                networkDisplayName={source_network?.display_name}
-                tokenDecimals={sourceCurrency?.decimals}
-                tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`}
-                chainId={sourceChainId as number}
-                generatedDepositAddress={generatedDepositAddress as `0x${string}`}
-                managedDepositAddress={managedDepositAddress as `0x${string}`}
-                userDestinationAddress={swap.destination_address as `0x${string}`}
-                amount={swap.requested_amount} />
-        </div>
+        return <Wrapper>
+            <StarknetWalletWithdrawStep />
+        </Wrapper>
+    return <Wrapper>
+        <TransferFromWallet
+            swapId={swap.id}
+            networkDisplayName={source_network?.display_name}
+            tokenDecimals={sourceCurrency?.decimals}
+            tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`}
+            chainId={sourceChainId as number}
+            generatedDepositAddress={generatedDepositAddress as `0x${string}`}
+            managedDepositAddress={managedDepositAddress as `0x${string}`}
+            userDestinationAddress={swap.destination_address as `0x${string}`}
+            amount={swap.requested_amount} />
+    </Wrapper>
 
 }
+
+const Wrapper: FC = ({ children }) => {
+    return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
+        {children}
+    </div>
+}
+
 export default WalletTransfer

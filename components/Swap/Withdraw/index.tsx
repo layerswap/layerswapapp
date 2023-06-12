@@ -1,6 +1,6 @@
 import { AlignLeft, Wallet } from 'lucide-react';
 import { FC, useEffect, useState } from 'react'
-import WalletTransfer from './WalletTransfer';
+import WalletTransfer from './Wallet';
 import ManualTransfer from './ManualTransfer';
 import FiatTransfer from './FiatTransfer';
 import { useSettingsState } from '../../../context/settings';
@@ -41,7 +41,7 @@ const Withdraw: FC = () => {
             label: "Withdrawal pending",
             enabled: true,
             icon: <Wallet className='stroke-1 -ml-1' />,
-            content: <External/>
+            content: <External />
         }]
     }
     else if (isFiat) {
@@ -61,10 +61,7 @@ const Withdraw: FC = () => {
                 enabled: true,
                 icon: <Wallet className='stroke-1 -ml-1' />,
                 content: <>
-                    <h1 className='text-xl text-white'>Wallet transfer</h1>
-                    <p className='text-sm leading-6 mt-1'>
-                        Bank transfers,
-                        also known as ACH payments, can take up to five business days. To pay via ACH, transfer funds using the following bank information.</p>
+
                 </>,
                 footer: <WalletTransfer />
             }]
@@ -77,10 +74,6 @@ const Withdraw: FC = () => {
                 enabled: !swap?.source_exchange,
                 icon: <Wallet className='stroke-1 -ml-1' />,
                 content: <>
-                    <h1 className='text-xl text-white'>Wallet transfer</h1>
-                    <p className='text-sm leading-6 mt-1'>
-                        Bank transfers,
-                        also known as ACH payments, can take up to five business days. To pay via ACH, transfer funds using the following bank information.</p>
                 </>,
                 footer: <WalletTransfer />
             },
@@ -90,11 +83,7 @@ const Withdraw: FC = () => {
                 enabled: sourceIsCoinbase,
                 icon: <Wallet className='stroke-1 -ml-1' />,
                 content: <>
-                    <h1 className='text-xl text-white'>Wallet transfer</h1>
-                    <p className='text-sm leading-6 mt-1'>
-                        Bank transfers,
-                        also known as ACH payments, can take up to five business days. To pay via ACH, transfer funds using the following bank information.</p>
-                </>,
+                                    </>,
                 footer: <Coinbase />
             },
             {

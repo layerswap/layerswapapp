@@ -32,7 +32,6 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         }
     }
 
-
     static ResolveLayers(exchanges: Exchange[], networks: CryptoNetwork[]): Layer[] {
         const exchangeLayers: Layer[] = exchanges.map((e): Layer => ({
             isExchange: true,
