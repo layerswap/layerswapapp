@@ -17,10 +17,10 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   let appSettings = new LayerSwapAppSettings(settings)
 
-  const [embadded, setEmbadded] = useState<boolean>()
+  const [embedded, setEmbedded] = useState<boolean>()
 
   useEffect(() => {
-    setEmbadded(inIframe())
+    setEmbedded(inIframe())
   }, [])
 
   return (
@@ -35,7 +35,7 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
         </SwapDataProvider>
       </SettingsProvider>
       {
-        !embadded &&
+        !embedded &&
         <IntroCard />
       }
     </Layout>

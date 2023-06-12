@@ -73,6 +73,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         && isValidAddress(values.destination_address, values.to)
         && ((query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
 
+
+    const actionDisplayName = query?.actionButtonText || "Swap now"
+
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
     }
@@ -300,7 +303,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                 }
                 <Widget.Footer>
                     <SwapButton className="plausible-event-name=Swap+initiated" type='submit' isDisabled={!isValid || loading} isSubmitting={isSubmitting || loading}>
-                        {displayErrorsOrSubmit(errors)}
+                        {ActionText(errors, actionDisplayName)}
                     </SwapButton>
                 </Widget.Footer>
             </Widget>
@@ -317,8 +320,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     </>
 }
 
-function displayErrorsOrSubmit(errors: FormikErrors<SwapFormValues>): string {
-    return errors.from?.toString() || errors.to?.toString() || errors.amount || errors.destination_address || "Swap now"
+function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {
+    return errors.from?.toString()
+        || errors.to?.toString()
+        || errors.amount
+        || errors.destination_address
+        || (actionDisplayName)
 }
 
 const TruncatedAdrress = ({ address }: { address: string }) => {
