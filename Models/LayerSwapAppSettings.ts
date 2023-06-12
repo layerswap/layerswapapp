@@ -49,7 +49,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             internal_name: n.internal_name,
             display_name: n.display_name,
             status: n.status,
-            native_currency: n.native_currency
+            native_currency: n.native_currency,
             average_completion_time: n.average_completion_time,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)
         }))
