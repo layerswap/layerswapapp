@@ -8,7 +8,6 @@ import { NextRouter } from "next/router";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
-import { DepositType } from "./NetworkSettings";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
@@ -156,16 +155,14 @@ export type NetworkAccount = {
 
 export type CreateSwapParams = {
     amount: string,
-    source_network: string | null,
-    source_exchange: string | null,
-    destination_network: string | null,
-    destination_exchange: string | null,
+    source: string | null,
+    destination: string | null,
     asset: string,
+    source_address: string,
     destination_address: string,
-    partner?: string,
-    external_id?: string,
+    app_name?: string,
+    reference_id?: string,
     refuel?: boolean,
-    deposit_type: DepositType,
 }
 
 export type SwapItem = {
@@ -176,8 +173,8 @@ export type SwapItem = {
     destination_address: string,
     requested_amount: number,
     message: string,
-    external_id: string,
-    partner: string,
+    reference_id: string,
+    app_name: string,
     source_network_asset: string,
     source_network: string,
     source_exchange: string,
@@ -186,6 +183,8 @@ export type SwapItem = {
     destination_exchange: string,
     input_transaction?: Transaction,
     output_transaction?: Transaction,
+    refuel_transaction?: RefuelTransaction;
+    has_refuel?: boolean,
     has_sucessfull_published_tx: boolean;
     has_pending_deposit: boolean;
     sequence_number: number;
@@ -206,6 +205,19 @@ type Transaction = {
     transaction_id: string,
     usd_value: number
     usd_price: number
+}
+
+type RefuelTransaction = {
+    from: string,
+    to: string,
+    created_date: string,
+    transaction_id: string,
+    explorer_url: string,
+    confirmations: number,
+    max_confirmations: number,
+    amount: number,
+    usd_price: number,
+    usd_value: number
 }
 
 

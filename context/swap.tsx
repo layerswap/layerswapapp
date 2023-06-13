@@ -10,6 +10,8 @@ import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import NetworkSettings, { DepositType } from '../lib/NetworkSettings';
 import { Partner } from '../Models/Partner';
+import { useAccount } from 'wagmi';
+import { getStarknet } from 'get-starknet-core';
 
 const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawManually: false });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
@@ -51,6 +53,8 @@ export function SwapDataProvider({ children }) {
     const [swapId, setSwapId] = useState(router.query.swapId?.toString())
     const query = useQueryState();
     const settings = useSettingsState();
+    const { address } = useAccount()
+    const starknet = getStarknet()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}`
@@ -66,8 +70,8 @@ export function SwapDataProvider({ children }) {
         }
     }
 
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?label=${query?.addressSource}`, layerswapApiClient.fetcher)
-    const partner = query?.addressSource && partnerData?.data?.labels?.includes(query?.addressSource) ? partnerData?.data : undefined
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?name=${query?.addressSource}`, layerswapApiClient.fetcher)
+    const partner = query?.addressSource && partnerData?.data?.name?.toLowerCase() === query?.addressSource?.toLowerCase() ? partnerData?.data : undefined
 
     useEffect(() => {
         setCodeRequested(false)
@@ -84,33 +88,18 @@ export function SwapDataProvider({ children }) {
 
         const sourceLayer = from
         const destinationLayer = to
+        const starknetAddress = (await starknet?.getLastConnectedWallet()).account.address
 
         const data: CreateSwapParams = {
             amount: formData.amount,
-            source_exchange: null,
-            source_network: null,
-            destination_network: null,
-            destination_exchange: null,
+            source: sourceLayer?.internal_name,
+            destination: destinationLayer?.internal_name,
             asset: currency.asset,
+            source_address: address || starknetAddress,
             destination_address: formData.destination_address,
             // type: (formData.swapType === SwapType.OnRamp ? 0 : 1), /// TODO create map for sap types
-            partner: partner ? query?.addressSource : undefined,
-            external_id: query.externalId,
-            deposit_type: NetworkSettings.KnownSettings[sourceLayer?.internal_name]?.DepositType || DepositType.Manual
-        }
-
-        if (sourceLayer?.isExchange) {
-            data.source_exchange = sourceLayer?.internal_name;
-        }
-        else {
-            data.source_network = sourceLayer?.internal_name;
-        }
-
-        if (destinationLayer?.isExchange) {
-            data.destination_exchange = destinationLayer?.internal_name;
-        }
-        else {
-            data.destination_network = destinationLayer?.internal_name;
+            app_name: partner ? query?.addressSource : undefined,
+            reference_id: query.externalId,
         }
 
         if (!destinationLayer?.isExchange) {

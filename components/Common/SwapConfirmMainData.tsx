@@ -31,7 +31,7 @@ const SwapConfirmMainData: FC<Props> = ({ children }) => {
     const receive_amount = CalculateReceiveAmount(swapFormData, networks, currencies)
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(addressSource && `/apps?label=${addressSource}`, layerswapApiClient.fetcher)
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(addressSource && `/apps?name=${addressSource}`, layerswapApiClient.fetcher)
 
 
     const partner = partnerData?.data

@@ -127,8 +127,8 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const destAddress: string = query.destAddress;
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?label=${query?.addressSource}`, layerswapApiClient.fetcher)
-    const partner = query?.addressSource && partnerData?.data?.labels?.find(l => l?.toLowerCase() === query?.addressSource?.toLowerCase()) ? partnerData?.data : undefined
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?name=${query?.addressSource}`, layerswapApiClient.fetcher)
+    const partner = query?.addressSource && partnerData?.data?.name === query?.addressSource?.toLowerCase() ? partnerData?.data : undefined
 
     const isPartnerAddress = partner && destAddress;
 
