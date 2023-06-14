@@ -61,7 +61,9 @@ const Withdraw: FC = () => {
                 enabled: true,
                 icon: <Wallet className='stroke-1 -ml-1' />,
                 content: <>
-
+                    <div className='flex justify-center'>
+                        <Wallet className='w-52 h-52 text-[#141c31]' />
+                    </div>
                 </>,
                 footer: <WalletTransfer />
             }]
@@ -74,6 +76,9 @@ const Withdraw: FC = () => {
                 enabled: !swap?.source_exchange,
                 icon: <Wallet className='stroke-1 -ml-1' />,
                 content: <>
+                    <div className='flex justify-center'>
+                        <Wallet className='w-52 h-52 text-[#141c31]' />
+                    </div>
                 </>,
                 footer: <WalletTransfer />
             },
@@ -83,7 +88,10 @@ const Withdraw: FC = () => {
                 enabled: sourceIsCoinbase,
                 icon: <Wallet className='stroke-1 -ml-1' />,
                 content: <>
-                                    </>,
+                    <div className='flex justify-center'>
+                        <Wallet className='w-52 h-52 text-[#141c31]' />
+                    </div>
+                </>,
                 footer: <Coinbase />
             },
             {
