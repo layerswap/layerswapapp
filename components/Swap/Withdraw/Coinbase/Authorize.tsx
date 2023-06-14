@@ -30,9 +30,9 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const { swap, swapFormData } = useSwapDataState()
     const { setWithdrawType } = useSwapDataUpdate()
     const { layers, currencies, discovery } = useSettingsState()
-    let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false }, 'configs')
+    let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({ }, 'configs')
 
-    const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect)
+    const [carouselFinished, setCarouselFinished] = useState(localConfigs.alreadyFamiliarWithCoinbaseConnect)
     const [authWindow, setAuthWindow] = useState<Window>()
     const [authorizedAmount, setAuthorizedAmount] = useState<number>()
 
@@ -96,7 +96,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const handleConnect = useCallback(() => {
         try {
-            if (!carouselFinished && !alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect) {
+            if (!carouselFinished && !localConfigs.alreadyFamiliarWithCoinbaseConnect) {
                 carouselRef?.current?.next()
                 return;
             }
@@ -118,7 +118,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     }
 
     const handleToggleChange = (value: boolean) => {
-        setAlreadyFamiliar({ ...alreadyFamiliar, alreadyFamiliarWithCoinbaseConnect: value })
+        setLocalConfigs({ ...localConfigs, alreadyFamiliarWithCoinbaseConnect: value })
         onCarouselLast(value)
     }
 
@@ -132,7 +132,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                     </h3>
                 }
                 {
-                    alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect ?
+                    localConfigs.alreadyFamiliarWithCoinbaseConnect ?
                         <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-secondary-900 to-secondary-700 h-100%`} style={{ width: '100%' }}>
                             <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                         </div>
@@ -164,7 +164,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
             <Widget.Footer sticky={stickyFooter}>
                 <div>
                     {
-                        alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect && carouselFinished ?
+                        localConfigs.alreadyFamiliarWithCoinbaseConnect && carouselFinished ?
                             <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-secondary-500 hover:bg-secondary-400 rounded-md border border-secondary-500 hover:border-secondary-200 w-full mb-3">
                                 Show me full guide
                             </button>
@@ -176,7 +176,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                                     type="checkbox"
                                     className="h-4 w-4 bg-secondary-600 rounded border-secondary-400 text-priamry focus:ring-secondary-600"
                                     onChange={() => handleToggleChange(true)}
-                                    checked={alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect}
+                                    checked={localConfigs.alreadyFamiliarWithCoinbaseConnect}
                                 />
                                 <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
                                     I'm already familiar with the process.

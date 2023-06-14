@@ -11,6 +11,7 @@ export type Configs = {
     icon?: string;
     balance?: number
   }
+  alreadyFamiliarWithManualWithdrawNote?: boolean
 }
 
 function usePersistedState<T>(defaultValue: T, key: string, type: storageType = 'localStorage'): PersistedState<T> {
