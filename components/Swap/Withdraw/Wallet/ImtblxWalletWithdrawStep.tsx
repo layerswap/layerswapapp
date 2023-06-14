@@ -4,14 +4,16 @@ import SubmitButton from '../../../buttons/submitButton';
 import ImtblClient from '../../../../lib/imtbl';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource, PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
-import useSWR from 'swr'
-import { ApiResponse } from '../../../../Models/ApiResponse';
 
-const ImtblxWalletWithdrawStep: FC = () => {
+type Props = {
+    generatedDepositAddress: string
+}
+
+const ImtblxWalletWithdrawStep: FC<Props> = ({ generatedDepositAddress }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const { walletAddress, swap } = useSwapDataState()
@@ -20,9 +22,6 @@ const ImtblxWalletWithdrawStep: FC = () => {
 
     const { source_network: source_network_internal_name } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
-
-    const layerswapApiClient = new LayerSwapApiClient()
-    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${swap?.source_network}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -46,7 +45,7 @@ const ImtblxWalletWithdrawStep: FC = () => {
         try {
             const imtblClient = new ImtblClient(source_network?.internal_name)
             const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
-            const res = await imtblClient.Transfer(swap, source_currency, generatedDeposit?.data?.address)
+            const res = await imtblClient.Transfer(swap, source_currency, generatedDepositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
                 toast('Transfer failed or terminated')

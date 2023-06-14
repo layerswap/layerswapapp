@@ -17,6 +17,10 @@ import { useAuthState } from '../../../../context/authContext';
 import NetworkSettings from '../../../../lib/NetworkSettings';
 import KnownInternalNames from '../../../../lib/knownIds';
 
+type Props = {
+    managedDepositAddress: string
+}
+
 function getUint256CalldataFromBN(bn: number.BigNumberish) {
     return { type: "struct" as const, ...uint256.bnToUint256(bn) }
 }
@@ -27,7 +31,7 @@ export function parseInputAmountToUint256(
     return getUint256CalldataFromBN(utils.parseUnits(input, decimals).toString())
 }
 
-const StarknetWalletWithdrawStep: FC = () => {
+const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress }) => {
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
@@ -45,9 +49,6 @@ const StarknetWalletWithdrawStep: FC = () => {
     const sourceCurrency = source_network.currencies.find(c => c.asset?.toLowerCase() === swap.source_network_asset?.toLowerCase())
 
     const sourceChainId = source_network?.chain_id
-
-    const layerswapApiClient = new LayerSwapApiClient()
-    const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher)
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -90,8 +91,8 @@ const StarknetWalletWithdrawStep: FC = () => {
 
             const call = erc20Contract.populate(
                 "transfer",
-                [managedDeposit.data.address,
-                parseInputAmountToUint256(swap.requested_amount.toString(), sourceCurrency.decimals)]
+                [managedDepositAddress,
+                    parseInputAmountToUint256(swap.requested_amount.toString(), sourceCurrency.decimals)]
                 ,
             );
 
@@ -119,7 +120,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [account, swap, source_network, managedDeposit, userId, sourceCurrency])
+    }, [account, swap, source_network, managedDepositAddress, userId, sourceCurrency])
 
     return (
         <>
@@ -158,7 +159,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                     }
                     {
                         account
-                        && managedDeposit?.data?.address
+                        && managedDepositAddress
                         && !isWrongNetwork
                         && <div className="flex flex-row
                         text-white text-base space-x-2">
