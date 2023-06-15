@@ -208,99 +208,97 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     return <>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget>
-                {loading ?
-                    <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
-                    : <Widget.Content>
-                        <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
-                            {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                                <NetworkFormField direction="from" label="From" />
-                            </div>}
-                            {
-                                !valuesSwapperDisabled &&
-                                <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[63px] z-10 rounded-full bg-secondary-900 ring-1 ring-secondary-400 hover:ring-primary py-2 px-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
-                                    <motion.div
-                                        animate={animate}
-                                        transition={{ duration: 0.3 }}
-                                        onTap={() => !valuesSwapperDisabled && cycle()}
-                                    >
-                                        <ArrowUpDown className="h-4" />
-                                    </motion.div>
-                                </button>
-                            }
-                            {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                                <NetworkFormField direction="to" label="To" />
-                            </div>}
-                        </div>
-                        <div className="mb-6 leading-4">
-                            <AmountField />
-                        </div>
+                {<Widget.Content>
+                    <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
+                        {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
+                            <NetworkFormField direction="from" label="From" />
+                        </div>}
                         {
-                            !query?.hideAddress &&
-                            <div className="w-full mb-3.5 leading-4">
-                                <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
-                                    {`To ${values?.to?.display_name || ''} address`}
-                                </label>
-                                <AddressButton
-                                    disabled={!values.to || !values.from}
-                                    isPartnerWallet={isPartnerWallet}
-                                    openAddressModal={() => setShowAddressModal(true)}
-                                    partnerImage={partnerImage}
-                                    values={values} />
-                                <Modal
-                                    header={`To ${values?.to?.display_name || ''} address`}
-                                    height="fit"
-                                    show={showAddressModal} setShow={setShowAddressModal}
-                                    className="min-h-[70%]"
+                            !valuesSwapperDisabled &&
+                            <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[63px] z-10 rounded-full bg-secondary-900 ring-1 ring-secondary-400 hover:ring-primary py-2 px-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
+                                <motion.div
+                                    animate={animate}
+                                    transition={{ duration: 0.3 }}
+                                    onTap={() => !valuesSwapperDisabled && cycle()}
                                 >
-                                    <Address
-                                        close={() => setShowAddressModal(false)}
-                                        onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
-                                        exchangeAccount={exchangeAccount}
-                                        disabled={lockAddress || (!values.to || !values.from)}
-                                        name={"destination_address"}
-                                        partnerImage={partnerImage}
-                                        isPartnerWallet={isPartnerWallet}
-                                        partner={partner}
-                                        address_book={address_book?.data}
-                                    />
-                                </Modal>
+                                    <ArrowUpDown className="h-4" />
+                                </motion.div>
+                            </button>
+                        }
+                        {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
+                            <NetworkFormField direction="to" label="To" />
+                        </div>}
+                    </div>
+                    <div className="mb-6 leading-4">
+                        <AmountField />
+                    </div>
+                    {
+                        !query?.hideAddress &&
+                        <div className="w-full mb-3.5 leading-4">
+                            <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
+                                {`To ${values?.to?.display_name || ''} address`}
+                            </label>
+                            <AddressButton
+                                disabled={!values.to || !values.from}
+                                isPartnerWallet={isPartnerWallet}
+                                openAddressModal={() => setShowAddressModal(true)}
+                                partnerImage={partnerImage}
+                                values={values} />
+                            <Modal
+                                header={`To ${values?.to?.display_name || ''} address`}
+                                height="fit"
+                                show={showAddressModal} setShow={setShowAddressModal}
+                                className="min-h-[70%]"
+                            >
+                                <Address
+                                    close={() => setShowAddressModal(false)}
+                                    onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
+                                    exchangeAccount={exchangeAccount}
+                                    disabled={lockAddress || (!values.to || !values.from)}
+                                    name={"destination_address"}
+                                    partnerImage={partnerImage}
+                                    isPartnerWallet={isPartnerWallet}
+                                    partner={partner}
+                                    address_book={address_book?.data}
+                                />
+                            </Modal>
+                        </div>
+                    }
+                    <div className="w-full">
+                        {
+                            !destination?.isExchange && GetNetworkCurrency(destination, asset)?.is_refuel_enabled && !query?.hideRefuel &&
+                            <div className="flex items-center justify-between px-3.5 py-3 bg-secondary-700 border border-secondary-500 rounded-lg mb-4">
+                                <div className="flex items-center space-x-2">
+                                    <Fuel className='h-8 w-8 text-primary' />
+                                    <div>
+                                        <p className="font-medium flex items-center">
+                                            <span>Need gas?</span>
+                                            <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
+                                        </p>
+                                        <p className="font-light text-xs">
+                                            Get <span className="font-semibold">{destination_native_currency}</span> to pay fees in {values.to?.display_name}
+                                        </p>
+                                    </div>
+                                </div>
+                                <ToggleButton name="refuel" value={values?.refuel} onChange={handleConfirmToggleChange} />
                             </div>
                         }
-                        <div className="w-full">
-                            {
-                                !destination?.isExchange && GetNetworkCurrency(destination, asset)?.is_refuel_enabled && !query?.hideRefuel &&
-                                <div className="flex items-center justify-between px-3.5 py-3 bg-secondary-700 border border-secondary-500 rounded-lg mb-4">
-                                    <div className="flex items-center space-x-2">
-                                        <Fuel className='h-8 w-8 text-primary' />
-                                        <div>
-                                            <p className="font-medium flex items-center">
-                                                <span>Need gas?</span>
-                                                <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
-                                            </p>
-                                            <p className="font-light text-xs">
-                                                Get <span className="font-semibold">{destination_native_currency}</span> to pay fees in {values.to?.display_name}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <ToggleButton name="refuel" value={values?.refuel} onChange={handleConfirmToggleChange} />
-                                </div>
-                            }
-                            <AmountAndFeeDetails values={values} />
-                            {
-                                //TODO refactor
-                                GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
-                                <WarningMessage messageType="warning" className="mt-4">
-                                    <span className="font-normal">We're experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
-                                </WarningMessage>
-                            }
-                            {
-                                GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
-                                <WarningMessage messageType="warning" className="mt-4">
-                                    <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
-                                </WarningMessage>
-                            }
-                        </div>
-                    </Widget.Content>
+                        <AmountAndFeeDetails values={values} />
+                        {
+                            //TODO refactor
+                            GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
+                            <WarningMessage messageType="warning" className="mt-4">
+                                <span className="font-normal">We're experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
+                            </WarningMessage>
+                        }
+                        {
+                            GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
+                            <WarningMessage messageType="warning" className="mt-4">
+                                <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
+                            </WarningMessage>
+                        }
+                    </div>
+                </Widget.Content>
                 }
                 <Widget.Footer>
                     <SwapButton
