@@ -12,26 +12,25 @@ import BackgroundField from "../../backgroundField";
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../lib/layerSwapApiClient";
 import { Configs, usePersistedState } from "../../../hooks/usePersistedState";
 import SubmitButton from "../../buttons/submitButton";
-import { Checkbox } from "../../shadcn/checkbox";
 
 const ManualTransfer: FC = () => {
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
     let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({}, 'configs')
-    const manualNote = localConfigs.alreadyFamiliarWithManualWithdrawNote
-    const [openManualNote, setOpenManualNote] = useState(!manualNote)
-    const [dontShowAgain, setDontShowAgain] = useState(false)
+    const manualNote = localConfigs?.alreadyFamiliarWithManualWithdrawNote || []
 
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
+    const [openManualNote, setOpenManualNote] = useState(manualNote?.includes(source_network?.internal_name) ? false : true)
+
     const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(openManualNote ? null : `/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
+    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(openManualNote ? null : `/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
     const generatedDepositAddress = generatedDeposit?.data?.address
 
     const handleCloseNote = () => {
         setOpenManualNote(false)
-        if (dontShowAgain) setLocalConfigs({ ...localConfigs, alreadyFamiliarWithManualWithdrawNote: true })
+        setLocalConfigs({ ...localConfigs, alreadyFamiliarWithManualWithdrawNote: [source_network.internal_name, ...manualNote] })
     }
 
     return (
@@ -41,20 +40,9 @@ const ManualTransfer: FC = () => {
                 <div className="max-w-xs mx-10">
                     Lorem ipsum dolor sit amet consectetur adipisicing elit.
                 </div>
-                <div className="space-y-3 w-full">
-                    <div className="flex items-center space-x-2 justify-center">
-                        <Checkbox checked={dontShowAgain} onCheckedChange={() => setDontShowAgain(!dontShowAgain)} id="terms" />
-                        <label
-                            htmlFor="terms"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                            Don't show this again
-                        </label>
-                    </div>
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleCloseNote}>
-                        Got it
-                    </SubmitButton>
-                </div>
+                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleCloseNote}>
+                    Got it
+                </SubmitButton>
             </div>
             :
             <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
