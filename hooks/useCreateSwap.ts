@@ -6,15 +6,11 @@ import { useFormWizardaUpdate } from "../context/formWizardProvider";
 import { useSwapDataState } from "../context/swap";
 import { AuthConnectResponse } from "../Models/LayerSwapAuth";
 import { SwapCreateStep, WizardStep } from "../Models/Wizard";
-import { useRouter } from "next/router";
 import AccountConnectStep from "../components/Swap/Withdraw/Coinbase/Authorize";
-import { useAuthDataUpdate, UserType } from "../context/authContext";
 
 const useCreateSwap = () => {
     const { goToStep } = useFormWizardaUpdate()
-    const { swapFormData, swap } = useSwapDataState()
-    const router = useRouter();
-    const { updateAuthData, setUserType } = useAuthDataUpdate()
+    const { swapFormData } = useSwapDataState()
 
     const MainForm: WizardStep<SwapCreateStep> = {
         Content: MainStep,
