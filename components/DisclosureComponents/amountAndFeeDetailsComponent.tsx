@@ -101,7 +101,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         Estimated arrival
                                     </label>
                                     <span className="text-right">
-                                        {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : <AverageCompletionTime destinationNetwork={destinationNetwork} />}
+                                        {destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : <AverageCompletionTime time={destinationNetwork?.average_completion_time} />}
                                     </span>
                                 </div>
                             </>
