@@ -290,13 +290,19 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 //TODO refactor
                                 GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
                                 <WarningMessage messageType="warning" className="mt-4">
-                                    <span className="font-normal">We're experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
+                                    <span className="font-normal">We're experiencing delays for transfers of {values?.currency?.asset} to {destination?.display_name}. Estimated arrival time can take up to 2 hours.</span>
                                 </WarningMessage>
                             }
                             {
                                 GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
                                 <WarningMessage messageType="warning" className="mt-4">
                                     <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to {<AverageCompletionTime time={destinationNetwork?.average_completion_time}/>}.</span>
+                                </WarningMessage>
+                            }
+                            {
+                                source?.internal_name === KnownInternalNames.Networks.PolygonMainnet &&
+                                <WarningMessage messageType="warning" className="mt-4">
+                                    <span className="font-normal">Transfers from Polygon take up to 1 hour due to a recent Polygon network issue with chain reorgs.</span>
                                 </WarningMessage>
                             }
                         </div>
