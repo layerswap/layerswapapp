@@ -35,6 +35,7 @@ import { useAuthState } from "../../../../context/authContext";
 import WarningMessage from "../../../WarningMessage";
 import { GetDefaultNetwork, GetNetworkCurrency } from "../../../../helpers/settingsHelper";
 import KnownInternalNames from "../../../../lib/knownIds";
+import AverageCompletionTime from "../../../Common/AverageCompletionTime";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -295,7 +296,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             {
                                 GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
                                 <WarningMessage messageType="warning" className="mt-4">
-                                    <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
+                                    <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to {<AverageCompletionTime time={destinationNetwork?.average_completion_time}/>}.</span>
                                 </WarningMessage>
                             }
                             {

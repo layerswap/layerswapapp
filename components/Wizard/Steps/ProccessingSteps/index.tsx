@@ -107,7 +107,7 @@ const ProcessingStep: FC = () => {
             </div>
             <WarningMessage messageType='informing'>
                 <span className='text-xs sm:text-sm space-x-1 text-primary'>
-                    <span className='text-primary-text'>Average completion time:</span> <AverageCompletionTime  destinationNetwork={destination_network}/>
+                    <span className='text-primary-text'>Average completion time:</span> <AverageCompletionTime  time={destination_network?.average_completion_time}/>
                 </span>
             </WarningMessage>
         </div>

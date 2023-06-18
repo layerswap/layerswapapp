@@ -106,7 +106,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                             from?.internal_name === KnownInternalNames.Networks.PolygonMainnet ?
                                                 "Up to 1 hour"
                                                 :
-                                                destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : <AverageCompletionTime destinationNetwork={destinationNetwork} />
+                                                destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : <AverageCompletionTime time={destinationNetwork?.average_completion_time} />
                                         }
                                     </span>
                                 </div>
