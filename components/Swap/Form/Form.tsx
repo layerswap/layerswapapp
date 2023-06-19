@@ -216,7 +216,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
                                 <NetworkFormField direction="from" label="From" />
                             </div>}
-                            <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed hover:text-primary disabled:text-primary-text duration-200 transition'>
+                            {!query?.hideFrom && !query?.hideTo && <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed hover:text-primary disabled:text-primary-text duration-200 transition'>
                                 <motion.div
                                     animate={animate}
                                     transition={{ duration: 0.3 }}
@@ -224,7 +224,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 >
                                     <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-8 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
                                 </motion.div>
-                            </button>
+                            </button>}
                             {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
                                 <NetworkFormField direction="to" label="To" />
                             </div>}
