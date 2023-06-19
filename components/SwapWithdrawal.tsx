@@ -2,9 +2,11 @@ import { FC, useEffect } from "react";
 import { useQueryState } from "../context/query";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import SwapDetails from "./Swap";
+import { Widget } from "./Widget/Index";
+import NotFound from "./Swap/NotFound";
 
 const SwapWithdrawal: FC = () => {
-    const { swap } = useSwapDataState()
+    const { swap, swapApiError } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
     const query = useQueryState()
 
@@ -13,14 +15,18 @@ const SwapWithdrawal: FC = () => {
     }, [])
 
     if (!swap)
-        return <div className={`pb-6 bg-secondary-900 shadow-card rounded-lg w-full overflow-hidden relative animate-pulse h-[548px]`}>
-
-        </div>
+        return <Widget>
+            <div className={`pb-6 rounded-lg w-full overflow-hidden relative h-[548px]`}>
+                {swapApiError &&
+                    <NotFound/>
+                }
+            </div>
+        </Widget>
 
     const key = Object.keys(query).join("")
 
     return (
-        <SwapDetails key={key}/>
+        <SwapDetails key={key} />
     )
 };
 

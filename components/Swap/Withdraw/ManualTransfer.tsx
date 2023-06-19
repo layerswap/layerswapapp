@@ -1,4 +1,4 @@
-import { FC, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import useSWR from "swr"
 import QRCode from "qrcode.react"
 import colors from 'tailwindcss/colors';
@@ -18,23 +18,29 @@ const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
     let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({}, 'configs')
-    const manualNote = localConfigs?.alreadyFamiliarWithManualWithdrawNote || []
+    const generatedNetworkAddresses = localConfigs?.networkAddressIsGenerated || {}
 
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
-    const [openManualNote, setOpenManualNote] = useState(manualNote?.includes(source_network?.internal_name) ? false : true)
+    const [depositAddressGenerated, setDepositAddressGenerated] = useState(!!generatedNetworkAddresses?.[source_network?.internal_name])
 
     const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(openManualNote ? null : `/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
+    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(!depositAddressGenerated ? null : `/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
     const generatedDepositAddress = generatedDeposit?.data?.address
 
-    const handleCloseNote = () => {
-        setOpenManualNote(false)
-        setLocalConfigs({ ...localConfigs, alreadyFamiliarWithManualWithdrawNote: [source_network.internal_name, ...manualNote] })
-    }
+    const handleCloseNote = useCallback(() => {
+        setDepositAddressGenerated(true)
+        setLocalConfigs({
+            ...localConfigs,
+            networkAddressIsGenerated: {
+                ...generatedNetworkAddresses,
+                [source_network_internal_name]: true
+            }
+        })
+    }, [generatedNetworkAddresses, localConfigs, source_network_internal_name])
 
     return (
-        openManualNote ?
+        !depositAddressGenerated ?
             <div className="rounded-lg p-4 flex flex-col items-center text-center bg-secondary-700 border border-secondary-500 gap-5">
                 <Megaphone className="h-10 w-10 text-primary-text" />
                 <div className="max-w-xs mx-10">

@@ -10,8 +10,10 @@ export type Configs = {
     address?: string;
     icon?: string;
     balance?: number
+  },
+  networkAddressIsGenerated?: {
+    [key: string]: boolean
   }
-  alreadyFamiliarWithManualWithdrawNote?: string[]
 }
 
 function usePersistedState<T>(defaultValue: T, key: string, type: storageType = 'localStorage'): PersistedState<T> {
