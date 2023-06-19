@@ -208,7 +208,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     return <>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-            <Widget>
+            <Widget className="min-h-[504px]">
                 {loading ?
                     <div className="w-full h-full flex items-center"><SpinIcon className="animate-spin h-8 w-8 grow" /></div>
                     : <Widget.Content>
