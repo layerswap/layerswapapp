@@ -10,7 +10,6 @@ import { GetSwapStatusStep } from '../../../utils/SwapStatus';
 import Steps from '../StepsComponent';
 import { SwapItem } from '../../../../lib/layerSwapApiClient';
 import WarningMessage from '../../../WarningMessage';
-import { CryptoNetwork } from '../../../../Models/CryptoNetwork';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
 
 const ProcessingStep: FC = () => {
