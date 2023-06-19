@@ -35,6 +35,7 @@ import WarningMessage from "../../WarningMessage";
 import { GetDefaultNetwork, GetNetworkCurrency } from "../../../helpers/settingsHelper";
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
+import { classNames } from "../../utils/classNames";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -207,24 +208,21 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     return <>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-            <Widget>
-                {<Widget.Content>
+            <Widget className="min-h-[504px]">
+                <Widget.Content>
                     <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
                             <NetworkFormField direction="from" label="From" />
                         </div>}
-                        {
-                            !valuesSwapperDisabled &&
-                            <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[63px] z-10 rounded-full bg-secondary-900 ring-1 ring-secondary-400 hover:ring-primary py-2 px-1 hover:text-primary disabled:opacity-30 disabled:ring-0 disabled:text-primary-text duration-200 transition'>
-                                <motion.div
-                                    animate={animate}
-                                    transition={{ duration: 0.3 }}
-                                    onTap={() => !valuesSwapperDisabled && cycle()}
-                                >
-                                    <ArrowUpDown className="h-4" />
-                                </motion.div>
-                            </button>
-                        }
+                        {!query?.hideFrom && !query?.hideTo && <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed hover:text-primary disabled:text-primary-text duration-200 transition'>
+                            <motion.div
+                                animate={animate}
+                                transition={{ duration: 0.3 }}
+                                onTap={() => !valuesSwapperDisabled && cycle()}
+                            >
+                                <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-8 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
+                            </motion.div>
+                        </button>}
                         {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
                             <NetworkFormField direction="to" label="To" />
                         </div>}
@@ -299,7 +297,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                         }
                     </div>
                 </Widget.Content>
-                }
                 <Widget.Footer>
                     <SwapButton
                         className="plausible-event-name=Swap+initiated"

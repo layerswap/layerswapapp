@@ -24,11 +24,10 @@ const WalletTransfer: FC = () => {
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>((sameSourceDestAddress || sourceIsStarknet) ? null : `/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
-    const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>((sameSourceDestAddress || sourceIsStarknet) ? `/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}` : null, layerswapApiClient.fetcher)
+    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>((sameSourceDestAddress || sourceIsStarknet) ? null : `/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
+    const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>((sameSourceDestAddress || sourceIsStarknet) ? `/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}` : null, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
     const generatedDepositAddress = generatedDeposit?.data?.address
     const managedDepositAddress = managedDeposit?.data?.address
-
     const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
     const sourceChainId = sourceNetworkSettings?.ChainId
 

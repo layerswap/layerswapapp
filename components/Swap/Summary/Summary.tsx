@@ -1,14 +1,17 @@
 import Image from "next/image";
 import { ArrowDown, Fuel } from "lucide-react";
 import { useAccount } from "wagmi";
-
 import { FC } from "react";
 import { Currency } from "../../../Models/Currency";
 import { Layer } from "../../../Models/Layer";
 import { useSettingsState } from "../../../context/settings";
-import { CalculateReceiveAmount } from "../../../lib/fees";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import shortenAddress from "../../utils/ShortenAddress";
+import { useQueryState } from "../../../context/query";
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
+import { ApiResponse } from "../../../Models/ApiResponse";
+import { Partner } from "../../../Models/Partner";
+import useSWR from 'swr'
 
 type SwapInfoProps = {
     currency: Currency,
@@ -20,9 +23,23 @@ type SwapInfoProps = {
     fee: number
 }
 
-const Summary: FC<SwapInfoProps> = ({ currency, source, destination, requestedAmount, destinationAddress, refuelAmount, fee }) => {
-    const { resolveImgSrc, networks, currencies } = useSettingsState()
+const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, destinationAddress, refuelAmount, fee }) => {
+    const { resolveImgSrc, currencies } = useSettingsState()
     const { isConnected, address } = useAccount();
+    const {
+        hideFrom,
+        hideTo,
+        account,
+        addressSource,
+        hideAddress
+    } = useQueryState()
+
+    const layerswapApiClient = new LayerSwapApiClient()
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(addressSource && `/apps?label=${addressSource}`, layerswapApiClient.fetcher)
+    const partner = partnerData?.data
+
+    const source = hideFrom ? partner : from
+    const destination = hideTo ? partner : to
 
     const sourceDisplayName = source?.display_name
     const destinationDisplayName = destination?.display_name
@@ -31,9 +48,11 @@ const Summary: FC<SwapInfoProps> = ({ currency, source, destination, requestedAm
 
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = (currency?.usd_price * receive_amount).toFixed(2)
-    const nativeCurrency = refuelAmount && destination?.isExchange === false && currencies.find(c => c.asset === destination?.native_currency)
-
+    const nativeCurrency = refuelAmount && to?.isExchange === false && currencies.find(c => c.asset === to?.native_currency)
     const truncatedRefuelAmount = truncateDecimals(refuelAmount, nativeCurrency?.precision)
+
+    const sourceAddress = (hideFrom && account) ? account : (isConnected && !from?.isExchange && address) || undefined
+    const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
 
     return (
         <div>
@@ -44,8 +63,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source, destination, requestedAm
                         <div>
                             <p className="text-primary-text text-lg leading-5">{sourceDisplayName}</p>
                             {
-                                isConnected && !source.isExchange &&
-                                <p className="text-sm text-primary-text">{shortenAddress(address)}</p>
+                                sourceAddress &&
+                                <p className="text-sm text-primary-text">{shortenAddress(sourceAddress)}</p>
                             }
                         </div>
                     </div>
@@ -60,7 +79,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source, destination, requestedAm
                         <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={30} height={30} className="rounded-md" />
                         <div>
                             <p className="text-primary-text text-lg leading-5">{destinationDisplayName}</p>
-                            <p className="text-sm text-primary-text">{shortenAddress(destinationAddress)}</p>
+                            <p className="text-sm text-primary-text">{shortenAddress(destAddress)}</p>
                         </div>
                     </div>
                     <div className="flex flex-col justify-end">

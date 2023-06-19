@@ -2,9 +2,9 @@ import HeaderWithMenu from "../HeaderWithMenu"
 import { useRouter } from "next/router"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 
-const Widget = ({ children }) => {
+const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[], className?: string}) => {
    const router = useRouter()
    const wrapper = useRef(null);
 
@@ -27,7 +27,7 @@ const Widget = ({ children }) => {
          <div className="relative px-6">
             <div className="flex items-start" ref={wrapper}>
                <div className={`flex flex-nowrap grow`}>
-                  <div className="w-full pb-6 flex flex-col justify-between h-full space-y-5 text-primary-text">
+                  <div className={`w-full pb-6 flex flex-col justify-between h-full space-y-5 text-primary-text ${className}`}>
                      {children}
                   </div>
                </div>

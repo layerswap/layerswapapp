@@ -117,31 +117,29 @@ const Withdraw: FC = () => {
     return (
         <>
             <Widget.Content>
-                <div className="w-full min-h-[422px] space-y-5 flex flex-col justify-between h-full text-primary-text">
-                    <div className='space-y-4'>
-                        <div className='mb-6 grid grid-cols-1 gap-4 space-y-4'>
+                <div className="w-full min-h-[422px] flex flex-col justify-between h-full text-primary-text">
+                    <div className=' grid grid-cols-1 gap-4 space-y-4'>
+                        {
+                            !isFiat && <SwapSummary />
+                        }
+                        {
+                            showTabsHeader &&
+                            <div className="flex space-x-3 w-full">
+                                {tabs.filter(t => t.enabled).map((tab) => (
+                                    <TabHeader
+                                        activeTabId={activeTabId}
+                                        onCLick={setActiveTabId}
+                                        tab={tab}
+                                        key={tab.id}
+                                    />
+                                ))}
+                            </div>
+                        }
+                        <span>
                             {
-                                !isFiat && <SwapSummary />
+                                activeTab?.content
                             }
-                            {
-                                showTabsHeader &&
-                                <div className="flex space-x-3 w-full">
-                                    {tabs.filter(t => t.enabled).map((tab) => (
-                                        <TabHeader
-                                            activeTabId={activeTabId}
-                                            onCLick={setActiveTabId}
-                                            tab={tab}
-                                            key={tab.id}
-                                        />
-                                    ))}
-                                </div>
-                            }
-                            <span>
-                                {
-                                    activeTab?.content
-                                }
-                            </span>
-                        </div>
+                        </span>
                     </div>
                 </div>
             </Widget.Content>
