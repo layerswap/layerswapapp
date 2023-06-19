@@ -88,7 +88,7 @@ export function SwapDataProvider({ children }) {
 
         const sourceLayer = from
         const destinationLayer = to
-        const starknetAddress = (await starknet?.getLastConnectedWallet()).account.address
+        const starknetAddress = (await starknet?.getLastConnectedWallet())?.account?.address
 
         const data: CreateSwapParams = {
             amount: formData.amount,
