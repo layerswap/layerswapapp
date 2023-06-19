@@ -12,7 +12,6 @@ import {
 } from "wagmi";
 import { utils } from 'ethers';
 import { erc20ABI } from 'wagmi'
-import { Wallet } from "lucide-react";
 import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
 import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../lib/layerSwapApiClient";
@@ -20,6 +19,7 @@ import { useSwapDataUpdate } from "../../../../context/swap";
 import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
 import { SwapWithdrawalStep } from "../../../../Models/Wizard";
 import { toast } from "react-hot-toast";
+import WalletIcon from "../../../icons/WalletIcon";
 
 type Props = {
     chainId: number,
@@ -202,7 +202,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 disabled={sendTransactionPrepare?.isLoading || sendTransactionPrepare.status === "idle"}
-                icon={<Wallet />}
+                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {(isError && buttonClicked) ? <span>Try again</span>
                     : <span>Send from wallet</span>}
@@ -297,7 +297,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 disabled={contractWritePrepare?.isLoading || contractWritePrepare.status === "idle"}
-                icon={<Wallet />}
+                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {(isError && buttonClicked) ? <span>Try again</span>
                     : <span>Send from wallet</span>}
@@ -398,7 +398,7 @@ const ConnectWalletButton: FC = ({ children }) => {
 
     return <ButtonWrapper
         clcikHandler={clickHandler}
-        icon={<Wallet />}
+        icon={<WalletIcon className="stroke-2 w-6 h-6" />}
     >
         Connect wallet
     </ButtonWrapper>
@@ -442,7 +442,7 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId
             !networkChange.isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
-                icon={<Wallet />}
+                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {
                     networkChange.isError ? <span>Try again</span>

@@ -1,4 +1,4 @@
-import { AlignLeft, Wallet } from 'lucide-react';
+import { AlignLeft } from 'lucide-react';
 import { FC, useEffect, useState } from 'react'
 import WalletTransfer from './Wallet';
 import ManualTransfer from './ManualTransfer';
@@ -13,6 +13,7 @@ import Coinbase from './Coinbase';
 import { useQueryState } from '../../../context/query';
 import External from './External';
 import { WithdrawType } from '../../../lib/layerSwapApiClient';
+import WalletIcon from '../../icons/WalletIcon';
 
 const Withdraw: FC = () => {
 
@@ -40,7 +41,7 @@ const Withdraw: FC = () => {
             id: WithdrawType.External,
             label: "Withdrawal pending",
             enabled: true,
-            icon: <Wallet className='stroke-1 -ml-1' />,
+            icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-1' />,
             content: <External />
         }]
     }
@@ -59,10 +60,10 @@ const Withdraw: FC = () => {
                 id: WithdrawType.Wallet,
                 label: "Via wallet",
                 enabled: true,
-                icon: <Wallet className='stroke-1 -ml-1' />,
+                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-1' />,
                 content: <>
                     <div className='flex justify-center'>
-                        <Wallet className='w-52 h-52 text-[#141c31]' />
+                        <WalletIcon className='w-52 h-52 text-[#141c31]' />
                     </div>
                 </>,
                 footer: <WalletTransfer />
@@ -74,10 +75,10 @@ const Withdraw: FC = () => {
                 id: WithdrawType.Wallet,
                 label: "Via wallet",
                 enabled: !swap?.source_exchange,
-                icon: <Wallet className='stroke-1 -ml-1' />,
+                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-1' />,
                 content: <>
                     <div className='flex justify-center'>
-                        <Wallet className='w-52 h-52 text-[#141c31]' />
+                        <WalletIcon className='w-52 h-52 text-[#141c31]' />
                     </div>
                 </>,
                 footer: <WalletTransfer />
@@ -86,10 +87,10 @@ const Withdraw: FC = () => {
                 id: WithdrawType.Coinbase,
                 label: "Automatic",
                 enabled: sourceIsCoinbase,
-                icon: <Wallet className='stroke-1 -ml-1' />,
+                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-1' />,
                 content: <>
                     <div className='flex justify-center'>
-                        <Wallet className='w-52 h-52 text-[#141c31]' />
+                        <WalletIcon className='w-52 h-52 text-[#141c31]' />
                     </div>
                 </>,
                 footer: <Coinbase />
