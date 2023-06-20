@@ -14,6 +14,7 @@ import { useQueryState } from '../../../context/query';
 import External from './External';
 import { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
+import { useAccount } from 'wagmi';
 
 const Withdraw: FC = () => {
 
@@ -78,19 +79,19 @@ const Withdraw: FC = () => {
                 icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-1' />,
                 content: <>
                     <div className='flex justify-center'>
-                        <WalletIcon className='w-52 h-52 text-[#141c31]' />
+                        <WalletIcon className='w-36 text-[#141c31]' />
                     </div>
                 </>,
                 footer: <WalletTransfer />
             },
             {
                 id: WithdrawType.Coinbase,
-                label: "Automatic",
+                label: "Automatically",
                 enabled: sourceIsCoinbase,
                 icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-1' />,
                 content: <>
                     <div className='flex justify-center'>
-                        <WalletIcon className='w-52 h-52 text-[#141c31]' />
+                        <WalletIcon className='w-36 text-[#141c31]' />
                     </div>
                 </>,
                 footer: <Coinbase />
@@ -100,7 +101,7 @@ const Withdraw: FC = () => {
                 label: "Manually",
                 enabled: true,
                 icon: <AlignLeft />,
-                content: <ManualTransfer />
+                content: <ManualTransfer />,
             }
         ];
     }
@@ -117,24 +118,27 @@ const Withdraw: FC = () => {
     return (
         <>
             <Widget.Content>
-                <div className="w-full min-h-[422px] flex flex-col justify-between h-full text-primary-text">
-                    <div className=' grid grid-cols-1 gap-4 space-y-4'>
+                <div className="w-full flex flex-col justify-between h-full text-primary-text">
+                    <div className='grid grid-cols-1 gap-4 '>
                         {
                             !isFiat && <SwapSummary />
                         }
-                        {
-                            showTabsHeader &&
-                            <div className="flex space-x-3 w-full">
-                                {tabs.filter(t => t.enabled).map((tab) => (
-                                    <TabHeader
-                                        activeTabId={activeTabId}
-                                        onCLick={setActiveTabId}
-                                        tab={tab}
-                                        key={tab.id}
-                                    />
-                                ))}
-                            </div>
-                        }
+                        <span>
+                            <div className="mb-3 ml-1">Choose how you’d like to complete the swap</div>
+                            {
+                                showTabsHeader &&
+                                <div className="flex space-x-3 w-full">
+                                    {tabs.filter(t => t.enabled).map((tab) => (
+                                        <TabHeader
+                                            activeTabId={activeTabId}
+                                            onCLick={setActiveTabId}
+                                            tab={tab}
+                                            key={tab.id}
+                                        />
+                                    ))}
+                                </div>
+                            }
+                        </span>
                         <span>
                             {
                                 activeTab?.content
@@ -151,5 +155,23 @@ const Withdraw: FC = () => {
         </>
     )
 }
+
+const WalletTransferContent: FC = () => {
+    const { isConnected, address } = useAccount();
+
+    return <div className='flex justify-center'>
+        <WalletIcon className='w-36 text-[#141c31]' />
+        <button
+            onClick={() => {}}
+            className={"text-[#5f667f] hover:text-primary-text bg-secondary-800 grow rounded-md text-left relative py-3 px-5 text-sm transition"}
+            style={{
+                WebkitTapHighlightColor: "transparent",
+            }}
+        >
+            {address}
+        </button>
+    </div>
+}
+
 
 export default Withdraw
