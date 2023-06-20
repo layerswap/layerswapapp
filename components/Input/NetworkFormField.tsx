@@ -78,7 +78,7 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         setFieldValue(name, item.baseObject, true)
     }, [name])
 
-    return (<div className="rounded-xl p-3 ea7df14a1597407f9f755f05e25bab42:bg-secondary-800/50 bg-secondary-700">
+    return (<div className="rounded-xl p-3 ea7df14a1597407f9f755f05e25bab42:bg-secondary-800/50 bg-secondary-700/70">
         <label htmlFor={name} className="block font-semibold text-primary-text text-sm">
             {label}
         </label>
