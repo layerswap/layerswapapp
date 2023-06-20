@@ -30,10 +30,12 @@ const Withdraw: FC = () => {
         || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+    const sourceIsArbitrumOne = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
+        || swap?.source_network === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
     const sourceIsCoinbase = swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
 
-    const isImtblMarketplace = (signature && addressSource === "imxMarketplace")
-    const sourceIsSynquote = addressSource === "ea7df14a1597407f9f755f05e25bab42"
+    const isImtblMarketplace = (signature && addressSource === "imxMarketplace" && sourceIsImmutableX)
+    const sourceIsSynquote = addressSource === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
 
     let tabs: Tab[] = []
     // TODO refactor
@@ -42,7 +44,7 @@ const Withdraw: FC = () => {
             id: WithdrawType.External,
             label: "Withdrawal pending",
             enabled: true,
-            icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-1' />,
+            icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
             content: <External />
         }]
     }
@@ -61,7 +63,7 @@ const Withdraw: FC = () => {
                 id: WithdrawType.Wallet,
                 label: "Via wallet",
                 enabled: true,
-                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-1' />,
+                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
                 content: <>
                     <div className='flex justify-center'>
                         <WalletIcon className='w-52 h-52 text-[#141c31]' />
@@ -76,10 +78,10 @@ const Withdraw: FC = () => {
                 id: WithdrawType.Wallet,
                 label: "Via wallet",
                 enabled: !swap?.source_exchange,
-                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-1' />,
+                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
                 content: <>
                     <div className='flex justify-center'>
-                        <WalletIcon className='w-36 text-[#141c31]' />
+                        <WalletIcon className='w-36 text-secondary-800/70' />
                     </div>
                 </>,
                 footer: <WalletTransfer />
@@ -88,10 +90,10 @@ const Withdraw: FC = () => {
                 id: WithdrawType.Coinbase,
                 label: "Automatically",
                 enabled: sourceIsCoinbase,
-                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-1' />,
+                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
                 content: <>
                     <div className='flex justify-center'>
-                        <WalletIcon className='w-36 text-[#141c31]' />
+                        <WalletIcon className='w-36 text-secondary-800/70' />
                     </div>
                 </>,
                 footer: <Coinbase />
@@ -163,10 +165,10 @@ const WalletTransferContent: FC = () => {
     const { isConnected, address } = useAccount();
 
     return <div className='flex justify-center'>
-        <WalletIcon className='w-36 text-[#141c31]' />
+        <WalletIcon className='w-36 text-secondary-800/70' />
         <button
             onClick={() => { }}
-            className={"text-[#5f667f] hover:text-primary-text bg-secondary-800 grow rounded-md text-left relative py-3 px-5 text-sm transition"}
+            className={"text-primary-text hover:text-primary-text bg-secondary-800 grow rounded-md text-left relative py-3 px-5 text-sm transition"}
             style={{
                 WebkitTapHighlightColor: "transparent",
             }}
