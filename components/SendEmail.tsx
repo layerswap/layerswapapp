@@ -25,21 +25,13 @@ type Props = {
 const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
     const { codeRequested, tempEmail, userType } = useAuthState()
     const { setCodeRequested, updateTempEmail } = useAuthDataUpdate();
-    const { goToStep } = useFormWizardaUpdate()
     const initialValues: EmailFormValues = { email: tempEmail ?? "" };
     const { start: startTimer } = useTimerState()
 
     const sendEmail = useCallback(async (values: EmailFormValues) => {
         try {
             const inputEmail = values.email;
-            const layerswapApiClient = new LayerswapApiClient();
-            const allPendingSwaps = await layerswapApiClient.GetPendingSwapsAsync()
-            //PENDING_SWAPS_CHECK
-            // if (userType === UserType.GuestUser && allPendingSwaps?.data?.length > 0) {
-            //     goToStep(SwapCreateStep.PendingSwaps)
-            // } else {
-                
-            // }
+
             if (inputEmail != tempEmail || !codeRequested) {
 
                 const apiClient = new LayerSwapAuthApiClient();

@@ -62,7 +62,6 @@ export const OnrampElement:FC<OnrampElementProps> = ({
 }) => {
     const stripeOnramp = useStripeOnramp();
     const onrampElementRef = useRef(null);
-    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
     const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
 
     useEffect(() => {
@@ -90,7 +89,6 @@ export const OnrampElement:FC<OnrampElementProps> = ({
                         return
                     }
                     await setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, e.payload.session.id);
-                    goToStep(SwapWithdrawalStep.SwapProcessing)
                 }
                 session.addEventListener("onramp_session_updated", eventListener)
             }
