@@ -16,7 +16,6 @@ import { useRouter } from "next/router";
 import { KnownwErrorCode } from "../../../Models/ApiError";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import ConnectApiKeyExchange from "../../connectApiKeyExchange";
-import SpinIcon from "../../icons/spinIcon";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/addressValidator";
@@ -293,6 +292,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
                             <WarningMessage messageType="warning" className="mt-4">
                                 <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
+                            </WarningMessage>
+                        }
+                        {
+                            source?.internal_name === KnownInternalNames.Networks.PolygonMainnet &&
+                            <WarningMessage messageType="warning" className="mt-4">
+                                <span className="font-normal">Transfers from Polygon take up to 1 hour due to a recent Polygon network issue with chain reorgs.</span>
                             </WarningMessage>
                         }
                     </div>
