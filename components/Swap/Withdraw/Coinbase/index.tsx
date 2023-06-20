@@ -6,7 +6,7 @@ import Coinbase2FA from './Coinbase2FA';
 import { ArrowLeftRight, Link } from 'lucide-react';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import LayerSwapApiClient, { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { KnownwErrorCode } from '../../../../Models/ApiError';
+import { KnownErrorCode } from '../../../../Models/ApiError';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
 import { TimerProvider, useTimerState } from '../../../../context/timerContext';
