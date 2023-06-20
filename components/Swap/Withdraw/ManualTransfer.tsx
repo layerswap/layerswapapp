@@ -34,8 +34,13 @@ const ManualTransfer: FC = () => {
         !generatedDepositAddress ?
             <div className="rounded-lg p-4 flex flex-col items-center text-center bg-secondary-700 border border-secondary-500 gap-5">
                 <Megaphone className="h-10 w-10 text-primary-text" />
-                <div className="max-w-xs mx-10">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                <div className="max-w-xs">
+                    <h3 className="text-lg text-white">
+                        About manual transfers
+                    </h3>
+                    <p className="text-sm">
+                        Transfer assets to Layerswap’s deposit address to complete the swap.
+                    </p>
                 </div>
                 <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleCloseNote}>
                     Got it

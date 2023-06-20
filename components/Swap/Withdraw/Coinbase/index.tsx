@@ -5,8 +5,8 @@ import Authorize from './Authorize';
 import Coinbase2FA from './Coinbase2FA';
 import { ArrowLeftRight, Link } from 'lucide-react';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
-import { KnownErrorCode } from '../../../../Models/ApiError';
+import LayerSwapApiClient, { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { KnownwErrorCode } from '../../../../Models/ApiError';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
 import { TimerProvider, useTimerState } from '../../../../context/timerContext';
@@ -22,7 +22,7 @@ const Coinbase: FC = () => {
 
 const TransferElements: FC = () => {
     const { swap, codeRequested } = useSwapDataState()
-    const { setCodeRequested } = useSwapDataUpdate()
+    const { setCodeRequested, setSwapPublishedTx } = useSwapDataUpdate()
     const { networks } = useSettingsState()
     const {
         destination_network: destination_network_internal_name,
@@ -96,6 +96,11 @@ const TransferElements: FC = () => {
         setShowCoinbaseConnectModal(true)
     }
 
+    const handleSuccess = useCallback(async (swapId: string) => {
+        setOpenCoinbase2FA(false)
+        setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, "_")
+    }, [])
+
     return (
         <>
             <Modal height='full'
@@ -118,7 +123,7 @@ const TransferElements: FC = () => {
                 setShow={setOpenCoinbase2FA}
             >
                 <Coinbase2FA
-                    onSuccess={async () => setOpenCoinbase2FA(false)}
+                    onSuccess={handleSuccess}
                     footerStickiness={false}
                 />
             </Modal>

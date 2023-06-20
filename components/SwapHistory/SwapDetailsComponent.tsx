@@ -154,7 +154,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <span className="text-white">
                                         <div className='inline-flex items-center'>
                                             <div className='underline hover:no-underline flex items-center space-x-1'>
-                                                <a target={"_blank"} href={input_tx_id.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
+                                                <a target={"_blank"} href={input_tx_id?.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
                                                 <ExternalLink className='h-4' />
                                             </div>
                                         </div>

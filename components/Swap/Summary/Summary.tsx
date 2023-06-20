@@ -55,7 +55,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
 
     return (
-        <div>
+        <div className="pb-8 border-b border-secondary-500">
             <div className="bg-secondary-700 font-normal rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
                 <div className="flex items-center justify-between w-full px-3 py-2 border-b border-secondary-500">
                     <div className="flex items-center gap-2">
