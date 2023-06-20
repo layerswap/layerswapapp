@@ -22,13 +22,13 @@ function MaintananceContent(props) {
         <div className="flex items-stretch flex-col">
             <LayerSwapLogo className="block md:hidden h-8 w-auto text-white mt-5"></LayerSwapLogo>
             <CardContainer {...props} >
-                <div className="flex flex-col justify-center space-y-12 p-8 md:p-20 text-white md:min-h-fit min-h-[400px]">
+                <div className="flex flex-col justify-center space-y-12 p-10 text-white md:min-h-fit min-h-[400px]">
                     <h1 className="text-3xl font-bold tracking-tight text-gray-200">
                         <p className="mb-4 text-primary-text">
                             We're upgrading our systems and infrastructure to give you the best experience yet.
                         </p>
                         <span className="block xl:inline">We'll be back</span>{' '}
-                        <span className="block text-primary xl:inline">in 3.5 hours <span className="block xl:inline text-xl">(15:30 UTC)</span></span>
+                        <span className="block text-primary xl:inline">in 1 hour <span className="block xl:inline text-xl">(19:30 UTC)</span></span>
                         <p className="mt-4 text-primary-text">
                             Any pending swap will be completed after maintanance.
                         </p>
