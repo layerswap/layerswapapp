@@ -12,13 +12,14 @@ import {
 } from "wagmi";
 import { utils } from 'ethers';
 import { erc20ABI } from 'wagmi'
-import { Wallet } from "lucide-react";
 import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
 import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../context/swap";
 import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
 import { SwapWithdrawalStep } from "../../../../Models/Wizard";
+import { toast } from "react-hot-toast";
+import WalletIcon from "../../../icons/WalletIcon";
 
 type Props = {
     chainId: number,
@@ -129,7 +130,6 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
     const [buttonClicked, setButtonClicked] = useState(false)
-    const { goToStep } = useFormWizardaUpdate()
 
     const { address } = useAccount();
 
@@ -162,13 +162,16 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
         hash: transaction?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            await applyTransaction(swapId, trxRcpt.transactionHash, setSwapPublishedTx)
-            goToStep(SwapWithdrawalStep.SwapProcessing)
+            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
             setApplyingTransaction(false)
+        },
+        onError: async (err) => {
+            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Error, "");
+            toast.error(err.message)
         }
     })
 
-    const clickHandler = useCallback(() => {
+    const clickHandler = useCallback(async () => {
         setButtonClicked(true)
         return transaction?.sendTransaction && transaction?.sendTransaction()
     }, [transaction])
@@ -199,7 +202,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 disabled={sendTransactionPrepare?.isLoading || sendTransactionPrepare.status === "idle"}
-                icon={<Wallet />}
+                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {(isError && buttonClicked) ? <span>Try again</span>
                     : <span>Send from wallet</span>}
@@ -262,7 +265,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         hash: contractWrite?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            await applyTransaction(swapId, trxRcpt.transactionHash, setSwapPublishedTx)
+            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
             goToStep(SwapWithdrawalStep.SwapProcessing)
             setApplyingTransaction(false)
         }
@@ -294,7 +297,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             <ButtonWrapper
                 clcikHandler={clickHandler}
                 disabled={contractWritePrepare?.isLoading || contractWritePrepare.status === "idle"}
-                icon={<Wallet />}
+                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {(isError && buttonClicked) ? <span>Try again</span>
                     : <span>Send from wallet</span>}
@@ -395,9 +398,9 @@ const ConnectWalletButton: FC = ({ children }) => {
 
     return <ButtonWrapper
         clcikHandler={clickHandler}
-        icon={<Wallet />}
+        icon={<WalletIcon className="stroke-2 w-6 h-6" />}
     >
-        Send from wallet
+        Connect wallet
     </ButtonWrapper>
 }
 
@@ -439,7 +442,7 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId
             !networkChange.isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
-                icon={<Wallet />}
+                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {
                     networkChange.isError ? <span>Try again</span>

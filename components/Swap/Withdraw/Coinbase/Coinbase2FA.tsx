@@ -2,17 +2,17 @@ import { Info, ScanFace } from 'lucide-react';
 import { Form, Formik, FormikErrors, FormikProps } from 'formik';
 import { FC, useCallback, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useSwapDataState } from '../context/swap';
-import { useTimerState } from '../context/timerContext';
-import LayerSwapApiClient from '../lib/layerSwapApiClient';
-import { ApiError, KnownwErrorCode } from '../Models/ApiError';
-import SubmitButton from './buttons/submitButton';
-import SpinIcon from './icons/spinIcon';
-import NumericInput from './Input/NumericInput';
-import MessageComponent from './MessageComponent';
-import Modal from './modal/modal';
-import TimerWithContext from './TimerComponent';
-import Widget from './Wizard/Widget';
+import { useSwapDataState } from '../../../../context/swap';
+import { useTimerState } from '../../../../context/timerContext';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
+import { ApiError, KnownwErrorCode } from '../../../../Models/ApiError';
+import SubmitButton from '../../../buttons/submitButton';
+import SpinIcon from '../../../icons/spinIcon';
+import NumericInput from '../../../Input/NumericInput';
+import MessageComponent from '../../../MessageComponent';
+import Modal from '../../../modal/modal';
+import TimerWithContext from '../../../TimerComponent';
+import Widget from '../../../Wizard/Widget';
 
 const TIMER_SECONDS = 120
 

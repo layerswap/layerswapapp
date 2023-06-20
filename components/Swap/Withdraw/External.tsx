@@ -1,29 +1,21 @@
-import { FC, useEffect } from 'react'
-import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import { SwapStatus } from '../../../../Models/SwapStatus';
-import { SwapWithdrawalStep } from '../../../../Models/Wizard';
-import { GetSwapStatusStep } from '../../../utils/SwapStatus';
+import { ExternalLink } from 'lucide-react';
+import { FC } from 'react'
+import { useSwapDataState } from '../../../context/swap';
+import { useSettingsState } from '../../../context/settings';
+import { GetSwapStep } from '../../utils/SwapStatus';
+import { SwapStep } from '../../../Models/Wizard';
+import KnownInternalNames from '../../../lib/knownIds';
+import Widget from '../../Wizard/Widget';
+import shortenAddress from '../../utils/ShortenAddress';
+import Steps from '../StepsComponent';
+import SwapSummary from '../Summary';
 
-const ProccessingWalletTransactionStep: FC = () => {
-    const { goToStep } = useFormWizardaUpdate<SwapWithdrawalStep>()
-    const { swap } = useSwapDataState()
-    const { setInterval } = useSwapDataUpdate()
 
-    useEffect(() => {
-        setInterval(10000)
-        return () => setInterval(0)
-    }, [])
+const External: FC = () => {
 
-    const swapStatusStep = GetSwapStatusStep(swap)
-
-    useEffect(() => {
-        if (swapStatusStep && !(swap?.status == SwapStatus.UserTransferPending && swap.has_sucessfull_published_tx && !swap.input_transaction) && swap.status != SwapStatus.UserTransferPending)
-            goToStep(swapStatusStep)
-    }, [swapStatusStep, swap])
 
     return (
-        <>
+        <Widget.Content>
             <div className="w-full py-12 grid grid-flow-row">
                 <div className='md:text-3xl text-lg font-bold text-white leading-6 text-center'>
                     Withdrawal pending
@@ -41,8 +33,8 @@ const ProccessingWalletTransactionStep: FC = () => {
                     </p>
                 </div>
             </div>
-        </>
+        </Widget.Content>
     )
 }
 
-export default ProccessingWalletTransactionStep;
+export default External;

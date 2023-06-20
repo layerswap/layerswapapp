@@ -1,72 +1,27 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
-import { FC, useCallback, useEffect, useState } from 'react'
-import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
-import { SwapWithdrawalStep } from '../../../../Models/Wizard';
+import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import ImtblClient from '../../../../lib/imtbl';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource, PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
-import { useInterval } from '../../../../hooks/useInterval';
-import { GetSwapStatusStep } from '../../../utils/SwapStatus';
-import shortenAddress from "../../../utils/ShortenAddress"
-import { SwapStatus } from '../../../../Models/SwapStatus';
-import Steps from '../StepsComponent';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
-import useSWR from 'swr'
-import { ApiResponse } from '../../../../Models/ApiResponse';
 
-const ImtblxWalletWithdrawStep: FC = () => {
+type Props = {
+    generatedDepositAddress: string
+}
+
+const ImtblxWalletWithdrawStep: FC<Props> = ({ generatedDepositAddress }) => {
     const [loading, setLoading] = useState(false)
-    const [verified, setVerified] = useState<boolean>()
-    const [txidApplied, setTxidApplied] = useState(false)
-    const [applyCount, setApplyCount] = useState(0)
-    const [transactionId, setTransactionId] = useState<string>()
     const [transferDone, setTransferDone] = useState<boolean>()
     const { walletAddress, swap } = useSwapDataState()
-    const { setWalletAddress, setInterval, setSwapPublishedTx } = useSwapDataUpdate()
+    const { setWalletAddress, setSwapPublishedTx } = useSwapDataUpdate()
     const { networks } = useSettingsState()
-    const { goToStep, setError } = useFormWizardaUpdate<SwapWithdrawalStep>()
 
     const { source_network: source_network_internal_name } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
-
-    const steps = [
-        { name: walletAddress ? `Connected to ${shortenAddress(walletAddress)}` : 'Connect wallet', description: 'Connect your ImmutableX wallet', href: '#', status: walletAddress ? 'complete' : 'current' },
-        { name: 'Transfer', description: "Initiate a transfer from your wallet to our address", href: '#', status: verified ? 'current' : 'upcoming' },
-    ]
-
-    const layerswapApiClient = new LayerSwapApiClient()
-    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${swap?.source_network}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher)
-
-    const applyNetworkInput = useCallback(async () => {
-        try {
-            setApplyCount(old => old + 1)
-            setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transactionId);
-            setTxidApplied(true)
-        }
-        catch (e) {
-            //TODO handle
-        }
-    }, [transactionId])
-
-    useInterval(
-        applyNetworkInput,
-        transactionId && !txidApplied && applyCount < 10 ? 8000 : null,
-    )
-
-    useEffect(() => {
-        return () => setInterval(0)
-    }, [])
-
-    const swapStatusStep = GetSwapStatusStep(swap)
-
-    useEffect(() => {
-        if (swapStatusStep && swap.status != SwapStatus.UserTransferPending)
-            goToStep(swapStatusStep)
-    }, [swapStatusStep, swap])
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -90,7 +45,7 @@ const ImtblxWalletWithdrawStep: FC = () => {
         try {
             const imtblClient = new ImtblClient(source_network?.internal_name)
             const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
-            const res = await imtblClient.Transfer(swap, source_currency, generatedDeposit?.data?.address)
+            const res = await imtblClient.Transfer(swap, source_currency, generatedDepositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
                 toast('Transfer failed or terminated')
@@ -98,9 +53,8 @@ const ImtblxWalletWithdrawStep: FC = () => {
                 toast(transactionRes.message)
             }
             else if (transactionRes.status == "success") {
-                setTransactionId(transactionRes.txId.toString())
+                setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transactionRes.txId.toString());
                 setTransferDone(true)
-                setInterval(2000)
             }
         }
         catch (e) {
@@ -113,17 +67,6 @@ const ImtblxWalletWithdrawStep: FC = () => {
     return (
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
-                <div className='space-y-4'>
-                    <div className="flex items-center">
-                        <h3 className="block text-lg font-medium text-white leading-6 text-left">
-                            Complete the transfer
-                        </h3>
-                    </div>
-                    <p className='leading-5'>
-                        We’ll help you to send crypto from your ImmutableX wallet
-                    </p>
-                </div>
-                <Steps steps={steps} />
                 <div className='space-y-4'>
                     <WarningMessage messageType='informing'>
                         <span className='flex-none'>

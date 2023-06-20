@@ -21,7 +21,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             return "/images/logo_placeholder.png";
         }
         // Shitty way to check for partner
-        else if ((item as Partner).is_wallet != undefined){
+        else if ((item as Partner).is_wallet != undefined) {
             return `${this.discovery.resource_storage_url}/layerswap/partners/${(item as Partner)?.organization_name?.toLowerCase()}.png`
         }
         else if ((item as any)?.internal_name != undefined) {
@@ -32,7 +32,6 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         }
     }
 
-
     static ResolveLayers(exchanges: Exchange[], networks: CryptoNetwork[]): Layer[] {
         const exchangeLayers: Layer[] = exchanges.map((e): Layer => ({
             isExchange: true,
@@ -40,6 +39,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             display_name: e.display_name,
             status: e.status,
             authorization_flow: e.authorization_flow,
+            type: e.type,
             assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks)
         }))
         const networkLayers: Layer[] = networks.map((n): Layer =>
@@ -48,6 +48,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             internal_name: n.internal_name,
             display_name: n.display_name,
             status: n.status,
+            native_currency: n.native_currency,
             average_completion_time: n.average_completion_time,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)
         }))
@@ -68,7 +69,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
                 network_internal_name: exchangecurrency.network,
                 network: { ...network, currencies: [networkCurrencies] },
                 min_deposit_amount: exchangecurrency.min_deposit_amount,
-                withdrawal_fee: exchangecurrency.withdrawal_fee
+                withdrawal_fee: exchangecurrency.withdrawal_fee,
             }
         })
     }
@@ -79,7 +80,9 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             status: c.status,
             is_default: true,
             network_internal_name: network?.internal_name,
-            network: { ...network, currencies: [c] }
+            network: { ...network, currencies: [c] },
+            contract_address: c.contract_address,
+            decimals: c.decimals
         }))
     }
 }

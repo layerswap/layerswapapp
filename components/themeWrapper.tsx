@@ -98,7 +98,7 @@ export default function ({ hideNavbar, children }: Props) {
                     </svg>
                 </div>
                 {hideNavbar ?? <Navbar />}
-                <div className={loading ? "animate-pulse" : ""}>
+                <div>
                     <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
                         <div className="flex flex-col w-full text-white">
                             {children}

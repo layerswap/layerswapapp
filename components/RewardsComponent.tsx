@@ -3,7 +3,7 @@ import { useCallback, useState } from "react"
 import { useSettingsState } from "../context/settings"
 import Image from 'next/image'
 import BackgroundField from "./backgroundField";
-import { Clock, Gift, Trophy, Wallet } from "lucide-react"
+import { Clock, Gift, Trophy } from "lucide-react"
 import LayerSwapApiClient, { Campaigns, Leaderboard, Reward, RewardPayout } from "../lib/layerSwapApiClient"
 import { RewardsComponentLeaderboardSceleton, RewardsComponentSceleton } from "./Sceletons"
 import useSWR from "swr"
@@ -11,7 +11,7 @@ import { ApiResponse } from "../Models/ApiResponse"
 import ClickTooltip from "./Tooltips/ClickTooltip"
 import shortenAddress from "./utils/ShortenAddress"
 import { useAccount } from "wagmi"
-import RainbowKit from "./Wizard/Steps/Wallet/RainbowKit"
+import RainbowKit from "./Swap/Withdraw/Wallet/RainbowKit"
 import { Progress } from "./ProgressBar"
 import NetworkSettings from "../lib/NetworkSettings"
 import { truncateDecimals } from "./utils/RoundDecimals"
@@ -20,6 +20,7 @@ import SubmitButton from "./buttons/submitButton";
 import AddressIcon from "./AddressIcon";
 import Modal from "./modal/modal";
 import SpinIcon from "./icons/spinIcon";
+import WalletIcon from "./icons/WalletIcon";
 
 function RewardsComponent() {
 
@@ -250,7 +251,7 @@ function RewardsComponent() {
                                                                             <div className="cols-start-2 flex items-center space-x-2">
                                                                                 <AddressIcon address={user.address} size={25} />
                                                                                 <div>
-                                                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
+                                                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name]?.AccountExplorerTemplate?.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
                                                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                                                 </div>
                                                                             </div>
@@ -312,7 +313,7 @@ function RewardsComponent() {
                                         )
                                     }
                                     <RainbowKit>
-                                        <SubmitButton isDisabled={false} isSubmitting={false} icon={<Wallet className="h-6 w-6 " />}>
+                                        <SubmitButton isDisabled={false} isSubmitting={false} icon={<WalletIcon className="stroke-2 w-6 h-6" />}>
                                             Connect a wallet
                                         </SubmitButton>
                                     </RainbowKit>
@@ -343,7 +344,7 @@ function RewardsComponent() {
                                             <div className="cols-start-2 flex items-center space-x-2">
                                                 <AddressIcon address={user.address} size={25} />
                                                 <div>
-                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
+                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name]?.AccountExplorerTemplate?.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                 </div>
                                             </div>

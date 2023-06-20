@@ -1,38 +1,38 @@
 import { ImmutableXClient } from "@imtbl/imx-sdk";
 import { Formik, FormikProps } from "formik";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { useQueryState } from "../../../../context/query";
-import { useSettingsState } from "../../../../context/settings";
-import { SwapFormValues } from "../../../DTOs/SwapFormValues";
-import { useSwapDataState, useSwapDataUpdate } from "../../../../context/swap";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryState } from "../../../context/query";
+import { useSettingsState } from "../../../context/settings";
+import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import React from "react";
-import { useFormWizardaUpdate } from "../../../../context/formWizardProvider";
-import { SwapCreateStep } from "../../../../Models/Wizard";
 import axios from "axios";
-import ConnectImmutableX from "../ConnectImmutableX";
-import ConnectNetwork from "../../../ConnectNetwork";
+import ConnectImmutableX from "./ConnectImmutableX";
+import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
-import { clearTempData, getTempData } from "../../../../lib/openLink";
-import KnownInternalNames from "../../../../lib/knownIds";
-import MainStepValidation from "../../../../lib/mainStepValidator";
-import { generateSwapInitialValues } from "../../../../lib/generateSwapInitialValues";
-import LayerSwapApiClient from "../../../../lib/layerSwapApiClient";
-import Modal from "../../../modal/modal";
-import SwapForm from "./SwapForm";
-import NetworkSettings from "../../../../lib/NetworkSettings";
+import { clearTempData, getTempData } from "../../../lib/openLink";
+import KnownInternalNames from "../../../lib/knownIds";
+import MainStepValidation from "../../../lib/mainStepValidator";
+import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
+import Modal from "../../modal/modal";
+import SwapForm from "./Form";
+import NetworkSettings from "../../../lib/NetworkSettings";
 import { useRouter } from "next/router";
 import useSWR from "swr";
-import { ApiResponse } from "../../../../Models/ApiResponse";
-import { Partner } from "../../../../Models/Partner";
+import { ApiResponse } from "../../../Models/ApiResponse";
+import { Partner } from "../../../Models/Partner";
+import InternalApiClient from "../../../lib/internalApiClient";
+import TokenService from "../../../lib/TokenService";
+import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
+import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 
-type Props = {
-    OnSumbit: ({ values, swapId }: { values: SwapFormValues, swapId?: string }) => Promise<void>
-}
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
-const MainStep: FC<Props> = ({ OnSumbit }) => {
+
+export default function ()  {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectImmutable, setShowConnectImmutable] = useState(false);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
@@ -40,13 +40,12 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
     const { swapFormData, swap } = useSwapDataState()
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
-
+    const { updateAuthData, setUserType } = useAuthDataUpdate()
     let formValues = formikRef.current?.values;
 
     const settings = useSettingsState();
     const query = useQueryState();
-    const { updateSwapFormData, clearSwap, setDepositeAddressIsfromAccount } = useSwapDataUpdate()
+    const { updateSwapFormData, clearSwap, setDepositeAddressIsfromAccount, createAndProcessSwap } = useSwapDataUpdate()
 
     useEffect(() => {
         if (query.coinbase_redirect) {
@@ -66,9 +65,6 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
                         clearTempData()
                         formikRef.current.setValues(formValues)
                         updateSwapFormData(formValues)
-                        if (source.isExchange) {
-                            goToStep(SwapCreateStep.Confirm)
-                        }
                     }
                     catch (e) {
                         toast(e?.response?.data?.error?.message || e.message)
@@ -116,13 +112,40 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             if (formikRef.current?.dirty) {
                 clearSwap()
             }
+
             updateSwapFormData(values)
-            await OnSumbit({ values, swapId: formikRef.current?.dirty ? null : swap?.id })
+
+            const accessToken = TokenService.getAuthData()?.access_token
+            if (!accessToken) {
+                try {
+                    var apiClient = new LayerSwapAuthApiClient();
+                    const res = await apiClient.guestConnectAsync()
+                    updateAuthData(res)
+                    setUserType(UserType.GuestUser)
+                }
+                catch (error) {
+                    toast.error(error.response?.data?.error || error.message)
+                    return;
+                }
+            }
+
+            if (query.addressSource === "imxMarketplace" && settings.validSignatureisPresent) {
+                try {
+                    const account = await layerswapApiClient.GetWhitelistedAddress(swapFormData?.to?.internal_name, query.destAddress)
+                }
+                catch (e) {
+                    //TODO handle account not found
+                    const internalApiClient = new InternalApiClient()
+                    await internalApiClient.VerifyWallet(window.location.search);
+                }
+            }
+            const swapId = await createAndProcessSwap(values);
+            await router.push(`/swap/${swapId}`)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [updateSwapFormData, swap])
+    }, [updateSwapFormData, swap, settings, query])
 
     const destAddress: string = query.destAddress;
 
@@ -153,8 +176,7 @@ const MainStep: FC<Props> = ({ OnSumbit }) => {
             onSubmit={handleSubmit}
         >
             <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />
-        </Formik >
+        </Formik>
     </>
 }
 
-export default MainStep

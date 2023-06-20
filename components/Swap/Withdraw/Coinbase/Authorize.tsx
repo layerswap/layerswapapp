@@ -1,7 +1,6 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import useSWR from 'swr';
-import { useFormWizardaUpdate } from '../../../../context/formWizardProvider';
 import { useQueryState } from '../../../../context/query';
 import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
@@ -9,17 +8,16 @@ import { useInterval } from '../../../../hooks/useInterval';
 import { Configs, usePersistedState } from '../../../../hooks/usePersistedState';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 import { parseJwt } from '../../../../lib/jwtParser';
-import LayerSwapApiClient, { UserExchangesData } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { UserExchangesData, WithdrawType } from '../../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
 import { ApiResponse } from '../../../../Models/ApiResponse';
-import { SwapCreateStep } from '../../../../Models/Wizard';
 import SubmitButton from '../../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
-import Widget from '../../Widget';
+import Widget from '../../../Wizard/Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectGuideScreens';
-import { Layer } from '../../../../Models/Layer';
 import KnownInternalNames from '../../../../lib/knownIds';
+import { Layer } from '../../../../Models/Layer';
 
 type Props = {
     onAuthorized: () => void,
@@ -30,19 +28,18 @@ type Props = {
 
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap, swapFormData } = useSwapDataState()
-    const { setWithdrawManually } = useSwapDataUpdate()
+    const { setWithdrawType } = useSwapDataUpdate()
     const { layers, currencies, discovery } = useSettingsState()
-    const { goToStep } = useFormWizardaUpdate()
-    let [alreadyFamiliar, setAlreadyFamiliar] = usePersistedState<Configs>({ alreadyFamiliarWithCoinbaseConnect: false }, 'configs')
+    let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({ }, 'configs')
 
-    const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect)
+    const [carouselFinished, setCarouselFinished] = useState(localConfigs.alreadyFamiliarWithCoinbaseConnect)
     const [authWindow, setAuthWindow] = useState<Window>()
     const [authorizedAmount, setAuthorizedAmount] = useState<number>()
 
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
-    const exchange_internal_name = swap?.source_exchange || swapFormData?.from?.internal_name
-    const asset_name = swap?.source_network_asset || swapFormData?.currency.asset
+    const exchange_internal_name = swap?.source_exchange 
+    const asset_name = swap?.source_network_asset 
 
     const exchange = layers.find(e => e.isExchange && e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase()) as Layer & { isExchange: true }
     const currency = currencies?.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
@@ -58,7 +55,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const { data: exchange_accounts } = useSWR<ApiResponse<UserExchangesData[]>>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
 
     const handleTransferMannually = useCallback(() => {
-        setWithdrawManually(true)
+        setWithdrawType(WithdrawType.Manually)
         onDoNotConnect()
     }, [])
 
@@ -99,16 +96,14 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const handleConnect = useCallback(() => {
         try {
-            if (!carouselFinished && !alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect) {
+            if (!carouselFinished && !localConfigs.alreadyFamiliarWithCoinbaseConnect) {
                 carouselRef?.current?.next()
                 return;
             }
             const access_token = TokenService.getAuthData()?.access_token
-            if (!access_token)
-                goToStep(SwapCreateStep.Email)
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ Type: 1, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, swap_data: swapFormData, swapId: swap?.id, query: query })
+            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, swapId: swap?.id, query: query })
             setAuthWindow(authWindow)
         }
         catch (e) {
@@ -123,7 +118,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     }
 
     const handleToggleChange = (value: boolean) => {
-        setAlreadyFamiliar({ ...alreadyFamiliar, alreadyFamiliarWithCoinbaseConnect: value })
+        setLocalConfigs({ ...localConfigs, alreadyFamiliarWithCoinbaseConnect: value })
         onCarouselLast(value)
     }
 
@@ -137,13 +132,13 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                     </h3>
                 }
                 {
-                    alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect ?
+                    localConfigs.alreadyFamiliarWithCoinbaseConnect ?
                         <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-secondary-900 to-secondary-700 h-100%`} style={{ width: '100%' }}>
                             <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                         </div>
                         :
                         <div className="w-full space-y-3">
-                            {(swap || swapFormData) && <Carousel onLast={onCarouselLast} ref={carouselRef}>
+                            {swap && <Carousel onLast={onCarouselLast} ref={carouselRef}>
                                 <CarouselItem width={100} >
                                     <FirstScreen exchange_name={exchange_name} />
                                 </CarouselItem>
@@ -169,7 +164,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
             <Widget.Footer sticky={stickyFooter}>
                 <div>
                     {
-                        alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect && carouselFinished ?
+                        localConfigs.alreadyFamiliarWithCoinbaseConnect && carouselFinished ?
                             <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-secondary-500 hover:bg-secondary-400 rounded-md border border-secondary-500 hover:border-secondary-200 w-full mb-3">
                                 Show me full guide
                             </button>
@@ -181,7 +176,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                                     type="checkbox"
                                     className="h-4 w-4 bg-secondary-600 rounded border-secondary-400 text-priamry focus:ring-secondary-600"
                                     onChange={() => handleToggleChange(true)}
-                                    checked={alreadyFamiliar.alreadyFamiliarWithCoinbaseConnect}
+                                    checked={localConfigs.alreadyFamiliarWithCoinbaseConnect}
                                 />
                                 <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
                                     I'm already familiar with the process.

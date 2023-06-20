@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapTransaction, WithdrawType } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';
@@ -10,13 +10,15 @@ import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import NetworkSettings, { DepositType } from '../lib/NetworkSettings';
 import { Partner } from '../Models/Partner';
+import { SwapStatus } from '../Models/SwapStatus';
+import { ApiError } from '../Models/ApiError';
 
-const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawManually: false });
+const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
     updateSwapFormData: (value: React.SetStateAction<SwapFormValues>) => void,
-    createAndProcessSwap: (TwoFACode?: string) => Promise<string>,
+    createAndProcessSwap: (swapFormData: SwapFormValues) => Promise<string>,
     //TODO this is stupid need to clean data in confirm step or even do not store it
     clearSwap: () => void,
     setCodeRequested(codeSubmitted: boolean): void;
@@ -26,7 +28,7 @@ type UpdateInterface = {
     mutateSwap: KeyedMutator<ApiResponse<SwapItem>>
     setWalletAddress: (value: string) => void,
     setDepositeAddressIsfromAccount: (value: boolean) => void,
-    setWithdrawManually: (value: boolean) => void
+    setWithdrawType: (value: WithdrawType) => void
     setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
 }
 
@@ -34,17 +36,19 @@ type SwapData = {
     codeRequested: boolean,
     swapFormData?: SwapFormValues,
     swap?: SwapItem,
+    swapApiError?: ApiError,
     addressConfirmed: boolean,
     depositeAddressIsfromAccount: boolean,
     walletAddress: string,
-    withdrawManually: boolean
+    withdrawType: WithdrawType,
+    swapTransaction: SwapTransaction
 }
 
 export function SwapDataProvider({ children }) {
     const [swapFormData, setSwapFormData] = useState<SwapFormValues>();
     const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
-    const [withdrawManually, setWithdrawManually] = useState<boolean>(false)
+    const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [walletAddress, setWalletAddress] = useState<string>()
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
@@ -55,16 +59,15 @@ export function SwapDataProvider({ children }) {
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}`
     const [interval, setInterval] = useState(0)
-    const { data: swapResponse, mutate } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
+    const { data: swapResponse, mutate, error } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
-    // Store pendingTransactionId in local storage, not the best solution
-    if (swapResponse?.data) {
+    const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
+
+    useEffect(() => {
         const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
         const txForSwap = data?.[swapId];
-        if (txForSwap && txForSwap.status == PublishedSwapTransactionStatus.Completed) {
-            swapResponse.data.has_sucessfull_published_tx = true;
-        }
-    }
+        setSwapTransaction(txForSwap)
+    }, [swapId])
 
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?label=${query?.addressSource}`, layerswapApiClient.fetcher)
     const partner = query?.addressSource && partnerData?.data?.labels?.includes(query?.addressSource) ? partnerData?.data : undefined
@@ -136,12 +139,10 @@ export function SwapDataProvider({ children }) {
         txForSwap.status = status;
         data[swapId] = txForSwap;
         localStorage.setItem('swapTransactions', JSON.stringify(data))
-        if (swapResponse?.data && txForSwap && txForSwap.status == PublishedSwapTransactionStatus.Completed) {
-            swapResponse.data.has_sucessfull_published_tx = true;
-        }
+        setSwapTransaction(txForSwap)
     }, [swapId, swapResponse])
 
-    const createAndProcessSwap = useCallback(async (TwoFACode?: string) => {
+    const createAndProcessSwap = useCallback(async (swapFormData: SwapFormValues) => {
         const newSwapId = await createSwap(swapFormData, query, settings)
         setSwapId(newSwapId)
         return newSwapId
@@ -158,12 +159,11 @@ export function SwapDataProvider({ children }) {
         mutateSwap: mutate,
         setDepositeAddressIsfromAccount,
         setWalletAddress,
-        setWithdrawManually,
+        setWithdrawType,
         setSwapPublishedTx
     };
-
     return (
-        <SwapDataStateContext.Provider value={{ swapFormData, withdrawManually, depositeAddressIsfromAccount, swap: swapResponse?.data, codeRequested, addressConfirmed, walletAddress }}>
+        <SwapDataStateContext.Provider value={{ swapFormData, withdrawType, depositeAddressIsfromAccount, swap: swapResponse?.data, swapApiError: error, codeRequested, addressConfirmed, walletAddress, swapTransaction }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>

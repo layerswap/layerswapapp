@@ -10,10 +10,12 @@ export type Layer = {
 type LayerData = ({
     isExchange: true;
     assets?: ExchangeL2Asset[];
+    type: "cex" | "fiat",
     authorization_flow: "o_auth2" | "api_credentials" | 'none';
 } | {
     isExchange: false;
     assets?: BaseL2Asset[];
+    native_currency?: string;
     average_completion_time?: string
 })
 
@@ -22,7 +24,9 @@ export type BaseL2Asset = {
     network_internal_name: string;
     network: CryptoNetwork;
     is_default: boolean;
-    status: LayerStatus
+    status: LayerStatus;
+    contract_address?: string;
+    decimals?: number
 }
 
 export type ExchangeL2Asset = {
