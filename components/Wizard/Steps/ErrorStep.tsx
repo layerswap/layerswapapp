@@ -2,7 +2,7 @@ import { FC, useEffect } from 'react'
 import SubmitButton from '../../buttons/submitButton';
 import MessageComponent from '../../MessageComponent';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
-import { KnownwErrorCode } from '../../../Models/ApiError';
+import { KnownErrorCode } from '../../../Models/ApiError';
 import { useIntercom } from 'react-use-intercom';
 import { useSwapDataState } from '../../../context/swap';
 import { useAuthState } from '../../../context/authContext';
@@ -17,7 +17,7 @@ const ErrorStep: FC = () => {
     return (
         <>
             {
-                error?.Code == KnownwErrorCode.INSUFFICIENT_FUNDS &&
+                error?.Code == KnownErrorCode.INSUFFICIENT_FUNDS &&
                 <MessageComponent>
                     <MessageComponent.Content icon='red'>
                         <MessageComponent.Header>
@@ -37,7 +37,7 @@ const ErrorStep: FC = () => {
                 </MessageComponent>
             }
             {
-                error?.Code == KnownwErrorCode.FUNDS_ON_HOLD &&
+                error?.Code == KnownErrorCode.FUNDS_ON_HOLD &&
                 <MessageComponent>
                     <MessageComponent.Content icon='red'>
                         <MessageComponent.Header>
@@ -57,7 +57,7 @@ const ErrorStep: FC = () => {
                 </MessageComponent>
             }
             {
-                error?.Code == KnownwErrorCode.NETWORK_ACCOUNT_ALREADY_EXISTS &&
+                error?.Code == KnownErrorCode.NETWORK_ACCOUNT_ALREADY_EXISTS &&
                 <MessageComponent>
                     <MessageComponent.Content icon='red'>
                         <MessageComponent.Header>

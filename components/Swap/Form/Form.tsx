@@ -13,7 +13,7 @@ import Modal from "../../modal/modal";
 import OfframpAccountConnectStep from "../../OfframpAccountConnect";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
-import { KnownwErrorCode } from "../../../Models/ApiError";
+import { KnownErrorCode } from "../../../Models/ApiError";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import ConnectApiKeyExchange from "../../connectApiKeyExchange";
 import { useQueryState } from "../../../context/query";
@@ -91,7 +91,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
             setDepositeAddressIsfromAccount(true)
         }
         catch (e) {
-            if (e?.response?.data?.error?.code === KnownwErrorCode.NOT_FOUND || e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS)
+            if (e?.response?.data?.error?.code === KnownErrorCode.NOT_FOUND || e?.response?.data?.error?.code === KnownErrorCode.INVALID_CREDENTIALS)
                 setOpenExchangeConnect(true)
             else {
                 toast(e?.response?.data?.error?.message || e.message)

@@ -10,9 +10,6 @@ export type Configs = {
     address?: string;
     icon?: string;
     balance?: number
-  },
-  networkAddressIsGenerated?: {
-    [key: string]: boolean
   }
 }
 

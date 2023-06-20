@@ -16,16 +16,27 @@ const WalletTransfer: FC = () => {
     const { layers } = useSettingsState()
     const { address } = useAccount()
     const { source_network: source_network_internal_name, destination_address } = swap
-    const sameSourceDestAddress = address?.toLowerCase() === destination_address?.toLowerCase()
+
+
+
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const sourceCurrency = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
 
+    const shouldGetGeneratedAddress =
+        !sourceIsStarknet &&
+        (address?.toLowerCase() !== destination_address?.toLowerCase()
+        || sourceIsImmutableX)
+
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>((sameSourceDestAddress || sourceIsStarknet) ? null : `/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
-    const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>((sameSourceDestAddress || sourceIsStarknet) ? `/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}` : null, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
+    const generateDepositParams = shouldGetGeneratedAddress ? [source_network_internal_name] : null
+    const {
+        data: generatedDeposit
+    } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
+
+    const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
     const generatedDepositAddress = generatedDeposit?.data?.address
     const managedDepositAddress = managedDeposit?.data?.address
     const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]

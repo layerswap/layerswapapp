@@ -35,7 +35,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     } = useQueryState()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(addressSource && `/apps?label=${addressSource}`, layerswapApiClient.fetcher)
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(addressSource && `/apps?name=${addressSource}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
 
     const source = hideFrom ? partner : from
@@ -82,10 +82,19 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                             <p className="text-sm text-primary-text">{shortenAddress(destAddress)}</p>
                         </div>
                     </div>
-                    <div className="flex flex-col justify-end">
-                        <p className="text-white text-lg">{receive_amount} {currency.asset}</p>
-                        <p className="text-primary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
-                    </div>
+                    {
+                        fee ?
+                            <div className="flex flex-col justify-end">
+                                <p className="text-white text-lg">{receive_amount} {currency.asset}</p>
+                                <p className="text-primary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
+                            </div>
+                            :
+                            <div className="flex flex-col justify-end">
+                                <div className="h-[18px] my-[5px] w-20 animate-pulse rounded bg-gray-500" />
+                                <div className="h-[10px] my-[5px] w-10 animate-pulse rounded bg-gray-500 ml-auto" />
+                            </div>
+                    }
+
                 </div>
             </div>
             {

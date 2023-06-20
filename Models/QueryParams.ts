@@ -1,7 +1,6 @@
 ///Doe to typechecking please always set default values in this class
 export class QueryParams {
     coinbase_redirect?: string = "";
-
     from?: string = "";
     to?: string = "";
     lockAddress?: boolean = false;

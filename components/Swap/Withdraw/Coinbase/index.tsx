@@ -6,7 +6,7 @@ import Coinbase2FA from './Coinbase2FA';
 import { ArrowLeftRight, Link } from 'lucide-react';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import LayerSwapApiClient, { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { KnownwErrorCode } from '../../../../Models/ApiError';
+import { KnownErrorCode } from '../../../../Models/ApiError';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
 import { TimerProvider, useTimerState } from '../../../../context/timerContext';
@@ -53,7 +53,7 @@ const TransferElements: FC = () => {
                 }
             }
             catch (e) {
-                if (e?.response?.data?.error?.code === KnownwErrorCode.NOT_FOUND)
+                if (e?.response?.data?.error?.code === KnownErrorCode.NOT_FOUND)
                     steAuthorized(false)
                 else
                     toast(e?.response?.data?.error?.message || e.message)
@@ -72,12 +72,12 @@ const TransferElements: FC = () => {
                 await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange)
             }
             catch (e) {
-                if (e?.response?.data?.error?.code === KnownwErrorCode.COINBASE_INVALID_2FA) {
+                if (e?.response?.data?.error?.code === KnownErrorCode.COINBASE_INVALID_2FA) {
                     startTimer(TIMER_SECONDS)
                     setCodeRequested(true)
                     setOpenCoinbase2FA(true)
                 }
-                else if (e?.response?.data?.error?.code === KnownwErrorCode.INVALID_CREDENTIALS || e?.response?.data?.error?.code === KnownwErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
+                else if (e?.response?.data?.error?.code === KnownErrorCode.INVALID_CREDENTIALS || e?.response?.data?.error?.code === KnownErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
                     steAuthorized(false)
                     setCodeRequested(false)
                     setShowCoinbaseConnectModal(true)

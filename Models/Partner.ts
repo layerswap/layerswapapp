@@ -3,5 +3,6 @@ export class Partner {
     organization_name: string;
     is_wallet: boolean;
     id: number;
-    labels: string[];
+    name: string
+    api_key: string
 }
