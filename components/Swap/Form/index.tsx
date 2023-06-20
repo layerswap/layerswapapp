@@ -26,13 +26,14 @@ import InternalApiClient from "../../../lib/internalApiClient";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
+import { ApiError, KnownErrorCode } from "../../../Models/ApiError";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
 
-export default function ()  {
+export default function () {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectImmutable, setShowConnectImmutable] = useState(false);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
@@ -114,7 +115,7 @@ export default function ()  {
             }
 
             updateSwapFormData(values)
-
+            
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken) {
                 try {
@@ -142,8 +143,14 @@ export default function ()  {
             const swapId = await createAndProcessSwap(values);
             await router.push(`/swap/${swapId}`)
         }
-        catch (e) {
-            toast.error(e.message)
+        catch (error) {
+            const data: ApiError = error?.response?.data?.error
+            if (data?.code === KnownErrorCode.BLACKLISTED_ADDRESS) {
+                toast.error('You can’t transfer to that address. Please double check your wallet’s address and change it in the previous page.')
+            }
+            else {
+                toast.error(error.message)
+            }
         }
     }, [updateSwapFormData, swap, settings, query])
 

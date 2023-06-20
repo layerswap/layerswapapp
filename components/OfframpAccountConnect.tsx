@@ -32,7 +32,6 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
     const { oauth_connect_url } = (destination?.isExchange && (coinbaseOauthProvider || {})) || {}
     const [authWindow, setAuthWindow] = useState<Window>()
     const [loading, setLoading] = useState(false)
-    const { goToStep } = useFormWizardaUpdate<SwapCreateStep>()
 
     const query = useQueryState()
 
@@ -64,8 +63,7 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
         setLoading(true)
         try {
             const access_token = TokenService.getAuthData()?.access_token
-            if (!access_token)
-                goToStep(SwapCreateStep.Email)
+
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ Type: 0, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
             const authWindow = OpenLink({ link: oauth_connect_url + encoded, swap_data: values, query })
