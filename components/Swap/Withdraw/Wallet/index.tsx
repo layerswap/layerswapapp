@@ -26,8 +26,9 @@ const WalletTransfer: FC = () => {
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
 
     const shouldGetGeneratedAddress =
-        address?.toLowerCase() !== destination_address?.toLowerCase()
-        || sourceIsImmutableX
+        !sourceIsStarknet &&
+        (address?.toLowerCase() !== destination_address?.toLowerCase()
+        || sourceIsImmutableX)
 
     const layerswapApiClient = new LayerSwapApiClient()
     const generateDepositParams = shouldGetGeneratedAddress ? [source_network_internal_name] : null
