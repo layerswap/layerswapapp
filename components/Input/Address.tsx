@@ -16,12 +16,11 @@ import { isValidAddress } from "../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
-import RainbowKit from "../Wizard/Steps/Wallet/RainbowKit";
+import RainbowKit from "../Swap/Withdraw/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
 import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
-import { Wallet } from 'lucide-react'
 import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import { connect, disconnect as starknetDisconnect } from "get-starknet";
@@ -315,7 +314,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             !disabled && !inputValue && destinationIsStarknet && canAutofillStarknet &&
                             <div onClick={handleConnectStarknet} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                                 <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                    <Wallet className="h-6 w-6 text-primary-text" />
+                                    <WalletIcon className="w-6 h-6 text-primary-text" />
                                 </div>
                                 <div className="flex flex-col">
                                     <div className="block text-sm font-medium">
@@ -334,7 +333,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             <RainbowKit>
                                 <div className={`min-h-12 text-left space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                                     <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                        <Wallet className="h-6 w-6 text-primary-text" />
+                                        <WalletIcon className="w-6 h-6 text-primary-text" />
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="block text-sm font-medium">

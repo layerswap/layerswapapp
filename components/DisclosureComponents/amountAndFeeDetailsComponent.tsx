@@ -3,7 +3,7 @@ import { useSettingsState } from '../../context/settings';
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import ClickTooltip from '../Tooltips/ClickTooltip';
 import { truncateDecimals } from '../utils/RoundDecimals';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../Accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { GetDefaultNetwork, GetNetworkCurrency } from '../../helpers/settingsHelper';

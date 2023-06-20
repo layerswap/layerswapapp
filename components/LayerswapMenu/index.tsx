@@ -1,5 +1,5 @@
 import { Menu } from "@headlessui/react";
-import { BookOpen, ExternalLink, Gift, Link, MenuIcon, MessageCircle, Wallet } from "lucide-react";
+import { BookOpen, ExternalLink, Gift, Link, MenuIcon } from "lucide-react";
 import { Home, LogIn, LogOut, TableIcon, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";

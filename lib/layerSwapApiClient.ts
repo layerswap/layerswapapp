@@ -51,6 +51,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<DepositAddress>>("GET", `/swaps?network=${network}&source=${source}`);
     }
 
+    async GenerateDepositAddress(network: string): Promise<ApiResponse<DepositAddress>> {
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/deposit_addresses/${network}`);
+    }
+
     async GetExchangeAccounts(): Promise<ApiResponse<UserExchangesData[]>> {
         return await this.AuthenticatedRequest<ApiResponse<UserExchangesData[]>>("GET", '/exchange_accounts');
     }
@@ -103,6 +107,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<any>>("PUT", `/campaigns/${campaign}/leaderboard`);
     }
 
+    async GetFee(params: GetFeeParams): Promise<ApiResponse<any>> {
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", '/swaps/amount_settings', params);
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
@@ -126,6 +134,7 @@ export default class LayerSwapApiClient {
 }
 
 export type DepositAddress = {
+    type: string
     address: string;
 }
 
@@ -156,16 +165,14 @@ export type NetworkAccount = {
 
 export type CreateSwapParams = {
     amount: string,
-    source_network: string | null,
-    source_exchange: string | null,
-    destination_network: string | null,
-    destination_exchange: string | null,
+    source: string,
+    destination: string,
     asset: string,
+    source_address: string,
     destination_address: string,
-    partner?: string,
-    external_id?: string,
+    app_name?: string,
+    reference_id?: string,
     refuel?: boolean,
-    deposit_type: DepositType,
 }
 
 export type SwapItem = {
@@ -176,8 +183,11 @@ export type SwapItem = {
     destination_address: string,
     requested_amount: number,
     message: string,
-    external_id: string,
-    partner: string,
+    reference_id: string,
+    app_name: string,
+    refuel_amount: number,
+    refuel_price: number,
+    refuel_transaction_id: string,
     source_network_asset: string,
     source_network: string,
     source_exchange: string,
@@ -186,7 +196,12 @@ export type SwapItem = {
     destination_exchange: string,
     input_transaction?: Transaction,
     output_transaction?: Transaction,
+    refuel_transaction?: RefuelTransaction;
+    has_refuel?: boolean,
     has_sucessfull_published_tx: boolean;
+    metadata?: {
+        'STRIPE:SessionId': string
+    },
     has_pending_deposit: boolean;
     sequence_number: number;
 }
@@ -208,19 +223,48 @@ type Transaction = {
     usd_price: number
 }
 
+type RefuelTransaction = {
+    from: string,
+    to: string,
+    created_date: string,
+    transaction_id: string,
+    explorer_url: string,
+    confirmations: number,
+    max_confirmations: number,
+    amount: number,
+    usd_price: number,
+    usd_value: number
+}
+
+export type Fee = {
+    min_amount: number,
+    max_amount: number,
+    fee_amount: number,
+    deposit_type: DepositType
+}
+
+type GetFeeParams = {
+    source: string,
+    destination: string,
+    asset: string,
+    refuel?: boolean
+}
 
 export enum PublishedSwapTransactionStatus {
     Pending,
+    Error,
     Completed
 }
 
 export type PublishedSwapTransactions = {
-    [key: string]: {
-        hash: string,
-        status: PublishedSwapTransactionStatus
-    }
+    [key: string]: SwapTransaction
 }
 
+
+export type SwapTransaction = {
+    hash: string,
+    status: PublishedSwapTransactionStatus
+}
 
 export enum SwapType {
     OnRamp = "cex_to_network",
@@ -228,6 +272,13 @@ export enum SwapType {
     CrossChain = "network_to_network"
 }
 
+export enum WithdrawType {
+    Wallet = 'wallet',
+    Manually = 'manually',
+    Stripe = 'stripe',
+    Coinbase = 'coinbase',
+    External = 'external'
+}
 export type ConnectParams = {
     api_key: string,
     api_secret: string,

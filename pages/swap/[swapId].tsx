@@ -11,6 +11,7 @@ import SwapWithdrawal from '../../components/SwapWithdrawal';
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient';
 import { validateSignature } from '../../helpers/validateSignature';
 import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings';
+import { TimerProvider } from '../../context/timerContext';
 
 const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
@@ -22,7 +23,9 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
         <MenuProvider>
           <SwapDataProvider >
             <UserExchangeProvider>
-              <SwapWithdrawal />
+              <TimerProvider>
+                <SwapWithdrawal />
+              </TimerProvider>
             </UserExchangeProvider>
           </SwapDataProvider >
         </MenuProvider>

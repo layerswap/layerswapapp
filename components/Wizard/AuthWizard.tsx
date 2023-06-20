@@ -6,7 +6,6 @@ import { AuthStep, SwapCreateStep } from "../../Models/Wizard";
 import { TrackEvent } from "../../pages/_document";
 import CodeStep from "./Steps/CodeStep";
 import EmailStep from "./Steps/EmailStep";
-import { AllPendingSwapStep } from "./Steps/PendingSwapsStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 
@@ -36,9 +35,6 @@ const AuthWizard: FC = () => {
                 </WizardItem>
                 <WizardItem StepName={SwapCreateStep.Code} GoBack={GoBackToEmailStep}>
                     <CodeStep OnNext={CodeOnNext} />
-                </WizardItem>
-                <WizardItem StepName={SwapCreateStep.PendingSwaps}>
-                    <AllPendingSwapStep />
                 </WizardItem>
             </Wizard>
         </TimerProvider>

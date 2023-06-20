@@ -6,7 +6,8 @@ export class Exchange {
     internal_name: string;
     authorization_flow: "o_auth2" | "api_credentials" | 'none'
     currencies: (ExchangeCurrency & NetworkCurrency)[];
-    status: LayerStatus
+    status: LayerStatus;
+    type: "cex" | "fiat"
 }
 
 export class ExchangeCurrency {

@@ -1,9 +1,9 @@
 export type ApiError = {
-    code: KnownwErrorCode | string,
+    code: KnownErrorCode | string,
     message: string;
 }
 
-export enum KnownwErrorCode {
+export enum KnownErrorCode {
     NOT_FOUND = "NOT_FOUND",
     INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
     INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS",

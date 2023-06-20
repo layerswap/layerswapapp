@@ -15,7 +15,6 @@ import { SwapStatus } from "../../Models/SwapStatus"
 import ToggleButton from "../buttons/toggleButton";
 import Modal from "../modal/modal";
 import HeaderWithMenu from "../HeaderWithMenu";
-import { SwapCancelModal } from "../Wizard/Steps/PendingSwapsStep";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -275,32 +274,23 @@ function TransactionsHistory() {
                         canCompleteCancelSwap &&
                         <div className="text-white text-sm mt-6 space-y-3">
                           <div className="flex flex-row text-white text-base space-x-2">
-                            <div className='basis-1/3'>
-                              <SubmitButton text_align="left" buttonStyle="outline" onClick={async () => setOpenCancelConfirmModal(true)} isDisabled={false} isSubmitting={false} icon={<X className='h-5 w-5' />}>
-                                <DoubleLineText
-                                  colorStyle='mltln-text-dark'
-                                  primaryText='Cancel'
-                                  secondarytext='the swap'
-                                  reversed={true}
-                                />
-                              </SubmitButton>
-                            </div>
-                            <div className='basis-2/3'>
-                              <SubmitButton button_align='right' text_align="left" onClick={() => router.push(`/swap/${selectedSwap.id}`)} isDisabled={false} isSubmitting={false} icon={<ExternalLink className='h-5 w-5' />}>
-                                <DoubleLineText
-                                  colorStyle='mltln-text-light'
-                                  primaryText="Complete"
-                                  secondarytext='the swap'
-                                  reversed={true}
-                                />
-                              </SubmitButton>
-                            </div>
+                            <SubmitButton
+                              text_align="center"
+                              onClick={() => router.push(`/swap/${selectedSwap.id}`)}
+                              isDisabled={false}
+                              isSubmitting={false}
+                              icon={
+                                <ExternalLink
+                                  className='h-5 w-5' />
+                              }
+                            >
+                              Complete the swap
+                            </SubmitButton>
                           </div>
                         </div>
                       }
                     </div>
                   </Modal>
-                  <SwapCancelModal onCancel={() => router.reload()} swapToCancel={selectedSwap} openCancelConfirmModal={openCancelConfirmModal} setOpenCancelConfirmModal={setOpenCancelConfirmModal} />
                 </div>
                 : <div className="absolute top-1/2 right-0 text-center w-full">
                   There are no transactions for this account
