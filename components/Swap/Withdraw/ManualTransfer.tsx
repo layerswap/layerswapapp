@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useState } from "react"
 import useSWR from "swr"
 import QRCode from "qrcode.react"
 import colors from 'tailwindcss/colors';
-import { ArrowLeftRight, Megaphone } from "lucide-react"
+import { AlignLeft, ArrowLeftRight, Megaphone } from "lucide-react"
 import Image from 'next/image';
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { useSettingsState } from "../../../context/settings";
@@ -12,6 +12,7 @@ import BackgroundField from "../../backgroundField";
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../lib/layerSwapApiClient";
 import SubmitButton from "../../buttons/submitButton";
 import { KnownErrorCode } from "../../../Models/ApiError";
+import { Widget } from "../../Widget/Index";
 
 const ManualTransfer: FC = () => {
     const { layers, resolveImgSrc } = useSettingsState()
@@ -23,7 +24,8 @@ const ManualTransfer: FC = () => {
 
     const layerswapApiClient = new LayerSwapApiClient()
     const {
-        data: generatedDeposit
+        data: generatedDeposit,
+        isLoading
     } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`,
         layerswapApiClient.fetcher,
         {
@@ -39,6 +41,11 @@ const ManualTransfer: FC = () => {
         setMessageClicked(true)
     }, [])
 
+    if (isLoading) {
+        return <div className='flex justify-center'>
+            <AlignLeft className='w-36 h-36 text-[#141c31]' />
+        </div>
+    }
 
     return (
         !(generatedDepositAddress || messageClicked) ?
