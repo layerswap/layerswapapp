@@ -9,8 +9,8 @@ type NetworkItemSettings = {
 }
 
 export enum DepositType {
-    Manual,
-    Wallet
+    Manual = 'manual',
+    Wallet = 'wallet'
 }
 
 const destinationOrder = [

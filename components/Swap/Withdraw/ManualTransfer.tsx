@@ -10,37 +10,28 @@ import { useSwapDataState } from "../../../context/swap";
 import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../lib/layerSwapApiClient";
-import { Configs, usePersistedState } from "../../../hooks/usePersistedState";
 import SubmitButton from "../../buttons/submitButton";
+import { KnownErrorCode } from "../../../Models/ApiError";
 
 const ManualTransfer: FC = () => {
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const { source_network: source_network_internal_name, destination_network_asset } = swap
-    let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({}, 'configs')
-    const generatedNetworkAddresses = localConfigs?.networkAddressIsGenerated || {}
-
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
-    const [depositAddressGenerated, setDepositAddressGenerated] = useState(!!generatedNetworkAddresses?.[source_network?.internal_name])
 
     const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: generatedDeposit } = useSWR<ApiResponse<DepositAddress>>(!depositAddressGenerated ? null : `/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
-    const generatedDepositAddress = generatedDeposit?.data?.address
+    const { data: generatedDeposit, error } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
+    const depositAddressNotFound = error?.response?.data?.error?.code === KnownErrorCode.NOT_FOUND
+    let generatedDepositAddress = generatedDeposit?.data?.address
 
-    const handleCloseNote = useCallback(() => {
-        setDepositAddressGenerated(true)
-        setLocalConfigs({
-            ...localConfigs,
-            networkAddressIsGenerated: {
-                ...generatedNetworkAddresses,
-                [source_network_internal_name]: true
-            }
-        })
-    }, [generatedNetworkAddresses, localConfigs, source_network_internal_name])
+    const handleCloseNote = useCallback(async () => {
+        const addressData = await layerswapApiClient.GenerateDepositAddress(source_network?.internal_name)
+        generatedDepositAddress = addressData?.data?.address
+    }, [depositAddressNotFound, source_network_internal_name])
 
     return (
-        !depositAddressGenerated ?
+        !generatedDepositAddress ?
             <div className="rounded-lg p-4 flex flex-col items-center text-center bg-secondary-700 border border-secondary-500 gap-5">
                 <Megaphone className="h-10 w-10 text-primary-text" />
                 <div className="max-w-xs mx-10">
