@@ -124,19 +124,22 @@ const Withdraw: FC = () => {
                             !isFiat && <SwapSummary />
                         }
                         <span>
-                            <div className="mb-3 ml-1">Choose how you’d like to complete the swap</div>
+
                             {
                                 showTabsHeader &&
-                                <div className="flex space-x-3 w-full">
-                                    {tabs.filter(t => t.enabled).map((tab) => (
-                                        <TabHeader
-                                            activeTabId={activeTabId}
-                                            onCLick={setActiveTabId}
-                                            tab={tab}
-                                            key={tab.id}
-                                        />
-                                    ))}
-                                </div>
+                                <>
+                                    <div className="mb-3 ml-1">Choose how you’d like to complete the swap</div>
+                                    <div className="flex space-x-3 w-full">
+                                        {tabs.filter(t => t.enabled).map((tab) => (
+                                            <TabHeader
+                                                activeTabId={activeTabId}
+                                                onCLick={setActiveTabId}
+                                                tab={tab}
+                                                key={tab.id}
+                                            />
+                                        ))}
+                                    </div>
+                                </>
                             }
                         </span>
                         <span>
@@ -162,7 +165,7 @@ const WalletTransferContent: FC = () => {
     return <div className='flex justify-center'>
         <WalletIcon className='w-36 text-[#141c31]' />
         <button
-            onClick={() => {}}
+            onClick={() => { }}
             className={"text-[#5f667f] hover:text-primary-text bg-secondary-800 grow rounded-md text-left relative py-3 px-5 text-sm transition"}
             style={{
                 WebkitTapHighlightColor: "transparent",
