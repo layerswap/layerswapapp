@@ -89,11 +89,11 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
 
     const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
 
-    const [selectedAssetNetwork, setSelectedAsseteNetwork] = useState(source_network.assets?.[0])
+    const [selectedAssetNetwork, setSelectedAsseteNetwork] = useState(source_network?.assets?.[0])
 
     const layerswapApiClient = new LayerSwapApiClient()
     const generateDepositParams = (!address
-        || selectedAssetNetwork?.network_internal_name !== source_network.assets?.[0]?.network_internal_name) ? [selectedAssetNetwork?.network_internal_name] : null
+        || selectedAssetNetwork?.network_internal_name !== source_network?.assets?.[0]?.network_internal_name) ? [selectedAssetNetwork?.network_internal_name] : null
 
     const {
         data: generatedDeposit
@@ -204,13 +204,13 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
     const defaultSourceNetwork = exchangeAssets.find(sn => sn.is_default) || exchangeAssets?.[0]
 
     const handleChangeSelectedNetwork = useCallback((n: string) => {
-        const network = exchangeAssets.find(network => network.network_internal_name === n)
+        const network = exchangeAssets.find(network => network?.network_internal_name === n)
         onChange(network)
     }, [exchangeAssets])
 
     return <div className='flex items-center gap-1 text-sm my-2'>
         <span>Network:</span>
-        {exchangeAssets.length === 1 ?
+        {exchangeAssets?.length === 1 ?
             <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
                 <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(exchangeAssets?.[0])}></Image>
                 <span>{defaultSourceNetwork?.network?.display_name}</span>
