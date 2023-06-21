@@ -84,7 +84,7 @@ export default function () {
         }
         else {
             const initialValues = generateSwapInitialValues(settings, query)
-            formikRef.current.resetForm({ values:  initialValues})
+            formikRef.current.resetForm({ values: initialValues })
             formikRef.current.validateForm(initialValues)
             setLoading(false)
         }
