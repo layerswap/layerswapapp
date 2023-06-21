@@ -1,5 +1,5 @@
-import { AlignLeft } from 'lucide-react';
-import { FC, useEffect, useState } from 'react'
+import { AlignLeft, X } from 'lucide-react';
+import { FC, useCallback, useEffect, useState } from 'react'
 import WalletTransfer from './Wallet';
 import ManualTransfer from './ManualTransfer';
 import FiatTransfer from './FiatTransfer';
@@ -15,6 +15,15 @@ import External from './External';
 import { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
 import { useAccount } from 'wagmi';
+import shortenAddress from '../../utils/ShortenAddress';
+import { useAccountModal } from '@rainbow-me/rainbowkit';
+import { disconnect as wagmiDisconnect } from '@wagmi/core'
+import { useWalletState, useWalletUpdate } from '../../../context/wallet';
+import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
+import { NetworkAddressType } from '../../../Models/CryptoNetwork';
+import { disconnect as starknetDisconnect } from "get-starknet";
+import Image from 'next/image';
+import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
 
 const Withdraw: FC = () => {
 
@@ -22,6 +31,7 @@ const Withdraw: FC = () => {
     const { setWithdrawType } = useSwapDataUpdate()
     const { layers } = useSettingsState()
     const { addressSource, signature } = useQueryState()
+
     const source_internal_name = swap?.source_exchange ?? swap.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
 
@@ -33,6 +43,15 @@ const Withdraw: FC = () => {
     const sourceIsArbitrumOne = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
     const sourceIsCoinbase = swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
+
+    const source_network = layers.find(n => n.internal_name === swap?.source_network)
+    const sourceAddressType = GetDefaultNetwork(source_network, swap?.source_network_asset)?.address_type
+    const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX || isFiat)
+    const walletIsAvailable = !isFiat
+        && !swap?.source_exchange
+        && (sourceAddressType === NetworkAddressType.evm
+            || sourceAddressType === NetworkAddressType.starknet
+            || sourceAddressType === NetworkAddressType.immutable_x)
 
     const isImtblMarketplace = (signature && addressSource === "imxMarketplace" && sourceIsImmutableX)
     const sourceIsSynquote = addressSource === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
@@ -64,11 +83,7 @@ const Withdraw: FC = () => {
                 label: "Via wallet",
                 enabled: true,
                 icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
-                content: <>
-                    <div className='flex justify-center'>
-                        <WalletIcon className='w-52 h-52 text-[#141c31]' />
-                    </div>
-                </>,
+                content: <WalletTransferContent />,
                 footer: <WalletTransfer />
             }]
     }
@@ -77,13 +92,9 @@ const Withdraw: FC = () => {
             {
                 id: WithdrawType.Wallet,
                 label: "Via wallet",
-                enabled: !swap?.source_exchange,
+                enabled: walletIsAvailable,
                 icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
-                content: <>
-                    <div className='flex justify-center'>
-                        <WalletIcon className='w-36 text-secondary-800/70' />
-                    </div>
-                </>,
+                content: <WalletTransferContent />,
                 footer: <WalletTransfer />
             },
             {
@@ -101,13 +112,12 @@ const Withdraw: FC = () => {
             {
                 id: WithdrawType.Manually,
                 label: "Manually",
-                enabled: true,
+                enabled: manualIsAvailable,
                 icon: <AlignLeft />,
                 content: <ManualTransfer />,
             }
         ];
     }
-
     const [activeTabId, setActiveTabId] = useState(tabs.find(t => t.enabled)?.id);
 
     const activeTab = tabs.find(t => t.id === activeTabId)
@@ -145,9 +155,7 @@ const Withdraw: FC = () => {
                             }
                         </span>
                         <span>
-                            {
-                                activeTab?.content
-                            }
+                            {activeTab?.content}
                         </span>
                     </div>
                 </div>
@@ -162,19 +170,82 @@ const Withdraw: FC = () => {
 }
 
 const WalletTransferContent: FC = () => {
-    const { isConnected, address } = useAccount();
+    const { isConnected, address, connector } = useAccount();
+    const { openAccountModal } = useAccountModal();
+    const { starknetAccount } = useWalletState()
+    const { setStarknetAccount } = useWalletUpdate()
 
-    return <div className='flex justify-center'>
-        <WalletIcon className='w-36 text-secondary-800/70' />
-        <button
-            onClick={() => { }}
-            className={"text-primary-text hover:text-primary-text bg-secondary-800 grow rounded-md text-left relative py-3 px-5 text-sm transition"}
-            style={{
-                WebkitTapHighlightColor: "transparent",
-            }}
-        >
-            {address}
-        </button>
+    const { layers, resolveImgSrc } = useSettingsState()
+    const { swap } = useSwapDataState()
+    const {
+        source_network: source_network_internal_name,
+        source_network_asset } = swap
+    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
+
+    const sourceAddressType = GetDefaultNetwork(source_network, source_network_asset)?.address_type
+
+    const handleDisconnect = useCallback(() => {
+        if (sourceAddressType === NetworkAddressType.evm) {
+            wagmiDisconnect()
+        }
+        else if (sourceAddressType === NetworkAddressType.starknet) {
+            starknetDisconnect({ clearLastWallet: true })
+            setStarknetAccount(null)
+        }
+    }, [sourceAddressType])
+
+    let walletAddress = ""
+    if (sourceAddressType === NetworkAddressType.evm) {
+        walletAddress = address;
+    }
+    else if (sourceAddressType === NetworkAddressType.starknet) {
+        walletAddress = starknetAccount?.account?.address;
+    }
+
+    const canOpenAccount = sourceAddressType === NetworkAddressType.evm
+
+    const handleOpenAccount = useCallback(() => {
+        if (canOpenAccount)
+            openAccountModal()
+    }, [canOpenAccount])
+
+    if (!walletAddress) {
+        return <>
+            <div className='flex justify-center'>
+                <WalletIcon className='w-36 text-secondary-800/70' />
+            </div>
+        </>
+    }
+
+    return <div className="h-36 grid content-end">
+        <span className='mb-1 font-semibold'>Connected wallet</span>
+        <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-300 ea7df14a1597407f9f755f05e25bab42:bg-secondary-800/50 bg-secondary-700/70 shadow-xl flex text-sm rounded-md items-center w-full pl-4 pr-2 py-2.5`}>
+            <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
+                {
+                    sourceAddressType === NetworkAddressType.starknet && 
+                    <Image
+                        src={starknetAccount?.icon}
+                        alt={walletAddress}
+                        width={25}
+                        height={25} />
+                }
+                {
+                    sourceAddressType === NetworkAddressType.evm &&
+                    <ResolveWalletIcon
+                        connector={connector?.id}
+                        className="w-6 rounded-full bg-primary-text"
+                    />
+                }
+            </div>
+            <div className="flex flex-col grow">
+                <div className="block text-lg font-medium text-white">
+                    {shortenAddress(walletAddress)}
+                </div>
+            </div>
+            <div onClick={handleDisconnect} className='cursor-pointer flex text-primary-text flex-row items-left p-2 rounded-md transform hover:bg-secondary-500 transition duration-200 hover:border-secondary-500 hover:shadow-xl'>
+                <X className='h-5' />
+            </div>
+        </div>
     </div>
 }
 

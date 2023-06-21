@@ -5,7 +5,8 @@ export enum NetworkAddressType {
     'starknet' = "starknet",
     'solana' = "solana",
     'osmosis' = "osmosis",
-    'immutable_x' = "immutable_x"
+    'immutable_x' = "immutable_x",
+    'loopring' = "loopring"
 }
 
 export class CryptoNetwork {

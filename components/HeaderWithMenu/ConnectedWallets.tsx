@@ -1,7 +1,4 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit"
-import { StarknetWindowObject, getStarknet } from "get-starknet-core"
-import { Check, Copy, LogOut } from "lucide-react"
-import { useState, useEffect } from "react"
 import { useAccount } from "wagmi"
 import AddressIcon from "../AddressIcon"
 import IconButton from "../buttons/iconButton"
@@ -9,16 +6,7 @@ import CoinbaseIcon from "../icons/Wallets/Coinbase"
 import MetaMaskIcon from "../icons/Wallets/MetaMask"
 import RainbowIcon from "../icons/Wallets/Rainbow"
 import WalletConnectIcon from "../icons/Wallets/WalletConnect"
-import { connect, disconnect } from "get-starknet"
-import { Dialog, DialogTrigger, DialogContent } from "../shadcn/dialog"
-import shortenAddress from "../utils/ShortenAddress"
-import useCopyClipboard from "../../hooks/useCopyClipboard"
-import Image from "next/image"
-import { Contract, uint256 } from "starknet"
-import Erc20Abi from "../../lib/abis/ERC20.json"
-import { BigNumber, utils } from "ethers"
-import { truncateDecimals } from "../utils/RoundDecimals"
-import Modal from "../modal/modal"
+
 import WalletIcon from "../icons/WalletIcon"
 
 
@@ -46,7 +34,7 @@ export const RainbowKitConnectWallet = ({ isButton }: { isButton?: boolean }) =>
     </ConnectButton.Custom>
 }
 
-const ResolveWalletIcon = ({ connector, className }: { connector: string, className: string }) => {
+export const ResolveWalletIcon = ({ connector, className }: { connector: string, className: string }) => {
     switch (connector) {
         case KnownKonnectors.MetaMask:
             return <MetaMaskIcon className={className} />

@@ -27,6 +27,7 @@ import { connect, disconnect as starknetDisconnect } from "get-starknet";
 import WalletIcon from "../icons/WalletIcon";
 import { Configs, usePersistedState } from "../../hooks/usePersistedState";
 import { NetworkAddressType } from "../../Models/CryptoNetwork";
+import { useWalletState, useWalletUpdate } from "../../context/wallet";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -68,8 +69,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const starknet = getStarknet()
         const destinationIsStarknet = destination.internal_name === KnownInternalNames.Networks.StarkNetGoerli
             || destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet
-        let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({}, 'configs')
-        const starknetWallet = localConfigs?.connectedWallet
+
+        const { starknetAccount } = useWalletState()
+        const { setStarknetAccount } = useWalletUpdate()
 
         const { authData } = useAuthState()
         const settings = useSettingsState()
@@ -121,7 +123,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             try {
                 if (autofilledWallet === "starknet") {
                     starknetDisconnect({ clearLastWallet: true })
-                    setLocalConfigs({ ...localConfigs, connectedWallet: null })
+                    setStarknetAccount(null)
                     setWrongNetwork(false)
                 }
                 else if (autofilledWallet === "evm") {
@@ -183,6 +185,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             if (res?.account?.chainId != destinationChainId) {
                 setWrongNetwork(true)
                 starknetDisconnect({ clearLastWallet: true })
+                setStarknetAccount(null)
                 setAutofilledWallet(null)
                 return
             }
@@ -191,7 +194,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setAddressConfirmed(true)
             setFieldValue("destination_address", res?.account?.address)
             setAutofilledWallet("starknet")
-            setLocalConfigs({ ...localConfigs, connectedWallet: { isConnected: res?.isConnected, address: res?.account?.address, icon: res?.icon } })
+            setStarknetAccount(res)
         }, [destinationChainId])
 
         return (<>
@@ -217,7 +220,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         placeholder={placeholder}
                                         autoCorrect="off"
                                         type={"text"}
-                                        disabled={disabled || !!((isRainbowKitConnected || starknetWallet?.isConnected) && values.destination_address) || !!(starknetWallet?.isConnected && values.destination_address)}
+                                        disabled={disabled || !!((isRainbowKitConnected || starknetAccount?.isConnected) && values.destination_address) || !!(starknetAccount?.isConnected && values.destination_address)}
                                         name={name}
                                         id={name}
                                         ref={inputReference}
@@ -273,8 +276,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-300 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-500 transition duration-200 px-2 py-2 hover:border-secondary-500 hover:shadow-xl`}>
                                 <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                     {
-                                        destinationIsStarknet && starknetWallet?.isConnected ?
-                                            <Image src={starknetWallet?.icon} alt={starknetWallet?.address} width={25} height={25} />
+                                        destinationIsStarknet && starknetAccount?.isConnected ?
+                                            <Image src={starknetAccount?.icon} alt={starknetAccount?.account?.address} width={25} height={25} />
                                             :
                                             <AddressIcon address={validInputAddress} size={25} />
                                     }
