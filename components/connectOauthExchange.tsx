@@ -53,7 +53,6 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
         }
     }, [exchange, loading, authWindowRef, router.query], 2000)
 
-
     const handleConnect = useCallback(() => {
         try {
             setLoading(true)
