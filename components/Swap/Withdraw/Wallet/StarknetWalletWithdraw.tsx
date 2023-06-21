@@ -3,19 +3,17 @@ import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource, PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import { connect, disconnect } from "get-starknet"
-import { AccountInterface, Contract, Abi, number, uint256 } from 'starknet';
+import { AccountInterface, Contract, number, uint256 } from 'starknet';
 import { utils } from "ethers"
 import Erc20Abi from "../../../../lib/abis/ERC20.json"
 import WatchDogAbi from "../../../../lib/abis/LSWATCHDOG.json"
-import { ApiResponse } from '../../../../Models/ApiResponse';
-import useSWR from 'swr';
 import { useAuthState } from '../../../../context/authContext';
-import NetworkSettings from '../../../../lib/NetworkSettings';
 import KnownInternalNames from '../../../../lib/knownIds';
+import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 
 type Props = {
     managedDepositAddress: string
@@ -35,7 +33,8 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress }) => {
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const [account, setAccount] = useState<AccountInterface>()
+    const { setStarknetAccount } = useWalletUpdate()
+    const { starknetAccount } = useWalletState()
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
     const { userId } = useAuthState()
@@ -61,7 +60,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress }) => {
             }
             else {
                 setIsWrongNetwork(false)
-                setAccount(res?.account)
+                setStarknetAccount(res)
             }
         }
         catch (e) {
@@ -73,20 +72,20 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress }) => {
     const handleTransfer = useCallback(async () => {
         setLoading(true)
         try {
-            if (!account) {
+            if (!starknetAccount) {
                 throw Error("starknet wallet not connected")
             }
 
             const erc20Contract = new Contract(
                 Erc20Abi,
                 sourceCurrency.contract_address,
-                account,
+                starknetAccount.account,
             )
 
             const watchDogContract = new Contract(
                 WatchDogAbi,
                 process.env.NEXT_PUBLIC_WATCHDOG_CONTRACT,
-                account,
+                starknetAccount.account,
             )
 
             const call = erc20Contract.populate(
@@ -102,7 +101,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress }) => {
             );
 
             try {
-                const { transaction_hash: transferTxHash } = await account.execute([call, watch]);
+                const { transaction_hash: transferTxHash } = await starknetAccount.account.execute([call, watch]);
                 if (transferTxHash) {
                     setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transferTxHash);
                     setTransferDone(true)
@@ -120,7 +119,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [account, swap, source_network, managedDepositAddress, userId, sourceCurrency])
+    }, [starknetAccount, swap, source_network, managedDepositAddress, userId, sourceCurrency])
 
     return (
         <>
@@ -140,7 +139,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress }) => {
                         </WarningMessage>
                     }
                     {
-                        !account &&
+                        !starknetAccount &&
                         <div className="flex flex-row
                          text-white text-base space-x-2">
                             <SubmitButton
@@ -158,7 +157,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress }) => {
                         </div>
                     }
                     {
-                        account
+                        starknetAccount
                         && managedDepositAddress
                         && !isWrongNetwork
                         && <div className="flex flex-row
