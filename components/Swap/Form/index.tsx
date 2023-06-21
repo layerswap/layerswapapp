@@ -84,12 +84,13 @@ export default function () {
         }
         else {
             const initialValues = generateSwapInitialValues(settings, query)
-            formikRef.current.resetForm({ values:  initialValues})
+            formikRef.current.resetForm({ values: initialValues })
             formikRef.current.validateForm(initialValues)
             setLoading(false)
         }
     }, [query, settings])
 
+    
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             const destination_internal_name = values?.to?.internal_name
