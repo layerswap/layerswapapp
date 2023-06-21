@@ -18,12 +18,12 @@ export function CalculateMinimalAuthorizeAmount(usd_price: number, amount: numbe
 }
 
 export function CaluclateRefuelAmount(
-    swapFormData: SwapFormValues,
+    values: SwapFormValues,
     allCurrencies: Currency[]): {
         refuelAmountInSelectedCurrency: number,
         refuelAmountInNativeCurrency: number
     } {
-    const { currency, to, refuel: refuelEnabled } = swapFormData || {}
+    const { currency, to, refuel: refuelEnabled } = values || {}
 
     if (!currency || !to || !refuelEnabled)
         return { refuelAmountInSelectedCurrency: 0, refuelAmountInNativeCurrency: 0 }
@@ -46,8 +46,8 @@ export function CaluclateRefuelAmount(
 
     return { refuelAmountInSelectedCurrency, refuelAmountInNativeCurrency };
 }
-export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[]): number {
-    const { currency, from, to } = swapFormData || {}
+export function CalculateFee(values: SwapFormValues, allNetworks: CryptoNetwork[]): number {
+    const { currency, from, to } = values || {}
 
     if (!currency || !from || !to)
         return 0;
@@ -69,32 +69,32 @@ export function CalculateFee(swapFormData: SwapFormValues, allNetworks: CryptoNe
     return (withdrawalFee + depoistFee + baseFee);
 }
 
-export function CalculateReceiveAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[]) {
+export function CalculateReceiveAmount(values: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[]) {
 
-    const amount = Number(swapFormData?.amount)
+    const amount = Number(values?.amount)
     if (!amount) return 0;
 
-    let minAllowedAmount = CalculateMinAllowedAmount(swapFormData, allNetworks, allCurrencies);
+    let minAllowedAmount = CalculateMinAllowedAmount(values, allNetworks, allCurrencies);
 
     if (amount >= minAllowedAmount) {
-        let fee = CalculateFee(swapFormData, allNetworks);
-        const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(swapFormData, allCurrencies)
+        let fee = CalculateFee(values, allNetworks);
+        const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(values, allCurrencies)
         var result = amount - fee - refuelAmountInSelectedCurrency;
-        const sourceLayer = swapFormData?.from
+        const sourceLayer = values?.from
 
         if (sourceLayer?.isExchange && sourceLayer?.authorization_flow == "o_auth2") {
-            let exchangeFee = GetExchangeFee(swapFormData.currency?.asset, swapFormData.from);
+            let exchangeFee = GetExchangeFee(values.currency?.asset, values.from);
             result -= exchangeFee;
         }
 
-        return Number(result.toFixed(swapFormData.currency?.precision));
+        return Number(result.toFixed(values.currency?.precision));
     }
 
     return 0;
 }
 
-export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, balances?: string, minAllowedAmount?: number) {
-    const { currency, from, to } = swapFormData || {}
+export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: string, minAllowedAmount?: number) {
+    const { currency, from, to } = values || {}
 
     if (!currency || !from || !to) return 0
     const destinationNetworkCurrency = GetNetworkCurrency(to, currency?.asset)
@@ -113,15 +113,15 @@ export function CalculateMaxAllowedAmount(swapFormData: SwapFormValues, balances
     return roundDecimals(maxAmount, currency?.usd_price?.toFixed()?.length) || 0
 }
 
-export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[]) {
+export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[]) {
 
-    const { currency, from, to } = swapFormData || {}
+    const { currency, from, to } = values || {}
     if (!currency || !from || !to) return 0
     const sourceLayer = from
     const destinationLayer = to
     const asset = currency?.asset
 
-    let minAmount = CalculateFee(swapFormData, allNetworks)
+    let minAmount = CalculateFee(values, allNetworks)
     if (from.internal_name === KnownInternalNames.Exchanges.Coinbase
         && sourceLayer.isExchange) {
         const exchangeAsset = GetDefaultAsset(sourceLayer, asset)
@@ -134,7 +134,7 @@ export function CalculateMinAllowedAmount(swapFormData: SwapFormValues, allNetwo
     }
     const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, asset)
 
-    const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(swapFormData, allCurrencies);
+    const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(values, allCurrencies);
     minAmount += destinationNetworkCurrency?.base_fee + refuelAmountInSelectedCurrency
 
     return roundDecimals(minAmount * 1.2, currency?.usd_price?.toFixed()?.length) || 0

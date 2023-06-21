@@ -36,15 +36,19 @@ const SwapSummary: FC = () => {
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], ([params]) => apiClient.GetFee(params), { dedupingInterval: 60000 })
 
     let fee: number
+
+    const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
+    const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
+
     if (swap?.fee) {
         fee = swap?.fee
     } else if (withdrawType === WithdrawType.Wallet && (isConnected && address?.toLowerCase() === destination_address?.toLowerCase())) {
-        fee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)?.fee_amount;
+        fee = walletTransferFee?.fee_amount;
     } else {
-        fee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)?.fee_amount;
+        fee = manualTransferFee?.fee_amount;
     }
 
-    const requested_amount = feeData?.data[1]?.min_amount > swap?.requested_amount ? feeData?.data[1]?.min_amount : swap?.requested_amount
+    const requested_amount = manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount
 
     return <Summary
         currency={currency}

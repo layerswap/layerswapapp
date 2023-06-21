@@ -27,7 +27,7 @@ type Props = {
 }
 
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
-    const { swap, swapFormData } = useSwapDataState()
+    const { swap } = useSwapDataState()
     const { setWithdrawType } = useSwapDataUpdate()
     const { layers, currencies, discovery } = useSettingsState()
     let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({ }, 'configs')
@@ -48,7 +48,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const coinbaseOauthProvider = oauthProviders?.find(p => p.provider === KnownInternalNames.Exchanges.Coinbase)
     const { oauth_authorize_url } = coinbaseOauthProvider || {}
     
-    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount || swapFormData?.amount))
+    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount))
 
     const layerswapApiClient = new LayerSwapApiClient()
     const exchange_accounts_endpoint = `/exchange_accounts`
