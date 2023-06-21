@@ -106,7 +106,6 @@ const TransferElements: FC = () => {
 
     const handleAuthorized = (data: UserExchangesData) => {
         setAuthorizedCoinbaseAccount(data)
-        setShowCoinbaseConnectModal(true)
         setShowCoinbaseConnectModal(false)
     }
 
