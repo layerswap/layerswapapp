@@ -10,12 +10,12 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import AmountAndFeeDetails from "../../DisclosureComponents/amountAndFeeDetailsComponent";
 import Modal from "../../modal/modal";
-import OfframpAccountConnectStep from "../../OfframpAccountConnect";
+import CoinbaseAccountConnect from "./CoinbaseAccountConnect";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
 import { KnownErrorCode } from "../../../Models/ApiError";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
-import ConnectApiKeyExchange from "../../connectApiKeyExchange";
+import ConnectApiKeyExchange from "./connectApiKeyExchange";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/addressValidator";
@@ -316,7 +316,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                 <Modal setShow={setOpenExchangeConnect} show={openExchangeConnect} header={`Connect ${values?.to?.display_name}`} >
                     {
                         (destination?.authorization_flow) === "o_auth2" ?
-                            <OfframpAccountConnectStep OnSuccess={async () => { await handleExchangeConnected(); setOpenExchangeConnect(false) }} />
+                            <CoinbaseAccountConnect OnSuccess={async () => { await handleExchangeConnected(); setOpenExchangeConnect(false) }} />
                             : <ConnectApiKeyExchange exchange={destination} onSuccess={async () => { handleExchangeConnected(); setOpenExchangeConnect(false) }} />
                     }
                 </Modal>

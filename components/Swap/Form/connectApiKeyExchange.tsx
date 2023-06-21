@@ -1,14 +1,14 @@
 import { Info } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
-import LayerswapApiClient from '../lib/layerSwapApiClient';
-import ExchangeSettings from '../lib/ExchangeSettings';
-import { Exchange } from '../Models/Exchange';
-import SubmitButton from './buttons/submitButton';
-import WarningMessage from './WarningMessage';
+import LayerswapApiClient from '../../../lib/layerSwapApiClient';
+import ExchangeSettings from '../../../lib/ExchangeSettings';
+import { Exchange } from '../../../Models/Exchange';
+import SubmitButton from '../../buttons/submitButton';
+import WarningMessage from '../../WarningMessage';
 import { useRouter } from 'next/router';
-import GuideLink from './guideLink';
-import { Layer } from '../Models/Layer';
+import GuideLink from '../../guideLink';
+import { Layer } from '../../../Models/Layer';
 
 type Props = {
     exchange: Layer & { isExchange: true },

@@ -5,7 +5,6 @@ import { useRouter } from 'next/router';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
-import { LayerSwapSettings } from '../Models/LayerSwapSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
@@ -13,14 +12,11 @@ import { ApiError } from '../Models/ApiError';
 import { useAccount } from 'wagmi';
 import { getStarknet } from 'get-starknet-core';
 
-const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, swapFormData: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined });
+const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
-    updateSwapFormData: (value: React.SetStateAction<SwapFormValues>) => void,
-    createAndProcessSwap: (swapFormData: SwapFormValues) => Promise<string>,
-    //TODO this is stupid need to clean data in confirm step or even do not store it
-    clearSwap: () => void,
+    createSwap: (values: SwapFormValues, query: QueryParams, partner: Partner) => Promise<string>,
     setCodeRequested(codeSubmitted: boolean): void;
     cancelSwap: (swapId: string) => Promise<void>;
     setAddressConfirmed: (value: boolean) => void;
@@ -34,7 +30,6 @@ type UpdateInterface = {
 
 type SwapData = {
     codeRequested: boolean,
-    swapFormData?: SwapFormValues,
     swap?: SwapItem,
     swapApiError?: ApiError,
     addressConfirmed: boolean,
@@ -45,16 +40,14 @@ type SwapData = {
 }
 
 export function SwapDataProvider({ children }) {
-    const [swapFormData, setSwapFormData] = useState<SwapFormValues>();
     const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [walletAddress, setWalletAddress] = useState<string>()
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
-    const [swapId, setSwapId] = useState(router.query.swapId?.toString())
+    const swapId = router.query.swapId?.toString()
     const query = useQueryState();
-    const settings = useSettingsState();
     const { address } = useAccount()
     const starknet = getStarknet()
 
@@ -71,18 +64,11 @@ export function SwapDataProvider({ children }) {
         setSwapTransaction(txForSwap)
     }, [swapId])
 
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?name=${query?.addressSource}`, layerswapApiClient.fetcher)
-    const partner = query?.addressSource && partnerData?.data?.name?.toLowerCase() === query?.addressSource?.toLowerCase() ? partnerData?.data : undefined
-
-    useEffect(() => {
-        setCodeRequested(false)
-    }, [swapFormData?.from])
-
-    const createSwap = useCallback(async (formData: SwapFormValues, query: QueryParams, settings: LayerSwapSettings) => {
-        if (!formData)
+    const createSwap = useCallback(async (values: SwapFormValues, query: QueryParams, partner: Partner) => {
+        if (!values)
             throw new Error("No swap data")
 
-        const { to, currency, from, refuel } = formData
+        const { to, currency, from, refuel } = values
 
         if (!to || !currency || !from)
             throw new Error("Form data is missing")
@@ -92,12 +78,12 @@ export function SwapDataProvider({ children }) {
         const starknetAddress = (await starknet?.getLastConnectedWallet())?.account?.address
 
         const data: CreateSwapParams = {
-            amount: formData.amount,
+            amount: values.amount,
             source: sourceLayer?.internal_name,
             destination: destinationLayer?.internal_name,
             asset: currency.asset,
             source_address: address || starknetAddress,
-            destination_address: formData.destination_address,
+            destination_address: values.destination_address,
             app_name: partner ? query?.addressSource : undefined,
             reference_id: query.externalId,
         }
@@ -113,31 +99,24 @@ export function SwapDataProvider({ children }) {
 
         const swapId = swapResponse.data.swap_id;
         return swapId;
-    }, [partner])
+    }, [])
 
     const cancelSwap = useCallback(async (swapId: string) => {
         await layerswapApiClient.CancelSwapAsync(swapId)
-    }, [router, swapFormData])
+    }, [router])
 
-    const setSwapPublishedTx = useCallback(async (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => {
+    const setSwapPublishedTx = useCallback(async (Id: string, status: PublishedSwapTransactionStatus, txHash: string) => {
         const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-        const txForSwap = data?.[swapId] ?? { hash: txHash, status: PublishedSwapTransactionStatus.Pending };
+        const txForSwap = data?.[Id] ?? { hash: txHash, status: PublishedSwapTransactionStatus.Pending };
         txForSwap.status = status;
-        data[swapId] = txForSwap;
+        data[Id] = txForSwap;
         localStorage.setItem('swapTransactions', JSON.stringify(data))
         setSwapTransaction(txForSwap)
-    }, [swapId, swapResponse])
+    }, [swapResponse])
 
-    const createAndProcessSwap = useCallback(async (swapFormData: SwapFormValues) => {
-        const newSwapId = await createSwap(swapFormData, query, settings)
-        setSwapId(newSwapId)
-        return newSwapId
-    }, [swapResponse?.data, swapFormData, query, settings])
 
     const updateFns: UpdateInterface = {
-        clearSwap: () => { setSwapId(undefined) },
-        updateSwapFormData: setSwapFormData,
-        createAndProcessSwap: createAndProcessSwap,
+        createSwap: createSwap,
         setCodeRequested: setCodeRequested,
         cancelSwap: cancelSwap,
         setAddressConfirmed: setAddressConfirmed,
@@ -149,7 +128,7 @@ export function SwapDataProvider({ children }) {
         setSwapPublishedTx
     };
     return (
-        <SwapDataStateContext.Provider value={{ swapFormData, withdrawType, depositeAddressIsfromAccount, swap: swapResponse?.data, swapApiError: error, codeRequested, addressConfirmed, walletAddress, swapTransaction }}>
+        <SwapDataStateContext.Provider value={{ withdrawType, depositeAddressIsfromAccount, swap: swapResponse?.data, swapApiError: error, codeRequested, addressConfirmed, walletAddress, swapTransaction }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>

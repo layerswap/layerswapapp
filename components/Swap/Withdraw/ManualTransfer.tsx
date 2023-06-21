@@ -13,11 +13,15 @@ import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../
 import SubmitButton from "../../buttons/submitButton";
 import { KnownErrorCode } from "../../../Models/ApiError";
 import { Widget } from "../../Widget/Index";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../shadcn/select";
+import { BaseL2Asset } from "../../../Models/Layer";
 
 const ManualTransfer: FC = () => {
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
-    const { source_network: source_network_internal_name, destination_network_asset } = swap
+    const {
+        source_network: source_network_internal_name,
+        destination_network_asset } = swap
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
 
     const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
@@ -73,21 +77,40 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
-    const { source_network: source_network_internal_name, destination_network_asset } = swap
+    const {
+        source_network: source_network_internal_name,
+        source_exchange: source_exchange_internal_name,
+        destination_network_asset
+    } = swap
+
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
+
+    const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
     const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
 
+    const [selectedAssetNetwork, setSelectedAsseteNetwork] = useState(source_network?.assets?.[0])
+
     const layerswapApiClient = new LayerSwapApiClient()
-    const generateDepositParams = address ? null : [source_network_internal_name]
+    const generateDepositParams = (!address
+        || selectedAssetNetwork?.network_internal_name !== source_network?.assets?.[0]?.network_internal_name) ? [selectedAssetNetwork?.network_internal_name] : null
+
     const {
         data: generatedDeposit
-    } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
+    } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network))
 
     const depositAddress = address || generatedDeposit?.data?.address
 
+    const handleChangeSelectedNetwork = useCallback((n: BaseL2Asset) => {
+        setSelectedAsseteNetwork(n)
+    }, [])
+
     return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
         <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
+            {
+                source_exchange &&
+                <ExchangeNetworkPicker onChange={handleChangeSelectedNetwork} />
+            }
             <div className='p-2 bg-white/30 bg-opacity-30 rounded-xl'>
                 <div className='p-2 bg-white/70 bg-opacity-70 rounded-lg'>
                     <QRCode
@@ -169,6 +192,62 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
     </div>
 }
 
+const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = ({ onChange }) => {
+    const { layers, resolveImgSrc } = useSettingsState()
+    const { swap } = useSwapDataState()
+    const {
+        source_exchange: source_exchange_internal_name,
+        source_network_asset } = swap
+    const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
+
+    const exchangeAssets = source_exchange.assets.filter(a => a.asset === source_network_asset && a.network.status !== "inactive")
+    const defaultSourceNetwork = exchangeAssets.find(sn => sn.is_default) || exchangeAssets?.[0]
+
+    const handleChangeSelectedNetwork = useCallback((n: string) => {
+        const network = exchangeAssets.find(network => network?.network_internal_name === n)
+        onChange(network)
+    }, [exchangeAssets])
+
+    return <div className='flex items-center gap-1 text-sm my-2'>
+        <span>Network:</span>
+        {exchangeAssets?.length === 1 ?
+            <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
+                <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(exchangeAssets?.[0])}></Image>
+                <span>{defaultSourceNetwork?.network?.display_name}</span>
+            </div>
+            :
+            <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.network_internal_name}>
+                <SelectTrigger className="w-fit border-none !text-white !font-semibold !h-fit !p-0">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectGroup>
+                        <SelectLabel>Networks</SelectLabel>
+                        {exchangeAssets.map(sn => (
+                            <SelectItem key={sn.network_internal_name} value={sn.network_internal_name}>
+                                <div className="flex items-center">
+                                    <div className="flex-shrink-0 h-5 w-5 relative">
+                                        {
+                                            sn &&
+                                            <Image
+                                                src={resolveImgSrc(sn.network)}
+                                                alt="From Logo"
+                                                height="60"
+                                                width="60"
+                                                className="rounded-md object-contain"
+                                            />
+                                        }
+                                    </div>
+                                    <div className="mx-1 block">{sn?.network?.display_name}</div>
+                                </div>
+                            </SelectItem>
+                        ))}
+                    </SelectGroup>
+                </SelectContent>
+            </Select>
+        }
+    </div>
+}
 
 
 export default ManualTransfer

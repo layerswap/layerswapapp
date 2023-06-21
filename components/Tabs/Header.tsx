@@ -19,7 +19,7 @@ const Header: FC<HeaderProps> = ({ tab, onCLick, activeTabId }) => {
             WebkitTapHighlightColor: "transparent",
         }}
     >
-        {tab.icon}
+        <span>{tab.icon}</span>
         {activeTabId === tab.id && (
             <motion.span
                 layoutId="bubble"
@@ -28,7 +28,7 @@ const Header: FC<HeaderProps> = ({ tab, onCLick, activeTabId }) => {
                 transition={{ type: "spring", bounce: 0.1, duration: 0.3 }}
             />
         )}
-        {tab.label}
+        <span>{tab.label}</span>
     </button>
 }
 

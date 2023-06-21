@@ -1,30 +1,27 @@
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useQueryState } from '../context/query';
-import { useInterval } from '../hooks/useInterval';
-import { parseJwt } from '../lib/jwtParser';
-import { OpenLink } from '../lib/openLink';
-import TokenService from '../lib/TokenService';
 import Image from 'next/image'
 import { ExternalLink, ArrowLeftRight } from 'lucide-react';
-import SubmitButton from './buttons/submitButton';
-import { SwapFormValues } from './DTOs/SwapFormValues';
 import { useFormikContext } from 'formik';
-import { SwapCreateStep } from '../Models/Wizard';
-import { useFormWizardaUpdate } from '../context/formWizardProvider';
-import { useSettingsState } from '../context/settings';
-import KnownInternalNames from '../lib/knownIds';
+import { useQueryState } from '../../../context/query';
+import { useSettingsState } from '../../../context/settings';
+import { useInterval } from '../../../hooks/useInterval';
+import TokenService from '../../../lib/TokenService';
+import { parseJwt } from '../../../lib/jwtParser';
+import KnownInternalNames from '../../../lib/knownIds';
+import { OpenLink } from '../../../lib/openLink';
+import { SwapFormValues } from '../../DTOs/SwapFormValues';
+import SubmitButton from '../../buttons/submitButton';
 
 type Props = {
     OnSuccess: () => Promise<void>,
 }
 
-const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
+const CoinbaseAccountConnect: FC<Props> = ({ OnSuccess }) => {
     const {
         values,
     } = useFormikContext<SwapFormValues>();
 
-    const { to } = values || {}
     const destination = values?.to
     const settings = useSettingsState()
     const oauthProviders = settings?.discovery?.o_auth_providers
@@ -145,4 +142,4 @@ const OfframpAccountConnectStep: FC<Props> = ({ OnSuccess }) => {
     )
 }
 
-export default OfframpAccountConnectStep;
+export default CoinbaseAccountConnect;
