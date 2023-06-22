@@ -16,6 +16,7 @@ import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
 import WalletIcon from "../icons/WalletIcon";
 import inIframe from "../utils/inIframe";
+import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 
 export default function () {
     const { email, userType, userId } = useAuthState()
@@ -35,7 +36,10 @@ export default function () {
     const handleLogout = useCallback(() => {
         TokenService.removeAuthData()
         if (router.pathname != '/') {
-            router.push('/')
+            router.push({
+                pathname: '/',
+                query: resolvePersistantQueryParams(router.query)
+            })
         } else {
             router.reload()
         }

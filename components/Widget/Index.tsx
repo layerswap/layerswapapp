@@ -3,14 +3,18 @@ import { useRouter } from "next/router"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
 import { useRef } from "react";
+import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 
-const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[], className?: string}) => {
+const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[], className?: string }) => {
    const router = useRouter()
    const wrapper = useRef(null);
 
    const goBack = window?.['navigation']?.['canGoBack'] ?
       () => router.back()
-      : () => router.push("/")
+      : () => router.push({
+         pathname: "/",
+         query: resolvePersistantQueryParams(router.query)
+      })
 
    const handleBack = router.pathname === "/" ? null : goBack
 

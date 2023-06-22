@@ -1,6 +1,7 @@
 import { useRouter } from "next/router"
 import { useCallback } from "react"
 import { useQueryState } from "../context/query"
+import { resolvePersistantQueryParams } from "../helpers/querryHelper"
 
 export const useGoHome = (): () => Promise<boolean> => {
     const router = useRouter()
@@ -8,7 +9,7 @@ export const useGoHome = (): () => Promise<boolean> => {
     return useCallback(async () => {
         return await router.push({
             pathname: "/",
-            query: { ...query }
+            query: { ...resolvePersistantQueryParams(router.query) }
         })
     }, [query])
 }

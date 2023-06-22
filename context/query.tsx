@@ -1,25 +1,11 @@
-import React, { FC, useEffect, useState } from 'react'
-import { usePersistedState } from '../hooks/usePersistedState';
-import useStorage from '../hooks/useStorage';
+import React, { FC } from 'react'
 import { QueryParams } from '../Models/QueryParams';
-
-const STORAGE_KEY = "settings_query_params"
 
 const QueryStateContext = React.createContext<QueryParams>(null);
 
 const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
-
-  const [data, setData] = usePersistedState<QueryParams>(mapLegacyQueryParams(query), STORAGE_KEY, 'sessionStorage');
-
-  useEffect(() => {
-    const emptyParams = new QueryParams()
-    if (query && Object.keys(emptyParams).some(key => query[key] !== undefined)) {
-      setData(mapLegacyQueryParams(query));
-    }
-  }, [query])
-
   return (
-    <QueryStateContext.Provider value={data}>
+    <QueryStateContext.Provider value={mapLegacyQueryParams(query)}>
       {children}
     </QueryStateContext.Provider>
   );
@@ -27,11 +13,11 @@ const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
 
 function mapLegacyQueryParams(params: QueryParams) {
   return {
-    ...params, 
-    from:params.from ?? params.sourceExchangeName,
-    to : params.to ?? params.destNetwork,
-    lockFrom : params.lockFrom ?? params.lockExchange,
-    lockTo : params.lockTo ?? params.lockNetwork
+    ...params,
+    from: params.from ?? params.sourceExchangeName,
+    to: params.to ?? params.destNetwork,
+    lockFrom: params.lockFrom ?? params.lockExchange,
+    lockTo: params.lockTo ?? params.lockNetwork
   }
 }
 

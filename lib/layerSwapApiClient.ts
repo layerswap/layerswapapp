@@ -9,6 +9,7 @@ import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
 import { DepositType } from "./NetworkSettings";
+import { resolvePersistantQueryParams } from "../helpers/querryHelper";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
@@ -121,7 +122,10 @@ export default class LayerSwapApiClient {
                 if (reason instanceof AuthRefreshFailedError) {
                     this._router && (await this._router.push({
                         pathname: '/auth',
-                        query: { redirect: this._redirect }
+                        query: {
+                            ...resolvePersistantQueryParams(this._router.query),
+                            redirect: this._redirect
+                        }
                     }));
 
                     return Promise.resolve(new EmptyApiResponse());
