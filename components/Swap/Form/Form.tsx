@@ -72,8 +72,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const lockAddress =
         (values.destination_address && values.to)
         && isValidAddress(values.destination_address, values.to)
-        && ((query.lockAddress && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
-
+        && (((query.lockAddress || query.hideAddress) && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
 
     const actionDisplayName = query?.actionButtonText || "Swap now"
 
@@ -140,10 +139,11 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     const previouslySelectedDestination = useRef(destination);
 
+    //If destination changed to exchange, remove destination_address
     useEffect(() => {
-        if (destination?.isExchange != previouslySelectedDestination.current?.isExchange
+        if ((destination?.isExchange != previouslySelectedDestination.current?.isExchange
             || (destination?.isExchange && previouslySelectedDestination.current?.isExchange && destination?.internal_name != previouslySelectedDestination.current?.internal_name)
-            || destination && !isValidAddress(values.destination_address, destination)) {
+            || destination && !isValidAddress(values.destination_address, destination)) && !lockAddress) {
             setFieldValue("destination_address", '')
             setDepositeAddressIsfromAccount(false)
         }
