@@ -5,12 +5,13 @@ import Authorize from './Authorize';
 import Coinbase2FA from './Coinbase2FA';
 import { ArrowLeftRight, Link } from 'lucide-react';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import LayerSwapApiClient, { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { PublishedSwapTransactionStatus, UserExchangesData } from '../../../../lib/layerSwapApiClient';
 import { KnownErrorCode } from '../../../../Models/ApiError';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
 import { TimerProvider, useTimerState } from '../../../../context/timerContext';
 import { useRouter } from 'next/router';
+import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 const TIMER_SECONDS = 120
 
 const Coinbase: FC = () => {
@@ -28,12 +29,14 @@ const TransferElements: FC = () => {
         destination_network: destination_network_internal_name,
     } = swap
     const { start: startTimer } = useTimerState()
+    const { setAuthorizedCoinbaseAccount } = useWalletUpdate()
+    const { authorizedCoinbaseAccount } = useWalletState()
 
     const router = useRouter();
 
     const [showCoinbaseConnectModal, setShowCoinbaseConnectModal] = useState(false)
     const [openCoinbase2FA, setOpenCoinbase2FA] = useState(false)
-    const [authorized, steAuthorized] = useState(false)
+
     const [loading, setLoading] = useState(false)
     const [ready, setReady] = useState(false)
 
@@ -45,16 +48,16 @@ const TransferElements: FC = () => {
             try {
                 const layerswapApiClient = new LayerSwapApiClient(router)
                 const res = await layerswapApiClient.GetExchangeAccount(swap?.source_exchange, 1)
-                if (res.data) {
-                    steAuthorized(true)
+                if (res?.data) {
+                    setAuthorizedCoinbaseAccount(res.data)
                 }
                 else {
-                    steAuthorized(false)
+                    setAuthorizedCoinbaseAccount(null)
                 }
             }
             catch (e) {
                 if (e?.response?.data?.error?.code === KnownErrorCode.NOT_FOUND)
-                    steAuthorized(false)
+                    setAuthorizedCoinbaseAccount(null)
                 else
                     toast(e?.response?.data?.error?.message || e.message)
             }
@@ -78,7 +81,7 @@ const TransferElements: FC = () => {
                     setOpenCoinbase2FA(true)
                 }
                 else if (e?.response?.data?.error?.code === KnownErrorCode.INVALID_CREDENTIALS || e?.response?.data?.error?.code === KnownErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
-                    steAuthorized(false)
+                    setAuthorizedCoinbaseAccount(null)
                     setCodeRequested(false)
                     setShowCoinbaseConnectModal(true)
                 }
@@ -101,6 +104,11 @@ const TransferElements: FC = () => {
         setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, "_")
     }, [])
 
+    const handleAuthorized = (data: UserExchangesData) => {
+        setAuthorizedCoinbaseAccount(data)
+        setShowCoinbaseConnectModal(false)
+    }
+
     return (
         <>
             <Modal height='full'
@@ -111,10 +119,7 @@ const TransferElements: FC = () => {
                 <Authorize
                     hideHeader
                     onDoNotConnect={() => setShowCoinbaseConnectModal(false)}
-                    onAuthorized={() => {
-                        steAuthorized(true);
-                        setShowCoinbaseConnectModal(false);
-                    }}
+                    onAuthorized={handleAuthorized}
                     stickyFooter={false}
                 />
             </Modal>
@@ -129,32 +134,34 @@ const TransferElements: FC = () => {
             </Modal>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
-                    {
-                        authorized ?
-                            <SubmitButton
-                                isDisabled={loading || !ready}
-                                isSubmitting={loading}
-                                onClick={handleTransfer}
-                                icon={<ArrowLeftRight
-                                    className="h-5 w-5 ml-2"
-                                    aria-hidden="true"
-                                />}
-                            >
-                                Transfer using Coinbase
-                            </SubmitButton>
-                            :
-                            <SubmitButton
-                                isDisabled={loading || !ready}
-                                isSubmitting={loading}
-                                onClick={openConnect}
-                                icon={<Link
-                                    className="h-5 w-5 ml-2"
-                                    aria-hidden="true" />
-                                }
-                            >
-                                Transfer using Coinbase
-                            </SubmitButton>
-                    }
+                    <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
+                        {
+                            authorizedCoinbaseAccount ?
+                                <SubmitButton
+                                    isDisabled={loading || !ready}
+                                    isSubmitting={loading}
+                                    onClick={handleTransfer}
+                                    icon={<ArrowLeftRight
+                                        className="h-5 w-5 ml-2"
+                                        aria-hidden="true"
+                                    />}
+                                >
+                                    Transfer using Coinbase
+                                </SubmitButton>
+                                :
+                                <SubmitButton
+                                    isDisabled={loading || !ready}
+                                    isSubmitting={loading}
+                                    onClick={openConnect}
+                                    icon={<Link
+                                        className="h-5 w-5 ml-2"
+                                        aria-hidden="true" />
+                                    }
+                                >
+                                    Connect Coinbase account
+                                </SubmitButton>
+                        }
+                    </div>
                 </div>
             </div>
         </>
