@@ -11,6 +11,7 @@ import { useAuthState, UserType } from '../context/authContext';
 import GuestCard from './guestCard';
 import { TimerProvider } from '../context/timerContext';
 import SwapForm from "./Swap/Form"
+import { WalletDatadProvider } from '../context/wallet';
 
 const Swap: FC = () => {
   const [embedded, setEmbedded] = useState<boolean>()
@@ -25,7 +26,9 @@ const Swap: FC = () => {
         <SwapDataProvider >
           <UserExchangeProvider>
             <TimerProvider>
-              <SwapForm />
+              <WalletDatadProvider>
+                <SwapForm />
+              </WalletDatadProvider>
               {
                 !embedded && userType && userType != UserType.AuthenticatedUser &&
                 <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu>
