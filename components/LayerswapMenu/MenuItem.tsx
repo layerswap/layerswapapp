@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { forwardRef, ReactNode } from "react";
+import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 
 export enum ItemType {
     button = 'button',
@@ -40,7 +41,7 @@ const Item = forwardRef<HTMLAnchorElement, MenuIemProps>(({ type, children, path
             <Link
                 href={{
                     pathname: pathname,
-                    query: router.query
+                    query: resolvePersistantQueryParams(router.query)
                 }}
                 target={target}
                 passHref
