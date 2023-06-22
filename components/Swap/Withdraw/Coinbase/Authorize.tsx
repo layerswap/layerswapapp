@@ -20,7 +20,7 @@ import KnownInternalNames from '../../../../lib/knownIds';
 import { Layer } from '../../../../Models/Layer';
 
 type Props = {
-    onAuthorized: () => void,
+    onAuthorized: (authorizedExchange: UserExchangesData) => void,
     onDoNotConnect: () => void,
     stickyFooter: boolean,
     hideHeader?: boolean,
@@ -30,7 +30,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const { swap } = useSwapDataState()
     const { setWithdrawType } = useSwapDataUpdate()
     const { layers, currencies, discovery } = useSettingsState()
-    let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({ }, 'configs')
+    let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({}, 'configs')
 
     const [carouselFinished, setCarouselFinished] = useState(localConfigs.alreadyFamiliarWithCoinbaseConnect)
     const [authWindow, setAuthWindow] = useState<Window>()
@@ -38,8 +38,8 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
-    const exchange_internal_name = swap?.source_exchange 
-    const asset_name = swap?.source_network_asset 
+    const exchange_internal_name = swap?.source_exchange
+    const asset_name = swap?.source_network_asset
 
     const exchange = layers.find(e => e.isExchange && e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase()) as Layer & { isExchange: true }
     const currency = currencies?.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
@@ -47,7 +47,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const oauthProviders = discovery?.o_auth_providers
     const coinbaseOauthProvider = oauthProviders?.find(p => p.provider === KnownInternalNames.Exchanges.Coinbase)
     const { oauth_authorize_url } = coinbaseOauthProvider || {}
-    
+
     const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount))
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -83,12 +83,12 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     useEffect(() => {
         if (exchange_accounts && authorizedAmount) {
-            const exchangeIsEnabled = exchange_accounts?.data?.some(e => e.exchange === exchange?.internal_name && e.type === 'authorize')
-            if (exchangeIsEnabled) {
+            const authorizedExchange = exchange_accounts?.data?.find(e => e.exchange === exchange?.internal_name && e.type === 'authorize')
+            if (authorizedExchange) {
                 if (Number(authorizedAmount) < minimalAuthorizeAmount)
                     toast.error("You did not authorize enough")
                 else {
-                    onAuthorized()
+                    onAuthorized(authorizedExchange)
                 }
             }
         }

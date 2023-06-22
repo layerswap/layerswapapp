@@ -10,12 +10,15 @@ import { AuthProvider } from "../context/authContext";
 import TokenService from "../lib/TokenService";
 import NoCookies from "./NoCookies";
 import useStorage from "../hooks/useStorage";
+import { ParsedUrlQuery } from "querystring";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
   hideNavbar?: boolean;
 };
+
+
 
 export default function Layout({ hideFooter, hideNavbar, children }: Props) {
   const router = useRouter();
@@ -25,6 +28,26 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
     ...router.query,
     ...(router.query.lockAddress === 'true' ? { lockAddress: true } : {}),
     ...(router.query.lockNetwork === 'true' ? { lockNetwork: true } : {}),
+    ...(router.query.lockExchange === 'true' ? { lockExchange: true } : {}),
+    ...(router.query.hideRefuel === 'true' ? { hideRefuel: true } : {}),
+    ...(router.query.hideAddress === 'true' ? { hideAddress: true } : {}),
+    ...(router.query.hideFrom === 'true' ? { hideFrom: true } : {}),
+    ...(router.query.hideTo === 'true' ? { hideTo: true } : {}),
+    ...(router.query.lockFrom === 'true' ? { lockFrom: true } : {}),
+    ...(router.query.lockTo === 'true' ? { lockTo: true } : {}),
+    ...(router.query.lockAsset === 'true' ? { lockAsset: true } : {}),
+
+
+    ...(router.query.lockAddress === 'false' ? { lockAddress: false } : {}),
+    ...(router.query.lockNetwork === 'false' ? { lockNetwork: false } : {}),
+    ...(router.query.lockExchange === 'false' ? { lockExchange: false } : {}),
+    ...(router.query.hideRefuel === 'false' ? { hideRefuel: false } : {}),
+    ...(router.query.hideAddress === 'false' ? { hideAddress: false } : {}),
+    ...(router.query.hideFrom === 'false' ? { hideFrom: false } : {}),
+    ...(router.query.hideTo === 'false' ? { hideTo: false } : {}),
+    ...(router.query.lockFrom === 'false' ? { lockFrom: false } : {}),
+    ...(router.query.lockTo === 'false' ? { lockTo: false } : {}),
+    ...(router.query.lockAsset === 'false' ? { lockAsset: false } : {}),
   };
 
   useEffect(() => {

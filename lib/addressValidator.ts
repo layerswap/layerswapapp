@@ -28,7 +28,7 @@ export function isValidAddress(address: string, network: Layer): boolean {
         }
         return false
     }
-    else if (network?.internal_name === KnownInternalNames.Networks.SolanaMainnet || network.internal_name === KnownInternalNames.Networks.SolanaTestnet) {
+    else if (network?.internal_name === KnownInternalNames.Networks.SolanaMainnet || network?.internal_name === KnownInternalNames.Networks.SolanaTestnet) {
         try {
             let pubkey = new PublicKey(address)
             let isSolana = PublicKey.isOnCurve(pubkey.toBuffer())
