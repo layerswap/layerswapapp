@@ -6,12 +6,16 @@ import { Currency } from "../../../Models/Currency";
 import { Layer } from "../../../Models/Layer";
 import { useSettingsState } from "../../../context/settings";
 import { truncateDecimals } from "../../utils/RoundDecimals";
-import shortenAddress from "../../utils/ShortenAddress";
+import shortenAddress, { shortenEmail } from "../../utils/ShortenAddress";
 import { useQueryState } from "../../../context/query";
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import useSWR from 'swr'
+import { GetDefaultNetwork } from "../../../helpers/settingsHelper";
+import { NetworkAddressType } from "../../../Models/CryptoNetwork";
+import { useWalletState } from "../../../context/wallet";
+import KnownInternalNames from "../../../lib/knownIds";
 
 type SwapInfoProps = {
     currency: Currency,
@@ -25,7 +29,8 @@ type SwapInfoProps = {
 
 const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, destinationAddress, refuelAmount, fee }) => {
     const { resolveImgSrc, currencies } = useSettingsState()
-    const { isConnected, address } = useAccount();
+    const { isConnected, address:evmAddress } = useAccount();
+    const { starknetAccount, authorizedCoinbaseAccount } = useWalletState()
     const {
         hideFrom,
         hideTo,
@@ -51,7 +56,22 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const nativeCurrency = refuelAmount && to?.isExchange === false && currencies.find(c => c.asset === to?.native_currency)
     const truncatedRefuelAmount = truncateDecimals(refuelAmount, nativeCurrency?.precision)
 
-    const sourceAddress = (hideFrom && account) ? account : (isConnected && !from?.isExchange && address) || undefined
+    const sourceAddressType = GetDefaultNetwork(from, currency?.asset)?.address_type
+
+    let sourceAccountAddress = ""
+    if(hideFrom && account){
+        sourceAccountAddress = shortenAddress(account);
+    }
+    else if (sourceAddressType === NetworkAddressType.evm && evmAddress && !from.isExchange) {
+        sourceAccountAddress = shortenAddress(evmAddress);
+    }
+    else if (sourceAddressType === NetworkAddressType.starknet && starknetAccount && !from.isExchange) {
+        sourceAccountAddress = shortenAddress(starknetAccount?.account?.address);
+    }
+    else if(from?.internal_name === KnownInternalNames.Exchanges.Coinbase && authorizedCoinbaseAccount){
+        sourceAccountAddress = shortenEmail(authorizedCoinbaseAccount?.note);
+    }
+
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
 
     return (
@@ -63,8 +83,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         <div>
                             <p className="text-primary-text text-lg leading-5">{sourceDisplayName}</p>
                             {
-                                sourceAddress &&
-                                <p className="text-sm text-primary-text">{shortenAddress(sourceAddress)}</p>
+                                sourceAccountAddress &&
+                                <p className="text-sm text-primary-text">{sourceAccountAddress}</p>
                             }
                         </div>
                     </div>

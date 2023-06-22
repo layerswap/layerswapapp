@@ -31,7 +31,7 @@ import ToggleButton from "../../buttons/toggleButton";
 import { ArrowUpDown, Fuel } from 'lucide-react'
 import { useAuthState } from "../../../context/authContext";
 import WarningMessage from "../../WarningMessage";
-import { GetDefaultNetwork, GetNetworkCurrency } from "../../../helpers/settingsHelper";
+import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetworkCurrency } from "../../../helpers/settingsHelper";
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
@@ -161,39 +161,35 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         setValues({ ...values, from: values.to, to: values.from }, true)
     }, [values])
 
-    const valuesSwapperFiltering = () => {
-        const sourceCurrencyIsAvailable = source
-            ?.assets
-            ?.some(a => a.network
-                ?.currencies
-                ?.some(c => c.is_deposit_enabled
-                    && c.is_withdrawal_enabled))
 
-        const destCurrencyIsAvailable = destination
-            ?.assets
-            ?.some(a => a.network
-                ?.currencies
-                ?.some(c => c.is_deposit_enabled
-                    && c.is_withdrawal_enabled))
 
-        if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
-            setValuesSwapperDisabled(true)
-        }
-        else if ((source && !destination && sourceCurrencyIsAvailable)
-            || (destination && !source && destCurrencyIsAvailable)) {
-            setValuesSwapperDisabled(false)
-        }
-        else if (source && destination && sourceCurrencyIsAvailable && destCurrencyIsAvailable) setValuesSwapperDisabled(false)
-        else setValuesSwapperDisabled(true)
-    }
     const [animate, cycle] = useCycle(
         { rotate: 0 },
         { rotate: 180 }
     );
 
+    const lockedCurrency = query?.lockAsset ? settings.currencies?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : null
+
+
     useEffect(() => {
-        valuesSwapperFiltering()
-    }, [source, destination])
+
+        const filteredSourceLayers = FilterSourceLayers(settings.layers, source, lockedCurrency);
+        const filteredDestinationLayers = FilterDestinationLayers(settings.layers, destination, lockedCurrency);
+
+        const sourceCanBeSwapped = filteredDestinationLayers.some(l=>l.internal_name === source?.internal_name)
+        const destinationCanBeSwapped = filteredSourceLayers.some(l=>l.internal_name === destination?.internal_name)
+
+        if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
+            setValuesSwapperDisabled(true)
+            return ;
+        }
+        if(!(sourceCanBeSwapped|| destinationCanBeSwapped)){
+            setValuesSwapperDisabled(true)
+            return ;
+        }
+        setValuesSwapperDisabled(false)
+        
+    }, [source, destination, query, settings, lockedCurrency])
 
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
