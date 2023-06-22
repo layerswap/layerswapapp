@@ -67,8 +67,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const [autofilledWallet, setAutofilledWallet] = useState<'evm' | 'starknet'>()
         const [canAutofillStarknet, setCanAutofillStarknet] = useState(true)
         const starknet = getStarknet()
-        const destinationIsStarknet = destination.internal_name === KnownInternalNames.Networks.StarkNetGoerli
-            || destination.internal_name === KnownInternalNames.Networks.StarkNetMainnet
+        const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
+            || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
         const { starknetAccount } = useWalletState()
         const { setStarknetAccount } = useWalletUpdate()
@@ -297,7 +297,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             && !inputValue
                             && destination?.isExchange
                             && authData?.access_token && values.to
-                            && ExchangeSettings.KnownSettings[destination.internal_name]?.EnableDepositAddressConnect
+                            && ExchangeSettings.KnownSettings[destination?.internal_name]?.EnableDepositAddressConnect
                             && !depositeAddressIsfromAccount &&
                             <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:shadow-xl`}>
                                 <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
