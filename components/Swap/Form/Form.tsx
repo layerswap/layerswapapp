@@ -57,7 +57,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const { authData } = useAuthState()
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
-    const { data: address_book, mutate, isValidating } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
+    const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
     const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
@@ -205,6 +205,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const parts = averageTimeString?.split(":");
     const averageTimeInMinutes = parts && parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + parseInt(parts[2]) / 60
 
+    const hideAddress = query?.hideAddress
+        && query?.to
+        && query?.destAddress
+        && (query?.lockTo || query?.hideTo)
+        && isValidAddress(query?.destAddress, destination)
+
     return <>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget className="min-h-[504px]">
@@ -230,7 +236,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                         <AmountField />
                     </div>
                     {
-                        !query?.hideAddress &&
+                        !hideAddress &&
                         <div className="w-full mb-3.5 leading-4">
                             <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
                                 {`To ${values?.to?.display_name || ''} address`}

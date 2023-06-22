@@ -25,6 +25,14 @@ export default function Layout({ hideFooter, hideNavbar, children }: Props) {
     ...router.query,
     ...(router.query.lockAddress === 'true' ? { lockAddress: true } : {}),
     ...(router.query.lockNetwork === 'true' ? { lockNetwork: true } : {}),
+    ...(router.query.lockExchange === 'true' ? { lockExchange: true } : {}),
+    ...(router.query.hideRefuel === 'true' ? { hideRefuel: true } : {}),
+    ...(router.query.hideAddress === 'true' ? { hideAddress: true } : {}),
+    ...(router.query.hideFrom === 'true' ? { hideFrom: true } : {}),
+    ...(router.query.hideTo === 'true' ? { hideTo: true } : {}),
+    ...(router.query.lockFrom === 'true' ? { lockFrom: true } : {}),
+    ...(router.query.lockTo === 'true' ? { lockTo: true } : {}),
+    ...(router.query.lockAsset === 'true' ? { lockAsset: true } : {}),
   };
 
   useEffect(() => {
