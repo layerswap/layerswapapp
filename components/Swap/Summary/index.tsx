@@ -37,9 +37,8 @@ const SwapSummary: FC = () => {
 
     let fee: number
 
-    const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
+    const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
-
     if (swap?.fee) {
         fee = swap?.fee
     } else if (withdrawType === WithdrawType.Wallet && (isConnected && address?.toLowerCase() === destination_address?.toLowerCase())) {
