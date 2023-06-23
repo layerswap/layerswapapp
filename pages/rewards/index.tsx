@@ -1,13 +1,11 @@
-import Layout from '../components/layout'
-import LayerSwapApiClient from '../lib/layerSwapApiClient'
+import Layout from '../../components/layout'
+import LayerSwapApiClient from '../../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
-import { SettingsProvider } from '../context/settings'
-import { MenuProvider } from '../context/menu'
-import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
-import RewardsComponent from '../components/RewardsComponent'
-import { Currency } from '../Models/Currency'
-import { Layer } from '../Models/Layer'
-import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
+import { SettingsProvider } from '../../context/settings'
+import { MenuProvider } from '../../context/menu'
+import LayerSwapAuthApiClient from '../../lib/userAuthApiClient'
+import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings'
+import RewardComponentWrapper from '../../components/Rewards'
 
 export default function RewardsPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
@@ -17,7 +15,7 @@ export default function RewardsPage({ settings }: InferGetServerSidePropsType<ty
         <Layout>
             <SettingsProvider data={appSettings}>
                 <MenuProvider>
-                    <RewardsComponent />
+                    <RewardComponentWrapper />
                 </MenuProvider>
             </SettingsProvider>
         </Layout>

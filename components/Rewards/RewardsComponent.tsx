@@ -1,26 +1,26 @@
 import { useRouter } from "next/router"
 import { useCallback, useState } from "react"
-import { useSettingsState } from "../context/settings"
+import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
-import BackgroundField from "./backgroundField";
+import BackgroundField from "../backgroundField";
 import { Clock, Gift, Trophy } from "lucide-react"
-import LayerSwapApiClient, { Campaigns, Leaderboard, Reward, RewardPayout } from "../lib/layerSwapApiClient"
-import { RewardsComponentLeaderboardSceleton, RewardsComponentSceleton } from "./Sceletons"
+import LayerSwapApiClient, { Campaigns, Leaderboard, Reward, RewardPayout } from "../../lib/layerSwapApiClient"
+import { RewardsComponentLeaderboardSceleton, RewardsComponentSceleton } from "../Sceletons"
 import useSWR from "swr"
-import { ApiResponse } from "../Models/ApiResponse"
-import ClickTooltip from "./Tooltips/ClickTooltip"
-import shortenAddress from "./utils/ShortenAddress"
+import { ApiResponse } from "../../Models/ApiResponse"
+import ClickTooltip from "../Tooltips/ClickTooltip"
+import shortenAddress from "../utils/ShortenAddress"
 import { useAccount } from "wagmi"
-import RainbowKit from "./Swap/Withdraw/Wallet/RainbowKit"
-import { Progress } from "./ProgressBar"
-import NetworkSettings from "../lib/NetworkSettings"
-import { truncateDecimals } from "./utils/RoundDecimals"
-import HeaderWithMenu from "./HeaderWithMenu"
-import SubmitButton from "./buttons/submitButton";
-import AddressIcon from "./AddressIcon";
-import Modal from "./modal/modal";
-import SpinIcon from "./icons/spinIcon";
-import WalletIcon from "./icons/WalletIcon";
+import RainbowKit from "../Swap/Withdraw/Wallet/RainbowKit"
+import { Progress } from "../ProgressBar"
+import NetworkSettings from "../../lib/NetworkSettings"
+import { truncateDecimals } from "../utils/RoundDecimals"
+import HeaderWithMenu from "../HeaderWithMenu"
+import SubmitButton from "../buttons/submitButton";
+import AddressIcon from "../AddressIcon";
+import Modal from "../modal/modal";
+import SpinIcon from "../icons/spinIcon";
+import WalletIcon from "../icons/WalletIcon";
 
 function RewardsComponent() {
 
@@ -28,6 +28,7 @@ function RewardsComponent() {
     const router = useRouter();
     const { resolveImgSrc, networks, currencies } = settings || { discovery: {} }
     const [openTopModal, setOpenTopModal] = useState(false)
+    const swapId = router.query.campaign?.toString()
 
     const { isConnected, address } = useAccount();
 
