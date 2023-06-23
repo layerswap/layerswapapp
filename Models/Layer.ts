@@ -1,4 +1,4 @@
-import { CryptoNetwork } from "./CryptoNetwork";
+import { CryptoNetwork, NetworkAddressType } from "./CryptoNetwork";
 
 export type LayerStatus = "active" | "inactive" | 'insufficient_liquidity';
 export type Layer = {
@@ -16,7 +16,9 @@ type LayerData = ({
     isExchange: false;
     assets?: BaseL2Asset[];
     native_currency?: string;
-    average_completion_time?: string
+    average_completion_time?: string;
+    chain_id?: string;
+    address_type?: NetworkAddressType
 })
 
 export type BaseL2Asset = {
