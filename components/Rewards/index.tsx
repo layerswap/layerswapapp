@@ -6,9 +6,13 @@ import LayerSwapApiClient, { Campaigns } from "../../lib/layerSwapApiClient";
 import HeaderWithMenu from "../HeaderWithMenu";
 import SpinIcon from "../icons/spinIcon";
 import useSWR from 'swr'
+import Link from "next/link";
+import { useSettingsState } from "../../context/settings";
+import Image from "next/image";
 
-const RewardComponentWrapper = () => {
+const Rewards = () => {
 
+    const { layers, resolveImgSrc } = useSettingsState()
     const router = useRouter();
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaigns[]>>('/campaigns', apiClient.fetcher)
@@ -36,8 +40,8 @@ const RewardComponentWrapper = () => {
                                         <div>
                                         </div>
                                         :
-                                        <div className="flex flex-col items-center justify-center space-y-4">
-                                            <Gift className="h-20 w-20 text-primary" />
+                                        <div className="flex flex-col items-center justify-center space-y-2">
+                                            <Gift className="h-10 w-10 text-primary" />
                                             <p className="font-bold text-center">There are no active campaigns right now</p>
                                         </div>
                                 }
@@ -49,12 +53,31 @@ const RewardComponentWrapper = () => {
                         <div className="space-y-2">
                             <p className="font-bold text-left leading-5">Inactive campaigns</p>
                             <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
-                                <div className="p-3">
-                                    {inactiveCampaigns.map(c => (
-                                        <div>
-                                            {c.name}
-                                        </div>
-                                    ))}
+                                <div className="p-3 flex flex-col space-y-2">
+                                    {inactiveCampaigns.map(c => {
+                                        const campaignLayer = layers?.find(l => l.internal_name === c.network)
+                                        const campaignEndDate = new Date(c.end_date).toLocaleDateString()
+
+                                        return (
+                                            <Link href={`/rewards/${c.name}`} className="flex items-center justify-between" key={c.name}>
+                                                <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
+                                                    <span className="h-5 w-5 relative">
+                                                        <Image
+                                                            src={resolveImgSrc(campaignLayer)}
+                                                            alt="Project Logo"
+                                                            height="40"
+                                                            width="40"
+                                                            loading="eager"
+                                                            className="rounded-md object-contain" />
+                                                    </span>
+                                                    <span className="font-semibold text-base text-left flex items-center">{campaignLayer?.display_name} </span>
+                                                </span>
+                                                <span className="text-primary-text-muted">
+                                                    {campaignEndDate}
+                                                </span>
+                                            </Link>
+                                        )
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -70,4 +93,4 @@ const RewardComponentWrapper = () => {
     )
 }
 
-export default RewardComponentWrapper
+export default Rewards
