@@ -5,7 +5,6 @@ import { SettingsProvider } from '../../context/settings'
 import { MenuProvider } from '../../context/menu'
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient'
 import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings'
-import Rewards from '../../components/Rewards'
 import RewardComponent from '../../components/Rewards/RewardComponent'
 
 export default function RewardsPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {

@@ -114,10 +114,10 @@ export default function () {
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
-                                                        {!embedded && router.pathname != '/rewards' &&
+                                                        {!embedded && router.pathname != '/campaigns' &&
                                                             <Menu.Item>
-                                                                <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
-                                                                    Rewards
+                                                                <Item type={ItemType.link} pathname={"/campaigns"} icon={<Gift className='h-4 w-4' />}>
+                                                                    Campaigns
                                                                 </Item>
                                                             </Menu.Item>
                                                         }
@@ -174,10 +174,10 @@ export default function () {
                                                             Exchange Accounts
                                                         </Item>
                                                     </Menu.Item>
-                                                    {!embedded && router.pathname != '/rewards' &&
+                                                    {!embedded && router.pathname != '/campaigns' &&
                                                         <Menu.Item>
-                                                            <Item type={ItemType.link} pathname={"/rewards"} icon={<Gift className='h-4 w-4' />}>
-                                                                Rewards
+                                                            <Item type={ItemType.link} pathname={"/campaigns"} icon={<Gift className='h-4 w-4' />}>
+                                                                Campaigns
                                                             </Item>
                                                         </Menu.Item>
                                                     }

@@ -41,7 +41,7 @@ const Rewards = () => {
                                             const campaignLayer = layers?.find(l => l.internal_name === c.network)
 
                                             return (
-                                                <Link href={`/rewards/${c.name}`} className="flex " key={c.name}>
+                                                <Link href={`/campaigns/${c.name}`} className="flex " key={c.name}>
                                                     <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
                                                         <span className="h-5 w-5 relative">
                                                             <Image
@@ -77,7 +77,7 @@ const Rewards = () => {
                                         const campaignEndDate = new Date(c.end_date).toLocaleDateString()
 
                                         return (
-                                            <Link href={`/rewards/${c.name}`} className="flex items-center justify-between" key={c.name}>
+                                            <Link href={`/campaigns/${c.name}`} className="flex items-center justify-between" key={c.name}>
                                                 <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
                                                     <span className="h-5 w-5 relative">
                                                         <Image
