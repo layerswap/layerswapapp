@@ -209,7 +209,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     return <>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-            <Widget className="min-h-[504px]">
+            <Widget className="sm:min-h-[504px]">
                 <Widget.Content>
                     <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">

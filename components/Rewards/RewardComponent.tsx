@@ -1,40 +1,42 @@
 import { useRouter } from "next/router"
 import { useCallback, useState } from "react"
-import { useSettingsState } from "../context/settings"
+import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
-import BackgroundField from "./backgroundField";
+import BackgroundField from "../backgroundField";
 import { Clock, Gift, Trophy } from "lucide-react"
-import LayerSwapApiClient, { Campaigns, Leaderboard, Reward, RewardPayout } from "../lib/layerSwapApiClient"
-import { RewardsComponentLeaderboardSceleton, RewardsComponentSceleton } from "./Sceletons"
+import LayerSwapApiClient, { Campaigns, Leaderboard, Reward, RewardPayout } from "../../lib/layerSwapApiClient"
+import { RewardsComponentLeaderboardSceleton, RewardsComponentSceleton } from "../Sceletons"
 import useSWR from "swr"
-import { ApiResponse } from "../Models/ApiResponse"
-import ClickTooltip from "./Tooltips/ClickTooltip"
-import shortenAddress from "./utils/ShortenAddress"
+import { ApiResponse } from "../../Models/ApiResponse"
+import ClickTooltip from "../Tooltips/ClickTooltip"
+import shortenAddress from "../utils/ShortenAddress"
 import { useAccount } from "wagmi"
-import RainbowKit from "./Swap/Withdraw/Wallet/RainbowKit"
-import { Progress } from "./ProgressBar"
-import NetworkSettings from "../lib/NetworkSettings"
-import { truncateDecimals } from "./utils/RoundDecimals"
-import HeaderWithMenu from "./HeaderWithMenu"
-import SubmitButton from "./buttons/submitButton";
-import AddressIcon from "./AddressIcon";
-import Modal from "./modal/modal";
-import SpinIcon from "./icons/spinIcon";
-import WalletIcon from "./icons/WalletIcon";
+import RainbowKit from "../Swap/Withdraw/Wallet/RainbowKit"
+import { Progress } from "../ProgressBar"
+import NetworkSettings from "../../lib/NetworkSettings"
+import { truncateDecimals } from "../utils/RoundDecimals"
+import HeaderWithMenu from "../HeaderWithMenu"
+import SubmitButton from "../buttons/submitButton";
+import AddressIcon from "../AddressIcon";
+import Modal from "../modal/modal";
+import SpinIcon from "../icons/spinIcon";
+import WalletIcon from "../icons/WalletIcon";
+import Link from "next/link";
 
-function RewardsComponent() {
+function RewardComponent() {
 
     const settings = useSettingsState()
     const router = useRouter();
     const { resolveImgSrc, networks, currencies } = settings || { discovery: {} }
     const [openTopModal, setOpenTopModal] = useState(false)
+    const camapaignName = router.query.campaign?.toString()
 
     const { isConnected, address } = useAccount();
 
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaigns[]>>('/campaigns', apiClient.fetcher)
     const campaigns = campaignsData?.data
-    const campaign = campaigns?.[0]
+    const campaign = campaigns?.find(c => c.name === camapaignName)
 
     const { data: rewardsData } = useSWR<ApiResponse<Reward>>((address && campaignsData) ? `/campaigns/${campaign?.id}/rewards/${address}` : null, apiClient.fetcher, { dedupingInterval: 60000 })
     const { data: leaderboardData } = useSWR<ApiResponse<Leaderboard>>(campaignsData ? `/campaigns/${campaign?.id}/leaderboard` : null, apiClient.fetcher, { dedupingInterval: 60000 })
@@ -88,7 +90,7 @@ function RewardsComponent() {
                     <div className="space-y-5">
                         <HeaderWithMenu goBack={handleGoBack} />
                         {
-                            !isCampaignEnded ?
+                            campaign ?
                                 <div className="space-y-5 px-6">
                                     {isConnected ?
                                         (!rewards || !payouts ?
@@ -109,7 +111,7 @@ function RewardsComponent() {
                                                         <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards <ClickTooltip text={<span>Onboarding incentives that are earned by transferring to {network?.display_name}. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></span>} /></p>
                                                     </div>
                                                     <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
-                                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
+                                                        {!isCampaignEnded && <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                                             <div className="flex justify-between w-full text-2xl">
                                                                 <div className="flex items-center space-x-1">
                                                                     <div className="h-5 w-5 relative">
@@ -132,7 +134,7 @@ function RewardsComponent() {
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                        </BackgroundField>
+                                                        </BackgroundField>}
                                                         <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Total Earnings <ClickTooltip text={`${campaign?.asset} tokens that you’ve earned so far (including Pending Earnings).`} /></span><span>Current Value</span></span>} withoutBorder>
                                                             <div className="flex justify-between w-full text-slate-300 text-2xl">
                                                                 <div className="flex items-center space-x-1">
@@ -155,7 +157,7 @@ function RewardsComponent() {
                                                             </div>
                                                         </BackgroundField>
                                                     </div>
-                                                    <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
+                                                    {!isCampaignEnded && <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
                                                         <BackgroundField header='Weekly Reward Earned' withoutBorder>
                                                             <div className="flex flex-col w-full gap-2">
                                                                 <Progress value={periodRewardClaimed === Infinity ? 0 : periodRewardClaimed} />
@@ -165,8 +167,7 @@ function RewardsComponent() {
                                                                 </div>
                                                             </div>
                                                         </BackgroundField>
-                                                    </div>
-
+                                                    </div>}
                                                 </div>
                                                 {
                                                     payouts.length > 0 &&
@@ -321,13 +322,14 @@ function RewardsComponent() {
                                 :
                                 <div className="h-[364px] flex flex-col items-center justify-center space-y-4">
                                     <Gift className="h-20 w-20 text-primary" />
-                                    <p className="font-bold text-center">There are no active campaigns right now</p>
+                                    <p className="font-bold text-center">Campaign not found</p>
+                                    <Link className="text-xs underline hover:no-underline" href='/campaigns'>See all campaigns</Link>
                                 </div>
                         }
                     </div>
                     :
                     <div className="absolute top-[calc(50%-5px)] left-[calc(50%-5px)]">
-                    <SpinIcon className="animate-spin h-5 w-5" />
+                        <SpinIcon className="animate-spin h-5 w-5" />
                     </div>
                 }
                 <div id="widget_root" />
@@ -358,7 +360,7 @@ function RewardsComponent() {
                                                         <div className="h-3.5 w-3.5 relative">
                                                             <Image
                                                                 src={resolveImgSrc(campaign)}
-                                                                alt="Project Logo"
+                                                                alt="Address Logo"
                                                                 height="40"
                                                                 width="40"
                                                                 loading="eager"
@@ -387,4 +389,4 @@ function RewardsComponent() {
 }
 
 
-export default RewardsComponent;
+export default RewardComponent;
