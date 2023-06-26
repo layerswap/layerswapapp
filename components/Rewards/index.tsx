@@ -37,8 +37,26 @@ const Rewards = () => {
                             <div className="p-3">
                                 {
                                     activeCampaigns?.length > 0 ?
-                                        <div>
-                                        </div>
+                                        activeCampaigns.map(c => {
+                                            const campaignLayer = layers?.find(l => l.internal_name === c.network)
+
+                                            return (
+                                                <Link href={`/rewards/${c.name}`} className="flex " key={c.name}>
+                                                    <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
+                                                        <span className="h-5 w-5 relative">
+                                                            <Image
+                                                                src={resolveImgSrc(campaignLayer)}
+                                                                alt="Project Logo"
+                                                                height="40"
+                                                                width="40"
+                                                                loading="eager"
+                                                                className="rounded-md object-contain" />
+                                                        </span>
+                                                        <span className="font-semibold text-base text-left flex items-center">{campaignLayer?.display_name} </span>
+                                                    </span>
+                                                </Link>
+                                            )
+                                        })
                                         :
                                         <div className="flex flex-col items-center justify-center space-y-2">
                                             <Gift className="h-10 w-10 text-primary" />
