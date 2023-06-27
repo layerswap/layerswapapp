@@ -310,6 +310,7 @@ export enum SwapStatusInNumbers {
 export type Campaigns = {
     id: number,
     name: string,
+    display_name: string,
     asset: string,
     network: string,
     percentage: number,
