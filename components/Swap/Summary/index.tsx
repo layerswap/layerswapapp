@@ -47,7 +47,7 @@ const SwapSummary: FC = () => {
         fee = manualTransferFee?.fee_amount;
     }
 
-    const requested_amount = manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount
+    const requested_amount = swap?.input_transaction?.amount ?? manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount
 
     return <Summary
         currency={currency}
