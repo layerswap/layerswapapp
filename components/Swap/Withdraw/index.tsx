@@ -196,7 +196,7 @@ const WalletTransferContent: FC = () => {
     }, [])
 
 
-    const handleDisconnect = useCallback(() => {
+    const handleDisconnect = useCallback((e:React.MouseEvent<HTMLDivElement>) => {
         if (swap.source_exchange) {
             handleDisconnectCoinbase()
         }
@@ -207,6 +207,7 @@ const WalletTransferContent: FC = () => {
             starknetDisconnect({ clearLastWallet: true })
             setStarknetAccount(null)
         }
+        e?.stopPropagation();
     }, [sourceAddressType, swap.source_exchange])
 
     let accountAddress = ""
@@ -222,17 +223,17 @@ const WalletTransferContent: FC = () => {
     const handleOpenAccount = useCallback(() => {
         if (canOpenAccount)
             openAccountModal()
-    }, [canOpenAccount])
+    }, [canOpenAccount, openAccountModal])
 
     if (!accountAddress || (swap.source_exchange && !authorizedCoinbaseAccount)) {
         return <>
             <div className='flex justify-center'>
-                <WalletIcon className='w-36 text-secondary-800/70' />
+                <WalletIcon className='w-12 text-secondary-800/70' />
             </div>
         </>
     }
 
-    return <div className="h-36 grid content-end">
+    return <div className="grid content-end">
         {
             swap.source_exchange ?
                 <span className='mb-1 font-medium'>Connected account</span>

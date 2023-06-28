@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FC, useRef, useState } from "react"
+import { FC, useEffect, useRef, useState } from "react"
 import ReactPortal from "../Common/ReactPortal";
 
 
@@ -34,6 +34,10 @@ type FooterProps = {
 const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
     const [height, setHeight] = useState(0)
     const ref = useRef(null)
+    
+    useEffect(()=>{
+        setHeight(ref?.current?.clientHeight)
+    },[])
 
     const handleAnimationEnd = (variant) => {
         if (variant == "center") {

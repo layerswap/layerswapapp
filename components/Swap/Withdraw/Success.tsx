@@ -8,13 +8,14 @@ import Widget from '../../Wizard/Widget';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import GoHomeButton from '../../utils/GoHome';
 import SwapSummary from '../Summary';
+import { useQueryState } from '../../../context/query';
 
 
 
 const Success: FC = () => {
     const { networks } = useSettingsState()
     const { swap } = useSwapDataState()
-
+    const { externalId } = useQueryState()
     const { destination_network: destination_network_internal_name } = swap
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
     const transaction_explorer_template = destination_network?.transaction_explorer_template
@@ -48,10 +49,10 @@ const Success: FC = () => {
             <Widget.Footer>
                 <MessageComponent.Buttons>
                     <div className="flex flex-row text-white text-base space-x-2">
-                        {
-                            (transaction_explorer_template && swap?.output_transaction?.transaction_id) ?
+                        {!externalId &&
+                            ((transaction_explorer_template && swap?.output_transaction?.transaction_id) ?
                                 <>
-                                    <div className='basis-1/3'>
+                                    <div className='grow'>
                                         <SubmitButton text_align='left' buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer} icon={<ExternalLink className='h-5 w-5' />}>
                                             <DoubleLineText
                                                 colorStyle='mltln-text-light'
@@ -60,7 +61,7 @@ const Success: FC = () => {
                                             />
                                         </SubmitButton>
                                     </div>
-                                    <div className='basis-2/3 grow '>
+                                    <div className='group basis-2/3 grow '>
                                         <GoHomeButton>
                                             <SubmitButton button_align='right' text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                                                 <DoubleLineText
@@ -79,7 +80,15 @@ const Success: FC = () => {
                                             Swap more
                                         </SubmitButton>
                                     </GoHomeButton>
-                                </div>
+                                </div>)
+                        }
+                        {
+                            externalId && transaction_explorer_template && swap?.output_transaction?.transaction_id &&
+                            <div className='grow'>
+                                <SubmitButton text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer} icon={<ExternalLink className='h-5 w-5' />}>
+                                    View in explorer
+                                </SubmitButton>
+                            </div>
                         }
                     </div>
                 </MessageComponent.Buttons>
