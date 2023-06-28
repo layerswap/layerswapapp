@@ -39,7 +39,7 @@ export function CaluclateRefuelAmount(
     let refuelAmountInSelectedCurrency = 0;
     let refuelAmountInNativeCurrency = 0;
 
-    if (!destinationLayer.isExchange && destinationNetworkCurrency.is_refuel_enabled && destinationNetwork.refuel_amount_in_usd > 0 && currency.usd_price > 0 && destinationNetworkNativeAsset.usd_price > 0) {
+    if (!destinationLayer?.isExchange && destinationNetworkCurrency.is_refuel_enabled && destinationNetwork.refuel_amount_in_usd > 0 && currency.usd_price > 0 && destinationNetworkNativeAsset.usd_price > 0) {
         refuelAmountInSelectedCurrency += destinationNetwork.refuel_amount_in_usd / currency.usd_price;
         refuelAmountInNativeCurrency += destinationNetwork.refuel_amount_in_usd / destinationNetworkNativeAsset.usd_price;
     }
@@ -127,7 +127,7 @@ export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: C
         const exchangeAsset = GetDefaultAsset(sourceLayer, asset)
         minAmount += exchangeAsset?.withdrawal_fee || 0
     }
-    if (destinationLayer.isExchange) {
+    if (destinationLayer?.isExchange) {
         const destinationNetworkCurrency = GetDefaultAsset(destinationLayer, asset)
         if (destinationNetworkCurrency?.min_deposit_amount > 0)
             minAmount += destinationNetworkCurrency?.min_deposit_amount

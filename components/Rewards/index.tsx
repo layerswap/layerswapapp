@@ -52,7 +52,7 @@ const Rewards = () => {
                                                                 loading="eager"
                                                                 className="rounded-md object-contain" />
                                                         </span>
-                                                        <span className="font-semibold text-base text-left flex items-center">{campaignLayer?.display_name} </span>
+                                                        <span className="font-semibold text-base text-left flex items-center">{c?.display_name} </span>
                                                     </span>
                                                 </Link>
                                             )
@@ -88,7 +88,7 @@ const Rewards = () => {
                                                             loading="eager"
                                                             className="rounded-md object-contain" />
                                                     </span>
-                                                    <span className="font-semibold text-base text-left flex items-center">{campaignLayer?.display_name} </span>
+                                                    <span className="font-semibold text-base text-left flex items-center">{c?.display_name} </span>
                                                 </span>
                                                 <span className="text-primary-text-muted">
                                                     {campaignEndDate}

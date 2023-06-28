@@ -29,7 +29,7 @@ type SwapInfoProps = {
 
 const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, destinationAddress, refuelAmount, fee }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
-    const { isConnected, address:evmAddress } = useAccount();
+    const { address: evmAddress } = useAccount();
     const { starknetAccount, authorizedCoinbaseAccount } = useWalletState()
     const {
         hideFrom,
@@ -60,16 +60,16 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const sourceAddressType = GetDefaultNetwork(from, currency?.asset)?.address_type
 
     let sourceAccountAddress = ""
-    if(hideFrom && account){
+    if (hideFrom && account) {
         sourceAccountAddress = shortenAddress(account);
     }
-    else if (sourceAddressType === NetworkAddressType.evm && evmAddress && !from.isExchange && !isNaN(Number(sourceNetworkChainId))) {
+    else if (sourceAddressType === NetworkAddressType.evm && evmAddress && !from?.isExchange && !isNaN(Number(sourceNetworkChainId))) {
         sourceAccountAddress = shortenAddress(evmAddress);
     }
-    else if (sourceAddressType === NetworkAddressType.starknet && starknetAccount && !from.isExchange) {
+    else if (sourceAddressType === NetworkAddressType.starknet && starknetAccount && !from?.isExchange) {
         sourceAccountAddress = shortenAddress(starknetAccount?.account?.address);
     }
-    else if(from?.internal_name === KnownInternalNames.Exchanges.Coinbase && authorizedCoinbaseAccount){
+    else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && authorizedCoinbaseAccount) {
         sourceAccountAddress = shortenEmail(authorizedCoinbaseAccount?.note);
     }
 

@@ -91,7 +91,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [isRainbowKitConnected, destinationNetwork?.address_type])
 
         useEffect(() => {
-            if (!destination.isExchange && isValidAddress(walletAddress, destination) && !values?.destination_address) {
+            if (!destination?.isExchange && isValidAddress(walletAddress, destination) && !values?.destination_address) {
                 setInputValue(walletAddress)
                 setAddressConfirmed(true)
                 setFieldValue("destination_address", walletAddress)
