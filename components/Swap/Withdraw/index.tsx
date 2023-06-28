@@ -30,9 +30,9 @@ const Withdraw: FC = () => {
 
     const { swap } = useSwapDataState()
     const { setWithdrawType } = useSwapDataUpdate()
-    const { layers } = useSettingsState()
+    const { layers, networks } = useSettingsState()
     const { addressSource, signature } = useQueryState()
-
+    const source_network = networks?.find(n => n.internal_name === swap?.source_network)
     const source_internal_name = swap?.source_exchange ?? swap.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
 
@@ -45,11 +45,12 @@ const Withdraw: FC = () => {
         || swap?.source_network === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
     const sourceIsCoinbase = swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
 
-    const source_network = layers.find(n => n.internal_name === swap?.source_network)
-    const sourceAddressType = GetDefaultNetwork(source_network, swap?.source_network_asset)?.address_type
+    const source_layer = layers.find(n => n.internal_name === swap?.source_network)
+    const sourceAddressType = GetDefaultNetwork(source_layer, swap?.source_network_asset)?.address_type
     const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX || isFiat)
     const walletIsAvailable = !isFiat
         && !swap?.source_exchange
+        && !isNaN(Number(source_network?.chain_id))
         && (sourceAddressType === NetworkAddressType.evm
             || sourceAddressType === NetworkAddressType.starknet
             || sourceAddressType === NetworkAddressType.immutable_x)

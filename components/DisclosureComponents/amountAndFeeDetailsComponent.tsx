@@ -129,7 +129,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                     className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
                     <div className='flex items-center'>
                         <p>Est. {campaignAsset?.asset} Reward</p>
-                        <ClickTooltip text={<span>The amount of onboarding reward that you’ll earn. <a target='_blank' href='/rewards' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
+                        <ClickTooltip text={<span>The amount of onboarding reward that you’ll earn. <a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
                     </div>
                     {
                         reward > 0 &&
