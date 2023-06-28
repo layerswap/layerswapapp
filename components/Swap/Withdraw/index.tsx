@@ -36,7 +36,7 @@ const Withdraw: FC = () => {
     const source_internal_name = swap?.source_exchange ?? swap.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
 
-    let isFiat = source.isExchange && source?.type === "fiat"
+    let isFiat = source?.isExchange && source?.type === "fiat"
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()

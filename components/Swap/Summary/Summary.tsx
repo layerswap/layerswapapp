@@ -63,10 +63,10 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     if(hideFrom && account){
         sourceAccountAddress = shortenAddress(account);
     }
-    else if (sourceAddressType === NetworkAddressType.evm && evmAddress && !from.isExchange && !isNaN(Number(sourceNetworkChainId))) {
+    else if (sourceAddressType === NetworkAddressType.evm && evmAddress && !from?.isExchange && !isNaN(Number(sourceNetworkChainId))) {
         sourceAccountAddress = shortenAddress(evmAddress);
     }
-    else if (sourceAddressType === NetworkAddressType.starknet && starknetAccount && !from.isExchange) {
+    else if (sourceAddressType === NetworkAddressType.starknet && starknetAccount && !from?.isExchange) {
         sourceAccountAddress = shortenAddress(starknetAccount?.account?.address);
     }
     else if(from?.internal_name === KnownInternalNames.Exchanges.Coinbase && authorizedCoinbaseAccount){
