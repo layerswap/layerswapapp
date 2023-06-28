@@ -50,6 +50,8 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             status: n.status,
             native_currency: n.native_currency,
             average_completion_time: n.average_completion_time,
+            chain_id: n.chain_id,
+            address_type: n.address_type,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)
         }))
         const result = exchangeLayers.concat(networkLayers)
