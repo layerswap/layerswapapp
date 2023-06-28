@@ -7,7 +7,7 @@ import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClie
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import { connect, disconnect } from "get-starknet"
-import { AccountInterface, Contract, number, uint256 } from 'starknet';
+import { Contract, number, uint256 } from 'starknet';
 import { utils } from "ethers"
 import Erc20Abi from "../../../../lib/abis/ERC20.json"
 import WatchDogAbi from "../../../../lib/abis/LSWATCHDOG.json"
@@ -16,7 +16,8 @@ import KnownInternalNames from '../../../../lib/knownIds';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 
 type Props = {
-    managedDepositAddress: string
+    managedDepositAddress: string;
+    amount: number
 }
 
 function getUint256CalldataFromBN(bn: number.BigNumberish) {
@@ -29,7 +30,7 @@ export function parseInputAmountToUint256(
     return getUint256CalldataFromBN(utils.parseUnits(input, decimals).toString())
 }
 
-const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress }) => {
+const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress, amount }) => {
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
@@ -91,7 +92,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress }) => {
             const call = erc20Contract.populate(
                 "transfer",
                 [managedDepositAddress,
-                    parseInputAmountToUint256(swap.requested_amount.toString(), sourceCurrency.decimals)]
+                    parseInputAmountToUint256(amount.toString(), sourceCurrency.decimals)]
                 ,
             );
 

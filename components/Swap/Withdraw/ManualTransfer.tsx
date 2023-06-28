@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useState } from "react"
 import useSWR from "swr"
 import QRCode from "qrcode.react"
 import colors from 'tailwindcss/colors';
@@ -9,12 +9,12 @@ import { useSettingsState } from "../../../context/settings";
 import { useSwapDataState } from "../../../context/swap";
 import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource, Fee } from "../../../lib/layerSwapApiClient";
 import SubmitButton from "../../buttons/submitButton";
-import { KnownErrorCode } from "../../../Models/ApiError";
-import { Widget } from "../../Widget/Index";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../shadcn/select";
 import { BaseL2Asset } from "../../../Models/Layer";
+import { utils } from "ethers";
+import { DepositType } from "../../../lib/NetworkSettings";
 
 const ManualTransfer: FC = () => {
     const { layers, resolveImgSrc } = useSettingsState()
@@ -80,6 +80,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
     const {
         source_network: source_network_internal_name,
         source_exchange: source_exchange_internal_name,
+        destination_network: destination_network_internal_name,
         destination_network_asset
     } = swap
 
@@ -99,6 +100,26 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
         data: generatedDeposit
     } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network))
 
+    const feeParams = {
+        source: source_network_internal_name,
+        destination: destination_network_internal_name,
+        asset: destination_network_asset,
+        refuel: swap?.refuel_amount ? true : false
+    }
+
+    const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
+    const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
+    const requested_amount = manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount
+
+    const sourceNetwork = source_network?.isExchange == false && source_network
+    const sourceChainId = sourceNetwork.chain_id
+    let canWithdrawWithWallet = !source_exchange && sourceNetwork.address_type === "evm" && !!sourceChainId && source_network?.internal_name !== KnownInternalNames.Networks.ZksyncMainnet;
+
+    const EIP_681 = asset.contract_address ?
+        `ethereum:${asset.contract_address}@${sourceNetwork.chain_id}/transfer?address=${address}&uint256=${utils.parseUnits(requested_amount.toString(), asset.decimals)}`
+        : `ethereum:${address}@${sourceNetwork.chain_id}?value=${requested_amount * 1000000000000000000}`
+
+    const qrData = canWithdrawWithWallet ? EIP_681 : address
     const depositAddress = address || generatedDeposit?.data?.address
 
     const handleChangeSelectedNetwork = useCallback((n: BaseL2Asset) => {
@@ -115,7 +136,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
                 <div className='p-2 bg-white/70 bg-opacity-70 rounded-lg'>
                     <QRCode
                         className="p-2 bg-white rounded-md"
-                        value={depositAddress}
+                        value={qrData}
                         size={120}
                         bgColor={colors.white}
                         fgColor="#000000"
@@ -166,9 +187,9 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
             </div>
         }
         <div className='flex divide-x divide-secondary-500'>
-            <BackgroundField Copiable={true} toCopy={swap?.requested_amount} header={'Amount'} withoutBorder>
+            <BackgroundField Copiable={true} toCopy={requested_amount} header={'Amount'} withoutBorder>
                 <p>
-                    {swap?.requested_amount}
+                    {requested_amount}
                 </p>
             </BackgroundField>
             <BackgroundField header={'Asset'} withoutBorder>
