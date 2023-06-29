@@ -1,6 +1,8 @@
 import { SwapStatus } from "../../Models/SwapStatus"
+import { PublishedSwapTransactions, SwapItem } from "../../lib/layerSwapApiClient"
 
-export default function StatusIcon({ status }: { status: SwapStatus }) {
+export default function StatusIcon({  swap }: { swap: SwapItem }) {
+  const status = swap.status;
   switch (status) {
     case SwapStatus.Failed:
       return (
@@ -36,17 +38,29 @@ export default function StatusIcon({ status }: { status: SwapStatus }) {
           </div>
         </>)
     case SwapStatus.UserTransferPending:
-      return <>
-        <div className="inline-flex items-center">
-          <YellowIcon />
-          <p>Pending</p>
-        </div>
-      </>
+      const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
+      const txForSwap = data?.[swap.id];
+      if (txForSwap || swap.input_transaction) {
+        return <>
+          <div className="inline-flex items-center">
+            <PurpleIcon />
+            <p>Processing</p>
+          </div>
+        </>
+      }
+      else {
+        return <>
+          <div className="inline-flex items-center">
+            <YellowIcon />
+            <p>Pending</p>
+          </div>
+        </>
+      }
     case SwapStatus.LsTransferPending:
       return <>
         <div className="inline-flex items-center">
           <PurpleIcon />
-          <p>Pending Withdrawal</p>
+          <p>Processing</p>
         </div>
       </>
     case SwapStatus.UserTransferDelayed:

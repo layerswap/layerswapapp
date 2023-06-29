@@ -214,8 +214,7 @@ function TransactionsHistory() {
                                 'relative text-sm table-cell'
                               )}>
                                 <span className="flex items-center">
-                                  {swap && <StatusIcon status={swap.status} />}
-                                  {/* {plan.from} - {plan.to} */}
+                                  {swap && <StatusIcon swap={swap}/>}
                                 </span>
                               </td>
                               <td
@@ -284,7 +283,7 @@ function TransactionsHistory() {
                                   className='h-5 w-5' />
                               }
                             >
-                              Complete the swap
+                              View swap
                             </SubmitButton>
                           </div>
                         </div>
