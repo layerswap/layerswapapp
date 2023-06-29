@@ -52,7 +52,7 @@ export default function StatusIcon({  swap }: { swap: SwapItem }) {
         return <>
           <div className="inline-flex items-center">
             <YellowIcon />
-            <p>Created</p>
+            <p>Pending</p>
           </div>
         </>
       }
