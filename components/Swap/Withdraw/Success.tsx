@@ -9,6 +9,7 @@ import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import GoHomeButton from '../../utils/GoHome';
 import SwapSummary from '../Summary';
 import { useQueryState } from '../../../context/query';
+import { truncateDecimals } from '../../utils/RoundDecimals';
 
 
 
@@ -38,7 +39,7 @@ const Success: FC = () => {
                         <MessageComponent.Description>
                             {
                                 swap?.destination_network ?
-                                    <span>Your swap was successfully completed. Go ahead, swap more!</span>
+                                    <span>Your swap was successfully completed. {swap?.output_transaction?.amount} {swap?.destination_network_asset} has been sent to your address.</span>
                                     :
                                     <span>Your swap was successfully completed. Your assets are on their way to your exchange account.</span>
                             }

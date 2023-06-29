@@ -22,12 +22,13 @@ type SwapInfoProps = {
     source: Layer,
     destination: Layer;
     requestedAmount: number;
+    receiveAmount: number;
     destinationAddress: string;
     refuelAmount?: number;
     fee: number
 }
 
-const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, destinationAddress, refuelAmount, fee }) => {
+const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, refuelAmount, fee }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
     const { address: evmAddress } = useAccount();
     const { starknetAccount, authorizedCoinbaseAccount } = useWalletState()
@@ -49,10 +50,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const sourceDisplayName = source?.display_name
     const destinationDisplayName = destination?.display_name
 
-    let receive_amount = truncateDecimals(requestedAmount - fee, currency?.precision)
-
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
-    const receiveAmountInUsd = (currency?.usd_price * receive_amount).toFixed(2)
+    const receiveAmountInUsd = (currency?.usd_price * receiveAmount).toFixed(2)
     const nativeCurrency = refuelAmount && to?.isExchange === false && currencies.find(c => c.asset === to?.native_currency)
     const truncatedRefuelAmount = truncateDecimals(refuelAmount, nativeCurrency?.precision)
 
@@ -106,7 +105,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     {
                         fee ?
                             <div className="flex flex-col justify-end">
-                                <p className="text-white text-lg">{receive_amount} {currency.asset}</p>
+                                <p className="text-white text-lg">{receiveAmount} {currency.asset}</p>
                                 <p className="text-primary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
                             </div>
                             :
