@@ -84,7 +84,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         <div className="flex justify-between p items-baseline">
                             <span className="text-left">Status </span>
                             <span className="text-white">
-                                {swap && <StatusIcon status={swap?.status} />}
+                                {swap && <StatusIcon swap={swap} />}
                             </span>
                         </div>
                         <hr className='horizontal-gradient' />

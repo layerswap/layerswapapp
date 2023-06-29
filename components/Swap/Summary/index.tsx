@@ -7,6 +7,7 @@ import { ApiResponse } from "../../../Models/ApiResponse"
 import LayerSwapApiClient, { Fee, WithdrawType } from "../../../lib/layerSwapApiClient"
 import { useAccount } from "wagmi"
 import { DepositType } from "../../../lib/NetworkSettings"
+import { truncateDecimals } from "../../utils/RoundDecimals"
 
 const SwapSummary: FC = () => {
     const { isConnected, address } = useAccount()
@@ -35,11 +36,15 @@ const SwapSummary: FC = () => {
     const apiClient = new LayerSwapApiClient()
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], ([params]) => apiClient.GetFee(params), { dedupingInterval: 60000 })
 
+
+
+
     let fee: number
 
     const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
-    if (swap?.fee) {
+
+    if (swap?.fee && swap.input_transaction) {
         fee = swap?.fee
     } else if (withdrawType === WithdrawType.Wallet && (isConnected && address?.toLowerCase() === destination_address?.toLowerCase())) {
         fee = walletTransferFee?.fee_amount;
@@ -51,11 +56,14 @@ const SwapSummary: FC = () => {
         walletTransferFee?.min_amount > swap?.requested_amount ? walletTransferFee?.min_amount : swap?.requested_amount
         : manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount)
 
+    const receive_amount = swap.output_transaction?.amount ?? truncateDecimals(requested_amount - fee, currency?.precision)
+
     return <Summary
         currency={currency}
         source={source_layer}
         destination={destination_layer}
         requestedAmount={requested_amount}
+        receiveAmount={receive_amount}
         destinationAddress={swap?.destination_address}
         refuelAmount={swap?.refuel_amount}
         fee={fee}
