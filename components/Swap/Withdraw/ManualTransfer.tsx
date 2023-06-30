@@ -15,9 +15,10 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { BaseL2Asset } from "../../../Models/Layer";
 import { utils } from "ethers";
 import { DepositType } from "../../../lib/NetworkSettings";
+import SpinIcon from "../../icons/spinIcon";
 
 const ManualTransfer: FC = () => {
-    const { layers, resolveImgSrc } = useSettingsState()
+    const { layers } = useSettingsState()
     const { swap } = useSwapDataState()
     const {
         source_network: source_network_internal_name,
@@ -104,7 +105,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
         source: source_network_internal_name,
         destination: destination_network_internal_name,
         asset: destination_network_asset,
-        refuel: swap?.refuel_amount ? true : false
+        refuel: swap?.has_refuel ? true : false
     }
 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
@@ -134,7 +135,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
             }
             <div className='p-2 bg-white/30 bg-opacity-30 rounded-xl'>
                 <div className='p-2 bg-white/70 bg-opacity-70 rounded-lg'>
-                    <QRCode
+                    {qrData ? <QRCode
                         className="p-2 bg-white rounded-md"
                         value={qrData}
                         size={120}
@@ -142,6 +143,13 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
                         fgColor="#000000"
                         level={"H"}
                     />
+                        :
+                        <div className="relative h-[120px] w-[120px]">
+                            <div className="absolute top-[calc(50%-10px)] left-[calc(50%-10px)]">
+                                <SpinIcon className="animate-spin h-5 w-5 text-secondary-500" />
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>

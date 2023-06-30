@@ -45,7 +45,7 @@ const WalletTransfer: FC = () => {
         source: source_network_internal_name,
         destination: destination?.internal_name,
         asset: destination_network_asset,
-        refuel: swap?.refuel_amount ? true : false
+        refuel: swap?.has_refuel ? true : false
     }
 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
