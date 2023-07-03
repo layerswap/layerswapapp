@@ -27,6 +27,7 @@ const partnerQueryParams = [
   "lockNetwork",
   "lockExchange"
 ]
+const LAYERSWAP_APP_URL = 'https://app.layerswap.io'
 const partnerRedirects = partnerQueryParams.map(param => {
   return {
     source: '/',
@@ -59,6 +60,7 @@ const securityHeaders = [
 ]
 const DOCS_URL = 'https://docs.layerswap.io/user-docs'
 const redirects = async () => [
+  ...partnerRedirects,
   {
     source: '/userguide',
     destination: DOCS_URL,
