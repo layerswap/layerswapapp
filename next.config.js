@@ -1,4 +1,52 @@
 const { PHASE_PRODUCTION_SERVER } = require('next/constants');
+const partnerQueryParams = [
+  "from",
+  "to",
+  "lockAddress",
+  "lockFrom",
+  "lockTo",
+  "lockAsset",
+  "destAddress",
+  "addressSource",
+  "addressSource",
+  "hideRefuel",
+  "hideAddress",
+  "hideFrom",
+  "hideTo",
+  "asset",
+  "amount",
+  "externalId",
+  "signature",
+  "timestamp",
+  "apiKey",
+  "balances",
+  "account",
+  "actionButtonText",
+  "sourceExchangeName",
+  "destNetwork",
+  "lockNetwork",
+  "lockExchange"
+]
+const LAYERSWAP_APP_URL = 'https://app.layerswap.io'
+const partnerRedirects = partnerQueryParams.map(param => {
+  return {
+    source: '/',
+    destination: LAYERSWAP_APP_URL,
+    permanent: true,
+    has: [
+      {
+        type: 'query',
+        key: param
+      }
+    ],
+    missing: [
+      {
+        type: 'host',
+        value: 'app.layerswap.io',
+      },
+    ],
+  }
+})
 
 const securityHeaders = [
   {
@@ -12,6 +60,7 @@ const securityHeaders = [
 ]
 const DOCS_URL = 'https://docs.layerswap.io/user-docs'
 const redirects = async () => [
+  ...partnerRedirects,
   {
     source: '/userguide',
     destination: DOCS_URL,
