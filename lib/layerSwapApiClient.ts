@@ -185,7 +185,6 @@ export type SwapItem = {
     message: string,
     reference_id: string,
     app_name: string,
-    refuel_amount: number,
     refuel_price: number,
     refuel_transaction_id: string,
     source_network_asset: string,

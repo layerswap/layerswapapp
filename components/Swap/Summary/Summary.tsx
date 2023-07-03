@@ -24,11 +24,12 @@ type SwapInfoProps = {
     requestedAmount: number;
     receiveAmount: number;
     destinationAddress: string;
+    hasRefuel?: boolean;
     refuelAmount?: number;
     fee: number
 }
 
-const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, refuelAmount, fee }) => {
+const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
     const { address: evmAddress } = useAccount();
     const { starknetAccount, authorizedCoinbaseAccount } = useWalletState()
@@ -53,7 +54,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = (currency?.usd_price * receiveAmount).toFixed(2)
     const nativeCurrency = refuelAmount && to?.isExchange === false && currencies.find(c => c.asset === to?.native_currency)
-    const truncatedRefuelAmount = truncateDecimals(refuelAmount, nativeCurrency?.precision)
+    const truncatedRefuelAmount = hasRefuel && truncateDecimals(refuelAmount, nativeCurrency?.precision)
 
     const sourceNetworkChainId = networks?.find(n => n.internal_name === from?.internal_name)?.chain_id
     const sourceAddressType = GetDefaultNetwork(from, currency?.asset)?.address_type
