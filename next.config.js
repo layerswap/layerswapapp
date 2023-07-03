@@ -42,7 +42,7 @@ const partnerRedirects = partnerQueryParams.map(param => {
     missing: [
       {
         type: 'host',
-        key: 'app.layerswap.io',
+        value: 'app.layerswap.io',
       },
     ],
   }
