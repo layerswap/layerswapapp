@@ -105,7 +105,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
         source: source_network_internal_name,
         destination: destination_network_internal_name,
         asset: destination_network_asset,
-        refuel: swap?.has_refuel ? true : false
+        refuel: swap?.has_refuel
     }
 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
@@ -120,8 +120,8 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
         `ethereum:${asset.contract_address}@${sourceNetwork.chain_id}/transfer?address=${address}&uint256=${utils.parseUnits(requested_amount.toString(), asset.decimals)}`
         : `ethereum:${address}@${sourceNetwork.chain_id}?value=${requested_amount * 1000000000000000000}`
 
-    const qrData = canWithdrawWithWallet ? EIP_681 : address
     const depositAddress = address || generatedDeposit?.data?.address
+    const qrData = canWithdrawWithWallet ? EIP_681 : depositAddress
 
     const handleChangeSelectedNetwork = useCallback((n: BaseL2Asset) => {
         setSelectedAsseteNetwork(n)
