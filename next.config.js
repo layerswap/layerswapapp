@@ -80,6 +80,7 @@ module.exports = (phase, { defaultConfig }) => {
    */
   const nextConfig = {
     redirects,
+    basePath: '/app',
     i18n: {
       locales: ["en"],
       defaultLocale: "en",
