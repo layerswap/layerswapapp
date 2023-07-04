@@ -11,7 +11,7 @@ import { truncateDecimals } from "../../utils/RoundDecimals"
 
 const SwapSummary: FC = () => {
     const { isConnected, address } = useAccount()
-    const { layers, currencies } = useSettingsState()
+    const { layers, currencies, networks } = useSettingsState()
     const { swap, withdrawType } = useSwapDataState()
     const {
         source_network: source_network_internal_name,
@@ -30,13 +30,11 @@ const SwapSummary: FC = () => {
         source: source_layer?.internal_name,
         destination: destination_layer?.internal_name,
         asset: destination_network_asset,
-        refuel: swap?.refuel_amount ? true : false
+        refuel: swap?.has_refuel
     }
 
     const apiClient = new LayerSwapApiClient()
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], ([params]) => apiClient.GetFee(params), { dedupingInterval: 60000 })
-
-
 
 
     let fee: number
@@ -56,7 +54,11 @@ const SwapSummary: FC = () => {
         walletTransferFee?.min_amount > swap?.requested_amount ? walletTransferFee?.min_amount : swap?.requested_amount
         : manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount)
 
-    const receive_amount = swap.output_transaction?.amount ?? truncateDecimals(requested_amount - fee, currency?.precision)
+    const destinationNetworkNativeAsset = currencies?.find(c => c.asset == networks.find(n => n.internal_name === destination_layer.internal_name)?.native_currency);
+    const refuelAmountInNativeCurrency = swap?.has_refuel && (swap?.refuel_transaction?.amount ?? (networks.find(n => n.internal_name === destination_layer.internal_name).refuel_amount_in_usd / destinationNetworkNativeAsset.usd_price));
+    const refuelAmountInSelectedCurrency = swap?.has_refuel && (networks.find(n => n.internal_name === destination_layer.internal_name).refuel_amount_in_usd / currency.usd_price) || 0;
+
+    const receive_amount = swap.output_transaction?.amount ?? truncateDecimals(requested_amount - fee - refuelAmountInSelectedCurrency, currency?.precision)
 
     return <Summary
         currency={currency}
@@ -65,7 +67,8 @@ const SwapSummary: FC = () => {
         requestedAmount={requested_amount}
         receiveAmount={receive_amount}
         destinationAddress={swap?.destination_address}
-        refuelAmount={swap?.refuel_amount}
+        hasRefuel={swap?.has_refuel}
+        refuelAmount={refuelAmountInNativeCurrency}
         fee={fee}
     />
 }
