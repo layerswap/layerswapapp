@@ -14,7 +14,19 @@ import { useRouter } from 'next/router'
 import { MenuProvider } from '../context/menu'
 import HeaderWithMenu from '../components/HeaderWithMenu'
 import { SettingsProvider } from '../context/settings'
+import Image from 'next/image'
 
+const ResponsiveImage = (props) => (
+    <Image
+        alt={props.alt}
+        sizes="100vw"
+        style={{ width: '100%', height: 'auto' }}
+        {...props}
+    />
+)
+const components = {
+    img: ResponsiveImage,
+}
 export default function ForPartners(props) {
     const router = useRouter();
 
@@ -29,13 +41,13 @@ export default function ForPartners(props) {
                     <Head>
                         <title>Layerswap Partners</title>
                     </Head>
-                    <main>
+                    <main className='w-full'>
                         <MenuProvider>
                             <HeaderWithMenu goBack={handleGoBack} />
                         </MenuProvider>
                         <div className="flex-col justify-center py-4 md:px-8 px-6">
                             <div className="prose md:prose-xl text-primary-text">
-                                <MDXRemote {...props.mdxSource} />
+                                <MDXRemote components={components} {...props.mdxSource} />
                             </div>
                             <p id='bottom' className='text-white text-lg md:text-xl text-left font-bold my-10'>Available values for the destNetwork parameter</p>
                             <div>
