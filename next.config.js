@@ -16,6 +16,16 @@ module.exports = (phase, { defaultConfig }) => {
    * @type {import('next').NextConfig}
    */
   const nextConfig = {
+    async redirects() {
+      return [
+        {
+          source: '/',
+          destination: '/app',
+          basePath: false,
+          permanent: false
+        }
+      ]
+    },
     basePath: '/app',
     i18n: {
       locales: ["en"],
