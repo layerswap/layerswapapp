@@ -311,7 +311,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     const prepareErrorCode = prepare?.error?.['code'] || prepare?.error?.["name"]
     const prepareInnerErrocCode = prepare?.error?.['data']?.['code']
     const prepareResolvedError = resolveError(prepareErrorCode, prepareInnerErrocCode)
-debugger
+
     const transactionResolvedError = resolveError(transaction?.error?.['code'], transaction?.error?.['data']?.['code'])
 
     const hasEror = prepare?.isError || transaction?.isError || wait?.isError
