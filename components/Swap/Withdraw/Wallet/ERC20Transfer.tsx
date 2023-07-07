@@ -135,11 +135,8 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
         managedDepositAddress : generatedDepositAddress
 
     const sendTransactionPrepare = usePrepareSendTransaction({
-        enabled: true,
-        request: {
-            to: depositAddress,
-            value: amount ? utils.parseEther(amount.toString()) : undefined,
-        },
+        to: depositAddress,
+        value: amount ? utils.parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
     const transaction = useSendTransaction(sendTransactionPrepare?.config)
@@ -236,7 +233,6 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         address: tokenContractAddress,
         abi: erc20ABI,
         functionName: 'transfer',
-        enabled: true,
         args: [depositAddress, utils.parseUnits(amount.toString(), tokenDecimals)]
     });
     const contractWrite = useContractWrite(contractWritePrepare?.config)
@@ -335,6 +331,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     else if (transaction?.isError && transactionResolvedError) {
         return <TransactionRejectedMessage />
     } else if (hasEror) {
+        debugger;
         const unexpectedError = prepare?.error
             || transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
