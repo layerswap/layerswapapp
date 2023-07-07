@@ -28,7 +28,6 @@
     "@tailwindcss/typography": "^0.5.2",
     "axios": "^0.21.4",
     "bn.js": "^5.2.0",
-    "class-variance-authority": "^0.4.0",
     "clsx": "^1.2.1",
     "cmdk": "^0.2.0",
     "crypto-js": "^4.1.1",
