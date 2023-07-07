@@ -5,36 +5,44 @@ import { IntercomProvider } from 'react-use-intercom';
 import { SWRConfig } from 'swr'
 
 const INTERCOM_APP_ID = 'h5zisg78'
+const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 import "@rainbow-me/rainbowkit/styles.css";
-import { configureChains, createClient, WagmiConfig } from 'wagmi';
+import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
   darkTheme,
   getDefaultWallets,
   RainbowKitProvider,
+  connectorsForWallets
 } from '@rainbow-me/rainbowkit';
+import { walletConnectWallet, argentWallet, trustWallet } from '@rainbow-me/rainbowkit/wallets';
 
 import { supportedChains } from '../lib/chainConfigs';
 import { publicProvider } from 'wagmi/providers/public';
 
+const { chains, publicClient } = configureChains(
+  supportedChains,
+  [
+    publicProvider()
+  ]
+);
+
+const { wallets } = getDefaultWallets({
+  appName: 'Layerswap',
+  chains,
+  projectId: WALLETCONNECT_PROJECT_ID
+});
+
+const connectors = connectorsForWallets([
+  ...wallets
+]);
+
+const wagmiConfig = createConfig({
+  autoConnect: true,
+  connectors,
+  publicClient,
+})
+
 function App({ Component, pageProps }) {
-  const { chains, provider } = configureChains(
-    supportedChains,
-    [
-      publicProvider()
-    ]
-  );
-
-  const { connectors } = getDefaultWallets({
-    appName: 'Layerswap',
-    chains
-  });
-
-  const wagmiClient = createClient({
-    autoConnect: true,
-    connectors,
-    provider
-  })
-
   const theme = darkTheme({
     accentColor: 'rgb(var(--colors-primary-500))',
     accentColorForeground: 'white',
@@ -53,7 +61,7 @@ function App({ Component, pageProps }) {
       }}
     >
       <IntercomProvider appId={INTERCOM_APP_ID}>
-        <WagmiConfig client={wagmiClient}>
+        <WagmiConfig config={wagmiConfig}>
           <RainbowKitProvider modalSize="compact" chains={chains} theme={theme}>
             <Component key={router.asPath} {...pageProps} />
           </RainbowKitProvider>

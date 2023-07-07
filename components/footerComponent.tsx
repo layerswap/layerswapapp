@@ -5,6 +5,7 @@ import SubstackLogo from "./icons/SubstackLogo"
 import TwitterLogo from "./icons/TwitterLogo"
 import SendFeedback from "./sendFeedback"
 import Popover from "./modal/popover"
+import Link from "next/link"
 
 const navigation = {
   main: [
@@ -50,9 +51,9 @@ export default function FooterComponent() {
       <div className="max-w-xs mt-6 space-y-6">
         <nav className="mt-4 flex flex-wrap flex-row gap-2" aria-label="Footer">
           {navigation.main.map((item) => (
-            <a key={item.name} href={item.href} target={item.target} className="items-center rounded-lg border-secondary-500 border p-2 bg-secondary-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-secondary-800 hover:cursor-pointer transition-all duration-200">
+            <Link key={item.name} href={item.href} target={item.target} className="items-center rounded-lg border-secondary-500 border p-2 bg-secondary-700 text-base text-primary-text hover:text-primary hover:border-primary hover:bg-secondary-800 hover:cursor-pointer transition-all duration-200">
               {item.name}
-            </a>
+            </Link>
           ))}
           <Popover
             opener={

@@ -83,4 +83,4 @@ export const avalanche = {
 
 
 export var supportedChains =
-  [avalanche, arbitrum, arbitrumGoerli, arbitrumNova, bsc, bscTestnet, goerli, mainnet, okc, kcc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet];
+  [mainnet, avalanche, arbitrum, arbitrumGoerli, arbitrumNova, bsc, bscTestnet, goerli, okc, kcc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet];
