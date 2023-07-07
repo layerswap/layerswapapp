@@ -331,7 +331,6 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     else if (transaction?.isError && transactionResolvedError) {
         return <TransactionRejectedMessage />
     } else if (hasEror) {
-        debugger;
         const unexpectedError = prepare?.error
             || transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
