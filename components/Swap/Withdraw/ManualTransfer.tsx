@@ -13,9 +13,9 @@ import LayerSwapApiClient, { DepositAddress, DepositAddressSource, Fee } from ".
 import SubmitButton from "../../buttons/submitButton";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../shadcn/select";
 import { BaseL2Asset } from "../../../Models/Layer";
-import { utils } from "ethers";
 import { DepositType } from "../../../lib/NetworkSettings";
 import SpinIcon from "../../icons/spinIcon";
+import { parseUnits } from 'viem'
 
 const ManualTransfer: FC = () => {
     const { layers } = useSettingsState()
@@ -117,7 +117,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
     let canWithdrawWithWallet = !source_exchange && sourceNetwork.address_type === "evm" && !!sourceChainId && source_network?.internal_name !== KnownInternalNames.Networks.ZksyncMainnet;
 
     const EIP_681 = asset.contract_address ?
-        `ethereum:${asset.contract_address}@${sourceNetwork.chain_id}/transfer?address=${address}&uint256=${utils.parseUnits(requested_amount.toString(), asset.decimals)}`
+        `ethereum:${asset.contract_address}@${sourceNetwork.chain_id}/transfer?address=${address}&uint256=${parseUnits(requested_amount.toString(), asset.decimals)}`
         : `ethereum:${address}@${sourceNetwork.chain_id}?value=${requested_amount * 1000000000000000000}`
 
     const depositAddress = address || generatedDeposit?.data?.address
