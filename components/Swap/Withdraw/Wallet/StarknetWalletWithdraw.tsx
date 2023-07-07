@@ -8,12 +8,12 @@ import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import { connect, disconnect } from "get-starknet"
 import { Contract, number, uint256 } from 'starknet';
-import { utils } from "ethers"
 import Erc20Abi from "../../../../lib/abis/ERC20.json"
 import WatchDogAbi from "../../../../lib/abis/LSWATCHDOG.json"
 import { useAuthState } from '../../../../context/authContext';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
+import { parseUnits } from 'viem'
 
 type Props = {
     managedDepositAddress: string;
@@ -27,7 +27,7 @@ export function parseInputAmountToUint256(
     input: string,
     decimals: number = 18,
 ) {
-    return getUint256CalldataFromBN(utils.parseUnits(input, decimals).toString())
+    return getUint256CalldataFromBN(parseUnits(input, decimals).toString())
 }
 
 const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress, amount }) => {
