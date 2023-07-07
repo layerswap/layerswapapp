@@ -312,7 +312,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     const prepareInnerErrocCode = prepare?.error?.['data']?.['code'] || prepare?.error?.["cause"]?.["cause"]?.["cause"]?.["code"]
     const prepareResolvedError = resolveError(prepareErrorCode, prepareInnerErrocCode)
 
-    const transactionResolvedError = resolveError(transaction?.error?.['code'] || transaction?.error?.name, transaction?.error?.['data']?.['code'])
+    const transactionResolvedError = resolveError(transaction?.error?.['code'] || transaction?.error?.name, transaction?.error?.['data']?.['code'] || transaction?.error?.['cause']?.['code'])
 
     const hasEror = prepare?.isError || transaction?.isError || wait?.isError
     
