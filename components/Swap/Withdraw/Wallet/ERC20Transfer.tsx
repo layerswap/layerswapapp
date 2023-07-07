@@ -10,7 +10,7 @@ import {
     useWaitForTransaction,
     useNetwork
 } from "wagmi";
-import { utils } from 'ethers';
+import { parseEther, parseUnits } from 'viem'
 import { erc20ABI } from 'wagmi'
 import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
@@ -136,7 +136,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
 
     const sendTransactionPrepare = usePrepareSendTransaction({
         to: depositAddress,
-        value: amount ? utils.parseEther(amount.toString()) : undefined,
+        value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
     const transaction = useSendTransaction(sendTransactionPrepare?.config)
@@ -233,7 +233,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         address: tokenContractAddress,
         abi: erc20ABI,
         functionName: 'transfer',
-        args: [depositAddress, utils.parseUnits(amount.toString(), tokenDecimals)]
+        args: [depositAddress, parseUnits(amount.toString(), tokenDecimals)]
     });
     const contractWrite = useContractWrite(contractWritePrepare?.config)
 
@@ -309,13 +309,13 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     prepare, wait, transaction, applyingTransaction
 }) => {
     const prepareErrorCode = prepare?.error?.['code'] || prepare?.error?.["name"]
-    const prepareInnerErrocCode = prepare?.error?.['data']?.['code']
+    const prepareInnerErrocCode = prepare?.error?.['data']?.['code'] || prepare?.error?.["cause"]?.["cause"]?.["cause"]?.["code"]
     const prepareResolvedError = resolveError(prepareErrorCode, prepareInnerErrocCode)
 
-    const transactionResolvedError = resolveError(transaction?.error?.['code'], transaction?.error?.['data']?.['code'])
+    const transactionResolvedError = resolveError(transaction?.error?.['code'] || transaction?.error?.name, transaction?.error?.['data']?.['code'] || transaction?.error?.['cause']?.['code'])
 
     const hasEror = prepare?.isError || transaction?.isError || wait?.isError
-
+    
     if (wait?.isLoading || applyingTransaction) {
         return <TransactionInProgressMessage />
     }
@@ -515,9 +515,11 @@ type ResolvedError = "insufficient_funds" | "transaction_rejected"
 const resolveError = (errorCode: string | number, innererrorCode?: string | number): ResolvedError => {
     if (errorCode === 'INSUFFICIENT_FUNDS'
         || errorCode === 'UNPREDICTABLE_GAS_LIMIT'
-        || (errorCode === -32603 && (innererrorCode === -32000 || 3)))
+        || (errorCode === -32603 && innererrorCode === 3)
+        || innererrorCode === -32000
+        || errorCode === 'EstimateGasExecutionError')
         return "insufficient_funds"
-    else if (errorCode === 4001) {
+    else if (errorCode === 4001 || errorCode === "TransactionExecutionError") {
         return "transaction_rejected"
     }
 }
