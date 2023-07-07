@@ -18,7 +18,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
 
     resolveImgSrc = (item: Layer | Currency | Pick<Layer, 'internal_name'> | { asset: string } | Partner) => {
         if (!item) {
-            return "/app/images/logo_placeholder.png";
+            return "/images/logo_placeholder.png";
         }
         // Shitty way to check for partner
         else if ((item as Partner).is_wallet != undefined) {

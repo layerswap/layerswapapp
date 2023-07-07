@@ -16,16 +16,20 @@ import HeaderWithMenu from '../components/HeaderWithMenu'
 import { SettingsProvider } from '../context/settings'
 import Image from 'next/image'
 
-const ResponsiveImage = (props) => (
-    <Image
+const ResponsiveImage = (props) => {
+    const router = useRouter();
+    return <Image
         alt={props.alt}
         sizes="100vw"
+        height={100}
+        width={100}
         style={{ width: '100%', height: 'auto' }}
         {...props}
+        src={`${router?.basePath}${props.src}`}
     />
-)
+}
 const components = {
-    img: ResponsiveImage,
+    Image: ResponsiveImage,
 }
 export default function ForPartners(props) {
     const router = useRouter();

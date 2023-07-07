@@ -12,6 +12,7 @@ import KnownInternalNames from '../../../lib/knownIds';
 import { OpenLink } from '../../../lib/openLink';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
 import SubmitButton from '../../buttons/submitButton';
+import { useRouter } from 'next/router';
 
 type Props = {
     OnSuccess: () => Promise<void>,
@@ -70,7 +71,8 @@ const CoinbaseAccountConnect: FC<Props> = ({ OnSuccess }) => {
             toast.error(e.message)
         }
     }, [oauth_connect_url, query, values])
-
+    const router = useRouter()
+    const basePath = router?.basePath ?? "";
     return (
         <>
             <div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
@@ -85,22 +87,20 @@ const CoinbaseAccountConnect: FC<Props> = ({ OnSuccess }) => {
                             <div className="flex justify-center items-center m-7 space-x-3">
                                 <div className="flex-shrink-0 w-16 border-2 rounded-md border-secondary-500 relative">
                                     <Image
-                                        src="/app/images/coinbaseWhite.png"
+                                        src={`${basePath}/images/coinbaseWhite.png`}
                                         alt="Exchange Logo"
                                         height="40"
                                         width="40"
-                                        layout="responsive"
                                         className="object-contain rounded-md"
                                     />
                                 </div>
                                 <ArrowLeftRight />
                                 <div className="flex-shrink-0 w-16 border-2 rounded-md border-secondary-500 relative">
                                     <Image
-                                        src="/app/images/layerswapWhite.png"
+                                        src={`${basePath}/images/layerswapWhite.png`}
                                         alt="Layerswap Logo"
                                         height="40"
                                         width="40"
-                                        layout="responsive"
                                         className="object-contain rounded-md"
                                     />
                                 </div>

@@ -16,17 +16,6 @@ module.exports = (phase, { defaultConfig }) => {
    * @type {import('next').NextConfig}
    */
   const nextConfig = {
-    async redirects() {
-      return [
-        {
-          source: '/',
-          destination: '/app',
-          basePath: false,
-          permanent: false
-        }
-      ]
-    },
-    basePath: '/app',
     i18n: {
       locales: ["en"],
       defaultLocale: "en",
@@ -40,7 +29,9 @@ module.exports = (phase, { defaultConfig }) => {
     reactStrictMode: false,
     productionBrowserSourceMaps: true,
   }
-
+  if(process.env.APP_BASE_PATH){
+    nextConfig.basePath = process.env.APP_BASE_PATH
+  }
   if (phase === PHASE_PRODUCTION_SERVER) {
     nextConfig.headers = async () => {
       return [
