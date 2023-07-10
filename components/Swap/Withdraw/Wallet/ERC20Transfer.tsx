@@ -10,7 +10,7 @@ import {
     useWaitForTransaction,
     useNetwork
 } from "wagmi";
-import { parseEther, parseUnits } from 'viem'
+import { parseEther, parseUnits, BaseError, InsufficientFundsError, EstimateGasExecutionError, UserRejectedRequestError } from 'viem'
 import { erc20ABI } from 'wagmi'
 import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
@@ -308,14 +308,10 @@ type TransactionMessageProps = {
 const TransactionMessage: FC<TransactionMessageProps> = ({
     prepare, wait, transaction, applyingTransaction
 }) => {
-    const prepareErrorCode = prepare?.error?.['code'] || prepare?.error?.["name"]
-    const prepareInnerErrocCode = prepare?.error?.['data']?.['code'] || prepare?.error?.["cause"]?.["cause"]?.["cause"]?.["code"]
-    const prepareResolvedError = resolveError(prepareErrorCode, prepareInnerErrocCode)
-
-    const transactionResolvedError = resolveError(transaction?.error?.['code'] || transaction?.error?.name, transaction?.error?.['data']?.['code'] || transaction?.error?.['cause']?.['code'])
-
+    const prepareResolvedError = resolveError(prepare?.error as BaseError)
+    const transactionResolvedError = resolveError(transaction?.error as BaseError)
     const hasEror = prepare?.isError || transaction?.isError || wait?.isError
-    
+
     if (wait?.isLoading || applyingTransaction) {
         return <TransactionInProgressMessage />
     }
@@ -512,14 +508,36 @@ const applyTransaction = async (swapId: string, trxId: string, setSwapPublishedT
 }
 type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
-const resolveError = (errorCode: string | number, innererrorCode?: string | number): ResolvedError => {
-    if (errorCode === 'INSUFFICIENT_FUNDS'
-        || errorCode === 'UNPREDICTABLE_GAS_LIMIT'
-        || (errorCode === -32603 && innererrorCode === 3)
-        || innererrorCode === -32000
-        || errorCode === 'EstimateGasExecutionError')
+const resolveError = (error: BaseError): ResolvedError => {
+
+    const insufficientFundsError = error?.walk((e: BaseError) => (e instanceof InsufficientFundsError)
+        || (e instanceof EstimateGasExecutionError))
+
+    const isInsufficientFundsError = (insufficientFundsError instanceof InsufficientFundsError)
+        || (insufficientFundsError instanceof EstimateGasExecutionError)
+
+    if (isInsufficientFundsError)
         return "insufficient_funds"
-    else if (errorCode === 4001 || errorCode === "TransactionExecutionError") {
+
+    const isUserRejectedRequestError = error?.walk((e: BaseError) => e instanceof UserRejectedRequestError) instanceof UserRejectedRequestError
+
+    if (isUserRejectedRequestError)
+        return "transaction_rejected"
+
+    const code_name = error?.['code']
+        || error?.["name"]
+    const inner_code = error?.['data']?.['code']
+        || error?.['cause']?.['code']
+        || error?.["cause"]?.["cause"]?.["cause"]?.["code"]
+    console.log("code_name", code_name)
+
+    if (code_name === 'INSUFFICIENT_FUNDS'
+        || code_name === 'UNPREDICTABLE_GAS_LIMIT'
+        || (code_name === -32603 && inner_code === 3)
+        || inner_code === -32000
+        || code_name === 'EstimateGasExecutionError')
+        return "insufficient_funds"
+    else if (code_name === 4001) {
         return "transaction_rejected"
     }
 }
