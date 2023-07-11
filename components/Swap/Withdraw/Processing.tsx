@@ -41,7 +41,7 @@ const Processing: FC = () => {
 
             description: swapStep !== SwapStep.TransactionDone ?
                 <div className='flex items-center space-x-1'>
-                    <span>Source Tx </span>
+                    <span>Source Tx: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={input_tx_explorer.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
                         <ExternalLink className='h-4' />
@@ -67,7 +67,7 @@ const Processing: FC = () => {
             description:
                 swap?.output_transaction ?
                     <div className='flex items-center space-x-1'>
-                        <span>Destination Tx </span>
+                        <span>Destination Tx: </span>
                         <div className='underline hover:no-underline flex items-center space-x-1'>
                             <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
                             <ExternalLink className='h-4' />
