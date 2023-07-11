@@ -139,7 +139,7 @@ export default function () {
                                                         {
                                                             !embedded &&
                                                             <Menu.Item>
-                                                                <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
+                                                                <Item type={ItemType.link} pathname={"https://layerswap.ducalis.io/roadmap/summary"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
                                                                     Roadmap
                                                                 </Item>
                                                             </Menu.Item>
@@ -199,7 +199,7 @@ export default function () {
                                                     {
                                                         !embedded &&
                                                         <Menu.Item>
-                                                            <Item type={ItemType.link} pathname={"https://layerswap.frill.co/roadmap"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
+                                                            <Item type={ItemType.link} pathname={"https://layerswap.ducalis.io/roadmap/summary"} target='_blank' icon={<ExternalLink className='h-4 w-4' />}>
                                                                 Roadmap
                                                             </Item>
                                                         </Menu.Item>

@@ -61,7 +61,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
         const { depositeAddressIsfromAccount } = useSwapDataState()
-        const placeholder = NetworkSettings.KnownSettings[values?.to?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c"
+        const placeholder = "Enter your address here"
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
         const [validInputAddress, setValidInputAddress] = useState<string>()
         const [autofilledWallet, setAutofilledWallet] = useState<'evm' | 'starknet'>()
