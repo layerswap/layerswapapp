@@ -260,6 +260,10 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             setApplyingTransaction(true)
             setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
             setApplyingTransaction(false)
+        },
+        onError: async (e) => {
+            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Error, "");
+            toast.error(e.message)
         }
     })
 
@@ -315,7 +319,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     const transactionResolvedError = resolveError(transaction?.error?.['code'] || transaction?.error?.name, transaction?.error?.['data']?.['code'] || transaction?.error?.['cause']?.['code'])
 
     const hasEror = prepare?.isError || transaction?.isError || wait?.isError
-    
+
     if (wait?.isLoading || applyingTransaction) {
         return <TransactionInProgressMessage />
     }

@@ -5,7 +5,7 @@ import LayerswapMenu from "../LayerswapMenu"
 import GoHomeButton from "../utils/GoHome"
 import { ArrowLeft } from 'lucide-react'
 import ChatIcon from "../icons/ChatIcon"
-import { RainbowKitConnectWallet } from "./ConnectedWallets"
+import { ConnectedWallets, RainbowKitConnectWallet } from "./ConnectedWallets"
 
 function HeaderWithMenu({ goBack }: { goBack: () => void }) {
    const { email, userId } = useAuthState()
@@ -26,7 +26,7 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
          </div>
 
          <div className="col-start-5 justify-self-end self-center flex items-center gap-4">
-            <RainbowKitConnectWallet />
+            <ConnectedWallets />
             <IconButton className="relative hidden md:inline" onClick={() => {
                boot();
                show();
