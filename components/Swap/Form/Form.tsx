@@ -176,19 +176,19 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         const filteredSourceLayers = FilterSourceLayers(settings.layers, source, lockedCurrency);
         const filteredDestinationLayers = FilterDestinationLayers(settings.layers, destination, lockedCurrency);
 
-        const sourceCanBeSwapped = filteredDestinationLayers.some(l=>l.internal_name === source?.internal_name)
-        const destinationCanBeSwapped = filteredSourceLayers.some(l=>l.internal_name === destination?.internal_name)
+        const sourceCanBeSwapped = filteredDestinationLayers.some(l => l.internal_name === source?.internal_name)
+        const destinationCanBeSwapped = filteredSourceLayers.some(l => l.internal_name === destination?.internal_name)
 
         if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
             setValuesSwapperDisabled(true)
-            return ;
+            return;
         }
-        if(!(sourceCanBeSwapped|| destinationCanBeSwapped)){
+        if (!(sourceCanBeSwapped || destinationCanBeSwapped)) {
             setValuesSwapperDisabled(true)
-            return ;
+            return;
         }
         setValuesSwapperDisabled(false)
-        
+
     }, [source, destination, query, settings, lockedCurrency])
 
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
@@ -361,7 +361,8 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
             {values.destination_address ?
                 <TruncatedAdrress address={values.destination_address} />
                 :
-                (NetworkSettings.KnownSettings[values?.to?.internal_name]?.AddressPlaceholder ?? "0x123...ab56c")}
+                "Enter your address here"
+            }
         </div>
     </button>
 }
