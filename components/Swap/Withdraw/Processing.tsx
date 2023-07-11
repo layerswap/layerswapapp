@@ -9,6 +9,8 @@ import Widget from '../../Wizard/Widget';
 import shortenAddress from '../../utils/ShortenAddress';
 import Steps from '../StepsComponent';
 import SwapSummary from '../Summary';
+import { GetNetworkCurrency } from '../../../helpers/settingsHelper';
+import AverageCompletionTime from '../../Common/AverageCompletionTime';
 
 
 const Processing: FC = () => {
@@ -21,6 +23,7 @@ const Processing: FC = () => {
 
     const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
     const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
+    const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network)
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
 
@@ -29,14 +32,16 @@ const Processing: FC = () => {
         || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
         || swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
 
+    const destinationNetworkCurrency = GetNetworkCurrency(destination_layer, swap?.destination_network_asset)
+
     const progress = [
         {
             name: swapStep === SwapStep.TransactionDone ? 'Detecting your transfer' : `Transfer from ${source_display_name} is completed`,
-             status: swapStep !== SwapStep.TransactionDone ? 'complete' : 'current', 
+            status: swapStep !== SwapStep.TransactionDone ? 'complete' : 'current',
 
-             description: swapStep !== SwapStep.TransactionDone ?
+            description: swapStep !== SwapStep.TransactionDone ?
                 <div className='flex items-center space-x-1'>
-                    <span>Source Tx </span>
+                    <span>Source Tx: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={input_tx_explorer.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
                         <ExternalLink className='h-4' />
@@ -60,21 +65,25 @@ const Processing: FC = () => {
             status: (swapStep === SwapStep.TransactionDone
                 || swapStep === SwapStep.TransactionDetected) ? 'upcoming' : 'current',
             description:
-                swap?.output_transaction ? <div className='flex items-center space-x-1'>
-                    <span>Destination Tx </span>
-                    <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
-                        <ExternalLink className='h-4' />
+                swap?.output_transaction ?
+                    <div className='flex items-center space-x-1'>
+                        <span>Destination Tx: </span>
+                        <div className='underline hover:no-underline flex items-center space-x-1'>
+                            <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                            <ExternalLink className='h-4' />
+                        </div>
                     </div>
-                </div>
                     :
-                    <div>
-                        {
-                            destination_network?.internal_name === KnownInternalNames.Networks.StarkNetMainnet ?
-                                <span>Estimated time: 20-60 minutes</span>
-                                :
-                                <span>Estimated time: 2 minutes</span>
-                        }
+                    <div className='flex items-center space-x-1'>
+                        <span>Estimated arrival:</span>
+                        <div className='text-white'>
+                            {
+                                destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
+                                    <span>Up to 2 hours (delayed)</span>
+                                    :
+                                    <AverageCompletionTime time={destination_network?.average_completion_time} />
+                            }
+                        </div>
                     </div>
         },
     ]
