@@ -14,7 +14,7 @@ import {
   RainbowKitProvider,
   connectorsForWallets
 } from '@rainbow-me/rainbowkit';
-import { walletConnectWallet, argentWallet, trustWallet } from '@rainbow-me/rainbowkit/wallets';
+import useStorage from "../hooks/useStorage";
 
 import { supportedChains } from '../lib/chainConfigs';
 import { publicProvider } from 'wagmi/providers/public';
@@ -36,13 +36,12 @@ const connectors = connectorsForWallets([
   ...wallets
 ]);
 
-const wagmiConfig = createConfig({
-  autoConnect: true,
-  connectors,
-  publicClient,
-})
+
 
 function App({ Component, pageProps }) {
+
+
+
   const theme = darkTheme({
     accentColor: 'rgb(var(--colors-primary-500))',
     accentColorForeground: 'white',
@@ -54,6 +53,28 @@ function App({ Component, pageProps }) {
   theme.colors.modalBackground = 'rgb(var(--colors-secondary-900))'
 
   const router = useRouter()
+
+  const { storageAvailable } = useStorage();
+
+  if (!storageAvailable) {
+    return (
+      <SWRConfig
+        value={{
+          revalidateOnFocus: false,
+        }}
+      >
+        <IntercomProvider appId={INTERCOM_APP_ID}>
+          <Component key={router.asPath} {...pageProps} />
+        </IntercomProvider>
+      </SWRConfig>)
+  }
+
+  const wagmiConfig = createConfig({
+    autoConnect: true,
+    connectors,
+    publicClient,
+  })
+
   return (
     <SWRConfig
       value={{
