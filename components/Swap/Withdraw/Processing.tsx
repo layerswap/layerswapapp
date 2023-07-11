@@ -74,13 +74,16 @@ const Processing: FC = () => {
                         </div>
                     </div>
                     :
-                    <div>
-                        {
-                            destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
-                                <span>Up to 2 hours (delayed)</span>
-                                :
-                                <AverageCompletionTime time={destination_network?.average_completion_time} />
-                        }
+                    <div className='flex items-center space-x-1'>
+                        <span>Estimated arrival:</span>
+                        <div className='text-white'>
+                            {
+                                destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
+                                    <span>Up to 2 hours (delayed)</span>
+                                    :
+                                    <AverageCompletionTime time={destination_network?.average_completion_time} />
+                            }
+                        </div>
                     </div>
         },
     ]
