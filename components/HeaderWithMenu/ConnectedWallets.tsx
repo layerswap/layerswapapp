@@ -20,6 +20,7 @@ import { truncateDecimals } from "../utils/RoundDecimals"
 import Image from "next/image"
 import { formatUnits } from 'viem'
 import Erc20Abi from "../../lib/abis/ERC20.json"
+import { useWalletState, useWalletUpdate } from "../../context/wallet"
 
 
 export const RainbowKitConnectWallet = ({ isButton }: { isButton?: boolean }) => {
@@ -88,18 +89,19 @@ const KnownKonnectors = {
 // TODO refactor and fix this
 export const ConnectedWallets = () => {
     const { isConnected } = useAccount();
-    const [account, setAccount] = useState<StarknetWindowObject>()
     const [balance, setBalance] = useState(0)
     const [showModal, setShowModal] = useState(false)
     const starknet = getStarknet()
-    const walletAddress = account?.selectedAddress
+    const { starknetAccount } = useWalletState()
+    const { setStarknetAccount } = useWalletUpdate()
+    const walletAddress = starknetAccount?.selectedAddress
 
     useEffect(() => {
         (async () => {
             const lastConnectedWallet = await starknet.getLastConnectedWallet()
             if (lastConnectedWallet) {
                 const res = await starknet.enable(lastConnectedWallet)
-                setAccount(res)
+                setStarknetAccount(res)
                 if (res) {
                     const erc20Contract = new Contract(
                         Erc20Abi,
@@ -116,11 +118,11 @@ export const ConnectedWallets = () => {
     }, [])
 
     const handleDisconnect = () => {
-        setAccount(null);
+        setStarknetAccount(null);
         disconnect({ clearLastWallet: true })
     }
 
-    if (isConnected && account) {
+    if (isConnected && starknetAccount) {
         return (
             <>
                 <IconButton onClick={() => setShowModal(true)} icon={
@@ -128,17 +130,17 @@ export const ConnectedWallets = () => {
                 } />
                 <Modal header={'Connected wallets'} height="fit" show={showModal} setShow={setShowModal}>
                     <div className="grid grid-cols-2 items-center place-items-center gap-5 mt-2">
-                        <StarknetWallet walletAddress={walletAddress} account={account} balance={balance} handleDisconnect={handleDisconnect} isButton />
+                        <StarknetWallet walletAddress={walletAddress} account={starknetAccount} balance={balance} handleDisconnect={handleDisconnect} isButton />
                         <RainbowKitConnectWallet isButton />
                     </div>
                 </Modal>
             </>
         )
-    } else if (!isConnected && account) {
-        return <StarknetWallet walletAddress={walletAddress} account={account} balance={balance} handleDisconnect={handleDisconnect} />
-    } else if (isConnected && !account) {
+    } else if (!isConnected && starknetAccount) {
+        return <StarknetWallet walletAddress={walletAddress} account={starknetAccount} balance={balance} handleDisconnect={handleDisconnect} />
+    } else if (isConnected && !starknetAccount) {
         return <RainbowKitConnectWallet />
-    } else if (!isConnected && !account) {
+    } else if (!isConnected && !starknetAccount) {
         return <RainbowKitConnectWallet />
     }
 }
