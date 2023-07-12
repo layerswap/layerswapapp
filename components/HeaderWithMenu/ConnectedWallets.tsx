@@ -7,7 +7,7 @@ import MetaMaskIcon from "../icons/Wallets/MetaMask"
 import RainbowIcon from "../icons/Wallets/Rainbow"
 import WalletConnectIcon from "../icons/Wallets/WalletConnect"
 import WalletIcon from "../icons/WalletIcon"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { StarknetWindowObject, getStarknet } from "get-starknet-core"
 import { Contract, uint256 } from "starknet"
 import { disconnect } from "get-starknet"
@@ -28,11 +28,25 @@ export const RainbowKitConnectWallet = ({ isButton }: { isButton?: boolean }) =>
         {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
             const connected = !!(mounted && account && chain)
             const { connector } = useAccount()
-            return <button type="button" className="justify-self-center w-full" onClick={() => connected ? openAccountModal() : openConnectModal()} >
-                {
-                    connected ?
-                        isButton ?
-                            <div className="bg-secondary-700 rounded-lg border-2 border-secondary-500 hover:brightness-110 active:scale-90 transition duration-100 py-4 w-full flex justify-center items-center gap-4">
+            return (
+                isButton ?
+                    <button type="button" onClick={() => connected ? openAccountModal() : openConnectModal()} className="bg-secondary-700 rounded-lg border-2 border-secondary-500 hover:brightness-110 active:scale-90 transition duration-100 py-4 w-full flex justify-center items-center gap-4">
+                        <div className="inline-flex items-center relative">
+                            <AddressIcon address={account.address} size={25} />
+                            {
+                                connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                                    <ResolveWalletIcon connector={connector?.id} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
+                                </span>
+                            }
+                        </div>
+                        <p>
+                            {connector?.name}
+                        </p>
+                    </button>
+                    :
+                    <IconButton onClick={() => connected ? openAccountModal() : openConnectModal()} icon={
+                        connected ?
+                            <div className="font-bold grow flex space-x-2">
                                 <div className="inline-flex items-center relative">
                                     <AddressIcon address={account.address} size={25} />
                                     {
@@ -41,24 +55,11 @@ export const RainbowKitConnectWallet = ({ isButton }: { isButton?: boolean }) =>
                                         </span>
                                     }
                                 </div>
-                                <p>
-                                    {connector?.name}
-                                </p>
                             </div>
-                            :
-                            <div className="font-bold grow flex space-x-2 -mx-2 py-1.5 px-2 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none rounded-lg items-center">
-                                <div className="inline-flex items-center relative">
-                                    <AddressIcon address={account.address} size={25} />
-                                    {
-                                        connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
-                                            <ResolveWalletIcon connector={connector?.id} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
-                                        </span>
-                                    }
-                                </div>
-                            </div>
-                        : <WalletIcon className="h-6 w-6" strokeWidth="2" />
-                }
-            </button>
+                            : <WalletIcon className="h-6 w-6" strokeWidth="2" />
+                    }>
+                    </IconButton>
+            )
         }}
     </ConnectButton.Custom>
 }
@@ -86,11 +87,10 @@ const KnownKonnectors = {
 }
 
 
-// TODO refactor and fix this
 export const ConnectedWallets = () => {
     const { isConnected } = useAccount();
     const [balance, setBalance] = useState(0)
-    const [showModal, setShowModal] = useState(false)
+    const [showModal, setShowModal] = useState<boolean>(false)
     const starknet = getStarknet()
     const { starknetAccount } = useWalletState()
     const { setStarknetAccount } = useWalletUpdate()
@@ -122,10 +122,14 @@ export const ConnectedWallets = () => {
         disconnect({ clearLastWallet: true })
     }
 
+    const handleOpenModal = useCallback(() => {
+        setShowModal(true)
+    }, [showModal])
+
     if (isConnected && starknetAccount) {
         return (
             <>
-                <IconButton onClick={() => setShowModal(true)} icon={
+                <IconButton onClick={handleOpenModal} icon={
                     <WalletIcon className="h-6 w-6" strokeWidth="2" />
                 } />
                 <Modal header={'Connected wallets'} height="fit" show={showModal} setShow={setShowModal}>

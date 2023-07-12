@@ -15,8 +15,7 @@ const IconButton = forwardRef<HTMLButtonElement | HTMLAnchorElement, IconButtonP
                     {icon}
                 </div>
             </div>
-
-            <span className="sr-only">Icon description</span>
+            <span className="sr-only">Icon button</span>
         </button>
     )
 })
