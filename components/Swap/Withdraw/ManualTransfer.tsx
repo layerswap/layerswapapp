@@ -6,7 +6,7 @@ import { AlignLeft, ArrowLeftRight, Megaphone } from "lucide-react"
 import Image from 'next/image';
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { useSettingsState } from "../../../context/settings";
-import { useSwapDataState } from "../../../context/swap";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource, Fee } from "../../../lib/layerSwapApiClient";
@@ -77,7 +77,8 @@ const ManualTransfer: FC = () => {
 const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
 
     const { layers, resolveImgSrc } = useSettingsState()
-    const { swap } = useSwapDataState()
+    const { swap, selectedAssetNetwork } = useSwapDataState()
+    const { setSelectedAssetNetwork } = useSwapDataUpdate()
     const {
         source_network: source_network_internal_name,
         source_exchange: source_exchange_internal_name,
@@ -91,15 +92,13 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
 
     const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
 
-    const [selectedAssetNetwork, setSelectedAsseteNetwork] = useState(source_network?.assets?.[0])
-
     const layerswapApiClient = new LayerSwapApiClient()
     const generateDepositParams = (!address
-        || selectedAssetNetwork?.network_internal_name !== source_network?.assets?.[0]?.network_internal_name) ? [selectedAssetNetwork?.network_internal_name] : null
+        || selectedAssetNetwork?.network_internal_name !== source_network?.assets?.[0]?.network_internal_name) ? [selectedAssetNetwork?.network_internal_name ?? null] : null
 
     const {
         data: generatedDeposit
-    } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network))
+    } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
 
     const feeParams = {
         source: source_network_internal_name,
@@ -124,7 +123,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
     const qrData = canWithdrawWithWallet ? EIP_681 : depositAddress
 
     const handleChangeSelectedNetwork = useCallback((n: BaseL2Asset) => {
-        setSelectedAsseteNetwork(n)
+        setSelectedAssetNetwork(n)
     }, [])
 
     return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>

@@ -12,7 +12,7 @@ import { truncateDecimals } from "../../utils/RoundDecimals"
 const SwapSummary: FC = () => {
     const { isConnected, address } = useAccount()
     const { layers, currencies, networks } = useSettingsState()
-    const { swap, withdrawType } = useSwapDataState()
+    const { swap, withdrawType, selectedAssetNetwork } = useSwapDataState()
     const {
         source_network: source_network_internal_name,
         source_exchange: source_exchange_internal_name,
@@ -21,20 +21,20 @@ const SwapSummary: FC = () => {
         destination_network_asset,
         destination_address
     } = swap
-    const source_layer = layers.find(n => n.internal_name === (source_exchange_internal_name ?? source_network_internal_name))
-    const destination_layer = layers.find(l => l.internal_name === (destination_exchange_internal_name ?? destination_network_internal_name))
+    const source_layer = layers?.find(n => n.internal_name === (source_exchange_internal_name ?? source_network_internal_name))
+    const destination_layer = layers?.find(l => l.internal_name === (destination_exchange_internal_name ?? destination_network_internal_name))
     const asset = source_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
     const currency = currencies?.find(c => c.asset === asset.asset)
 
     const params = {
-        source: source_layer?.internal_name,
+        source: selectedAssetNetwork?.network?.internal_name,
         destination: destination_layer?.internal_name,
         asset: destination_network_asset,
         refuel: swap?.has_refuel
     }
 
     const apiClient = new LayerSwapApiClient()
-    const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], ([params]) => apiClient.GetFee(params), { dedupingInterval: 60000 })
+    const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], selectedAssetNetwork ? ([params]) => apiClient.GetFee(params) : null, { dedupingInterval: 60000 })
 
 
     let fee: number
