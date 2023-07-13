@@ -101,7 +101,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
     } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
 
     const feeParams = {
-        source: source_network_internal_name,
+        source: selectedAssetNetwork?.network?.internal_name,
         destination: destination_network_internal_name,
         asset: destination_network_asset,
         refuel: swap?.has_refuel
@@ -109,6 +109,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
+    
     const requested_amount = manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount
 
     const sourceNetwork = source_network?.isExchange == false && source_network
@@ -225,10 +226,11 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
     const { swap } = useSwapDataState()
     const {
         source_exchange: source_exchange_internal_name,
+        destination_network,
         source_network_asset } = swap
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
-    const exchangeAssets = source_exchange.assets.filter(a => a.asset === source_network_asset && a.network.status !== "inactive")
+    const exchangeAssets = source_exchange.assets.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network.status !== "inactive")
     const defaultSourceNetwork = exchangeAssets.find(sn => sn.is_default) || exchangeAssets?.[0]
 
     const handleChangeSelectedNetwork = useCallback((n: string) => {
