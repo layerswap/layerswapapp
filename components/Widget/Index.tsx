@@ -4,7 +4,7 @@ import { default as Content } from './Content';
 import { default as Footer } from './Footer';
 import { useRef } from "react";
 
-const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[], className?: string}) => {
+const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[], className?: string }) => {
    const router = useRouter()
    const wrapper = useRef(null);
 
@@ -20,6 +20,14 @@ const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[]
             <div className="overflow-hidden h-1 flex rounded-t-lg bg-secondary-500">
                <div className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
             </div>
+            {
+               process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production' && <div>
+                  <div className="h-0.5 bg-[#D95E1B]" />
+                  <div className="absolute top-0.5 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
+                     TESTNET
+                  </div>
+               </div>
+            }
          </div>
          <HeaderWithMenu goBack={handleBack} />
          <div className='text-center text-xl text-secondary-100'>
