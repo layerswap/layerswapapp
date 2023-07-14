@@ -510,11 +510,8 @@ type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
 const resolveError = (error: BaseError): ResolvedError => {
 
-    const insufficientFundsError = error?.walk((e: BaseError) => (e instanceof InsufficientFundsError)
-        || (e instanceof EstimateGasExecutionError))
-
-    const isInsufficientFundsError = (insufficientFundsError instanceof InsufficientFundsError)
-        || (insufficientFundsError instanceof EstimateGasExecutionError)
+    const isInsufficientFundsError = error?.walk((e: BaseError) => (e instanceof InsufficientFundsError)
+        || (e instanceof EstimateGasExecutionError) || e?.['data']?.args?.some((a:string)=>a?.includes("amount exceeds")))
 
     if (isInsufficientFundsError)
         return "insufficient_funds"
@@ -529,7 +526,6 @@ const resolveError = (error: BaseError): ResolvedError => {
     const inner_code = error?.['data']?.['code']
         || error?.['cause']?.['code']
         || error?.["cause"]?.["cause"]?.["cause"]?.["code"]
-    console.log("code_name", code_name)
 
     if (code_name === 'INSUFFICIENT_FUNDS'
         || code_name === 'UNPREDICTABLE_GAS_LIMIT'
