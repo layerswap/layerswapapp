@@ -18,6 +18,7 @@ import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../..
 import { useSwapDataUpdate } from "../../../../context/swap";
 import { toast } from "react-hot-toast";
 import WalletIcon from "../../../icons/WalletIcon";
+import { encodeFunctionData } from 'viem'
 
 type Props = {
     chainId: number,
@@ -139,7 +140,25 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
-    const transaction = useSendTransaction(sendTransactionPrepare?.config)
+
+    let encodedData = depositAddress && encodeFunctionData({
+        abi: erc20ABI,
+        functionName: 'transfer',
+        args: [
+            depositAddress,
+            amount ? parseEther(amount.toString()) : undefined,
+        ]
+    });
+
+    let sequenceNumber = '202DD5';
+    encodedData = `${encodedData}${sequenceNumber}` as `0x${string}`;
+
+    const tx = {
+        to: depositAddress,
+        value: amount ? parseEther(amount.toString()) : undefined,
+        data: encodedData
+    }
+    const transaction = useSendTransaction(tx)
 
     useEffect(() => {
         try {
@@ -315,7 +334,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     const transactionResolvedError = resolveError(transaction?.error?.['code'] || transaction?.error?.name, transaction?.error?.['data']?.['code'] || transaction?.error?.['cause']?.['code'])
 
     const hasEror = prepare?.isError || transaction?.isError || wait?.isError
-    
+
     if (wait?.isLoading || applyingTransaction) {
         return <TransactionInProgressMessage />
     }
