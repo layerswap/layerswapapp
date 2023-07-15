@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapTransaction, WithdrawType } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapTransaction, WithdrawType, Fee } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
-import { useQueryState } from './query';
 import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
@@ -11,8 +10,9 @@ import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
 import { useAccount } from 'wagmi';
 import { getStarknet } from 'get-starknet-core';
+import { BaseL2Asset, ExchangeL2Asset } from '../Models/Layer';
 
-const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined });
+const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
@@ -26,6 +26,7 @@ type UpdateInterface = {
     setDepositeAddressIsfromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
     setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
+    setSelectedAssetNetwork: (assetNetwork: ExchangeL2Asset | BaseL2Asset) => void
 }
 
 type SwapData = {
@@ -36,7 +37,8 @@ type SwapData = {
     depositeAddressIsfromAccount: boolean,
     walletAddress: string,
     withdrawType: WithdrawType,
-    swapTransaction: SwapTransaction
+    swapTransaction: SwapTransaction,
+    selectedAssetNetwork: ExchangeL2Asset | BaseL2Asset
 }
 
 export function SwapDataProvider({ children }) {
@@ -47,9 +49,9 @@ export function SwapDataProvider({ children }) {
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
     const swapId = router.query.swapId?.toString()
-    const query = useQueryState();
     const { address } = useAccount()
     const starknet = getStarknet()
+    const { layers } = useSettingsState()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}`
@@ -57,6 +59,16 @@ export function SwapDataProvider({ children }) {
     const { data: swapResponse, mutate, error } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
+    const source_exchange = layers.find(n => n?.internal_name?.toLowerCase() === swapResponse?.data?.source_exchange?.toLowerCase())
+
+    const exchangeAssets = source_exchange?.assets?.filter(a => a?.asset === swapResponse?.data?.source_network_asset && a?.network?.status !== "inactive")
+    const source_network = layers.find(n => n.internal_name?.toLowerCase() === swapResponse?.data?.source_network?.toLowerCase())
+    const defaultSourceNetwork = (exchangeAssets?.find(sn => sn?.is_default) || exchangeAssets?.[0] || source_network?.assets?.[0])
+    const [selectedAssetNetwork, setSelectedAssetNetwork] = useState<ExchangeL2Asset | BaseL2Asset>(defaultSourceNetwork)
+
+    useEffect(() => {
+        setSelectedAssetNetwork(defaultSourceNetwork)
+    }, [defaultSourceNetwork])
 
     useEffect(() => {
         const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
@@ -125,10 +137,11 @@ export function SwapDataProvider({ children }) {
         setDepositeAddressIsfromAccount,
         setWalletAddress,
         setWithdrawType,
-        setSwapPublishedTx
+        setSwapPublishedTx,
+        setSelectedAssetNetwork
     };
     return (
-        <SwapDataStateContext.Provider value={{ withdrawType, depositeAddressIsfromAccount, swap: swapResponse?.data, swapApiError: error, codeRequested, addressConfirmed, walletAddress, swapTransaction }}>
+        <SwapDataStateContext.Provider value={{ withdrawType, depositeAddressIsfromAccount, swap: swapResponse?.data, swapApiError: error, codeRequested, addressConfirmed, walletAddress, swapTransaction, selectedAssetNetwork }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>
