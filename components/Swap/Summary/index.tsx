@@ -27,20 +27,20 @@ const SwapSummary: FC = () => {
     const currency = currencies?.find(c => c.asset === asset.asset)
 
     const params = {
-        source: selectedAssetNetwork?.network?.internal_name,
+        source: source_layer.internal_name,
         destination: destination_layer?.internal_name,
         asset: destination_network_asset,
         refuel: swap?.has_refuel
     }
 
     const apiClient = new LayerSwapApiClient()
-    const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], selectedAssetNetwork ? ([params]) => apiClient.GetFee(params) : null, { dedupingInterval: 60000 })
+    const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], ([params]) => apiClient.GetFee(params), { dedupingInterval: 60000 })
 
 
     let fee: number
 
-    const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
-    const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
+    const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet && selectedAssetNetwork.network_internal_name === f.network_name)
+    const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual && selectedAssetNetwork.network_internal_name === f.network_name)
 
     if (swap?.fee && swap.input_transaction) {
         fee = swap?.fee

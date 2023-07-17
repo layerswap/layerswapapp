@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
-import { Check, ChevronRight } from "lucide-react"
+import { Check, ChevronDown } from "lucide-react"
 import { classNames } from "../utils/classNames"
 
 const Select = SelectPrimitive.Root
@@ -24,7 +24,7 @@ const SelectTrigger = React.forwardRef<
         {...props}
     >
         {children}
-        <ChevronRight className="h-4 w-4 text-white" />
+        <ChevronDown className="h-4 w-4 text-white" />
     </SelectPrimitive.Trigger>
 ))
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
@@ -72,7 +72,7 @@ const SelectItem = React.forwardRef<
     <SelectPrimitive.Item
         ref={ref}
         className={classNames(
-            "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-semibold outline-none focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-slate-700",
+            "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-semibold outline-none focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-secondary-500",
             className
         )}
         {...props}

@@ -236,6 +236,7 @@ type RefuelTransaction = {
 }
 
 export type Fee = {
+    network_name: string,
     min_amount: number,
     max_amount: number,
     fee_amount: number,

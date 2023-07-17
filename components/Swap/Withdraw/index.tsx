@@ -133,25 +133,22 @@ const Withdraw: FC = () => {
                         {
                             !isFiat && <SwapSummary />
                         }
-                        <span>
-
-                            {
-                                showTabsHeader &&
-                                <>
-                                    <div className="mb-3 ml-1">Choose how you’d like to complete the swap</div>
-                                    <div className="flex space-x-3 w-full">
-                                        {tabs.filter(t => t.enabled).map((tab) => (
-                                            <TabHeader
-                                                activeTabId={activeTabId}
-                                                onCLick={setActiveTabId}
-                                                tab={tab}
-                                                key={tab.id}
-                                            />
-                                        ))}
-                                    </div>
-                                </>
-                            }
-                        </span>
+                        {
+                            showTabsHeader &&
+                            <div>
+                                <p className="mb-3 ml-1">Choose how you’d like to complete the swap</p>
+                                <div className="flex space-x-3 w-full">
+                                    {tabs.filter(t => t.enabled).map((tab) => (
+                                        <TabHeader
+                                            activeTabId={activeTabId}
+                                            onCLick={setActiveTabId}
+                                            tab={tab}
+                                            key={tab.id}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        }
                         <span>
                             {activeTab?.content}
                         </span>
@@ -197,7 +194,7 @@ const WalletTransferContent: FC = () => {
     }, [])
 
 
-    const handleDisconnect = useCallback((e:React.MouseEvent<HTMLDivElement>) => {
+    const handleDisconnect = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
         if (swap.source_exchange) {
             handleDisconnectCoinbase()
         }

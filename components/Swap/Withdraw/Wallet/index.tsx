@@ -15,9 +15,10 @@ const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
     const { address } = useAccount()
-    const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset } = swap
+    const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_exchange: source_exchange_internal_name } = swap
 
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
+    const source_layer = layers.find(n => n.internal_name === (source_exchange_internal_name ?? source_network_internal_name))
     const destination = layers.find(n => n.internal_name === destination_network)
     const sourceCurrency = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
 
@@ -42,7 +43,7 @@ const WalletTransfer: FC = () => {
     const sourceChainId = sourceNetworkSettings?.ChainId
 
     const feeParams = {
-        source: source_network_internal_name,
+        source: source_layer.internal_name,
         destination: destination?.internal_name,
         asset: destination_network_asset,
         refuel: swap?.has_refuel
