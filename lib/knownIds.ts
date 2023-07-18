@@ -111,7 +111,10 @@ export default class KnownInternalNames {
         public static readonly OKCMainnet: string = "OKC_MAINNET";
 
         public static readonly PolygonZkMainnet :string = "POLYGONZK_MAINNET";
+
         public static readonly LineaMainnet :string = "LINEA_MAINNET";
+        
+        public static readonly AvalancheMainnet :string = "AVAX_MAINNET";
     }
 
     static Currencies = class{
