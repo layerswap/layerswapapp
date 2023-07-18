@@ -2,7 +2,7 @@ import { FC, useCallback, useState } from "react"
 import useSWR from "swr"
 import QRCode from "qrcode.react"
 import colors from 'tailwindcss/colors';
-import { AlignLeft, ArrowLeftRight, Megaphone } from "lucide-react"
+import { AlignLeft, ArrowLeftRight, ChevronDown, Info, Megaphone } from "lucide-react"
 import Image from 'next/image';
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { useSettingsState } from "../../../context/settings";
@@ -11,12 +11,14 @@ import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource, Fee } from "../../../lib/layerSwapApiClient";
 import SubmitButton from "../../buttons/submitButton";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../shadcn/select";
-import { BaseL2Asset } from "../../../Models/Layer";
+import { BaseL2Asset, Layer } from "../../../Models/Layer";
 import { DepositType } from "../../../lib/NetworkSettings";
 import SpinIcon from "../../icons/spinIcon";
 import { parseUnits } from 'viem'
 import ClickTooltip from "../../Tooltips/ClickTooltip";
+import Modal from "../../modal/modal";
+import { CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandWrapper } from "../../shadcn/command";
+import useWindowDimensions from "../../../hooks/useWindowDimensions";
 
 const ManualTransfer: FC = () => {
     const { layers } = useSettingsState()
@@ -227,19 +229,23 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
 }
 
 const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void, feeData: Fee[] }> = ({ onChange, feeData }) => {
-    const { layers, resolveImgSrc } = useSettingsState()
-    const { swap } = useSwapDataState()
+    const { layers, resolveImgSrc, exchanges } = useSettingsState()
+    const { swap, selectedAssetNetwork } = useSwapDataState()
     const {
         source_exchange: source_exchange_internal_name,
         destination_network,
         source_network_asset } = swap
-    const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
+    const source_layer = layers.find(n => n.internal_name === source_exchange_internal_name)
+    const source_exchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
+    const [show, setShow] = useState(false)
+    const { isDesktop } = useWindowDimensions();
 
-    const exchangeAssets = source_exchange.assets.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network.status !== "inactive")
+    const exchangeAssets = source_layer.assets.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network.status !== "inactive")
     const defaultSourceNetwork = exchangeAssets.find(sn => sn.is_default) || exchangeAssets?.[0]
+    const sourceNetwork = selectedAssetNetwork ?? defaultSourceNetwork
 
-    const handleChangeSelectedNetwork = useCallback((n: string) => {
-        const network = exchangeAssets.find(network => network?.network_internal_name === n)
+    const handleChangeSelectedNetwork = useCallback((n: Layer) => {
+        const network = exchangeAssets.find(network => network?.network_internal_name === n.internal_name)
         onChange(network)
     }, [exchangeAssets])
 
@@ -248,74 +254,107 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void, feeD
             <p className="font-semibold text-primary-text text-sm">Network</p>
             {exchangeAssets?.length !== 1 && <ClickTooltip text={'Recommended network is displayed. Expand to see the full list.'} />}
         </div>
-        <div className=" p-3 bg-secondary-700 border border-secondary-500 rounded-md">
-            {exchangeAssets?.length === 1 ?
-                <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
-                    <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(defaultSourceNetwork.network)}></Image>
-                    <span>{defaultSourceNetwork?.network?.display_name}</span>
-                </div>
-                :
-                <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.network_internal_name}>
-                    <SelectTrigger className="w-fit border-none !text-white !font-semibold !h-fit !p-0">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="w-fit">
-                        <SelectGroup>
-                            <SelectLabel>Recommended</SelectLabel>
-                            <SelectItem value={defaultSourceNetwork?.network_internal_name}>
-                                <div className="flex items-center gap-1">
-                                    <div className="flex-shrink-0 h-5 w-5 relative">
-                                        <Image
-                                            src={resolveImgSrc(defaultSourceNetwork.network)}
-                                            alt="From Logo"
-                                            height="60"
-                                            width="60"
-                                            className="rounded-md object-contain"
-                                        />
-                                    </div>
-                                    <div className="block">{defaultSourceNetwork.network.display_name}</div>
-                                    <p>
-                                        {feeData?.find(f => f.network_name === defaultSourceNetwork.network_internal_name && f.deposit_type === DepositType.Manual)?.fee_amount}
-                                    </p>
-                                    <p>
-                                        {source_network_asset}
-                                    </p>
-                                </div>
-                            </SelectItem>
-                        </SelectGroup>
-                        <SelectGroup>
-                            <SelectLabel>Networks</SelectLabel>
-                            {exchangeAssets.filter(a => a.network_internal_name !== defaultSourceNetwork.network_internal_name).map(sn => (
-                                <SelectItem key={sn.network_internal_name} value={sn.network_internal_name}>
-                                    <div className="flex items-center gap-1">
-                                        <div className="flex-shrink-0 h-5 w-5 relative">
-                                            {
-                                                sn &&
+        {exchangeAssets?.length === 1 ?
+            <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
+                <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(defaultSourceNetwork.network)}></Image>
+                <span>{defaultSourceNetwork?.network?.display_name}</span>
+            </div>
+            :
+            <>
+                <button
+                    className={"flex h-10 w-full items-center justify-between gap-1 rounded-md border border-secondary-500 bg-secondary-700 py-2 px-3 text-sm placeholder:text-primary-text focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50 text-white"}
+                    onClick={() => setShow(true)}
+                >
+                    <div className="flex items-center justify-between flex-1">
+                        <div className="flex items-center gap-1">
+                            <div className="flex-shrink-0 h-5 w-5 relative">
+                                <Image
+                                    src={resolveImgSrc(sourceNetwork.network)}
+                                    alt="From Logo"
+                                    height="60"
+                                    width="60"
+                                    className="rounded-md object-contain"
+                                />
+                            </div>
+                            <div className="block">{sourceNetwork.network.display_name}</div>
+                        </div>
+                        <div className="flex items-center gap-1 text-primary-text-muted">
+                            <p>
+                                {feeData?.find(f => f.network_name === sourceNetwork.network_internal_name && f.deposit_type === DepositType.Manual)?.fee_amount}
+                            </p>
+                            <p>
+                                {source_network_asset}
+                            </p>
+                        </div>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-white" />
+                </button>
+                <Modal height='full' show={show} setShow={setShow}>
+                    {show &&
+                        <CommandWrapper>
+                            <CommandInput autoFocus={isDesktop} placeholder={''} />
+                            <CommandList>
+                                <CommandEmpty>No results found.</CommandEmpty>
+                                <CommandGroup heading='Recommended'>
+                                    {layers.filter(l => l.isExchange === false && source_exchange.currencies.find(c => c.network === l.internal_name)).map(item => <CommandItem value={item.display_name} key={item.internal_name} onSelect={() => {
+                                        handleChangeSelectedNetwork(item)
+                                        setShow(false)
+                                    }} className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1">
+                                            <div className="flex-shrink-0 h-5 w-5 relative">
                                                 <Image
-                                                    src={resolveImgSrc(sn.network)}
+                                                    src={resolveImgSrc(item)}
                                                     alt="From Logo"
                                                     height="60"
                                                     width="60"
                                                     className="rounded-md object-contain"
                                                 />
-                                            }
+                                            </div>
+                                            <div className="block">{item.display_name}</div>
                                         </div>
-                                        <div className="block">{sn?.network?.display_name}</div>
-                                        <p>
-                                            {feeData?.find(f => f.network_name === sn.network_internal_name && f.deposit_type === DepositType.Manual)?.fee_amount}
-                                        </p>
-                                        <p>
-                                            {source_network_asset}
-                                        </p>
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
-            }
-        </div>
-
+                                        <div className="flex items-center gap-1 text-primary-text-muted">
+                                            <p>
+                                                {feeData?.find(f => f.network_name === item.internal_name && f.deposit_type === DepositType.Manual)?.fee_amount}
+                                            </p>
+                                            <p>
+                                                {source_network_asset}
+                                            </p>
+                                        </div>
+                                    </CommandItem>)}
+                                </CommandGroup>
+                                <CommandGroup heading='Other'>
+                                    {layers.filter(l => l.isExchange === false && !source_exchange.currencies.find(c => c.network === l.internal_name)).map(item => <CommandItem value={item.display_name} key={item.internal_name} onSelect={() => {
+                                        handleChangeSelectedNetwork(item)
+                                        setShow(false)
+                                    }} className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1">
+                                            <div className="flex-shrink-0 h-5 w-5 relative">
+                                                <Image
+                                                    src={resolveImgSrc(item)}
+                                                    alt="From Logo"
+                                                    height="60"
+                                                    width="60"
+                                                    className="rounded-md object-contain"
+                                                />
+                                            </div>
+                                            <div className="block">{item.display_name}</div>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-primary-text-muted">
+                                            <p>
+                                                {feeData?.find(f => f.network_name === item.internal_name && f.deposit_type === DepositType.Manual)?.fee_amount}
+                                            </p>
+                                            <p>
+                                                {source_network_asset}
+                                            </p>
+                                        </div>
+                                    </CommandItem>)}
+                                </CommandGroup>
+                            </CommandList>
+                        </CommandWrapper>
+                    }
+                </Modal>
+            </>
+        }
     </div>
 }
 
