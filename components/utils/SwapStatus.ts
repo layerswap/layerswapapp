@@ -46,13 +46,13 @@ export const GetSwapStep = (swap: SwapItem): SwapStep => {
         return SwapStep.UserTransferPending
 }
 
-export const ResolvePollingInterval = (step: SwapStep): 15000 | 0 => {
+export const ResolvePollingInterval = (step: SwapStep): 10000 | 0 => {
     switch (step) {
         case SwapStep.Failed:
         case SwapStep.Delay:
         case SwapStep.Success:
             return 0;
         default:
-            return 15000
+            return 10000
     }
 }
