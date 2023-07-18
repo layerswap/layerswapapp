@@ -7,6 +7,8 @@ import CurrencyFormField from "./CurrencyFormField";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
 import { useQueryState } from "../../context/query";
+import { useAccount, useBalance } from "wagmi";
+import { NetworkAddressType } from "../../Models/CryptoNetwork";
 
 const AmountField = forwardRef((_, ref: any) => {
 
@@ -15,11 +17,18 @@ const AmountField = forwardRef((_, ref: any) => {
     const query = useQueryState();
     const { currency, from, to, amount } = values
     const name = "amount"
+    const { address } = useAccount()
+
+    const { data, isError, isLoading } = useBalance((from?.isExchange === false && from?.address_type === NetworkAddressType.evm) && {
+        address: address,
+        token: from?.assets?.find(a => a.asset === currency?.asset)?.contract_address as `0x${string}`,
+        chainId: Number(from?.chain_id)
+    })
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
-    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, minAllowedAmount);
+    const maxAllowedAmount = Number(data?.formatted) || CalculateMaxAllowedAmount(values, query.balances, minAllowedAmount);
 
-    const placeholder = (currency && from && to) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
+    const placeholder = (currency && from && to) ? `${minAllowedAmount} - ${maxAllowedAmount.toFixed(currency.precision)}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.precision)
     const amountRef = useRef(ref)
 
