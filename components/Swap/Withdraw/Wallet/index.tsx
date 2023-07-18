@@ -27,7 +27,7 @@ const WalletTransfer: FC = () => {
     const shouldGetGeneratedAddress =
         !sourceIsStarknet &&
         (address?.toLowerCase() !== destination_address?.toLowerCase()
-        || sourceIsImmutableX)
+            || sourceIsImmutableX)
 
     const layerswapApiClient = new LayerSwapApiClient()
     const generateDepositParams = shouldGetGeneratedAddress ? [source_network_internal_name] : null
@@ -38,8 +38,7 @@ const WalletTransfer: FC = () => {
     const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
     const generatedDepositAddress = generatedDeposit?.data?.address
     const managedDepositAddress = managedDeposit?.data?.address
-    const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
-    const sourceChainId = sourceNetworkSettings?.ChainId
+    const sourceChainId = source_network.isExchange === false && Number(source_network.chain_id)
 
     const feeParams = {
         source: source_network_internal_name,
