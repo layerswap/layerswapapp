@@ -16,8 +16,9 @@ export enum DepositType {
 const destinationOrder = [
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
-    KnownInternalNames.Networks.ArbitrumNova,
+    KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.ZksyncMainnet,
+    KnownInternalNames.Networks.ArbitrumNova,
     KnownInternalNames.Networks.ArbitrumMainnet,
     KnownInternalNames.Networks.OptimismMainnet,
     KnownInternalNames.Networks.PolygonZkMainnet,
