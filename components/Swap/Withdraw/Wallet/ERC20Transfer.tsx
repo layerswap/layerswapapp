@@ -165,6 +165,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     const tx = {
         to: depositAddress,
         value: amount ? parseEther(amount.toString()) : undefined,
+        gas: estimatedGas,
         data: encodedData
     }
     const transaction = useSendTransaction(tx)
@@ -184,6 +185,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
                     to: depositAddress,
                     data: encodedData,
                 })
+                setEstimatedGas(gasEstimate)
                 console.log("gasEstimate", gasEstimate)
                 // const estimate = await contract?.estimateGas?.transfer(
                 //     [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
