@@ -27,11 +27,11 @@ const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
 
 function mapLegacyQueryParams(params: QueryParams) {
   return {
-    ...params, 
-    from:params.from ?? params.sourceExchangeName,
-    to : params.to ?? params.destNetwork,
-    lockFrom : params.lockFrom ?? params.lockExchange,
-    lockTo : params.lockTo ?? params.lockNetwork
+    ...params,
+    ...(params.sourceExchangeName ? { from: params.sourceExchangeName } : {}),
+    ...(params.destNetwork ? { to: params.destNetwork } : {}),
+    ...(params.lockExchange ? { lockFrom: params.lockExchange } : {}),
+    ...(params.lockNetwork ? { lockTo: params.lockNetwork } : {}),
   }
 }
 
