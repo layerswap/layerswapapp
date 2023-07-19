@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
-import { ArrowRight, ChevronRight, ExternalLink, RefreshCcw, X } from 'lucide-react';
+import { ArrowRight, ChevronRight, ExternalLink, RefreshCcw, Scroll, X } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
 import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
@@ -15,6 +15,7 @@ import { SwapStatus } from "../../Models/SwapStatus"
 import ToggleButton from "../buttons/toggleButton";
 import Modal from "../modal/modal";
 import HeaderWithMenu from "../HeaderWithMenu";
+import Link from "next/link";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -214,7 +215,7 @@ function TransactionsHistory() {
                                 'relative text-sm table-cell'
                               )}>
                                 <span className="flex items-center">
-                                  {swap && <StatusIcon swap={swap}/>}
+                                  {swap && <StatusIcon swap={swap} />}
                                 </span>
                               </td>
                               <td
@@ -292,7 +293,13 @@ function TransactionsHistory() {
                   </Modal>
                 </div>
                 : <div className="absolute top-1/2 right-0 text-center w-full">
-                  There are no transactions for this account
+                  <Scroll className='h-20 w-20 text-secondary-700 mx-auto' />
+                  <p className="mt-1">It's empty here</p>
+                  <p>You can find all your transactions by searching with address in</p>
+                  <Link target="_blank" href="https://www.layerswap.io/explorer" className="text-primary-text hover:text-gray-400">
+                    <span className="sr-only">Layerswap Explorer</span>
+                    
+                  </Link>
                 </div>
             }
           </>

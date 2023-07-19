@@ -4,6 +4,8 @@ import { forwardRef } from 'react';
 import inIframe from '../utils/inIframe';
 import IconButton from '../buttons/iconButton';
 import { X } from 'lucide-react';
+import { UserType, useAuthState } from '../../context/authContext';
+import { shortenEmail } from '../utils/ShortenAddress';
 
 export type LeafletHeight = 'fit' | 'full' | '80%';
 
@@ -24,6 +26,12 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 33 };
+    const { userType, email } = useAuthState();
+    const UserEmail = ({ email }: { email: string }) => {
+        return (
+            email.length >= 22 ? <>{shortenEmail(email)}</> : <>{email}</>
+        )
+    }
 
     async function handleDragEnd(_, info) {
         const offset = info.offset.y;
@@ -74,10 +82,17 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''}  pb-6`}>
+                <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
                     <div className='px-6 flex justify-between items-center'>
                         <div className="text-lg text-white font-semibold">
-                            <div>{title}</div>
+                            {userType != UserType.AuthenticatedUser ?
+                                <h2 className="font-bold leading-none tracking-tight text-gray-900 md:text-2xl dark:text-white">Hi</h2>
+                                :
+                                <span className="font-normal text-primary-text">
+                                    <UserEmail email={email} />
+                                </span>
+                            }
+
                         </div>
                         <IconButton onClick={handleCloseModal} icon={
                             <X strokeWidth={3} />
