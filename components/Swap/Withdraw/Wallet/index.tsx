@@ -69,7 +69,9 @@ const WalletTransfer: FC = () => {
             generatedDepositAddress={generatedDepositAddress as `0x${string}`}
             managedDepositAddress={managedDepositAddress as `0x${string}`}
             userDestinationAddress={swap.destination_address as `0x${string}`}
-            amount={requested_amount} />
+            amount={requested_amount}
+            asset={sourceCurrency?.asset}
+        />
     </Wrapper>
 
 }
