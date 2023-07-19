@@ -27,6 +27,7 @@ import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 import { ApiError, KnownErrorCode } from "../../../Models/ApiError";
+import { WalletDatadProvider } from "../../../context/wallet";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -90,7 +91,7 @@ export default function () {
         }
     }, [query, settings])
 
-    
+
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             const destination_internal_name = values?.to?.internal_name
@@ -182,7 +183,9 @@ export default function () {
             validate={MainStepValidation({ settings, query })}
             onSubmit={handleSubmit}
         >
-            <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />
+            <WalletDatadProvider>
+                <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />
+            </WalletDatadProvider>
         </Formik>
     </>
 }

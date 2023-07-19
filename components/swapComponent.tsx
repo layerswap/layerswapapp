@@ -26,9 +26,7 @@ const Swap: FC = () => {
         <SwapDataProvider >
           <UserExchangeProvider>
             <TimerProvider>
-              <WalletDatadProvider>
-                <SwapForm />
-              </WalletDatadProvider>
+              <SwapForm />
               {
                 !embedded && userType && userType != UserType.AuthenticatedUser &&
                 <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu>
