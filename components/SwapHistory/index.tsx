@@ -295,8 +295,8 @@ function TransactionsHistory() {
                 : <div className="absolute top-1/4 right-0 text-center w-full">
                   <Scroll className='h-40 w-40 text-secondary-700 mx-auto' />
                   <p className="my-2 text-xl">It's empty here</p>
-                  <p className="px-14">You can find all your transactions by searching with address in</p>
-                  <Link target="_blank" href="https://www.layerswap.io/explorer" className="underline hover:no-underline cursor-pointer text-primary-text font-light">
+                  <p className="px-14 text-primary-text">You can find all your transactions by searching with address in</p>
+                  <Link target="_blank" href="https://www.layerswap.io/explorer" className="underline hover:no-underline cursor-pointer hover:text-primary-text text-white font-light">
                     <span>Layerswap Explorer</span>
                   </Link>
                 </div>
