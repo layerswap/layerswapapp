@@ -115,7 +115,7 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[550px]'>
+    <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[580px]'>
       <HeaderWithMenu goBack={handleGoBack} />
       {
         page == 0 && loading ?
@@ -296,9 +296,8 @@ function TransactionsHistory() {
                   <Scroll className='h-20 w-20 text-secondary-700 mx-auto' />
                   <p className="mt-1">It's empty here</p>
                   <p>You can find all your transactions by searching with address in</p>
-                  <Link target="_blank" href="https://www.layerswap.io/explorer" className="text-primary-text hover:text-gray-400">
-                    <span className="sr-only">Layerswap Explorer</span>
-                    
+                  <Link target="_blank" href="https://www.layerswap.io/explorer" className="underline hover:no-underline cursor-pointer text-primary-text font-light">
+                    <span>Layerswap Explorer</span>
                   </Link>
                 </div>
             }
