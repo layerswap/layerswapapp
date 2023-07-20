@@ -27,7 +27,7 @@ const Rewards = () => {
     }, [router])
 
     return (
-        <div className='bg-secondary-900 pb-6 sm:shadow-card rounded-lg text-white overflow-hidden relative min-h-[500px] h-full space-y-5'>
+        <div className='bg-secondary-900 pb-6 sm:shadow-card rounded-lg text-white overflow-hidden relative min-h-[530px] h-full space-y-5'>
             <HeaderWithMenu goBack={handleGoBack} />
             {!isLoading ?
                 <div className="space-y-5 h-full px-6">

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
 import { useQueryState } from "../context/query"
 import Navbar from "./navbar"
+import GlobalFooter from "./globalFooter";
+import useWindowDimensions from "../hooks/useWindowDimensions";
 
 type Props = {
     hideNavbar: boolean,
@@ -12,6 +14,7 @@ type Props = {
 export default function ({ hideNavbar, children }: Props) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const { isDesktop } = useWindowDimensions()
 
     useEffect(() => {
         const handleStart = (url) => (url !== router.asPath) && setLoading(true);
@@ -39,7 +42,7 @@ export default function ({ hideNavbar, children }: Props) {
     return <div className='styled-scroll'>
         <div className="invisible imxMarketplace ea7df14a1597407f9f755f05e25bab42"></div>
         <main className="styled-scroll">
-            <div className="min-h-screen overflow-hidden relative font-robo">
+            <div className={`${isDesktop ? "flex flex-col items-center" : ""} min-h-screen overflow-hidden relative font-robo`}>
                 <Toaster position="top-center" toastOptions={{
                     duration: 5000,
                     style: {
@@ -106,6 +109,7 @@ export default function ({ hideNavbar, children }: Props) {
                     </div>
                 </div>
                 <div id="offset-for-stickyness"></div>
+                {isDesktop && <GlobalFooter />}
             </div>
         </main>
     </div>

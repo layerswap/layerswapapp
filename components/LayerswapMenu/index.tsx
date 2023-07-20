@@ -256,11 +256,11 @@ export default function () {
                                 }
                             </div>
                             <a className='underline hover:no-underline cursor-pointer plausible-event-name=Read+more' href='https://docs.layerswap.io/user-docs/' target='_blank'>
-                                <div className="flex flex-col pr-4 py-3 text-primary-text font-light absolute bottom-0">
-                                    <div className="bg-secondary-700 hover:text-white px-4 py-2 rounded-md cursor-pointer">
-                                        <h1 className="text-xl font-light text-white">About Layerswap</h1>
-                                        <p className="text-base mt-2">
-                                            Move crypto across exchanges, blockchains, and wallets. <a className='underline hover:no-underline cursor-pointer plausible-event-name=Read+more' href='https://docs.layerswap.io/user-docs/' target='_blank'>Read more</a>
+                                <div className="flex flex-col py-3 text-primary-text font-light absolute bottom-0">
+                                    <div className="bg-secondary-700 hover:text-white px-7 py-2 rounded-md cursor-pointer">
+                                        <h1 className="text-xl font-light text-white py-1 pb-0">About Layerswap</h1>
+                                        <p className="text-base mt-2 py-1">
+                                            Move crypto across exchanges, blockchains, and wallets.
                                         </p>
                                     </div>
                                     <div className="flex space-x-6 mt-4">
