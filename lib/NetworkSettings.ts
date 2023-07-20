@@ -16,18 +16,21 @@ export enum DepositType {
 const destinationOrder = [
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
-    KnownInternalNames.Networks.ArbitrumNova,
+    KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.ZksyncMainnet,
+    KnownInternalNames.Networks.ArbitrumNova,
     KnownInternalNames.Networks.ArbitrumMainnet,
     KnownInternalNames.Networks.OptimismMainnet,
     KnownInternalNames.Networks.PolygonZkMainnet,
     KnownInternalNames.Networks.EthereumMainnet,
+    KnownInternalNames.Networks.PolygonMainnet,
+    KnownInternalNames.Networks.AvalancheMainnet,
+    KnownInternalNames.Networks.ImmutableXMainnet,
     KnownInternalNames.Networks.LoopringMainnet,
     KnownInternalNames.Networks.BNBChainMainnet,
-    KnownInternalNames.Networks.ImmutableXMainnet,
-    KnownInternalNames.Networks.RhinoFiMainnet,
     KnownInternalNames.Networks.OsmosisMainnet,
     KnownInternalNames.Networks.ZkspaceMainnet,
+    KnownInternalNames.Networks.RhinoFiMainnet,
 ];
 
 const sourceOrder = [
@@ -36,13 +39,16 @@ const sourceOrder = [
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.BNBChainMainnet,
     KnownInternalNames.Networks.OptimismMainnet,
+    KnownInternalNames.Networks.SolanaMainnet,
+    KnownInternalNames.Networks.ZksyncEraMainnet,
     KnownInternalNames.Networks.PolygonMainnet,
+    KnownInternalNames.Networks.AvalancheMainnet,
+    KnownInternalNames.Networks.ZksyncMainnet,
     KnownInternalNames.Networks.ArbitrumNova,
     KnownInternalNames.Networks.PolygonZkMainnet,
     KnownInternalNames.Networks.KCCMainnet,
     KnownInternalNames.Networks.LoopringMainnet,
     KnownInternalNames.Networks.ImmutableXMainnet,
-    KnownInternalNames.Networks.SolanaMainnet,
 ];
 
 export default class NetworkSettings {
@@ -192,6 +198,12 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OKCMainnet] = {
             ChainId: 66,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.LineaMainnet] = {
+            ChainId: 59144,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.AvalancheMainnet] = {
+            ChainId: 43114,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.PolygonZkMainnet] = {
             ChainId: 1101,

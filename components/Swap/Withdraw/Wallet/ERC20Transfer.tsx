@@ -18,6 +18,7 @@ import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../..
 import { useSwapDataUpdate } from "../../../../context/swap";
 import { toast } from "react-hot-toast";
 import WalletIcon from "../../../icons/WalletIcon";
+import usdtAbi from "../../../../lib/abis/usdt.json"
 
 type Props = {
     chainId: number,
@@ -29,6 +30,7 @@ type Props = {
     tokenDecimals: number,
     networkDisplayName: string,
     swapId: string;
+    asset: string;
 }
 
 const TransferFromWallet: FC<Props> = ({ networkDisplayName,
@@ -40,6 +42,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     tokenContractAddress,
     tokenDecimals,
     swapId,
+    asset
 }) => {
 
     const { isConnected } = useAccount();
@@ -80,6 +83,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     }
     else if (tokenContractAddress) {
         return <TransferErc20Button
+            asset={asset}
             swapId={swapId}
             amount={amount}
             generatedDepositAddress={generatedDepositAddress}
@@ -209,8 +213,8 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
 type TransferERC20ButtonProps = BaseTransferButtonProps & {
     tokenContractAddress: `0x${string}`,
     tokenDecimals: number,
+    asset: string,
 }
-
 const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     generatedDepositAddress,
     managedDepositAddress,
@@ -219,7 +223,8 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     tokenContractAddress,
     tokenDecimals,
     savedTransactionHash,
-    swapId
+    swapId,
+    asset
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
@@ -231,10 +236,11 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
 
     const contractWritePrepare = usePrepareContractWrite({
         address: tokenContractAddress,
-        abi: erc20ABI,
+        abi: asset?.toUpperCase() == 'USDT' ? usdtAbi : erc20ABI,
         functionName: 'transfer',
         args: [depositAddress, parseUnits(amount.toString(), tokenDecimals)]
     });
+
     const contractWrite = useContractWrite(contractWritePrepare?.config)
 
     useEffect(() => {
@@ -511,7 +517,7 @@ type ResolvedError = "insufficient_funds" | "transaction_rejected"
 const resolveError = (error: BaseError): ResolvedError => {
 
     const isInsufficientFundsError = error?.walk((e: BaseError) => (e instanceof InsufficientFundsError)
-        || (e instanceof EstimateGasExecutionError) || e?.['data']?.args?.some((a:string)=>a?.includes("amount exceeds")))
+        || (e instanceof EstimateGasExecutionError) || e?.['data']?.args?.some((a: string) => a?.includes("amount exceeds")))
 
     if (isInsufficientFundsError)
         return "insufficient_funds"

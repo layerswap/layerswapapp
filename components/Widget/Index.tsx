@@ -21,7 +21,7 @@ const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[]
                <div className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
             </div>
             {
-               process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production' && <div>
+               process.env.NEXT_PUBLIC_API_VERSION === 'sandbox' && <div>
                   <div className="h-0.5 bg-[#D95E1B]" />
                   <div className="absolute top-0.5 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
                      TESTNET
