@@ -111,7 +111,7 @@ function TransactionsHistory() {
   }
 
   const handleToggleChange = (value: boolean) => {
-    setShowAllSwaps(value)
+    setShowAllSwaps(value);
   }
 
   return (
