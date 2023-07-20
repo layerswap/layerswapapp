@@ -11,7 +11,6 @@ import { useAuthState, UserType } from '../context/authContext';
 import GuestCard from './guestCard';
 import { TimerProvider } from '../context/timerContext';
 import SwapForm from "./Swap/Form"
-import { WalletDatadProvider } from '../context/wallet';
 
 const Swap: FC = () => {
   const [embedded, setEmbedded] = useState<boolean>()

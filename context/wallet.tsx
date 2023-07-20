@@ -2,14 +2,12 @@ import React, { FC, useState, useEffect } from 'react'
 import { Steps } from '../Models/Wizard';
 import { StarknetWindowObject } from 'get-starknet';
 import { UserExchangesData } from '../lib/layerSwapApiClient';
-import { GenerateCurrencyMenuItems } from '../components/Input/CurrencyFormField';
 import { erc20ABI, useAccount } from 'wagmi';
-import { useQueryState } from './query';
-import { useSettingsState } from './settings';
 import { useFormikContext } from 'formik';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import { FilterCurrencies } from '../helpers/settingsHelper';
-import { multicall, fetchBalance } from '@wagmi/core'
+import { multicall, fetchBalance, fetchFeeData, fetchBlockNumber } from '@wagmi/core'
+import { formatEther } from 'viem'
+import { NetworkAddressType } from '../Models/CryptoNetwork';
 
 const WalletStateContext = React.createContext(null);
 const WalletStateUpdateContext = React.createContext(null);
@@ -17,82 +15,120 @@ const WalletStateUpdateContext = React.createContext(null);
 export type WizardProvider<T> = {
     starknetAccount: StarknetWindowObject,
     authorizedCoinbaseAccount: UserExchangesData,
+    balances: Balance[]
 }
 
 type UpdateInterface<T> = {
     setStarknetAccount: (account: StarknetWindowObject) => void,
     setAuthorizedCoinbaseAccount: (value: UserExchangesData) => void,
+    setBalances: (balances: Balance[]) => void
 }
 
-type Balances = {
+type Balance = {
     network: string,
     amount: any,
     token: string
 }
 
+type Fee = {
+    gasPrice: bigint
+    maxFeePerGas: bigint
+    maxPriorityFeePerGas: bigint
+    formatted: {
+        gasPrice: string
+        maxFeePerGas: string
+        maxPriorityFeePerGas: string
+    }
+}
 
-export const WalletDatadProvider: FC = <T extends Steps>({ children }) => {
+
+export const WalletDataProvider: FC = <T extends Steps>({ children }) => {
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
     const [authorizedCoinbaseAccount, setAuthorizedCoinbaseAccount] = useState<UserExchangesData>()
-    const [balances, setBalances] = useState<Balances[]>([{ network: '', amount: 0, token: '' }])
+    const [balances, setBalances] = useState<Balance[]>()
 
     const { address } = useAccount()
-    const query = useQueryState();
-    const { currencies, resolveImgSrc } = useSettingsState()
     const { values } = useFormikContext<SwapFormValues>();
-    const { from, to } = values
-    const lockedCurrency = query?.lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === query?.asset?.toUpperCase()) : null
-    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : FilterCurrencies(currencies, from, to)
-    const currencyMenuItems = GenerateCurrencyMenuItems(
-        filteredCurrencies,
-        from,
-        resolveImgSrc,
-        lockedCurrency
-    )
+    const { from } = values
+    const [feeData, setFeeData] = useState<Fee>()
 
-    const prepareToFetchERC20 = currencyMenuItems.filter(c => from?.assets?.find(a => a.asset.toUpperCase() === c?.baseObject?.asset?.toUpperCase())?.contract_address).map(c => ({
-        address: from?.assets?.find(a => a.asset.toUpperCase() === c?.baseObject?.asset?.toUpperCase())?.contract_address as `0x${string}`,
+    const formatAmount = (unformattedAmount: bigint | unknown, asset: string) => {
+        const currency = from.assets.find(c => c.asset === asset)
+        return (Number(BigInt(unformattedAmount.toString())) / Math.pow(10, currency?.decimals))
+    }
+
+
+    const prepareToFetchERC20 = from?.assets?.filter(a => a.contract_address).map(a => ({
+        address: a?.contract_address as `0x${string}`,
         abi: erc20ABI,
         functionName: 'balanceOf',
         args: [address],
     }))
 
-    
-    //shit
     useEffect(() => {
-        if (from?.isExchange === false) {
+        if (from && address && from?.isExchange === false && from.address_type === NetworkAddressType.evm) {
 
-            const fetchERC20Balances = async () => {
-                const ERC20data = await multicall({
-                    chainId: Number(from?.isExchange === false && from?.chain_id),
-                    contracts: prepareToFetchERC20
+            (async () => {
+                const feeData = await fetchFeeData({
+                    chainId: Number(from.chain_id),
                 })
+                setFeeData(feeData)
+                let contractRes: ({
+                    error: Error;
+                    result?: undefined;
+                    status: "failure";
+                } | {
+                    error?: undefined;
+                    result: unknown;
+                    status: "success";
+                })[];
+                let nativeTokenRes: {
+                    decimals: number
+                    formatted: string
+                    symbol: string
+                    value: bigint
+                };
 
-                setBalances([...balances, { amount: ERC20data[0]?.result, token: currencyMenuItems.find(c => from?.assets?.find(a => a.asset.toUpperCase() === c?.baseObject?.asset?.toUpperCase()))?.baseObject?.asset, network: '' }])
-            }
-            const fetchNativeTokenBalance = async () => {
-                const data = await fetchBalance({
-                    address: address,
-                    chainId: Number(from?.chain_id)
-                })
-                setBalances([...balances, { amount: data[0]?.result, token: currencyMenuItems.find(c => !from?.assets?.find(a => a.asset.toUpperCase() === c?.baseObject?.asset?.toUpperCase()))?.baseObject?.asset, network: '' }])
-            }
+                try {
+                    contractRes = await multicall({
+                        chainId: Number(from?.chain_id),
+                        contracts: prepareToFetchERC20
+                    })
+                } catch (e) { console.log(e) }
 
-            fetchNativeTokenBalance()
-            fetchERC20Balances()
-            console.log(balances)
+                try {
+                    nativeTokenRes = await fetchBalance({
+                        address: address,
+                        chainId: Number(from?.chain_id)
+                    })
+                } catch (e) { console.log(e) }
+                const contractBalances = contractRes?.map((d, index) => ({
+                    network: from.internal_name,
+                    token: from?.assets?.filter(a => a.contract_address)[index].asset,
+                    amount: formatAmount(d.result, from?.assets?.filter(a => a.contract_address)[index].asset)
+                }))
+                const nativeBalance = {
+                    network: from.internal_name,
+                    token: from.native_currency,
+                    amount: formatAmount(nativeTokenRes.value, from.native_currency)
+                }
+                setBalances(contractBalances?.concat(nativeBalance))
+            })()
+        } else {
+            setBalances(undefined)
         }
-
-    }, [from, to, address])
+    }, [from, address])
 
     return (
         <WalletStateContext.Provider value={{
             starknetAccount,
-            authorizedCoinbaseAccount
+            authorizedCoinbaseAccount,
+            balances
         }}>
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,
-                setAuthorizedCoinbaseAccount
+                setAuthorizedCoinbaseAccount,
+                setBalances
             }}>
                 {children}
             </WalletStateUpdateContext.Provider>

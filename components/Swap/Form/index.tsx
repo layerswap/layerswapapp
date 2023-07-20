@@ -27,7 +27,7 @@ import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 import { ApiError, KnownErrorCode } from "../../../Models/ApiError";
-import { WalletDatadProvider } from "../../../context/wallet";
+import { WalletDataProvider } from "../../../context/wallet";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -183,9 +183,9 @@ export default function () {
             validate={MainStepValidation({ settings, query })}
             onSubmit={handleSubmit}
         >
-            <WalletDatadProvider>
+            <WalletDataProvider>
                 <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />
-            </WalletDatadProvider>
+            </WalletDataProvider>
         </Formik>
     </>
 }

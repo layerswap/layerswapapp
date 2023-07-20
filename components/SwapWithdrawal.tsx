@@ -4,7 +4,7 @@ import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import SwapDetails from "./Swap";
 import { Widget } from "./Widget/Index";
 import NotFound from "./Swap/NotFound";
-import { WalletDatadProvider } from "../context/wallet";
+import { WalletDataProvider } from "../context/wallet";
 
 const SwapWithdrawal: FC = () => {
     const { swap, swapApiError } = useSwapDataState()
@@ -27,9 +27,9 @@ const SwapWithdrawal: FC = () => {
     const key = Object.keys(query).join("")
 
     return (
-        <WalletDatadProvider>
+        <WalletDataProvider>
             <SwapDetails key={key} />
-        </WalletDatadProvider>
+        </WalletDataProvider>
     )
 };
 

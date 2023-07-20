@@ -7,14 +7,17 @@ import CurrencyFormField from "./CurrencyFormField";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
 import { useQueryState } from "../../context/query";
+import { useWalletState } from "../../context/wallet";
 
 
 const AmountField = forwardRef((_, ref: any) => {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { networks, currencies, resolveImgSrc } = useSettingsState()
+    const { networks, currencies } = useSettingsState()
     const query = useQueryState();
     const { currency, from, to, amount } = values
+
+    const { balances } = useWalletState()
     const name = "amount"
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
