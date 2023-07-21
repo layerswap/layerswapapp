@@ -18,7 +18,6 @@ const AmountField = forwardRef((_, ref: any) => {
     const { currency, from, to, amount } = values
 
     const { balances, isBalanceLoading } = useWalletState()
-    console.log(isBalanceLoading)
     const name = "amount"
     const walletBalance = roundDecimals(balances?.find(b => b.network === from?.internal_name && b.token === currency?.asset)?.amount, currency?.precision)
 
