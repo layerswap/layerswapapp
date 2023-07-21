@@ -183,9 +183,7 @@ export default function () {
             validate={MainStepValidation({ settings, query })}
             onSubmit={handleSubmit}
         >
-            <WalletDataProvider>
-                <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />
-            </WalletDataProvider>
+            <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />
         </Formik>
     </>
 }

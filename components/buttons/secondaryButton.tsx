@@ -5,10 +5,11 @@ type buttonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 type SecondaryButtonProps = {
     size?: buttonSize
     onClick?: MouseEventHandler<HTMLButtonElement>
-    className?: string
+    className?: string,
+    disabled?: boolean
 }
 
-const SecondaryButton: FC<SecondaryButtonProps> = ({ size = 'md', onClick, children, className }) => {
+const SecondaryButton: FC<SecondaryButtonProps> = ({ size = 'md', onClick, children, className, disabled }) => {
 
     let defaultStyle = 'rounded-md duration-200 break-keep transition bg-secondary-500 hover:bg-secondary-400 border border-secondary-400 hover:border-secondary-200 font-semibold text-white shadow-sm cursor-pointer ' + className
 
@@ -35,6 +36,7 @@ const SecondaryButton: FC<SecondaryButtonProps> = ({ size = 'md', onClick, child
             type="button"
             className={defaultStyle}
             onClick={onClick}
+            disabled={disabled}
         >
             {children}
         </button>

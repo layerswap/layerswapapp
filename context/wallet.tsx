@@ -1,13 +1,10 @@
 import React, { FC, useState, useEffect } from 'react'
-import { Steps } from '../Models/Wizard';
 import { StarknetWindowObject } from 'get-starknet';
 import { UserExchangesData } from '../lib/layerSwapApiClient';
 import { erc20ABI, useAccount } from 'wagmi';
-import { useFormikContext } from 'formik';
-import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import { multicall, fetchBalance, fetchFeeData, fetchBlockNumber } from '@wagmi/core'
-import { formatEther } from 'viem'
+import { multicall, fetchBalance, fetchFeeData } from '@wagmi/core'
 import { NetworkAddressType } from '../Models/CryptoNetwork';
+import { Layer } from '../Models/Layer';
 
 const WalletStateContext = React.createContext(null);
 const WalletStateUpdateContext = React.createContext(null);
@@ -15,19 +12,22 @@ const WalletStateUpdateContext = React.createContext(null);
 export type WizardProvider<T> = {
     starknetAccount: StarknetWindowObject,
     authorizedCoinbaseAccount: UserExchangesData,
-    balances: Balance[]
+    balances: Balance[],
+    isBalanceLoading: boolean
 }
 
 type UpdateInterface<T> = {
     setStarknetAccount: (account: StarknetWindowObject) => void,
     setAuthorizedCoinbaseAccount: (value: UserExchangesData) => void,
-    setBalances: (balances: Balance[]) => void
+    setBalances: (balances: Balance[]) => void,
+    setIsBalanceLoading: (loading: boolean) => void,
 }
 
 type Balance = {
     network: string,
     amount: any,
-    token: string
+    token: string,
+    request_time: string
 }
 
 type Fee = {
@@ -42,14 +42,13 @@ type Fee = {
 }
 
 
-export const WalletDataProvider: FC = <T extends Steps>({ children }) => {
+export const WalletDataProvider: FC<{ from?: Layer }> = ({ children, from }) => {
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
     const [authorizedCoinbaseAccount, setAuthorizedCoinbaseAccount] = useState<UserExchangesData>()
-    const [balances, setBalances] = useState<Balance[]>()
+    const [balances, setBalances] = useState<Balance[]>([])
+    const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
 
     const { address } = useAccount()
-    const { values } = useFormikContext<SwapFormValues>();
-    const { from } = values
     const [feeData, setFeeData] = useState<Fee>()
 
     const formatAmount = (unformattedAmount: bigint | unknown, asset: string) => {
@@ -57,16 +56,17 @@ export const WalletDataProvider: FC = <T extends Steps>({ children }) => {
         return (Number(BigInt(unformattedAmount.toString())) / Math.pow(10, currency?.decimals))
     }
 
-
-    const prepareToFetchERC20 = from?.assets?.filter(a => a.contract_address).map(a => ({
+    const prepareToFetchERC20 = from?.assets?.filter(a => a.contract_address && a.status !== 'inactive').map(a => ({
         address: a?.contract_address as `0x${string}`,
         abi: erc20ABI,
         functionName: 'balanceOf',
         args: [address],
     }))
 
+    const isBalanceOutDated = new Date().getTime() - (new Date(balances?.find(b => b.network === from?.internal_name)?.request_time).getTime() || 0) > 60000
+
     useEffect(() => {
-        if (from && address && from?.isExchange === false && from.address_type === NetworkAddressType.evm) {
+        if (from && address && from?.isExchange === false && from?.address_type === NetworkAddressType.evm && isBalanceOutDated) {
 
             (async () => {
                 const feeData = await fetchFeeData({
@@ -88,7 +88,7 @@ export const WalletDataProvider: FC = <T extends Steps>({ children }) => {
                     symbol: string
                     value: bigint
                 };
-
+                setIsBalanceLoading(true)
                 try {
                     contractRes = await multicall({
                         chainId: Number(from?.chain_id),
@@ -102,20 +102,22 @@ export const WalletDataProvider: FC = <T extends Steps>({ children }) => {
                         chainId: Number(from?.chain_id)
                     })
                 } catch (e) { console.log(e) }
+                finally { setIsBalanceLoading(false) }
                 const contractBalances = contractRes?.map((d, index) => ({
                     network: from.internal_name,
                     token: from?.assets?.filter(a => a.contract_address)[index].asset,
-                    amount: formatAmount(d.result, from?.assets?.filter(a => a.contract_address)[index].asset)
+                    amount: formatAmount(d.result, from?.assets?.filter(a => a.contract_address)[index].asset),
+                    request_time: new Date().toJSON()
                 }))
                 const nativeBalance = {
                     network: from.internal_name,
                     token: from.native_currency,
-                    amount: formatAmount(nativeTokenRes.value, from.native_currency)
+                    amount: formatAmount(nativeTokenRes.value, from.native_currency),
+                    request_time: new Date().toJSON()
                 }
-                setBalances(contractBalances?.concat(nativeBalance))
+                const filteredBalances = balances.some(b => b.network === from.internal_name) ? balances?.filter(b => b.network !== from.internal_name) : balances
+                setBalances(filteredBalances.concat(contractBalances, nativeBalance))
             })()
-        } else {
-            setBalances(undefined)
         }
     }, [from, address])
 
@@ -123,12 +125,14 @@ export const WalletDataProvider: FC = <T extends Steps>({ children }) => {
         <WalletStateContext.Provider value={{
             starknetAccount,
             authorizedCoinbaseAccount,
-            balances
+            balances,
+            isBalanceLoading
         }}>
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,
                 setAuthorizedCoinbaseAccount,
-                setBalances
+                setBalances,
+                setIsBalanceLoading
             }}>
                 {children}
             </WalletStateUpdateContext.Provider>

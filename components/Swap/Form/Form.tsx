@@ -35,6 +35,7 @@ import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetw
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
+import { WalletDataProvider } from "../../../context/wallet";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -207,7 +208,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         && (query?.lockTo || query?.hideTo)
         && isValidAddress(query?.destAddress, destination)
 
-    return <>
+    return <WalletDataProvider from={values.from}>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget className="sm:min-h-[504px]">
                 <Widget.Content>
@@ -324,7 +325,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                 </Modal>
             }
         </Form >
-    </>
+    </WalletDataProvider>
 }
 
 function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {
