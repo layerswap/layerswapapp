@@ -18,6 +18,7 @@ import useStorage from "../hooks/useStorage";
 
 import { supportedChains } from '../lib/chainConfigs';
 import { publicProvider } from 'wagmi/providers/public';
+import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet } from '@rainbow-me/rainbowkit/wallets';
 
 const { chains, publicClient } = configureChains(
   supportedChains,
@@ -32,11 +33,24 @@ const { wallets } = getDefaultWallets({
   projectId: WALLETCONNECT_PROJECT_ID
 });
 
+const projectId = WALLETCONNECT_PROJECT_ID;
 const connectors = connectorsForWallets([
-  ...wallets
+  {
+    groupName: 'Popular',
+    wallets: [
+      metaMaskWallet({ projectId, chains }),
+      coinbaseWallet({ chains, appName: 'Layerswap RainbowKit App' }),
+      walletConnectWallet({ projectId, chains }),
+    ],
+  },
+  {
+    groupName: 'Others',
+    wallets: [
+      rainbowWallet({ projectId, chains }),
+      bitKeepWallet({ projectId, chains }),
+    ],
+  },
 ]);
-
-
 
 function App({ Component, pageProps }) {
 
