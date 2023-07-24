@@ -10,7 +10,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
   darkTheme,
-  getDefaultWallets,
+  AvatarComponent,
   RainbowKitProvider,
   connectorsForWallets
 } from '@rainbow-me/rainbowkit';
@@ -18,7 +18,7 @@ import useStorage from "../hooks/useStorage";
 
 import { supportedChains } from '../lib/chainConfigs';
 import { publicProvider } from 'wagmi/providers/public';
-import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet } from '@rainbow-me/rainbowkit/wallets';
+import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 
 const { chains, publicClient } = configureChains(
   supportedChains,
@@ -26,12 +26,6 @@ const { chains, publicClient } = configureChains(
     publicProvider()
   ]
 );
-
-const { wallets } = getDefaultWallets({
-  appName: 'Layerswap',
-  chains,
-  projectId: WALLETCONNECT_PROJECT_ID
-});
 
 const projectId = WALLETCONNECT_PROJECT_ID;
 const connectors = connectorsForWallets([
@@ -48,14 +42,12 @@ const connectors = connectorsForWallets([
     wallets: [
       rainbowWallet({ projectId, chains }),
       bitKeepWallet({ projectId, chains }),
+      argentWallet({ projectId, chains }),
     ],
   },
 ]);
 
 function App({ Component, pageProps }) {
-
-
-
   const theme = darkTheme({
     accentColor: 'rgb(var(--colors-primary-500))',
     accentColorForeground: 'white',

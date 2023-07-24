@@ -8,13 +8,16 @@ import RainbowIcon from "../icons/Wallets/Rainbow"
 import WalletConnectIcon from "../icons/Wallets/WalletConnect"
 
 import WalletIcon from "../icons/WalletIcon"
+import BitKeep from "../icons/Wallets/BitKeep"
+import Argent from "../icons/Wallets/Argent"
 
 
 export const RainbowKitConnectWallet = ({ isButton }: { isButton?: boolean }) => {
     return <ConnectButton.Custom>
         {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
-            const connected = !!(mounted && account && chain)
-            const { connector } = useAccount()
+            const connected = !!(mounted && account && chain);
+            const { connector } = useAccount();
+
             return <IconButton onClick={() => connected ? openAccountModal() : openConnectModal()} icon={
                 connected ?
                     <div className="font-bold grow flex space-x-2">
@@ -22,7 +25,7 @@ export const RainbowKitConnectWallet = ({ isButton }: { isButton?: boolean }) =>
                             <AddressIcon address={account.address} size={25} />
                             {
                                 connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
-                                    <ResolveWalletIcon connector={connector?.id} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
+                                    <ResolveWalletIcon connector={connector?.name} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
                                 </span>
                             }
                         </div>
@@ -44,18 +47,23 @@ export const ResolveWalletIcon = ({ connector, className }: { connector: string,
             return <WalletConnectIcon className={className} />
         case KnownKonnectors.Rainbow:
             return <RainbowIcon className={className} />
+        case KnownKonnectors.BitKeep:
+            return <BitKeep className={className} />
+        case KnownKonnectors.Argent:
+            return <Argent className={className} />
         default:
             return <></>
     }
 }
 
 const KnownKonnectors = {
-    MetaMask: 'metaMask',
-    WaletConnect: 'waletConnect',
-    Coinbase: 'coinbase',
-    Rainbow: 'rainbow',
+    MetaMask: 'MetaMask',
+    WaletConnect: 'WaletConnect',
+    Coinbase: 'Coinbase Wallet',
+    Rainbow: 'Rainbow',
+    BitKeep: 'BitKeep',
+    Argent: 'Argent',
 }
-
 
 //TODO refactor and fix this
 // export const ConnectedWallets = () => {
