@@ -15,9 +15,9 @@ import Argent from "../icons/Wallets/Argent"
 export const RainbowKitConnectWallet = ({ isButton }: { isButton?: boolean }) => {
     return <ConnectButton.Custom>
         {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
-            const connected = !!(mounted && account && chain);
-            const { connector } = useAccount();
-
+            const connected = !!(mounted && account && chain)
+            const { connector } = useAccount()
+            console.log(connector,"connector")
             return <IconButton onClick={() => connected ? openAccountModal() : openConnectModal()} icon={
                 connected ?
                     <div className="font-bold grow flex space-x-2">
@@ -43,7 +43,7 @@ export const ResolveWalletIcon = ({ connector, className }: { connector: string,
             return <MetaMaskIcon className={className} />
         case KnownKonnectors.Coinbase:
             return <CoinbaseIcon className={className} />
-        case KnownKonnectors.WaletConnect:
+        case KnownKonnectors.WalletConnect:
             return <WalletConnectIcon className={className} />
         case KnownKonnectors.Rainbow:
             return <RainbowIcon className={className} />
@@ -58,7 +58,7 @@ export const ResolveWalletIcon = ({ connector, className }: { connector: string,
 
 const KnownKonnectors = {
     MetaMask: 'MetaMask',
-    WaletConnect: 'WaletConnect',
+    WalletConnect: 'WalletConnect',
     Coinbase: 'Coinbase Wallet',
     Rainbow: 'Rainbow',
     BitKeep: 'BitKeep',
