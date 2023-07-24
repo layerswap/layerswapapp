@@ -2,7 +2,7 @@ import React, { FC, useState, useEffect } from 'react'
 import { StarknetWindowObject } from 'get-starknet';
 import { UserExchangesData } from '../lib/layerSwapApiClient';
 import { erc20ABI, useAccount } from 'wagmi';
-import { multicall, fetchBalance, fetchFeeData } from '@wagmi/core'
+import { multicall, fetchBalance } from '@wagmi/core'
 import { NetworkAddressType } from '../Models/CryptoNetwork';
 import { Layer } from '../Models/Layer';
 
@@ -30,18 +30,6 @@ type Balance = {
     request_time: string
 }
 
-type Fee = {
-    gasPrice: bigint
-    maxFeePerGas: bigint
-    maxPriorityFeePerGas: bigint
-    formatted: {
-        gasPrice: string
-        maxFeePerGas: string
-        maxPriorityFeePerGas: string
-    }
-}
-
-
 export const WalletDataProvider: FC<{ from?: Layer }> = ({ children, from }) => {
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
     const [authorizedCoinbaseAccount, setAuthorizedCoinbaseAccount] = useState<UserExchangesData>()
@@ -49,7 +37,6 @@ export const WalletDataProvider: FC<{ from?: Layer }> = ({ children, from }) => 
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
 
     const { address } = useAccount()
-    const [feeData, setFeeData] = useState<Fee>()
 
     const formatAmount = (unformattedAmount: bigint | unknown, asset: string) => {
         const currency = from.assets.find(c => c.asset === asset)
@@ -69,10 +56,6 @@ export const WalletDataProvider: FC<{ from?: Layer }> = ({ children, from }) => 
         if (from && address && from?.isExchange === false && from?.address_type === NetworkAddressType.evm && isBalanceOutDated) {
 
             (async () => {
-                const feeData = await fetchFeeData({
-                    chainId: Number(from.chain_id),
-                })
-                setFeeData(feeData)
                 let contractRes: ({
                     error: Error;
                     result?: undefined;
