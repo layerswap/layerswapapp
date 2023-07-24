@@ -1,4 +1,4 @@
-import { arbitrum, arbitrumGoerli, bsc, bscTestnet, goerli, mainnet, okc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet, lineaTestnet } from 'wagmi/chains';
+import { arbitrum, avalanche, arbitrumGoerli, bsc, bscTestnet, goerli, mainnet, okc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet, lineaTestnet } from 'wagmi/chains';
 
 export const kcc = {
   id: 321,
@@ -56,29 +56,6 @@ export const arbitrumNova = {
       blockCreated: 1746963,
     },
   },
-}
-
-
-export const avalanche = {
-  id: 43114,
-  name: 'Avalanche Mainnet',
-  network: 'avalanche',
-  nativeCurrency: { name: 'AVAX', symbol: 'AVAX', decimals: 6 },
-  rpcUrls: {
-    blast: {
-      http: ['https://ava-mainnet.public.blastapi.io/ext/bc/C/rpc'],
-      webSocket: ['wss://ava-mainnet.public.blastapi.io/ext/bc/C/ws'],
-    },
-    default: {
-      http: ['https://api.avax.network/ext/bc/C/rpc'],
-    },
-    public: {
-      http: ['https://api.avax.network/ext/bc/C/rpc'],
-    },
-  },
-  blockExplorers: {
-    default: { name: 'Snowtrace', url: 'https://snowtrace.io' },
-  }
 }
 
 export const linea = {

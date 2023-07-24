@@ -208,7 +208,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         && (query?.lockTo || query?.hideTo)
         && isValidAddress(query?.destAddress, destination)
 
-    return <WalletDataProvider from={values.from}>
+    return <WalletDataProvider from={values.from} currency={values.currency}>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget className="sm:min-h-[504px]">
                 <Widget.Content>

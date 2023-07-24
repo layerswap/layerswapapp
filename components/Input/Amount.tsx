@@ -19,12 +19,13 @@ const AmountField = forwardRef((_, ref: any) => {
 
     const { balances, isBalanceLoading } = useWalletState()
     const name = "amount"
-    const walletBalance = roundDecimals(balances?.find(b => b.network === from?.internal_name && b.token === currency?.asset)?.amount, currency?.precision)
+    const walletBalance = roundDecimals(balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)?.amount, currency?.precision)
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
-    const maxAllowedAmount = walletBalance > minAllowedAmount ? walletBalance : CalculateMaxAllowedAmount(values, query.balances, minAllowedAmount);
+    const CalculatedMaxAmount = CalculateMaxAllowedAmount(values, query.balances, minAllowedAmount)
+    const maxAllowedAmount = (walletBalance > minAllowedAmount && walletBalance < CalculatedMaxAmount) ? walletBalance : CalculatedMaxAmount;
 
-    const placeholder = walletBalance > minAllowedAmount ? `${minAllowedAmount} - ${walletBalance}` : (currency && from && to) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
+    const placeholder = (walletBalance > minAllowedAmount && walletBalance < maxAllowedAmount) ? `${minAllowedAmount} - ${walletBalance}` : (currency && from && to) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.precision)
     const amountRef = useRef(ref)
 
@@ -83,7 +84,7 @@ const AmountLabel = ({
         <p>Amount</p>
         {detailsAvailable &&
             <div className="text-xs text-primary-text flex items-center space-x-1">
-                (Min: {minAllowedAmount} - Max: {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse"/> : maxAllowedAmount})
+                (Min: {minAllowedAmount} - Max: {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : maxAllowedAmount})
             </div>}
     </div>
 }
