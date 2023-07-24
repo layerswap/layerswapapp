@@ -35,7 +35,6 @@ export type Balance = {
 }
 
 
-
 export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ children, from, currency }) => {
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
     const [authorizedCoinbaseAccount, setAuthorizedCoinbaseAccount] = useState<UserExchangesData>()
@@ -43,15 +42,14 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
 
     const { address } = useAccount()
-    const { chain } = useNetwork();
 
     const publicClient = createPublicClient({
-        chain: supportedChains.find(ch => ch.id === (from?.isExchange === false && Number(from?.chain_id))) ?? chain,
+        chain: supportedChains?.find(ch => ch.id === (from?.isExchange === false && Number(from?.chain_id))) ?? supportedChains[0],
         transport: http()
     })
 
     const walletClient = createWalletClient({
-        chain: supportedChains.find(ch => ch.id === (from?.isExchange === false && Number(from?.chain_id))) ?? chain,
+        chain: supportedChains?.find(ch => ch.id === (from?.isExchange === false && Number(from?.chain_id))) ?? supportedChains[0],
         transport: http()
     })
 
@@ -147,8 +145,8 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
                     gas: formatAmount(feeData?.maxFeePerGas ? (feeData?.maxFeePerGas * estimatedNativeGasLimit) : (estimatedNativeGasLimit * feeData?.gasPrice), from.native_currency)
                 }
 
-                const filteredBalances = balances.some(b => b?.network === from?.internal_name) ? balances?.filter(b => b?.network !== from.internal_name) : balances
-                setBalances(filteredBalances.concat(contractBalances, nativeBalance))
+                const filteredBalances = balances?.some(b => b?.network === from?.internal_name) ? balances?.filter(b => b?.network !== from.internal_name) : balances
+                setBalances(filteredBalances?.concat(contractBalances, nativeBalance))
             })()
         }
     }, [from, address, currency])

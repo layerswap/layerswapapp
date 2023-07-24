@@ -45,7 +45,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
 
     const destinationNetwork = GetDefaultNetwork(to, currency?.asset)
     const { balances } = useWalletState()
-    const walletBalance = balances.find(b => b.network === from.internal_name && b.token === currency.asset)
+    const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
 
     return (
         <>
