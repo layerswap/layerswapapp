@@ -7,7 +7,7 @@ import { useMenuState } from "../../context/menu";
 import TokenService from "../../lib/TokenService";
 import { AnimatePresence, motion } from "framer-motion";
 import shortenAddress, { shortenEmail } from "../utils/ShortenAddress";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
@@ -20,6 +20,7 @@ import SubstackLogo from "./../icons/SubstackLogo";
 import TwitterLogo from "./../icons/TwitterLogo";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import Link from "next/link";
+import { RainbowKitConnectWallet } from "../HeaderWithMenu/ConnectedWallets";
 
 ``
 
@@ -33,6 +34,7 @@ export default function () {
     const [embedded, setEmbedded] = useState<boolean>()
     const [openTopModal, setOpenTopModal] = useState(false);
     const { isMobile, isDesktop } = useWindowDimensions()
+    const { openConnectModal } = useConnectModal();
 
     useEffect(() => {
         setEmbedded(inIframe())
@@ -95,7 +97,7 @@ export default function () {
                 </button>
                 <Modal show={openTopModal} setShow={setOpenTopModal} header="Menu">
                     <AnimatePresence>
-                        <div className="text-sm font-medium text-left origin-top-right mt-2 focus:outline-none">
+                        <div className="text-sm font-medium text-left origin-top-right mt-2 focus:outline-none flex flex-col h-full">
                             <div className="relative z-30 py-1">
                                 {
                                     userType == UserType.AuthenticatedUser ?
@@ -110,16 +112,25 @@ export default function () {
                                                         show();
                                                         updateWithProps();
                                                     }}
-                                                    className={`${!isMobile && !isConnected ? "px-[70px] py-7" : ""} ${isMobile && !isConnected ? "px-[52px] py-6" : ""} ${!isMobile && isConnected ? "px-[35px] py-7" : ""} ${isMobile && isConnected ? "px-[25px] py-6" : ""} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                                    className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
                                                 >
                                                     <ChatIcon className="h-6 w-6" strokeWidth={2} />
                                                     <p>Get Help</p>
                                                 </button>
                                                 {
-                                                    isConnected &&
-                                                    <WalletAddress isMobile={isMobile} isConnected={isConnected} />
+                                                    isConnected ?
+                                                        <WalletAddress isMobile={isMobile} isConnected={isConnected} />
+                                                        :
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openConnectModal()}
+                                                            className={`${!isMobile ? "px-[15px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                                        >
+                                                            <WalletIcon className="h-6 w-6" strokeWidth={2} />
+                                                            <p>Connect a Wallet</p>
+                                                        </button>
                                                 }
-                                                <Link href="/transactions" className={`${!isMobile && !isConnected ? "px-[70px] py-7" : ""} ${isMobile && !isConnected ? "px-[52px] py-6" : ""} ${!isMobile && isConnected ? "px-[35px] py-7" : ""} ${isMobile && isConnected ? "px-[25px] py-6" : ""} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
+                                                <Link href="/transactions" className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
                                                     <ScrollText className="h-6 w-6" />
                                                     <p>Transfers</p>
                                                 </Link>
@@ -180,18 +191,27 @@ export default function () {
                                                     show();
                                                     updateWithProps();
                                                 }}
-                                                className={`${!isMobile && !isConnected ? "px-[70px] py-7" : ""} ${isMobile && !isConnected ? "px-[52px] py-6" : ""} ${!isMobile && isConnected ? "px-[35px] py-7" : ""} ${isMobile && isConnected ? "px-[25px] py-6" : ""} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
-                                                >
+                                                className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                            >
                                                 <ChatIcon className="h-6 w-6" strokeWidth={2} />
                                                 <p>Get Help</p>
                                             </button>
                                             {
-                                                isConnected &&
-                                                <WalletAddress isMobile={isMobile} isConnected={isConnected} />
+                                                isConnected ?
+                                                    <WalletAddress isMobile={isMobile} isConnected={isConnected} />
+                                                    :
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openConnectModal()}
+                                                        className={`${!isMobile ? "px-[15px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                                    >
+                                                        <WalletIcon className="h-6 w-6" strokeWidth={2} />
+                                                        <p>Connect a Wallet</p>
+                                                    </button>
                                             }
                                             <Link
                                                 href="/transactions"
-                                                className={`${!isMobile && !isConnected ? "px-[70px] py-7" : ""} ${isMobile && !isConnected ? "px-[52px] py-6" : ""} ${!isMobile && isConnected ? "px-[35px] py-7" : ""} ${isMobile && isConnected ? "px-[25px] py-6" : ""} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
+                                                className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
                                                 <ScrollText className="h-6 w-6" />
                                                 <p>Transfers</p>
                                             </Link>
@@ -255,9 +275,9 @@ export default function () {
                                     </>
                                 }
                             </div>
-                            <a className='underline hover:no-underline cursor-pointer plausible-event-name=Read+more' href='https://docs.layerswap.io/user-docs/' target='_blank'>
-                                <div className="flex flex-col py-3 text-primary-text font-light absolute bottom-0">
-                                    <div className="bg-secondary-700 hover:text-white px-7 py-2 rounded-md cursor-pointer">
+                            <a className='hover:no-underline cursor-pointer plausible-event-name=Read+more mt-auto' href='https://docs.layerswap.io/user-docs/' target='_blank'>
+                                <div className="flex flex-col py-3 text-primary-text font-light">
+                                    <div className="bg-secondary-700 hover:text-white px-4 py-2 rounded-md cursor-pointer">
                                         <h1 className="text-xl font-light text-white py-1 pb-0">About Layerswap</h1>
                                         <p className="text-base mt-2 py-1">
                                             Move crypto across exchanges, blockchains, and wallets.
@@ -288,7 +308,7 @@ const WalletAddress = (isMobile, isConnected) => {
                 return <button
                     type="button"
                     onClick={openAccountModal}
-                    className={`${!isMobile?.isMobile && isConnected ? "px-[35px] py-7" : ""} ${isMobile?.isMobile && isConnected ? "px-[25px] py-7" : ""} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                    className={`${!isMobile?.isMobile ? "px-[30px] py-5" : "px-[25px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
                 >
                     <WalletIcon className="h-6 w-6" strokeWidth={2} />
                     <p>{shortenAddress(account.address)}</p>
