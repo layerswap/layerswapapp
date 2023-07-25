@@ -25,7 +25,7 @@ const AmountField = forwardRef((_, ref: any) => {
     const CalculatedMaxAmount = CalculateMaxAllowedAmount(values, query.balances, minAllowedAmount)
     const maxAllowedAmount = (walletBalance > minAllowedAmount && walletBalance < CalculatedMaxAmount) ? walletBalance : CalculatedMaxAmount;
 
-    const placeholder = (walletBalance > minAllowedAmount && walletBalance < maxAllowedAmount) ? `${minAllowedAmount} - ${walletBalance}` : (currency && from && to) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
+    const placeholder = (walletBalance > minAllowedAmount && walletBalance < maxAllowedAmount) ? `${minAllowedAmount} - ${walletBalance}` : (currency && from && to && !isBalanceLoading) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.precision)
     const amountRef = useRef(ref)
 

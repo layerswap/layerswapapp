@@ -62,7 +62,7 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
 
     const formatAmount = (unformattedAmount: bigint | unknown, asset: string) => {
         const currency = from.assets.find(c => c.asset === asset)
-        return (Number(BigInt(unformattedAmount.toString())) / Math.pow(10, currency?.decimals))
+        return (Number(BigInt(unformattedAmount?.toString() || 0)) / Math.pow(10, currency?.decimals))
     }
 
     const prepareToFetchERC20 = from?.assets?.filter(a => a.contract_address && a.status !== 'inactive').map(a => ({
@@ -127,6 +127,7 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
                     })
                 } catch (e) { console.log(e) }
                 finally { setIsBalanceLoading(false) }
+
                 const contractBalances = contractRes?.map((d, index) => {
                     const token = from?.assets?.filter(a => a.contract_address && a.status !== 'inactive')[index].asset
                     return {
@@ -134,22 +135,52 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
                         token: token,
                         amount: formatAmount(d.result, token),
                         request_time: new Date().toJSON(),
-                        gas: (contract.address && token === currency.asset) ? formatAmount(feeData.maxFeePerGas ? (feeData?.maxFeePerGas * estimatedERC20GasLimit) : (estimatedNativeGasLimit * feeData?.gasPrice), from.native_currency) : 0
+                        gas: (contract.address && token === currency.asset) ? formatAmount(feeData.maxFeePerGas ? (feeData?.maxFeePerGas * estimatedERC20GasLimit) : (estimatedERC20GasLimit * feeData?.gasPrice), from.native_currency) : 0
                     }
                 })
                 const nativeBalance = {
                     network: from.internal_name,
                     token: from.native_currency,
-                    amount: formatAmount(nativeTokenRes.value, from.native_currency),
+                    amount: formatAmount(nativeTokenRes?.value, from.native_currency),
                     request_time: new Date().toJSON(),
                     gas: formatAmount(feeData?.maxFeePerGas ? (feeData?.maxFeePerGas * estimatedNativeGasLimit) : (estimatedNativeGasLimit * feeData?.gasPrice), from.native_currency)
                 }
 
                 const filteredBalances = balances?.some(b => b?.network === from?.internal_name) ? balances?.filter(b => b?.network !== from.internal_name) : balances
                 setBalances(filteredBalances?.concat(contractBalances, nativeBalance))
+
             })()
         }
     }, [from, address, currency])
+
+    useEffect(() => {
+        const gasToChange = balances.find(b => from?.isExchange === false && b?.network === from?.internal_name && b?.token === currency?.asset && b?.gas === 0 && from?.native_currency !== b?.token)
+        if (from?.isExchange === false && gasToChange) {
+            const GasFetch = async () => {
+
+                let estimatedERC20GasLimit: bigint
+                let feeData: FetchFeeDataResult
+
+                setIsBalanceLoading(true)
+                try {
+                    feeData = await fetchFeeData({
+                        chainId: Number(from?.chain_id),
+                    })
+                } catch (e) { console.log(e) }
+                try {
+                    if (contract.address) {
+                        estimatedERC20GasLimit = await contract?.estimateGas?.transfer(
+                            [address, BigInt(0)],
+                            { account: address }
+                        )
+                    }
+                } catch (e) { console.log(e) }
+                finally { setIsBalanceLoading(false) }
+                setBalances(balances.filter(b => b !== gasToChange).concat({ ...gasToChange, gas: formatAmount(feeData.maxFeePerGas ? (feeData?.maxFeePerGas * estimatedERC20GasLimit) : (estimatedERC20GasLimit * feeData?.gasPrice), from.native_currency) }))
+            }
+            GasFetch()
+        }
+    }, [currency])
 
     return (
         <WalletStateContext.Provider value={{
