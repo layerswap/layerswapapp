@@ -37,7 +37,9 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
                }>
             </IconButton>
 
-            <LayerswapMenu />
+            <div className="fixed-width-container">
+               <LayerswapMenu />
+            </div>
          </div>
       </div>
    )

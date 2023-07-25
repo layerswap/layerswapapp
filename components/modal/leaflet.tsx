@@ -32,7 +32,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             email.length >= 22 ? <>{shortenEmail(email)}</> : <>{email}</>
         )
     }
-
+console.log(title,"title")
     async function handleDragEnd(_, info) {
         const offset = info.offset.y;
         const velocity = info.velocity.y;
@@ -85,12 +85,12 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
                     <div className='px-6 flex justify-between items-center'>
                         <div className="text-lg text-white font-semibold">
-                            {userType != UserType.AuthenticatedUser ?
+                            {userType != UserType.AuthenticatedUser && title == "Menu" ?
                                 <h2 className="font-bold leading-none tracking-tight text-gray-900 md:text-2xl dark:text-white">Hi</h2>
-                                :
-                                <span className="font-normal text-primary-text">
-                                    <UserEmail email={email} />
-                                </span>
+                                : userType != UserType.AuthenticatedUser ? "" :
+                                    <span className="font-normal text-primary-text">
+                                        <UserEmail email={email} />
+                                    </span>
                             }
 
                         </div>
