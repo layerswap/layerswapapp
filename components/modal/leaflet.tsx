@@ -86,7 +86,7 @@ console.log(title,"title")
                     <div className='px-6 flex justify-between items-center'>
                         <div className="text-lg text-white font-semibold">
                             {userType != UserType.AuthenticatedUser && title == "Menu" ?
-                                <h2 className="font-bold leading-none tracking-tight text-gray-900 md:text-2xl dark:text-white">Menu</h2>
+                                <h2 className="font-normal leading-none tracking-tight text-gray-900 md:text-2xl dark:text-white">Menu</h2>
                                 : userType != UserType.AuthenticatedUser ? "" :
                                     <span className="font-normal text-primary-text">
                                         <UserEmail email={email} />
