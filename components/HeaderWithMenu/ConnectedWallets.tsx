@@ -17,7 +17,7 @@ export const RainbowKitConnectWallet = ({ isButton }: { isButton?: boolean }) =>
         {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
             const connected = !!(mounted && account && chain)
             const { connector } = useAccount()
-            console.log(connector,"connector")
+            
             return <IconButton onClick={() => connected ? openAccountModal() : openConnectModal()} icon={
                 connected ?
                     <div className="font-bold grow flex space-x-2">
