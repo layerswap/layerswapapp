@@ -92,7 +92,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                 from?.isExchange &&
                                 <div className="mt-2 flex flex-row justify-between">
                                     <label className="flex items-center text-left grow text-primary-text-placeholder">
-                                        Exchange Fee
+                                        Exchange fee
                                         <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                     </label>
                                     <span className="text-right">
@@ -104,7 +104,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                 from?.isExchange === false && from?.address_type === NetworkAddressType.evm && balances?.length > 0 && walletBalance && 
                                 <div className="mt-2 flex flex-row items-baseline justify-between">
                                     <label className="inline-flex items-center text-left text-primary-text-placeholder">
-                                        Estimated Gas
+                                        Estimated gas
                                     </label>
                                     <div className="text-right flex items-center gap-1">
                                         {!isBalanceLoading ? truncateDecimals(walletBalance?.gas, currencies.find(a => a.asset === from.native_currency).precision) : <div className='h-3 w-10 bg-gray-500 rounded-sm animate-pulse' />} <span>{from?.native_currency}</span>
