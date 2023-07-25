@@ -93,7 +93,10 @@ const AmountLabel = ({
                 </div>
             }
         </div>
-        <p className="justify-self-end text-xs">Balance: <span className="text-primary-text font-light">{walletBalance}</span></p>
+        {
+            !isNaN(walletBalance) &&
+            <div className="text-xs text-primary-text flex items-center space-x-1">Balance: {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : walletBalance}</div>
+        }
     </div>
 }
 
