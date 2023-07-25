@@ -76,7 +76,7 @@ export default function () {
                 className: 'plausible-event-name=Discord'
             },
             {
-                name: 'Substack ',
+                name: 'Substack',
                 href: 'https://layerswap.substack.com/',
                 icon: (props) => SubstackLogo(props),
                 className: 'plausible-event-name=Substack'
@@ -112,7 +112,7 @@ export default function () {
                                                         show();
                                                         updateWithProps();
                                                     }}
-                                                    className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                                    className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
                                                 >
                                                     <ChatIcon className="h-6 w-6" strokeWidth={2} />
                                                     <p>Get Help</p>
@@ -124,17 +124,18 @@ export default function () {
                                                         <button
                                                             type="button"
                                                             onClick={() => openConnectModal()}
-                                                            className={`${!isMobile ? "px-[15px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                                            className={`${!isMobile ? "px-[15px] py-5" : "px-[15px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
                                                         >
                                                             <WalletIcon className="h-6 w-6" strokeWidth={2} />
                                                             <p>Connect a Wallet</p>
                                                         </button>
                                                 }
-                                                <Link href="/transactions" className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
+                                                <Link href="/transactions" className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
                                                     <ScrollText className="h-6 w-6" />
                                                     <p>Transfers</p>
                                                 </Link>
                                             </div>
+                                            <p className="text-primary-text">General</p>
                                             {
                                                 router.pathname != '/' &&
                                                 <Link href="/" className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
@@ -191,7 +192,7 @@ export default function () {
                                                     show();
                                                     updateWithProps();
                                                 }}
-                                                className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                                className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
                                             >
                                                 <ChatIcon className="h-6 w-6" strokeWidth={2} />
                                                 <p>Get Help</p>
@@ -203,7 +204,7 @@ export default function () {
                                                     <button
                                                         type="button"
                                                         onClick={() => openConnectModal()}
-                                                        className={`${!isMobile ? "px-[15px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                                        className={`${!isMobile ? "px-[15px] py-5" : "px-[15px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
                                                     >
                                                         <WalletIcon className="h-6 w-6" strokeWidth={2} />
                                                         <p>Connect a Wallet</p>
@@ -211,11 +212,12 @@ export default function () {
                                             }
                                             <Link
                                                 href="/transactions"
-                                                className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
+                                                className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
                                                 <ScrollText className="h-6 w-6" />
                                                 <p>Transfers</p>
                                             </Link>
                                         </div>
+                                        <p className="text-primary-text">General</p>
                                         {
                                             router.pathname != '/' &&
                                             <Link
@@ -276,18 +278,22 @@ export default function () {
                                 }
                             </div>
                             <a className='hover:no-underline cursor-pointer plausible-event-name=Read+more mt-auto' href='https://docs.layerswap.io/user-docs/' target='_blank'>
-                                <div className="flex flex-col py-3 text-primary-text font-light">
-                                    <div className="bg-secondary-700 hover:text-white px-4 py-2 rounded-md cursor-pointer">
+                                <div className="flex flex-col py-3 text-primary-text">
+                                    <div className="bg-secondary-700 hover:text-white px-4 py-2 rounded-md cursor-pointer font-light">
                                         <h1 className="text-xl font-light text-white py-1 pb-0">About Layerswap</h1>
                                         <p className="text-base mt-2 py-1">
                                             Move crypto across exchanges, blockchains, and wallets.
                                         </p>
                                     </div>
-                                    <div className="flex space-x-6 mt-4">
+                                    <div className="flex flex-col mt-4">
+                                        <p className="text-primary-text font-medium mb-1.5">About</p>
                                         {navigation.social.map((item) => (
-                                            <Link key={item.name} target="_blank" href={item.href} className={`text-primary-text hover:text-gray-400 ${item.className}`}>
-                                                <span className="sr-only">{item.name}</span>
-                                                <item.icon className="h-6 w-6" aria-hidden="true" />
+                                            <Link key={item.name} target="_blank" href={item.href} className={`${item.name == "Substack" ? "rounded-b-md" : ""} ${item.name != "Twitter" ? "border-t border-slate-800" : "rounded-t-md"}  menu-link flex relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white ${item.className}`}>
+                                                <div className="flex items-center">
+                                                    <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><item.icon className="h-6 w-6" aria-hidden="true" /></div>
+                                                    <p>{item.name}</p>
+                                                </div>
+                                                <ExternalLink className="h-4 w-4 absolute right-3" />
                                             </Link>
                                         ))}
                                     </div>
