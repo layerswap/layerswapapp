@@ -81,7 +81,7 @@ export function GenerateCurrencyMenuItems(currencies: Currency[], source: Layer,
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(),
             isDefault: false,
-            details: (balance && balance !== 0) ? balance?.toString() : undefined
+            details: (balance || balance === 0) ? balance?.toString() : undefined
         };
     }).sort(SortingByOrder);
 }

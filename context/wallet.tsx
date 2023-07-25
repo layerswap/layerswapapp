@@ -22,7 +22,6 @@ export type WizardProvider<T> = {
 type UpdateInterface<T> = {
     setStarknetAccount: (account: StarknetWindowObject) => void,
     setAuthorizedCoinbaseAccount: (value: UserExchangesData) => void,
-    setBalances: (balances: Balance[]) => void,
     setIsBalanceLoading: (loading: boolean) => void,
 }
 
@@ -34,14 +33,13 @@ export type Balance = {
     gas: number
 }
 
-
 export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ children, from, currency }) => {
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
     const [authorizedCoinbaseAccount, setAuthorizedCoinbaseAccount] = useState<UserExchangesData>()
-    const [balances, setBalances] = useState<Balance[]>([])
+    const [allBalances, setAllBalances] = useState<{ [address: string]: Balance[] }>({})
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
-
     const { address } = useAccount()
+    const balances = allBalances[address]
 
     const publicClient = createPublicClient({
         chain: supportedChains?.find(ch => ch.id === (from?.isExchange === false && Number(from?.chain_id))) ?? supportedChains[0],
@@ -72,7 +70,7 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
         args: [address],
     }))
 
-    const isBalanceOutDated = new Date().getTime() - (new Date(balances?.find(b => b?.network === from?.internal_name)?.request_time).getTime() || 0) > 60000
+    const isBalanceOutDated = new Date().getTime() - (new Date(allBalances[address]?.find(b => b?.network === from?.internal_name)?.request_time).getTime() || 0) > 60000
 
     useEffect(() => {
         if (from && isBalanceOutDated && address && from?.isExchange === false && from?.address_type === NetworkAddressType.evm) {
@@ -146,15 +144,14 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
                     gas: formatAmount(feeData?.maxFeePerGas ? (feeData?.maxFeePerGas * estimatedNativeGasLimit) : (estimatedNativeGasLimit * feeData?.gasPrice), from.native_currency)
                 }
 
-                const filteredBalances = balances?.some(b => b?.network === from?.internal_name) ? balances?.filter(b => b?.network !== from.internal_name) : balances
-                setBalances(filteredBalances?.concat(contractBalances, nativeBalance))
-
+                const filteredBalances = allBalances[address]?.some(b => b?.network === from?.internal_name) ? allBalances[address]?.filter(b => b?.network !== from.internal_name) : allBalances[address] || []
+                setAllBalances({ ...allBalances, [address]: filteredBalances?.concat(contractBalances, nativeBalance) })
             })()
         }
     }, [from, address, currency])
 
     useEffect(() => {
-        const gasToChange = balances.find(b => from?.isExchange === false && b?.network === from?.internal_name && b?.token === currency?.asset && b?.gas === 0 && from?.native_currency !== b?.token)
+        const gasToChange = allBalances[address]?.find(b => from?.isExchange === false && b?.network === from?.internal_name && b?.token === currency?.asset && b?.gas === 0 && from?.native_currency !== b?.token)
         if (from?.isExchange === false && gasToChange) {
             const GasFetch = async () => {
 
@@ -176,7 +173,7 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
                     }
                 } catch (e) { console.log(e) }
                 finally { setIsBalanceLoading(false) }
-                setBalances(balances.filter(b => b !== gasToChange).concat({ ...gasToChange, gas: formatAmount(feeData.maxFeePerGas ? (feeData?.maxFeePerGas * estimatedERC20GasLimit) : (estimatedERC20GasLimit * feeData?.gasPrice), from.native_currency) }))
+                setAllBalances({ ...allBalances, [address]: allBalances[address].filter(b => b !== gasToChange).concat({ ...gasToChange, gas: formatAmount(feeData.maxFeePerGas ? (feeData?.maxFeePerGas * estimatedERC20GasLimit) : (estimatedERC20GasLimit * feeData?.gasPrice), from.native_currency) }) })
             }
             GasFetch()
         }
@@ -192,7 +189,6 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,
                 setAuthorizedCoinbaseAccount,
-                setBalances,
                 setIsBalanceLoading
             }}>
                 {children}

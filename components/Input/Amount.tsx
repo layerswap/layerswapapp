@@ -43,6 +43,7 @@ const AmountField = forwardRef((_, ref: any) => {
                 maxAllowedAmount={maxAllowedAmount}
                 minAllowedAmount={minAllowedAmount}
                 isBalanceLoading={isBalanceLoading}
+                walletBalance={walletBalance}
             />}
             disabled={!currency}
             placeholder={placeholder}
@@ -72,20 +73,27 @@ type AmountLabelProps = {
     detailsAvailable: boolean;
     minAllowedAmount: number;
     maxAllowedAmount: number;
-    isBalanceLoading: boolean
+    isBalanceLoading: boolean;
+    walletBalance: number
 }
 const AmountLabel = ({
     detailsAvailable,
     minAllowedAmount,
     maxAllowedAmount,
-    isBalanceLoading
+    isBalanceLoading,
+    walletBalance
 }: AmountLabelProps) => {
-    return <div className="flex items-center space-x-2">
-        <p>Amount</p>
-        {detailsAvailable &&
-            <div className="text-xs text-primary-text flex items-center space-x-1">
-                (Min: {minAllowedAmount} - Max: {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : maxAllowedAmount})
-            </div>}
+    return <div className="flex items-center w-full justify-between">
+        <div className="flex items-center space-x-2">
+            <p>Amount</p>
+            {
+                detailsAvailable &&
+                <div className="text-xs text-primary-text flex items-center space-x-1">
+                    (Min: {minAllowedAmount} - Max: {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : maxAllowedAmount})
+                </div>
+            }
+        </div>
+        <p className="justify-self-end text-xs">Balance: <span className="text-primary-text font-light">{walletBalance}</span></p>
     </div>
 }
 
