@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
 import { ArrowRight, ChevronRight, ExternalLink, RefreshCcw, X } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
@@ -112,7 +112,7 @@ function TransactionsHistory() {
   const handleToggleChange = (value: boolean) => {
     setShowAllSwaps(value)
   }
-
+  console.log(swaps)
   return (
     <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[550px]'>
       <HeaderWithMenu goBack={handleGoBack} />
@@ -214,7 +214,7 @@ function TransactionsHistory() {
                                 'relative text-sm table-cell'
                               )}>
                                 <span className="flex items-center">
-                                  {swap && <StatusIcon swap={swap}/>}
+                                  {swap && <StatusIcon swap={swap} />}
                                 </span>
                               </td>
                               <td
@@ -228,7 +228,7 @@ function TransactionsHistory() {
                                     {
                                       swap?.status == 'completed' ?
                                         <span className="ml-1 md:ml-0">
-                                          {swap.output_transaction?.amount}
+                                          {swap.transactions.find(t => t.type === TransactionType.Output)?.amount}
                                         </span>
                                         :
                                         <span>
