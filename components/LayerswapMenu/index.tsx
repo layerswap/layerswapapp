@@ -1,12 +1,11 @@
-import { BookOpen, ExternalLink, Link as LinkIcon, Gift, MenuIcon, ChevronRight } from "lucide-react";
-import { Home, LogIn, LogOut, ScrollIcon, ScrollText } from "lucide-react";
+import { BookOpen, ExternalLink, Link as LinkIcon, Gift, MenuIcon, ChevronRight, Map, Home, LogIn, LogOut, ScrollText } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
 import { useMenuState } from "../../context/menu";
 import TokenService from "../../lib/TokenService";
-import { AnimatePresence, motion } from "framer-motion";
-import shortenAddress, { shortenEmail } from "../utils/ShortenAddress";
+import { AnimatePresence } from "framer-motion";
+import shortenAddress from "../utils/ShortenAddress";
 import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { useIntercom } from "react-use-intercom";
@@ -112,27 +111,27 @@ export default function () {
                                                         show();
                                                         updateWithProps();
                                                     }}
-                                                    className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                                    className={`${!isMobile ? "px-[35px] py-5" : "px-[16px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
                                                 >
                                                     <ChatIcon className="h-6 w-6" strokeWidth={2} />
-                                                    <p>Get Help</p>
+                                                    <p className={`${isConnected ? "mt-1" : ""}`}>Get Help</p>
                                                 </button>
                                                 {
                                                     isConnected ?
-                                                        <WalletAddress isMobile={isMobile} isConnected={isConnected} />
+                                                        <RainbowKitConnectWallet isMobile={isMobile} isConnected={isConnected} isMenuCard={true} />
                                                         :
                                                         <button
                                                             type="button"
                                                             onClick={() => openConnectModal()}
-                                                            className={`${!isMobile ? "px-[15px] py-5" : "px-[8px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                                            className={`${!isMobile ? "px-[15px] py-5" : "px-[12px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
                                                         >
                                                             <WalletIcon className="h-6 w-6" strokeWidth={2} />
                                                             <p>Connect a Wallet</p>
                                                         </button>
                                                 }
-                                                <Link href="/transactions" className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
+                                                <Link href="/transactions" className={`${!isMobile ? "px-[35px] py-5" : "px-[16px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
                                                     <ScrollText className="h-6 w-6" />
-                                                    <p>Transfers</p>
+                                                    <p className={`${isConnected ? "mt-1" : ""}`}>Transfers</p>
                                                 </Link>
                                             </div>
                                             <p className="text-primary-text">General</p>
@@ -148,27 +147,6 @@ export default function () {
                                                 <Link href="/campaigns" className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
                                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Gift className="h-5 w-5" /></div>
                                                     <p>Campaigns</p>
-                                                    <ChevronRight className="h-4 w-4 absolute right-3" />
-                                                </Link>
-                                            }
-                                            <Link
-                                                href="https://docs.layerswap.io/"
-                                                target="_blank"
-                                                className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
-                                            >
-                                                <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><BookOpen className="h-5 w-5" /></div>
-                                                <p>User Docs</p>
-                                                <ChevronRight className="h-4 w-4 absolute right-3" />
-                                            </Link>
-                                            {
-                                                !embedded &&
-                                                <Link
-                                                    href="https://layerswap.ducalis.io/roadmap/summary"
-                                                    target="_blank"
-                                                    className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
-                                                >
-                                                    <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><ExternalLink className="h-5 w-5" /></div>
-                                                    <p>Roadmap</p>
                                                     <ChevronRight className="h-4 w-4 absolute right-3" />
                                                 </Link>
                                             }
@@ -192,19 +170,19 @@ export default function () {
                                                     show();
                                                     updateWithProps();
                                                 }}
-                                                className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                                className={`${!isMobile ? "px-[35px] py-5" : "px-[16px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
                                             >
                                                 <ChatIcon className="h-6 w-6" strokeWidth={2} />
-                                                <p>Get Help</p>
+                                                <p className={`${isConnected ? "mt-1" : ""}`}>Get Help</p>
                                             </button>
                                             {
                                                 isConnected ?
-                                                    <WalletAddress isMobile={isMobile} isConnected={isConnected} />
+                                                    <RainbowKitConnectWallet isMobile={isMobile} isConnected={isConnected} isMenuCard={true} />
                                                     :
                                                     <button
                                                         type="button"
                                                         onClick={() => openConnectModal()}
-                                                        className={`${!isMobile ? "px-[15px] py-5" : "px-[8px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                                                        className={`${!isMobile ? "px-[15px] py-5" : "px-[12px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
                                                     >
                                                         <WalletIcon className="h-6 w-6" strokeWidth={2} />
                                                         <p>Connect a Wallet</p>
@@ -212,9 +190,9 @@ export default function () {
                                             }
                                             <Link
                                                 href="/transactions"
-                                                className={`${!isMobile ? "px-[35px] py-5" : "px-[15px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
+                                                className={`${!isMobile ? "px-[35px] py-5" : "px-[16px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
                                                 <ScrollText className="h-6 w-6" />
-                                                <p>Transfers</p>
+                                                <p className={`${isConnected ? "mt-1" : ""}`}>Transfers</p>
                                             </Link>
                                         </div>
                                         <p className="text-primary-text">General</p>
@@ -244,27 +222,6 @@ export default function () {
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
                                             </Link>
                                         }
-                                        <Link
-                                            href="https://docs.layerswap.io/"
-                                            target="_blank"
-                                            className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
-                                        >
-                                            <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><BookOpen className="h-5 w-5" /></div>
-                                            <p>User Docs</p>
-                                            <ChevronRight className="h-4 w-4 absolute right-3" />
-                                        </Link>
-                                        {
-                                            !embedded &&
-                                            <Link
-                                                href="https://layerswap.ducalis.io/roadmap/summary"
-                                                target="_blank"
-                                                className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
-                                            >
-                                                <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><ExternalLink className="h-5 w-5" /></div>
-                                                <p>Roadmap</p>
-                                                <ChevronRight className="h-4 w-4 absolute right-3" />
-                                            </Link>
-                                        }
                                         <button
                                             type="button"
                                             onClick={handleLogout}
@@ -277,7 +234,8 @@ export default function () {
                                     </>
                                 }
                             </div>
-                            <a className='hover:no-underline cursor-pointer plausible-event-name=Read+more mt-auto' href='https://docs.layerswap.io/user-docs/' target='_blank'>
+                            <p className="text-primary-text font-medium mb-1.5">About</p>
+                            <a className='hover:no-underline cursor-pointer plausible-event-name=Read+more' href='https://docs.layerswap.io/user-docs/' target='_blank'>
                                 {/*<div className="flex flex-col py-3 text-primary-text">
                                      <div className="bg-secondary-700 hover:text-white px-4 py-2 rounded-md cursor-pointer font-light">
                                         <h1 className="text-xl font-light text-white py-1 pb-0">About Layerswap</h1>
@@ -285,18 +243,38 @@ export default function () {
                                             Move crypto across exchanges, blockchains, and wallets.
                                         </p>
                                     </div> */}
-                                    <div className="flex flex-col ">
-                                        <p className="text-primary-text font-medium mb-1.5">About</p>
-                                        {navigation.social.map((item) => (
-                                            <Link key={item.name} target="_blank" href={item.href} className={`${item.name == "Substack" ? "rounded-b-md" : ""} ${item.name != "Twitter" ? "border-t border-slate-800" : "rounded-t-md"}  menu-link flex relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white ${item.className}`}>
-                                                <div className="flex items-center">
-                                                    <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><item.icon className="h-6 w-6" aria-hidden="true" /></div>
-                                                    <p>{item.name}</p>
-                                                </div>
-                                                <ExternalLink className="h-4 w-4 absolute right-3" />
-                                            </Link>
-                                        ))}
-                                    </div>
+                                <div className="flex flex-col ">
+                                    <Link
+                                        href="https://docs.layerswap.io/"
+                                        target="_blank"
+                                        className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
+                                    >
+                                        <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><BookOpen className="h-5 w-5" /></div>
+                                        <p>User Docs</p>
+                                        <ExternalLink className="h-4 w-4 absolute right-3" />
+                                    </Link>
+                                    {navigation.social.map((item) => (
+                                        <Link key={item.name} target="_blank" href={item.href} className={`border-t border-slate-800 menu-link flex relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white ${item.className}`}>
+                                            <div className="flex items-center">
+                                                <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><item.icon className="h-5 w-5" aria-hidden="true" /></div>
+                                                <p>{item.name}</p>
+                                            </div>
+                                            <ExternalLink className="h-4 w-4 absolute right-3" />
+                                        </Link>
+                                    ))}
+                                    {
+                                        !embedded &&
+                                        <Link
+                                            href="https://layerswap.ducalis.io/roadmap/summary"
+                                            target="_blank"
+                                            className="menu-link flex relative cursor-pointer select-none items-center rounded-b-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white border-t border-slate-800"
+                                        >
+                                            <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Map className="h-5 w-5" /></div>
+                                            <p>Roadmap</p>
+                                            <ExternalLink className="h-4 w-4 absolute right-3" />
+                                        </Link>
+                                    }
+                                </div>
                                 {/* </div> */}
                             </a>
                         </div>

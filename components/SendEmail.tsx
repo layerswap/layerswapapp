@@ -10,8 +10,6 @@ import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
 import Widget from './Wizard/Widget';
-import { useFormWizardaUpdate } from '../context/formWizardProvider';
-import { SwapCreateStep } from '../Models/Wizard';
 
 type EmailFormValues = {
     email: string;
