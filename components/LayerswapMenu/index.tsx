@@ -134,17 +134,16 @@ export default function () {
                                                     <p className={`${isConnected ? "mt-1" : ""}`}>Transfers</p>
                                                 </Link>
                                             </div>
-                                            <p className="text-primary-text">General</p>
                                             {
                                                 router.pathname != '/' &&
-                                                <Link href="/" className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
+                                                <Link href="/" className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
                                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Home className="h-5 w-5" /></div>
                                                     <p>Home</p>
                                                     <ChevronRight className="h-4 w-4 absolute right-3" />
                                                 </Link>
                                             }
                                             {!embedded && router.pathname != '/campaigns' &&
-                                                <Link href="/campaigns" className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
+                                                <Link href="/campaigns" className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
                                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Gift className="h-5 w-5" /></div>
                                                     <p>Campaigns</p>
                                                     <ChevronRight className="h-4 w-4 absolute right-3" />
@@ -152,7 +151,7 @@ export default function () {
                                             }
                                             <Link
                                                 href="/auth"
-                                                className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
+                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
                                                 <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><LogIn className="h-5 w-5" /></div>
                                                 <p>Login</p>
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
@@ -195,12 +194,11 @@ export default function () {
                                                 <p className={`${isConnected ? "mt-1" : ""}`}>Transfers</p>
                                             </Link>
                                         </div>
-                                        <p className="text-primary-text">General</p>
                                         {
                                             router.pathname != '/' &&
                                             <Link
                                                 href="/"
-                                                className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
+                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
                                                 <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Home className="h-5 w-5" /></div>
                                                 <p>Home</p>
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
@@ -208,7 +206,7 @@ export default function () {
                                         }
                                         <Link
                                             href="/exchanges"
-                                            className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
+                                            className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
                                             <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><LinkIcon className="h-5 w-5" /></div>
                                             <p>Exchange Accounts</p>
                                             <ChevronRight className="h-4 w-4 absolute right-3" />
@@ -225,7 +223,7 @@ export default function () {
                                         <button
                                             type="button"
                                             onClick={handleLogout}
-                                            className="menu-link my-1.5 w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
+                                            className="border-2 border-secondary-500 menu-link my-1.5 w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
                                         >
                                             <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><LogOut className="h-5 w-5" /></div>
                                             <p>Sign Out</p>
