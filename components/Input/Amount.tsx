@@ -44,6 +44,7 @@ const AmountField = forwardRef((_, ref: any) => {
                 minAllowedAmount={minAllowedAmount}
                 isBalanceLoading={isBalanceLoading}
                 walletBalance={walletBalance}
+                onAmountClick={(amount) => setFieldValue(name, amount)}
             />}
             disabled={!currency}
             placeholder={placeholder}
@@ -75,13 +76,15 @@ type AmountLabelProps = {
     maxAllowedAmount: number;
     isBalanceLoading: boolean;
     walletBalance: number
+    onAmountClick: (setAmount: number) => void;
 }
 const AmountLabel = ({
     detailsAvailable,
     minAllowedAmount,
     maxAllowedAmount,
     isBalanceLoading,
-    walletBalance
+    walletBalance,
+    onAmountClick
 }: AmountLabelProps) => {
     return <div className="flex items-center w-full justify-between">
         <div className="flex items-center space-x-2">
@@ -95,7 +98,7 @@ const AmountLabel = ({
         </div>
         {
             !isNaN(walletBalance) &&
-            <div className="text-xs text-primary-text flex items-center space-x-1">Balance: {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : walletBalance}</div>
+            <button onClick={() => onAmountClick(walletBalance)} className=" border-b border-dotted border-primary-text hover:text-primary hover:border-primary text-xs text-primary-text flex items-center space-x-1"><span>Balance:</span> {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{walletBalance}</span>}</button>
         }
     </div>
 }
