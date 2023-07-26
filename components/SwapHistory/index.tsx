@@ -112,7 +112,7 @@ function TransactionsHistory() {
   const handleToggleChange = (value: boolean) => {
     setShowAllSwaps(value)
   }
-  console.log(swaps)
+
   return (
     <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[550px]'>
       <HeaderWithMenu goBack={handleGoBack} />
