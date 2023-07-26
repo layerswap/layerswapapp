@@ -314,7 +314,7 @@ const WalletAddress = (isMobile, isConnected) => {
                 return <button
                     type="button"
                     onClick={openAccountModal}
-                    className={`${!isMobile?.isMobile ? "px-[30px] py-5" : "px-[25px] py-6"} menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
+                    className={`${!isMobile?.isMobile ? "px-[30px] py-5" : "px-[25px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
                 >
                     <WalletIcon className="h-6 w-6" strokeWidth={2} />
                     <p>{shortenAddress(account.address)}</p>
