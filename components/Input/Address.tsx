@@ -1,7 +1,6 @@
 import { useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { AddressBookItem, UserExchangesData } from "../../lib/layerSwapApiClient";
-import NetworkSettings from "../../lib/NetworkSettings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
@@ -25,7 +24,6 @@ import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import { connect, disconnect as starknetDisconnect } from "get-starknet";
 import WalletIcon from "../icons/WalletIcon";
-import { Configs, usePersistedState } from "../../hooks/usePersistedState";
 import { NetworkAddressType } from "../../Models/CryptoNetwork";
 import { useWalletState, useWalletUpdate } from "../../context/wallet";
 
