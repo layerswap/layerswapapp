@@ -80,12 +80,6 @@ function App({ Component, pageProps }) {
     publicClient,
   })
 
-  const disclaimer = ({ Text }) => (
-    <Text>
-      Thanks for choosing Layerswap!
-    </Text>
-  );
-
   return (
     <SWRConfig
       value={{
@@ -94,11 +88,7 @@ function App({ Component, pageProps }) {
     >
       <IntercomProvider appId={INTERCOM_APP_ID}>
         <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider modalSize="compact" chains={chains} theme={theme}
-            appInfo={{
-              appName: 'Layerswap',
-              learnMoreUrl: 'https://docs.layerswap.io/'
-            }}>
+          <RainbowKitProvider modalSize="compact" chains={chains} theme={theme}>
             <Component key={router.asPath} {...pageProps} />
           </RainbowKitProvider>
         </WagmiConfig>
