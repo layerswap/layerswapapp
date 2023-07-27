@@ -10,7 +10,6 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
   darkTheme,
-  AvatarComponent,
   RainbowKitProvider,
   connectorsForWallets
 } from '@rainbow-me/rainbowkit';
@@ -33,16 +32,16 @@ const connectors = connectorsForWallets([
     groupName: 'Popular',
     wallets: [
       metaMaskWallet({ projectId, chains }),
-      coinbaseWallet({ chains, appName: 'Layerswap RainbowKit App' }),
       walletConnectWallet({ projectId, chains }),
     ],
   },
   {
-    groupName: 'Others',
+    groupName: 'Wallets',
     wallets: [
-      rainbowWallet({ projectId, chains }),
-      bitKeepWallet({ projectId, chains }),
+      coinbaseWallet({ chains, appName: 'Layerswap' }),
       argentWallet({ projectId, chains }),
+      bitKeepWallet({ projectId, chains }),
+      rainbowWallet({ projectId, chains }),
     ],
   },
 ]);
@@ -81,6 +80,12 @@ function App({ Component, pageProps }) {
     publicClient,
   })
 
+  const disclaimer = ({ Text }) => (
+    <Text>
+      Thanks for choosing Layerswap!
+    </Text>
+  );
+
   return (
     <SWRConfig
       value={{
@@ -89,7 +94,12 @@ function App({ Component, pageProps }) {
     >
       <IntercomProvider appId={INTERCOM_APP_ID}>
         <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider modalSize="compact" chains={chains} theme={theme}>
+          <RainbowKitProvider modalSize="compact" chains={chains} theme={theme}
+            appInfo={{
+              appName: 'Layerswap',
+              learnMoreUrl: 'https://docs.layerswap.io/',
+              disclaimer: disclaimer
+            }}>
             <Component key={router.asPath} {...pageProps} />
           </RainbowKitProvider>
         </WagmiConfig>

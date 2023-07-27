@@ -18,7 +18,7 @@ export default function GlobalTable(props) {
         <Layout>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col container mx-auto sm:px-6 lg:px-8 max-w-md md:max-w-3xl">
                 <Head>
-                    <title>Global Table</title>
+                    <title>Table</title>
                 </Head>
                 <main>
                     <div className="flex-col justify-center py-4">
