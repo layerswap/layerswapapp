@@ -10,6 +10,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
   darkTheme,
+  AvatarComponent,
   RainbowKitProvider,
   connectorsForWallets
 } from '@rainbow-me/rainbowkit';
@@ -41,6 +42,7 @@ const connectors = connectorsForWallets([
     wallets: [
       rainbowWallet({ projectId, chains }),
       bitKeepWallet({ projectId, chains }),
+      argentWallet({ projectId, chains }),
     ],
   },
 ]);
