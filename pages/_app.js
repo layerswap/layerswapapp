@@ -32,16 +32,15 @@ const connectors = connectorsForWallets([
     groupName: 'Popular',
     wallets: [
       metaMaskWallet({ projectId, chains }),
+      coinbaseWallet({ chains, appName: 'Layerswap RainbowKit App' }),
       walletConnectWallet({ projectId, chains }),
     ],
   },
   {
-    groupName: 'Wallets',
+    groupName: 'Others',
     wallets: [
-      coinbaseWallet({ chains, appName: 'Layerswap' }),
-      argentWallet({ projectId, chains }),
-      bitKeepWallet({ projectId, chains }),
       rainbowWallet({ projectId, chains }),
+      bitKeepWallet({ projectId, chains }),
     ],
   },
 ]);
