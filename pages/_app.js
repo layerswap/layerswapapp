@@ -11,7 +11,7 @@ import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
   darkTheme,
   RainbowKitProvider,
-  connectorsForWallets,
+  connectorsForWallets
 } from '@rainbow-me/rainbowkit';
 import useStorage from "../hooks/useStorage";
 
@@ -80,7 +80,7 @@ function App({ Component, pageProps }) {
     publicClient,
   })
 
-  const disclaimer = ({ Text, Link }) => (
+  const disclaimer = ({ Text }) => (
     <Text>
       Thanks for choosing Layerswap!
     </Text>
@@ -97,8 +97,7 @@ function App({ Component, pageProps }) {
           <RainbowKitProvider modalSize="compact" chains={chains} theme={theme}
             appInfo={{
               appName: 'Layerswap',
-              learnMoreUrl: 'https://docs.layerswap.io/',
-              disclaimer: disclaimer
+              learnMoreUrl: 'https://docs.layerswap.io/'
             }}>
             <Component key={router.asPath} {...pageProps} />
           </RainbowKitProvider>
