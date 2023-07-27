@@ -98,7 +98,7 @@ function App({ Component, pageProps }) {
             appInfo={{
               appName: 'Layerswap',
               learnMoreUrl: 'https://docs.layerswap.io/',
-              disclaimer: disclaimer,
+              disclaimer: disclaimer
             }}>
             <Component key={router.asPath} {...pageProps} />
           </RainbowKitProvider>
