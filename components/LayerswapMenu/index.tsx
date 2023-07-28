@@ -92,7 +92,7 @@ export default function () {
                 <button onClick={handleOpenTopModal} type="button" className="-mx-2 p-1.5 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none inline-flex rounded-lg items-center">
                     <div className='mx-1'>
                         <div>
-                            <MenuIcon strokeWidth={3} />
+                            <MenuIcon className="h-6 w-6" strokeWidth="2" />
                         </div>
                     </div>
                     <span className="sr-only">Icon description</span>

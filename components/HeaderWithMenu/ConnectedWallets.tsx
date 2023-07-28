@@ -28,7 +28,7 @@ export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected, isMen
                         </div>
                         {isMenuCard && <p>{shortenAddress(account.address)}</p>}
                     </div>
-                    : <WalletIcon className="h-6 w-6" strokeWidth="2" />
+                    : <WalletIcon className="h-6 w-6 mx-1" strokeWidth="2" />
                 }
             </button>
         }}

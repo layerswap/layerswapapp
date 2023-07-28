@@ -36,10 +36,7 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
                   <ChatIcon className="h-6 w-6" strokeWidth="2" />
                }>
             </IconButton>
-
-            <div className="fixed-width-container">
-               <LayerswapMenu />
-            </div>
+            <LayerswapMenu />
          </div>
       </div>
    )
