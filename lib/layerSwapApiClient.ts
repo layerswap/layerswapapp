@@ -108,7 +108,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetFee(params: GetFeeParams): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", '/swaps/amount_settings', params);
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", '/swaps/quote', params);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
