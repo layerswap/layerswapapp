@@ -39,10 +39,6 @@ const Swap: FC = () => {
           </UserExchangeProvider>
         </SwapDataProvider >
       </MenuProvider>
-      {
-        !embedded &&
-        <IntroCard />
-      }
     </div >
   )
 };

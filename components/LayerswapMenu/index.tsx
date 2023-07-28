@@ -1,4 +1,4 @@
-import { BookOpen, ExternalLink, Link as LinkIcon, Gift, MenuIcon, ChevronRight, Map, Home, LogIn, LogOut, ScrollText } from "lucide-react";
+import { BookOpen, ExternalLink, Link as LinkIcon, Gift, MenuIcon, ChevronRight, Map, Home, LogIn, LogOut, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
@@ -20,6 +20,8 @@ import TwitterLogo from "./../icons/TwitterLogo";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import Link from "next/link";
 import { RainbowKitConnectWallet } from "../HeaderWithMenu/ConnectedWallets";
+import Popover from "../modal/popover";
+import SendFeedback from "../sendFeedback";
 
 ``
 
@@ -34,6 +36,7 @@ export default function () {
     const [openTopModal, setOpenTopModal] = useState(false);
     const { isMobile, isDesktop } = useWindowDimensions()
     const { openConnectModal } = useConnectModal();
+    const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
 
     useEffect(() => {
         setEmbedded(inIframe())
@@ -156,6 +159,21 @@ export default function () {
                                                 <p>Login</p>
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
                                             </Link>
+                                            <Popover
+                                                opener={
+                                                    <button onClick={() => setOpenFeedbackModal(true)} className="border-2 border-secondary-500 menu-link  w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
+                                                        <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><MessageSquarePlus className="h-5 w-5" /></div>
+                                                        <p>Send Feedback</p>
+                                                        <ChevronRight className="h-4 w-4 absolute right-3" />
+                                                    </button>
+                                                }
+                                                isMenu={true}
+                                                show={openFeedbackModal}
+                                                setShow={setOpenFeedbackModal} >
+                                                <div className="p-0 md:p-5 md:max-w-md">
+                                                    <SendFeedback onSend={() => setOpenFeedbackModal(false)} />
+                                                </div>
+                                            </Popover>
                                         </>
                                 }
                                 {
@@ -220,6 +238,21 @@ export default function () {
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
                                             </Link>
                                         }
+                                        <Popover
+                                            opener={
+                                                <button onClick={() => setOpenFeedbackModal(true)} className="border-2 border-secondary-500 menu-link w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
+                                                    <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><MessageSquarePlus className="h-5 w-5" /></div>
+                                                    <p>Send Feedback</p>
+                                                    <ChevronRight className="h-4 w-4 absolute right-3" />
+                                                </button>
+                                            }
+                                            isMenu={true}
+                                            show={openFeedbackModal}
+                                            setShow={setOpenFeedbackModal} >
+                                            <div className="p-0 md:p-5 md:max-w-md">
+                                                <SendFeedback onSend={() => setOpenFeedbackModal(false)} />
+                                            </div>
+                                        </Popover>
                                         <button
                                             type="button"
                                             onClick={handleLogout}
@@ -231,6 +264,15 @@ export default function () {
                                         </button>
                                     </>
                                 }
+                            </div>
+                            <div className="my-1.5">
+                                <a target="_blank" href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="w-full p-2 inline-flex justify-between group items-center rounded-lg border-2 border-secondary-500 bg-secondary-600 pr-3 text-primary-text hover:text-white sm:text-base lg:text-sm xl:text-base">
+                                    <div className="flex">
+                                        <span className="rounded-md bg-primary px-3 py-0.5 text-sm font-semibold leading-5 text-white"> New </span>
+                                        <span className="ml-2 md:text-sm text-xs font-medium flex items-center gap-2 text-primary-text hover:text-white">Transfer to Avalanche with $AVAX refuel </span>
+                                    </div>
+                                    <ChevronRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                                </a>
                             </div>
                             <p className="text-primary-text font-medium mb-1.5">About</p>
                             <a className='hover:no-underline cursor-pointer plausible-event-name=Read+more' href='https://docs.layerswap.io/user-docs/' target='_blank'>
@@ -249,6 +291,15 @@ export default function () {
                                     >
                                         <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><BookOpen className="h-5 w-5" /></div>
                                         <p>User Docs</p>
+                                        <ExternalLink className="h-4 w-4 absolute right-3" />
+                                    </Link>
+                                    <Link
+                                        href="/forpartners"
+                                        target="_self"
+                                        className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white border-t border-slate-800"
+                                    >
+                                        <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Users className="h-5 w-5" /></div>
+                                        <p>For Partners</p>
                                         <ExternalLink className="h-4 w-4 absolute right-3" />
                                     </Link>
                                     {navigation.social.map((item) => (
@@ -272,6 +323,24 @@ export default function () {
                                             <ExternalLink className="h-4 w-4 absolute right-3" />
                                         </Link>
                                     }
+                                    <Link
+                                        href="https://docs.layerswap.io/user-docs/information/privacy-policy"
+                                        target="_blank"
+                                        className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white border-t border-slate-800"
+                                    >
+                                        <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Shield className="h-5 w-5" /></div>
+                                        <p>Privacy Policy</p>
+                                        <ExternalLink className="h-4 w-4 absolute right-3" />
+                                    </Link>
+                                    <Link
+                                        href="https://docs.layerswap.io/user-docs/information/terms-of-services"
+                                        target="_blank"
+                                        className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white border-t border-slate-800"
+                                    >
+                                        <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><LibraryIcon className="h-5 w-5" /></div>
+                                        <p>Terms of Service</p>
+                                        <ExternalLink className="h-4 w-4 absolute right-3" />
+                                    </Link>
                                 </div>
                                 {/* </div> */}
                             </a>
