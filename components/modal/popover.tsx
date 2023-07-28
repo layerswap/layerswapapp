@@ -10,13 +10,13 @@ export default function Popover({
     align = "center",
     show,
     setShow,
-    isMenu,
+    isNested,
 }: {
     children: ReactNode;
     opener: ReactNode | string;
     align?: "center" | "start" | "end";
     show: boolean;
-    isMenu?: boolean;
+    isNested?: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
 }) {
     const { isMobile, isDesktop } = useWindowDimensions();
@@ -35,7 +35,7 @@ export default function Popover({
                 {show && isMobile && (
                     <Leaflet position="fixed" height="fit" setShow={setShow} show={show}>{children}</Leaflet>
                 )}
-                {show && isMenu && (
+                {show && isNested && (
                     <Leaflet position="fixed" height="fit" setShow={setShow} show={show}>{children}</Leaflet>
                 )}
                 {isDesktop && (

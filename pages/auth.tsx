@@ -34,10 +34,6 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
           </MenuProvider>
         </SwapDataProvider>
       </SettingsProvider>
-      {
-        !embedded &&
-        <IntroCard />
-      }
     </Layout>
   )
 }
