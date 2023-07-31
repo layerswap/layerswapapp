@@ -25,7 +25,7 @@ export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected, isMen
                                 <AddressIcon address={account.address} size={25} />
                                 {
                                     connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
-                                        <ResolveWalletIcon connector={connector?.id} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
+                                        <ResolveWalletIcon connector={connector?.name} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
                                     </span>
                                 }
                             </div>

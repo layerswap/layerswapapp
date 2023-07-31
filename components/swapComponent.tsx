@@ -28,12 +28,12 @@ const Swap: FC = () => {
               <WalletDatadProvider>
                 <SwapForm />
               </WalletDatadProvider>
-              {
+              {/* {
                 !embedded && userType && userType != UserType.AuthenticatedUser &&
                 <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu>
                   <GuestCard />
                 </FormWizardProvider>
-              }
+              } */}
             </TimerProvider>
           </UserExchangeProvider>
         </SwapDataProvider >
