@@ -73,7 +73,7 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
     const isBalanceOutDated = new Date().getTime() - (new Date(allBalances[address]?.find(b => b?.network === from?.internal_name)?.request_time).getTime() || 0) > 60000
 
     useEffect(() => {
-        if (from && isBalanceOutDated && address && from?.isExchange === false && from?.address_type === NetworkAddressType.evm) {
+        if (from && isBalanceOutDated && address && from?.isExchange === false && from?.address_type === NetworkAddressType.evm && !isNaN(Number(from?.chain_id))) {
 
             (async () => {
                 let contractRes: ({
