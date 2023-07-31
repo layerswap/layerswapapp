@@ -516,13 +516,13 @@ type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
 const resolveError = (error: BaseError): ResolvedError => {
 
-    const isInsufficientFundsError = error?.walk((e: BaseError) => (e instanceof InsufficientFundsError)
+    const isInsufficientFundsError = typeof error?.walk === "function" && error?.walk((e: BaseError) => (e instanceof InsufficientFundsError)
         || (e instanceof EstimateGasExecutionError) || e?.['data']?.args?.some((a: string) => a?.includes("amount exceeds")))
 
     if (isInsufficientFundsError)
         return "insufficient_funds"
 
-    const isUserRejectedRequestError = error?.walk((e: BaseError) => e instanceof UserRejectedRequestError) instanceof UserRejectedRequestError
+    const isUserRejectedRequestError = typeof error?.walk === "function" && error?.walk && error?.walk((e: BaseError) => e instanceof UserRejectedRequestError) instanceof UserRejectedRequestError
 
     if (isUserRejectedRequestError)
         return "transaction_rejected"

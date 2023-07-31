@@ -1,27 +1,6 @@
-import { PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapItem } from "../../lib/layerSwapApiClient";
+import { PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapItem, TransactionType } from "../../lib/layerSwapApiClient";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { SwapStep, SwapWithdrawalStep } from "../../Models/Wizard";
-
-export const GetSwapStatusStep = (swap: SwapItem): SwapWithdrawalStep => {
-
-    const swapStatus = swap?.status;
-    if ((swapStatus == SwapStatus.UserTransferPending
-        && (swap.has_sucessfull_published_tx
-            || swap.input_transaction
-            || swap.has_pending_deposit))
-        || (swapStatus == SwapStatus.LsTransferPending))
-        return SwapWithdrawalStep.SwapProcessing
-    else if (swapStatus == SwapStatus.UserTransferPending)
-        return SwapWithdrawalStep.OffRampWithdrawal
-    else if (swapStatus == SwapStatus.Completed)
-        return SwapWithdrawalStep.Success
-    else if (swapStatus == SwapStatus.Failed || swapStatus == SwapStatus.Cancelled || swapStatus === SwapStatus.Expired)
-        return SwapWithdrawalStep.Failed
-    else if (swapStatus == SwapStatus.UserTransferDelayed)
-        return SwapWithdrawalStep.Delay
-}
-
-
 
 export const GetSwapStep = (swap: SwapItem): SwapStep => {
 
@@ -29,6 +8,7 @@ export const GetSwapStep = (swap: SwapItem): SwapStep => {
 
     const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
     const txForSwap = data?.[swap.id];
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
 
     if (swapStatus == SwapStatus.Completed)
         return SwapStep.Success;
@@ -38,9 +18,9 @@ export const GetSwapStep = (swap: SwapItem): SwapStep => {
         return SwapStep.Delay;
     else if (swapStatus == SwapStatus.LsTransferPending)
         return SwapStep.LSTransferPending;
-    else if (swap.input_transaction && swapStatus == SwapStatus.UserTransferPending)
+    else if (swapInputTransaction && swapStatus == SwapStatus.UserTransferPending)
         return SwapStep.TransactionDetected;
-    else if (txForSwap && !swap.input_transaction)
+    else if (txForSwap && !swapInputTransaction)
         return SwapStep.TransactionDone;
     else
         return SwapStep.UserTransferPending
