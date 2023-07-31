@@ -46,7 +46,6 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, from && lockFrom);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
-            console.log(groups)
             let popularsGroup = new SelectMenuItemGroup({
                 name: "Popular",
                 items: [
