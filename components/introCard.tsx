@@ -1,5 +1,5 @@
 import CardContainer from './cardContainer';
-import { ChevronRight, Fuel, Gift } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import FooterComponent from './footerComponent';
 
 function IntroCard(props) {
@@ -9,7 +9,7 @@ function IntroCard(props) {
                 <div>
                     <a target="_blank" href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="inline-flex group items-center rounded-lg border border-secondary-500  bg-secondary-600 p-1 pr-2 text-white sm:text-base lg:text-sm xl:text-base">
                         <span className="rounded-md bg-primary px-3 py-0.5 text-sm font-semibold leading-5 text-white"> New </span>
-                        <span className="ml-2 md:text-sm text-xs font-medium flex items-center gap-2">Transfer to Avalanche with $AVAX refuel </span>
+                        <span className="ml-2 md:text-sm text-xs font-medium flex items-center gap-2">Linea Mainnet is live on Layerswap </span>
                         <ChevronRight className="ml-2 h-5 w-5 text-primary-text group-hover:text-primary-500" aria-hidden="true" />
                     </a>
                 </div>
