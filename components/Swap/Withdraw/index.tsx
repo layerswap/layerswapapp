@@ -197,7 +197,7 @@ const WalletTransferContent: FC = () => {
     }, [])
 
 
-    const handleDisconnect = useCallback((e:React.MouseEvent<HTMLDivElement>) => {
+    const handleDisconnect = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
         if (swap.source_exchange) {
             handleDisconnectCoinbase()
         }
@@ -256,7 +256,7 @@ const WalletTransferContent: FC = () => {
                     !swap.source_exchange
                     && sourceAddressType === NetworkAddressType.evm
                     && <ResolveWalletIcon
-                        connector={connector?.id}
+                        connector={connector?.name}
                         className="w-6 h-6 rounded-full"
                     />
                 }
