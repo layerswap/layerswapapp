@@ -31,29 +31,23 @@ export default function Popover({
     return (
         <>
             {isMobile && opener}
-            <AnimatePresence>
-                {show && isMobile && (
-                    <Leaflet position="fixed" height="fit" setShow={setShow} show={show}>{children}</Leaflet>
-                )}
-                {show && isNested && (
-                    <Leaflet position="fixed" height="fit" setShow={setShow} show={show}>{children}</Leaflet>
-                )}
-                {isDesktop && (
-                    <PopoverPrimitive.Root>
-                        <PopoverPrimitive.Trigger className="inline-flex" asChild>
-                            {opener}
-                        </PopoverPrimitive.Trigger>
-                        <PopoverPrimitive.Content
-                            sideOffset={4}
-                            onInteractOutside={() => setShow(false)}
-                            align={align}
-                            className="z-20 animate-slide-up-fade items-center rounded-md bg-secondary-900 border-2 border-secondary-500 drop-shadow-lg"
-                        >
-                            {show && children}
-                        </PopoverPrimitive.Content>
-                    </PopoverPrimitive.Root>
-                )}
-            </AnimatePresence>
+            {show && (isMobile || isNested) && (
+                <Leaflet position="fixed" height="fit" setShow={setShow} show={show}>{children}</Leaflet>
+            )}
+            {isDesktop && (
+                <PopoverPrimitive.Root>
+                    <PopoverPrimitive.Trigger className="inline-flex" asChild>
+                        {opener}
+                    </PopoverPrimitive.Trigger>
+                    <PopoverPrimitive.Content
+                        sideOffset={4}
+                        align={align}
+                        className="z-20 animate-slide-up-fade items-center rounded-md bg-secondary-900 border-2 border-secondary-500 drop-shadow-lg"
+                    >
+                        {show && children}
+                    </PopoverPrimitive.Content>
+                </PopoverPrimitive.Root>
+            )}
         </>
     );
 }

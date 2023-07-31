@@ -15,7 +15,7 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent, f
     const { currentStepName, wrapperWidth, moving } = useFormWizardState()
     const { setGoBack, setPositionPercent } = useFormWizardaUpdate()
     const styleConfigs = fitHeight ? { width: `${wrapperWidth}px`, height: '100%' } : { width: `${wrapperWidth}px`, minHeight: '534px', height: '100%' }
-    console.log("StepName",children)
+
     useEffect(() => {
         if (currentStepName === StepName) {
             setGoBack(GoBack)

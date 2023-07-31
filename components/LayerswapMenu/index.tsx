@@ -31,7 +31,7 @@ export default function () {
     const { email, userType, userId } = useAuthState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
-    const { menuVisible } = useMenuState()
+    const { menuVisible } = useMenuState();
     const { isConnected } = useAccount();
     const { boot, show, update } = useIntercom()
     const [embedded, setEmbedded] = useState<boolean>()
@@ -56,9 +56,6 @@ export default function () {
         setUserType(UserType.NotAuthenticatedUser)
     }, [router.query])
 
-    const handleOpenTopModal = () => {
-        setOpenTopModal((prevOpenTopModal) => !prevOpenTopModal);
-    }
     const navigation = {
         social: [
             {
@@ -88,22 +85,25 @@ export default function () {
         ]
     }
 
+
+    const handleCloseFeedback = ()=>{
+        setOpenFeedbackModal(false)
+    }
+
     return <>
         <span className="text-primary-text cursor-pointer relative">
             {
-                <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
-                    {({ open }) => (
+                
                         <>
                             <div className="relative top-">
-                                <Menu.Button as='div'>
-                                    <IconButton icon={
+                               
+                                    <IconButton onClick={() => setOpenTopModal(true)} icon={
                                         <MenuIcon strokeWidth={3} />
                                     }>
                                     </IconButton>
-                                </Menu.Button>
+                               
                             </div>
-                            <Modal show={open} setShow={setOpenTopModal} header="Menu">
-                                <AnimatePresence>
+                            <Modal show={openTopModal} setShow={setOpenTopModal} header="Menu">
                                     <div className="text-sm font-medium text-left origin-top-right mt-2 focus:outline-none flex flex-col h-full">
                                         <div className="relative z-30 py-1">
                                             {
@@ -263,7 +263,7 @@ export default function () {
                                                 show={openFeedbackModal}
                                                 setShow={setOpenFeedbackModal} >
                                                 <div className="p-0 md:p-5 md:max-w-md">
-                                                    <SendFeedback onSend={() => setOpenFeedbackModal(false)} />
+                                                    <SendFeedback onSend={handleCloseFeedback} />
                                                 </div>
                                             </Popover>
                                         </div>
@@ -334,11 +334,8 @@ export default function () {
                                             </Link>
                                         </div>
                                     </div>
-                                </AnimatePresence>
                             </Modal>
                         </>
-                    )}
-                </Menu>
             }
         </span>
     </>
