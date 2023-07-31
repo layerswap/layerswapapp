@@ -46,11 +46,12 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, from && lockFrom);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
+            console.log(groups)
             let popularsGroup = new SelectMenuItemGroup({
                 name: "Popular",
                 items: [
-                    ...groups?.[1].items.splice(0, 2),
-                    ...(groups?.[2]?.items.splice(0, 2) || [])
+                    ...groups?.find(g => g?.name === 'Networks')?.items.splice(0, 2),
+                    ...(groups?.find(g => g?.name === 'Exchanges')?.items.splice(0, 2) || [])
                 ]
             })
             groups.unshift(popularsGroup);
@@ -66,7 +67,7 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
             let popularsGroup = new SelectMenuItemGroup({
                 name: "Popular",
-                items: [...groups?.[0]?.items?.splice(0, 4)]
+                items: [...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 4)]
             })
             groups.unshift(popularsGroup);
             return groups;
