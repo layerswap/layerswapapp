@@ -9,8 +9,8 @@ const IconButton = forwardRef<HTMLButtonElement | HTMLAnchorElement, IconButtonP
     const theirProps = props as object;
 
     return (
-        <button {...theirProps} type="button" className={classNames("-mx-2 p-1.5 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none inline-flex rounded-lg items-center", className)}>
-            <div className='mx-1'>
+        <button {...theirProps} type="button" className={classNames("-mx-2 py-1.5 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none inline-flex rounded-lg items-center", className)}>
+            <div className='mx-2'>
                 <div>
                     {icon}
                 </div>

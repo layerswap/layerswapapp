@@ -25,7 +25,7 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
             <GoHomeButton />
          </div>
 
-         <div className="col-start-5 justify-self-end self-center flex items-center gap-3">
+         <div className="col-start-5 justify-self-end self-center flex items-center gap-4">
             <RainbowKitConnectWallet />
             <IconButton className="relative hidden md:inline" onClick={() => {
                boot();
@@ -36,7 +36,9 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
                   <ChatIcon className="h-6 w-6" strokeWidth="2" />
                }>
             </IconButton>
-            <LayerswapMenu />
+            <div className="fixed-width-container">
+               <LayerswapMenu />
+            </div>
          </div>
       </div>
    )
