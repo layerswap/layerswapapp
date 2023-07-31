@@ -83,7 +83,8 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
         source_network: source_network_internal_name,
         source_exchange: source_exchange_internal_name,
         destination_network: destination_network_internal_name,
-        destination_network_asset
+        destination_network_asset,
+        source_network_asset
     } = swap
 
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
@@ -103,7 +104,8 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
     const feeParams = {
         source: selectedAssetNetwork?.network?.internal_name,
         destination: destination_network_internal_name,
-        asset: destination_network_asset,
+        source_asset: source_network_asset,
+        destination_asset: destination_network_asset,
         refuel: swap?.has_refuel
     }
 

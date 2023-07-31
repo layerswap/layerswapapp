@@ -8,6 +8,8 @@ import WalletConnectIcon from "../icons/Wallets/WalletConnect"
 
 import WalletIcon from "../icons/WalletIcon"
 import shortenAddress from "../utils/ShortenAddress"
+import BitKeep from "../icons/Wallets/BitKeep"
+import Argent from "../icons/Wallets/Argent"
 
 
 export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected, isMenuCard }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean, isMenuCard?: boolean }) => {
@@ -43,22 +45,27 @@ export const ResolveWalletIcon = ({ connector, className }: { connector: string,
             return <MetaMaskIcon className={className} />
         case KnownKonnectors.Coinbase:
             return <CoinbaseIcon className={className} />
-        case KnownKonnectors.WaletConnect:
+        case KnownKonnectors.WalletConnect:
             return <WalletConnectIcon className={className} />
         case KnownKonnectors.Rainbow:
             return <RainbowIcon className={className} />
+        case KnownKonnectors.BitKeep:
+            return <BitKeep className={className} />
+        case KnownKonnectors.Argent:
+            return <Argent className={className} />
         default:
             return <></>
     }
 }
 
 const KnownKonnectors = {
-    MetaMask: 'metaMask',
-    WaletConnect: 'waletConnect',
-    Coinbase: 'coinbase',
-    Rainbow: 'rainbow',
+    MetaMask: 'MetaMask',
+    WalletConnect: 'WalletConnect',
+    Coinbase: 'Coinbase Wallet',
+    Rainbow: 'Rainbow',
+    BitKeep: 'BitKeep',
+    Argent: 'Argent',
 }
-
 
 //TODO refactor and fix this
 // export const ConnectedWallets = () => {

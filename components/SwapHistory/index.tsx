@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
 import { ArrowRight, ChevronRight, ExternalLink, RefreshCcw, Scroll, X } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
@@ -229,7 +229,7 @@ function TransactionsHistory() {
                                     {
                                       swap?.status == 'completed' ?
                                         <span className="ml-1 md:ml-0">
-                                          {swap.output_transaction?.amount}
+                                          {swap.transactions.find(t => t.type === TransactionType.Output)?.amount}
                                         </span>
                                         :
                                         <span>

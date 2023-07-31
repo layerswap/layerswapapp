@@ -10,6 +10,7 @@ import GoHomeButton from '../../utils/GoHome';
 import SwapSummary from '../Summary';
 import { useQueryState } from '../../../context/query';
 import { truncateDecimals } from '../../utils/RoundDecimals';
+import { TransactionType } from '../../../lib/layerSwapApiClient';
 
 
 
@@ -20,11 +21,12 @@ const Success: FC = () => {
     const { destination_network: destination_network_internal_name } = swap
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
     const transaction_explorer_template = destination_network?.transaction_explorer_template
+    const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
 
     const handleViewInExplorer = useCallback(() => {
         if (!transaction_explorer_template)
             return
-        window.open(transaction_explorer_template.replace("{0}", swap?.output_transaction?.transaction_id), '_blank')
+        window.open(transaction_explorer_template.replace("{0}", swapOutputTransaction?.transaction_id), '_blank')
     }, [transaction_explorer_template])
 
     return (
@@ -39,7 +41,7 @@ const Success: FC = () => {
                         <MessageComponent.Description>
                             {
                                 swap?.destination_network ?
-                                    <span>Your swap was successfully completed. {swap?.output_transaction?.amount} {swap?.destination_network_asset} has been sent to your address.</span>
+                                    <span>Your swap was successfully completed. {swapOutputTransaction?.amount} {swap?.destination_network_asset} has been sent to your address.</span>
                                     :
                                     <span>Your swap was successfully completed. Your assets are on their way to your exchange account.</span>
                             }
@@ -51,7 +53,7 @@ const Success: FC = () => {
                 <MessageComponent.Buttons>
                     <div className="flex flex-row text-white text-base space-x-2">
                         {!externalId &&
-                            ((transaction_explorer_template && swap?.output_transaction?.transaction_id) ?
+                            ((transaction_explorer_template && swapOutputTransaction?.transaction_id) ?
                                 <>
                                     <div className='grow'>
                                         <SubmitButton text_align='left' buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer} icon={<ExternalLink className='h-5 w-5' />}>
@@ -84,7 +86,7 @@ const Success: FC = () => {
                                 </div>)
                         }
                         {
-                            externalId && transaction_explorer_template && swap?.output_transaction?.transaction_id &&
+                            externalId && transaction_explorer_template && swapOutputTransaction?.transaction_id &&
                             <div className='grow'>
                                 <SubmitButton text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer} icon={<ExternalLink className='h-5 w-5' />}>
                                     View in explorer

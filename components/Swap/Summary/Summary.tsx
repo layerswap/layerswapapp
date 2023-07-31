@@ -74,6 +74,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
+    const sourceCurrencyName = networks?.find(n => n.internal_name === from?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset).name || currency.asset
+    const destCurrencyName = networks?.find(n => n.internal_name === to?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset).name || currency.asset
 
     return (
         <div className="pb-8 border-b border-secondary-500">
@@ -90,7 +92,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-white text-lg">{requestedAmount} {currency.asset}</p>
+                        <p className="text-white text-lg">{requestedAmount} {sourceCurrencyName}</p>
                         <p className="text-primary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>
                 </div>
@@ -106,7 +108,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     {
                         fee ?
                             <div className="flex flex-col justify-end">
-                                <p className="text-white text-lg">{receiveAmount} {currency.asset}</p>
+                                <p className="text-white text-lg">{receiveAmount} {destCurrencyName}</p>
                                 <p className="text-primary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
                             </div>
                             :
