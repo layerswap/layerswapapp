@@ -25,7 +25,7 @@ function HeaderWithMenu({ goBack }: { goBack: () => void }) {
             <GoHomeButton />
          </div>
 
-         <div className="col-start-5 justify-self-end self-center flex items-center gap-4">
+         <div className="col-start-5 justify-self-end self-center flex items-center gap-3">
             <RainbowKitConnectWallet />
             <IconButton className="relative hidden md:inline" onClick={() => {
                boot();

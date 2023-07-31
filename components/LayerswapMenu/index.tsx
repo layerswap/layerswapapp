@@ -1,4 +1,4 @@
-import { BookOpen, ExternalLink, Link as LinkIcon, Gift, MenuIcon, ChevronRight, Map, Home, LogIn, LogOut, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
+import { BookOpen, ExternalLink, Link as LinkIcon, Gift, MenuIcon, ChevronRight, Map, Home, LogIn, LogOut, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus, Bell } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
@@ -92,7 +92,7 @@ export default function () {
                 <button onClick={handleOpenTopModal} type="button" className="-mx-2 p-1.5 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none inline-flex rounded-lg items-center">
                     <div className='mx-1'>
                         <div>
-                            <MenuIcon className="h-6 w-6" strokeWidth="2" />
+                            <MenuIcon className="h-6 w-6" strokeWidth="3" />
                         </div>
                     </div>
                     <span className="sr-only">Icon description</span>
@@ -237,11 +237,20 @@ export default function () {
                             </div>
                             <p className="text-primary-text font-medium">New</p>
                             <div className="relative py-1">
+                                <Link
+                                    href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards"
+                                    target="_blank"
+                                    className="menu-link flex rounded-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white border-2 border-secondary-500"
+                                >
+                                    <div className="p-1.5 bg-primary rounded-md mr-4"><Bell className="h-5 w-5" strokeWidth={3} /></div>
+                                    <p>Transfer to Avalanche with $AVAX refuel</p>
+                                    <ExternalLink className="h-4 w-4 absolute right-3" />
+                                </Link>
                                 <Popover
                                     opener={
-                                        <button onClick={() => setOpenFeedbackModal(true)} className="border-2 border-secondary-500 menu-link w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
+                                        <button onClick={() => setOpenFeedbackModal(true)} className="mt-1.5 border-2 border-secondary-500 menu-link w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
                                             <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><MessageSquarePlus className="h-5 w-5" /></div>
-                                            <p>Send Feedback</p>
+                                            <p>Suggest a Feature</p>
                                             <ChevronRight className="h-4 w-4 absolute right-3" />
                                         </button>
                                     }
@@ -252,15 +261,6 @@ export default function () {
                                         <SendFeedback onSend={() => setOpenFeedbackModal(false)} />
                                     </div>
                                 </Popover>
-                                <div className="my-1.5">
-                                    <a target="_blank" href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="w-full p-2 inline-flex justify-between group items-center rounded-lg border-2 border-secondary-500 bg-secondary-600 pr-3 text-primary-text hover:text-white sm:text-base lg:text-sm xl:text-base">
-                                        <div className="flex">
-                                            <span className="rounded-md bg-primary px-3 py-0.5 text-sm font-semibold leading-5 text-white"> New </span>
-                                            <span className="ml-2 md:text-sm text-xs font-medium flex items-center gap-2 text-primary-text hover:text-white">Transfer to Avalanche with $AVAX refuel </span>
-                                        </div>
-                                        <ExternalLink className="ml-2 h-4 w-4" aria-aria-hidden="true" />
-                                    </a>
-                                </div>
                             </div>
                             <p className="text-primary-text font-medium">Docs</p>
                             <div className="relative py-1">
@@ -270,13 +270,13 @@ export default function () {
                                     className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
                                 >
                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><BookOpen className="h-5 w-5" /></div>
-                                    <p>User Docs</p>
+                                    <p>For Users</p>
                                     <ExternalLink className="h-4 w-4 absolute right-3" />
                                 </Link>
                                 <Link
                                     href="/forpartners"
                                     target="_self"
-                                    className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white border-t border-slate-800"
+                                    className="menu-link flex rounded-b-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white border-t border-slate-800"
                                 >
                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Users className="h-5 w-5" /></div>
                                     <p>For Partners</p>
