@@ -35,5 +35,6 @@ export class NetworkCurrency {
     withdrawal_fee: number;
     contract_address: string;
     decimals: number;
-    base_fee: number;
+    source_base_fee: number;
+    destination_base_fee: number;
 }

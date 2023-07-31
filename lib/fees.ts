@@ -59,7 +59,7 @@ export function CalculateFee(values: SwapFormValues, allNetworks: CryptoNetwork[
     if (!destinationNetworkCurrency || !sourceNetworkCurrency)
         return 0
 
-    let baseFee = destinationNetworkCurrency.base_fee
+    let baseFee = (sourceNetworkCurrency?.source_base_fee + destinationNetworkCurrency?.destination_base_fee)
     let withdrawalFee = destinationNetworkCurrency.withdrawal_fee
     let depoistFee = sourceNetworkCurrency.deposit_fee;
     if (NetworkSettings.KnownSettings[sourceLayer.internal_name]?.DepositType === DepositType.Wallet)
@@ -133,9 +133,10 @@ export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: C
             minAmount += destinationNetworkCurrency?.min_deposit_amount
     }
     const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, asset)
+    const sourceNetworkCurrency = GetNetworkCurrency(sourceLayer, asset)
 
     const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(values, allCurrencies);
-    minAmount += destinationNetworkCurrency?.base_fee + refuelAmountInSelectedCurrency
+    minAmount += (sourceNetworkCurrency?.source_base_fee + destinationNetworkCurrency?.destination_base_fee) + refuelAmountInSelectedCurrency
 
     return roundDecimals(minAmount * 1.2, currency?.usd_price?.toFixed()?.length) || 0
 }

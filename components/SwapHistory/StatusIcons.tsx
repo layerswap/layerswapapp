@@ -1,5 +1,5 @@
 import { SwapStatus } from "../../Models/SwapStatus"
-import { PublishedSwapTransactions, SwapItem } from "../../lib/layerSwapApiClient"
+import { PublishedSwapTransactions, SwapItem, TransactionType } from "../../lib/layerSwapApiClient"
 
 export default function StatusIcon({  swap }: { swap: SwapItem }) {
   const status = swap.status;
@@ -40,7 +40,7 @@ export default function StatusIcon({  swap }: { swap: SwapItem }) {
     case SwapStatus.UserTransferPending:
       const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
       const txForSwap = data?.[swap.id];
-      if (txForSwap || swap.input_transaction) {
+      if (txForSwap || swap.transactions.find(t => t.type === TransactionType.Input)) {
         return <>
           <div className="inline-flex items-center">
             <PurpleIcon />
