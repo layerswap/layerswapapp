@@ -253,7 +253,7 @@ const WalletTransferContent: FC = () => {
                     !swap.source_exchange
                     && sourceAddressType === NetworkAddressType.evm
                     && <ResolveWalletIcon
-                        connector={connector?.id}
+                        connector={connector?.name}
                         className="w-6 h-6 rounded-full"
                     />
                 }

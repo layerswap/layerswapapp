@@ -4,7 +4,7 @@ import { useSettingsState } from "../../../context/settings"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
-import LayerSwapApiClient, { Fee, WithdrawType } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { Fee, TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
 import { useAccount } from "wagmi"
 import { DepositType } from "../../../lib/NetworkSettings"
 import { truncateDecimals } from "../../utils/RoundDecimals"
@@ -18,6 +18,7 @@ const SwapSummary: FC = () => {
         source_exchange: source_exchange_internal_name,
         destination_exchange: destination_exchange_internal_name,
         destination_network: destination_network_internal_name,
+        source_network_asset,
         destination_network_asset,
         destination_address
     } = swap
@@ -26,10 +27,15 @@ const SwapSummary: FC = () => {
     const asset = source_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
     const currency = currencies?.find(c => c.asset === asset.asset)
 
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+    const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
+    const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
+
     const params = {
         source: source_layer.internal_name,
         destination: destination_layer?.internal_name,
-        asset: destination_network_asset,
+        source_asset: source_network_asset,
+        destination_asset: destination_network_asset,
         refuel: swap?.has_refuel
     }
 
@@ -42,7 +48,7 @@ const SwapSummary: FC = () => {
     const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet && selectedAssetNetwork.network_internal_name === f.network_name)
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual && selectedAssetNetwork.network_internal_name === f.network_name)
 
-    if (swap?.fee && swap.input_transaction) {
+    if (swap?.fee && swapInputTransaction) {
         fee = swap?.fee
     } else if (withdrawType === WithdrawType.Wallet && (isConnected && address?.toLowerCase() === destination_address?.toLowerCase())) {
         fee = walletTransferFee?.fee_amount;
@@ -50,15 +56,15 @@ const SwapSummary: FC = () => {
         fee = manualTransferFee?.fee_amount;
     }
 
-    const requested_amount = swap?.input_transaction?.amount ?? (withdrawType === WithdrawType.Wallet ?
+    const requested_amount = swapInputTransaction?.amount ?? (withdrawType === WithdrawType.Wallet ?
         walletTransferFee?.min_amount > swap?.requested_amount ? walletTransferFee?.min_amount : swap?.requested_amount
         : manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount)
 
     const destinationNetworkNativeAsset = currencies?.find(c => c.asset == networks.find(n => n.internal_name === destination_layer.internal_name)?.native_currency);
-    const refuelAmountInNativeCurrency = swap?.has_refuel && (swap?.refuel_transaction?.amount ?? (networks.find(n => n.internal_name === destination_layer.internal_name).refuel_amount_in_usd / destinationNetworkNativeAsset.usd_price));
+    const refuelAmountInNativeCurrency = swap?.has_refuel && (swapRefuelTransaction?.amount ?? (networks.find(n => n.internal_name === destination_layer.internal_name).refuel_amount_in_usd / destinationNetworkNativeAsset.usd_price));
     const refuelAmountInSelectedCurrency = swap?.has_refuel && (networks.find(n => n.internal_name === destination_layer.internal_name).refuel_amount_in_usd / currency.usd_price) || 0;
 
-    const receive_amount = swap.output_transaction?.amount ?? truncateDecimals(requested_amount - fee - refuelAmountInSelectedCurrency, currency?.precision)
+    const receive_amount = swapOutputTransaction?.amount ?? truncateDecimals(requested_amount - fee - refuelAmountInSelectedCurrency, currency?.precision)
 
     return <Summary
         currency={currency}

@@ -11,6 +11,7 @@ import Steps from '../StepsComponent';
 import SwapSummary from '../Summary';
 import { GetNetworkCurrency } from '../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../Common/AverageCompletionTime';
+import { TransactionType } from '../../../lib/layerSwapApiClient';
 
 
 const Processing: FC = () => {
@@ -34,6 +35,9 @@ const Processing: FC = () => {
 
     const destinationNetworkCurrency = GetNetworkCurrency(destination_layer, swap?.destination_network_asset)
 
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+    const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
+
     const progress = [
         {
             name: swapStep === SwapStep.TransactionDone ? 'Detecting your transfer' : `Transfer from ${source_display_name} is completed`,
@@ -43,7 +47,7 @@ const Processing: FC = () => {
                 <div className='flex items-center space-x-1'>
                     <span>Source Tx: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={input_tx_explorer.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
+                        <a target={"_blank"} href={input_tx_explorer.replace("{0}", swapInputTransaction.transaction_id)}>{shortenAddress(swapInputTransaction.transaction_id)}</a>
                         <ExternalLink className='h-4' />
                     </div>
                 </div>
@@ -58,18 +62,18 @@ const Processing: FC = () => {
                 || (swapStep === SwapStep.LSTransferPending && 'complete')
                 || (swapStep === SwapStep.TransactionDone && 'upcoming'),
             description: (swapStep === SwapStep.TransactionDetected
-                || swapStep === SwapStep.LSTransferPending) ? <div>Confirmations: <span className='text-white'>{((swap?.input_transaction?.confirmations >= swap?.input_transaction?.max_confirmations) ? swap?.input_transaction?.max_confirmations : swap?.input_transaction?.confirmations) ?? 0}</span>/{swap?.input_transaction?.max_confirmations}</div> : ""
+                || swapStep === SwapStep.LSTransferPending) ? <div>Confirmations: <span className='text-white'>{((swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations) ? swapInputTransaction?.max_confirmations : swapInputTransaction?.confirmations) ?? 0}</span>/{swapInputTransaction?.max_confirmations}</div> : ""
         },
         {
             name: swapStep === SwapStep.LSTransferPending ? 'Your assets are on their way' : 'Transfer of assets to your address',
             status: (swapStep === SwapStep.TransactionDone
                 || swapStep === SwapStep.TransactionDetected) ? 'upcoming' : 'current',
             description:
-                swap?.output_transaction ?
+                swapOutputTransaction ?
                     <div className='flex items-center space-x-1'>
                         <span>Destination Tx: </span>
                         <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={output_tx_explorer.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                            <a target={"_blank"} href={output_tx_explorer.replace("{0}", swapOutputTransaction.transaction_id)}>{shortenAddress(swapOutputTransaction.transaction_id)}</a>
                             <ExternalLink className='h-4' />
                         </div>
                     </div>

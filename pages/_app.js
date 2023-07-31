@@ -10,7 +10,6 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
   darkTheme,
-  getDefaultWallets,
   RainbowKitProvider,
   connectorsForWallets
 } from '@rainbow-me/rainbowkit';
@@ -18,6 +17,7 @@ import useStorage from "../hooks/useStorage";
 
 import { supportedChains } from '../lib/chainConfigs';
 import { publicProvider } from 'wagmi/providers/public';
+import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 
 const { chains, publicClient } = configureChains(
   supportedChains,
@@ -26,22 +26,27 @@ const { chains, publicClient } = configureChains(
   ]
 );
 
-const { wallets } = getDefaultWallets({
-  appName: 'Layerswap',
-  chains,
-  projectId: WALLETCONNECT_PROJECT_ID
-});
-
+const projectId = WALLETCONNECT_PROJECT_ID;
 const connectors = connectorsForWallets([
-  ...wallets
+  {
+    groupName: 'Popular',
+    wallets: [
+      metaMaskWallet({ projectId, chains }),
+      walletConnectWallet({ projectId, chains }),
+    ],
+  },
+  {
+    groupName: 'Wallets',
+    wallets: [
+      coinbaseWallet({ chains, appName: 'Layerswap' }),
+      argentWallet({ projectId, chains }),
+      bitKeepWallet({ projectId, chains }),
+      rainbowWallet({ projectId, chains }),
+    ],
+  },
 ]);
 
-
-
 function App({ Component, pageProps }) {
-
-
-
   const theme = darkTheme({
     accentColor: 'rgb(var(--colors-primary-500))',
     accentColorForeground: 'white',
@@ -75,6 +80,12 @@ function App({ Component, pageProps }) {
     publicClient,
   })
 
+  const disclaimer = ({ Text }) => (
+    <Text>
+      Thanks for choosing Layerswap!
+    </Text>
+  );
+
   return (
     <SWRConfig
       value={{
@@ -83,7 +94,12 @@ function App({ Component, pageProps }) {
     >
       <IntercomProvider appId={INTERCOM_APP_ID}>
         <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider modalSize="compact" chains={chains} theme={theme}>
+          <RainbowKitProvider modalSize="compact" chains={chains} theme={theme}
+            appInfo={{
+              appName: 'Layerswap',
+              learnMoreUrl: 'https://docs.layerswap.io/',
+              disclaimer: disclaimer
+            }}>
             <Component key={router.asPath} {...pageProps} />
           </RainbowKitProvider>
         </WagmiConfig>

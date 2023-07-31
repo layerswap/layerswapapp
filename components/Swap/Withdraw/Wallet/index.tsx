@@ -15,7 +15,7 @@ const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
     const { address } = useAccount()
-    const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_exchange: source_exchange_internal_name } = swap
+    const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_exchange: source_exchange_internal_name, source_network_asset } = swap
 
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const source_layer = layers.find(n => n.internal_name === (source_exchange_internal_name ?? source_network_internal_name))
@@ -28,7 +28,7 @@ const WalletTransfer: FC = () => {
     const shouldGetGeneratedAddress =
         !sourceIsStarknet &&
         (address?.toLowerCase() !== destination_address?.toLowerCase()
-        || sourceIsImmutableX)
+            || sourceIsImmutableX)
 
     const layerswapApiClient = new LayerSwapApiClient()
     const generateDepositParams = shouldGetGeneratedAddress ? [source_network_internal_name] : null
@@ -39,13 +39,13 @@ const WalletTransfer: FC = () => {
     const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
     const generatedDepositAddress = generatedDeposit?.data?.address
     const managedDepositAddress = managedDeposit?.data?.address
-    const sourceNetworkSettings = NetworkSettings.KnownSettings[source_network_internal_name]
-    const sourceChainId = sourceNetworkSettings?.ChainId
+    const sourceChainId = source_network.isExchange === false && Number(source_network.chain_id)
 
     const feeParams = {
         source: source_layer.internal_name,
         destination: destination?.internal_name,
-        asset: destination_network_asset,
+        source_asset: source_network_asset,
+        destination_asset: destination_network_asset,
         refuel: swap?.has_refuel
     }
 
@@ -71,7 +71,9 @@ const WalletTransfer: FC = () => {
             generatedDepositAddress={generatedDepositAddress as `0x${string}`}
             managedDepositAddress={managedDepositAddress as `0x${string}`}
             userDestinationAddress={swap.destination_address as `0x${string}`}
-            amount={requested_amount} />
+            amount={requested_amount}
+            asset={sourceCurrency?.asset}
+        />
     </Wrapper>
 
 }

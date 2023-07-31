@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { FC, useEffect, useState } from 'react'
 import { useSettingsState } from '../../context/settings';
-import LayerSwapApiClient, { SwapItem } from '../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, TransactionType } from '../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
 import shortenAddress from '../utils/ShortenAddress';
@@ -42,6 +42,8 @@ const SwapDetails: FC<Props> = ({ id }) => {
 
     const source_network = networks?.find(e => e.internal_name === source_network_internal_name)
     const input_tx_id = source_network?.transaction_explorer_template
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+    const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
 
     useEffect(() => {
         (async () => {
@@ -146,7 +148,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 </div>
                             </span>
                         </div>
-                        {swap?.input_transaction?.transaction_id &&
+                        {swapInputTransaction?.transaction_id &&
                             <>
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
@@ -154,7 +156,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <span className="text-white">
                                         <div className='inline-flex items-center'>
                                             <div className='underline hover:no-underline flex items-center space-x-1'>
-                                                <a target={"_blank"} href={input_tx_id?.replace("{0}", swap?.input_transaction.transaction_id)}>{shortenAddress(swap.input_transaction.transaction_id)}</a>
+                                                <a target={"_blank"} href={input_tx_id?.replace("{0}", swapInputTransaction.transaction_id)}>{shortenAddress(swapInputTransaction.transaction_id)}</a>
                                                 <ExternalLink className='h-4' />
                                             </div>
                                         </div>
@@ -162,7 +164,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                 </div>
                             </>
                         }
-                        {swap?.output_transaction?.transaction_id &&
+                        {swapOutputTransaction?.transaction_id &&
                             <>
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
@@ -170,11 +172,11 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <span className="text-white">
                                         <div className='inline-flex items-center'>
                                             <div className="">
-                                                {(swap?.output_transaction?.transaction_id && swap?.destination_exchange === KnownInternalNames.Exchanges.Coinbase && (isGuid(swap?.output_transaction?.transaction_id))) ?
-                                                    <span><CopyButton toCopy={swap.output_transaction.transaction_id} iconClassName="text-gray-500">{shortenAddress(swap.output_transaction.transaction_id)}</CopyButton></span>
+                                                {(swapOutputTransaction?.transaction_id && swap?.destination_exchange === KnownInternalNames.Exchanges.Coinbase && (isGuid(swapOutputTransaction?.transaction_id))) ?
+                                                    <span><CopyButton toCopy={swapOutputTransaction.transaction_id} iconClassName="text-gray-500">{shortenAddress(swapOutputTransaction.transaction_id)}</CopyButton></span>
                                                     :
                                                     <div className='underline hover:no-underline flex items-center space-x-1'>
-                                                        <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swap?.output_transaction.transaction_id)}>{shortenAddress(swap.output_transaction.transaction_id)}</a>
+                                                        <a target={"_blank"} href={destination_network?.transaction_explorer_template?.replace("{0}", swapOutputTransaction.transaction_id)}>{shortenAddress(swapOutputTransaction.transaction_id)}</a>
                                                         <ExternalLink className='h-4' />
                                                     </div>
                                                 }
@@ -192,19 +194,19 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             </span>
                         </div>
                         {
-                            swap?.input_transaction &&
+                            swapInputTransaction &&
                             <>
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
                                     <span className="text-left">Transfered amount</span>
                                     <span className='text-white font-normal flex'>
-                                        {swap?.input_transaction?.amount} {swap?.destination_network_asset}
+                                        {swapInputTransaction?.amount} {swap?.destination_network_asset}
                                     </span>
                                 </div>
                             </>
                         }
                         {
-                            swap?.output_transaction &&
+                            swapOutputTransaction &&
                             <>
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
@@ -214,13 +216,13 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             </>
                         }
                         {
-                            swap?.output_transaction &&
+                            swapOutputTransaction &&
                             <>
                                 <hr className='horizontal-gradient' />
                                 <div className="flex justify-between items-baseline">
                                     <span className="text-left">Amount You Received</span>
                                     <span className='text-white font-normal flex'>
-                                        {swap?.output_transaction?.amount} {currency?.asset}
+                                        {swapOutputTransaction?.amount} {currency?.asset}
                                     </span>
                                 </div>
                             </>
