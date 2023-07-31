@@ -96,10 +96,11 @@ export function FilterDestinationLayers(layers: Layer[], source?: Layer, lockedC
 
     const filteredLayers = layers.filter(l => {
         const isAvailable = l.status != "inactive"
+            && !(l.isExchange === true && l.type === 'fiat')
             && source?.internal_name !== l.internal_name;
 
         const layerHasAvailableL2 = l.assets.some(l2Asset =>
-            l2Asset.is_default 
+            l2Asset.is_default
             && (!lockedCurrency || l2Asset?.asset === lockedCurrency?.asset)
             && (source ? IsAvailableForLayer(l2Asset.asset, source, l)
                 : IsAvailableForSomeLayer(l2Asset.asset, l)))
