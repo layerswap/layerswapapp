@@ -22,8 +22,7 @@ const AmountField = forwardRef((_, ref: any) => {
     const walletBalance = roundDecimals(balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)?.amount, currency?.precision)
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
-    const CalculatedMaxAmount = CalculateMaxAllowedAmount(values, query.balances, minAllowedAmount)
-    const maxAllowedAmount = (walletBalance > minAllowedAmount && walletBalance < CalculatedMaxAmount) ? walletBalance : CalculatedMaxAmount;
+    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalance, minAllowedAmount)
 
     const placeholder = (walletBalance > minAllowedAmount && walletBalance < maxAllowedAmount) ? `${minAllowedAmount} - ${walletBalance}` : (currency && from && to && !isBalanceLoading) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.precision)
