@@ -90,19 +90,35 @@ function TransactionsHistory() {
     const nextPage = page + 1
     setLoading(true)
     const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
-    const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage)
+    if (showAllSwaps) {
+      const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage)
 
-    if (error) {
-      toast.error(error.message);
-      return;
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      setSwaps(old => [...(old ? old : []), ...(data ? data : [])])
+      setPage(nextPage)
+      if (data.length < PAGE_SIZE)
+        setIsLastPage(true)
+
+      setLoading(false)
+    } else {
+      const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage, SwapStatusInNumbers.SwapsWithoutCancelledAndExpired)
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      setSwaps(old => [...(old ? old : []), ...(data ? data : [])])
+      setPage(nextPage)
+      if (data.length < PAGE_SIZE)
+        setIsLastPage(true)
+
+      setLoading(false)
     }
-
-    setSwaps(old => [...(old ? old : []), ...(data ? data : [])])
-    setPage(nextPage)
-    if (data.length < PAGE_SIZE)
-      setIsLastPage(true)
-
-    setLoading(false)
   }, [page, setSwaps])
 
   const handleopenSwapDetails = (swap: SwapItem) => {
