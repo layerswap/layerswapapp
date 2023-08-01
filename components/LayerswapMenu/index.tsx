@@ -145,12 +145,12 @@ export default function () {
                                                             </Menu.Item>
                                                         }
 
-                                                        {/* <hr className="horizontal-gradient" />
+                                                        <hr className="horizontal-gradient" />
                                                         <Menu.Item>
                                                             <Item type={ItemType.link} pathname='/auth' icon={<LogIn className='h-4 w-4' />}>
                                                                 Login
                                                             </Item>
-                                                        </Menu.Item> */}
+                                                        </Menu.Item>
                                                     </>
                                             }
                                             {
