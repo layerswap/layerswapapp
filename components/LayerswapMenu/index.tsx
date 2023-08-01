@@ -111,7 +111,7 @@ export default function () {
                                         null
                                         :
                                         <>
-                                            <div className="flex">
+                                            <div className="flex mb-3">
                                                 <button
                                                     type="button"
                                                     onClick={() => {
@@ -178,7 +178,7 @@ export default function () {
                                 {
                                     userType == UserType.AuthenticatedUser &&
                                     <>
-                                        <div className="flex">
+                                        <div className="flex mb-3">
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -247,7 +247,7 @@ export default function () {
                                         <button
                                             type="button"
                                             onClick={handleLogout}
-                                            className="border-2 border-secondary-500 menu-link my-1.5 w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
+                                            className="border-2 border-secondary-500 menu-link my-1.5 mb-4 w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
                                         >
                                             <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><LogOut className="h-5 w-5" /></div>
                                             <p className="text-base font-semibold">Sign Out</p>
@@ -256,8 +256,7 @@ export default function () {
                                     </>
                                 }
                             </div>
-                            <hr className="w-full opacity-60 mx-auto border-secondary-600 border-[6px] rounded my-2"></hr>
-                            <p className="text-primary-text font-medium">New</p>
+                            <p className="text-primary-text font-medium mt-1.5">New</p>
                             <div className="relative py-1">
                                 <Link
                                     href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards"
@@ -284,7 +283,7 @@ export default function () {
                                     </div>
                                 </Popover>
                             </div>
-                            <p className="text-primary-text font-medium">Docs</p>
+                            <p className="text-primary-text font-medium mt-1.5">Docs</p>
                             <div className="relative py-1">
                                 <Link
                                     href="https://docs.layerswap.io/"
@@ -305,7 +304,7 @@ export default function () {
                                     <ChevronRight className="h-4 w-4 absolute right-3" />
                                 </Link>
                             </div>
-                            <p className="text-primary-text font-medium mt-1.5">Social</p>
+                            {/* <p className="text-primary-text font-medium mt-1.5">Social</p>
                             <div className="relative py-1">
                                 {navigation.social.map((item) => (
                                     <Link key={item.name} target="_blank" href={item.href} className={`${item.name != "Twitter" ? "border-t" : "rounded-t-md"} border-slate-800 menu-link flex relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white ${item.className}`}>
@@ -328,7 +327,7 @@ export default function () {
                                         <ExternalLink className="h-4 w-4 absolute right-3" />
                                     </Link>
                                 }
-                            </div>
+                            </div> */}
                             <p className="text-primary-text font-medium mt-1.5">Legal</p>
                             <div className="relative py-1">
                                 <Link
@@ -349,6 +348,25 @@ export default function () {
                                     <p>Terms of Service</p>
                                     <ExternalLink className="h-4 w-4 absolute right-3" />
                                 </Link>
+                            </div>
+                            <div className="flex justify-center mt-5">
+                                {navigation.social.map((item) => (
+                                    <Link key={item.name} target="_blank" href={item.href} className={`menu-link flex relative cursor-pointer select-none items-center py-1.5 outline-none text-primary-text hover:text-white ${item.className}`}>
+                                        <div className="flex items-center">
+                                            <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><item.icon className="h-5 w-5" aria-hidden="true" /></div>
+                                        </div>
+                                    </Link>
+                                ))}
+                                {
+                                    !embedded &&
+                                    <Link
+                                        href="https://layerswap.ducalis.io/roadmap/summary"
+                                        target="_blank"
+                                        className="menu-link flex relative cursor-pointer select-none items-center rounded-b-md py-1.5 outline-none text-primary-text hover:text-white"
+                                    >
+                                        <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Map className="h-5 w-5" /></div>
+                                    </Link>
+                                }
                             </div>
                         </div>
                     </Modal>
