@@ -52,10 +52,10 @@ const SwapDetails: FC = () => {
                 }
             </Widget>
             {
-                // swapStep === SwapStep.Success && userType && userType != UserType.AuthenticatedUser &&
-                // <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu>
-                //     <GuestCard />
-                // </FormWizardProvider>
+                swapStep === SwapStep.Success && userType && userType != UserType.AuthenticatedUser &&
+                <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu>
+                    <GuestCard />
+                </FormWizardProvider>
             }
         </>
     )
