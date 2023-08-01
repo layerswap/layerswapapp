@@ -121,6 +121,11 @@ export default class LayerSwapApiClient {
             })
             .catch(async reason => {
                 if (reason instanceof AuthRefreshFailedError) {
+                    this._router && (await this._router.push({
+                        pathname: '/auth',
+                        query: { redirect: this._redirect }
+                    }));
+
                     return Promise.resolve(new EmptyApiResponse());
                 }
                 else {

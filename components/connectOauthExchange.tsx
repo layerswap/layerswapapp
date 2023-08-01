@@ -57,6 +57,13 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
         try {
             setLoading(true)
             const access_token = TokenService.getAuthData()?.access_token
+            if (!access_token) {
+                router.push({
+                    pathname: '/auth',
+                    query: { redirect: '/exchanges' }
+                })
+                return;
+            }
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
             const authWindow = window.open(oauth_authorize_url + encoded, '_blank', 'width=420,height=720')
