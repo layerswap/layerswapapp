@@ -238,7 +238,7 @@ export default function () {
                                         {!embedded && router.pathname != '/campaigns' &&
                                             <Link
                                                 href="/campaigns"
-                                                className="menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
+                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
                                                 <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><Gift className="h-5 w-5" /></div>
                                                 <p className="text-base font-semibold">Campaigns</p>
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
