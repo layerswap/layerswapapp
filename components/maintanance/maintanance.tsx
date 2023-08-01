@@ -25,7 +25,7 @@ function MaintananceContent(props) {
                 <div className="flex flex-col justify-center space-y-12 p-10 text-white md:min-h-fit min-h-[400px]">
                     <h1 className="text-xl tracking-tight text-gray-200">
                         <p className="mb-4 text-primary-text">
-                            We're upgrading our systems and infrastructure to give you the best experience yet.
+                            We're upgrading our systems and infrastructure to give you the best experience yet. 
                         </p>
                         <span className="block font-bold text-3xl xl:inline">We'll be back at 19:00 UTC</span>
                         <p className="mt-4 text-primary-text">
