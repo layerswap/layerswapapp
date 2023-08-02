@@ -18,6 +18,7 @@ const destinationOrder = [
     KnownInternalNames.Networks.ZksyncEraMainnet,
     KnownInternalNames.Networks.ZksyncMainnet,
     KnownInternalNames.Networks.ArbitrumNova,
+    KnownInternalNames.Networks.BaseMainnet,
     KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.ArbitrumMainnet,
     KnownInternalNames.Networks.OptimismMainnet,
@@ -50,6 +51,7 @@ const sourceOrder = [
     KnownInternalNames.Networks.KCCMainnet,
     KnownInternalNames.Networks.LoopringMainnet,
     KnownInternalNames.Networks.ImmutableXMainnet,
+    KnownInternalNames.Networks.BaseMainnet,
 ];
 
 export default class NetworkSettings {
@@ -202,6 +204,9 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LineaMainnet] = {
             ChainId: 59144,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseMainnet] = {
+            ChainId: 8453,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AvalancheMainnet] = {
             ChainId: 43114,
