@@ -53,7 +53,13 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
                     ...(groups?.find(g => g?.name === 'Exchanges')?.items.splice(0, 2) || [])
                 ]
             })
-            groups.unshift(popularsGroup);
+            let newGroup = new SelectMenuItemGroup({
+                name: "New",
+                items: [
+                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(2, 1),
+                ]
+            })
+            groups.unshift(popularsGroup, newGroup);
             return groups;
         }
     }
@@ -68,7 +74,13 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
                 name: "Popular",
                 items: [...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 4)]
             })
-            groups.unshift(popularsGroup);
+            let newGroup = new SelectMenuItemGroup({
+                name: "New",
+                items: [
+                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 2),
+                ]
+            })
+            groups.unshift(popularsGroup, newGroup);
             return groups;
         }
     }
