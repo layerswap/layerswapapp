@@ -23,7 +23,7 @@ const Header: FC<HeaderProps> = ({ tab, onCLick, activeTabId }) => {
         {activeTabId === tab.id && (
             <motion.span
                 layoutId="bubble"
-                className="absolute inset-0 z-10 bg-secondary-700 mix-blend-lighten border-2 border-secondary-500"
+                className="absolute inset-0 z-10 bg-secondary-700 light:mix-blend-darken mix-blend-lighten border-2 border-secondary-500"
                 style={{ borderRadius: '6px' }}
                 transition={{ type: "spring", bounce: 0.1, duration: 0.3 }}
             />

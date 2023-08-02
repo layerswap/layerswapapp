@@ -198,7 +198,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         return (<>
             <div className='w-full flex flex-col justify-between h-full text-primary-text'>
                 <div className='flex flex-col self-center grow w-full'>
-                    <div className={`flex flex-col self-center grow w-full space-y-3`}>
+                    <div className={`flex flex-col self-center grow w-full space-y-3 pb-3`}>
                         <div className="text-left">
                             <label htmlFor={name}>Address</label>
                             {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
@@ -271,7 +271,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         </div>
                         {
                             validInputAddress &&
-                            <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-300 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-500 transition duration-200 px-2 py-2 hover:border-secondary-500 hover:shadow-xl`}>
+                            <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-300 bg-secondary-600 flex text-sm rounded-md items-center w-full transform hover:bg-secondary-500 transition duration-200 px-2 py-2 hover:border-secondary-500 hover:shadow-md`}>
                                 <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                     {
                                         destinationIsStarknet && starknetAccount?.isConnected ?

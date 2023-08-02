@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
 @layer utilities {
 
   /* Chrome, Safari, Edge, Opera */
@@ -40,6 +38,9 @@
 iframe body {
   display: none;
 }
+.light .top-backdrop{
+  display: none;
+}
 
 .top-backdrop {
   width: 1325px;
@@ -68,11 +69,11 @@ select:-webkit-autofill:focus {
   transition: all 5000s ease-in-out 0s;
   transition-property: background-color, color;
 
-  border: 1px solid #1A2949;
-  -webkit-text-fill-color: #f8fdff;
-  caret-color: #f8fdff;
-  -webkit-box-shadow: 0 0 0px 1000px #131e36 inset;
-  box-shadow: 0 0 0px 1000px #131e36 inset;
+  /* border: 1px solid #1A2949; */
+  -webkit-text-fill-color: rgb(var(--colors-primary-text));
+  caret-color: rgb(var(--colors-primary-text));
+  -webkit-box-shadow: 0 0 0px 1000px rgb(var(--colors-secondary-700)) inset;
+  box-shadow: 0 0 0px 1000px rgb(var(--colors-secondary-700)) inset;
 
 }
 

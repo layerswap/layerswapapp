@@ -30,14 +30,14 @@ export default function ({ hideNavbar, children }: Props) {
 
     const { addressSource } = useQueryState()
 
-    useEffect(() => {
-        if (addressSource) window.document.body.className = addressSource
+    // useEffect(() => {
+    //     if (addressSource) window.document.body.className = addressSource
 
-        return () => { window.document.body.className = '' }
-    }, [addressSource])
+    //     return () => { window.document.body.className = '' }
+    // }, [addressSource])
 
     return <div className='styled-scroll'>
-        <div className="invisible imxMarketplace ea7df14a1597407f9f755f05e25bab42"></div>
+        <div className="invisible imxMarketplace  light"></div>
         <main className="styled-scroll">
             <div className="min-h-screen overflow-hidden relative font-robo">
                 <Toaster position="top-center" toastOptions={{

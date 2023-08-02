@@ -23,7 +23,7 @@ const BackgroundField: FC<Props> = (({ Copiable, toCopy, header, children, QRabl
             }
             <div className={`w-full relative px-3 py-3 shadow-sm ${withoutBorder ? 'border-secondary-700' : 'border-secondary-500 rounded-md border bg-secondary-700'}`}>
                 {
-                    header && <p className="block font-bold text-sm text-slate-300">
+                    header && <p className="block font-bold text-sm text-primary-text">
                         {header}
                     </p>
                 }
