@@ -269,7 +269,7 @@ export default function () {
                                 </Link>
                                 <Popover
                                     opener={
-                                        <button onClick={() => setOpenFeedbackModal(true)} className="menu-link w-full flex relative cursor-pointer select-none items-center rounded-b-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
+                                        <button onClick={() => setOpenFeedbackModal(true)} className="menu-link border-t border-slate-800 w-full flex relative cursor-pointer select-none items-center rounded-b-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
                                             <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><MessageSquarePlus className="h-5 w-5" /></div>
                                             <p>Suggest a Feature</p>
                                             <ChevronRight className="h-4 w-4 absolute right-3" />
