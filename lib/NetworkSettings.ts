@@ -14,12 +14,12 @@ export enum DepositType {
 }
 
 const destinationOrder = [
+    KnownInternalNames.Networks.BaseMainnet,
+    KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
     KnownInternalNames.Networks.ZksyncMainnet,
     KnownInternalNames.Networks.ArbitrumNova,
-    KnownInternalNames.Networks.BaseMainnet,
-    KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.ArbitrumMainnet,
     KnownInternalNames.Networks.OptimismMainnet,
     KnownInternalNames.Networks.PolygonZkMainnet,
@@ -35,11 +35,11 @@ const destinationOrder = [
 ];
 
 const sourceOrder = [
+    KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.ArbitrumMainnet,
     KnownInternalNames.Networks.EthereumMainnet,
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.BNBChainMainnet,
-    KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.OptimismMainnet,
     KnownInternalNames.Networks.SolanaMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
