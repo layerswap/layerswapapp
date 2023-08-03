@@ -40,11 +40,17 @@ const SwapDetails: FC = () => {
                 }
                 {
                     swapStep === SwapStep.Success &&
-                    <Success />
+                    <div>
+                        <Processing />
+                        <Success />
+                    </div>
                 }
                 {
                     swapStep === SwapStep.Failed &&
-                    <Failed />
+                    <div>
+                        <Processing />
+                        <Failed />
+                    </div>
                 }
                 {
                     swapStep === SwapStep.Delay &&

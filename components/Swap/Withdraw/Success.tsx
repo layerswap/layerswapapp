@@ -32,7 +32,6 @@ const Success: FC = () => {
     return (
         <>
             <Widget.Content>
-                <SwapSummary />
                 <MessageComponent>
                     <MessageComponent.Content icon='green'>
                         <MessageComponent.Header>

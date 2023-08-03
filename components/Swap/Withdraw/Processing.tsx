@@ -57,12 +57,13 @@ const Processing: FC = () => {
         {
             name: (swapStep === SwapStep.TransactionDone && 'Transfer confirmation')
                 || (swapStep === SwapStep.TransactionDetected && ' Waiting for the transfer to get confirmed')
-                || (swapStep === SwapStep.LSTransferPending && 'The transfer is confirmed'),
+                || (swapStep === SwapStep.LSTransferPending || swapStep === SwapStep.Success && 'The transfer is confirmed'),
             status: (swapStep === SwapStep.TransactionDetected && 'current')
-                || (swapStep === SwapStep.LSTransferPending && 'complete')
+                || (swapStep === SwapStep.LSTransferPending || swapStep === SwapStep.Success && 'complete')
                 || (swapStep === SwapStep.TransactionDone && 'upcoming'),
             description: (swapStep === SwapStep.TransactionDetected
-                || swapStep === SwapStep.LSTransferPending) ? <div>Confirmations: <span className='text-white'>{((swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations) ? swapInputTransaction?.max_confirmations : swapInputTransaction?.confirmations) ?? 0}</span>/{swapInputTransaction?.max_confirmations}</div> : ""
+                || swapStep === SwapStep.LSTransferPending
+                || swapStep === SwapStep.Success) ? <div>Confirmations: <span className='text-white'>{((swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations) ? swapInputTransaction?.max_confirmations : swapInputTransaction?.confirmations) ?? 0}</span>/{swapInputTransaction?.max_confirmations}</div> : ""
         },
         {
             name: swapStep === SwapStep.LSTransferPending ? 'Your assets are on their way' : 'Transfer of assets to your address',
