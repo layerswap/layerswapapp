@@ -47,7 +47,7 @@ module.exports = {
           '400': 'var(--ls-colors-secondary-400, #1C2759)',
           '500': 'var(--ls-colors-secondary-500, #162546)',
           '600': 'var(--ls-colors-secondary-600, #14213E)',
-          '700': 'var(--ls-colors-secondary-700, #111D36)',
+          '700': 'rgb(var(--ls-colors-secondary-700, 255 115 179) / <alpha-value>)',
           '800': 'var(--ls-colors-secondary-800, #0F192F)',
           '900': 'var(--ls-colors-secondary-900, #0C1527)',
           '950': 'var(--ls-colors-secondary-900, #0B1123)',

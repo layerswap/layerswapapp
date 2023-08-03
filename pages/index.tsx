@@ -74,7 +74,6 @@ export default function Home({ settings, inMaintanance, themeData }: InferGetSer
           --ls-colors-secondary-800: ${themeData.secondary?.[800]};
           --ls-colors-secondary-900: ${themeData.secondary?.[900]};
           --ls-colors-secondary-950: ${themeData.secondary?.[950]};
-
         }
       `}</style>
       }
@@ -217,11 +216,50 @@ const themes = {
       '300': '#79ADC8',
       '400': '#5C9BBC',
       '500': '#224253',
-      '600': '#39708D',
+      '600': '#0F1D27',
       '700': '#0F1D27',
       '800': '#224253',
       '900': '#162B36',
       '950': '#0E1B22',
+    },
+  },
+  "light": {
+    backdrop: "#007985",
+    placeholderText: '#C6F2F6',
+    actionButtonText: '#000000',
+    logo: '#ffffffff',
+    primary: {
+      DEFAULT: '#E42575',
+      '50': '#F8C8DC',
+      '100': '#F6B6D1',
+      '200': '#F192BA',
+      '300': '#ED6EA3',
+      '400': '#E8498C',
+      '500': '#E42575',
+      '600': '#A6335E',
+      '700': '#881143',
+      '800': '#930863',
+      '900': '#c499af',
+      'background': '#F6B6D1',
+      'text': '#171717',
+      'text-muted': '#56617B',
+      'text-placeholder': '#737373',
+      'buttonTextColor': '#ffffff',
+      'logoColor': '#FF0093'
+    },
+    secondary: {
+      DEFAULT: '#EFEFEF',
+      '50': '#313C9B',
+      '100': '#2E3B93',
+      '200': '#232A70',
+      '300': '#4b5563',
+      '400': '#6b7280',
+      '500': '#9ca3af',
+      '600': '#d1d5db',
+      '700': '#e5e7eb',
+      '800': '#f3f4f6',
+      '900': '#fff',
+      '950': '#fff',
     },
   }
 }
