@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
 import { useMenuState } from "../../context/menu";
 import TokenService from "../../lib/TokenService";
-import { AnimatePresence } from "framer-motion";
 import shortenAddress from "../utils/ShortenAddress";
 import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
@@ -22,7 +21,6 @@ import Link from "next/link";
 import { RainbowKitConnectWallet } from "../HeaderWithMenu/ConnectedWallets";
 import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
-import { Menu } from "@headlessui/react";
 import IconButton from "../buttons/iconButton";
 
 ``
@@ -119,8 +117,7 @@ export default function () {
                                                         show();
                                                         updateWithProps();
                                                     }}
-                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-14 w-14"
-                                                        }`}
+                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
                                                 >
                                                     <ChatIcon className="h-6 w-6" strokeWidth={2} />
                                                     <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
@@ -135,8 +132,7 @@ export default function () {
                                                     <button
                                                         type="button"
                                                         onClick={() => openConnectModal()}
-                                                        className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-14 w-14"
-                                                            }`}
+                                                        className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
                                                     >
                                                         <WalletIcon className="h-6 w-6" strokeWidth={2} />
                                                         <p className="text-base font-semibold">Wallet</p>
@@ -144,8 +140,7 @@ export default function () {
                                                 )}
                                                 <Link
                                                     href="/transactions"
-                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-14 w-14"
-                                                        }`}
+                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
                                                 >
                                                     <ScrollText className="h-6 w-6" />
                                                     <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Transfers</p>
@@ -186,8 +181,7 @@ export default function () {
                                                     show();
                                                     updateWithProps();
                                                 }}
-                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-14 w-14"
-                                                    }`}
+                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
                                             >
                                                 <ChatIcon className="h-6 w-6" strokeWidth={2} />
                                                 <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
@@ -202,8 +196,7 @@ export default function () {
                                                 <button
                                                     type="button"
                                                     onClick={() => openConnectModal()}
-                                                    className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-14 w-14"
-                                                        }`}
+                                                    className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
                                                 >
                                                     <WalletIcon className="h-6 w-6" strokeWidth={2} />
                                                     <p className="text-base font-semibold">Wallet</p>
@@ -211,8 +204,7 @@ export default function () {
                                             )}
                                             <Link
                                                 href="/transactions"
-                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-14 w-14"
-                                                    }`}
+                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
                                             >
                                                 <ScrollText className="h-6 w-6" />
                                                 <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Transfers</p>

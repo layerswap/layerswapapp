@@ -42,7 +42,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                         }
                         {
                             isMobile &&
-                            <Leaflet position="fixed" height="full" ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
+                            <Leaflet position="fixed" height={header == "Menu" ? 'full' : "80%"} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
                                 {children}
                             </Leaflet>
                         }
