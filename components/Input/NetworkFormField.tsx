@@ -20,7 +20,7 @@ type Props = {
     label: string,
 }
 
-let groupNameMap = (isExchange: boolean) => isExchange ? 'Exchanges' : 'Networks';
+let groupNameMap = (isExchange: boolean, type?: 'cex' | 'fiat' | '') => isExchange ? (type === 'fiat' ? 'Fiat' : 'Exchanges') : 'Networks';
 
 const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
     const {
@@ -46,14 +46,20 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, from && lockFrom);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
+            let newGroup = new SelectMenuItemGroup({
+                name: "New",
+                items: [
+                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 1),
+                ]
+            })
             let popularsGroup = new SelectMenuItemGroup({
                 name: "Popular",
                 items: [
-                    ...groups?.[0].items.splice(0, 2),
-                    ...(groups?.[1]?.items.splice(0, 2) || [])
+                    ...groups?.find(g => g?.name === 'Networks')?.items.splice(0, 2),
+                    ...(groups?.find(g => g?.name === 'Exchanges')?.items.splice(0, 2) || [])
                 ]
             })
-            groups.unshift(popularsGroup);
+            groups.unshift(popularsGroup, newGroup);
             return groups;
         }
     }
@@ -64,11 +70,17 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, to && lockTo);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
+            let newGroup = new SelectMenuItemGroup({
+                name: "New",
+                items: [
+                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 2),
+                ]
+            })
             let popularsGroup = new SelectMenuItemGroup({
                 name: "Popular",
-                items: [...groups?.[0]?.items?.splice(0, 4)]
+                items: [...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 4)]
             })
-            groups.unshift(popularsGroup);
+            groups.unshift(popularsGroup, newGroup);
             return groups;
         }
     }
@@ -107,7 +119,7 @@ function groupByType(values: ISelectMenuItem[]) {
     });
     groups.sort((a, b) => {
         // Sort put networks first then exchanges
-        return Number(a.name == groupNameMap(true)) - Number(b.name == groupNameMap(true));
+        return Number(a.name == groupNameMap(true)) - Number(b.name == groupNameMap(true)) - Number(b.name == groupNameMap(false));
     });
     return groups;
 }
@@ -133,7 +145,7 @@ function GenerateMenuItems(layers: Layer[], resolveImgSrc: (item: Layer | Curren
             order: l.isExchange ? ExchangeSettings.KnownSettings[l.internal_name]?.[orderProp] : NetworkSettings.KnownSettings[l.internal_name]?.[orderProp],
             imgSrc: resolveImgSrc && resolveImgSrc(l),
             isAvailable: layerIsAvailable(l),
-            group: groupNameMap(l.isExchange)
+            group: groupNameMap(l.isExchange, l.isExchange === true && l.type)
         }
     }).sort(SortingByOrder);
 }

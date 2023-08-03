@@ -14,9 +14,10 @@ export enum DepositType {
 }
 
 const destinationOrder = [
+    KnownInternalNames.Networks.BaseMainnet,
+    KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
-    KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.ZksyncMainnet,
     KnownInternalNames.Networks.ArbitrumNova,
     KnownInternalNames.Networks.ArbitrumMainnet,
@@ -34,6 +35,7 @@ const destinationOrder = [
 ];
 
 const sourceOrder = [
+    KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.ArbitrumMainnet,
     KnownInternalNames.Networks.EthereumMainnet,
     KnownInternalNames.Networks.StarkNetMainnet,
@@ -49,6 +51,7 @@ const sourceOrder = [
     KnownInternalNames.Networks.KCCMainnet,
     KnownInternalNames.Networks.LoopringMainnet,
     KnownInternalNames.Networks.ImmutableXMainnet,
+    KnownInternalNames.Networks.BaseMainnet,
 ];
 
 export default class NetworkSettings {
@@ -99,10 +102,10 @@ export default class NetworkSettings {
             AccountExplorerTemplate: 'https://zkscan.io/explorer/accounts/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncEraMainnet] = {
-            ChainId:324,
+            ChainId: 324,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZkspaceMainnet] = {
-            ChainId:13,
+            ChainId: 13,
             AccountExplorerTemplate: 'https://zkspace.info/account/{0}'
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumGoerli] = {
@@ -201,6 +204,9 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LineaMainnet] = {
             ChainId: 59144,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseMainnet] = {
+            ChainId: 8453,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AvalancheMainnet] = {
             ChainId: 43114,
