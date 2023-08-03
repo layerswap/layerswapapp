@@ -46,17 +46,17 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, from && lockFrom);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
+            let newGroup = new SelectMenuItemGroup({
+                name: "New",
+                items: [
+                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 1),
+                ]
+            })
             let popularsGroup = new SelectMenuItemGroup({
                 name: "Popular",
                 items: [
                     ...groups?.find(g => g?.name === 'Networks')?.items.splice(0, 2),
                     ...(groups?.find(g => g?.name === 'Exchanges')?.items.splice(0, 2) || [])
-                ]
-            })
-            let newGroup = new SelectMenuItemGroup({
-                name: "New",
-                items: [
-                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(2, 1),
                 ]
             })
             groups.unshift(popularsGroup, newGroup);
@@ -70,15 +70,15 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, to && lockTo);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
-            let popularsGroup = new SelectMenuItemGroup({
-                name: "Popular",
-                items: [...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 4)]
-            })
             let newGroup = new SelectMenuItemGroup({
                 name: "New",
                 items: [
                     ...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 2),
                 ]
+            })
+            let popularsGroup = new SelectMenuItemGroup({
+                name: "Popular",
+                items: [...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 4)]
             })
             groups.unshift(popularsGroup, newGroup);
             return groups;
