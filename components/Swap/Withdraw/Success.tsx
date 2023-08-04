@@ -26,28 +26,11 @@ const Success: FC = () => {
     const handleViewInExplorer = useCallback(() => {
         if (!transaction_explorer_template)
             return
-        window.open(transaction_explorer_template.replace("{0}", swapOutputTransaction?.transaction_id), '_blank')
+        window.open(`https://www.layerswap.io/explorer/${swapOutputTransaction?.transaction_id}`, '_blank')
     }, [transaction_explorer_template])
 
     return (
         <>
-            <Widget.Content>
-                <MessageComponent>
-                    <MessageComponent.Content icon='green'>
-                        <MessageComponent.Header>
-                            Swap completed
-                        </MessageComponent.Header>
-                        <MessageComponent.Description>
-                            {
-                                swap?.destination_network ?
-                                    <span>Your swap was successfully completed. {swapOutputTransaction?.amount} {swap?.destination_network_asset} has been sent to your address.</span>
-                                    :
-                                    <span>Your swap was successfully completed. Your assets are on their way to your exchange account.</span>
-                            }
-                        </MessageComponent.Description>
-                    </MessageComponent.Content>
-                </MessageComponent>
-            </Widget.Content>
             <Widget.Footer>
                 <MessageComponent.Buttons>
                     <div className="flex flex-row text-white text-base space-x-2">

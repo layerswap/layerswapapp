@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Fuel } from 'lucide-react';
 import { FC } from 'react'
 import { useSwapDataState } from '../../../context/swap';
 import { useSettingsState } from '../../../context/settings';
@@ -12,7 +12,6 @@ import SwapSummary from '../Summary';
 import { GetNetworkCurrency } from '../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../Common/AverageCompletionTime';
 import { TransactionType } from '../../../lib/layerSwapApiClient';
-
 
 const Processing: FC = () => {
 
@@ -37,6 +36,7 @@ const Processing: FC = () => {
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
+    const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
     const progress = [
         {
@@ -66,17 +66,34 @@ const Processing: FC = () => {
                 || swapStep === SwapStep.Success) ? <div>Confirmations: <span className='text-white'>{((swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations) ? swapInputTransaction?.max_confirmations : swapInputTransaction?.confirmations) ?? 0}</span>/{swapInputTransaction?.max_confirmations}</div> : ""
         },
         {
-            name: swapStep === SwapStep.LSTransferPending ? 'Your assets are on their way' : 'Transfer of assets to your address',
+            name: swapStep === SwapStep.LSTransferPending
+                ? 'Your assets are on their way'
+                : swapStep === SwapStep.Success ? "Swap completed"
+                    : 'Transfer of assets to your address',
             status: (swapStep === SwapStep.TransactionDone
-                || swapStep === SwapStep.TransactionDetected) ? 'upcoming' : 'current',
+                || swapStep === SwapStep.TransactionDetected && 'current')
+                || (swapStep === SwapStep.Success && 'complete'),
             description:
                 swapOutputTransaction ?
-                    <div className='flex items-center space-x-1'>
-                        <span>Destination Tx: </span>
-                        <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={output_tx_explorer.replace("{0}", swapOutputTransaction.transaction_id)}>{shortenAddress(swapOutputTransaction.transaction_id)}</a>
-                            <ExternalLink className='h-4' />
+                    <div className="flex flex-col">
+                        <div className='flex items-center space-x-1'>
+                            <span>Destination Tx: </span>
+                            <div className='underline hover:no-underline flex items-center space-x-1'>
+                                <a target={"_blank"} href={output_tx_explorer.replace("{0}", swapOutputTransaction.transaction_id)}>{shortenAddress(swapOutputTransaction.transaction_id)}</a>
+                                <ExternalLink className='h-4' />
+                            </div>
                         </div>
+                        {swap?.has_refuel &&
+                            <div className='flex items-center'>
+                                <div className='flex items-center'>
+                                    <p className='mr-1'>Refuel Tx:</p>
+                                </div>
+                                <div className='underline hover:no-underline flex items-center space-x-1'>
+                                    <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
+                                    <ExternalLink className='h-4' />
+                                </div>
+                            </div>
+                        }
                     </div>
                     :
                     <div className='flex items-center space-x-1'>
@@ -90,7 +107,7 @@ const Processing: FC = () => {
                             }
                         </div>
                     </div>
-        },
+        }
     ]
 
     if (!swap) return <></>
