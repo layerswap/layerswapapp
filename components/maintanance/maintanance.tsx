@@ -5,7 +5,6 @@ import SubmitButton from "../buttons/submitButton";
 import CardContainer from "../cardContainer";
 import LayerSwapLogo from "../icons/layerSwapLogo";
 import TwitterLogo from "../icons/TwitterLogo";
-import IntroCard from "../introCard";
 
 function MaintananceContent(props) {
     const { email, userId } = useAuthState()
@@ -36,7 +35,6 @@ function MaintananceContent(props) {
                     <SubmitButton onClick={() => window.open('https://twitter.com/layerswap', '_blank')} icon={twitterLogo} isDisabled={false} isSubmitting={false}>Follow for updates</SubmitButton>
                 </div>
             </CardContainer>
-            <IntroCard />
         </div>
     );
 }

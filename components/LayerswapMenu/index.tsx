@@ -18,7 +18,7 @@ import SubstackLogo from "./../icons/SubstackLogo";
 import TwitterLogo from "./../icons/TwitterLogo";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import Link from "next/link";
-import { RainbowKitConnectWallet } from "../HeaderWithMenu/ConnectedWallets";
+import { MenuRainbowKitConnectWallet, RainbowKitConnectWallet } from "../HeaderWithMenu/ConnectedWallets";
 import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
 import IconButton from "../buttons/iconButton";
@@ -101,7 +101,7 @@ export default function () {
                         </IconButton>
 
                     </div>
-                    <Modal show={openTopModal} setShow={setOpenTopModal} header="Menu">
+                    <Modal show={openTopModal} setShow={setOpenTopModal} header="Menu" isMenu={true}>
                         <div className="text-sm font-medium text-left origin-top-right mt-2 focus:outline-none flex flex-col h-full">
                             <div className="relative z-30 py-1">
                                 {
@@ -123,10 +123,9 @@ export default function () {
                                                     <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
                                                 </button>
                                                 {isConnected ? (
-                                                    <RainbowKitConnectWallet
+                                                    <MenuRainbowKitConnectWallet
                                                         isMobile={isMobile}
                                                         isConnected={isConnected}
-                                                        isMenuCard={true}
                                                     />
                                                 ) : (
                                                     <button
@@ -187,10 +186,9 @@ export default function () {
                                                 <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
                                             </button>
                                             {isConnected ? (
-                                                <RainbowKitConnectWallet
+                                                <MenuRainbowKitConnectWallet
                                                     isMobile={isMobile}
                                                     isConnected={isConnected}
-                                                    isMenuCard={true}
                                                 />
                                             ) : (
                                                 <button

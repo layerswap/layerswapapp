@@ -14,11 +14,12 @@ export interface ModalProps {
     height?: LeafletHeight;
     show: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
+    isMenu?: boolean;
 }
 
-const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow }) => {
+const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, isMenu }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
-
+console.log(isMenu,"height={height ?? 'full'}")
     const mobileModalRef = useRef(null)
 
     useEffect(() => {
@@ -41,8 +42,14 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                             </ReactPortal>
                         }
                         {
-                            isMobile &&
-                            <Leaflet position="fixed" height={header == "Menu" ? 'full' : "80%"} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
+                            isMobile && !isMenu &&
+                            <Leaflet position="fixed" height={'80%'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
+                                {children}
+                            </Leaflet>
+                        }
+                        {
+                            isMobile && isMenu &&
+                            <Leaflet position="fixed" height={"full"} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
                                 {children}
                             </Leaflet>
                         }

@@ -12,15 +12,15 @@ import BitKeep from "../icons/Wallets/BitKeep"
 import Argent from "../icons/Wallets/Argent"
 
 
-export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected, isMenuCard }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean, isMenuCard?: boolean }) => {
+export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean }) => {
     return <ConnectButton.Custom>
         {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
             const connected = !!(mounted && account && chain)
             const { connector } = useAccount()
-            return <button onClick={() => connected ? openAccountModal() : openConnectModal()} type="button" className={`${!isMobile && isMenuCard ? "h-24 w-24" : isMobile && isMenuCard ? "h-16 w-14" : ""} ${isMenuCard ? "mx-2 w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white" : "-mx-2 p-1.5 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none inline-flex rounded-lg items-center"}`}>
+            return <button onClick={() => connected ? openAccountModal() : openConnectModal()} type="button" className={`-mx-2 p-1.5 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none inline-flex rounded-lg items-center`}>
                 {connected ?
                     <div className="mx-0.5">
-                        <div className={`${isMenuCard ? "flex-col items-center" : "font-bold grow flex space-x-2"}`}>
+                        <div className="font-bold grow flex space-x-2">
                             <div className="inline-flex items-center relative">
                                 <AddressIcon address={account.address} size={25} />
                                 {
@@ -29,7 +29,33 @@ export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected, isMen
                                     </span>
                                 }
                             </div>
-                            {isMenuCard && <p>{shortenAddress(account.address)}</p>}
+                        </div>
+                    </div>
+                    : <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
+                }
+            </button>
+        }}
+    </ConnectButton.Custom>
+}
+
+export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean }) => {
+    return <ConnectButton.Custom>
+        {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
+            const connected = !!(mounted && account && chain)
+            const { connector } = useAccount()
+            return <button onClick={() => connected ? openAccountModal() : openConnectModal()} type="button" className={`${!isMobile ? "h-24 w-24" : "h-16 w-14"} mx-2 w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
+                {connected ?
+                    <div className="mx-0.5">
+                        <div className="flex-col items-center">
+                            <div className="inline-flex items-center relative">
+                                <AddressIcon address={account.address} size={25} />
+                                {
+                                    connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                                        <ResolveWalletIcon connector={connector?.name} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
+                                    </span>
+                                }
+                            </div>
+                            <p>{shortenAddress(account.address)}</p>
                         </div>
                     </div>
                     : <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />

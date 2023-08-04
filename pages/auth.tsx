@@ -9,7 +9,6 @@ import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { SettingsProvider } from '../context/settings'
 import { useEffect, useState } from 'react'
 import inIframe from '../components/utils/inIframe'
-import IntroCard from '../components/introCard'
 import { SwapDataProvider } from '../context/swap'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
 
