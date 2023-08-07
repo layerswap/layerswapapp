@@ -73,7 +73,7 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
             let newGroup = new SelectMenuItemGroup({
                 name: "New",
                 items: [
-                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 2),
+                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 3),
                 ]
             })
             let popularsGroup = new SelectMenuItemGroup({

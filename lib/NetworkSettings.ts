@@ -15,6 +15,7 @@ export enum DepositType {
 
 const destinationOrder = [
     KnownInternalNames.Networks.BaseMainnet,
+    KnownInternalNames.Networks.PGNMainnet,
     KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
@@ -207,6 +208,9 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseMainnet] = {
             ChainId: 8453,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.PGNMainnet] = {
+            ChainId: 424,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AvalancheMainnet] = {
             ChainId: 43114,
