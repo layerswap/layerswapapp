@@ -118,6 +118,8 @@ export default class KnownInternalNames {
 
         public static readonly AvalancheMainnet: string = "AVAX_MAINNET";
 
+        public static readonly PGNMainnet: string = "PGN_MAINNET";
+
     }
 
     static Currencies = class {
