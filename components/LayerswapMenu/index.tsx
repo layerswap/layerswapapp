@@ -117,7 +117,7 @@ export default function () {
                                                         show();
                                                         updateWithProps();
                                                     }}
-                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
+                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                                 >
                                                     <ChatIcon className="h-6 w-6" strokeWidth={2} />
                                                     <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
@@ -131,7 +131,7 @@ export default function () {
                                                     <button
                                                         type="button"
                                                         onClick={() => openConnectModal()}
-                                                        className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
+                                                        className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                                     >
                                                         <WalletIcon className="h-6 w-6" strokeWidth={2} />
                                                         <p className="text-base font-semibold">Wallet</p>
@@ -139,7 +139,7 @@ export default function () {
                                                 )}
                                                 <Link
                                                     href="/transactions"
-                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
+                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                                 >
                                                     <ScrollText className="h-6 w-6" />
                                                     <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Transfers</p>
@@ -180,7 +180,7 @@ export default function () {
                                                     show();
                                                     updateWithProps();
                                                 }}
-                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
+                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                             >
                                                 <ChatIcon className="h-6 w-6" strokeWidth={2} />
                                                 <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
@@ -194,7 +194,7 @@ export default function () {
                                                 <button
                                                     type="button"
                                                     onClick={() => openConnectModal()}
-                                                    className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
+                                                    className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                                 >
                                                     <WalletIcon className="h-6 w-6" strokeWidth={2} />
                                                     <p className="text-base font-semibold">Wallet</p>
@@ -202,7 +202,7 @@ export default function () {
                                             )}
                                             <Link
                                                 href="/transactions"
-                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-16 w-14"}`}
+                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                             >
                                                 <ScrollText className="h-6 w-6" />
                                                 <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Transfers</p>
@@ -294,30 +294,6 @@ export default function () {
                                     <ChevronRight className="h-4 w-4 absolute right-3" />
                                 </Link>
                             </div>
-                            {/* <p className="text-primary-text font-medium mt-1.5">Social</p>
-                            <div className="relative py-1">
-                                {navigation.social.map((item) => (
-                                    <Link key={item.name} target="_blank" href={item.href} className={`${item.name != "Twitter" ? "border-t" : "rounded-t-md"} border-slate-800 menu-link flex relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white ${item.className}`}>
-                                        <div className="flex items-center">
-                                            <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><item.icon className="h-5 w-5" aria-hidden="true" /></div>
-                                            <p>{item.name}</p>
-                                        </div>
-                                        <ExternalLink className="h-4 w-4 absolute right-3" />
-                                    </Link>
-                                ))}
-                                {
-                                    !embedded &&
-                                    <Link
-                                        href="https://layerswap.ducalis.io/roadmap/summary"
-                                        target="_blank"
-                                        className="menu-link flex relative cursor-pointer select-none items-center rounded-b-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white border-t border-slate-800"
-                                    >
-                                        <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Map className="h-5 w-5" /></div>
-                                        <p>Roadmap</p>
-                                        <ExternalLink className="h-4 w-4 absolute right-3" />
-                                    </Link>
-                                }
-                            </div> */}
                             <p className="text-primary-text font-medium mt-1.5">Legal</p>
                             <div className="relative py-1">
                                 <Link
