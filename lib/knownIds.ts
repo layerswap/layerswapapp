@@ -120,6 +120,8 @@ export default class KnownInternalNames {
 
         public static readonly PGNMainnet: string = "PGN_MAINNET";
 
+        public static readonly MantleMainnet: string = "MANTLE_MAINNET";
+
     }
 
     static Currencies = class {
