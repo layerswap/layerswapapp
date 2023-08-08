@@ -292,7 +292,8 @@ function TransactionsHistory() {
                     </div>
                   </Modal>
                 </div>
-                : <div className="absolute top-1/4 right-0 text-center w-full">
+                :
+                <div className="absolute top-1/4 right-0 text-center w-full">
                   <Scroll className='h-40 w-40 text-secondary-700 mx-auto' />
                   <p className="my-2 text-xl">It's empty here</p>
                   <p className="px-14 text-primary-text">You can find all your transactions by searching with address in</p>
