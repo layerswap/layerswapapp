@@ -13,6 +13,9 @@ import { GetNetworkCurrency } from '../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../Common/AverageCompletionTime';
 import { TransactionType } from '../../../lib/layerSwapApiClient';
 
+
+
+
 const Processing: FC = () => {
 
     const { swap } = useSwapDataState()
@@ -38,75 +41,115 @@ const Processing: FC = () => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    const progress = [
-        {
-            name: swapStep === SwapStep.TransactionDone ? 'Detecting your transfer' : `Transfer from ${source_display_name} is completed`,
-            status: swapStep !== SwapStep.TransactionDone ? 'complete' : 'current',
+    const progressStatuses = getProgressStatuses(swapStep)
 
-            description: swapStep !== SwapStep.TransactionDone ?
-                <div className='flex items-center space-x-1'>
+    type ProgressStates = {
+        [key in Progress]: {
+            [key in ProgressStatus]: {
+                name: string;
+                description: string | JSX.Element;
+            }
+        }
+    }
+
+    const confirmationsDetails = <div>Confirmations: <span className='text-white'>{((swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations) ? swapInputTransaction?.max_confirmations : swapInputTransaction?.confirmations) ?? 0}</span>/{swapInputTransaction?.max_confirmations}</div>
+    const outputPendingDetails = <div className='flex items-center space-x-1'>
+        <span>Estimated arrival:</span>
+        <div className='text-white'>
+            {
+                destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
+                    <span>Up to 2 hours (delayed)</span>
+                    :
+                    <AverageCompletionTime time={destination_network?.average_completion_time} />
+            }
+        </div>
+    </div>
+
+    const progressStates: ProgressStates = {
+        "input_transfer": {
+            upcoming: {
+                name: 'Detecting your transfer',
+                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
+            },
+            current: {
+                name: 'Detecting your transfer',
+                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
+            },
+            complete: {
+                name: `Transfer from ${source_display_name} is completed`,
+                description: <div className='flex items-center space-x-1'>
                     <span>Source Tx: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={input_tx_explorer.replace("{0}", swapInputTransaction.transaction_id)}>{shortenAddress(swapInputTransaction.transaction_id)}</a>
+                        <a target={"_blank"} href={input_tx_explorer.replace("{0}", swapInputTransaction?.transaction_id)}>{shortenAddress(swapInputTransaction?.transaction_id)}</a>
                         <ExternalLink className='h-4' />
                     </div>
                 </div>
-                :
-                <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
+            },
         },
-        {
-            name: (swapStep === SwapStep.TransactionDone && 'Transfer confirmation')
-                || (swapStep === SwapStep.TransactionDetected && ' Waiting for the transfer to get confirmed')
-                || (swapStep === SwapStep.LSTransferPending || swapStep === SwapStep.Success && 'The transfer is confirmed'),
-            status: (swapStep === SwapStep.TransactionDetected && 'current')
-                || (swapStep === SwapStep.LSTransferPending || swapStep === SwapStep.Success && 'complete')
-                || (swapStep === SwapStep.TransactionDone && 'upcoming'),
-            description: (swapStep === SwapStep.TransactionDetected
-                || swapStep === SwapStep.LSTransferPending
-                || swapStep === SwapStep.Success) ? <div>Confirmations: <span className='text-white'>{((swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations) ? swapInputTransaction?.max_confirmations : swapInputTransaction?.confirmations) ?? 0}</span>/{swapInputTransaction?.max_confirmations}</div> : ""
+        "confirmations": {
+            upcoming: {
+                name: 'Transfer confirmation',
+                description: ""
+            },
+            current: {
+                name: 'Waiting for the transfer to get confirmed',
+                description: confirmationsDetails
+            },
+            complete: {
+                name: 'The transfer is confirmed',
+                description: confirmationsDetails
+            }
         },
-        {
-            name: swapStep === SwapStep.LSTransferPending
-                ? 'Your assets are on their way'
-                : swapStep === SwapStep.Success ? "Swap completed"
-                    : 'Transfer of assets to your address',
-            status: (swapStep === SwapStep.TransactionDone
-                || swapStep === SwapStep.TransactionDetected && 'current')
-                || (swapStep === SwapStep.Success && 'complete'),
-            description:
-                swapOutputTransaction ?
-                    <div className="flex flex-col">
-                        <div className='flex items-center space-x-1'>
-                            <span>Destination Tx: </span>
+        "output_transfer": {
+            upcoming: {
+                name: 'Transfer of assets to your address',
+                description: outputPendingDetails
+            },
+            current: {
+                name: 'Your assets are on their way',
+                description: outputPendingDetails,
+            },
+            complete: {
+                name: "Swap completed",
+                description: swapOutputTransaction ? <div className="flex flex-col">
+                    <div className='flex items-center space-x-1'>
+                        <span>Destination Tx: </span>
+                        <div className='underline hover:no-underline flex items-center space-x-1'>
+                            <a target={"_blank"} href={output_tx_explorer.replace("{0}", swapOutputTransaction.transaction_id)}>{shortenAddress(swapOutputTransaction.transaction_id)}</a>
+                            <ExternalLink className='h-4' />
+                        </div>
+                    </div>
+                    {swap?.has_refuel &&
+                        <div className='flex items-center'>
+                            <div className='flex items-center'>
+                                <p className='mr-1'>Refuel Tx:</p>
+                            </div>
                             <div className='underline hover:no-underline flex items-center space-x-1'>
-                                <a target={"_blank"} href={output_tx_explorer.replace("{0}", swapOutputTransaction.transaction_id)}>{shortenAddress(swapOutputTransaction.transaction_id)}</a>
+                                <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
                                 <ExternalLink className='h-4' />
                             </div>
                         </div>
-                        {swap?.has_refuel &&
-                            <div className='flex items-center'>
-                                <div className='flex items-center'>
-                                    <p className='mr-1'>Refuel Tx:</p>
-                                </div>
-                                <div className='underline hover:no-underline flex items-center space-x-1'>
-                                    <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
-                                    <ExternalLink className='h-4' />
-                                </div>
-                            </div>
-                        }
-                    </div>
-                    :
-                    <div className='flex items-center space-x-1'>
-                        <span>Estimated arrival:</span>
-                        <div className='text-white'>
-                            {
-                                destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
-                                    <span>Up to 2 hours (delayed)</span>
-                                    :
-                                    <AverageCompletionTime time={destination_network?.average_completion_time} />
-                            }
-                        </div>
-                    </div>
+                    }
+                </div> : outputPendingDetails,
+            }
+        }
+    }
+
+    const progress: StatusStep[] = [
+        {
+            name: progressStates["input_transfer"][progressStatuses.input_transfer].name,
+            status: progressStatuses.input_transfer,
+            description: progressStates["input_transfer"][progressStatuses.input_transfer].description
+        },
+        {
+            name: progressStates["confirmations"][progressStatuses.confirmations].name,
+            status: progressStatuses.confirmations,
+            description: progressStates["confirmations"][progressStatuses.confirmations].description
+        },
+        {
+            name: progressStates["output_transfer"][progressStatuses.output_transfer].name,
+            status: progressStatuses.output_transfer,
+            description: progressStates["output_transfer"][progressStatuses.output_transfer].description
         }
     ]
 
@@ -139,5 +182,55 @@ const Processing: FC = () => {
         </Widget.Content>
     )
 }
+
+
+enum Progress {
+    InputTransfer = 'input_transfer',
+    Confirmations = 'confirmations',
+    OutputTransfer = 'output_transfer'
+}
+enum ProgressStatus {
+    Upcoming = 'upcoming',
+    Current = 'current',
+    Complete = 'complete'
+}
+type StatusStep = {
+    name: string;
+    status: ProgressStatus;
+    description: string | JSX.Element;
+}
+
+
+const getProgressStatuses = (swapStep: SwapStep): { [key in Progress]: ProgressStatus } => {
+    if (swapStep <= SwapStep.TransactionDone) {
+        return {
+            "input_transfer": ProgressStatus.Current,
+            "confirmations": ProgressStatus.Upcoming,
+            "output_transfer": ProgressStatus.Upcoming,
+        }
+    }
+    else if (swapStep === SwapStep.TransactionDetected) {
+        return {
+            "input_transfer": ProgressStatus.Complete,
+            "confirmations": ProgressStatus.Current,
+            "output_transfer": ProgressStatus.Upcoming
+        }
+    }
+    else if (swapStep === SwapStep.LSTransferPending) {
+        return {
+            "input_transfer": ProgressStatus.Complete,
+            "confirmations": ProgressStatus.Complete,
+            "output_transfer": ProgressStatus.Current
+        }
+    }
+    else {
+        return {
+            "input_transfer": ProgressStatus.Complete,
+            "confirmations": ProgressStatus.Complete,
+            "output_transfer": ProgressStatus.Complete
+        }
+    }
+}
+
 
 export default Processing;
