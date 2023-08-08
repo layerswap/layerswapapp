@@ -14,9 +14,6 @@ export enum DepositType {
 }
 
 const destinationOrder = [
-    KnownInternalNames.Networks.MantleMainnet,
-    KnownInternalNames.Networks.PGNMainnet,
-    KnownInternalNames.Networks.BaseMainnet,
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
     KnownInternalNames.Networks.ZksyncMainnet,
@@ -30,6 +27,9 @@ const destinationOrder = [
     KnownInternalNames.Networks.ImmutableXMainnet,
     KnownInternalNames.Networks.LoopringMainnet,
     KnownInternalNames.Networks.BNBChainMainnet,
+    KnownInternalNames.Networks.MantleMainnet,
+    KnownInternalNames.Networks.PGNMainnet,
+    KnownInternalNames.Networks.BaseMainnet,
     KnownInternalNames.Networks.OsmosisMainnet,
     KnownInternalNames.Networks.ZkspaceMainnet,
     KnownInternalNames.Networks.RhinoFiMainnet,
