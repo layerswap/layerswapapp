@@ -18,10 +18,11 @@ import SubstackLogo from "./../icons/SubstackLogo";
 import TwitterLogo from "./../icons/TwitterLogo";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import Link from "next/link";
-import { MenuRainbowKitConnectWallet, RainbowKitConnectWallet } from "../HeaderWithMenu/ConnectedWallets";
+import { MenuRainbowKitConnectWallet } from "../HeaderWithMenu/ConnectedWallets";
 import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
 import IconButton from "../buttons/iconButton";
+import YoutubeLogo from "../icons/YoutubeLogo";
 
 ``
 
@@ -75,10 +76,22 @@ export default function () {
                 className: 'plausible-event-name=Discord'
             },
             {
+                name: 'YouTube',
+                href: 'https://www.youtube.com/@layerswaphq',
+                icon: (props) => YoutubeLogo(props),
+                className: 'plausible-event-name=Youtube'
+            },
+            {
                 name: 'Substack',
                 href: 'https://layerswap.substack.com/',
                 icon: (props) => SubstackLogo(props),
                 className: 'plausible-event-name=Substack'
+            },
+            {
+                name: 'Roadmap',
+                href: 'https://layerswap.ducalis.io/roadmap/summary',
+                icon: (props) => <Map {...props}></Map>,
+                className: 'plausible-event-name=Roadmap'
             },
         ]
     }
@@ -249,13 +262,12 @@ export default function () {
                             <p className="text-primary-text font-medium mt-1.5">New</p>
                             <div className="relative py-1">
                                 <Link
-                                    href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards"
-                                    target="_blank"
+                                    href="?to=base_mainnet"
                                     className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
                                 >
                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Bell className="h-5 w-5" strokeWidth={3} /></div>
-                                    <p>Transfer to Avalanche with $AVAX refuel</p>
-                                    <ExternalLink className="h-4 w-4 absolute right-3" />
+                                    <p>We're live on Base!</p>
+                                    <ChevronRight className="h-4 w-4 absolute right-3" />
                                 </Link>
                                 <Popover
                                     opener={
@@ -267,8 +279,9 @@ export default function () {
                                     }
                                     isNested={true}
                                     show={openFeedbackModal}
+                                    header="Suggest a Feature"
                                     setShow={setOpenFeedbackModal} >
-                                    <div className="p-0 md:p-5 md:max-w-md">
+                                    <div className="p-0 md:max-w-md">
                                         <SendFeedback onSend={handleCloseFeedback} />
                                     </div>
                                 </Popover>
@@ -323,16 +336,6 @@ export default function () {
                                         </div>
                                     </Link>
                                 ))}
-                                {
-                                    !embedded &&
-                                    <Link
-                                        href="https://layerswap.ducalis.io/roadmap/summary"
-                                        target="_blank"
-                                        className="menu-link flex relative cursor-pointer select-none items-center rounded-b-md py-1.5 outline-none text-primary-text hover:text-white"
-                                    >
-                                        <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Map className="h-5 w-5" /></div>
-                                    </Link>
-                                }
                             </div>
                         </div>
                     </Modal>
