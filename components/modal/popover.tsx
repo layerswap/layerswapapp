@@ -38,7 +38,7 @@ export default function Popover({
                     <Leaflet position="fixed" height="fit" title={header} setShow={setShow} show={show}>{children}</Leaflet>
                 )}
                 {isDesktop && (
-                    <PopoverPrimitive.Root>
+                    <PopoverPrimitive.Root key={"popover-primitive"}>
                         <PopoverPrimitive.Trigger className="inline-flex" asChild>
                             {opener}
                         </PopoverPrimitive.Trigger>
