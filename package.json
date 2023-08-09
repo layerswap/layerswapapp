@@ -54,7 +54,7 @@
     "tailwind-merge": "^1.11.0",
     "tailwindcss-animate": "^1.0.5",
     "uuid": "^9.0.0",
-    "wagmi": "^1.3.7"
+    "wagmi": "^1.3.9"
   },
   "engines": {
     "node": ">=16.0.0"
