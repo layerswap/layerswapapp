@@ -1,4 +1,4 @@
-import { arbitrum, arbitrumGoerli, bsc, bscTestnet, goerli, mainnet, okc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet, lineaTestnet, base, mantle, metis } from 'wagmi/chains';
+import { arbitrum, arbitrumGoerli, bsc, bscTestnet, goerli, mainnet, okc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet, lineaTestnet, base, mantle, evmos } from 'wagmi/chains';
 
 export const kcc = {
   id: 321,
@@ -125,4 +125,4 @@ export const linea = {
 
 
 export var supportedChains =
-  [mainnet, avalanche, arbitrum, arbitrumGoerli, arbitrumNova, bsc, bscTestnet, goerli, okc, kcc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet, linea, lineaTestnet, base, mantle, metis];
+  [mainnet, avalanche, arbitrum, arbitrumGoerli, arbitrumNova, bsc, bscTestnet, goerli, okc, kcc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet, linea, lineaTestnet, base, mantle, evmos];
