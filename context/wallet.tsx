@@ -1,13 +1,14 @@
 import React, { FC, useState, useEffect } from 'react'
 import { StarknetWindowObject } from 'get-starknet';
-import { UserExchangesData } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { UserExchangesData } from '../lib/layerSwapApiClient';
 import { erc20ABI, useAccount, useNetwork } from 'wagmi';
-import { createPublicClient, http, createWalletClient, getContract, parseUnits } from 'viem'
-import { multicall, fetchBalance, fetchFeeData, FetchFeeDataResult } from '@wagmi/core'
+import { createPublicClient, http, createWalletClient, getContract, parseUnits, } from 'viem'
+import { multicall, fetchBalance, fetchFeeData, FetchFeeDataResult, FetchBalanceResult } from '@wagmi/core'
 import { NetworkAddressType } from '../Models/CryptoNetwork';
-import { Layer } from '../Models/Layer';
+import { BaseL2Asset, Layer } from '../Models/Layer';
 import { supportedChains } from '../lib/chainConfigs';
 import { Currency } from '../Models/Currency';
+import useSWR from 'swr'
 
 const WalletStateContext = React.createContext(null);
 const WalletStateUpdateContext = React.createContext(null);
@@ -28,6 +29,7 @@ type UpdateInterface<T> = {
 export type Balance = {
     network: string,
     amount: any,
+    decimals: number,
     token: string,
     request_time: string,
     gas: number
@@ -41,143 +43,73 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
     const { address } = useAccount()
     const balances = allBalances[address]
 
-    const publicClient = createPublicClient({
-        chain: supportedChains?.find(ch => ch.id === (from?.isExchange === false && Number(from?.chain_id))) ?? supportedChains[0],
-        transport: http()
-    })
 
-    const walletClient = createWalletClient({
-        chain: supportedChains?.find(ch => ch.id === (from?.isExchange === false && Number(from?.chain_id))) ?? supportedChains[0],
-        transport: http()
-    })
-
-    const contract = getContract({
-        address: from?.assets?.filter(a => a?.contract_address).find(a => a?.asset === currency?.asset)?.contract_address as `0x${string}`,
-        abi: erc20ABI,
-        walletClient,
-        publicClient
-    })
-
-    const formatAmount = (unformattedAmount: bigint | unknown, asset: string) => {
-        const currency = from.assets.find(c => c.asset === asset)
-        return (Number(BigInt(unformattedAmount?.toString() || 0)) / Math.pow(10, currency?.decimals))
-    }
-
-    const prepareToFetchERC20 = from?.assets?.filter(a => a.contract_address && a.status !== 'inactive').map(a => ({
-        address: a?.contract_address as `0x${string}`,
-        abi: erc20ABI,
-        functionName: 'balanceOf',
-        args: [address],
-    }))
+    const contract_address = from?.assets?.filter(a => a?.contract_address).find(a => a?.asset === currency?.asset)?.contract_address as `0x${string}`
 
     const isBalanceOutDated = new Date().getTime() - (new Date(allBalances[address]?.find(b => b?.network === from?.internal_name)?.request_time).getTime() || 0) > 60000
 
     useEffect(() => {
         if (from && isBalanceOutDated && address && from?.isExchange === false && from?.address_type === NetworkAddressType.evm && !isNaN(Number(from?.chain_id))) {
-
             (async () => {
-                let contractRes: ({
-                    error: Error;
-                    result?: undefined;
-                    status: "failure";
-                } | {
-                    error?: undefined;
-                    result: unknown;
-                    status: "success";
-                })[];
-                let nativeTokenRes: {
-                    decimals: number
-                    formatted: string
-                    symbol: string
-                    value: bigint
-                };
-                let estimatedNativeGasLimit: bigint
-                let estimatedERC20GasLimit: bigint
-                let feeData: FetchFeeDataResult
-
                 setIsBalanceLoading(true)
-                try {
-                    feeData = await fetchFeeData({
-                        chainId: from?.isExchange === false && Number(from?.chain_id),
-                    })
-                } catch (e) { console.log(e) }
-                try {
-                    contractRes = await multicall({
-                        chainId: Number(from?.chain_id),
-                        contracts: prepareToFetchERC20
-                    })
-                    if (contract.address) {
-                        estimatedERC20GasLimit = await contract?.estimateGas?.transfer(
-                            [address, BigInt(0)],
-                            { account: address }
-                        )
-                    }
-                } catch (e) { console.log(e) }
 
-                try {
-                    nativeTokenRes = await fetchBalance({
-                        address: address,
-                        chainId: Number(from?.chain_id)
-                    })
-                    estimatedNativeGasLimit = await publicClient.estimateGas({
-                        account: address,
-                        to: address,
-                    })
-                } catch (e) { console.log(e) }
-                finally { setIsBalanceLoading(false) }
+                const erc20BalancesContractRes = await getErc20Balances(
+                    address,
+                    Number(from?.chain_id),
+                    from.assets
+                );
 
-                const contractBalances = contractRes?.map((d, index) => {
-                    const token = from?.assets?.filter(a => a.contract_address && a.status !== 'inactive')[index].asset
-                    return {
-                        network: from.internal_name,
-                        token: token,
-                        amount: formatAmount(d.result, token),
-                        request_time: new Date().toJSON(),
-                        gas: (contract.address && token === currency.asset) ? formatAmount(feeData.maxFeePerGas ? (feeData?.maxFeePerGas * estimatedERC20GasLimit) : (estimatedERC20GasLimit * feeData?.gasPrice), from.native_currency) : 0
-                    }
-                })
-                const nativeBalance = {
-                    network: from.internal_name,
-                    token: from.native_currency,
-                    amount: formatAmount(nativeTokenRes?.value, from.native_currency),
-                    request_time: new Date().toJSON(),
-                    gas: formatAmount(feeData?.maxFeePerGas ? (feeData?.maxFeePerGas * estimatedNativeGasLimit) : (estimatedNativeGasLimit * feeData?.gasPrice), from.native_currency)
-                }
+                const erc20Balances = await resolveERC20Balances(
+                    erc20BalancesContractRes,
+                    from
+                );
 
-                const filteredBalances = allBalances[address]?.some(b => b?.network === from?.internal_name) ? allBalances[address]?.filter(b => b?.network !== from.internal_name) : allBalances[address] || []
-                setAllBalances({ ...allBalances, [address]: filteredBalances?.concat(contractBalances, nativeBalance) })
+                const nativeBalanceContractRes = await getNativeBalance(address, Number(from.chain_id), from.assets)
+                const nativeBalance = await resolveNativeBalance(from, nativeBalanceContractRes)
+                const balances = [...(erc20Balances || []), nativeBalance]
+                setAllBalances((data) => ({ ...data, [address]: balances }))
+                setIsBalanceLoading(false)
+
             })()
         }
-    }, [from, address, currency])
+    }, [from, address])
+
+    const gasToChange = allBalances[address]
+        ?.find((b) => {
+            return from?.isExchange === false
+                && b?.network === from?.internal_name
+                && b?.token === currency?.asset
+                && b?.gas === null
+                && from?.native_currency !== b?.token
+        })
+    const chainId = from?.isExchange === false && Number(from?.chain_id)
 
     useEffect(() => {
-        const gasToChange = allBalances[address]?.find(b => from?.isExchange === false && b?.network === from?.internal_name && b?.token === currency?.asset && b?.gas === 0 && from?.native_currency !== b?.token)
-        if (from?.isExchange === false && gasToChange) {
-            const GasFetch = async () => {
-
-                let estimatedERC20GasLimit: bigint
-                let feeData: FetchFeeDataResult
+        if (gasToChange && chainId) {
+            (async () => {
 
                 setIsBalanceLoading(true)
-                try {
-                    feeData = await fetchFeeData({
-                        chainId: Number(from?.chain_id),
+                const feeData = await resolveFeeData(Number(from.chain_id))
+                const estimatedGas = await estimateGas(chainId, contract_address, address)
+                
+                if (estimatedGas) {
+                    setAllBalances(data => {
+                        const item = data[address]?.find(b =>
+                            b?.network === gasToChange?.network
+                            && b?.token === gasToChange?.token)
+
+                        const gasBigint = feeData.maxFeePerGas
+                            ? (feeData?.maxFeePerGas * estimatedGas)
+                            : (estimatedGas * feeData?.gasPrice)
+                        item.gas = formatAmount(gasBigint, item.decimals)
+                        return { ...data }
                     })
-                } catch (e) { console.log(e) }
-                try {
-                    if (contract.address) {
-                        estimatedERC20GasLimit = await contract?.estimateGas?.transfer(
-                            [address, BigInt(0)],
-                            { account: address }
-                        )
-                    }
-                } catch (e) { console.log(e) }
-                finally { setIsBalanceLoading(false) }
-                setAllBalances({ ...allBalances, [address]: allBalances[address].filter(b => b !== gasToChange).concat({ ...gasToChange, gas: formatAmount(feeData.maxFeePerGas ? (feeData?.maxFeePerGas * estimatedERC20GasLimit) : (estimatedERC20GasLimit * feeData?.gasPrice), from.native_currency) }) })
-            }
-            GasFetch()
+                }
+                setIsBalanceLoading(false)
+                
+            })()
         }
-    }, [currency])
+    }, [gasToChange, chainId, contract_address])
 
     return (
         <WalletStateContext.Provider value={{
@@ -197,7 +129,6 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
     );
 }
 
-
 export function useWalletState<T>() {
     const data = React.useContext<WizardProvider<T>>((WalletStateContext as unknown) as React.Context<WizardProvider<T>>);
     if (data === undefined) {
@@ -215,4 +146,142 @@ export function useWalletUpdate<T>() {
     }
 
     return updateFns;
+}
+
+type ERC20ContractRes = ({
+    error: Error;
+    result?: undefined;
+    status: "failure";
+} | {
+    error?: undefined;
+    result: unknown;
+    status: "success";
+})
+
+const resolveFeeData = async (chainId: number) => {
+    try {
+        const feeData = await fetchFeeData({
+            chainId,
+        })
+        return feeData
+    } catch (e) {
+        //TODO: log the error to our logging service
+        console.log(e)
+        return null;
+    }
+}
+
+const resolveERC20Balances = async (
+    multicallRes: ERC20ContractRes[],
+    from: Layer & { isExchange: false },
+) => {
+    const contractBalances = multicallRes?.map((d, index) => {
+        const currency = from?.assets?.filter(a => a.contract_address && a.status !== 'inactive')[index]
+        return {
+            network: from.internal_name,
+            token: currency.asset,
+            amount: formatAmount(d.result, currency?.decimals),
+            request_time: new Date().toJSON(),
+            decimals: currency.decimals,
+            gas: null
+        }
+    })
+    return contractBalances
+}
+
+const getErc20Balances = async (address: string, chainId: number, assets: BaseL2Asset[]): Promise<ERC20ContractRes[] | null> => {
+
+    const contracts = assets?.filter(a => a.contract_address && a.status !== 'inactive').map(a => ({
+        address: a?.contract_address as `0x${string}`,
+        abi: erc20ABI,
+        functionName: 'balanceOf',
+        args: [address],
+    }))
+
+    try {
+        const contractRes = await multicall({
+            chainId: chainId,
+            contracts: contracts
+        })
+        return contractRes
+    }
+    catch (e) {
+        //TODO: log the error to our logging service
+        console.log(e);
+        return null;
+    }
+
+}
+
+const getNativeBalance = async (address: `0x${string}`, chainId: number, assets: BaseL2Asset[]): Promise<FetchBalanceResult | null> => {
+
+    try {
+        const nativeTokenRes = await fetchBalance({
+            address,
+            chainId
+        })
+        return nativeTokenRes
+    } catch (e) {
+        //TODO: log the error to our logging service
+        console.log(e)
+        return null
+    }
+
+}
+
+const resolveNativeBalance = async (
+    from: Layer & { isExchange: false },
+    nativeTokenRes: FetchBalanceResult
+) => {
+    const native_currency = from.assets.find(a => a.asset === from.native_currency)
+    const nativeBalance = {
+        network: from.internal_name,
+        token: from.native_currency,
+        amount: formatAmount(nativeTokenRes?.value, native_currency?.decimals),
+        request_time: new Date().toJSON(),
+        decimals: native_currency.decimals,
+        gas: null
+    }
+
+    return nativeBalance
+}
+
+const estimateGas = async (chainId: number, contract_address: `0x${string}`, address: `0x${string}`) => {
+    const chain = supportedChains?.find(ch => ch.id === chainId) ?? supportedChains[0];
+    const publicClient = createPublicClient({
+        chain: chain,
+        transport: http()
+    })
+
+    const walletClient = createWalletClient({
+        chain: chain,
+        transport: http()
+    })
+
+    const contract = getContract({
+        address: contract_address,
+        abi: erc20ABI,
+        walletClient,
+        publicClient
+    })
+
+    try {
+        if (!contract.address)
+            return null
+
+        const estimatedERC20GasLimit = await contract?.estimateGas?.transfer(
+            [address, BigInt(0)],
+            { account: address }
+        )
+        return estimatedERC20GasLimit
+    } catch (e) {
+        //TODO: log the error to our logging service
+        console.log(e)
+        return null
+    }
+
+}
+
+const formatAmount = (unformattedAmount: bigint | unknown, decimals: number) => {
+    return (Number(BigInt(unformattedAmount?.toString() || 0)) / Math.pow(10, decimals))
 }
