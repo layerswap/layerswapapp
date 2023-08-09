@@ -1,11 +1,8 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useEffect, useRef } from 'react'
 import { motion, useAnimation } from "framer-motion";
 import { forwardRef } from 'react';
-import inIframe from '../utils/inIframe';
 import IconButton from '../buttons/iconButton';
 import { X } from 'lucide-react';
-import { UserType, useAuthState } from '../../context/authContext';
-import { shortenEmail } from '../utils/ShortenAddress';
 
 export type LeafletHeight = 'fit' | 'full' | '80%';
 
@@ -22,16 +19,10 @@ export interface LeafletProps {
     position: LeafletPosition;
 }
 
-export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(({ show, setShow, children, title, className, height, description, position }, topmostRef) => {
+export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(({ show, setShow, children, title, className, height, description, position}, topmostRef) => {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 33 };
-    const { userType, email } = useAuthState();
-    const UserEmail = ({ email }: { email: string }) => {
-        return (
-            email.length >= 22 ? <>{shortenEmail(email)}</> : <>{email}</>
-        )
-    }
 
     async function handleDragEnd(_, info) {
         const offset = info.offset.y;
@@ -85,17 +76,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
                     <div className='px-4 flex justify-between items-center'>
                         <div className="text-lg text-white font-semibold">
-                            {userType != UserType.AuthenticatedUser && title == "Menu"
-                                ?
-                                <h2 className="font-normal leading-none tracking-tight text-gray-900 md:text-2xl dark:text-white">Menu</h2>
-                                :
-                                userType == UserType.AuthenticatedUser && title == "Menu"
-                                    ? <span className="font-normal text-primary-text">
-                                        <UserEmail email={email} />
-                                    </span>
-                                    :
-                                    <div>{title}</div>
-                            }
+                            <div>{title}</div>
                         </div>
                         <IconButton onClick={handleCloseModal} icon={
                             <X strokeWidth={3} />

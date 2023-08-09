@@ -2,7 +2,6 @@ import { BookOpen, ExternalLink, Link as LinkIcon, Gift, MenuIcon, ChevronRight,
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
-import { useMenuState } from "../../context/menu";
 import TokenService from "../../lib/TokenService";
 import shortenAddress from "../utils/ShortenAddress";
 import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
@@ -23,21 +22,25 @@ import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
 import IconButton from "../buttons/iconButton";
 import YoutubeLogo from "../icons/YoutubeLogo";
-
+import { shortenEmail } from '../utils/ShortenAddress';
 ``
 
 export default function () {
     const { email, userType, userId } = useAuthState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
-    const { menuVisible } = useMenuState();
     const { isConnected } = useAccount();
     const { boot, show, update } = useIntercom()
     const [embedded, setEmbedded] = useState<boolean>()
     const [openTopModal, setOpenTopModal] = useState(false);
-    const { isMobile, isDesktop } = useWindowDimensions()
+    const { isMobile } = useWindowDimensions()
     const { openConnectModal } = useConnectModal();
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
+    const UserEmail = ({ email }: { email: string }) => {
+        return (
+            email.length >= 22 ? <>{shortenEmail(email)}</> : <>{email}</>
+        )
+    }
 
     useEffect(() => {
         setEmbedded(inIframe())
@@ -101,6 +104,14 @@ export default function () {
         setOpenFeedbackModal(false)
     }
 
+    const title = userType != UserType.AuthenticatedUser
+        ?
+        <h2 className="font-normal leading-none tracking-tight text-gray-900 md:text-2xl dark:text-white">Menu</h2>
+        :
+        <span className="font-normal text-primary-text">
+                <UserEmail email={email} />
+            </span>
+
     return <>
         <span className="text-primary-text cursor-pointer relative">
             {
@@ -114,7 +125,7 @@ export default function () {
                         </IconButton>
 
                     </div>
-                    <Modal show={openTopModal} setShow={setOpenTopModal} header="Menu" isMenu={true}>
+                    <Modal show={openTopModal} setShow={setOpenTopModal} header={title}>
                         <div className="text-sm font-medium text-left origin-top-right mt-2 focus:outline-none flex flex-col h-full">
                             <div className="relative z-30 py-1">
                                 {

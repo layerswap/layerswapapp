@@ -14,12 +14,10 @@ export interface ModalProps {
     height?: LeafletHeight;
     show: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
-    isMenu?: boolean;
 }
 
-const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, isMenu }) => {
+const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
-console.log(isMenu,"height={height ?? 'full'}")
     const mobileModalRef = useRef(null)
 
     useEffect(() => {
@@ -36,20 +34,14 @@ console.log(isMenu,"height={height ?? 'full'}")
                     <>
                         {isDesktop &&
                             <ReactPortal wrapperId={"widget_root"}>
-                                <Leaflet position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className} >
+                                <Leaflet position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
                                     {children}
                                 </Leaflet>
                             </ReactPortal>
                         }
                         {
-                            isMobile && !isMenu &&
-                            <Leaflet position="fixed" height={'80%'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
-                                {children}
-                            </Leaflet>
-                        }
-                        {
-                            isMobile && isMenu &&
-                            <Leaflet position="fixed" height={"full"} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
+                            isMobile &&
+                            <Leaflet position="fixed" height={height == 'full' ? '80%' : 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
                                 {children}
                             </Leaflet>
                         }
