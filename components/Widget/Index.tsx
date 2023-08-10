@@ -35,7 +35,7 @@ const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[]
          <div className="relative px-6">
             <div className="flex items-start" ref={wrapper}>
                <div className={`flex flex-nowrap grow`}>
-                  <div className={`w-full pb-6 flex flex-col justify-between h-full space-y-5 text-primary-text ${className}`}>
+                  <div className={`w-full pb-6 flex flex-col justify-between space-y-5 text-primary-text h-full ${className}`}>
                      {children}
                   </div>
                </div>
