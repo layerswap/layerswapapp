@@ -127,11 +127,11 @@ function TransactionsHistory() {
   }
 
   const handleToggleChange = (value: boolean) => {
-    setShowAllSwaps(value)
+    setShowAllSwaps(value);
   }
 
   return (
-    <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[550px]'>
+    <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[620px]'>
       <HeaderWithMenu goBack={handleGoBack} />
       {
         page == 0 && loading ?
