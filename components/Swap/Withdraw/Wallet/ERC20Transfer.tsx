@@ -502,7 +502,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
             <p className="text-md font-semibold self-center text-white">
                 {header}
             </p>
-            <p className="text-sm text-primary-text">
+            <p className="text-sm text-primary-text break-all">
                 {details}
             </p>
         </div>

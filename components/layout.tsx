@@ -74,19 +74,19 @@ export default function Layout({ hideNavbar, children }: Props) {
       <meta name="description" content="Move crypto across exchanges, blockchains, and wallets." />
 
       {/* Facebook Meta Tags */}
-      <meta property="og:url" content="https://www.layerswap.io/" />
+      <meta property="og:url" content={`https://www.layerswap.io/${basePath}`} />
       <meta property="og:type" content="website" />
       <meta property="og:title" content="Layerswap" />
       <meta property="og:description" content="Move crypto across exchanges, blockchains, and wallets." />
-      <meta property="og:image" content={`${basePath}/opengraph.jpg?v=2`} />
+      <meta property="og:image" content={`https://layerswap.io/${basePath}/opengraph.jpg?v=2`} />
 
       {/* Twitter Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta property="twitter:domain" content="layerswap.io" />
-      <meta property="twitter:url" content="https://www.layerswap.io/" />
+      <meta property="twitter:url" content={`https://www.layerswap.io/${basePath}`} />
       <meta name="twitter:title" content="Layerswap" />
       <meta name="twitter:description" content="Move crypto across exchanges, blockchains, and wallets." />
-      <meta name="twitter:image" content={`${basePath}/opengraphtw.jpg`} />
+      <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
     </Head>
     {
       storageAvailable === true &&
