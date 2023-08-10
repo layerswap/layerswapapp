@@ -50,7 +50,7 @@ export default function Steps({ steps }) {
                                     ) : null}
                                     <div className="group relative flex items-start">
                                         <span className="flex h-9 items-center" aria-hidden="true">
-                                            <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary">
+                                            <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 opacity-60">
                                                 <span className="h-2.5 w-2.5 rounded-full bg-transparent " />
                                             </span>
                                         </span>
