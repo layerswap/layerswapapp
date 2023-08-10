@@ -28,7 +28,7 @@ export default function Steps({ steps }) {
                             ) : step?.status === 'current' ? (
                                 <>
                                     {stepIdx !== steps.length - 1 ? (
-                                        <div className="absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 bg-gray-700" aria-hidden="true" />
+                                        <div className="absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 bg-gray-300 opacity-60" aria-hidden="true" />
                                     ) : null}
                                     <div className="group relative flex items-start" aria-current="step">
                                         <span className="flex h-9 items-center" aria-hidden="true">
@@ -46,7 +46,7 @@ export default function Steps({ steps }) {
                             ) : (
                                 <>
                                     {stepIdx !== steps.length - 1 ? (
-                                        <div className="absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 bg-gray-700" aria-hidden="true" />
+                                        <div className="absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 bg-gray-300 opacity-60" aria-hidden="true" />
                                     ) : null}
                                     <div className="group relative flex items-start">
                                         <span className="flex h-9 items-center" aria-hidden="true">
