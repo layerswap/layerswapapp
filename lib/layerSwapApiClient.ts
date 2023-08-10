@@ -31,12 +31,14 @@ export default class LayerSwapApiClient {
     }
 
     async GetSwapsAsync(page: number, status?: SwapStatusInNumbers): Promise<ApiResponse<SwapItem[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}`);
+        const version = process.env.NEXT_PUBLIC_API_VERSION
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}&version=${version}`);
     }
 
 
     async GetPendingSwapsAsync(): Promise<ApiResponse<SwapItem[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=0`);
+        const version = process.env.NEXT_PUBLIC_API_VERSION
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=0&version=${version}`);
     }
 
     async CancelSwapAsync(swapid: string): Promise<ApiResponse<void>> {
@@ -108,7 +110,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetFee(params: GetFeeParams): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", '/swaps/amount_settings', params);
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", '/swaps/quote', params);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
@@ -119,11 +121,6 @@ export default class LayerSwapApiClient {
             })
             .catch(async reason => {
                 if (reason instanceof AuthRefreshFailedError) {
-                    this._router && (await this._router.push({
-                        pathname: '/auth',
-                        query: { redirect: this._redirect }
-                    }));
-
                     return Promise.resolve(new EmptyApiResponse());
                 }
                 else {
@@ -167,7 +164,8 @@ export type CreateSwapParams = {
     amount: string,
     source: string,
     destination: string,
-    asset: string,
+    source_asset: string,
+    destination_asset: string
     source_address: string,
     destination_address: string,
     app_name?: string,
@@ -193,9 +191,7 @@ export type SwapItem = {
     destination_network_asset: string,
     destination_network: string,
     destination_exchange: string,
-    input_transaction?: Transaction,
-    output_transaction?: Transaction,
-    refuel_transaction?: RefuelTransaction;
+    transactions: Transaction[]
     has_refuel?: boolean,
     has_sucessfull_published_tx: boolean;
     metadata?: {
@@ -213,26 +209,24 @@ export type AddressBookItem = {
 }
 
 type Transaction = {
-    amount: number,
-    confirmations: number,
+    type: TransactionType,
+    from: string,
+    to: string,
     created_date: string,
-    max_confirmations: number,
+    amount: number,
     transaction_id: string,
+    confirmations: number,
+    max_confirmations: number,
+    explorer_url: string,
+    account_explorer_url: string,
     usd_value: number
     usd_price: number
 }
 
-type RefuelTransaction = {
-    from: string,
-    to: string,
-    created_date: string,
-    transaction_id: string,
-    explorer_url: string,
-    confirmations: number,
-    max_confirmations: number,
-    amount: number,
-    usd_price: number,
-    usd_value: number
+export enum TransactionType {
+    Input = 'input',
+    Output = 'output',
+    Refuel = 'refuel'
 }
 
 export type Fee = {

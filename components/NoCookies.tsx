@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import MessageComponent from "./MessageComponent";
 import Navbar from "./navbar";
 import inIframe from "./utils/inIframe";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 function NoCookies(props) {
     const [embedded, setEmbedded] = useState<boolean>()
@@ -19,31 +21,34 @@ function NoCookies(props) {
                         <MessageComponent>
                             <MessageComponent.Content icon="red">
                                 <MessageComponent.Header>
-                                    🍪 No cookies
+                                    Sorry
                                 </MessageComponent.Header>
                                 <MessageComponent.Description>
-                                    <p>
-                                        Sorry, but it seems you have disabled cookies.
-                                    </p>
+                                    <div className="text-primary-text space-y-5 text-left">
+                                        <div className="space-y-2">
+                                            <p className="text-white">
+                                                It seems like you’ve either:
+                                            </p>
+                                            <ul className="text-primary-text list-disc ml-4 mt-0 ">
+                                                <li>Disabled cookies</li>
+                                                <li>Or using Layerswap in a partner’s page in Incognito mode</li>
+                                            </ul>
+                                        </div>
+                                        <p className="text-primary-text">Unforunately, we can’t run in those conditions 🙁</p>
+                                    </div>
                                     {
-                                        embedded === true &&
-                                        <a href="https://layerswap.io/" className="bg-primary text-primary-buttonTextColor py-3 px-3 border border-primary disabled:border-primary-900 shadowed-button items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 ease-in-out">
+                                        embedded &&
+                                        <Link target="_blank" href={window?.location?.href} className="bg-primary text-primary-buttonTextColor py-3 px-3 border border-primary disabled:border-primary-900 shadowed-button items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 ease-in-out">
                                             Try on Layerswap
-                                        </a>
-                                    }
-                                    {
-                                        embedded === false &&
-                                        <p>
-                                            Please enable cookies in your browser and try again.
-                                        </p>
+                                        </Link>
                                     }
                                 </MessageComponent.Description>
                             </MessageComponent.Content>
                         </MessageComponent>
                     </div>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }
 

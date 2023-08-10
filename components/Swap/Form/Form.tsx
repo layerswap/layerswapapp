@@ -141,13 +141,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     //If destination changed to exchange, remove destination_address
     useEffect(() => {
-        if ((destination?.isExchange != previouslySelectedDestination.current?.isExchange
+        if ((previouslySelectedDestination.current && destination?.isExchange != previouslySelectedDestination.current?.isExchange
             || (destination?.isExchange && previouslySelectedDestination.current?.isExchange && destination?.internal_name != previouslySelectedDestination.current?.internal_name)
             || destination && !isValidAddress(values.destination_address, destination)) && !lockAddress) {
             setFieldValue("destination_address", '')
             setDepositeAddressIsfromAccount(false)
         }
-
         previouslySelectedDestination.current = destination
     }, [destination])
 
@@ -160,8 +159,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const valuesSwapper = useCallback(() => {
         setValues({ ...values, from: values.to, to: values.from }, true)
     }, [values])
-
-
 
     const [animate, cycle] = useCycle(
         { rotate: 0 },

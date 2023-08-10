@@ -10,7 +10,7 @@ import {
     useWaitForTransaction,
     useNetwork,
 } from "wagmi";
-import { parseEther, parseUnits } from 'viem'
+import { parseEther, parseUnits, BaseError, InsufficientFundsError, EstimateGasExecutionError, UserRejectedRequestError } from 'viem'
 import { erc20ABI } from 'wagmi'
 import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
@@ -20,6 +20,7 @@ import { toast } from "react-hot-toast";
 import WalletIcon from "../../../icons/WalletIcon";
 import { encodeFunctionData, getContract } from 'viem'
 import { createPublicClient, http, createWalletClient } from 'viem'
+import usdtAbi from "../../../../lib/abis/usdt.json"
 
 type Props = {
     sequenceNumber: number,
@@ -32,6 +33,7 @@ type Props = {
     tokenDecimals: number,
     networkDisplayName: string,
     swapId: string;
+    asset: string;
 }
 
 const TransferFromWallet: FC<Props> = ({ networkDisplayName,
@@ -44,6 +46,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     tokenDecimals,
     sequenceNumber,
     swapId,
+    asset
 }) => {
 
     const { isConnected } = useAccount();
@@ -87,6 +90,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     }
     else if (tokenContractAddress) {
         return <TransferErc20Button
+            asset={asset}
             swapId={swapId}
             sequenceNumber={sequence_number_even}
             amount={amount}
@@ -256,8 +260,8 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
 type TransferERC20ButtonProps = BaseTransferButtonProps & {
     tokenContractAddress: `0x${string}`,
     tokenDecimals: number,
+    asset: string,
 }
-
 const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     generatedDepositAddress,
     managedDepositAddress,
@@ -267,7 +271,8 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     tokenDecimals,
     savedTransactionHash,
     swapId,
-    sequenceNumber
+    sequenceNumber,
+    asset
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
@@ -280,7 +285,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     const contractWritePrepare = usePrepareContractWrite({
         enabled: !!depositAddress,
         address: tokenContractAddress,
-        abi: erc20ABI,
+        abi: asset?.toUpperCase() == 'USDT' ? usdtAbi : erc20ABI,
         functionName: 'transfer',
         gas: estimatedGas,
         args: [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
@@ -402,12 +407,8 @@ type TransactionMessageProps = {
 const TransactionMessage: FC<TransactionMessageProps> = ({
     prepare, wait, transaction, applyingTransaction
 }) => {
-    const prepareErrorCode = prepare?.error?.['code'] || prepare?.error?.["name"]
-    const prepareInnerErrocCode = prepare?.error?.['data']?.['code'] || prepare?.error?.["cause"]?.["cause"]?.["cause"]?.["code"]
-    const prepareResolvedError = resolveError(prepareErrorCode, prepareInnerErrocCode)
-
-    const transactionResolvedError = resolveError(transaction?.error?.['code'] || transaction?.error?.name, transaction?.error?.['data']?.['code'] || transaction?.error?.['cause']?.['code'])
-
+    const prepareResolvedError = resolveError(prepare?.error as BaseError)
+    const transactionResolvedError = resolveError(transaction?.error as BaseError)
     const hasEror = prepare?.isError || transaction?.isError || wait?.isError
 
     if (wait?.isLoading || applyingTransaction) {
@@ -594,7 +595,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
             <p className="text-md font-semibold self-center text-white">
                 {header}
             </p>
-            <p className="text-sm text-primary-text">
+            <p className="text-sm text-primary-text break-all">
                 {details}
             </p>
         </div>
@@ -603,14 +604,32 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
 
 type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
-const resolveError = (errorCode: string | number, innererrorCode?: string | number): ResolvedError => {
-    if (errorCode === 'INSUFFICIENT_FUNDS'
-        || errorCode === 'UNPREDICTABLE_GAS_LIMIT'
-        || (errorCode === -32603 && innererrorCode === 3)
-        || innererrorCode === -32000
-        || errorCode === 'EstimateGasExecutionError')
+const resolveError = (error: BaseError): ResolvedError => {
+
+    const isInsufficientFundsError = typeof error?.walk === "function" && error?.walk((e: BaseError) => (e instanceof InsufficientFundsError)
+        || (e instanceof EstimateGasExecutionError) || e?.['data']?.args?.some((a: string) => a?.includes("amount exceeds")))
+
+    if (isInsufficientFundsError)
         return "insufficient_funds"
-    else if (errorCode === 4001 || errorCode === "TransactionExecutionError") {
+
+    const isUserRejectedRequestError = typeof error?.walk === "function" && error?.walk && error?.walk((e: BaseError) => e instanceof UserRejectedRequestError) instanceof UserRejectedRequestError
+
+    if (isUserRejectedRequestError)
+        return "transaction_rejected"
+
+    const code_name = error?.['code']
+        || error?.["name"]
+    const inner_code = error?.['data']?.['code']
+        || error?.['cause']?.['code']
+        || error?.["cause"]?.["cause"]?.["cause"]?.["code"]
+
+    if (code_name === 'INSUFFICIENT_FUNDS'
+        || code_name === 'UNPREDICTABLE_GAS_LIMIT'
+        || (code_name === -32603 && inner_code === 3)
+        || inner_code === -32000
+        || code_name === 'EstimateGasExecutionError')
+        return "insufficient_funds"
+    else if (code_name === 4001) {
         return "transaction_rejected"
     }
 }

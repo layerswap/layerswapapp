@@ -31,13 +31,13 @@ export default class KnownInternalNames {
         public static readonly BinanceUS: string = "BINANCEUS";
 
         public static readonly Blocktane: string = "BLOCKTANE";
-        
+
         public static readonly MexcGlobal: string = "MEXC";
     }
 
     static Networks = class {
         public static readonly CronosMainnet: string = "CRONOS_MAINNET";
-            
+
         public static readonly OsmosisMainnet: string = "OSMOSIS_MAINNET";
 
         public static readonly ArbitrumMainnet: string = "ARBITRUM_MAINNET";
@@ -59,7 +59,7 @@ export default class KnownInternalNames {
         public static readonly BobaRinkeby: string = "BOBA_RINKEBY";
 
         public static readonly ZksyncMainnet: string = "ZKSYNC_MAINNET";
-        
+
         public static readonly ZksyncEraMainnet: string = "ZKSYNCERA_MAINNET";
 
         public static readonly ZkspaceMainnet: string = "ZKSPACE_MAINNET";
@@ -105,15 +105,26 @@ export default class KnownInternalNames {
         public static readonly SolanaTestnet: string = "SOLANA_TESTNET";
 
         public static readonly SorareStage: string = "SORARE_MAINNET";
-        
+
         public static readonly KCCMainnet: string = "KCC_MAINNET";
 
         public static readonly OKCMainnet: string = "OKC_MAINNET";
 
-        public static readonly PolygonZkMainnet :string = "POLYGONZK_MAINNET";
+        public static readonly PolygonZkMainnet: string = "POLYGONZK_MAINNET";
+
+        public static readonly LineaMainnet: string = "LINEA_MAINNET";
+
+        public static readonly BaseMainnet: string = "BASE_MAINNET";
+
+        public static readonly AvalancheMainnet: string = "AVAX_MAINNET";
+
+        public static readonly PGNMainnet: string = "PGN_MAINNET";
+
+        public static readonly MantleMainnet: string = "MANTLE_MAINNET";
+
     }
 
-    static Currencies = class{
+    static Currencies = class {
         public static readonly USDT: string = "USDT";
         public static readonly ETH: string = "ETH";
         public static readonly USDC: string = "USDC";

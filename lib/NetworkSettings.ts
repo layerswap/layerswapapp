@@ -16,33 +16,43 @@ export enum DepositType {
 const destinationOrder = [
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
-    KnownInternalNames.Networks.ArbitrumNova,
     KnownInternalNames.Networks.ZksyncMainnet,
+    KnownInternalNames.Networks.ArbitrumNova,
     KnownInternalNames.Networks.ArbitrumMainnet,
     KnownInternalNames.Networks.OptimismMainnet,
     KnownInternalNames.Networks.PolygonZkMainnet,
     KnownInternalNames.Networks.EthereumMainnet,
+    KnownInternalNames.Networks.PolygonMainnet,
+    KnownInternalNames.Networks.AvalancheMainnet,
+    KnownInternalNames.Networks.ImmutableXMainnet,
     KnownInternalNames.Networks.LoopringMainnet,
     KnownInternalNames.Networks.BNBChainMainnet,
-    KnownInternalNames.Networks.ImmutableXMainnet,
-    KnownInternalNames.Networks.RhinoFiMainnet,
+    KnownInternalNames.Networks.MantleMainnet,
+    KnownInternalNames.Networks.PGNMainnet,
+    KnownInternalNames.Networks.BaseMainnet,
     KnownInternalNames.Networks.OsmosisMainnet,
     KnownInternalNames.Networks.ZkspaceMainnet,
+    KnownInternalNames.Networks.RhinoFiMainnet,
 ];
 
 const sourceOrder = [
+    KnownInternalNames.Networks.LineaMainnet,
     KnownInternalNames.Networks.ArbitrumMainnet,
     KnownInternalNames.Networks.EthereumMainnet,
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.BNBChainMainnet,
     KnownInternalNames.Networks.OptimismMainnet,
+    KnownInternalNames.Networks.SolanaMainnet,
+    KnownInternalNames.Networks.ZksyncEraMainnet,
     KnownInternalNames.Networks.PolygonMainnet,
+    KnownInternalNames.Networks.AvalancheMainnet,
+    KnownInternalNames.Networks.ZksyncMainnet,
     KnownInternalNames.Networks.ArbitrumNova,
     KnownInternalNames.Networks.PolygonZkMainnet,
     KnownInternalNames.Networks.KCCMainnet,
     KnownInternalNames.Networks.LoopringMainnet,
     KnownInternalNames.Networks.ImmutableXMainnet,
-    KnownInternalNames.Networks.SolanaMainnet,
+    KnownInternalNames.Networks.BaseMainnet,
 ];
 
 export default class NetworkSettings {
@@ -93,10 +103,10 @@ export default class NetworkSettings {
             AccountExplorerTemplate: 'https://zkscan.io/explorer/accounts/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncEraMainnet] = {
-            ChainId:324,
+            ChainId: 324,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZkspaceMainnet] = {
-            ChainId:13,
+            ChainId: 13,
             AccountExplorerTemplate: 'https://zkspace.info/account/{0}'
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumGoerli] = {
@@ -192,6 +202,21 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OKCMainnet] = {
             ChainId: 66,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.LineaMainnet] = {
+            ChainId: 59144,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseMainnet] = {
+            ChainId: 8453,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.PGNMainnet] = {
+            ChainId: 424,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.MantleMainnet] = {
+            ChainId: 5000,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.AvalancheMainnet] = {
+            ChainId: 43114,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.PolygonZkMainnet] = {
             ChainId: 1101,
