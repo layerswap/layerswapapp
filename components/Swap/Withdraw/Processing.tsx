@@ -68,15 +68,15 @@ const Processing: FC = () => {
     const progressStates: ProgressStates = {
         "input_transfer": {
             upcoming: {
-                name: 'Detecting your transfer',
+                name: '1. Detecting your transfer',
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             current: {
-                name: 'Detecting your transfer',
+                name: '1. Detecting your transfer',
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             complete: {
-                name: `Transfer from ${source_display_name} is completed`,
+                name: `1. Transfer from ${source_display_name} is completed`,
                 description: <div className='flex items-center space-x-1'>
                     <span>Source Tx: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
@@ -88,29 +88,29 @@ const Processing: FC = () => {
         },
         "confirmations": {
             upcoming: {
-                name: 'Transfer confirmation',
+                name: '2. Transfer confirmation',
                 description: ""
             },
             current: {
-                name: 'Waiting for the transfer to get confirmed',
+                name: '2. Waiting for the transfer to get confirmed',
                 description: confirmationsDetails
             },
             complete: {
-                name: 'The transfer is confirmed',
+                name: '2. The transfer is confirmed',
                 description: confirmationsDetails
             }
         },
         "output_transfer": {
             upcoming: {
-                name: 'Transfer of assets to your address',
+                name: '3. Transfer of assets to your address',
                 description: outputPendingDetails
             },
             current: {
-                name: 'Your assets are on their way',
+                name: '3. Your assets are on their way',
                 description: outputPendingDetails,
             },
             complete: {
-                name: "Swap completed",
+                name: "3. Swap completed",
                 description: swapOutputTransaction ? <div className="flex flex-col">
                     <div className='flex items-center space-x-1'>
                         <span>Destination Tx: </span>
@@ -225,9 +225,9 @@ const getProgressStatuses = (swapStep: SwapStep): { [key in Progress]: ProgressS
     }
     else {
         return {
-            "input_transfer": ProgressStatus.Complete,
-            "confirmations": ProgressStatus.Complete,
-            "output_transfer": ProgressStatus.Complete
+            "input_transfer": ProgressStatus.Current,
+            "confirmations": ProgressStatus.Upcoming,
+            "output_transfer": ProgressStatus.Upcoming
         }
     }
 }
