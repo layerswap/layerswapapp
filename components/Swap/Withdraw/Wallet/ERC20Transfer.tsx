@@ -127,9 +127,7 @@ type TransferETHButtonProps = BaseTransferButtonProps & {
 }
 
 const TransferEthButton: FC<TransferETHButtonProps> = ({
-    generatedDepositAddress,
     managedDepositAddress,
-    userDestinationAddress,
     chainId,
     amount,
     savedTransactionHash,
@@ -186,17 +184,9 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
                     data: encodedData,
                 })
                 setEstimatedGas(gasEstimate)
-                console.log("gasEstimate", gasEstimate)
-                // const estimate = await contract?.estimateGas?.transfer(
-                //     [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
-                //     {...contractWritePrepare?.config, account: address}
-                // )
             }
         })()
-
     }, [address, encodedData, depositAddress, amount])
-
-
 
     useEffect(() => {
         try {
@@ -335,7 +325,6 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
                     [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
                     { data: encodedData, account: address }
                 )
-                console.log("estimate", estimate)
                 setEstimatedGas(estimate)
             }
         })()
@@ -612,9 +601,6 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
     </div>
 }
 
-const applyTransaction = async (swapId: string, trxId: string, setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void) => {
-    setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxId);
-}
 type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
 const resolveError = (errorCode: string | number, innererrorCode?: string | number): ResolvedError => {
