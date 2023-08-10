@@ -225,9 +225,9 @@ const getProgressStatuses = (swapStep: SwapStep): { [key in Progress]: ProgressS
     }
     else {
         return {
-            "input_transfer": ProgressStatus.Current,
-            "confirmations": ProgressStatus.Upcoming,
-            "output_transfer": ProgressStatus.Upcoming
+            "input_transfer": ProgressStatus.Complete,
+            "confirmations": ProgressStatus.Complete,
+            "output_transfer": ProgressStatus.Complete
         }
     }
 }
