@@ -30,6 +30,7 @@ export type Balance = {
     network: string,
     amount: any,
     decimals: number,
+    isNativeCurrency: boolean,
     token: string,
     request_time: string,
     gas: number
@@ -80,7 +81,6 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
                 && b?.network === from?.internal_name
                 && b?.token === currency?.asset
                 && b?.gas === null
-                && from?.native_currency !== b?.token
         })
     const chainId = from?.isExchange === false && Number(from?.chain_id)
 
@@ -91,9 +91,13 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
                 setIsBalanceLoading(true)
                 const feeData = await resolveFeeData(Number(from.chain_id))
                 const estimatedGas = await estimateGas(chainId, contract_address, address)
-                
+
                 if (estimatedGas) {
                     setAllBalances(data => {
+                        const nativeBalance = data[address]?.find(b =>
+                            b?.network === gasToChange?.network
+                            && b.isNativeCurrency)
+
                         const item = data[address]?.find(b =>
                             b?.network === gasToChange?.network
                             && b?.token === gasToChange?.token)
@@ -101,16 +105,16 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
                         const gasBigint = feeData.maxFeePerGas
                             ? (feeData?.maxFeePerGas * estimatedGas)
                             : (estimatedGas * feeData?.gasPrice)
-                        item.gas = formatAmount(gasBigint, item.decimals)
+                        item.gas = formatAmount(gasBigint, nativeBalance.decimals)
                         return { ...data }
                     })
                 }
                 setIsBalanceLoading(false)
-                
+
             })()
         }
     }, [gasToChange, chainId, contract_address])
-
+    console.log("balances", balances)
     return (
         <WalletStateContext.Provider value={{
             starknetAccount,
@@ -183,6 +187,7 @@ const resolveERC20Balances = async (
             amount: formatAmount(d.result, currency?.decimals),
             request_time: new Date().toJSON(),
             decimals: currency.decimals,
+            isNativeCurrency: false,
             gas: null
         }
     })
@@ -234,12 +239,13 @@ const resolveNativeBalance = async (
     nativeTokenRes: FetchBalanceResult
 ) => {
     const native_currency = from.assets.find(a => a.asset === from.native_currency)
-    const nativeBalance = {
+    const nativeBalance: Balance = {
         network: from.internal_name,
         token: from.native_currency,
         amount: formatAmount(nativeTokenRes?.value, native_currency?.decimals),
         request_time: new Date().toJSON(),
         decimals: native_currency.decimals,
+        isNativeCurrency: true,
         gas: null
     }
 
