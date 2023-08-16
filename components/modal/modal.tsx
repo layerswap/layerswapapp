@@ -18,7 +18,6 @@ export interface ModalProps {
 
 const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
-
     const mobileModalRef = useRef(null)
 
     useEffect(() => {
@@ -35,14 +34,14 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                     <>
                         {isDesktop &&
                             <ReactPortal wrapperId={"widget_root"}>
-                                <Leaflet position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className} >
+                                <Leaflet position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
                                     {children}
                                 </Leaflet>
                             </ReactPortal>
                         }
                         {
                             isMobile &&
-                            <Leaflet position="fixed" height={height == 'full' ? '80%' : 'fit'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
+                            <Leaflet position="fixed" height={height == 'full' ? '80%' : 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
                                 {children}
                             </Leaflet>
                         }

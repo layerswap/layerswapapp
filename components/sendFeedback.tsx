@@ -54,8 +54,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
         >
             {({ handleChange, isValid, isSubmitting }) => (
                 <Form className='flex flex-col justify-between'>
-                    <div className='space-y-4 h-full'>
-                        <p className='text-white font-semibold text-lg'>Send Feedback</p>
+                    <div className='space-y-4 h-full mt-2'>
                         <p className='text-base text-left font-roboto text-primary-text font-light'>
                             Please help us shape the product, catch bugs, and prioritize features. Your feedback will go directly into our Telegram channel.
                         </p>

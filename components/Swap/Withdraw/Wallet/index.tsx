@@ -62,6 +62,7 @@ const WalletTransfer: FC = () => {
         </Wrapper>
     return <Wrapper>
         <TransferFromWallet
+            sequenceNumber={swap.sequence_number}
             swapId={swap.id}
             networkDisplayName={source_network?.display_name}
             tokenDecimals={sourceCurrency?.decimals}

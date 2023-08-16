@@ -8,7 +8,7 @@ import {
     useSendTransaction,
     useSwitchNetwork,
     useWaitForTransaction,
-    useNetwork
+    useNetwork,
 } from "wagmi";
 import { parseEther, parseUnits, BaseError, InsufficientFundsError, EstimateGasExecutionError, UserRejectedRequestError } from 'viem'
 import { erc20ABI } from 'wagmi'
@@ -18,6 +18,8 @@ import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../..
 import { useSwapDataUpdate } from "../../../../context/swap";
 import { toast } from "react-hot-toast";
 import WalletIcon from "../../../icons/WalletIcon";
+import { encodeFunctionData, getContract } from 'viem'
+import { createPublicClient, http, createWalletClient } from 'viem'
 import usdtAbi from "../../../../lib/abis/usdt.json"
 import { estimateNativeGas, formatAmount, getNativeBalance, resolveNativeBalance } from "../../../../helpers/balanceHelper";
 import Modal from '../../../modal/modal';
@@ -25,6 +27,7 @@ import MessageComponent from "../../../MessageComponent";
 import GoHomeButton from "../../../utils/GoHome";
 
 type Props = {
+    sequenceNumber: number,
     chainId: number,
     generatedDepositAddress: `0x${string}`,
     managedDepositAddress: `0x${string}`,
@@ -45,6 +48,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     amount,
     tokenContractAddress,
     tokenDecimals,
+    sequenceNumber,
     swapId,
     asset
 }) => {
@@ -75,6 +79,9 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
         }
     }, [swapId])
 
+    const hexed_sequence_number = sequenceNumber?.toString(16)
+    const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
+
     if (!isConnected) {
         return <ConnectWalletButton />
     }
@@ -88,6 +95,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
         return <TransferErc20Button
             asset={asset}
             swapId={swapId}
+            sequenceNumber={sequence_number_even}
             amount={amount}
             generatedDepositAddress={generatedDepositAddress}
             managedDepositAddress={managedDepositAddress}
@@ -100,6 +108,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     else {
         return <TransferEthButton
             swapId={swapId}
+            sequenceNumber={sequence_number_even}
             amount={amount}
             generatedDepositAddress={generatedDepositAddress}
             managedDepositAddress={managedDepositAddress}
@@ -112,6 +121,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
 
 type BaseTransferButtonProps = {
     swapId: string,
+    sequenceNumber: string,
     generatedDepositAddress: `0x${string}`,
     managedDepositAddress: `0x${string}`,
     userDestinationAddress: `0x${string}`,
@@ -124,30 +134,67 @@ type TransferETHButtonProps = BaseTransferButtonProps & {
 }
 
 const TransferEthButton: FC<TransferETHButtonProps> = ({
-    generatedDepositAddress,
     managedDepositAddress,
-    userDestinationAddress,
     chainId,
     amount,
     savedTransactionHash,
     swapId,
+    sequenceNumber
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { setSwapPublishedTx } = useSwapDataUpdate()
     const [buttonClicked, setButtonClicked] = useState(false)
     const [openChangeAmount, setOpenChangeAmount] = useState(false)
+    const [estimatedGas, setEstimatedGas] = useState<bigint>()
 
     const { address } = useAccount();
 
-    const depositAddress = userDestinationAddress === address ?
-        managedDepositAddress : generatedDepositAddress
+    const depositAddress = managedDepositAddress
 
     const sendTransactionPrepare = usePrepareSendTransaction({
         to: depositAddress,
         value: amount ? parseEther(amount.toString()) : undefined,
+        gas: estimatedGas,
         chainId: chainId,
     })
-    const transaction = useSendTransaction(sendTransactionPrepare?.config)
+
+    let encodedData = depositAddress && encodeFunctionData({
+        abi: erc20ABI,
+        functionName: 'transfer',
+        args: [
+            depositAddress,
+            amount ? parseEther(amount.toString()) : undefined,
+        ]
+    });
+    encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
+
+    const tx = {
+        to: depositAddress,
+        value: amount ? parseEther(amount.toString()) : undefined,
+        gas: estimatedGas,
+        data: encodedData
+    }
+    const transaction = useSendTransaction(tx)
+
+    const { chain } = useNetwork();
+
+    const publicClient = createPublicClient({
+        chain: chain,
+        transport: http()
+    })
+
+    useEffect(() => {
+        (async () => {
+            if (encodedData) {
+                const gasEstimate = await publicClient.estimateGas({
+                    account: address,
+                    to: depositAddress,
+                    data: encodedData,
+                })
+                setEstimatedGas(gasEstimate)
+            }
+        })()
+    }, [address, encodedData, depositAddress, amount])
 
     useEffect(() => {
         try {
@@ -274,25 +321,71 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     tokenDecimals,
     savedTransactionHash,
     swapId,
+    sequenceNumber,
     asset
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { setSwapPublishedTx } = useSwapDataUpdate()
     const { address } = useAccount();
     const [buttonClicked, setButtonClicked] = useState(false)
+    const [estimatedGas, setEstimatedGas] = useState<bigint>()
 
-    const depositAddress = userDestinationAddress === address ?
-        managedDepositAddress : generatedDepositAddress
+    const depositAddress = managedDepositAddress
 
     const contractWritePrepare = usePrepareContractWrite({
+        enabled: !!depositAddress,
         address: tokenContractAddress,
         abi: asset?.toUpperCase() == 'USDT' ? usdtAbi : erc20ABI,
         functionName: 'transfer',
-        args: [depositAddress, parseUnits(amount.toString(), tokenDecimals)]
+        gas: estimatedGas,
+        args: [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
     });
 
-    const contractWrite = useContractWrite(contractWritePrepare?.config)
+    let encodedData = depositAddress && contractWritePrepare?.config?.request
+        && encodeFunctionData({
+            ...contractWritePrepare?.config?.request,
+        });
 
+    encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
+
+    const tx = {
+        ...contractWritePrepare?.config,
+        request: {
+            ...contractWritePrepare?.config?.request,
+            data: encodedData
+        }
+    }
+    const { chain } = useNetwork();
+
+    const publicClient = createPublicClient({
+        chain: chain,
+        transport: http()
+    })
+    const walletClient = createWalletClient({
+        chain: chain,
+        transport: http()
+    })
+
+    const contract = getContract({
+        address: tokenContractAddress,
+        abi: erc20ABI,
+        walletClient,
+        publicClient
+    })
+
+    useEffect(() => {
+        (async () => {
+            if (encodedData) {
+                const estimate = await contract?.estimateGas?.transfer(
+                    [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
+                    { data: encodedData, account: address }
+                )
+                setEstimatedGas(estimate)
+            }
+        })()
+    }, [address, encodedData, depositAddress, amount, tokenDecimals, tx])
+
+    const contractWrite = useContractWrite(tx)
     useEffect(() => {
         try {
             if (contractWrite?.data?.hash) {
@@ -307,7 +400,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
 
     const clickHandler = useCallback(() => {
         setButtonClicked(true)
-        return contractWrite?.write && contractWrite?.write()
+        contractWrite?.write && contractWrite?.write()
     }, [contractWrite])
 
     const waitForTransaction = useWaitForTransaction({
@@ -552,16 +645,13 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
             <p className="text-md font-semibold self-center text-white">
                 {header}
             </p>
-            <p className="text-sm text-primary-text">
+            <p className="text-sm text-primary-text break-all">
                 {details}
             </p>
         </div>
     </div>
 }
 
-const applyTransaction = async (swapId: string, trxId: string, setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void) => {
-    setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxId);
-}
 type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
 const resolveError = (error: BaseError): ResolvedError => {
