@@ -41,21 +41,10 @@ const Success: FC = () => {
                                         <SubmitButton text_align='left' buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer} icon={<ExternalLink className='h-5 w-5' />}>
                                             <DoubleLineText
                                                 colorStyle='mltln-text-light'
-                                                primaryText='Explorer'
-                                                secondarytext='View in'
+                                                primaryText='View in Explorer'
+                                                secondarytext=''
                                             />
                                         </SubmitButton>
-                                    </div>
-                                    <div className='group basis-2/3 grow '>
-                                        <GoHomeButton>
-                                            <SubmitButton button_align='right' text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<Home className="h-5 w-5" aria-hidden="true" />}>
-                                                <DoubleLineText
-                                                    colorStyle='mltln-text-dark'
-                                                    primaryText='Swap'
-                                                    secondarytext='Do another'
-                                                />
-                                            </SubmitButton>
-                                        </GoHomeButton>
                                     </div>
                                 </>
                                 :

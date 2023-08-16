@@ -6,7 +6,7 @@ export default function Steps({ steps }) {
         <nav aria-label="Progress">
             <ol role="list" className="overflow-hidden">
                 {steps.map((step, stepIdx) => (
-                    <li key={step.name} className={classNames(stepIdx !== steps.length - 1 ? 'pb-10' : '', 'relative')}>
+                    <li key={step?.name} className={classNames(stepIdx !== steps.length - 1 ? 'pb-10' : '', 'relative')}>
                         <div className="flex items-center justify-between w-full">
                             {step?.status === 'complete' ? (
                                 <>
@@ -51,12 +51,12 @@ export default function Steps({ steps }) {
                                     <div className="group relative flex items-start">
                                         <span className="flex h-9 items-center" aria-hidden="true">
                                             <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 opacity-60">
-                                                <span className="h-2.5 w-2.5 rounded-full bg-transparent " />
+                                                <span className="font-semibold">{step?.index}</span>
                                             </span>
                                         </span>
                                         <span className="ml-4 flex min-w-0 flex-col">
-                                            <span className="text-sm font-medium text-primary-text opacity-60">{step.name}</span>
-                                            <span className="text-sm text-primary-text opacity-60">{step.description}</span>
+                                            <span className="text-sm font-medium text-primary-text opacity-60">{step?.name}</span>
+                                            <span className="text-sm text-primary-text opacity-60">{step?.description}</span>
                                         </span>
                                     </div>
                                 </>

@@ -22,7 +22,7 @@ export default class LayerSwapApiClient {
 
     async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
         const version = process.env.NEXT_PUBLIC_API_VERSION
-        return await (await fetch(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${version}`))?.json();
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${version}`).then(res => res.data);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {
