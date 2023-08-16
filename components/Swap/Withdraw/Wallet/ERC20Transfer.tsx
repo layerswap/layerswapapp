@@ -12,13 +12,17 @@ import {
 } from "wagmi";
 import { parseEther, parseUnits, BaseError, InsufficientFundsError, EstimateGasExecutionError, UserRejectedRequestError } from 'viem'
 import { erc20ABI } from 'wagmi'
-import SubmitButton from "../../../buttons/submitButton";
+import SubmitButton, { DoubleLineText } from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
 import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../context/swap";
 import { toast } from "react-hot-toast";
 import WalletIcon from "../../../icons/WalletIcon";
 import usdtAbi from "../../../../lib/abis/usdt.json"
+import { estimateNativeGas, formatAmount, getNativeBalance, resolveNativeBalance } from "../../../../helpers/balanceHelper";
+import Modal from '../../../modal/modal';
+import MessageComponent from "../../../MessageComponent";
+import GoHomeButton from "../../../utils/GoHome";
 
 type Props = {
     chainId: number,
@@ -44,7 +48,6 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     swapId,
     asset
 }) => {
-
     const { isConnected } = useAccount();
     const networkChange = useSwitchNetwork({
         chainId: chainId,
@@ -130,8 +133,9 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     swapId,
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
-    const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
+    const { setSwapPublishedTx } = useSwapDataUpdate()
     const [buttonClicked, setButtonClicked] = useState(false)
+    const [openChangeAmount, setOpenChangeAmount] = useState(false)
 
     const { address } = useAccount();
 
@@ -171,6 +175,19 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     })
 
     const clickHandler = useCallback(async () => {
+        const nativeBalanceContractRes = await getNativeBalance(address, chainId)
+        const estimatedGas = await estimateNativeGas(chainId, address, managedDepositAddress)
+
+        const balance = formatAmount(nativeBalanceContractRes?.value, nativeBalanceContractRes?.decimals)
+        const gas = formatAmount(estimatedGas, nativeBalanceContractRes?.decimals)
+        if (amount > balance - gas) {
+            setOpenChangeAmount(true)
+        } else {
+            transfer()
+        }
+    }, [transaction])
+
+    const transfer = useCallback(async () => {
         setButtonClicked(true)
         return transaction?.sendTransaction && transaction?.sendTransaction()
     }, [transaction])
@@ -207,6 +224,39 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
                     : <span>Send from wallet</span>}
             </ButtonWrapper>
         }
+        <Modal
+            height="80%"
+            show={openChangeAmount}
+            setShow={setOpenChangeAmount}
+        >
+            <MessageComponent>
+                <div className="space-y-4">
+                    <div className='md:text-2xl text-lg font-bold text-white leading-6 text-center'>
+                        Insufficient funds for gas
+                    </div>
+                    <div className="text-base font-medium space-y-6 text-primary-text text-center">
+                        This transfer can't be processed because you don't have enough gas.
+                    </div>
+                </div>
+                <div className="text-base">
+                    You have requested swap with {amount}
+                </div>
+                <MessageComponent.Buttons>
+                    <div className="flex flex-row text-white text-base space-x-2">
+                        <div className='basis-1/3'>
+                            <SubmitButton onClick={() => { setOpenChangeAmount(false); transfer() }} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='filled' >
+                                Transfer
+                            </SubmitButton>
+                        </div>
+                        <div className='basis-2/3'>
+                            <SubmitButton onClick={() => setOpenChangeAmount(false)} button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' >
+                                Cancel
+                            </SubmitButton>
+                        </div>
+                    </div>
+                </MessageComponent.Buttons>
+            </MessageComponent>
+        </Modal>
     </>
 }
 
@@ -227,7 +277,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     asset
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
-    const { mutateSwap, setSwapPublishedTx } = useSwapDataUpdate()
+    const { setSwapPublishedTx } = useSwapDataUpdate()
     const { address } = useAccount();
     const [buttonClicked, setButtonClicked] = useState(false)
 

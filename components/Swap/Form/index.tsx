@@ -27,7 +27,6 @@ import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 import { ApiError, KnownErrorCode } from "../../../Models/ApiError";
-import { WalletDataProvider } from "../../../context/wallet";
 
 type NetworkToConnect = {
     DisplayName: string;
