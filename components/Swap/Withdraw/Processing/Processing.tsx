@@ -1,36 +1,35 @@
 import { ExternalLink, Fuel } from 'lucide-react';
 import { FC } from 'react'
-import { useSwapDataState } from '../../../context/swap';
-import { useSettingsState } from '../../../context/settings';
-import { GetSwapStep } from '../../utils/SwapStatus';
-import { SwapStep } from '../../../Models/Wizard';
-import KnownInternalNames from '../../../lib/knownIds';
-import Widget from '../../Wizard/Widget';
-import shortenAddress from '../../utils/ShortenAddress';
-import Steps from '../StepsComponent';
-import SwapSummary from '../Summary';
-import { GetNetworkCurrency } from '../../../helpers/settingsHelper';
-import AverageCompletionTime from '../../Common/AverageCompletionTime';
-import { TransactionType } from '../../../lib/layerSwapApiClient';
-import { truncateDecimals } from '../../utils/RoundDecimals';
+import { GetSwapStep } from '../../../utils/SwapStatus';
+import { SwapStep } from '../../../../Models/Wizard';
+import KnownInternalNames from '../../../../lib/knownIds';
+import Widget from '../../../Wizard/Widget';
+import shortenAddress from '../../../utils/ShortenAddress';
+import Steps from '../../StepsComponent';
+import SwapSummary from '../../Summary';
+import { GetNetworkCurrency } from '../../../../helpers/settingsHelper';
+import AverageCompletionTime from '../../../Common/AverageCompletionTime';
+import { SwapItem, TransactionType } from '../../../../lib/layerSwapApiClient';
+import { truncateDecimals } from '../../../utils/RoundDecimals';
+import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 
 
+type Props = {
+    swap: SwapItem,
+    settings?: LayerSwapAppSettings | any
+}
 
-
-const Processing: FC = () => {
-
-    const { swap } = useSwapDataState()
-    const settings = useSettingsState()
-
+const Processing: FC<Props> = ({ settings, swap }) => {
 
     const source_display_name = swap?.source_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.display_name : settings?.networks?.find(e => e.internal_name == swap?.source_network)?.display_name;
     const destination_display_name = swap?.destination_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.destination_exchange)?.display_name : settings?.networks?.find(e => e.internal_name == swap?.destination_network)?.display_name;
 
     const swapStep = GetSwapStep(swap)
-
+    console.log("settings", settings)
     const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
     const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
     const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network)
+    console.log("swap.source_network", swap.source_network)
 
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
@@ -130,7 +129,7 @@ const Processing: FC = () => {
             complete: {
                 name: `+ ${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your wallet (Refuel)`,
                 description: <div className='flex items-center space-x-1'>
-                    <span>Destination Tx: </span>
+                    <span>Explorer link: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
                         <ExternalLink className='h-4' />
@@ -155,7 +154,7 @@ const Processing: FC = () => {
         }
     ]
 
-    if(swap?.has_refuel){ 
+    if (swap?.has_refuel) {
         progress.push({
             name: progressStates["refuel"][progressStatuses.refuel].name,
             status: progressStatuses.refuel,
@@ -214,21 +213,22 @@ type StatusStep = {
 
 
 const getProgressStatuses = (swapStep: SwapStep): { [key in Progress]: ProgressStatus } => {
-    if (swapStep <= SwapStep.TransactionDone) {
+    console.log(swapStep,"swapStep")
+    if (swapStep === SwapStep.Delay || swapStep === SwapStep.UserTransferPending) {
         return {
             "input_transfer": ProgressStatus.Current,
             "output_transfer": ProgressStatus.Upcoming,
             "refuel": ProgressStatus.Upcoming
         }
     }
-    else if (swapStep === SwapStep.TransactionDetected) {
+    else if (swapStep === SwapStep.TransactionDetected || swapStep === SwapStep.LSTransferPending) {
         return {
             "input_transfer": ProgressStatus.Complete,
             "output_transfer": ProgressStatus.Current,
-            "refuel": ProgressStatus.Current
+            "refuel": ProgressStatus.Upcoming
         }
     }
-    else {
+    else if(swapStep === SwapStep.Success) {
         return {
             "input_transfer": ProgressStatus.Complete,
             "output_transfer": ProgressStatus.Complete,

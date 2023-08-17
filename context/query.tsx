@@ -5,7 +5,7 @@ import { QueryParams } from '../Models/QueryParams';
 
 const STORAGE_KEY = "settings_query_params"
 
-const QueryStateContext = React.createContext<QueryParams>(null);
+export const QueryStateContext = React.createContext<QueryParams>(null);
 
 const QueryProvider: FC<{ query: QueryParams }> = ({ query, children }) => {
 

@@ -6,7 +6,7 @@ import { LayerSwapSettings } from "./LayerSwapSettings";
 import { Partner } from "./Partner";
 
 export class LayerSwapAppSettings extends LayerSwapSettings {
-    constructor(settings: LayerSwapSettings) {
+    constructor(settings: LayerSwapSettings | any) {
         super();
         Object.assign(this, settings)
 

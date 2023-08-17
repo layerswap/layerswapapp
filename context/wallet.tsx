@@ -5,7 +5,7 @@ import { AccountInterface } from 'starknet';
 import { StarknetWindowObject } from 'get-starknet';
 import { UserExchangesData } from '../lib/layerSwapApiClient';
 
-const WalletStateContext = React.createContext(null);
+export const WalletStateContext = React.createContext(null);
 const WalletStateUpdateContext = React.createContext(null);
 
 export type WizardProvider<T> = {
