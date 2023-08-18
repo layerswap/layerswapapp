@@ -6,7 +6,6 @@ import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import { getStarknet } from "get-starknet-core"
-import { Info } from "lucide-react";
 import KnownInternalNames from "../../lib/knownIds";
 import { useAuthState } from "../../context/authContext";
 import ExchangeSettings from "../../lib/ExchangeSettings";
@@ -26,6 +25,7 @@ import { connect, disconnect as starknetDisconnect } from "@argent/get-starknet"
 import WalletIcon from "../icons/WalletIcon";
 import { NetworkAddressType } from "../../Models/CryptoNetwork";
 import { useWalletState, useWalletUpdate } from "../../context/wallet";
+import { Info } from "lucide-react";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;

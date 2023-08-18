@@ -2,8 +2,8 @@ import React, { FC, useCallback, useState } from 'react'
 import { KnownErrorCode } from '../Models/ApiError';
 import { Steps } from '../Models/Wizard';
 import { AccountInterface } from 'starknet';
-import { StarknetWindowObject } from 'get-starknet';
 import { UserExchangesData } from '../lib/layerSwapApiClient';
+import { StarknetWindowObject } from '@argent/get-starknet';
 
 const WalletStateContext = React.createContext(null);
 const WalletStateUpdateContext = React.createContext(null);
