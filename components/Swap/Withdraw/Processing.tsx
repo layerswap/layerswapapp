@@ -26,7 +26,7 @@ const Processing: FC = () => {
     const source_display_name = swap?.source_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.source_exchange)?.display_name : settings?.networks?.find(e => e.internal_name == swap?.source_network)?.display_name;
     const destination_display_name = swap?.destination_exchange ? settings?.exchanges?.find(e => e.internal_name == swap?.destination_exchange)?.display_name : settings?.networks?.find(e => e.internal_name == swap?.destination_network)?.display_name;
 
-    const swapStep = GetSwapStep(swap)
+    const swapStep = GetSwapStep(swap);
 
     const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
     const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
@@ -98,11 +98,11 @@ const Processing: FC = () => {
         },
         "output_transfer": {
             upcoming: {
-                name: `Sending ${destination_display_name} to your wallet`,
+                name: `Sending ${destinationNetworkCurrency?.name} to your wallet`,
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             current: {
-                name: `Sending ${destination_display_name} to your wallet`,
+                name: `Sending ${destinationNetworkCurrency?.name} to your wallet`,
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             complete: {
@@ -128,9 +128,9 @@ const Processing: FC = () => {
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             complete: {
-                name: `+ ${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your wallet (Refuel)`,
+                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your wallet (Refuel)`,
                 description: <div className='flex items-center space-x-1'>
-                    <span>Destination Tx: </span>
+                    <span>Explorer link: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
                         <ExternalLink className='h-4' />
@@ -155,7 +155,7 @@ const Processing: FC = () => {
         }
     ]
 
-    if(swap?.has_refuel){ 
+    if (swap?.has_refuel) {
         progress.push({
             name: progressStates["refuel"][progressStatuses.refuel].name,
             status: progressStatuses.refuel,
@@ -214,21 +214,21 @@ type StatusStep = {
 
 
 const getProgressStatuses = (swapStep: SwapStep): { [key in Progress]: ProgressStatus } => {
-    if (swapStep <= SwapStep.TransactionDone) {
+    if (swapStep === SwapStep.Delay || swapStep === SwapStep.UserTransferPending) {
         return {
             "input_transfer": ProgressStatus.Current,
             "output_transfer": ProgressStatus.Upcoming,
             "refuel": ProgressStatus.Upcoming
         }
     }
-    else if (swapStep === SwapStep.TransactionDetected) {
+    else if (swapStep === SwapStep.TransactionDetected || swapStep === SwapStep.LSTransferPending) {
         return {
             "input_transfer": ProgressStatus.Complete,
             "output_transfer": ProgressStatus.Current,
-            "refuel": ProgressStatus.Current
+            "refuel": ProgressStatus.Upcoming
         }
     }
-    else {
+    else if (swapStep === SwapStep.Success) {
         return {
             "input_transfer": ProgressStatus.Complete,
             "output_transfer": ProgressStatus.Complete,
