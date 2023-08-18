@@ -22,7 +22,7 @@ import shortenAddress from "../utils/ShortenAddress";
 import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
-import { connect, disconnect as starknetDisconnect } from "get-starknet";
+import { connect, disconnect as starknetDisconnect } from "@argent/get-starknet";
 import WalletIcon from "../icons/WalletIcon";
 import { NetworkAddressType } from "../../Models/CryptoNetwork";
 import { useWalletState, useWalletUpdate } from "../../context/wallet";
@@ -179,7 +179,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const destinationChainId = destinationAsset?.network?.chain_id
 
         const handleConnectStarknet = useCallback(async () => {
-            const res = await connect()
+            const res = await connect({
+                alwaysShowDiscovery: false,
+                include: ["braavos", "argentX", "bitkeep"],
+                sort: ["braavos", "bitkeep", "argentX"]
+            })
+
             if (res?.account?.chainId != destinationChainId) {
                 setWrongNetwork(true)
                 starknetDisconnect({ clearLastWallet: true })

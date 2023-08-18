@@ -21,7 +21,7 @@ import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import { useWalletState, useWalletUpdate } from '../../../context/wallet';
 import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
 import { NetworkAddressType } from '../../../Models/CryptoNetwork';
-import { disconnect as starknetDisconnect } from "get-starknet";
+import { disconnect as starknetDisconnect } from "@argent/get-starknet";
 import Image from 'next/image';
 import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
 import toast from 'react-hot-toast';

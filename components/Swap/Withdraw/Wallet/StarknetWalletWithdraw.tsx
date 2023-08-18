@@ -6,8 +6,8 @@ import toast from 'react-hot-toast';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
-import { connect, disconnect } from "get-starknet"
-import { Contract, number, uint256 } from 'starknet';
+import { connect, disconnect } from "@argent/get-starknet"
+import { Contract, BigNumberish, uint256 } from 'starknet';
 import Erc20Abi from "../../../../lib/abis/ERC20.json"
 import WatchDogAbi from "../../../../lib/abis/LSWATCHDOG.json"
 import { useAuthState } from '../../../../context/authContext';
@@ -20,7 +20,7 @@ type Props = {
     amount: number
 }
 
-function getUint256CalldataFromBN(bn: number.BigNumberish) {
+function getUint256CalldataFromBN(bn: BigNumberish) {
     return { type: "struct" as const, ...uint256.bnToUint256(bn) }
 }
 export function parseInputAmountToUint256(
@@ -53,7 +53,12 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress, amount }
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await connect()
+            const res = await connect({
+                alwaysShowDiscovery: false,
+                include: ["braavos", "argentX", "bitkeep"],
+                sort: ["braavos", "bitkeep", "argentX"]
+            })
+
             const connectedChainId = res?.account?.chainId
             if (connectedChainId && connectedChainId !== sourceChainId) {
                 setIsWrongNetwork(true)
