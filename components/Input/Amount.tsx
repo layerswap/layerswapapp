@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useRef } from "react";
+import { forwardRef, useCallback, useRef } from "react";
 import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -19,12 +19,13 @@ const AmountField = forwardRef((_, ref: any) => {
 
     const { balances, isBalanceLoading } = useWalletState()
     const name = "amount"
-    const walletBalance = roundDecimals(balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)?.amount, currency?.precision)
+    const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
+    const walletBalanceAmount = roundDecimals(walletBalance?.amount, currency?.precision)
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
-    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalance, minAllowedAmount)
+    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalanceAmount, minAllowedAmount)
 
-    const placeholder = (walletBalance > minAllowedAmount && walletBalance < maxAllowedAmount) ? `${minAllowedAmount} - ${walletBalance}` : (currency && from && to && !isBalanceLoading) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
+    const placeholder = (walletBalanceAmount > minAllowedAmount && walletBalanceAmount < maxAllowedAmount) ? `${minAllowedAmount} - ${walletBalanceAmount}` : (currency && from && to && !isBalanceLoading) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.precision)
     const amountRef = useRef(ref)
 
@@ -36,14 +37,19 @@ const AmountField = forwardRef((_, ref: any) => {
         setFieldValue(name, maxAllowedAmount)
     }
 
+    const setAmountFromBalance = useCallback(() => {
+        setFieldValue(name, walletBalance?.amount > maxAllowedAmount ? maxAllowedAmount : walletBalance?.amount)
+    }, [maxAllowedAmount, walletBalance])
+
     return (<>
         <NumericInput
             label={<AmountLabel detailsAvailable={!!(from && to && amount)}
                 maxAllowedAmount={maxAllowedAmount}
                 minAllowedAmount={minAllowedAmount}
                 isBalanceLoading={isBalanceLoading}
-                walletBalance={walletBalance}
-                onAmountClick={(amount) => setFieldValue(name, amount)}
+                walletBalance={walletBalanceAmount}
+                canSetBalance={!walletBalance?.isNativeCurrency}
+                setAmountFromBalance={setAmountFromBalance}
             />}
             disabled={!currency}
             placeholder={placeholder}
@@ -75,7 +81,8 @@ type AmountLabelProps = {
     maxAllowedAmount: number;
     isBalanceLoading: boolean;
     walletBalance: number
-    onAmountClick: (setAmount: number) => void;
+    canSetBalance: boolean,
+    setAmountFromBalance: () => void;
 }
 const AmountLabel = ({
     detailsAvailable,
@@ -83,7 +90,8 @@ const AmountLabel = ({
     maxAllowedAmount,
     isBalanceLoading,
     walletBalance,
-    onAmountClick
+    canSetBalance,
+    setAmountFromBalance
 }: AmountLabelProps) => {
     return <div className="flex items-center w-full justify-between">
         <div className="flex items-center space-x-2">
@@ -96,8 +104,8 @@ const AmountLabel = ({
             }
         </div>
         {
-            !isNaN(walletBalance) &&
-            <button onClick={() => onAmountClick(walletBalance)} className=" border-b border-dotted border-primary-text hover:text-primary hover:border-primary text-xs text-primary-text flex items-center space-x-1"><span>Balance:</span> {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{walletBalance}</span>}</button>
+            !isNaN(walletBalance) && 
+            <button type="button" onClick={setAmountFromBalance} className="border-b border-dotted border-primary-text hover:text-primary hover:border-primary text-xs text-primary-text flex items-center space-x-1"><span>Balance:</span> {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{walletBalance}</span>}</button>
         }
     </div>
 }

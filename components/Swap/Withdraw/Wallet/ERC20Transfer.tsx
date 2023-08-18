@@ -12,7 +12,7 @@ import {
 } from "wagmi";
 import { parseEther, parseUnits, BaseError, InsufficientFundsError, EstimateGasExecutionError, UserRejectedRequestError } from 'viem'
 import { erc20ABI } from 'wagmi'
-import SubmitButton, { DoubleLineText } from "../../../buttons/submitButton";
+import SubmitButton from "../../../buttons/submitButton";
 import FailIcon from "../../../icons/FailIcon";
 import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from "../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../context/swap";
@@ -21,10 +21,10 @@ import WalletIcon from "../../../icons/WalletIcon";
 import { encodeFunctionData, getContract } from 'viem'
 import { createPublicClient, http, createWalletClient } from 'viem'
 import usdtAbi from "../../../../lib/abis/usdt.json"
-import { estimateNativeGas, formatAmount, getNativeBalance, resolveNativeBalance } from "../../../../helpers/balanceHelper";
+import { formatAmount, getNativeBalance, resolveFeeData } from "../../../../helpers/balanceHelper";
 import Modal from '../../../modal/modal';
 import MessageComponent from "../../../MessageComponent";
-import GoHomeButton from "../../../utils/GoHome";
+import { FetchFeeDataResult, FetchBalanceResult } from '@wagmi/core'
 
 type Props = {
     sequenceNumber: number,
@@ -139,6 +139,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     amount,
     savedTransactionHash,
     swapId,
+    userDestinationAddress,
     sequenceNumber
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
@@ -146,7 +147,6 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [openChangeAmount, setOpenChangeAmount] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
-
     const { address } = useAccount();
 
     const depositAddress = managedDepositAddress
@@ -154,7 +154,6 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     const sendTransactionPrepare = usePrepareSendTransaction({
         to: depositAddress,
         value: amount ? parseEther(amount.toString()) : undefined,
-        gas: estimatedGas,
         chainId: chainId,
     })
 
@@ -166,14 +165,18 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
             amount ? parseEther(amount.toString()) : undefined,
         ]
     });
-    encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
+
+    if (address !== userDestinationAddress){
+        encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
+    }
 
     const tx = {
         to: depositAddress,
-        value: amount ? parseEther(amount.toString()) : undefined,
+        value: amount ? parseEther(amount?.toString()) : undefined,
         gas: estimatedGas,
         data: encodedData
     }
+
     const transaction = useSendTransaction(tx)
 
     const { chain } = useNetwork();
@@ -222,17 +225,8 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     })
 
     const clickHandler = useCallback(async () => {
-        const nativeBalanceContractRes = await getNativeBalance(address, chainId)
-        const estimatedGas = await estimateNativeGas(chainId, address, managedDepositAddress)
-
-        const balance = formatAmount(nativeBalanceContractRes?.value, nativeBalanceContractRes?.decimals)
-        const gas = formatAmount(estimatedGas, nativeBalanceContractRes?.decimals)
-        if (amount > balance - gas) {
-            setOpenChangeAmount(true)
-        } else {
-            transfer()
-        }
-    }, [transaction])
+        return transaction?.sendTransaction && transaction?.sendTransaction()
+    }, [transaction, estimatedGas])
 
     const transfer = useCallback(async () => {
         setButtonClicked(true)
@@ -313,15 +307,14 @@ type TransferERC20ButtonProps = BaseTransferButtonProps & {
     asset: string,
 }
 const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
-    generatedDepositAddress,
     managedDepositAddress,
-    userDestinationAddress,
     amount,
     tokenContractAddress,
     tokenDecimals,
     savedTransactionHash,
     swapId,
     sequenceNumber,
+    userDestinationAddress,
     asset
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
@@ -346,7 +339,9 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             ...contractWritePrepare?.config?.request,
         });
 
-    encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
+    if (address !== userDestinationAddress){
+        encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
+    }
 
     const tx = {
         ...contractWritePrepare?.config,

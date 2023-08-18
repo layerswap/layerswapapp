@@ -97,7 +97,7 @@ export const WalletDataProvider: FC<{ from?: Layer, currency?: Currency }> = ({ 
 
                         const gasBigint = feeData.maxFeePerGas
                             ? (feeData?.maxFeePerGas * estimatedGas)
-                            : (estimatedGas * feeData?.gasPrice)
+                            : (feeData?.gasPrice * estimatedGas)
 
                         item.gas = formatAmount(gasBigint, nativeBalance.decimals)
                         return { ...data }

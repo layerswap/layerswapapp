@@ -1,7 +1,6 @@
-import { erc20ABI, useAccount, useNetwork } from 'wagmi';
-import { createPublicClient, http, createWalletClient, getContract, parseUnits, } from 'viem'
-import { multicall, fetchBalance, fetchFeeData, FetchFeeDataResult, FetchBalanceResult } from '@wagmi/core'
-import { NetworkAddressType } from '../Models/CryptoNetwork';
+import { erc20ABI } from 'wagmi';
+import { parseEther, createPublicClient, http, createWalletClient, getContract, encodeFunctionData, } from 'viem'
+import { multicall, fetchBalance, fetchFeeData, FetchBalanceResult } from '@wagmi/core'
 import { BaseL2Asset, Layer } from '../Models/Layer';
 import { supportedChains } from '../lib/chainConfigs';
 
@@ -17,7 +16,7 @@ export type ERC20ContractRes = ({
 
 export type Balance = {
     network: string,
-    amount: any,
+    amount: number,
     decimals: number,
     isNativeCurrency: boolean,
     token: string,
@@ -121,10 +120,26 @@ export const estimateNativeGas = async (chainId: number, account: `0x${string}`,
         chain: chain,
         transport: http()
     })
+    const to = destination || account;
+
+    let encodedData = encodeFunctionData({
+        abi: erc20ABI,
+        functionName: 'transfer',
+        args: [
+            to,
+            parseEther("0.1"),
+        ]
+    });
+
+    const hexed_sequence_number =  (99999999).toString(16)
+    const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
+
+    encodedData = encodedData ? `${encodedData}${sequence_number_even}` as `0x${string}` : null;
 
     const gasEstimate = await publicClient.estimateGas({
         account: account,
-        to: destination || account,
+        to: to,
+        data: encodedData,
     })
 
     return gasEstimate
