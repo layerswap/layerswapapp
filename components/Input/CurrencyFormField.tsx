@@ -10,8 +10,9 @@ import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByOrder } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
 import { useQueryState } from "../../context/query";
-import { Balance, useWalletState } from "../../context/wallet";
+import { useWalletState } from "../../context/wallet";
 import { truncateDecimals } from "../utils/RoundDecimals";
+import { Balance } from "../../helpers/balanceHelper";
 
 const CurrencyFormField: FC = () => {
     const {
