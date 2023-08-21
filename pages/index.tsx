@@ -9,8 +9,6 @@ import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { validateSignature } from '../helpers/validateSignature'
 import { mapNetworkCurrencies } from '../helpers/settingsHelper'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
-import { useTheme } from 'next-themes'
-import InternalApiClient from '../lib/internalApiClient'
 import { useEffect } from 'react'
 const { parseColor } = require("tailwindcss/lib/util/color");
 
@@ -57,9 +55,9 @@ export default function Home({ settings, inMaintanance, themeData }: InferGetSer
           --ls-colors-primary-800: ${themeData.primary?.[800]};
           --ls-colors-primary-900: ${themeData.primary?.[900]};
 
-          --ls-colors-text-placeholder: ${themeData.primary?.textPlaceholder};
+          --ls-colors-text-placeholder: ${themeData.placeholderText};
           --ls-colors-primary-text: ${themeData.primary?.text};
-          --ls-colors-primary-button-text: ${themeData.primary?.buttonTextColor};
+          --ls-colors-primary-button-text: ${themeData.placeholderText};
           --ls-colors-primary-logoColor: ${themeData.primary?.logoColor};
 
           --ls-colors-secondary: ${themeData.secondary?.DEFAULT};
@@ -74,6 +72,8 @@ export default function Home({ settings, inMaintanance, themeData }: InferGetSer
           --ls-colors-secondary-800: ${themeData.secondary?.[800]};
           --ls-colors-secondary-900: ${themeData.secondary?.[900]};
           --ls-colors-secondary-950: ${themeData.secondary?.[950]};
+          --ls-colors-secondary-text: ${themeData.secondary?.text};
+
         }
       `}</style>
       }
@@ -132,10 +132,8 @@ type ThemeData = {
   backdrop: string,
   actionButtonText: string,
   logo: string,
+  placeholderText: string,
   primary: {
-    text: string,
-    buttonTextColor: string,
-    textPlaceholder: string,
     logoColor: string,
   } & ThemeColor,
   secondary: ThemeColor
@@ -153,6 +151,7 @@ type ThemeColor = {
   700: string;
   800: string;
   900: string;
+  text: string,
 }
 const themes = {
   "imxMarketplace": {
@@ -160,7 +159,6 @@ const themes = {
     actionButtonText: '#000000',
     logo: '#ffffffff',
     primary: {
-      'text': '#D1FBFF',
       DEFAULT: '#2EECFF',
       '50': '#E6FDFF',
       '100': '#D1FBFF',
@@ -172,6 +170,7 @@ const themes = {
       '700': '#00ACBD',
       '800': '#007985',
       '900': '#00464D',
+      'text': '#fff',
     },
     secondary: {
       DEFAULT: '#111D36',
@@ -186,6 +185,7 @@ const themes = {
       '800': '#0F192F',
       '900': '#0C1527',
       '950': '#0B1123',
+      'text': '#D1FBFF',
     },
   },
   "ea7df14a1597407f9f755f05e25bab42": {
@@ -206,7 +206,7 @@ const themes = {
       '800': '#1A9CA8',
       '900': '#136F78',
       '950': '#0F5960',
-      'text': '#D1FBFF',
+      'text': '#fff',
     },
     secondary: {
       DEFAULT: '#2E5970',
@@ -221,12 +221,13 @@ const themes = {
       '800': '#224253',
       '900': '#162B36',
       '950': '#0E1B22',
+      'text': '#D1FBFF',
     },
   },
   "light": {
     backdrop: "#007985",
-    placeholderText: '#C6F2F6',
-    actionButtonText: '#000000',
+    placeholderText: '#000',
+    actionButtonText: '#fff',
     logo: '#ffffffff',
     primary: {
       DEFAULT: '#E42575',
@@ -241,25 +242,24 @@ const themes = {
       '800': '#930863',
       '900': '#c499af',
       'background': '#F6B6D1',
-      'text': '#171717',
+      'text': '#000',
       'text-muted': '#56617B',
-      'text-placeholder': '#737373',
-      'buttonTextColor': '#ffffff',
       'logoColor': '#FF0093'
     },
     secondary: {
       DEFAULT: '#EFEFEF',
       '50': '#313C9B',
       '100': '#2E3B93',
-      '200': '#232A70',
-      '300': '#4b5563',
-      '400': '#6b7280',
-      '500': '#9ca3af',
-      '600': '#d1d5db',
-      '700': '#e5e7eb',
+      '200': '#868686',
+      '300': '#8b8b8b',
+      '400': '#b1b1b1',
+      '500': '#cfcfcf',
+      '600': '#dfdfdf',
+      '700': '#f0f0f0',
       '800': '#f3f4f6',
-      '900': '#fff',
+      '900': '#faf8f8',
       '950': '#fff',
+      'text': '#6c6c6c',
     },
   }
 }

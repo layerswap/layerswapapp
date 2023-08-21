@@ -55,9 +55,9 @@ const ManualTransfer: FC = () => {
     return (
         !(generatedDepositAddress || messageClicked) ?
             <div className="rounded-lg p-4 flex flex-col items-center text-center bg-secondary-700 border border-secondary-500 gap-5">
-                <Megaphone className="h-10 w-10 text-primary-text" />
+                <Megaphone className="h-10 w-10 text-secondary-text" />
                 <div className="max-w-xs">
-                    <h3 className="text-lg text-white">
+                    <h3 className="text-lg text-primary-text">
                         About manual transfers
                     </h3>
                     <p className="text-sm">
@@ -170,7 +170,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
             <div>
                 {
                     depositAddress ?
-                        <p className='break-all text-white'>
+                        <p className='break-all text-primary-text'>
                             {depositAddress}
                         </p>
                         :
@@ -243,13 +243,13 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
     return <div className='flex items-center gap-1 text-sm my-2'>
         <span>Network:</span>
         {exchangeAssets?.length === 1 ?
-            <div className='flex space-x-1 items-center w-fit font-semibold text-white'>
+            <div className='flex space-x-1 items-center w-fit font-semibold text-primary-text'>
                 <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(exchangeAssets?.[0])}></Image>
                 <span>{defaultSourceNetwork?.network?.display_name}</span>
             </div>
             :
             <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.network_internal_name}>
-                <SelectTrigger className="w-fit border-none !text-white !font-semibold !h-fit !p-0">
+                <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

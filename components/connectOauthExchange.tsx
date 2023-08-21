@@ -76,14 +76,14 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
 
     return (
         <>
-            <div className="w-full grid grid-flow-row text-primary-text space-y-4 mt-2">
-                <h3 className="block text-primary-text">
+            <div className="w-full grid grid-flow-row text-secondary-text space-y-4 mt-2">
+                <h3 className="block text-secondary-text">
                     You will leave Layerswap and be securely redirected to Coinbase authorization page.
                 </h3>
                 <WarningMessage>
                     Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.
                 </WarningMessage>
-                <div className="text-white text-sm mt-3">
+                <div className="text-primary-text text-sm mt-3">
                     <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect}>
                         Connect
                     </SubmitButton>

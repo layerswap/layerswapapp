@@ -52,7 +52,7 @@ const Processing: FC = () => {
                     </div>
                 </div>
                 :
-                <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
+                <span>Estimated time: <span className='text-primary-text'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
         },
         {
             name: (swapStep === SwapStep.TransactionDone && 'Transfer confirmation')
@@ -62,7 +62,7 @@ const Processing: FC = () => {
                 || (swapStep === SwapStep.LSTransferPending && 'complete')
                 || (swapStep === SwapStep.TransactionDone && 'upcoming'),
             description: (swapStep === SwapStep.TransactionDetected
-                || swapStep === SwapStep.LSTransferPending) ? <div>Confirmations: <span className='text-white'>{((swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations) ? swapInputTransaction?.max_confirmations : swapInputTransaction?.confirmations) ?? 0}</span>/{swapInputTransaction?.max_confirmations}</div> : ""
+                || swapStep === SwapStep.LSTransferPending) ? <div>Confirmations: <span className='text-primary-text'>{((swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations) ? swapInputTransaction?.max_confirmations : swapInputTransaction?.confirmations) ?? 0}</span>/{swapInputTransaction?.max_confirmations}</div> : ""
         },
         {
             name: swapStep === SwapStep.LSTransferPending ? 'Your assets are on their way' : 'Transfer of assets to your address',
@@ -80,7 +80,7 @@ const Processing: FC = () => {
                     :
                     <div className='flex items-center space-x-1'>
                         <span>Estimated arrival:</span>
-                        <div className='text-white'>
+                        <div className='text-primary-text'>
                             {
                                 destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
                                     <span>Up to 2 hours (delayed)</span>
@@ -96,15 +96,15 @@ const Processing: FC = () => {
 
     return (
         <Widget.Content>
-            <div className="w-full min-h-[422px] space-y-5 flex flex-col justify-between h-full text-primary-text">
+            <div className="w-full min-h-[422px] space-y-5 flex flex-col justify-between h-full text-secondary-text">
                 <div className='space-y-4'>
                     <div className='mb-6 grid grid-cols-1 gap-4 space-y-4'>
                         {
                             <SwapSummary />
                         }
                         <div className="w-full flex flex-col h-full space-y-5">
-                            <div className="text-left text-primary-text mt-4 space-y-2">
-                                <p className="block sm:text-lg font-medium text-white">
+                            <div className="text-left text-secondary-text mt-4 space-y-2">
+                                <p className="block sm:text-lg font-medium text-primary-text">
                                     Transfer status
                                 </p>
                                 <p className='text-sm flex space-x-1'>

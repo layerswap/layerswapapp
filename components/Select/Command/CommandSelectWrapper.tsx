@@ -64,15 +64,15 @@ export default function CommandSelectWrapper<T>({
                         }
                         {value
                             ?
-                            <span className="ml-3 block font-medium text-white flex-auto items-center">
+                            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
                                 {value?.name}
                             </span>
                             :
-                            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                            <span className="block font-medium text-secondary-text-placeholder flex-auto items-center">
                                 {placeholder}
                             </span>}
                     </span>
-                    <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-white">
+                    <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-primary-text">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
                     </span>
                 </button>

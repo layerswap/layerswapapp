@@ -16,12 +16,12 @@ export default function Steps({ steps }) {
                                     <div className="group relative flex items-start">
                                         <span className="flex h-9 items-center">
                                             <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full  bg-primary">
-                                                <Check className="h-5 w-5 text-white" aria-hidden="true" />
+                                                <Check className="h-5 w-5 text-primary-text" aria-hidden="true" />
                                             </span>
                                         </span>
                                         <span className="ml-4 flex min-w-0 flex-col">
                                             <span className="text-sm font-medium text-gray-300">{step.name}</span>
-                                            <span className="text-sm text-primary-text">{step.description}</span>
+                                            <span className="text-sm text-secondary-text">{step.description}</span>
                                         </span>
                                     </div>
                                 </>
@@ -39,7 +39,7 @@ export default function Steps({ steps }) {
                                         </span>
                                         <span className="ml-4 flex min-w-0 flex-col">
                                             <span className="text-sm font-medium text-primary">{step.name}</span>
-                                            <span className="text-sm text-primary-text">{step.description}</span>
+                                            <span className="text-sm text-secondary-text">{step.description}</span>
                                         </span>
                                     </div>
                                 </>
@@ -55,8 +55,8 @@ export default function Steps({ steps }) {
                                             </span>
                                         </span>
                                         <span className="ml-4 flex min-w-0 flex-col">
-                                            <span className="text-sm font-medium text-primary-text">{step.name}</span>
-                                            <span className="text-sm text-primary-text">{step.description}</span>
+                                            <span className="text-sm font-medium text-secondary-text">{step.name}</span>
+                                            <span className="text-sm text-secondary-text">{step.description}</span>
                                         </span>
                                     </div>
                                 </>

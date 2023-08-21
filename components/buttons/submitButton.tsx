@@ -67,7 +67,7 @@ type DoubleLineTextProps = {
 
 const text_styles = {
     'mltln-text-light': {
-        primary: 'text-white imxMarketplace:text-black',
+        primary: 'text-primary-text imxMarketplace:text-black',
         secondary: 'text-primary-100 imxMarketplace:text-black/60'
     },
     'mltln-text-dark': {

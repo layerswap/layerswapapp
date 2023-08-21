@@ -24,7 +24,7 @@ export const RainbowKitConnectWallet = ({ isButton }: { isButton?: boolean }) =>
                         <div className="inline-flex items-center relative">
                             <AddressIcon address={account.address} size={25} />
                             {
-                                connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                                connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-primary-text">
                                     <ResolveWalletIcon connector={connector?.name} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
                                 </span>
                             }
@@ -135,7 +135,7 @@ const KnownKonnectors = {
 //                             <div className="inline-flex items-center relative">
 //                                 <AddressIcon address={walletAddress} size={25} />
 //                                 {
-//                                     <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+//                                     <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-primary-text">
 //                                         <Image width={20} height={20} src={account.icon} className="border-2 border-secondary-600 rounded-full bg-primary-text" alt={account.id} />
 //                                     </span>
 //                                 }
@@ -145,11 +145,11 @@ const KnownKonnectors = {
 //                             </p>
 //                         </div>
 //                         :
-//                         <div className="font-bold grow flex space-x-2 -mx-2 py-1.5 px-2 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none rounded-lg items-center">
+//                         <div className="font-bold grow flex space-x-2 -mx-2 py-1.5 px-2 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none rounded-lg items-center">
 //                             <div className="inline-flex items-center relative">
 //                                 <AddressIcon address={walletAddress} size={25} />
 //                                 {
-//                                     <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+//                                     <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-primary-text">
 //                                         <Image width={20} height={20} src={account.icon} className="border-2 border-secondary-600 rounded-full bg-primary-text" alt={account.id} />
 //                                     </span>
 //                                 }
@@ -158,21 +158,21 @@ const KnownKonnectors = {
 //                 }
 //             </DialogTrigger>
 //             <DialogContent>
-//                 <div className="flex flex-col items-center text-white gap-3">
+//                 <div className="flex flex-col items-center text-primary-text gap-3">
 //                     <div className="inline-flex items-center relative mt-3">
 //                         <AddressIcon address={walletAddress} size={70} />
 //                         {
-//                             <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+//                             <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-primary-text">
 //                                 <Image width={30} height={30} src={account.icon} className=" border-2 border-secondary-600 rounded-full bg-primary-text" alt={account.id} />
 //                             </span>
 //                         }
 //                     </div>
 //                     <div className="text-center">
 //                         <p className="text-xl font-bold">{shortenAddress(walletAddress)}</p>
-//                         <p className="text-base font-medium text-primary-text">{truncateDecimals(balance, 6)} ETH</p>
+//                         <p className="text-base font-medium text-secondary-text">{truncateDecimals(balance, 6)} ETH</p>
 //                     </div>
 //                     <div className="grid grid-cols-2 w-full gap-2 text-xs font-medium">
-//                         <button onClick={() => setCopied(walletAddress)} type="button" className="w-full py-2 flex flex-col items-center text-white bg-secondary-500 rounded gap-1 transition duration-100 hover:scale-[1.03] hover:brightness-110 active:scale-95">
+//                         <button onClick={() => setCopied(walletAddress)} type="button" className="w-full py-2 flex flex-col items-center text-primary-text bg-secondary-500 rounded gap-1 transition duration-100 hover:scale-[1.03] hover:brightness-110 active:scale-95">
 //                             {
 //                                 isCopied ?
 //                                     <Check className="h-4 w-4" />
@@ -181,7 +181,7 @@ const KnownKonnectors = {
 //                             }
 //                             <span>Copy Address</span>
 //                         </button>
-//                         <button onClick={handleDisconnect} type="button" className="w-full py-2 flex flex-col items-center text-white bg-secondary-500 rounded gap-1 transition duration-100 hover:scale-[1.03] hover:brightness-110 active:scale-95">
+//                         <button onClick={handleDisconnect} type="button" className="w-full py-2 flex flex-col items-center text-primary-text bg-secondary-500 rounded gap-1 transition duration-100 hover:scale-[1.03] hover:brightness-110 active:scale-95">
 //                             <LogOut className="h-4 w-4" />
 //                             <span>Disconnect</span>
 //                         </button>

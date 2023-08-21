@@ -84,32 +84,32 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     <div className="flex items-center gap-2">
                         <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={30} height={30} className="rounded-md" />
                         <div>
-                            <p className="text-primary-text text-lg leading-5">{sourceDisplayName}</p>
+                            <p className="text-secondary-text text-lg leading-5">{sourceDisplayName}</p>
                             {
                                 sourceAccountAddress &&
-                                <p className="text-sm text-primary-text">{sourceAccountAddress}</p>
+                                <p className="text-sm text-secondary-text">{sourceAccountAddress}</p>
                             }
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-white text-lg">{requestedAmount} {sourceCurrencyName}</p>
-                        <p className="text-primary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
+                        <p className="text-primary-text text-lg">{requestedAmount} {sourceCurrencyName}</p>
+                        <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>
                 </div>
-                <ArrowDown className="h-4 w-4 text-primary-text absolute top-[calc(50%-8px)] left-[calc(50%-8px)]" />
+                <ArrowDown className="h-4 w-4 text-secondary-text absolute top-[calc(50%-8px)] left-[calc(50%-8px)]" />
                 <div className="flex items-center justify-between w-full px-3 py-2">
                     <div className="flex items-center gap-2">
                         <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={30} height={30} className="rounded-md" />
                         <div>
-                            <p className="text-primary-text text-lg leading-5">{destinationDisplayName}</p>
-                            <p className="text-sm text-primary-text">{shortenAddress(destAddress)}</p>
+                            <p className="text-secondary-text text-lg leading-5">{destinationDisplayName}</p>
+                            <p className="text-sm text-secondary-text">{shortenAddress(destAddress)}</p>
                         </div>
                     </div>
                     {
                         fee ?
                             <div className="flex flex-col justify-end">
-                                <p className="text-white text-lg">{receiveAmount} {destCurrencyName}</p>
-                                <p className="text-primary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
+                                <p className="text-primary-text text-lg">{receiveAmount} {destCurrencyName}</p>
+                                <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
                             </div>
                             :
                             <div className="flex flex-col justify-end">
@@ -128,7 +128,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         <Fuel className='h-4 w-4 text-primary' />
                         <p>Refuel</p>
                     </div>
-                    <div className="text-white">
+                    <div className="text-primary-text">
                         + {truncatedRefuelAmount} {nativeCurrency.asset}
                     </div>
                 </div>

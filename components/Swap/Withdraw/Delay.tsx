@@ -17,7 +17,7 @@ const Delay: FC = () => {
                     </MessageComponent.Header>
                     <MessageComponent.Description>
                         <p>This swap is being delayed by Coinbase. This usually means that the exchange needs additional verification.</p>
-                        <div className='p-4 bg-secondary-700 text-white rounded-lg border border-secondary-500'>
+                        <div className='p-4 bg-secondary-700 text-primary-text rounded-lg border border-secondary-500'>
                             <div className="flex items-center">
                                 <Info className='h-5 w-5 text-primary-600 mr-3' />
                                 <label className="block text-sm md:text-base font-medium leading-6">What to do?</label>
@@ -30,7 +30,7 @@ const Delay: FC = () => {
                     </MessageComponent.Description>
                 </MessageComponent.Content>
                 <MessageComponent.Buttons>
-                    <div className="flex flex-row text-white text-base space-x-2">
+                    <div className="flex flex-row text-primary-text text-base space-x-2">
                         <div className='basis-1/3'>
                             <GoHomeButton>
                                 <SubmitButton text_align='left' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<Home className="h-5 w-5" aria-hidden="true" />}>

@@ -90,7 +90,7 @@ export default function UserGuide(props) {
                 </Head>
                 <main>
                     <div className="flex justify-center">
-                        <div className="py-4 px-8 md:px-0 prose md:prose-xl text-primary-text">
+                        <div className="py-4 px-8 md:px-0 prose md:prose-xl text-secondary-text">
                             <MDXRemote {...props.mdxSource} components={componentOverrides} />
                         </div>
                     </div>
@@ -108,7 +108,7 @@ export default function UserGuide(props) {
                                                 src={exchange.imageSrc}
                                                 alt="" />
                                             <div className="font-medium text-lg leading-6 space-y-1">
-                                                <h3 className="text-white">{exchange.name}</h3>
+                                                <h3 className="text-primary-text">{exchange.name}</h3>
                                             </div>
                                         </div>
                                     </li>

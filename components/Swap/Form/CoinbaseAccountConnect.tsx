@@ -75,12 +75,12 @@ const CoinbaseAccountConnect: FC<Props> = ({ OnSuccess }) => {
     const basePath = router?.basePath ?? "";
     return (
         <>
-            <div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text'>
+            <div className='w-full flex flex-col justify-between h-full space-y-5 text-secondary-text'>
                 <div className='flex flex-col self-center grow w-full mt-4'>
                     <div className='flex flex-col self-start w-full text-left'>
                         <div className='text-left space-y-1'>
                             <p className='text-sm sm:text-base'>
-                                Allow Layerswap to read your Coinbase account's <span className='text-white'>email address.</span>
+                                Allow Layerswap to read your Coinbase account's <span className='text-primary-text'>email address.</span>
                             </p>
                         </div>
                         <div className="w-full color-white">

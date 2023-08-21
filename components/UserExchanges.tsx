@@ -133,11 +133,11 @@ function UserExchanges() {
 
     return (
         <>
-            <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[600px]'>
+            <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-primary-text overflow-hidden relative min-h-[600px]'>
                 <HeaderWithMenu goBack={handleGoBack}></HeaderWithMenu>
                 <div className="hidden md:block px-6">
                     <p className="text-2xl font-bold relative">Account</p>
-                    <span className="text-primary-text font-medium absolute">{email}</span>
+                    <span className="text-secondary-text font-medium absolute">{email}</span>
                 </div>
                 <div className="relative mb-6 px-6 mt-10 inset-0 flex flex-col styled-scroll">
                     <div className="relative min-h-full items-center justify-center text-center">
@@ -205,7 +205,7 @@ function UserExchanges() {
                             </Combobox.Options>
 
                             {userExchanges?.length === 0 && (
-                                <div className="py-8 px-6 text-center text-primary-text text-sm sm:px-14">
+                                <div className="py-8 px-6 text-center text-secondary-text text-sm sm:px-14">
                                     <AlertCircle
                                         name="exclamation-circle"
                                         className="mx-auto h-16 w-16 text-primary"

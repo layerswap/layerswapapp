@@ -104,21 +104,21 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
             }}
         >
             {({ isValid, isSubmitting, errors, handleChange }) => (
-                <Form className='h-full w-full text-primary-text'>
+                <Form className='h-full w-full text-secondary-text'>
                     {
                         disclosureLogin ?
                             <div className='mt-2'>
                                 <div className="w-full text-left text-base font-light">
                                     <div className='flex items-center justify-start'>
-                                        <p className='text-xl text-white'>
+                                        <p className='text-xl text-primary-text'>
                                             Sign in with email
                                         </p>
                                     </div>
                                     <p className='mt-2 text-left'>
-                                        Please enter the 6 digit code sent to <span className='font-medium text-white'>{tempEmail}</span>
+                                        Please enter the 6 digit code sent to <span className='font-medium text-primary-text'>{tempEmail}</span>
                                     </p>
                                 </div>
-                                <div className="text-sm text-primary-text font-normal mt-5">
+                                <div className="text-sm text-secondary-text font-normal mt-5">
                                     <div className='grid gap-4 grid-cols-5  items-center'>
                                         <div className="relative rounded-md shadow-sm col-span-3">
                                             <NumericInput
@@ -129,7 +129,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                                 onChange={e => {
                                                     /^[0-9]*$/.test(e.target.value) && handleChange(e)
                                                 }}
-                                                className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-secondary-500 block
+                                                className="leading-none h-12 text-2xl pl-5 text-primary-text  focus:ring-primary text-center focus:border-primary border-secondary-500 block
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-secondary-700  w-full font-semibold rounded-md placeholder-primary-text"
                                             />
                                         </div>
@@ -166,7 +166,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                 <Widget.Content center={true}>
                                     <MailOpen className='w-16 h-16 mt-auto text-primary self-center' />
                                     <div className='text-center mt-5'>
-                                        <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{tempEmail}</span></p>
+                                        <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-primary-text'>{tempEmail}</span></p>
                                     </div>
                                     <div className="relative rounded-md shadow-sm mt-5">
                                         <NumericInput
@@ -177,7 +177,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                             onChange={e => {
                                                 /^[0-9]*$/.test(e.target.value) && handleChange(e)
                                             }}
-                                            className="leading-none h-12 text-2xl pl-5 text-white  focus:ring-primary text-center focus:border-primary border-secondary-500 block
+                                            className="leading-none h-12 text-2xl pl-5 text-primary-text  focus:ring-primary text-center focus:border-primary border-secondary-500 block
                                     placeholder:text-2xl placeholder:text-center tracking-widest placeholder:font-normal placeholder:opacity-50 bg-secondary-700  w-full font-semibold rounded-md placeholder-primary-text"
                                         />
                                         <span className="flex text-sm leading-6 items-center mt-1.5">
@@ -197,7 +197,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                     </div>
                                 </Widget.Content>
                                 <Widget.Footer>
-                                    <p className='text-primary-text text-xs sm:text-sm mb-3 md:mb-5'>
+                                    <p className='text-secondary-text text-xs sm:text-sm mb-3 md:mb-5'>
                                         By clicking Confirm you agree to Layerswap's <span
                                             onClick={handleOpenTerms}
                                             className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'> Terms of Service

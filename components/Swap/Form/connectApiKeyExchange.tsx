@@ -62,11 +62,11 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
     const userGuideURL = ExchangeSettings.KnownSettings[exchange?.internal_name]?.UserApiKeyGuideUrl
 
     return (
-        <div className='w-full flex flex-col justify-between h-full space-y-5 text-primary-text text-left'>
+        <div className='w-full flex flex-col justify-between h-full space-y-5 text-secondary-text text-left'>
             <div className='flex flex-col self-center grow w-full'>
                 <div className='flex flex-col self-center grow w-full'>
                     <div className="flex items-center">
-                        <h3 className="block text-primary-text mt-2 mb-4">
+                        <h3 className="block text-secondary-text mt-2 mb-4">
                             Please enter
                             {ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl ? <a target='_blank' href={ExchangeSettings.KnownSettings[exchange?.internal_name]?.ExchangeApiKeyPageUrl} className='mx-1 underline'>{exchange?.display_name}</a> : <span className='mx-1'>{exchange?.display_name}</span>}
                             API keys
@@ -128,12 +128,12 @@ const ConnectApiKeyExchange: FC<Props> = ({ exchange, onSuccess }) => {
                 </div>
             </div>
             <div className='mb-4'>
-                <div className='p-4 bg-secondary-700 text-white rounded-lg border border-secondary-500 mb-5'>
+                <div className='p-4 bg-secondary-700 text-primary-text rounded-lg border border-secondary-500 mb-5'>
                     <div className="flex items-center">
                         <Info className='h-5 w-5 text-primary-600 mr-3' />
                         <label className="block text-sm md:text-base">We're requesting <span className='font-medium'>Read-Only</span> API Keys</label>
                     </div>
-                    <ul className="list-disc font-light space-y-1 text-xs md:text-sm text-primary-text mt-2 ml-8">
+                    <ul className="list-disc font-light space-y-1 text-xs md:text-sm text-secondary-text mt-2 ml-8">
                         <li>They <strong>DON'T</strong> allow us to place a trade or initiate a withdrawal</li>
                         <li>We use it to get your withdrawal history and match with our records</li>
                     </ul>

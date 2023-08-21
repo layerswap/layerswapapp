@@ -76,7 +76,7 @@ const Expired = ({ swap, onGetHelp }: Props) => {
                     </MessageComponent.Description>
                 </MessageComponent.Content>
                 <MessageComponent.Buttons>
-                    <div className="flex flex-row text-white text-base space-x-2">
+                    <div className="flex flex-row text-primary-text text-base space-x-2">
                         <div className='basis-1/3'>
                             <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
                                 <DoubleLineText
@@ -125,7 +125,7 @@ const Canceled = ({ swap, onGetHelp }: Props) => {
                     </MessageComponent.Description>
                 </MessageComponent.Content>
                 <MessageComponent.Buttons>
-                    <div className="flex flex-row text-white text-base space-x-2">
+                    <div className="flex flex-row text-primary-text text-base space-x-2">
                         <div className='basis-1/3'>
                             <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
                                 <DoubleLineText
@@ -177,7 +177,7 @@ const SwapFailed = ({ swap, onGetHelp }: Props) => {
                 </MessageComponent.Content>
                 <MessageComponent.Buttons>
                     <MessageComponent.Buttons>
-                        <div className="flex flex-row text-white text-base space-x-2">
+                        <div className="flex flex-row text-primary-text text-base space-x-2">
                             <div className='basis-1/3'>
                                 <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
                                     <DoubleLineText

@@ -127,7 +127,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
             <Widget.Content center>
                 {
                     !hideHeader &&
-                    <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
+                    <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-primary-text font-semibold'>
                         Please connect your {exchange_name} account
                     </h3>
                 }
@@ -157,7 +157,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             </Carousel>}
                         </div>
                 }
-                <div className="flex font-normal text-sm text-primary-text">
+                <div className="flex font-normal text-sm text-secondary-text">
                     <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
                 </div>
             </Widget.Content>
@@ -165,7 +165,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                 <div>
                     {
                         localConfigs.alreadyFamiliarWithCoinbaseConnect && carouselFinished ?
-                            <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-secondary-500 hover:bg-secondary-400 rounded-md border border-secondary-500 hover:border-secondary-200 w-full mb-3">
+                            <button onClick={() => handleToggleChange(false)} className="p-1.5 text-primary-text bg-secondary-500 hover:bg-secondary-400 rounded-md border border-secondary-500 hover:border-secondary-200 w-full mb-3">
                                 Show me full guide
                             </button>
                             :
@@ -178,7 +178,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                                     onChange={() => handleToggleChange(true)}
                                     checked={localConfigs.alreadyFamiliarWithCoinbaseConnect}
                                 />
-                                <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
+                                <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-primary-text">
                                     I'm already familiar with the process.
                                 </label>
                             </div>
@@ -188,7 +188,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             carouselFinished ? "Connect" : "Next"
                         }
                     </SubmitButton>
-                    <p className='text-sm mt-2 font-lighter text-primary-text text-left'>Don't want to connect Coinbase account? <span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
+                    <p className='text-sm mt-2 font-lighter text-secondary-text text-left'>Don't want to connect Coinbase account? <span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
                 </div>
             </Widget.Footer>
         </Widget>

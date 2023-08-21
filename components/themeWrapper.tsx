@@ -100,7 +100,7 @@ export default function ({ hideNavbar, children }: Props) {
                 {hideNavbar ?? <Navbar />}
                 <div>
                     <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
-                        <div className="flex flex-col w-full text-white">
+                        <div className="flex flex-col w-full text-primary-text">
                             {children}
                         </div>
                     </div>

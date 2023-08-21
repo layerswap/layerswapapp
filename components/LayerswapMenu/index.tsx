@@ -49,7 +49,7 @@ export default function () {
     }
 
     return <>
-        <span className="text-primary-text cursor-pointer relative">
+        <span className="text-secondary-text cursor-pointer relative">
             {
                 <Menu as="div" className={`relative inline-block text-left ${menuVisible ? 'visible' : 'invisible'}`}>
                     {({ open }) => (

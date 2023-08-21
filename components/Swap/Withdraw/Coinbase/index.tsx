@@ -132,7 +132,7 @@ const TransferElements: FC = () => {
                     footerStickiness={false}
                 />
             </Modal>
-            <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
+            <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
                 <div className='space-y-4'>
                     <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
                         {

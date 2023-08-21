@@ -50,7 +50,7 @@ class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
                                         </MessageComponent.Description>
                                     </MessageComponent.Content>
                                     <MessageComponent.Buttons>
-                                        <div className="flex flex-row text-white text-xs sm:text-base space-x-2">
+                                        <div className="flex flex-row text-primary-text text-xs sm:text-base space-x-2">
                                             <div className='basis-1/3'>
                                                 {
                                                     this.props.router.asPath !== "/" && <GoHomeButton>

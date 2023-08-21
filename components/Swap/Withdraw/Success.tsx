@@ -51,7 +51,7 @@ const Success: FC = () => {
             </Widget.Content>
             <Widget.Footer>
                 <MessageComponent.Buttons>
-                    <div className="flex flex-row text-white text-base space-x-2">
+                    <div className="flex flex-row text-primary-text text-base space-x-2">
                         {!externalId &&
                             ((transaction_explorer_template && swapOutputTransaction?.transaction_id) ?
                                 <>

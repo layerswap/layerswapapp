@@ -45,7 +45,7 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconW
                     <div>
                         {qrCode}
                     </div>
-                    <div className="text-xl md:text-2xl text-primary-text">
+                    <div className="text-xl md:text-2xl text-secondary-text">
                         <CopyButton toCopy={qrUrl} iconHeight={22} iconWidth={22}>
                             <span>{shortenAddress(qrUrl)}</span>
                         </CopyButton>

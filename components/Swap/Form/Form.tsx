@@ -212,7 +212,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
                             <NetworkFormField direction="from" label="From" />
                         </div>}
-                        {!query?.hideFrom && !query?.hideTo && <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed hover:text-primary disabled:text-primary-text duration-200 transition'>
+                        {!query?.hideFrom && !query?.hideTo && <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed hover:text-primary disabled:text-secondary-text duration-200 transition'>
                             <motion.div
                                 animate={animate}
                                 transition={{ duration: 0.3 }}
@@ -231,7 +231,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                     {
                         !hideAddress &&
                         <div className="w-full mb-3.5 leading-4">
-                            <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
+                            <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-sm">
                                 {`To ${values?.to?.display_name || ''} address`}
                             </label>
                             <AddressButton
@@ -333,7 +333,7 @@ function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: str
 }
 
 const TruncatedAdrress = ({ address }: { address: string }) => {
-    return <div className="tracking-wider text-white">{shortenAddress(address)}</div>
+    return <div className="tracking-wider text-primary-text">{shortenAddress(address)}</div>
 }
 
 type AddressButtonProps = {
@@ -345,7 +345,7 @@ type AddressButtonProps = {
 }
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
     const destination = values?.to
-    return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
+    return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-secondary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
         {isPartnerWallet && !destination?.isExchange &&
             <div className="shrink-0 flex items-center pointer-events-none">
                 {

@@ -196,7 +196,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         }, [destinationChainId])
 
         return (<>
-            <div className='w-full flex flex-col justify-between h-full text-primary-text'>
+            <div className='w-full flex flex-col justify-between h-full text-secondary-text'>
                 <div className='flex flex-col self-center grow w-full'>
                     <div className={`flex flex-col self-center grow w-full space-y-3 pb-3`}>
                         <div className="text-left">
@@ -272,7 +272,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {
                             validInputAddress &&
                             <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-300 bg-secondary-600 flex text-sm rounded-md items-center w-full transform hover:bg-secondary-500 transition duration-200 px-2 py-2 hover:border-secondary-500 hover:shadow-md`}>
-                                <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
+                                <div className='flex text-secondary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                     {
                                         destinationIsStarknet && starknetAccount?.isConnected ?
                                             <Image src={starknetAccount?.icon} alt={starknetAccount?.account?.address} width={25} height={25} />
@@ -281,11 +281,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                     }
                                 </div>
                                 <div className="flex flex-col grow">
-                                    <div className="block text-md font-medium text-white">
+                                    <div className="block text-md font-medium text-primary-text">
                                         {shortenAddress(validInputAddress)}
                                     </div>
                                 </div>
-                                <div className='flex text-primary-text flex-row items-left px-2 py-1 rounded-md'>
+                                <div className='flex text-secondary-text flex-row items-left px-2 py-1 rounded-md'>
                                     Select
                                 </div>
                             </div>
@@ -298,8 +298,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             && ExchangeSettings.KnownSettings[destination?.internal_name]?.EnableDepositAddressConnect
                             && !depositeAddressIsfromAccount &&
                             <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:shadow-xl`}>
-                                <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                    <WalletIcon className="h-6 w-6 text-primary-text" />
+                                <div className='flex text-secondary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
+                                    <WalletIcon className="h-6 w-6 text-secondary-text" />
                                 </div>
                                 <div className="flex flex-col">
                                     <div className="block text-sm font-medium">
@@ -314,8 +314,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {
                             !disabled && !inputValue && destinationIsStarknet && canAutofillStarknet &&
                             <div onClick={handleConnectStarknet} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
-                                <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                    <WalletIcon className="w-6 h-6 text-primary-text" />
+                                <div className='flex text-secondary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
+                                    <WalletIcon className="w-6 h-6 text-secondary-text" />
                                 </div>
                                 <div className="flex flex-col">
                                     <div className="block text-sm font-medium">
@@ -333,8 +333,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             &&
                             <RainbowKit>
                                 <div className={`min-h-12 text-left space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
-                                    <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                        <WalletIcon className="w-6 h-6 text-primary-text" />
+                                    <div className='flex text-secondary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
+                                        <WalletIcon className="w-6 h-6 text-secondary-text" />
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="block text-sm font-medium">
@@ -349,12 +349,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         }
                         {
                             destination?.isExchange && !inputAddressIsValid &&
-                            <div className='text-left p-4 bg-secondary-800 text-white rounded-lg border border-secondary-500'>
+                            <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500'>
                                 <div className="flex items-center">
                                     <Info className='h-5 w-5 text-primary-600 mr-3' />
                                     <label className="block text-sm md:text-base font-medium leading-6">How to find your {destination?.display_name} deposit address</label>
                                 </div>
-                                <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
+                                <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-secondary-text">
                                     <li>Go to the Deposits page</li>
                                     <li>
                                         Select
@@ -366,7 +366,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                     width="15"
                                                     className='rounded-sm'
                                                 />
-                                                <span className="text-white">{values.currency.asset}</span>
+                                                <span className="text-primary-text">{values.currency.asset}</span>
                                             </span>
                                         </span>
                                         as asset
@@ -381,7 +381,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                     width="15"
                                                     className='rounded-sm'
                                                 />
-                                                <span className="text-white">{destinationNetwork?.display_name}</span>
+                                                <span className="text-primary-text">{destinationNetwork?.display_name}</span>
                                             </span>
                                         </span>
                                         as network
@@ -414,7 +414,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                             as="span"
                                                             className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:bg-secondary-300 transition duration-200 px-2 py-1.5 border border-secondary-900 hover:border-secondary-500 hover:bg-secondary-700/70 hover:shadow-xl ${checked && 'border-secondary-700'}`}
                                                         >
-                                                            <div className='flex bg-secondary-400 text-primary-text flex-row items-left  rounded-md p-2'>
+                                                            <div className='flex bg-secondary-400 text-secondary-text flex-row items-left  rounded-md p-2'>
                                                                 <AddressIcon address={a.address} size={20} />
                                                             </div>
                                                             <div className="flex flex-col">

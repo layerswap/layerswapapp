@@ -13,7 +13,7 @@ const Header: FC<HeaderProps> = ({ tab, onCLick, activeTabId }) => {
     return <button
         key={tab.id}
         onClick={() => onCLick(tab.id)}
-        className={`${activeTabId === tab.id ? "bg-secondary-700 text-primary-text" : "text-primary-text/50 hover:text-primary-text bg-secondary-800"
+        className={`${activeTabId === tab.id ? "bg-secondary-700 text-secondary-text" : "text-secondary-text/50 hover:text-secondary-text bg-secondary-800"
             } grow rounded-md text-left relative py-3 px-5 text-sm transition`}
         style={{
             WebkitTapHighlightColor: "transparent",
