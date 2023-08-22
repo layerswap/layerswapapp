@@ -16,7 +16,6 @@ const WalletTransfer: FC = () => {
     const { layers, networks } = useSettingsState()
     const { address } = useAccount()
     const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap
-    console.log(swap,"swap");
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const destination = layers.find(n => n.internal_name === destination_network)
     const sourceCurrency = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
