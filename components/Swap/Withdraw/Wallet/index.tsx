@@ -18,7 +18,7 @@ const WalletTransfer: FC = () => {
     const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const destination = layers.find(n => n.internal_name === destination_network)
-    const sourceCurrency = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
+    const sourceAsset = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
@@ -34,10 +34,8 @@ const WalletTransfer: FC = () => {
         data: generatedDeposit
     } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
 
-    const managedDeposit = networks?.find(n => n?.internal_name === swap?.source_network)?.managed_accounts[0];
+    const managedDepositAddress = sourceAsset?.network?.managed_accounts?.[0]?.address;
     const generatedDepositAddress = generatedDeposit?.data?.address
-
-    const managedDepositAddress = managedDeposit.address
     const sourceChainId = source_network.isExchange === false && Number(source_network.chain_id)
 
     const feeParams = {
@@ -64,14 +62,14 @@ const WalletTransfer: FC = () => {
         <TransferFromWallet
             swapId={swap.id}
             networkDisplayName={source_network?.display_name}
-            tokenDecimals={sourceCurrency?.decimals}
-            tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`}
+            tokenDecimals={sourceAsset?.decimals}
+            tokenContractAddress={sourceAsset?.contract_address as `0x${string}`}
             chainId={sourceChainId as number}
             generatedDepositAddress={generatedDepositAddress as `0x${string}`}
             managedDepositAddress={managedDepositAddress as `0x${string}`}
             userDestinationAddress={swap.destination_address as `0x${string}`}
             amount={requested_amount}
-            asset={sourceCurrency?.asset}
+            asset={sourceAsset?.asset}
         />
     </Wrapper>
 
