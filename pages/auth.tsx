@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react'
 import inIframe from '../components/utils/inIframe'
 import { SwapDataProvider } from '../context/swap'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
+import { getServerSideProps } from '../lib/serverSidePropsUtils'
 
 export default function AuthPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
@@ -35,24 +36,4 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
       </SettingsProvider>
     </Layout>
   )
-}
-export async function getServerSideProps(context) {
-
-  context.res.setHeader(
-    'Cache-Control',
-    's-maxage=60, stale-while-revalidate'
-  );
-
-  var apiClient = new LayerSwapApiClient();
-  const { data: settings } = await apiClient.GetSettingsAsync()
-
-  const resource_storage_url = settings.discovery.resource_storage_url
-  if (resource_storage_url[resource_storage_url.length - 1] === "/")
-    settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
-
-  LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
-
-  return {
-    props: { settings }
-  }
 }

@@ -40,6 +40,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             status: e.status,
             authorization_flow: e.authorization_flow,
             type: e.type,
+            is_featured: e?.metadata?.is_featured,
             assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks)
         }))
         const networkLayers: Layer[] = networks.map((n): Layer =>
@@ -52,6 +53,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             average_completion_time: n.average_completion_time,
             chain_id: n.chain_id,
             address_type: n.address_type,
+            is_featured: n?.metadata?.is_featured,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)
         }))
         const result = exchangeLayers.concat(networkLayers)

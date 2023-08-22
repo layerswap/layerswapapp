@@ -7,6 +7,7 @@ export class Exchange {
     authorization_flow: "o_auth2" | "api_credentials" | 'none'
     currencies: (ExchangeCurrency & NetworkCurrency)[];
     status: LayerStatus;
+    metadata?: ExchangeMetadata;
     type: "cex" | "fiat"
 }
 
@@ -17,4 +18,7 @@ export class ExchangeCurrency {
     network: string;
     is_default: boolean;
     status: LayerStatus
+}
+export class ExchangeMetadata {
+    is_featured: boolean;
 }

@@ -20,7 +20,9 @@ export class CryptoNetwork {
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
     chain_id: string;
-    address_type: NetworkAddressType
+    address_type: NetworkAddressType;
+    metadata?:  NetworkMetadata;
+    created_date: string;
 }
 
 export class NetworkCurrency {
@@ -37,4 +39,10 @@ export class NetworkCurrency {
     decimals: number;
     source_base_fee: number;
     destination_base_fee: number;
+}
+
+export class NetworkMetadata {
+    is_featured: boolean;
+    node_url: string;
+    watchdog_contract_address?: string;
 }
