@@ -13,6 +13,7 @@ import { SortingByOrder } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
+import KnownInternalNames from "../../lib/knownIds";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -46,14 +47,21 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, from && lockFrom);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
+            const indexOfLinea = groups?.find(g => g?.name === 'Networks')?.items?.indexOf(values?.find(i => i?.id === KnownInternalNames.Networks.LineaMainnet))
+            let newGroup = new SelectMenuItemGroup({
+                name: "New",
+                items: [
+                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(indexOfLinea, 1),
+                ]
+            })
             let popularsGroup = new SelectMenuItemGroup({
                 name: "Popular",
                 items: [
-                    ...groups?.find(g => g?.name === 'Networks')?.items.splice(0, 2),
-                    ...(groups?.find(g => g?.name === 'Exchanges')?.items.splice(0, 2) || [])
+                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 2),
+                    ...(groups?.find(g => g?.name === 'Exchanges')?.items?.splice(0, 2) || [])
                 ]
             })
-            groups.unshift(popularsGroup);
+            groups.unshift(popularsGroup, newGroup);
             return groups;
         }
     }
@@ -64,11 +72,22 @@ const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, to && lockTo);
         valueGrouper = (values: ISelectMenuItem[]) => {
             let groups: SelectMenuItemGroup[] = groupByType(values);
+            const indexOfBase = groups?.find(g => g?.name === 'Networks')?.items?.indexOf(values?.find(i => i?.id === KnownInternalNames.Networks.BaseMainnet))
+            const indexOfMantle = groups?.find(g => g?.name === 'Networks')?.items?.indexOf(values?.find(i => i?.id === KnownInternalNames.Networks.MantleMainnet))
+            const indexOfPGN = groups?.find(g => g?.name === 'Networks')?.items?.indexOf(values?.find(i => i?.id === KnownInternalNames.Networks.PGNMainnet))
+            let newGroup = new SelectMenuItemGroup({
+                name: "New",
+                items: [
+                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(indexOfBase, 1),
+                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(indexOfPGN, 1),
+                    ...groups?.find(g => g?.name === 'Networks')?.items?.splice(indexOfMantle, 1),
+                ]
+            })
             let popularsGroup = new SelectMenuItemGroup({
                 name: "Popular",
                 items: [...groups?.find(g => g?.name === 'Networks')?.items?.splice(0, 4)]
             })
-            groups.unshift(popularsGroup);
+            groups.unshift(popularsGroup, newGroup);
             return groups;
         }
     }

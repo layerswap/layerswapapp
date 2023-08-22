@@ -3,8 +3,7 @@ import { FC } from 'react'
 import { SwapDataProvider } from '../context/swap';
 import { UserExchangeProvider } from '../context/userExchange';
 import { MenuProvider } from '../context/menu';
-import IntroCard from './introCard';
-import { AuthStep, SwapCreateStep } from '../Models/Wizard';
+import { AuthStep } from '../Models/Wizard';
 import { FormWizardProvider } from '../context/formWizardProvider';
 import inIframe from './utils/inIframe';
 import { useAuthState, UserType } from '../context/authContext';
@@ -29,20 +28,16 @@ const Swap: FC = () => {
               <WalletDatadProvider>
                 <SwapForm />
               </WalletDatadProvider>
-              {
+              {/* {
                 !embedded && userType && userType != UserType.AuthenticatedUser &&
                 <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu>
                   <GuestCard />
                 </FormWizardProvider>
-              }
+              } */}
             </TimerProvider>
           </UserExchangeProvider>
         </SwapDataProvider >
       </MenuProvider>
-      {
-        !embedded &&
-        <IntroCard />
-      }
     </div >
   )
 };
