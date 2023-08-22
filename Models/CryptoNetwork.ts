@@ -20,7 +20,11 @@ export class CryptoNetwork {
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
     chain_id: string;
-    address_type: NetworkAddressType
+    address_type: NetworkAddressType;
+    managed_accounts: ManagedAccount[];
+}
+export type ManagedAccount = {
+    address: string;
 }
 
 export class NetworkCurrency {
