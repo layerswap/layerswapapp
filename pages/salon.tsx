@@ -37,7 +37,7 @@ export default function Salon() {
                     </svg>
                 </div>
                 <div className="flex flex-col text-center place-content-center space-y-2">
-                    <p className="block text-primary-text font-bold text-lg"> Exchange account successfully connected </p>
+                    <p className="block text-white font-bold text-lg"> Exchange account successfully connected </p>
                     <p className="block"> You can close this window now</p>
                 </div>
             </div>

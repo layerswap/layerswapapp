@@ -22,7 +22,8 @@ export class QueryParams {
     balances?: string = null;
     account?: string = "";
     actionButtonText?: string = "";
-    
+    theme?: string = "";
+
     // Obsolate
     sourceExchangeName?: string = "";
     destNetwork?: string = "";
