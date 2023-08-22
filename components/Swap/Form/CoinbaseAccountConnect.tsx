@@ -13,6 +13,7 @@ import { OpenLink } from '../../../lib/openLink';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
 import SubmitButton from '../../buttons/submitButton';
 import { useRouter } from 'next/router';
+import { useSwapDataState } from '../../../context/swap';
 
 type Props = {
     OnSuccess: () => Promise<void>,
@@ -20,9 +21,11 @@ type Props = {
 
 const CoinbaseAccountConnect: FC<Props> = ({ OnSuccess }) => {
     const {
-        values,
+        values
     } = useFormikContext<SwapFormValues>();
 
+    const { swap } = useSwapDataState()
+   
     const destination = values?.to
     const settings = useSettingsState()
     const oauthProviders = settings?.discovery?.o_auth_providers
@@ -63,7 +66,7 @@ const CoinbaseAccountConnect: FC<Props> = ({ OnSuccess }) => {
             const access_token = TokenService.getAuthData()?.access_token
 
             const { sub } = parseJwt(access_token) || {}
-            const encoded = btoa(JSON.stringify({ Type: 0, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
+            const encoded = btoa(JSON.stringify({ swapId: swap?.id, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
             const authWindow = OpenLink({ link: oauth_connect_url + encoded, swap_data: values, query })
             setAuthWindow(authWindow)
         }
