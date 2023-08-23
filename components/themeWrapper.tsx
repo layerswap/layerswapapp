@@ -17,14 +17,7 @@ export default function ({ hideNavbar, children }: Props) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const { isDesktop } = useWindowDimensions()
-    const query = useQueryState()
 
-    const theme_name = router.query.theme
-        || router.query.addressSource
-        || query.theme
-        || query.addressSource
-
-    const themeData = DEFAULT_THEMES[theme_name as string];
     useEffect(() => {
         const handleStart = (url) => (url !== router.asPath) && setLoading(true);
         const handleComplete = (url) => (url === router.asPath) && setLoading(false);
@@ -121,6 +114,5 @@ export default function ({ hideNavbar, children }: Props) {
                 {isDesktop && <GlobalFooter />}
             </div>
         </main>
-        <ColorSchema themeData={themeData} />
     </div>
 }

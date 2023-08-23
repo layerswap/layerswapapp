@@ -45,7 +45,6 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-colors-secondary-900: ${themeData.secondary?.[900]};
                     --ls-colors-secondary-950: ${themeData.secondary?.[950]};
                     --ls-colors-secondary-text: ${themeData.secondary?.text};
-
                     }
                 `}
                 </style>

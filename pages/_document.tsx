@@ -21,6 +21,8 @@ declare global {
 
 export default class extends Document {
   render() {
+    const query = this.props?.__NEXT_DATA__?.query || {}
+    const theme = (query.theme || query.addressSource) as string
     return (
       <Html>
         <Head>
@@ -41,7 +43,7 @@ export default class extends Document {
             }}
           />
         </Head>
-        <body>
+        <body className={theme}>
           <Main />
           <NextScript />
         </body>
