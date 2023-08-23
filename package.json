@@ -74,15 +74,15 @@
     "typescript": "^5.1"
   },
   "optionalDependencies": {
-    "@storybook/addon-essentials": "^7.3.1",
-    "@storybook/addon-interactions": "^7.3.1",
-    "@storybook/addon-links": "^7.3.1",
+    "@storybook/addon-essentials": "^7.3.2",
+    "@storybook/addon-interactions": "^7.3.2",
+    "@storybook/addon-links": "^7.3.2",
     "@storybook/addon-onboarding": "^1.0.8",
-    "@storybook/blocks": "^7.3.1",
-    "@storybook/nextjs": "^7.3.1",
-    "@storybook/react": "^7.3.1",
+    "@storybook/blocks": "^7.3.2",
+    "@storybook/nextjs": "^7.3.2",
+    "@storybook/react": "^7.3.2",
     "@storybook/testing-library": "^0.2.0",
-    "storybook": "^7.3.1",
+    "storybook": "^7.3.2",
     "storybook-react-context": "^0.6.0"
   }
 }
