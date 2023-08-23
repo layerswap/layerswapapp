@@ -25,7 +25,7 @@ const Component: FC = () => {
     if(!settings)
         return <div>asdasdas</div>
     return (
-        <Processing settings={settings} swap={swap} />
+        <Processing />
     )
 }
 
