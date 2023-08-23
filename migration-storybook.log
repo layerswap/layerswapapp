@@ -1,0 +1,51 @@
+🔎 checking possible migrations..
+
+🔎 found a 'github-flavored-markdown-mdx' migration:
+╭ Automigration detected ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                                │
+│   In MDX1 you had the option of using GitHub flavored markdown.                                                                                │
+│                                                                                                                                                │
+│   Storybook 7.0 uses MDX2 for compiling MDX, and thus no longer supports GFM out of the box.                                                   │
+│   Because of this you need to explicitly add the GFM plugin in the addon-docs options:                                                         │
+│   https://storybook.js.org/docs/react/writing-docs/mdx#lack-of-github-flavored-markdown-gfm                                                    │
+│                                                                                                                                                │
+│   We recommend you follow the guide on the link above, however we can add a temporary storybook addon that helps make this migration easier.   │
+│   We'll install the addon and add it to your storybook config.                                                                                 │
+│                                                                                                                                                │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+? Do you want to run the 'github-flavored-markdown-mdx' migration on your project? » (Y/n)√ Do you want to run the 'github-flavored-markdown-mdx' migration on your project? ... yes
+❌ error when running github-flavored-markdown-mdx migration
+Error: Couldn't find any official storybook packages in package.json
+    at getStorybookVersionSpecifier (C:\Users\Paruyr\Desktop\layerswapapp\node_modules\@storybook\cli\dist\generate.js:22:3745)
+    at Object.run (C:\Users\Paruyr\Desktop\layerswapapp\node_modules\@storybook\cli\dist\generate.js:167:158)
+    at async runFixes (C:\Users\Paruyr\Desktop\layerswapapp\node_modules\@storybook\cli\dist\generate.js:390:1144)
+    at async automigrate (C:\Users\Paruyr\Desktop\layerswapapp\node_modules\@storybook\cli\dist\generate.js:385:676)
+    at async doUpgrade (C:\Users\Paruyr\Desktop\layerswapapp\node_modules\@storybook\cli\dist\generate.js:417:3419)
+    at async withTelemetry (C:\Users\Paruyr\Desktop\layerswapapp\node_modules\@storybook\core-server\dist\index.js:113:3910)
+    at async upgrade (C:\Users\Paruyr\Desktop\layerswapapp\node_modules\@storybook\cli\dist\generate.js:417:3865)
+
+
+╭ Migration check ran with failures ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                                               │
+│   Failed migrations:                                                                                                                                          │
+│                                                                                                                                                               │
+│   github-flavored-markdown-mdx:                                                                                                                               │
+│   Couldn't find any official storybook packages in package.json                                                                                               │
+│                                                                                                                                                               │
+│   You can find the full logs in C:\Users\Paruyr\Desktop\layerswapapp\migration-storybook.log                                                                  │
+│                                                                                                                                                               │
+│   ─────────────────────────────────────────────────                                                                                                           │
+│                                                                                                                                                               │
+│   If you'd like to run the migrations again, you can do so by running 'npx storybook@next automigrate'                                                        │
+│                                                                                                                                                               │
+│   The automigrations try to migrate common patterns in your project, but might not contain everything needed to migrate to the latest version of Storybook.   │
+│                                                                                                                                                               │
+│   Please check the changelog and migration guide for manual migrations and more information: https://storybook.js.org/migration-guides/7.0                    │
+│   And reach out on Discord if you need help: https://discord.gg/storybook                                                                                     │
+│                                                                                                                                                               │
+│   ─────────────────────────────────────────────────                                                                                                           │
+│                                                                                                                                                               │
+│   You can find more information for a given dependency by running npm ls --depth=1 <package-name>                                                             │
+│                                                                                                                                                               │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
