@@ -1,6 +1,5 @@
-///Doe to typechecking please always set default values in this class
-export class QueryParams {
-    coinbase_redirect?: string = "";
+
+export class PersistantQueryParams {
     from?: string = "";
     to?: string = "";
     lockAddress?: boolean = false;
@@ -29,4 +28,9 @@ export class QueryParams {
     destNetwork?: string = "";
     lockNetwork?: boolean = false;
     lockExchange?: boolean = false;
+}
+
+
+export class QueryParams extends  PersistantQueryParams {
+    coinbase_redirect?: string = "";
 }

@@ -23,7 +23,8 @@ import SendFeedback from "../sendFeedback";
 import IconButton from "../buttons/iconButton";
 import YoutubeLogo from "../icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
-``
+import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
+
 
 export default function () {
     const { email, userType, userId } = useAuthState()
@@ -51,7 +52,10 @@ export default function () {
     const handleLogout = useCallback(() => {
         TokenService.removeAuthData()
         if (router.pathname != '/') {
-            router.push('/')
+            router.push({
+                pathname: '/',
+                query: resolvePersistantQueryParams(router.query)
+            })
         } else {
             router.reload()
         }

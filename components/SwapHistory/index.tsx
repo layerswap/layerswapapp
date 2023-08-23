@@ -16,6 +16,7 @@ import ToggleButton from "../buttons/toggleButton";
 import Modal from "../modal/modal";
 import HeaderWithMenu from "../HeaderWithMenu";
 import Link from "next/link";
+import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -292,7 +293,10 @@ function TransactionsHistory() {
                           <div className="flex flex-row text-primary-text text-base space-x-2">
                             <SubmitButton
                               text_align="center"
-                              onClick={() => router.push(`/swap/${selectedSwap.id}`)}
+                              onClick={() => router.push({
+                                pathname: `/swap/${selectedSwap.id}`,
+                                query: resolvePersistantQueryParams(router.query)
+                              })}
                               isDisabled={false}
                               isSubmitting={false}
                               icon={

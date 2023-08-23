@@ -9,6 +9,7 @@ import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
 import { DepositType } from "./NetworkSettings";
+import { resolvePersistantQueryParams } from "../helpers/querryHelper";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;

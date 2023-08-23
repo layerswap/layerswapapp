@@ -27,6 +27,7 @@ import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 import { ApiError, KnownErrorCode } from "../../../Models/ApiError";
+import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -90,7 +91,7 @@ export default function () {
         }
     }, [query, settings])
 
-    
+
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             const destination_internal_name = values?.to?.internal_name
@@ -144,7 +145,10 @@ export default function () {
                 }
             }
             const swapId = await createSwap(values, query, partner);
-            await router.push(`/swap/${swapId}`)
+            await router.push({
+                pathname: `/swap/${swapId}`,
+                query: resolvePersistantQueryParams(router.query)
+            })
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error

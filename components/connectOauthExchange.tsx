@@ -11,6 +11,7 @@ import { Layer } from '../Models/Layer';
 import WarningMessage from './WarningMessage';
 import { useSettingsState } from '../context/settings';
 import KnownInternalNames from '../lib/knownIds';
+import { resolvePersistantQueryParams } from '../helpers/querryHelper';
 
 type Props = {
     exchange: Layer & { isExchange: true },
