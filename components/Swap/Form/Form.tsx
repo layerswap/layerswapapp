@@ -293,12 +293,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
                             </WarningMessage>
                         }
-                        {
-                            source?.internal_name === KnownInternalNames.Networks.PolygonMainnet &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">Transfers from Polygon take up to 1 hour due to a recent Polygon network issue with chain reorgs.</span>
-                            </WarningMessage>
-                        }
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
