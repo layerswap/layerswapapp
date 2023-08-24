@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import Processing from '../components/Swap/Withdraw/Processing';
 import { SwapItem, TransactionType } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapDataStateContext } from '../context/swap';
@@ -14,6 +13,7 @@ import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bit
 import { WalletStateContext } from '../context/wallet';
 import { QueryStateContext } from '../context/query';
 import { FC } from 'react';
+import FailedStory from './storyComponents/Failed';
 
 const swap: SwapItem = {
     "id": "2f3f3d0f-028a-49ed-a648-bb3543061a80",
@@ -25,7 +25,7 @@ const swap: SwapItem = {
     "app_name": "Layerswap",
     "has_pending_deposit": false,
     "created_date": "2023-08-16T16:31:11.934618+00:00",
-    "status": SwapStatus.Created,
+    "status": SwapStatus.Failed,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
     "source_network_asset": "ETH",
     "source_network": "ETHEREUM_GOERLI",
@@ -110,7 +110,7 @@ const connectors = connectorsForWallets([
 
 let appSettings = new LayerSwapAppSettings(Settings)
 
-const Comp: FC<{ swap: SwapItem }> = ({ swap }) => {
+const Comp1: FC<{ swap: SwapItem }> = ({ swap }) => {
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
@@ -122,7 +122,7 @@ const Comp: FC<{ swap: SwapItem }> = ({ swap }) => {
             <QueryStateContext.Provider value={{}}>
                 <SwapDataStateContext.Provider value={swapContextInitialValues}>
                     <WalletStateContext.Provider value={{}}>
-                        <Processing />
+                        <FailedStory />
                     </WalletStateContext.Provider>
                 </SwapDataStateContext.Provider >
             </QueryStateContext.Provider>
@@ -131,12 +131,12 @@ const Comp: FC<{ swap: SwapItem }> = ({ swap }) => {
 }
 // More on how to set up stories at: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 const meta = {
-    title: 'Example/Process',
-    component: Comp,
+    title: 'Example/Failed',
+    component: Comp1,
     parameters: {
         layout: 'centered',
     }
-} satisfies Meta<typeof Comp>;
+} satisfies Meta<typeof Comp1>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -144,30 +144,6 @@ type Story = StoryObj<typeof meta>;
 // More on writing stories with args: https://storybook.js.org/docs/react/writing-stories/args
 export const Initial: Story = {
     args: {
-        swap: { ...swap, status: SwapStatus.Created }
-    }
-};
-
-export const OutputPending: Story = {
-    args: {
-        swap: { ...swap, status: SwapStatus.LsTransferPending }
-    }
-};
-
-export const Completed: Story = {
-    args: {
-        swap: { ...swap, status: SwapStatus.Completed }
-    }
-};
-
-export const UserTransferPending: Story = {
-    args: {
-        swap: { ...swap, status: SwapStatus.UserTransferPending }
-    }
-};
-
-export const UserTransferDelayed: Story = {
-    args: {
-        swap: { ...swap, status: SwapStatus.UserTransferDelayed }
+        swap: { ...swap, status: SwapStatus.Failed }
     }
 };
