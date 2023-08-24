@@ -23,6 +23,8 @@ export class CryptoNetwork {
     address_type: NetworkAddressType;
     metadata?:  NetworkMetadata;
     created_date: string;
+    is_featured: boolean;
+    nodes: NetworkNodes[];
 }
 
 export class NetworkCurrency {
@@ -42,7 +44,11 @@ export class NetworkCurrency {
 }
 
 export class NetworkMetadata {
-    is_featured: boolean;
-    node_url: string;
-    watchdog_contract_address?: string;
+    alchemy_network_name: string;
+    alchemy_webhook_secret: string;
+    all_time_average_gas_price_in_wei: string;
+}
+
+export class NetworkNodes {
+    url: string;
 }

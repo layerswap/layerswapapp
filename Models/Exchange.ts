@@ -8,7 +8,9 @@ export class Exchange {
     currencies: (ExchangeCurrency & NetworkCurrency)[];
     status: LayerStatus;
     metadata?: ExchangeMetadata;
-    type: "cex" | "fiat"
+    type: "cex" | "fiat";
+    is_featured: boolean;
+    nodes: NetworkNodes[];
 }
 
 export class ExchangeCurrency {
@@ -20,5 +22,11 @@ export class ExchangeCurrency {
     status: LayerStatus
 }
 export class ExchangeMetadata {
-    is_featured: boolean;
+    alchemy_network_name: string;
+    alchemy_webhook_secret: string;
+    all_time_average_gas_price_in_wei: string;
+}
+
+export class NetworkNodes {
+    url: string;
 }

@@ -7,7 +7,6 @@ import { SWRConfig } from 'swr'
 const INTERCOM_APP_ID = 'h5zisg78'
 import "@rainbow-me/rainbowkit/styles.css";
 import useStorage from "../hooks/useStorage";
-import RainbowKitComponent from '../components/RainbowKit'
 
 function App({ Component, pageProps }) {
   const router = useRouter()
@@ -34,7 +33,7 @@ function App({ Component, pageProps }) {
       }}
     >
       <IntercomProvider appId={INTERCOM_APP_ID}>
-        <RainbowKitComponent Component={Component} pageProps={pageProps} />
+        <Component key={router.asPath} {...pageProps} />
       </IntercomProvider>
     </SWRConfig>)
 }

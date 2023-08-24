@@ -13,7 +13,6 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         this.layers = LayerSwapAppSettings.ResolveLayers(this.exchanges, this.networks);
     }
 
-
     layers?: Layer[]
 
     resolveImgSrc = (item: Layer | Currency | Pick<Layer, 'internal_name'> | { asset: string } | Partner) => {
@@ -40,7 +39,8 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             status: e.status,
             authorization_flow: e.authorization_flow,
             type: e.type,
-            is_featured: e?.metadata?.is_featured,
+            is_featured: e.is_featured,
+            nodes: e.nodes,
             assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks)
         }))
         const networkLayers: Layer[] = networks.map((n): Layer =>
@@ -53,7 +53,8 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             average_completion_time: n.average_completion_time,
             chain_id: n.chain_id,
             address_type: n.address_type,
-            is_featured: n?.metadata?.is_featured,
+            nodes: n.nodes,
+            is_featured: n?.is_featured,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)
         }))
         const result = exchangeLayers.concat(networkLayers)

@@ -6,7 +6,8 @@ export type Layer = {
     internal_name: string;
     status: LayerStatus;
     is_featured: boolean;
-    created_date: string;
+    created_date?: string;
+    nodes: NetworkNodes[]; 
 } & LayerData
 
 type LayerData = ({
@@ -37,3 +38,7 @@ export type ExchangeL2Asset = {
     withdrawal_fee: number;
     min_deposit_amount: number;
 } & BaseL2Asset
+
+export type NetworkNodes = {
+    url: string;
+}
