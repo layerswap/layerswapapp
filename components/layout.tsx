@@ -26,7 +26,7 @@ export default function Layout({ hideNavbar, children, settings }: Props) {
   const router = useRouter();
   const { storageAvailable } = useStorage();
   let appSettings = new LayerSwapAppSettings(settings);
-  
+
   const query: QueryParams = {
     ...router.query,
     ...(router.query.lockAddress === 'true' ? { lockAddress: true } : {}),

@@ -14,6 +14,7 @@ import { useRouter } from 'next/router'
 import { MenuProvider } from '../context/menu'
 import HeaderWithMenu from '../components/HeaderWithMenu'
 import Image from 'next/image'
+import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
 
 const ResponsiveImage = (props) => {
     
@@ -33,13 +34,14 @@ const components = {
 }
 export default function ForPartners(props) {
     const router = useRouter();
+    let appSettings = new LayerSwapAppSettings(props.settings)
 
     const handleGoBack = useCallback(() => {
         router.back()
     }, [router])
 
     return (
-        <Layout>
+        <Layout settings={appSettings}>
             <div className="bg-secondary-900 shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container">
                 <Head>
                     <title>Layerswap Partners</title>
