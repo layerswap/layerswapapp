@@ -9,7 +9,7 @@ export default function Home({ settings }: InferGetServerSidePropsType<typeof ge
 
     return (
         <div className='wide-page'>
-            <Layout>
+            <Layout settings={settings}>
                 <UserExchanges />
             </Layout>
         </div>

@@ -16,6 +16,7 @@ import HeaderWithMenu from '../components/HeaderWithMenu'
 import Image from 'next/image'
 
 const ResponsiveImage = (props) => {
+    
     const router = useRouter();
     return <Image
         alt={props.alt}

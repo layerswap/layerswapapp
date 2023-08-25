@@ -19,7 +19,7 @@ type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
   hideNavbar?: boolean;
-  settings: LayerSwapSettings;
+  settings?: LayerSwapSettings;
 };
 
 export default function Layout({ hideNavbar, children, settings }: Props) {

@@ -19,7 +19,7 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
   }, [])
 
   return (
-    <Layout >
+    <Layout settings={settings}>
       <SwapDataProvider>
         <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
           <AuthWizard />
