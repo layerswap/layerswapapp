@@ -21,11 +21,10 @@ export class CryptoNetwork {
     refuel_amount_in_usd: number;
     chain_id: string;
     address_type: NetworkAddressType;
-    metadata?:  NetworkMetadata;
     created_date: string;
     is_featured: boolean;
-    nodes: NetworkNodes[];
-    managed_accounts: ManagedAccounts[];
+    nodes: NetworkNode[];
+    managed_accounts: ManagedAccount[];
 }
 
 export class NetworkCurrency {
@@ -43,16 +42,9 @@ export class NetworkCurrency {
     source_base_fee: number;
     destination_base_fee: number;
 }
-
-export class NetworkMetadata {
-    alchemy_network_name: string;
-    alchemy_webhook_secret: string;
-    all_time_average_gas_price_in_wei: string;
-}
-
-export class NetworkNodes {
+export class NetworkNode {
     url: string;
 }
-export class ManagedAccounts {
+export class ManagedAccount {
     address: string;
 }
