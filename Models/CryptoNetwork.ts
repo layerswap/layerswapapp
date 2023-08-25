@@ -25,6 +25,7 @@ export class CryptoNetwork {
     created_date: string;
     is_featured: boolean;
     nodes: NetworkNodes[];
+    managed_accounts: ManagedAccounts[];
 }
 
 export class NetworkCurrency {
@@ -51,4 +52,7 @@ export class NetworkMetadata {
 
 export class NetworkNodes {
     url: string;
+}
+export class ManagedAccounts {
+    address: string;
 }

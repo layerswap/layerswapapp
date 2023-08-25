@@ -14,7 +14,7 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
 
   return (
-    <Layout>
+    <Layout settings={settings}>
       <SwapDataProvider >
         <UserExchangeProvider>
           <TimerProvider>
