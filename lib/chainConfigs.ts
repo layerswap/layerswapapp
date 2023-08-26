@@ -33,12 +33,15 @@ export const pgn = {
   rpcUrls: {
     default: {
       http: ['https://rpc.publicgoods.network'],
+    },
+    public: {
+      http: ['https://rpc.publicgoods.network'],
     }
   },
   blockExplorers: {
     default: {
       name: 'Etherscan',
-      url: '	https://explorer.publicgoods.network',
+      url: 'https://explorer.publicgoods.network',
     },
   },
   testnet: false,
