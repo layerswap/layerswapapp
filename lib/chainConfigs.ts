@@ -45,4 +45,4 @@ export const pgn = {
 }
 
 export var supportedChains =
-  [mainnet, avalanche, arbitrum, arbitrumGoerli, arbitrumNova, bsc, bscTestnet, goerli, okc, kcc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet, linea, lineaTestnet, base, mantle, evmos];
+  [mainnet, avalanche, arbitrum, arbitrumGoerli, arbitrumNova, bsc, bscTestnet, goerli, okc, kcc, optimism, optimismGoerli, polygon, polygonMumbai, polygonZkEvmTestnet, polygonZkEvm, sepolia, zkSync, zkSyncTestnet, linea, lineaTestnet, base, mantle, evmos, pgn];
