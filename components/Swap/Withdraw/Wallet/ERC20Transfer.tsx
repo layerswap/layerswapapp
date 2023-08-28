@@ -383,7 +383,7 @@ const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
         details={message} />
 }
 
-const ConnectWalletButton: FC = ({ children }) => {
+const ConnectWalletButton: FC = () => {
     const { openConnectModal } = useConnectModal();
 
     const clickHandler = useCallback(() => {
@@ -451,6 +451,7 @@ type ButtonWrapperProps = {
     icon?: ReactNode,
     clcikHandler: () => void,
     disabled?: boolean
+    children?: React.ReactNode
 }
 const ButtonWrapper: FC<ButtonWrapperProps> = ({
     icon,

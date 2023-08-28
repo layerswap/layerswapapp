@@ -18,11 +18,11 @@ type UpdateInterface<T> = {
     setAuthorizedCoinbaseAccount: (value: UserExchangesData) => void,
 }
 
-type Props<T> = {
+type Props = {
     children?: JSX.Element | JSX.Element[];
 }
 
-export const WalletDatadProvider: FC = <T extends Steps>({ children }) => {
+export const WalletDatadProvider: FC<Props> = <T extends Steps>({ children }) => {
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
     const [authorizedCoinbaseAccount, setAuthorizedCoinbaseAccount] = useState<UserExchangesData>()
 
