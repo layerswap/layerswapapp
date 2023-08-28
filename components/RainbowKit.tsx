@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import "@rainbow-me/rainbowkit/styles.css";
 import { configureChains, WagmiConfig, createConfig } from 'wagmi';
 import {
@@ -18,7 +17,7 @@ type Props = {
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
 
-    const settingsChains = settings.networks.filter(net => net.address_type === 'evm' && net.nodes?.length > 0).map(n => {
+    const settingsChains = settings.networks.filter(net => net.address_type === 'evm' && net.nodes?.some(n => n.url?.length > 0)).map(n => {
         const nativeCurrency = n.currencies.find(c => c.asset === n.native_currency);
         return {
             id: Number(n.chain_id),
@@ -27,18 +26,27 @@ function RainbowKitComponent({ children }: Props) {
             nativeCurrency: { name: nativeCurrency?.name, symbol: nativeCurrency?.asset, decimals: nativeCurrency?.decimals },
             rpcUrls: {
                 default: {
-                    http: n.nodes.map(n => n.url),
+                    http: n.nodes.map(n => n?.url),
                 },
                 public: {
-                    http: n.nodes.map(n => n.url),
+                    http: n.nodes.map(n => n?.url),
                 },
             },
-            // blockExplorers: {
-            //     default: { name: 'Snowtrace', url: 'https://snowtrace.io' },
-            // }
+            blockExplorers: {
+                default: {
+                    name: 'name',
+                    url: n.transaction_explorer_template.replace('{0}',''),
+                },
+            },
+            contracts: {
+                multicall3: {
+                    address: n?.metadata?.contracts?.multicall3?.address,
+                    blockCreated: n?.metadata?.contracts?.multicall3?.blockCreated,
+                },
+            },
         }
     })
-
+   
     const { chains, publicClient } = configureChains(
         settingsChains,
         [
@@ -75,8 +83,6 @@ function RainbowKitComponent({ children }: Props) {
     })
 
     theme.colors.modalBackground = 'rgb(var(--colors-secondary-900))'
-
-    const router = useRouter()
 
     const wagmiConfig = createConfig({
         autoConnect: true,

@@ -25,6 +25,7 @@ export class CryptoNetwork {
     is_featured: boolean;
     nodes: NetworkNode[];
     managed_accounts: ManagedAccount[];
+    metadata: Metadata;
 }
 
 export class NetworkCurrency {
@@ -47,4 +48,12 @@ export class NetworkNode {
 }
 export class ManagedAccount {
     address: string;
+}
+export class Metadata {
+    contracts: {
+        multicall3: {
+            address: `0x${string}`;
+            blockCreated: number
+        }
+    }
 }
