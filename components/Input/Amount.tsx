@@ -90,8 +90,6 @@ const AmountLabel = ({
     maxAllowedAmount,
     isBalanceLoading,
     walletBalance,
-    canSetBalance,
-    setAmountFromBalance
 }: AmountLabelProps) => {
     return <div className="flex items-center w-full justify-between">
         <div className="flex items-center space-x-2">
@@ -104,8 +102,8 @@ const AmountLabel = ({
             }
         </div>
         {
-            !isNaN(walletBalance) && 
-            <button type="button" onClick={setAmountFromBalance} className="border-b border-dotted border-primary-text hover:text-primary hover:border-primary text-xs text-primary-text flex items-center space-x-1"><span>Balance:</span> {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{walletBalance}</span>}</button>
+            !isNaN(walletBalance) &&
+            <div className="border-primary-text text-xs text-primary-text flex items-center space-x-1"><span>Balance:</span> {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{walletBalance}</span>}</div>
         }
     </div>
 }

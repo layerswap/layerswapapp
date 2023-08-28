@@ -27,7 +27,6 @@ import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 import { ApiError, KnownErrorCode } from "../../../Models/ApiError";
-import { WalletDataProvider } from "../../../context/wallet";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -170,23 +169,21 @@ export default function () {
     const destination = formValues?.to
 
     return <>
-        <WalletDataProvider from={formValues?.from} currency={formValues?.currency}>
-            <Modal show={showConnectImmutable} setShow={setShowConnectImmutable} >
-                <ConnectImmutableX network={((source?.isExchange && formValues?.to) || (destination?.isExchange && formValues?.from) || (!source?.isExchange && !destination?.isExchange) && (formValues?.to || formValues?.from))} onClose={close} />
-            </Modal>
-            <Modal show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
-                <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
-            </Modal>
-            <Formik
-                innerRef={formikRef}
-                initialValues={initialValues}
-                validateOnMount={true}
-                validate={MainStepValidation({ settings, query })}
-                onSubmit={handleSubmit}
-            >
-                <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />
-            </Formik>
-        </WalletDataProvider>
+        <Modal show={showConnectImmutable} setShow={setShowConnectImmutable} >
+            <ConnectImmutableX network={((source?.isExchange && formValues?.to) || (destination?.isExchange && formValues?.from) || (!source?.isExchange && !destination?.isExchange) && (formValues?.to || formValues?.from))} onClose={close} />
+        </Modal>
+        <Modal show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
+            <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+        </Modal>
+        <Formik
+            innerRef={formikRef}
+            initialValues={initialValues}
+            validateOnMount={true}
+            validate={MainStepValidation({ settings, query })}
+            onSubmit={handleSubmit}
+        >
+            <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />
+        </Formik>
     </>
 }
 

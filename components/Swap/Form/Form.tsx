@@ -21,7 +21,6 @@ import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { CalculateMinAllowedAmount } from "../../../lib/fees";
 import Address from "../../Input/Address";
-import NetworkSettings from "../../../lib/NetworkSettings";
 import shortenAddress from "../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
@@ -35,7 +34,8 @@ import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetw
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import { WalletDataProvider, useWalletState } from "../../../context/wallet";
+import { useWalletState, useWalletUpdate } from "../../../context/wallet";
+import { useAccount } from "wagmi";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -56,6 +56,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const source = values.from
     const asset = values.currency?.asset
     const { authData } = useAuthState()
+    const { getBalance, getGas } = useWalletUpdate()
+    const { balances } = useWalletState()
+    const { address } = useAccount()
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
@@ -189,6 +192,17 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     }, [source, destination, query, settings, lockedCurrency])
 
+    useEffect(() => {
+        getBalance(values.from)
+        getGas(values.from, values.currency)
+    }, [values.from, values.destination_address, address])
+
+    const contract_address = values.from?.assets?.find(a => a.asset === values?.currency?.asset)?.contract_address
+
+    useEffect(() => {
+        getGas(values.from, values.currency)
+    }, [contract_address, values.currency, address])
+
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
 
@@ -205,7 +219,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         && (query?.lockTo || query?.hideTo)
         && isValidAddress(query?.destAddress, destination)
 
-    const { balances } = useWalletState()
     const walletBalance = balances?.find(b => b?.network === values?.from?.internal_name && b?.token === values?.currency?.asset)
     const handleReserveGas = useCallback(() => {
         setFieldValue('amount', walletBalance.amount - walletBalance.gas)
@@ -306,7 +319,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                         </WarningMessage>
                     }
                     {
-                        walletBalance?.isNativeCurrency && Number(values.amount) + walletBalance.gas > walletBalance.amount &&
+                        walletBalance?.isNativeCurrency && Number(values.amount) + walletBalance.gas > walletBalance.amount && walletBalance.amount > minAllowedAmount &&
                         <WarningMessage messageType="warning" className="mt-4">
                             <div className="font-normal text-white">
                                 <div>
