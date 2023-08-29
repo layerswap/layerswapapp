@@ -44,8 +44,9 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const currencyName = currency?.asset || " "
 
     const destinationNetwork = GetDefaultNetwork(to, currency?.asset)
-    const { balances, isBalanceLoading } = useWalletState()
+    const { balances, gases, isGasLoading, isBalanceLoading } = useWalletState()
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
+    const networkGas = gases?.[values.from?.internal_name]?.find(g => g.token === values.currency?.asset)?.gas
 
     return (
         <>
@@ -107,7 +108,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         Estimated gas
                                     </label>
                                     <div className="text-right flex items-center gap-1">
-                                        {!isBalanceLoading ? truncateDecimals(walletBalance?.gas, currencies.find(a => a.asset === from.native_currency).precision) : <div className='h-3 w-10 bg-gray-500 rounded-sm animate-pulse' />} <span>{from?.native_currency}</span>
+                                        {(!isGasLoading || !isBalanceLoading) ? truncateDecimals(networkGas, currencies.find(a => a.asset === from.native_currency).precision) : <div className='h-3 w-10 bg-gray-500 rounded-sm animate-pulse' />} <span>{from?.native_currency}</span>
                                     </div>
                                 </div>
                             }

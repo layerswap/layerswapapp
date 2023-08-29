@@ -21,7 +21,11 @@ export type Balance = {
     isNativeCurrency: boolean,
     token: string,
     request_time: string,
-    gas: number
+}
+
+export type Gas = {
+    token: string,
+    gas: number,
 }
 
 export const resolveFeeData = async (chainId: number) => {
@@ -108,7 +112,6 @@ export const resolveNativeBalance = async (
         request_time: new Date().toJSON(),
         decimals: native_currency.decimals,
         isNativeCurrency: true,
-        gas: null
     }
 
     return nativeBalance
@@ -131,7 +134,7 @@ export const estimateNativeGas = async (chainId: number, account: `0x${string}`,
         ]
     });
 
-    const hexed_sequence_number =  (99999999).toString(16)
+    const hexed_sequence_number = (99999999).toString(16)
     const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
 
     encodedData = encodedData ? `${encodedData}${sequence_number_even}` as `0x${string}` : null;
