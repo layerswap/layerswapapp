@@ -109,8 +109,8 @@ export default function () {
         <h2 className="font-normal leading-none tracking-tight text-gray-900 md:text-2xl dark:text-white">Menu</h2>
         :
         <span className="font-normal text-primary-text">
-                <UserEmail email={email} />
-            </span>
+            <UserEmail email={email} />
+        </span>
 
     return <>
         <span className="text-primary-text cursor-pointer relative">
@@ -184,13 +184,14 @@ export default function () {
                                                     <ChevronRight className="h-4 w-4 absolute right-3" />
                                                 </Link>
                                             }
-                                            <Link
+                                            {router.pathname != '/auth' && <Link
                                                 href="/auth"
                                                 className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
                                                 <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><LogIn className="h-5 w-5" /></div>
                                                 <p className="text-base font-semibold">Login</p>
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
                                             </Link>
+                                            }
                                         </>
                                 }
                                 {
@@ -242,13 +243,6 @@ export default function () {
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
                                             </Link>
                                         }
-                                        <Link
-                                            href="/exchanges"
-                                            className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white">
-                                            <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><LinkIcon className="h-5 w-5" /></div>
-                                            <p className="text-base font-semibold">Exchange Accounts</p>
-                                            <ChevronRight className="h-4 w-4 absolute right-3" />
-                                        </Link>
                                         {!embedded && router.pathname != '/campaigns' &&
                                             <Link
                                                 href="/campaigns"

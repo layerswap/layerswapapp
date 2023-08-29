@@ -102,13 +102,13 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                 </div>
                             }
                             {
-                                from?.isExchange === false && from?.address_type === NetworkAddressType.evm && balances?.length > 0 && walletBalance && 
+                                from?.isExchange === false && from?.address_type === NetworkAddressType.evm && balances?.length > 0 && walletBalance &&
                                 <div className="mt-2 flex flex-row items-baseline justify-between">
                                     <label className="inline-flex items-center text-left text-primary-text-placeholder">
                                         Estimated gas
                                     </label>
                                     <div className="text-right flex items-center gap-1">
-                                        {(!isGasLoading || !isBalanceLoading) ? truncateDecimals(networkGas, currencies.find(a => a.asset === from.native_currency).precision) : <div className='h-3 w-10 bg-gray-500 rounded-sm animate-pulse' />} <span>{from?.native_currency}</span>
+                                        {(isGasLoading || isBalanceLoading) ? <div className='h-3 w-10 bg-gray-500 rounded-sm animate-pulse' /> : truncateDecimals(networkGas, currencies.find(a => a.asset === from.native_currency).precision)} <span>{from?.native_currency}</span>
                                     </div>
                                 </div>
                             }
