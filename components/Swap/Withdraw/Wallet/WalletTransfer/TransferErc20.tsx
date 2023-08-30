@@ -16,7 +16,7 @@ import { createPublicClient, http, createWalletClient } from 'viem'
 import usdtAbi from "../../../../../lib/abis/usdt.json"
 import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
-import { ButtonWrapper } from "./walletButtons";
+import { ButtonWrapper } from "./buttons";
 
 type TransferERC20ButtonProps = BaseTransferButtonProps & {
     tokenContractAddress: `0x${string}`,

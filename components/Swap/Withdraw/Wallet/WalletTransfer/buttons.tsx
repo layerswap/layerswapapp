@@ -4,7 +4,7 @@ import {
     useSwitchNetwork,
 } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
-import WalletMessage from "./walletMessage";
+import WalletMessage from "./message";
 import { ActionData } from "./sharedTypes";
 import SubmitButton from "../../../../buttons/submitButton";
 

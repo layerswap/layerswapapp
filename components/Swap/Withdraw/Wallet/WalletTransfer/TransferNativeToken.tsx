@@ -17,13 +17,13 @@ import Modal from '../../../../modal/modal';
 import MessageComponent from "../../../../MessageComponent";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import TransactionMessage from "./transactionMessage";
-import { ButtonWrapper } from "./walletButtons";
+import { ButtonWrapper } from "./buttons";
 
-type TransferETHButtonProps = BaseTransferButtonProps & {
+type TransferNativeTokenButtonProps = BaseTransferButtonProps & {
     chainId: number,
 }
 
-const TransferEthButton: FC<TransferETHButtonProps> = ({
+const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     managedDepositAddress,
     chainId,
     amount,
@@ -115,13 +115,9 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     })
 
     const clickHandler = useCallback(async () => {
-        return transaction?.sendTransaction && transaction?.sendTransaction()
-    }, [transaction, estimatedGas])
-
-    const transfer = useCallback(async () => {
         setButtonClicked(true)
         return transaction?.sendTransaction && transaction?.sendTransaction()
-    }, [transaction])
+    }, [transaction, estimatedGas])
 
     const isError = [
         sendTransactionPrepare,
@@ -175,7 +171,7 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
                 <MessageComponent.Buttons>
                     <div className="flex flex-row text-white text-base space-x-2">
                         <div className='basis-1/3'>
-                            <SubmitButton onClick={() => { setOpenChangeAmount(false); transfer() }} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='filled' >
+                            <SubmitButton onClick={() => { setOpenChangeAmount(false); clickHandler() }} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='filled' >
                                 Transfer
                             </SubmitButton>
                         </div>
@@ -191,4 +187,4 @@ const TransferEthButton: FC<TransferETHButtonProps> = ({
     </>
 }
 
-export default TransferEthButton
+export default TransferNativeTokenButton

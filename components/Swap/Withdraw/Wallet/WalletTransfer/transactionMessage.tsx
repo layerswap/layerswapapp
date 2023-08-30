@@ -1,5 +1,5 @@
 import { FC } from "react"
-import WalletMessage from "./walletMessage"
+import WalletMessage from "./message"
 import resolveError from "./resolveError"
 import { ActionData } from "./sharedTypes"
 import { BaseError } from 'viem'
