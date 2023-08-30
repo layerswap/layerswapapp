@@ -2,14 +2,14 @@ import { FC } from "react"
 import { ApiResponse } from "../../../../Models/ApiResponse"
 import { useSettingsState } from "../../../../context/settings"
 import { useSwapDataState } from "../../../../context/swap"
-import NetworkSettings, { DepositType } from "../../../../lib/NetworkSettings"
+import { DepositType } from "../../../../lib/NetworkSettings"
 import KnownInternalNames from "../../../../lib/knownIds"
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource, Fee } from "../../../../lib/layerSwapApiClient"
-import TransferFromWallet from "./ERC20Transfer"
 import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import useSWR from 'swr'
 import { useAccount } from "wagmi"
+import TransferFromWallet from "./WalletTransfer"
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()

@@ -109,8 +109,8 @@ export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: str
         }
         // in case the query parameter had bad formatting just ignoe
         catch { }
-    } else if (walletBalance) {
-        (walletBalance > minAllowedAmount && walletBalance < maxAmount) ? walletBalance : maxAmount
+    } else if (walletBalance && (walletBalance >= minAllowedAmount && walletBalance <= maxAmount)) {
+       return maxAmount = roundDecimals(walletBalance, currency?.precision)
     }
     return roundDecimals(maxAmount, currency?.usd_price?.toFixed()?.length) || 0
 }

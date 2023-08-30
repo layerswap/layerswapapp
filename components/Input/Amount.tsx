@@ -23,9 +23,9 @@ const AmountField = forwardRef((_, ref: any) => {
     const walletBalanceAmount = roundDecimals(walletBalance?.amount, currency?.precision)
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
-    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalanceAmount, minAllowedAmount)
+    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalance?.amount, minAllowedAmount)
 
-    const placeholder = (walletBalanceAmount > minAllowedAmount && walletBalanceAmount < maxAllowedAmount) ? `${minAllowedAmount} - ${walletBalanceAmount}` : (currency && from && to && !isBalanceLoading) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
+    const placeholder = (currency && from && to && !isBalanceLoading) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.precision)
     const amountRef = useRef(ref)
 
@@ -37,10 +37,6 @@ const AmountField = forwardRef((_, ref: any) => {
         setFieldValue(name, maxAllowedAmount)
     }
 
-    const setAmountFromBalance = useCallback(() => {
-        setFieldValue(name, walletBalance?.amount > maxAllowedAmount ? maxAllowedAmount : walletBalance?.amount)
-    }, [maxAllowedAmount, walletBalance])
-
     return (<>
         <NumericInput
             label={<AmountLabel detailsAvailable={!!(from && to && amount)}
@@ -48,8 +44,6 @@ const AmountField = forwardRef((_, ref: any) => {
                 minAllowedAmount={minAllowedAmount}
                 isBalanceLoading={isBalanceLoading}
                 walletBalance={walletBalanceAmount}
-                canSetBalance={!walletBalance?.isNativeCurrency}
-                setAmountFromBalance={setAmountFromBalance}
             />}
             disabled={!currency}
             placeholder={placeholder}
@@ -81,8 +75,6 @@ type AmountLabelProps = {
     maxAllowedAmount: number;
     isBalanceLoading: boolean;
     walletBalance: number
-    canSetBalance: boolean,
-    setAmountFromBalance: () => void;
 }
 const AmountLabel = ({
     detailsAvailable,

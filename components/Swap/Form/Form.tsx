@@ -300,53 +300,33 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             <ToggleButton name="refuel" value={values?.refuel} onChange={handleConfirmToggleChange} />
                         </div>
                     }
-                    <div className="w-full">
-                        {
-                            !destination?.isExchange && GetNetworkCurrency(destination, asset)?.is_refuel_enabled && !query?.hideRefuel &&
-                            <div className="flex items-center justify-between px-3.5 py-3 bg-secondary-700 border border-secondary-500 rounded-lg mb-4">
-                                <div className="flex items-center space-x-2">
-                                    <Fuel className='h-8 w-8 text-primary' />
-                                    <div>
-                                        <p className="font-medium flex items-center">
-                                            <span>Need gas?</span>
-                                            <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
-                                        </p>
-                                        <p className="font-light text-xs">
-                                            Get <span className="font-semibold">{destination_native_currency}</span> to pay fees in {values.to?.display_name}
-                                        </p>
-                                    </div>
+                    <AmountAndFeeDetails values={values} />
+                    {
+                        //TODO refactor
+                        GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
+                        <WarningMessage messageType="warning" className="mt-4">
+                            <span className="font-normal">We're experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
+                        </WarningMessage>
+                    }
+                    {
+                        GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
+                        <WarningMessage messageType="warning" className="mt-4">
+                            <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
+                        </WarningMessage>
+                    }
+                    {
+                        walletBalance?.isNativeCurrency && Number(values.amount) + networkGas > walletBalance.amount && walletBalance.amount > minAllowedAmount &&
+                        <WarningMessage messageType="warning" className="mt-4">
+                            <div className="font-normal text-white">
+                                <div>
+                                    You might not be able to complete the transaction.
                                 </div>
-                                <ToggleButton name="refuel" value={values?.refuel} onChange={handleConfirmToggleChange} />
+                                <div onClick={handleReserveGas} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
+                                    Reserve {truncateDecimals(networkGas, values.currency.precision)} {values.currency.asset} for gas.
+                                </div>
                             </div>
-                        }
-                        <AmountAndFeeDetails values={values} />
-                        {
-                            //TODO refactor
-                            GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">We're experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
-                            </WarningMessage>
-                        }
-                        {
-                            GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
-                            </WarningMessage>
-                        }
-                        {
-                            walletBalance?.isNativeCurrency && Number(values.amount) + networkGas > walletBalance.amount && walletBalance.amount > minAllowedAmount &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <div className="font-normal text-white">
-                                    <div>
-                                        You might not be able to complete the transaction.
-                                    </div>
-                                    <div onClick={handleReserveGas} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                                        Reserve {truncateDecimals(networkGas, values.currency.precision)} {values.currency.asset} for gas.
-                                    </div>
-                                </div>
-                            </WarningMessage>
-                        }
-                    </div>
+                        </WarningMessage>
+                    }
                 </div>
             </Widget.Content>
             <Widget.Footer>
