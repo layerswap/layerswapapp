@@ -9,15 +9,16 @@ import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import { GetNetworkCurrency } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import { TransactionType } from '../../../../lib/layerSwapApiClient';
+import { SwapItem, TransactionType } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
-import { useSwapDataState } from '../../../../context/swap';
-import { useSettingsState } from '../../../../context/settings';
+import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 
-const Processing: FC = () => {
+type Props = {
+    settings: LayerSwapAppSettings;
+    swap: SwapItem;
+}
 
-    const { swap } = useSwapDataState()
-    const settings = useSettingsState()
+const Processing: FC<Props> = ({settings, swap}) => {
 
     const swapStep = GetSwapStep(swap);
 

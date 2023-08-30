@@ -46,10 +46,6 @@ export async function getServerSideProps(context) {
   var apiClient = new LayerSwapApiClient();
   const { data: settings } = await apiClient.GetSettingsAsync()
 
-  const resource_storage_url = settings.discovery.resource_storage_url
-  if (resource_storage_url[resource_storage_url.length - 1] === "/")
-    settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
-
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
 
   return {

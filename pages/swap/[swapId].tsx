@@ -56,10 +56,6 @@ export const getServerSideProps = async (ctx) => {
     var apiClient = new LayerSwapApiClient();
     const { data } = await apiClient.GetSettingsAsync()
 
-    const resource_storage_url = data.discovery.resource_storage_url
-    if (resource_storage_url[resource_storage_url.length - 1] === "/")
-      data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
-
     settings = data
   }
 
