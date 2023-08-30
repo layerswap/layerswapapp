@@ -18,7 +18,7 @@ type Props = {
     swap: SwapItem;
 }
 
-const Processing: FC<Props> = ({settings, swap}) => {
+const Processing: FC<Props> = ({ settings, swap }) => {
 
     const swapStep = GetSwapStep(swap);
 
@@ -43,18 +43,17 @@ const Processing: FC<Props> = ({settings, swap}) => {
     const nativeCurrency = swapRefuelTransaction?.amount && destination_layer?.isExchange === false && settings?.currencies?.find(c => c.asset === destination_layer?.native_currency)
     const truncatedRefuelAmount = truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision)
 
-    const progressStatuses = getProgressStatuses(swapStep)
+    const progressStatuses = getProgressStatuses(swap, swapStep)
 
     type ProgressStates = {
         [key in Progress]: {
             [key in ProgressStatus]: {
                 name: string;
                 description: string | JSX.Element;
-            }
+            } 
         }
     }
 
-    const confirmationsDetails = <div>Confirmations: <span className='text-white'>{((swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations) ? swapInputTransaction?.max_confirmations : swapInputTransaction?.confirmations) ?? 0}</span>/{swapInputTransaction?.max_confirmations}</div>
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival:</span>
         <div className='text-white'>
@@ -89,6 +88,15 @@ const Processing: FC<Props> = ({settings, swap}) => {
                     </div>
                 </div>
             },
+            failed: {
+                name: `Your transfer is failed`,
+                description: <div className='flex space-x-1'>
+                    <span>Error: </span>
+                    <div className='space-x-1 text-white'>
+                        {swap.message}
+                    </div>
+                </div>
+            }
         },
         "output_transfer": {
             upcoming: {
@@ -110,6 +118,15 @@ const Processing: FC<Props> = ({settings, swap}) => {
                         </div>
                     </div>
                 </div> : outputPendingDetails,
+            },
+            failed: {
+                name: `Your transfer is failed`,
+                description: <div className='flex space-x-1'>
+                    <span>Error: </span>
+                    <div className='space-x-1 text-white'>
+                        {swap.message}
+                    </div>
+                </div>
             }
         },
         "refuel": {
@@ -128,6 +145,44 @@ const Processing: FC<Props> = ({settings, swap}) => {
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
                         <ExternalLink className='h-4' />
+                    </div>
+                </div>
+            },
+            failed: {
+                name: `Your transfer is failed`,
+                description: <div className='flex space-x-1'>
+                    <span>Error: </span>
+                    <div className='space-x-1 text-white'>
+                        {swap.message}
+                    </div>
+                </div>
+            }
+        },
+        "failed": {
+            upcoming: {
+                name: `Sending ${nativeCurrency?.asset} to your wallet (Refuel)`,
+                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
+            },
+            current: {
+                name: `Sending ${nativeCurrency?.asset} to your wallet (Refuel)`,
+                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
+            },
+            complete: {
+                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your wallet (Refuel)`,
+                description: <div className='flex items-center space-x-1'>
+                    <span>Explorer link: </span>
+                    <div className='underline hover:no-underline flex items-center space-x-1'>
+                        <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
+                        <ExternalLink className='h-4' />
+                    </div>
+                </div>
+            },
+            failed: {
+                name: `Your transfer is failed`,
+                description: <div className='flex space-x-1'>
+                    <span>Error: </span>
+                    <div className='space-x-1 text-white'>
+                        {swap.message}
                     </div>
                 </div>
             }
@@ -157,6 +212,16 @@ const Processing: FC<Props> = ({settings, swap}) => {
             index: 3
         })
     }
+
+    if (swap?.status == "failed") {
+        progress.push({
+            name: progressStates["failed"][progressStatuses?.failed]?.name,
+            status: progressStatuses?.failed,
+            description: progressStates["failed"][progressStatuses?.failed]?.description,
+            index: swap?.has_refuel ? 4 : 3
+        })
+    }
+console.log(swap,"swap")
 
     if (!swap) return <></>
 
@@ -192,12 +257,14 @@ const Processing: FC<Props> = ({settings, swap}) => {
 enum Progress {
     InputTransfer = 'input_transfer',
     Refuel = 'refuel',
-    OutputTransfer = 'output_transfer'
+    OutputTransfer = 'output_transfer',
+    Failed = 'failed'
 }
 enum ProgressStatus {
     Upcoming = 'upcoming',
     Current = 'current',
-    Complete = 'complete'
+    Complete = 'complete',
+    Failed = 'failed'
 }
 type StatusStep = {
     name: string;
@@ -207,24 +274,37 @@ type StatusStep = {
 }
 
 
-const getProgressStatuses = (swapStep: SwapStep): { [key in Progress]: ProgressStatus } => {
-    if (swapStep === SwapStep.Delay || swapStep === SwapStep.UserTransferPending || swapStep === SwapStep.TransactionDone ) {
+const getProgressStatuses = (swap: SwapItem, swapStep: SwapStep): { [key in Progress]: ProgressStatus } => {
+    const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
+    const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
+
+    if (swapStep === SwapStep.Delay || swapStep === SwapStep.UserTransferPending || swapStep === SwapStep.TransactionDone) {
         return {
             "input_transfer": ProgressStatus.Current,
             "output_transfer": ProgressStatus.Upcoming,
-            "refuel": ProgressStatus.Upcoming
+            "refuel": ProgressStatus.Upcoming,
+            "failed": null
         };
     } else if (swapStep === SwapStep.TransactionDetected || swapStep === SwapStep.LSTransferPending) {
         return {
             "input_transfer": ProgressStatus.Complete,
             "output_transfer": ProgressStatus.Current,
-            "refuel": ProgressStatus.Upcoming
+            "refuel": ProgressStatus.Upcoming,
+            "failed": null
         };
     } else if (swapStep === SwapStep.Success) {
         return {
             "input_transfer": ProgressStatus.Complete,
             "output_transfer": ProgressStatus.Complete,
-            "refuel": ProgressStatus.Complete
+            "refuel": ProgressStatus.Complete,
+            "failed": null
+        };
+    } else if (swapStep === SwapStep.Failed) {
+        return {
+            "input_transfer": ProgressStatus.Complete,
+            "output_transfer": swapOutputTransaction ? ProgressStatus.Complete : ProgressStatus.Current,
+            "refuel": swapRefuelTransaction && ProgressStatus.Complete,
+            "failed": !swapOutputTransaction && !swapRefuelTransaction && ProgressStatus.Failed
         };
     }
 }

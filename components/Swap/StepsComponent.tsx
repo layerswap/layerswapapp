@@ -1,7 +1,8 @@
-import { Check } from "lucide-react";
+import { Check, X, XCircle } from "lucide-react";
 import { classNames } from "../utils/classNames";
 
 export default function Steps({ steps }) {
+    console.log(steps, "steps")
     return (<div className="bg-secondary-700 font-normal px-3 py-5 rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
         <nav aria-label="Progress">
             <ol role="list" className="overflow-hidden">
@@ -40,6 +41,21 @@ export default function Steps({ steps }) {
                                         <span className="ml-4 flex min-w-0 flex-col">
                                             <span className="text-sm font-medium text-primary">{step.name}</span>
                                             <span className="text-sm text-primary-text">{step.description}</span>
+                                        </span>
+                                    </div>
+                                </>
+                            ) : step?.status === 'failed' ? (
+                                <>
+                                    {stepIdx !== steps.length - 1 ? (
+                                        <div className="absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 bg-gray-300 opacity-60" aria-hidden="true" />
+                                    ) : null}
+                                    <div className="group relative flex items-start">
+                                        <span className="flex h-9 items-center" aria-hidden="true">
+                                            <XCircle className="h-8 w-8 text-red-600" aria-hidden="true" />
+                                        </span>
+                                        <span className="ml-4 flex min-w-0 flex-col">
+                                        <span className="text-sm font-medium text-gray-300">{step.name}</span>
+                                            <span className="text-sm text-primary-text">{step?.description}</span>
                                         </span>
                                     </div>
                                 </>

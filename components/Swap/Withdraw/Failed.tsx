@@ -155,53 +155,19 @@ const Canceled = ({ swap, onGetHelp }: Props) => {
 const SwapFailed = ({ swap, onGetHelp }: Props) => {
     return (
         <Widget.Content>
-            <SwapSummary />
-            <MessageComponent>
-                <MessageComponent.Content icon='red'>
-                    <MessageComponent.Header>
-                        Swap failed
-                    </MessageComponent.Header>
-                    <MessageComponent.Description>
-                        {
-                            swap?.message ?
-                                swap.message
-                                :
-                                <>
-                                    <p>
-                                        Your funds are safe, but there seems to be an issue with the swap.
-                                    </p>
-                                    <p>  Please contact our support team and we’ll help you fix this.</p>
-                                </>
-                        }
-                    </MessageComponent.Description>
-                </MessageComponent.Content>
-                <MessageComponent.Buttons>
-                    <MessageComponent.Buttons>
-                        <div className="flex flex-row text-white text-base space-x-2">
-                            <div className='basis-1/3'>
-                                <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
-                                    <DoubleLineText
-                                        colorStyle='mltln-text-dark'
-                                        primaryText='Support'
-                                        secondarytext='Contact'
-                                    />
-                                </SubmitButton>
-                            </div>
-                            <div className='basis-2/3'>
-                                <GoHomeButton>
-                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
-                                        <DoubleLineText
-                                            colorStyle='mltln-text-dark'
-                                            primaryText='Swap'
-                                            secondarytext='Do another'
-                                        />
-                                    </SubmitButton>
-                                </GoHomeButton>
-                            </div>
-                        </div>
-                    </MessageComponent.Buttons>
-                </MessageComponent.Buttons>
-            </MessageComponent>
+            <MessageComponent.Buttons>
+                <div className="flex text-white text-base space-x-2">
+                    <div className='basis-1/3 grow'>
+                        <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='filled' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
+                            <DoubleLineText
+                                colorStyle='mltln-text-light'
+                                primaryText='Contact Support'
+                                secondarytext=''
+                            />
+                        </SubmitButton>
+                    </div>
+                </div>
+            </MessageComponent.Buttons>
         </Widget.Content>
     )
 }
