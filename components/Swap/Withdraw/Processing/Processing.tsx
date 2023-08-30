@@ -221,7 +221,6 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             index: swap?.has_refuel ? 4 : 3
         })
     }
-console.log(swap,"swap")
 
     if (!swap) return <></>
 
@@ -304,7 +303,7 @@ const getProgressStatuses = (swap: SwapItem, swapStep: SwapStep): { [key in Prog
             "input_transfer": ProgressStatus.Complete,
             "output_transfer": swapOutputTransaction ? ProgressStatus.Complete : ProgressStatus.Current,
             "refuel": swapRefuelTransaction && ProgressStatus.Complete,
-            "failed": !swapOutputTransaction && !swapRefuelTransaction && ProgressStatus.Failed
+            "failed": ProgressStatus.Failed
         };
     }
 }

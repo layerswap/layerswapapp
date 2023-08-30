@@ -1,10 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import Processing from '../components/Swap/Withdraw/Processing';
-import { SwapItem, TransactionType } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, TransactionType } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapDataStateContext } from '../context/swap';
-import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
-import { Settings } from './Data/settings';
 import { SettingsStateContext } from '../context/settings';
 import { WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { supportedChains } from '../lib/chainConfigs';
@@ -13,7 +11,8 @@ import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { WalletStateContext } from '../context/wallet';
 import { QueryStateContext } from '../context/query';
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
+import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 
 const swap: SwapItem = {
     "id": "2f3f3d0f-028a-49ed-a648-bb3543061a80",
@@ -108,15 +107,32 @@ const connectors = connectorsForWallets([
     },
 ]);
 
-let appSettings = new LayerSwapAppSettings(Settings)
-
 const Comp: FC<{ swap: SwapItem }> = ({ swap }) => {
+    const [appSettings, setAppSettings] = useState(null);
+    const version = process.env.NEXT_PUBLIC_API_VERSION;
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
         publicClient,
     })
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const res = await (await fetch(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${version}`)).json();
+                let appSettings = new LayerSwapAppSettings(res.data)
+                setAppSettings(appSettings);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+        fetchData();
+    }, []);
     const swapContextInitialValues = { codeRequested: false, swap, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
+
+    if (!appSettings) {
+        return <div>Loading...</div>
+    }
+
     return <WagmiConfig config={wagmiConfig}>
         <SettingsStateContext.Provider value={appSettings}>
             <QueryStateContext.Provider value={{}}>
@@ -129,19 +145,26 @@ const Comp: FC<{ swap: SwapItem }> = ({ swap }) => {
         </SettingsStateContext.Provider>
     </WagmiConfig>
 }
-// More on how to set up stories at: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
+
 const meta = {
     title: 'Example/Process',
     component: Comp,
     parameters: {
         layout: 'centered',
+        mockData: [
+            {
+                url: 'https://bridge-api-dev.layerswap.cloud/api/settings?version=sandbox',
+                method: 'GET',
+                status: 200,
+                response: "dknkdjn",
+            },
+        ],
     }
 } satisfies Meta<typeof Comp>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// More on writing stories with args: https://storybook.js.org/docs/react/writing-stories/args
 export const Initial: Story = {
     args: {
         swap: { ...swap, status: SwapStatus.Created }

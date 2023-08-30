@@ -74,15 +74,16 @@
     "@types/bn.js": "^5.1.0",
     "@types/crypto-js": "^4.1.1",
     "@types/node": "^16.11.7",
+    "@types/react": "18.x",
     "@web3-react/types": "^6.0.7",
     "autoprefixer": "^10.4.5",
     "chromatic": "^6.24.1",
     "postcss": "^8.4.13",
     "storybook": "^7.3.2",
+    "storybook-addon-mock": "^4.2.1",
     "storybook-react-context": "^0.6.0",
     "tailwindcss": "^3.0.24",
     "tailwindcss-themer": "^2.0.2",
-    "typescript": "^5.1",
-    "@types/react": "18.x"
+    "typescript": "^5.1"
   }
 }
