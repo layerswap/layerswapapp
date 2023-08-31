@@ -352,7 +352,7 @@ function RewardComponent() {
                                             </div>
                                         </div>
                                         {
-                                            user.position < 4 &&
+                                            user.position < 4 && leaderboard.leaderboard_budget > 0 &&
                                             <div className="text-right flex items-center space-x-2">
                                                 <ClickTooltip text={
                                                     <div className="flex items-center space-x-1">
