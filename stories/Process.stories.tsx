@@ -46,7 +46,6 @@ const connectors = connectorsForWallets([
 
 const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, }> = ({ swap, failedSwap, failedSwapOutOfRange }) => {
     const [appSettings, setAppSettings] = useState(null);
-    const version = process.env.NEXT_PUBLIC_API_VERSION;
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
@@ -55,7 +54,7 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
     useEffect(() => {
         async function fetchData() {
             try {
-                const res = await (await fetch(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${version}`)).json();
+                const res = await (await fetch(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=sandbox`)).json();
                 let appSettings = new LayerSwapAppSettings(res.data)
                 setAppSettings(appSettings);
             } catch (error) {
