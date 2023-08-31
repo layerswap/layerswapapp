@@ -3,6 +3,9 @@ import { parseEther, createPublicClient, http, createWalletClient, getContract, 
 import { multicall, fetchBalance, fetchFeeData, FetchBalanceResult } from '@wagmi/core'
 import { BaseL2Asset, Layer } from '../Models/Layer';
 import { supportedChains } from '../lib/chainConfigs';
+import { Currency } from '../Models/Currency';
+import KnownInternalNames from '../lib/knownIds';
+import { opL1Fee } from '../lib/abis/OptimismL1Fee';
 
 export type ERC20ContractRes = ({
     error: Error;
@@ -54,7 +57,6 @@ export const resolveERC20Balances = async (
             request_time: new Date().toJSON(),
             decimals: currency.decimals,
             isNativeCurrency: false,
-            gas: null
         }
     })
     return contractBalances
@@ -181,6 +183,43 @@ export const estimateGas = async (chainId: number, contract_address: `0x${string
         console.log(e)
         return null
     }
+
+}
+
+export const resolveGas = async (chainId: number, contract_address: `0x${string}`, account: `0x${string}`, balances: Balance[], from: Layer, currency: Currency) => {
+
+    const feeData = await resolveFeeData(Number(chainId))
+    const estimatedGas = contract_address ?
+        await estimateGas(chainId, account, contract_address)
+        : await estimateNativeGas(chainId, account)
+
+    const nativeBalance = balances?.find(b =>
+        b.network === from.internal_name
+        && b.isNativeCurrency)
+
+    const gasBigint = feeData.maxFeePerGas
+        ? (feeData?.maxFeePerGas * estimatedGas)
+        : (feeData?.gasPrice * estimatedGas)
+
+    if (from.internal_name === KnownInternalNames.Networks.OptimismMainnet) {
+        const chain = supportedChains?.find(ch => ch.id === chainId) ?? supportedChains[0];
+
+        const publicClient = createPublicClient({
+            chain: chain,
+            transport: http()
+        })
+
+        const data = await publicClient.readContract({
+            address: '0x420000000000000000000000000000000000000F',
+            abi: [opL1Fee],
+            functionName:'jnhjhjh'
+        });
+
+        
+    }
+
+
+    return { gas: formatAmount(gasBigint, nativeBalance?.decimals), token: currency?.asset }
 
 }
 

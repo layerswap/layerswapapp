@@ -5,7 +5,7 @@ import { useAccount } from 'wagmi';
 import { NetworkAddressType } from '../Models/CryptoNetwork';
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
-import { Balance, Gas, estimateGas, estimateNativeGas, formatAmount, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveFeeData, resolveNativeBalance } from '../helpers/balanceHelper';
+import { Balance, Gas, estimateGas, estimateNativeGas, formatAmount, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveFeeData, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
 
 const WalletStateContext = React.createContext(null);
 const WalletStateUpdateContext = React.createContext(null);
@@ -70,27 +70,16 @@ export const WalletDataProvider: FC = ({ children }) => {
         if (!shouldNotFetchGas && chainId && currency) {
             (async () => {
                 setIsGasLoading(true)
+                try {
+                    const gas = await resolveGas(chainId, contract_address, address, balances, from, currency)
+                    const filteredGases = allGases[from.internal_name]?.some(b => b?.token === currency?.asset) ? allGases[from.internal_name].filter(g => g.token !== currency.asset) : allGases[from.internal_name] || []
 
-                const feeData = await resolveFeeData(Number(from.chain_id))
-                const estimatedGas = contract_address ?
-                    await estimateGas(chainId, address, contract_address)
-                    : await estimateNativeGas(chainId, address)
-                    
-                const nativeBalance = balances?.find(b =>
-                    b.network === from.internal_name
-                    && b.isNativeCurrency)
-
-                const gasBigint = feeData.maxFeePerGas
-                    ? (feeData?.maxFeePerGas * estimatedGas)
-                    : (feeData?.gasPrice * estimatedGas)
-
-                const gas = { gas: formatAmount(gasBigint, nativeBalance?.decimals), token: currency?.asset }
-                const filteredGases = allGases[from.internal_name]?.some(b => b?.token === currency?.asset) ? allGases[from.internal_name].filter(g => g.token !== currency.asset) : allGases[from.internal_name] || []
-
-                if (estimatedGas) {
-                    setAllGases((data) => ({ ...data, [from.internal_name]: filteredGases.concat(gas) }))
+                    if (gas) {
+                        setAllGases((data) => ({ ...data, [from.internal_name]: filteredGases.concat(gas) }))
+                    }
                 }
-                setIsGasLoading(false)
+                catch (e) { console.log(e) }
+                finally { setIsGasLoading(false) }
             })()
         }
     }
