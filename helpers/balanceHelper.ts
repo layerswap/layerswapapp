@@ -211,8 +211,8 @@ export const resolveGas = async (chainId: number, contract_address: `0x${string}
 
         const data = await publicClient.readContract({
             address: '0x420000000000000000000000000000000000000F',
-            abi: [opL1Fee],
-            functionName:'jnhjhjh'
+            abi: opL1Fee,
+            functionName:'getL1Fee'
         });
 
         
