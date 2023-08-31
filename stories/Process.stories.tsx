@@ -14,6 +14,7 @@ import { QueryStateContext } from '../context/query';
 import { FC, useEffect, useState } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange } from './Data/swaps'
+import { Settings } from './Data/settings';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 
@@ -44,8 +45,11 @@ const connectors = connectorsForWallets([
     },
 ]);
 
+let settings = new LayerSwapAppSettings(Settings)
+
 const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, }> = ({ swap, failedSwap, failedSwapOutOfRange }) => {
     const [appSettings, setAppSettings] = useState(null);
+    const version = process.env.NEXT_PUBLIC_API_VERSION;
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
@@ -54,7 +58,7 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
     useEffect(() => {
         async function fetchData() {
             try {
-                const res = await (await fetch(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=sandbox`)).json();
+                const res = await (await fetch(`https://bridge-api-dev.layerswap.cloud/api/settings?version=sandbox`)).json();
                 let appSettings = new LayerSwapAppSettings(res.data)
                 setAppSettings(appSettings);
             } catch (error) {
