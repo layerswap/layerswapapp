@@ -160,15 +160,15 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         },
         "failed": {
             upcoming: {
-                name: `Sending ${nativeCurrency?.asset} to your wallet (Refuel)`,
+                name: `Sending ${nativeCurrency?.asset} to your wallet`,
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             current: {
-                name: `Sending ${nativeCurrency?.asset} to your wallet (Refuel)`,
+                name: `Sending ${nativeCurrency?.asset} to your wallet`,
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             complete: {
-                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your wallet (Refuel)`,
+                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your wallet`,
                 description: <div className='flex items-center space-x-1'>
                     <span>Explorer link: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
