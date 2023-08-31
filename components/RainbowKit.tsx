@@ -19,6 +19,7 @@ function RainbowKitComponent({ children }: Props) {
 
     const settingsChains = settings.networks.filter(net => net.address_type === 'evm' && net.nodes?.some(n => n.url?.length > 0)).map(n => {
         const nativeCurrency = n.currencies.find(c => c.asset === n.native_currency);
+        const blockExplorersBaseURL = new URL(n.transaction_explorer_template).origin;
         return {
             id: Number(n.chain_id),
             name: n.display_name,
@@ -35,18 +36,15 @@ function RainbowKitComponent({ children }: Props) {
             blockExplorers: {
                 default: {
                     name: 'name',
-                    url: n.transaction_explorer_template.replace('{0}',''),
+                    url: blockExplorersBaseURL,
                 },
             },
             contracts: {
-                multicall3: {
-                    address: n?.metadata?.contracts?.multicall3?.address,
-                    blockCreated: n?.metadata?.contracts?.multicall3?.blockCreated,
-                },
+                multicall3 : n?.metadata?.contracts?.multicall3
             },
         }
     })
-   
+
     const { chains, publicClient } = configureChains(
         settingsChains,
         [
