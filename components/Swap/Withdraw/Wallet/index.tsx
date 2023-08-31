@@ -13,10 +13,9 @@ import { useAccount } from "wagmi"
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
-    const { layers } = useSettingsState()
+    const { layers, networks } = useSettingsState()
     const { address } = useAccount()
     const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap
-
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const destination = layers.find(n => n.internal_name === destination_network)
     const sourceAsset = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
@@ -35,8 +34,8 @@ const WalletTransfer: FC = () => {
         data: generatedDeposit
     } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
 
-    const generatedDepositAddress = generatedDeposit?.data?.address
     const managedDepositAddress = sourceAsset?.network?.managed_accounts?.[0]?.address;
+    const generatedDepositAddress = generatedDeposit?.data?.address
     const sourceChainId = source_network.isExchange === false && Number(source_network.chain_id)
     const feeParams = {
         source: source_network_internal_name,

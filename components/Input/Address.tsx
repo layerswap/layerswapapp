@@ -8,8 +8,6 @@ import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import { getStarknet } from "get-starknet-core"
 import { Info } from "lucide-react";
 import KnownInternalNames from "../../lib/knownIds";
-import { useAuthState } from "../../context/authContext";
-import ExchangeSettings from "../../lib/ExchangeSettings";
 import { useSettingsState } from "../../context/settings";
 import { isValidAddress } from "../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
@@ -33,8 +31,6 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     name: string;
     children?: JSX.Element | JSX.Element[];
     ref?: any;
-    onSetExchangeDepoisteAddress?: () => Promise<void>;
-    exchangeAccount?: UserExchangesData;
     close: () => void,
     isPartnerWallet: boolean,
     partnerImage: string,
@@ -44,7 +40,7 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
 }
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
+    ({  name, canFocus, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
         const {
             values,
             setFieldValue
@@ -71,7 +67,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const { starknetAccount } = useWalletState()
         const { setStarknetAccount } = useWalletUpdate()
 
-        const { authData } = useAuthState()
         const settings = useSettingsState()
 
         const { isConnected: isRainbowKitConnected, address: walletAddress } = useAccount({
@@ -95,15 +90,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 setFieldValue("destination_address", walletAddress)
             }
         }, [walletAddress, destination?.isExchange])
-
-        const handleUseDepositeAddress = async () => {
-            try {
-                await onSetExchangeDepoisteAddress()
-            }
-            catch (e) {
-                toast(e.message)
-            }
-        }
 
         useEffect(() => {
             if (canFocus) {
@@ -225,33 +211,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         tabIndex={0}
                                         className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-secondary-700 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
                                     />
-                                    {
-                                        inputValue &&
-                                        <span className="inline-flex items-center mr-2">
-                                            <div className="text-xs flex items-center space-x-2 md:ml-5 bg-secondary-500 rounded-md border border-secondary-500">
-                                                {
-                                                    values?.to?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
-                                                    <span className="inline-flex items-center mr-2">
-                                                        <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
-                                                            {exchangeAccount?.note}
-                                                        </div>
-                                                    </span>
-                                                }
-                                                {
-                                                    !disabled &&
-                                                    <button
-                                                        type="button"
-                                                        className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
-                                                        onClick={handleRemoveDepositeAddress}
-                                                    >
-                                                        <div className="flex items-center px-2 text-sm py-1 font-semibold">
-                                                            Clear
-                                                        </div>
-                                                    </button>
-                                                }
-                                            </div>
-                                        </span>
-                                    }
                                 </div>
                                 {errorMessage &&
                                     <div className="basis-full text-xs text-primary">
@@ -287,27 +246,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                 </div>
                                 <div className='flex text-primary-text flex-row items-left px-2 py-1 rounded-md'>
                                     Select
-                                </div>
-                            </div>
-                        }
-                        {
-                            !disabled
-                            && !inputValue
-                            && destination?.isExchange
-                            && authData?.access_token && values.to
-                            && ExchangeSettings.KnownSettings[destination?.internal_name]?.EnableDepositAddressConnect
-                            && !depositeAddressIsfromAccount &&
-                            <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:shadow-xl`}>
-                                <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                    <WalletIcon className="h-6 w-6 text-primary-text" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <div className="block text-sm font-medium">
-                                        Autofill from {values?.to?.display_name}
-                                    </div>
-                                    <div className="text-gray-500">
-                                        Connect your account to fetch the address
-                                    </div>
                                 </div>
                             </div>
                         }

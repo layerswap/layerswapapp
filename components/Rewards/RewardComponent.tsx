@@ -240,7 +240,7 @@ function RewardComponent() {
                                                         Top 10
                                                     </button>
                                                 </div>
-                                                <p className="text-sm text-primary-text">Users who earn the most throughout the program will be featured here, and will earn additional rewards.</p>
+                                                <p className="text-sm text-primary-text">Users who earn the most throughout the program will be featured here.</p>
                                                 <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
                                                     <div className="p-3">
                                                         {leaderboard?.leaderboard?.length > 0 ? <div className="space-y-6">
@@ -257,28 +257,30 @@ function RewardComponent() {
                                                                                 </div>
                                                                             </div>
                                                                         </div>
-                                                                        <div className="text-right flex items-center space-x-2">
-                                                                            <ClickTooltip text={
-                                                                                <div className="flex items-center space-x-1">
-                                                                                    <span>+</span>
-                                                                                    <div className="h-3.5 w-3.5 relative">
-                                                                                        <Image
-                                                                                            src={resolveImgSrc(campaign)}
-                                                                                            alt="Project Logo"
-                                                                                            height="40"
-                                                                                            width="40"
-                                                                                            loading="eager"
-                                                                                            className="rounded-full object-contain" />
+                                                                        {
+                                                                            leaderboard.leaderboard_budget > 0 && <div className="text-right flex items-center space-x-2">
+                                                                                <ClickTooltip text={
+                                                                                    <div className="flex items-center space-x-1">
+                                                                                        <span>+</span>
+                                                                                        <div className="h-3.5 w-3.5 relative">
+                                                                                            <Image
+                                                                                                src={resolveImgSrc(campaign)}
+                                                                                                alt="Project Logo"
+                                                                                                height="40"
+                                                                                                width="40"
+                                                                                                loading="eager"
+                                                                                                className="rounded-full object-contain" />
+                                                                                        </div>
+                                                                                        <p>
+                                                                                            <span>{leaderboardReward(user.position)} {campaign?.asset}</span>
+                                                                                        </p>
+                                                                                    </div>}>
+                                                                                    <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-secondary-200 active:ring-2 active:ring-gray-200 active:bg-secondary-400 focus:outline-none cursor-default p-1 rounded'>
+                                                                                        <Trophy className="h-4 w-4" aria-hidden="true" />
                                                                                     </div>
-                                                                                    <p>
-                                                                                        <span>{leaderboardReward(user.position)} {campaign?.asset}</span>
-                                                                                    </p>
-                                                                                </div>}>
-                                                                                <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-secondary-200 active:ring-2 active:ring-gray-200 active:bg-secondary-400 focus:outline-none cursor-default p-1 rounded'>
-                                                                                    <Trophy className="h-4 w-4" aria-hidden="true" />
-                                                                                </div>
-                                                                            </ClickTooltip>
-                                                                        </div>
+                                                                                </ClickTooltip>
+                                                                            </div>
+                                                                        }
                                                                     </div>
                                                                 ))
 
@@ -352,7 +354,7 @@ function RewardComponent() {
                                             </div>
                                         </div>
                                         {
-                                            user.position < 4 &&
+                                            user.position < 4 && leaderboard.leaderboard_budget > 0 &&
                                             <div className="text-right flex items-center space-x-2">
                                                 <ClickTooltip text={
                                                     <div className="flex items-center space-x-1">
