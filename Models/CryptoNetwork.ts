@@ -9,6 +9,7 @@ export enum NetworkAddressType {
     'loopring' = "loopring"
 }
 
+
 export class CryptoNetwork {
     display_name: string;
     internal_name: string;
