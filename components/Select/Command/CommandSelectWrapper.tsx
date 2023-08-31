@@ -68,7 +68,7 @@ export default function CommandSelectWrapper<T>({
                                 {value?.name}
                             </span>
                             :
-                            <span className="block font-medium text-secondary-text-placeholder flex-auto items-center">
+                            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
                                 {placeholder}
                             </span>}
                     </span>

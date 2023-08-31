@@ -1,18 +1,17 @@
 import { FC } from "react";
-import { ThemeData } from "../Models/Theme";
+import { THEME_COLORS, ThemeData } from "../Models/Theme";
 
 type Props = {
     themeData: ThemeData
 }
 const ColorSchema: FC<Props> = ({ themeData }) => {
-
+    themeData = themeData || THEME_COLORS.default
     return (
         <>
             {themeData &&
                 <style global jsx>{`
                     :root {
                     --ls-colors-backdrop:${themeData.backdrop};
-                    --ls-colors-placeholderText: ${themeData.backdrop};
                     --ls-colors-actionButtonText: ${themeData.actionButtonText};
                     --ls-colors-logo: ${themeData.logo};
                     --ls-colors-primary: ${themeData.primary?.DEFAULT};
@@ -29,8 +28,9 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
 
                     --ls-colors-text-placeholder: ${themeData.placeholderText};
                     --ls-colors-primary-text: ${themeData.primary?.text};
-                    --ls-colors-primary-button-text: ${themeData.placeholderText};
-                    --ls-colors-primary-logoColor: ${themeData.primary?.logoColor};
+                    --ls-colors-primary-text-muted: ${themeData.primary?.textMuted};
+                    --ls-colors-primary-button-text: ${themeData.actionButtonText};
+                    --ls-colors-primary-logoColor: ${themeData.logo};
 
                     --ls-colors-secondary: ${themeData.secondary?.DEFAULT};
                     --ls-colors-secondary-50: ${themeData.secondary?.[50]};

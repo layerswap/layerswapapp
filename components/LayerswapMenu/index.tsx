@@ -24,6 +24,7 @@ import IconButton from "../buttons/iconButton";
 import YoutubeLogo from "../icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
+import LinkWrapper from "../LinkWraapper";
 
 
 export default function () {
@@ -110,9 +111,9 @@ export default function () {
 
     const title = userType != UserType.AuthenticatedUser
         ?
-        <h2 className="font-normal leading-none tracking-tight text-gray-900 md:text-2xl dark:text-primary-text">Menu</h2>
+        <h2 className="font-normal leading-none tracking-tight md:text-2xl text-secondary-text">Menu</h2>
         :
-        <span className="font-normal text-primary-text">
+        <span className="font-normal text-secondary-text">
             <UserEmail email={email} />
         </span>
 
@@ -145,7 +146,7 @@ export default function () {
                                                         show();
                                                         updateWithProps();
                                                     }}
-                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
+                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                                 >
                                                     <ChatIcon className="h-6 w-6" strokeWidth={2} />
                                                     <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
@@ -159,42 +160,42 @@ export default function () {
                                                     <button
                                                         type="button"
                                                         onClick={() => openConnectModal()}
-                                                        className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
+                                                        className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                                     >
                                                         <WalletIcon className="h-6 w-6" strokeWidth={2} />
                                                         <p className="text-base font-semibold">Wallet</p>
                                                     </button>
                                                 )}
-                                                <Link
+                                                <LinkWrapper
                                                     href="/transactions"
-                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
+                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                                 >
                                                     <ScrollText className="h-6 w-6" />
                                                     <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Transfers</p>
-                                                </Link>
+                                                </LinkWrapper>
                                             </div>
                                             {
                                                 router.pathname != '/' &&
-                                                <Link href="/" className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text">
+                                                <LinkWrapper href="/" className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
                                                     <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><Home className="h-5 w-5" /></div>
                                                     <p className="text-base font-semibold">Home</p>
                                                     <ChevronRight className="h-4 w-4 absolute right-3" />
-                                                </Link>
+                                                </LinkWrapper>
                                             }
                                             {!embedded && router.pathname != '/campaigns' &&
-                                                <Link href="/campaigns" className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text">
+                                                <LinkWrapper href="/campaigns" className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
                                                     <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><Gift className="h-5 w-5" /></div>
                                                     <p className="text-base font-semibold">Campaigns</p>
                                                     <ChevronRight className="h-4 w-4 absolute right-3" />
-                                                </Link>
+                                                </LinkWrapper>
                                             }
-                                            {router.pathname != '/auth' && <Link
+                                            {router.pathname != '/auth' && <LinkWrapper
                                                 href="/auth"
-                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text">
+                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
                                                 <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><LogIn className="h-5 w-5" /></div>
                                                 <p className="text-base font-semibold">Login</p>
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
-                                            </Link>
+                                            </LinkWrapper>
                                             }
                                         </>
                                 }
@@ -209,7 +210,7 @@ export default function () {
                                                     show();
                                                     updateWithProps();
                                                 }}
-                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
+                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                             >
                                                 <ChatIcon className="h-6 w-6" strokeWidth={2} />
                                                 <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
@@ -223,50 +224,50 @@ export default function () {
                                                 <button
                                                     type="button"
                                                     onClick={() => openConnectModal()}
-                                                    className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
+                                                    className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                                 >
                                                     <WalletIcon className="h-6 w-6" strokeWidth={2} />
                                                     <p className="text-base font-semibold">Wallet</p>
                                                 </button>
                                             )}
-                                            <Link
+                                            <LinkWrapper
                                                 href="/transactions"
-                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
+                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                             >
                                                 <ScrollText className="h-6 w-6" />
                                                 <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Transfers</p>
-                                            </Link>
+                                            </LinkWrapper>
                                         </div>
                                         {
                                             router.pathname != '/' &&
-                                            <Link
+                                            <LinkWrapper
                                                 href="/"
-                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text">
+                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
                                                 <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><Home className="h-5 w-5" /></div>
                                                 <p className="text-base font-semibold">Home</p>
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
-                                            </Link>
+                                            </LinkWrapper>
                                         }
-                                        <Link
+                                        <LinkWrapper
                                             href="/exchanges"
-                                            className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text">
+                                            className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
                                             <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><LinkIcon className="h-5 w-5" /></div>
                                             <p className="text-base font-semibold">Exchange Accounts</p>
                                             <ChevronRight className="h-4 w-4 absolute right-3" />
-                                        </Link>
+                                        </LinkWrapper>
                                         {!embedded && router.pathname != '/campaigns' &&
-                                            <Link
+                                            <LinkWrapper
                                                 href="/campaigns"
-                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text">
+                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
                                                 <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><Gift className="h-5 w-5" /></div>
                                                 <p className="text-base font-semibold">Campaigns</p>
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
-                                            </Link>
+                                            </LinkWrapper>
                                         }
                                         <button
                                             type="button"
                                             onClick={handleLogout}
-                                            className="border-2 border-secondary-500 menu-link my-1.5 mb-4 w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text"
+                                            className="border-2 border-secondary-500 menu-link my-1.5 mb-4 w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text"
                                         >
                                             <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><LogOut className="h-5 w-5" /></div>
                                             <p className="text-base font-semibold">Sign Out</p>
@@ -275,19 +276,22 @@ export default function () {
                                     </>
                                 }
                             </div>
-                            <p className="text-primary-text font-medium mt-1.5">New</p>
+                            <p className="text-secondary-text font-medium mt-1.5">New</p>
                             <div className="relative py-1">
-                                <Link
-                                    href="?to=base_mainnet"
-                                    className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text"
+                                <LinkWrapper
+                                    href={{
+                                        pathname: "/",
+                                        query: { to: "base_mainnet" }
+                                    }}
+                                    className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text"
                                 >
                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Bell className="h-5 w-5" strokeWidth={3} /></div>
                                     <p>We're live on Base!</p>
                                     <ChevronRight className="h-4 w-4 absolute right-3" />
-                                </Link>
+                                </LinkWrapper>
                                 <Popover
                                     opener={
-                                        <button onClick={() => setOpenFeedbackModal(true)} className="menu-link border-t border-slate-800 w-full flex relative cursor-pointer select-none items-center rounded-b-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text">
+                                        <button onClick={() => setOpenFeedbackModal(true)} className="menu-link border-t border-secondary-500 w-full flex relative cursor-pointer select-none items-center rounded-b-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
                                             <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><MessageSquarePlus className="h-5 w-5" /></div>
                                             <p>Suggest a Feature</p>
                                             <ChevronRight className="h-4 w-4 absolute right-3" />
@@ -302,33 +306,33 @@ export default function () {
                                     </div>
                                 </Popover>
                             </div>
-                            <p className="text-primary-text font-medium mt-1.5">Docs</p>
+                            <p className="text-secondary-text font-medium mt-1.5">Docs</p>
                             <div className="relative py-1">
                                 <Link
                                     href="https://docs.layerswap.io/"
                                     target="_blank"
-                                    className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text"
+                                    className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text"
                                 >
                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><BookOpen className="h-5 w-5" /></div>
                                     <p>For Users</p>
                                     <ExternalLink className="h-4 w-4 absolute right-3" />
                                 </Link>
-                                <Link
+                                <LinkWrapper
                                     href="/forpartners"
                                     target="_self"
-                                    className="menu-link flex rounded-b-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text border-t border-slate-800"
+                                    className="menu-link flex rounded-b-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text border-t border-secondary-500"
                                 >
                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Users className="h-5 w-5" /></div>
                                     <p>For Partners</p>
                                     <ChevronRight className="h-4 w-4 absolute right-3" />
-                                </Link>
+                                </LinkWrapper>
                             </div>
-                            <p className="text-primary-text font-medium mt-1.5">Legal</p>
+                            <p className="text-secondary-text font-medium mt-1.5">Legal</p>
                             <div className="relative py-1">
                                 <Link
                                     href="https://docs.layerswap.io/user-docs/information/privacy-policy"
                                     target="_blank"
-                                    className="menu-link flex relative cursor-pointer select-none items-center rounded-t-md px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text"
+                                    className="menu-link flex relative cursor-pointer select-none items-center rounded-t-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text"
                                 >
                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Shield className="h-5 w-5" /></div>
                                     <p>Privacy Policy</p>
@@ -337,7 +341,7 @@ export default function () {
                                 <Link
                                     href="https://docs.layerswap.io/user-docs/information/terms-of-services"
                                     target="_blank"
-                                    className="menu-link flex rounded-b-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-primary-text border-t border-slate-800"
+                                    className="menu-link flex rounded-b-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text border-t border-secondary-500"
                                 >
                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><LibraryIcon className="h-5 w-5" /></div>
                                     <p>Terms of Service</p>
@@ -346,7 +350,7 @@ export default function () {
                             </div>
                             <div className="flex justify-center mt-5">
                                 {navigation.social.map((item) => (
-                                    <Link key={item.name} target="_blank" href={item.href} className={`menu-link flex relative cursor-pointer select-none items-center py-1.5 outline-none text-primary-text hover:text-primary-text ${item.className}`}>
+                                    <Link key={item.name} target="_blank" href={item.href} className={`menu-link flex relative cursor-pointer select-none items-center py-1.5 outline-none text-secondary-text hover:text-primary-text ${item.className}`}>
                                         <div className="flex items-center">
                                             <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><item.icon className="h-5 w-5" aria-hidden="true" /></div>
                                         </div>
@@ -357,7 +361,7 @@ export default function () {
                     </Modal>
                 </>
             }
-        </span>
+        </span >
     </>
 }
 
@@ -368,7 +372,7 @@ const WalletAddress = (isMobile, isConnected) => {
                 return <button
                     type="button"
                     onClick={openAccountModal}
-                    className={`${!isMobile?.isMobile ? "px-[30px] py-5" : "px-[25px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-primary-text`}
+                    className={`${!isMobile?.isMobile ? "px-[30px] py-5" : "px-[25px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text`}
                 >
                     <WalletIcon className="h-6 w-6" strokeWidth={2} />
                     <p>{shortenAddress(account.address)}</p>

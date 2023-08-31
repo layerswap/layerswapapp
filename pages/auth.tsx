@@ -11,8 +11,10 @@ import { useEffect, useState } from 'react'
 import inIframe from '../components/utils/inIframe'
 import { SwapDataProvider } from '../context/swap'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
+import { THEME_COLORS } from '../Models/Theme'
+import ColorSchema from '../components/ColorSchema'
 
-export default function AuthPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function AuthPage({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   let appSettings = new LayerSwapAppSettings(settings)
 
@@ -23,17 +25,20 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
   }, [])
 
   return (
-    <Layout>
-      <SettingsProvider data={appSettings}>
-        <SwapDataProvider>
-          <MenuProvider>
-            <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
-              <AuthWizard />
-            </FormWizardProvider >
-          </MenuProvider>
-        </SwapDataProvider>
-      </SettingsProvider>
-    </Layout>
+    <>
+      <Layout>
+        <SettingsProvider data={appSettings}>
+          <SwapDataProvider>
+            <MenuProvider>
+              <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
+                <AuthWizard />
+              </FormWizardProvider >
+            </MenuProvider>
+          </SwapDataProvider>
+        </SettingsProvider>
+      </Layout>
+      <ColorSchema themeData={themeData} />
+    </>
   )
 }
 export async function getServerSideProps(context) {
@@ -51,8 +56,18 @@ export async function getServerSideProps(context) {
     settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
-
+  let themeData = null
+  try {
+    const theme_name = context.query.theme || context.query.addressSource
+    // const internalApiClient = new InternalApiClient()
+    // const themeData = await internalApiClient.GetThemeData(theme_name);
+    // result.themeData = themeData as ThemeData;
+    themeData = THEME_COLORS[theme_name] || null;
+  }
+  catch (e) {
+    console.log(e)
+  }
   return {
-    props: { settings }
+    props: { settings, themeData }
   }
 }

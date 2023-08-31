@@ -70,10 +70,10 @@ select:-webkit-autofill:focus {
   transition-property: background-color, color;
 
   /* border: 1px solid #1A2949; */
-  -webkit-text-fill-color: rgb(var(--colors-primary-text));
-  caret-color: rgb(var(--colors-primary-text));
-  -webkit-box-shadow: 0 0 0px 1000px rgb(var(--colors-secondary-700)) inset;
-  box-shadow: 0 0 0px 1000px rgb(var(--colors-secondary-700)) inset;
+  -webkit-text-fill-color: rgb(var(--ls-colors-primary-text));
+  caret-color: rgb(var(--ls-colors-primary-text));
+  -webkit-box-shadow: 0 0 0px 1000px rgb(var(--ls-colors-secondary-700)) inset;
+  box-shadow: 0 0 0px 1000px rgb(var(--ls-colors-secondary-700)) inset;
 
 }
 

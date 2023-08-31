@@ -22,6 +22,7 @@ import Modal from "../modal/modal";
 import SpinIcon from "../icons/spinIcon";
 import WalletIcon from "../icons/WalletIcon";
 import Link from "next/link";
+import LinkWrapper from "../LinkWraapper";
 
 function RewardComponent() {
 
@@ -323,7 +324,7 @@ function RewardComponent() {
                                 <div className="h-[364px] flex flex-col items-center justify-center space-y-4">
                                     <Gift className="h-20 w-20 text-primary" />
                                     <p className="font-bold text-center">Campaign not found</p>
-                                    <Link className="text-xs underline hover:no-underline" href='/campaigns'>See all campaigns</Link>
+                                    <LinkWrapper className="text-xs underline hover:no-underline" href='/campaigns'>See all campaigns</LinkWrapper>
                                 </div>
                         }
                     </div>

@@ -9,7 +9,7 @@ import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { validateSignature } from '../helpers/validateSignature'
 import { mapNetworkCurrencies } from '../helpers/settingsHelper'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
-import { DEFAULT_THEMES, ThemeData } from '../Models/Theme'
+import { THEME_COLORS, ThemeData } from '../Models/Theme'
 import ColorSchema from '../components/ColorSchema'
 const { parseColor } = require("tailwindcss/lib/util/color");
 
@@ -59,7 +59,7 @@ export async function getServerSideProps(context) {
     // const internalApiClient = new InternalApiClient()
     // const themeData = await internalApiClient.GetThemeData(theme_name);
     // result.themeData = themeData as ThemeData;
-    const themeDat = DEFAULT_THEMES[theme_name];
+    const themeDat = THEME_COLORS[theme_name];
     if (themeDat)
       result.themeData = themeDat
   }

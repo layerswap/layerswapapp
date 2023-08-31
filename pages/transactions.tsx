@@ -8,12 +8,15 @@ import { SwapDataProvider } from '../context/swap'
 import TransactionsHistory from '../components/SwapHistory'
 import TransfersWrapper from '../components/SwapHistory/TransfersWrapper'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
+import ColorSchema from '../components/ColorSchema'
+import { THEME_COLORS } from '../Models/Theme'
 
-export default function Transactions({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Transactions({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   let appSettings = new LayerSwapAppSettings(settings)
 
   return (
+    <>
       <Layout>
         <SettingsProvider data={appSettings}>
           <MenuProvider>
@@ -23,6 +26,8 @@ export default function Transactions({ settings }: InferGetServerSidePropsType<t
           </MenuProvider>
         </SettingsProvider>
       </Layout>
+      <ColorSchema themeData={themeData} />
+    </>
   )
 }
 
@@ -41,7 +46,16 @@ export async function getServerSideProps(context) {
 
   let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 
+  let themeData = null;
+  try {
+    const theme_name = context.query.theme || context.query.addressSource
+    themeData = THEME_COLORS[theme_name] || null;
+  }
+  catch (e) {
+    console.log(e)
+  }
+
   return {
-    props: { settings, isOfframpEnabled },
+    props: { settings, isOfframpEnabled, themeData },
   }
 }

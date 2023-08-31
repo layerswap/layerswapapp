@@ -10,7 +10,7 @@ import { AuthProvider } from "../context/authContext";
 import NoCookies from "./NoCookies";
 import useStorage from "../hooks/useStorage";
 import ColorSchema from "./ColorSchema";
-import { DEFAULT_THEMES } from "../Models/Theme";
+import { THEME_COLORS } from "../Models/Theme";
 
 type Props = {
   children: JSX.Element | JSX.Element[];

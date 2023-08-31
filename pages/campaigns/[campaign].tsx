@@ -6,12 +6,14 @@ import { MenuProvider } from '../../context/menu'
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient'
 import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings'
 import RewardComponent from '../../components/Rewards/RewardComponent'
+import { THEME_COLORS } from '../../Models/Theme'
+import ColorSchema from '../../components/ColorSchema'
 
-export default function RewardsPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function RewardsPage({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
     let appSettings = new LayerSwapAppSettings(settings)
 
-    return (
+    return (<>
         <Layout>
             <SettingsProvider data={appSettings}>
                 <MenuProvider>
@@ -19,6 +21,8 @@ export default function RewardsPage({ settings }: InferGetServerSidePropsType<ty
                 </MenuProvider>
             </SettingsProvider>
         </Layout>
+        <ColorSchema themeData={themeData} />
+    </>
     )
 }
 
@@ -42,8 +46,16 @@ export async function getServerSideProps(context) {
 
     let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 
+    let themeData = null
+    try {
+        const theme_name = context.query.theme || context.query.addressSource
+        themeData = THEME_COLORS[theme_name] || null;
+    }
+    catch (e) {
+        console.log(e)
+    }
 
     return {
-        props: { settings, isOfframpEnabled },
+        props: { settings, isOfframpEnabled, themeData }
     }
 }
