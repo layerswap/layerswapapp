@@ -1,20 +1,4 @@
-import Layout from '../../components/layout'
-import { InferGetServerSidePropsType } from 'next'
-import LayerSwapAuthApiClient from '../../lib/userAuthApiClient'
-import RewardComponent from '../../components/Rewards/RewardComponent'
-import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings'
-import LayerSwapApiClient from '../../lib/layerSwapApiClient'
-
-export default function RewardsPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-    LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
-    let appSettings = new LayerSwapAppSettings(settings)
-    
-    return (
-        <Layout settings={appSettings}>
-            <RewardComponent />
-        </Layout>
-    )
-}
+import LayerSwapApiClient from "./layerSwapApiClient";
 
 export async function getServerSideProps(context) {
     context.res.setHeader(

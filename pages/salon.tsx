@@ -2,9 +2,15 @@ import Layout from '../components/layout'
 import React, { useEffect } from 'react'
 import { useRouter } from 'next/router';
 import { clearTempData, getTempData } from '../lib/openLink';
+import LayerSwapApiClient from '../lib/layerSwapApiClient';
+import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
+import { InferGetServerSidePropsType } from 'next';
+import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 
-export default function Salon() {
+export default function Salon({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const router = useRouter();
+    LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+    let appSettings = new LayerSwapAppSettings(settings)
 
     useEffect(() => {
         const temp_data = getTempData()
@@ -26,7 +32,7 @@ export default function Salon() {
     }, [])
 
     return (
-        <Layout hideFooter={true} hideNavbar={true}>
+        <Layout hideFooter={true} hideNavbar={true} settings={appSettings}>
             <div className="h-full min-h-screen flex flex-col justify-center text-primary-text text-md font-lighter leading-6">
                 <div className='flex place-content-center mb-4'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 116 116" fill="none">
@@ -43,4 +49,25 @@ export default function Salon() {
             </div>
         </Layout>
     )
+}
+
+export async function getServerSideProps(context) {
+
+    context.res.setHeader(
+        'Cache-Control',
+        's-maxage=60, stale-while-revalidate'
+    );
+
+    var apiClient = new LayerSwapApiClient();
+    const { data: settings } = await apiClient.GetSettingsAsync()
+
+    const resource_storage_url = settings.discovery.resource_storage_url
+    if (resource_storage_url[resource_storage_url.length - 1] === "/")
+        settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+
+    LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+
+    return {
+        props: { settings }
+    }
 }

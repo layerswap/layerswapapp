@@ -1,24 +1,18 @@
 import Layout from '../components/layout'
-import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
-import { SettingsProvider } from '../context/settings'
 import UserExchanges from '../components/UserExchanges'
-import { MenuProvider } from '../context/menu'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
+import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
 
 export default function Home({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
     let appSettings = new LayerSwapAppSettings(settings)
-
+    
     return (
         <div className='wide-page'>
-            <Layout>
-                <SettingsProvider data={appSettings}>
-                    <MenuProvider>
-                        <UserExchanges />
-                    </MenuProvider>
-                </SettingsProvider>
+            <Layout settings={appSettings}>
+                <UserExchanges />
             </Layout>
         </div>
     )

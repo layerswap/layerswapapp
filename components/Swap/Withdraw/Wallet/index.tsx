@@ -37,7 +37,6 @@ const WalletTransfer: FC = () => {
     const managedDepositAddress = sourceAsset?.network?.managed_accounts?.[0]?.address;
     const generatedDepositAddress = generatedDeposit?.data?.address
     const sourceChainId = source_network.isExchange === false && Number(source_network.chain_id)
-
     const feeParams = {
         source: source_network_internal_name,
         destination: destination?.internal_name,

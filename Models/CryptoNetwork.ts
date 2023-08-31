@@ -9,6 +9,7 @@ export enum NetworkAddressType {
     'loopring' = "loopring"
 }
 
+
 export class CryptoNetwork {
     display_name: string;
     internal_name: string;
@@ -21,10 +22,11 @@ export class CryptoNetwork {
     refuel_amount_in_usd: number;
     chain_id: string;
     address_type: NetworkAddressType;
+    created_date: string;
+    is_featured: boolean;
+    nodes: NetworkNode[];
     managed_accounts: ManagedAccount[];
-}
-export type ManagedAccount = {
-    address: string;
+    metadata: Metadata;
 }
 
 export class NetworkCurrency {
@@ -41,4 +43,18 @@ export class NetworkCurrency {
     decimals: number;
     source_base_fee: number;
     destination_base_fee: number;
+}
+export class NetworkNode {
+    url: string;
+}
+export class ManagedAccount {
+    address: string;
+}
+export class Metadata {
+    contracts: {
+        multicall3: {
+            address: `0x${string}`;
+            blockCreated: number
+        }
+    }
 }

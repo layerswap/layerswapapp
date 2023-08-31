@@ -2,7 +2,6 @@ import Swap from '../components/swapComponent'
 import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
-import { SettingsProvider } from '../context/settings'
 import { LayerSwapSettings } from '../Models/LayerSwapSettings'
 import MaintananceContent from '../components/maintanance/maintanance'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
@@ -18,18 +17,16 @@ type IndexProps = {
 
 export default function Home({ settings, inMaintanance }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
-
   let appSettings = new LayerSwapAppSettings(settings)
+
   return (
-    <Layout>
+    <Layout settings={appSettings}>
       {
         inMaintanance
           ?
           <MaintananceContent />
           :
-          <SettingsProvider data={appSettings}>
-            <Swap />
-          </SettingsProvider>
+          <Swap />
       }
 
     </Layout>
