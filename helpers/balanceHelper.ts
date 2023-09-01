@@ -1,5 +1,5 @@
 import { erc20ABI } from 'wagmi';
-import { parseEther, createPublicClient, http, createWalletClient, getContract, encodeFunctionData, } from 'viem'
+import { parseEther, createPublicClient, http, createWalletClient, getContract, encodeFunctionData, toRlp, toBytes } from 'viem'
 import { multicall, fetchBalance, fetchFeeData, FetchBalanceResult } from '@wagmi/core'
 import { BaseL2Asset, Layer } from '../Models/Layer';
 import { supportedChains } from '../lib/chainConfigs';
@@ -157,36 +157,21 @@ export const estimateGas = async (chainId: number, contract_address: `0x${string
         transport: http()
     })
 
-    const walletClient = createWalletClient({
-        chain: chain,
-        transport: http()
-    })
-
-    const contract = getContract({
+    const estimatedERC20GasLimit = await publicClient.estimateContractGas({
         address: contract_address,
         abi: erc20ABI,
-        walletClient,
-        publicClient
-    })
+        functionName: 'transfer',
+        account,
+        args: [destination || account, BigInt(0)]
+    });
 
-    try {
-        if (!contract.address)
-            return null
-
-        const estimatedERC20GasLimit = await contract?.estimateGas?.transfer(
-            [destination || account, BigInt(0)],
-            { account: account }
-        )
-        return estimatedERC20GasLimit
-    } catch (e) {
-        //TODO: log the error to our logging service
-        console.log(e)
-        return null
-    }
-
+    return estimatedERC20GasLimit;
 }
 
 export const resolveGas = async (chainId: number, contract_address: `0x${string}`, account: `0x${string}`, balances: Balance[], from: Layer, currency: Currency) => {
+
+    var nonce = 9;
+    var dummyAddress = "0x3535353535353535353535353535353535353535";
 
     const feeData = await resolveFeeData(Number(chainId))
     const estimatedGas = contract_address ?
@@ -209,15 +194,20 @@ export const resolveGas = async (chainId: number, contract_address: `0x${string}
             transport: http()
         })
 
-        const data = await publicClient.readContract({
+        const L2Fee = (feeData.lastBaseFeePerGas + feeData.maxPriorityFeePerGas) * estimatedGas
+
+        const L1Fee = await publicClient.readContract({
             address: '0x420000000000000000000000000000000000000F',
             abi: opL1Fee,
-            functionName:'getL1Fee'
+            functionName: 'getL1Fee',
+            args: [toRlp([
+                toBytes(nonce), toBytes(feeData.gasPrice), toBytes(estimatedGas), toBytes(dummyAddress), toBytes(BigInt('1000000000000000000')), toBytes('')
+            ])]
         });
 
-        
-    }
+        return { gas: formatAmount(L2Fee + L1Fee, nativeBalance?.decimals), token: currency?.asset }
 
+    }
 
     return { gas: formatAmount(gasBigint, nativeBalance?.decimals), token: currency?.asset }
 
