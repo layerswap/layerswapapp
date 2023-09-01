@@ -49,7 +49,6 @@ let settings = new LayerSwapAppSettings(Settings)
 
 const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, }> = ({ swap, failedSwap, failedSwapOutOfRange }) => {
     const [appSettings, setAppSettings] = useState(null);
-    const version = process.env.NEXT_PUBLIC_API_VERSION;
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,

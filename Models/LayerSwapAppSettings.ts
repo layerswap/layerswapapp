@@ -30,7 +30,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             return `${basePath}/layerswap/networks/${(item as any)?.internal_name?.toLowerCase()}.png`
         }
         else if ((item as any)?.asset != undefined) {
-            return `${basePath}/layerswap/networks/layerswap/currencies/${(item as any)?.asset?.toLowerCase()}.png`
+            return `${basePath}/layerswap/currencies/${(item as any)?.asset?.toLowerCase()}.png`
         }
     }
 

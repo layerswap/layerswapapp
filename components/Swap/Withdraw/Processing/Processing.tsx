@@ -50,7 +50,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             [key in ProgressStatus]: {
                 name: string;
                 description: string | JSX.Element;
-            } 
+            }
         }
     }
 
@@ -75,7 +75,17 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             current: {
                 name: 'Your transfer is in progress',
                 description: <div>
-                    <span>Waiting for confirmations</span>
+                    <span>
+                        Waiting for confirmations
+                        {swapInputTransaction && (
+                            <span className="text-white ml-1">
+                                {swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations
+                                    ? swapInputTransaction.max_confirmations
+                                    : swapInputTransaction.confirmations}
+                                /{swapInputTransaction.max_confirmations}
+                            </span>
+                        )}
+                    </span>
                 </div>
             },
             complete: {
@@ -195,21 +205,24 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             status: progressStatuses?.input_transfer,
             description: progressStates["input_transfer"][progressStatuses?.input_transfer]?.description,
             index: 1
-        },
-        {
+        }
+    ]
+
+    if (swapOutputTransaction) {
+        progress.push({
             name: progressStates["output_transfer"][progressStatuses?.output_transfer]?.name,
             status: progressStatuses?.output_transfer,
             description: progressStates["output_transfer"][progressStatuses?.output_transfer]?.description,
             index: 2
-        }
-    ]
+        })
+    }
 
     if (swap?.has_refuel) {
         progress.push({
             name: progressStates["refuel"][progressStatuses?.refuel]?.name,
             status: progressStatuses?.refuel,
             description: progressStates["refuel"][progressStatuses?.refuel]?.description,
-            index: 3
+            index: swapOutputTransaction ? 3 : 2
         })
     }
 
@@ -301,7 +314,7 @@ const getProgressStatuses = (swap: SwapItem, swapStep: SwapStep): { [key in Prog
     } else if (swapStep === SwapStep.Failed) {
         return {
             "input_transfer": ProgressStatus.Complete,
-            "output_transfer": swapOutputTransaction ? ProgressStatus.Complete : ProgressStatus.Current,
+            "output_transfer": swapOutputTransaction && ProgressStatus.Complete,
             "refuel": swapRefuelTransaction && ProgressStatus.Complete,
             "failed": ProgressStatus.Failed
         };
