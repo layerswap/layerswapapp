@@ -211,23 +211,23 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         tabIndex={0}
                                         className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-secondary-700 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
                                     />
+                                    {
+                                        inputValue && !disabled &&
+                                        <span className="inline-flex items-center mr-2">
+                                            <div className="text-xs flex items-center space-x-2 md:ml-5 bg-secondary-500 rounded-md border border-secondary-500">
+                                                <button
+                                                    type="button"
+                                                    className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
+                                                    onClick={handleRemoveDepositeAddress}
+                                                >
+                                                    <div className="flex items-center px-2 text-sm py-1 font-semibold">
+                                                        Clear
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </span>
+                                    }
                                 </div>
-                                {
-                                    inputValue && !disabled &&
-                                    <span className="inline-flex items-center mr-2">
-                                        <div className="text-xs flex items-center space-x-2 md:ml-5 bg-secondary-500 rounded-md border border-secondary-500">
-                                            <button
-                                                type="button"
-                                                className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
-                                                onClick={handleRemoveDepositeAddress}
-                                            >
-                                                <div className="flex items-center px-2 text-sm py-1 font-semibold">
-                                                    Clear
-                                                </div>
-                                            </button>
-                                        </div>
-                                    </span>
-                                }
                                 {errorMessage &&
                                     <div className="basis-full text-xs text-primary">
                                         {errorMessage}
