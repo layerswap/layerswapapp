@@ -50,43 +50,21 @@ function App({ Component, pageProps }) {
 
   const theme = darkTheme({
     accentColor: 'var(--ls-colors-primary-500)',
-    accentColorForeground: 'white',
+    accentColorForeground: 'rgb(var(--ls-colors-secondary-text))',
     borderRadius: 'small',
     fontStack: 'system',
     overlayBlur: 'small',
   })
 
 
-  // // theme.colors.actionButtonBorder = 'var(--ls-colors-primary-500)';
-  // // theme.colors.actionButtonBorderMobile = "#0f0";
-  // // theme.colors.actionButtonSecondaryBackground = "#0f0";
-  // theme.colors.closeButton = "rgb(var(--ls-colors-secondary-500))";
-  // // theme.colors.closeButtonBackground = "var(--ls-colors-secondary-700)";
-  // // theme.colors.connectButtonBackground = "#0f0";
-  // // theme.colors.connectButtonBackgroundError = "var(--ls-colors-secondary-500)";
-  // // theme.colors.connectButtonInnerBackground = "#0f0";
-  // // theme.colors.connectButtonText = "#0f0";
-  // // theme.colors.connectButtonTextError = "#0f0";
-  // // theme.colors.connectionIndicator = "#0f0";
-  // // theme.colors.downloadBottomCardBackground = "#0f0";
-  // // theme.colors.downloadTopCardBackground = "#0f0";
-  // // theme.colors.error = "#0f0";
-  // // theme.colors.generalBorder = "#0f0";
-  // // theme.colors.generalBorderDim = "#0f0";
-  // // theme.colors.menuItemBackground = "#0f0";
-  // // theme.colors.modalBackdrop = "#0f0";
-  // // theme.colors.modalBackground = "#0f0";
-  // // theme.colors.modalBorder = "#0f0";
-  // // theme.colors.modalText = "#0f0";
-  // // theme.colors.modalTextDim = "#0f0";
-  // // theme.colors.modalTextSecondary = "#0f0";
-  // // theme.colors.profileAction = "#0f0";
-  // // theme.colors.profileActionHover = "#0f0";
-  // // theme.colors.profileForeground = "#0f0";
-  // // theme.colors.selectedOptionBorder = "#0f0";
-  // // theme.colors.standby = "#0f0";
 
-  // theme.colors.modalBackground = 'var(--ls-colors-secondary-900)'
+  theme.colors.closeButton = "rgb(var(--ls-colors-secondary-text))";
+  theme.colors.closeButtonBackground = "rgb(var(--ls-colors-secondary-800))";
+
+  theme.colors.modalBackground = "var(--ls-colors-secondary-900)";
+  theme.colors.modalText = "var(--ls-colors-primary-text)";
+  theme.colors.modalTextDim = "rgb(var(--ls-colors-secondary-text))";
+  theme.colors.modalTextSecondary = "rgb(var(--ls-colors-secondary-text))";
 
   const router = useRouter()
 
