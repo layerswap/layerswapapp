@@ -224,7 +224,7 @@ function RewardComponent() {
                                                     </div>
                                                     <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards </p>
                                                 </div>
-                                                <p className="text-primary-text text-base">You can earn ${campaign?.asset} tokens by transferring assets to {network?.display_name}. For each transaction, you’ll receive {campaign?.percentage}% of Layerswap fee back. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></p>
+                                                <p className="text-primary-text text-base">You can earn ${campaign?.asset} tokens by transferring assets to {network?.display_name}. For each transaction, you’ll receive {campaign?.percentage}% of Layerswap fee back. <Link target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</Link></p>
                                             </div>
                                         </div>
                                     }
