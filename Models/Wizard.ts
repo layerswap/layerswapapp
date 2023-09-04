@@ -32,17 +32,17 @@ export enum SwapCreateStep {
     Error = "Error"
 }
 
-export enum SwapStep {
-    UserTransferPending = 0,
+// export enum SwapStep {
+//     UserTransferPending = 0,
 
-    TransactionDone = 1,
-    TransactionDetected = 2,
-    LSTransferPending = 3,
+//     TransactionDone = 1,
+//     TransactionDetected = 2,
+//     LSTransferPending = 3,
 
-    Success = 4,
-    Failed = 5,
-    Delay = 6
-}
+//     Success = 4,
+//     Failed = 5,
+//     Delay = 6
+// }
 
 export enum SwapWithdrawalStep {
     Withdrawal = "Withdrawal",

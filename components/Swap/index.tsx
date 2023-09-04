@@ -1,55 +1,49 @@
 import { FC, useEffect } from 'react'
 import { Widget } from '../Widget/Index';
 import { useSwapDataState, useSwapDataUpdate } from '../../context/swap';
-import { GetSwapStep, ResolvePollingInterval } from '../utils/SwapStatus';
-import { SwapStep } from '../../Models/Wizard';
+import { ResolvePollingInterval } from '../utils/SwapStatus';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
 import Success from './Withdraw/Success';
 import Failed from './Withdraw/Failed';
 import Delay from './Withdraw/Delay';
+import { TransactionType } from '../../lib/layerSwapApiClient';
+import { SwapStatus } from '../../Models/SwapStatus';
 
 
 const SwapDetails: FC = () => {
     const { swap } = useSwapDataState()
-    const swapStep = GetSwapStep(swap)
+    const swapStatus = swap.status;
     const { setInterval } = useSwapDataUpdate()
-
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))[swap?.id]
     useEffect(() => {
-        setInterval(ResolvePollingInterval(swapStep))
+        setInterval(ResolvePollingInterval(swapStatus))
         return () => setInterval(0)
-    }, [swapStep])
+    }, [swapStatus])
 
     return (
         <>
             <Widget>
                 {
-                    swapStep === SwapStep.UserTransferPending &&
+                    swapStatus === SwapStatus.UserTransferPending &&
                     <Withdraw />
                 }
                 {
-                    (swapStep === SwapStep.TransactionDetected
-                        || swapStep === SwapStep.LSTransferPending
-                        || swapStep === SwapStep.TransactionDone)
+                    (swapInputTransaction
+                        || swapStatus === SwapStatus.LsTransferPending)
                     &&
                     <Processing />
                 }
                 {
-                    swapStep === SwapStep.Success &&
-                    <div>
-                        <Processing />
-                        <Success />
-                    </div>
+                    swapStatus === SwapStatus.Completed &&
+                    <Success />
                 }
                 {
-                    swapStep === SwapStep.Failed &&
-                    <div>
-                        <Processing />
-                        <Failed />
-                    </div>
+                    swapStatus === SwapStatus.Failed &&
+                    <Failed />
                 }
                 {
-                    swapStep === SwapStep.Delay &&
+                    swapStatus === SwapStatus.UserTransferDelayed &&
                     <Delay />
                 }
             </Widget>
