@@ -38,10 +38,6 @@ export async function getServerSideProps(context) {
 
     settings.exchanges = settings.exchanges.filter(e => e.status === 'active')
 
-    const resource_storage_url = settings.discovery.resource_storage_url
-    if (resource_storage_url[resource_storage_url.length - 1] === "/")
-        settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
-
     let isOfframpEnabled = process.env.OFFRAMP_ENABLED != undefined && process.env.OFFRAMP_ENABLED == "true";
 
     return {

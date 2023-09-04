@@ -17,7 +17,7 @@ const FiatTransfer: FC = () => {
 
 const CryptoElementsContext = createContext(null);
 
-export const CryptoElements: FC<{ stripeOnramp: Promise<StripeOnramp> }> = ({
+export const CryptoElements: FC<{ stripeOnramp: Promise<StripeOnramp>, children?: React.ReactNode }> = ({
     stripeOnramp,
     children
 }) => {

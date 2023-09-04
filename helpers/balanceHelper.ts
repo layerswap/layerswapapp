@@ -1,11 +1,11 @@
 import { erc20ABI } from 'wagmi';
-import { parseEther, createPublicClient, http, createWalletClient, getContract, encodeFunctionData, toRlp, toBytes } from 'viem'
+import { parseEther, createPublicClient, http, encodeFunctionData } from 'viem'
 import { multicall, fetchBalance, fetchFeeData, FetchBalanceResult } from '@wagmi/core'
 import { BaseL2Asset, Layer } from '../Models/Layer';
 import { supportedChains } from '../lib/chainConfigs';
 import { Currency } from '../Models/Currency';
 import KnownInternalNames from '../lib/knownIds';
-import { opL1Fee } from '../lib/abis/OptimismL1Fee';
+import { estimateFees } from '@eth-optimism/fee-estimation'
 
 export type ERC20ContractRes = ({
     error: Error;
@@ -168,49 +168,60 @@ export const estimateGas = async (chainId: number, contract_address: `0x${string
     return estimatedERC20GasLimit;
 }
 
-export const resolveGas = async (chainId: number, contract_address: `0x${string}`, account: `0x${string}`, balances: Balance[], from: Layer, currency: Currency) => {
+export const resolveGas = async (chainId: number, contract_address: `0x${string}`, account: `0x${string}`, balances: Balance[], from: string, currency: Currency) => {
 
-    var nonce = 9;
-    var dummyAddress = "0x3535353535353535353535353535353535353535";
+    const nativeBalance = balances?.find(b =>
+        b.network === from
+        && b.isNativeCurrency)
 
+    let fee: Gas
+
+    switch (from) {
+        case KnownInternalNames.Networks.OptimismMainnet:
+            fee = await GetOptimismGas(chainId, account, nativeBalance, currency)
+            break;
+        default:
+            fee = await GetGas(chainId, account, nativeBalance, currency, contract_address)
+    }
+
+    return fee
+}
+
+const GetOptimismGas = async (chainId: number, account: `0x${string}`, nativeBalance: Balance, currency: Currency) => {
+
+    var dummyAddress = "0x3535353535353535353535353535353535353535" as const;
+    const amount = BigInt(100000000)
+    const chain = supportedChains?.find(ch => ch.id === chainId) ?? supportedChains[0];
+
+    const publicClient = createPublicClient({
+        chain: chain,
+        transport: http()
+    })
+
+    const fee = await estimateFees({
+        client: publicClient,
+        functionName: 'transfer',
+        abi: erc20ABI,
+        args: [dummyAddress, amount],
+        account: account,
+        chainId: chain.id,
+        to: dummyAddress
+    })
+
+    return { gas: formatAmount(fee, nativeBalance?.decimals), token: currency?.asset }
+}
+
+const GetGas = async (chainId: number, account: `0x${string}`, nativeBalance: Balance, currency: Currency, contract_address: `0x${string}`) => {
     const feeData = await resolveFeeData(Number(chainId))
     const estimatedGas = contract_address ?
         await estimateGas(chainId, account, contract_address)
         : await estimateNativeGas(chainId, account)
 
-    const nativeBalance = balances?.find(b =>
-        b.network === from.internal_name
-        && b.isNativeCurrency)
-
     const gasBigint = feeData.maxFeePerGas
         ? (feeData?.maxFeePerGas * estimatedGas)
         : (feeData?.gasPrice * estimatedGas)
 
-    if (from.internal_name === KnownInternalNames.Networks.OptimismMainnet) {
-        const chain = supportedChains?.find(ch => ch.id === chainId) ?? supportedChains[0];
-
-        const publicClient = createPublicClient({
-            chain: chain,
-            transport: http()
-        })
-
-        const L2Fee = (feeData.lastBaseFeePerGas + feeData.maxPriorityFeePerGas) * estimatedGas
-
-        const L1Fee = await publicClient.readContract({
-            address: '0x420000000000000000000000000000000000000F',
-            abi: opL1Fee,
-            functionName: 'getL1Fee',
-            args: [toRlp([
-                toBytes(nonce), toBytes(feeData.gasPrice), toBytes(estimatedGas), toBytes(dummyAddress), toBytes(BigInt('1000000000000000000')), toBytes('')
-            ])]
-        });
-
-        return { gas: formatAmount(L2Fee + L1Fee, nativeBalance?.decimals), token: currency?.asset }
-
-    }
-
     return { gas: formatAmount(gasBigint, nativeBalance?.decimals), token: currency?.asset }
-
 }
 
 export const formatAmount = (unformattedAmount: bigint | unknown, decimals: number) => {

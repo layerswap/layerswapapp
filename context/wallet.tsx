@@ -5,9 +5,9 @@ import { useAccount } from 'wagmi';
 import { NetworkAddressType } from '../Models/CryptoNetwork';
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
-import { Balance, Gas, estimateGas, estimateNativeGas, formatAmount, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveFeeData, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
+import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
 
-const WalletStateContext = React.createContext(null);
+export const WalletStateContext = React.createContext(null);
 const WalletStateUpdateContext = React.createContext(null);
 
 export type WizardProvider = {
@@ -26,7 +26,11 @@ type UpdateInterface = {
     getGas: (from: Layer, currency: Currency) => Promise<void>
 }
 
-export const WalletDataProvider: FC = ({ children }) => {
+type Props = {
+    children?: JSX.Element | JSX.Element[];
+}
+
+export const WalletDataProvider: FC<Props> = ({ children }) => {
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
     const [authorizedCoinbaseAccount, setAuthorizedCoinbaseAccount] = useState<UserExchangesData>()
     const [allBalances, setAllBalances] = useState<{ [address: string]: Balance[] }>({})
@@ -71,7 +75,7 @@ export const WalletDataProvider: FC = ({ children }) => {
             (async () => {
                 setIsGasLoading(true)
                 try {
-                    const gas = await resolveGas(chainId, contract_address, address, balances, from, currency)
+                    const gas = await resolveGas(chainId, contract_address, address, balances, from.internal_name, currency)
                     const filteredGases = allGases[from.internal_name]?.some(b => b?.token === currency?.asset) ? allGases[from.internal_name].filter(g => g.token !== currency.asset) : allGases[from.internal_name] || []
 
                     if (gas) {

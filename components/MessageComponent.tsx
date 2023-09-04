@@ -69,7 +69,7 @@ const Description = ({ children }) => {
 }
 
 const Buttons = ({ children }) => {
-    return <div className="space-y-3 mt-6">
+    return <div className="space-y-3">
         {children}
     </div>
 }

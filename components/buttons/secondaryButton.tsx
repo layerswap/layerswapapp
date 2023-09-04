@@ -7,6 +7,7 @@ type SecondaryButtonProps = {
     onClick?: MouseEventHandler<HTMLButtonElement>
     className?: string,
     disabled?: boolean
+    children?: React.ReactNode
 }
 
 const SecondaryButton: FC<SecondaryButtonProps> = ({ size = 'md', onClick, children, className, disabled }) => {

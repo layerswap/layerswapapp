@@ -8,7 +8,7 @@ import WalletMessage from "./message";
 import { ActionData } from "./sharedTypes";
 import SubmitButton from "../../../../buttons/submitButton";
 
-export const ConnectWalletButton: FC = ({ children }) => {
+export const ConnectWalletButton: FC = () => {
     const { openConnectModal } = useConnectModal();
 
     const clickHandler = useCallback(() => {
@@ -75,7 +75,8 @@ export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ 
 type ButtonWrapperProps = {
     icon?: ReactNode,
     clcikHandler: () => void,
-    disabled?: boolean
+    disabled?: boolean,
+    children: ReactNode
 }
 export const ButtonWrapper: FC<ButtonWrapperProps> = ({
     icon,

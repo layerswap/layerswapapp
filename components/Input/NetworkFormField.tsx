@@ -144,7 +144,6 @@ function GenerateMenuItems(layers: Layer[], resolveImgSrc: (item: Layer | Curren
 
     return layers.map(l => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-
         return {
             baseObject: l,
             id: l.internal_name,
