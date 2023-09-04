@@ -7,7 +7,7 @@ export const GetSwapStep = (swap: SwapItem): SwapStep => {
     const swapStatus = swap?.status;
 
     const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-    const txForSwap = data?.[swap.id];
+    const txForSwap = data?.[swap?.id];
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
 
     if (swapStatus == SwapStatus.Completed)

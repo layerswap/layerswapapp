@@ -25,7 +25,7 @@ const SwapSummary: FC = () => {
     const source_layer = layers?.find(n => n.internal_name === (source_exchange_internal_name ?? source_network_internal_name))
     const destination_layer = layers?.find(l => l.internal_name === (destination_exchange_internal_name ?? destination_network_internal_name))
     const asset = source_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
-    const currency = currencies?.find(c => c.asset === asset.asset)
+    const currency = currencies?.find(c => c.asset === asset?.asset)
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
@@ -60,9 +60,9 @@ const SwapSummary: FC = () => {
         walletTransferFee?.min_amount > swap?.requested_amount ? walletTransferFee?.min_amount : swap?.requested_amount
         : manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount)
 
-    const destinationNetworkNativeAsset = currencies?.find(c => c.asset == networks.find(n => n.internal_name === destination_layer.internal_name)?.native_currency);
-    const refuelAmountInNativeCurrency = swap?.has_refuel && (swapRefuelTransaction?.amount ?? (networks.find(n => n.internal_name === destination_layer.internal_name).refuel_amount_in_usd / destinationNetworkNativeAsset.usd_price));
-    const refuelAmountInSelectedCurrency = swap?.has_refuel && (networks.find(n => n.internal_name === destination_layer.internal_name).refuel_amount_in_usd / currency.usd_price) || 0;
+    const destinationNetworkNativeAsset = currencies?.find(c => c.asset == networks.find(n => n.internal_name === destination_layer?.internal_name)?.native_currency);
+    const refuelAmountInNativeCurrency = swap?.has_refuel && (swapRefuelTransaction?.amount ?? (networks.find(n => n.internal_name === destination_layer?.internal_name)?.refuel_amount_in_usd / destinationNetworkNativeAsset?.usd_price));
+    const refuelAmountInSelectedCurrency = swap?.has_refuel && (networks.find(n => n.internal_name === destination_layer?.internal_name)?.refuel_amount_in_usd / currency?.usd_price) || 0;
 
     const receive_amount = swapOutputTransaction?.amount ?? truncateDecimals(requested_amount - fee - refuelAmountInSelectedCurrency, currency?.precision)
 

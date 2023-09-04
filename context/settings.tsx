@@ -1,9 +1,9 @@
 import React, { FC } from 'react'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 
-const SettingsStateContext = React.createContext<LayerSwapAppSettings | null>(null);
+export const SettingsStateContext = React.createContext<LayerSwapAppSettings | null>(null);
 
-export const SettingsProvider: FC<{data:LayerSwapAppSettings}> = ({children, data}) => {
+export const SettingsProvider: FC<{ data: LayerSwapAppSettings, children?: React.ReactNode }> = ({ children, data }) => {
   return (
     <SettingsStateContext.Provider value={data}>
       {children}

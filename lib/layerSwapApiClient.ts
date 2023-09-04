@@ -22,7 +22,7 @@ export default class LayerSwapApiClient {
 
     async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
         const version = process.env.NEXT_PUBLIC_API_VERSION
-        return await (await fetch(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${version}`))?.json();
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${version}`).then(res => res.data);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {
@@ -180,11 +180,11 @@ export type SwapItem = {
     status: SwapStatus,
     destination_address: string,
     requested_amount: number,
-    message: string,
-    reference_id: string,
-    app_name: string,
-    refuel_price: number,
-    refuel_transaction_id: string,
+    message?: string,
+    reference_id?: string,
+    app_name?: string,
+    refuel_price?: number,
+    refuel_transaction_id?: string,
     source_network_asset: string,
     source_network: string,
     source_exchange: string,
@@ -193,7 +193,6 @@ export type SwapItem = {
     destination_exchange: string,
     transactions: Transaction[]
     has_refuel?: boolean,
-    has_sucessfull_published_tx: boolean;
     metadata?: {
         'STRIPE:SessionId': string
     },

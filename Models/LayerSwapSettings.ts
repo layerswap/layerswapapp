@@ -8,7 +8,7 @@ export class LayerSwapSettings {
     exchanges: Exchange[];
     networks: CryptoNetwork[];
     currencies: Currency[];
-    blacklisted_addresses: BlacklistedAddress[];
+    blacklisted_addresses?: BlacklistedAddress[];
     discovery: {
         identity_url: string;
         resource_storage_url: string;

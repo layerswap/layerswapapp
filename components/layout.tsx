@@ -3,20 +3,19 @@ import Head from "next/head"
 import { useRouter } from "next/router";
 import QueryProvider from "../context/query";
 import ThemeWrapper from "./themeWrapper";
-import ErrorBoundary from "./ErrorBoundary";
+import { ErrorBoundary } from "react-error-boundary";
 import { QueryParams } from "../Models/QueryParams";
 import MaintananceContent from "./maintanance/maintanance";
 import { AuthProvider } from "../context/authContext";
 import NoCookies from "./NoCookies";
 import useStorage from "../hooks/useStorage";
+import ErrorFallback from "./ErrorFallback";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
   hideNavbar?: boolean;
 };
-
-
 
 export default function Layout({ hideNavbar, children }: Props) {
   const router = useRouter();
@@ -91,7 +90,7 @@ export default function Layout({ hideNavbar, children }: Props) {
     {
       storageAvailable === true &&
       <AuthProvider>
-        <ErrorBoundary >
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
           <QueryProvider query={query}>
             <ThemeWrapper hideNavbar={hideNavbar}>
               {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ? <MaintananceContent /> : children}

@@ -2,7 +2,8 @@ import { FC } from 'react';
 import { createPortal } from 'react-dom';
 
 type Props = {
-    wrapperId: string
+    wrapperId: string;
+    children?: React.ReactNode
 }
 
 const ReactPortal: FC<Props> = ({ children, wrapperId = "react-portal-wrapper" }) => {

@@ -5,14 +5,12 @@ import {
     usePrepareContractWrite,
     useWaitForTransaction,
     useNetwork,
+    erc20ABI
 } from "wagmi";
-import { parseUnits } from 'viem'
-import { erc20ABI } from 'wagmi'
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../../context/swap";
 import WalletIcon from "../../../../icons/WalletIcon";
-import { encodeFunctionData, getContract } from 'viem'
-import { createPublicClient, http, createWalletClient } from 'viem'
+import { encodeFunctionData, createPublicClient, http, parseUnits } from 'viem'
 import usdtAbi from "../../../../../lib/abis/usdt.json"
 import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
@@ -73,25 +71,18 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         chain: chain,
         transport: http()
     })
-    const walletClient = createWalletClient({
-        chain: chain,
-        transport: http()
-    })
-
-    const contract = getContract({
-        address: tokenContractAddress,
-        abi: erc20ABI,
-        walletClient,
-        publicClient
-    })
 
     useEffect(() => {
         (async () => {
             if (encodedData) {
-                const estimate = await contract?.estimateGas?.transfer(
-                    [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
-                    { data: encodedData, account: address }
-                )
+
+                const estimate = await publicClient.estimateGas({
+                    data: encodedData,
+                    account: address,
+                    to: depositAddress,
+                    value: parseUnits(amount.toString(), tokenDecimals)
+                })
+
                 setEstimatedGas(estimate)
             }
         })()
