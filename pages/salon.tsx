@@ -33,7 +33,7 @@ export default function Salon({ settings }: InferGetServerSidePropsType<typeof g
 
     return (
         <Layout hideFooter={true} hideNavbar={true} settings={appSettings}>
-            <div className="h-full min-h-screen flex flex-col justify-center text-primary-text text-md font-lighter leading-6">
+            <div className="h-full min-h-screen flex flex-col justify-center text-secondary-text text-md font-lighter leading-6">
                 <div className='flex place-content-center mb-4'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 116 116" fill="none">
                         <circle cx="58" cy="58" r="58" fill="#55B585" fillOpacity="0.1" />
@@ -43,7 +43,7 @@ export default function Salon({ settings }: InferGetServerSidePropsType<typeof g
                     </svg>
                 </div>
                 <div className="flex flex-col text-center place-content-center space-y-2">
-                    <p className="block text-white font-bold text-lg"> Exchange account successfully connected </p>
+                    <p className="block text-primary-text font-bold text-lg"> Exchange account successfully connected </p>
                     <p className="block"> You can close this window now</p>
                 </div>
             </div>

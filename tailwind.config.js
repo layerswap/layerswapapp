@@ -32,10 +32,10 @@ module.exports = {
           '800': 'var(--ls-colors-primary-800, #930863)',
           '900': 'var(--ls-colors-primary-900, #6e0040)',
           'background': 'var(--ls-colors-backdrop, #3e1240)',
-          'text': 'var(--ls-colors-primary-text, #fff)',
+          'text': 'rgb(var(--ls-colors-primary-text, 255, 255, 255), <alpha-value>)',
           'text-muted': 'var(--ls-colors-primary-text-muted, #56617B)',
           'text-placeholder': 'var(--ls-colors-text-placeholder, #8C98C0)',
-          'buttonTextColor': 'rgb(var(--ls-colors-actionButtonText, 255 255 255) / <alpha-value>)',
+          'buttonTextColor': 'rgb(var(--ls-colors-actionButtonText, 255 255 255), <alpha-value>)',
           'logoColor': 'var(--ls-colors-logo, #FF0093)'
         },
         secondary: {

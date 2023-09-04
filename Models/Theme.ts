@@ -113,7 +113,7 @@ export const THEME_COLORS:{[key:string]:ThemeData} = {
             '700': '#881143',
             '800': '#930863',
             '900': '#c499af',
-            'text': '#111111',
+            'text': '17, 17, 17',
             'textMuted': '#56617B',
         },
         secondary: {
@@ -149,7 +149,7 @@ export const THEME_COLORS:{[key:string]:ThemeData} = {
             '700': '#881143',
             '800': '#930863',
             '900': '#6e0040',
-            'text': '#fff',
+            'text': '255, 255, 255',
             'textMuted': '#56617B',
         },
         secondary: {

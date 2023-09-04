@@ -459,7 +459,7 @@ const ButtonWrapper: FC<ButtonWrapperProps> = ({
     children
 }) => {
     return <div>
-        <div className="flex flex-row text-primary-text text-base space-x-2">
+        <div className="flex flex-row text-primary-buttonTextColor text-base space-x-2">
             <SubmitButton icon={icon}
                 text_align='center'
                 isDisabled={disabled}

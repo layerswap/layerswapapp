@@ -36,7 +36,6 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}&version=${version}`);
     }
 
-
     async GetPendingSwapsAsync(): Promise<ApiResponse<SwapItem[]>> {
         const version = process.env.NEXT_PUBLIC_API_VERSION
         return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=0&version=${version}`);

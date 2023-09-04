@@ -366,7 +366,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                                     return (
                                                         <RadioGroup.Description
                                                             as="span"
-                                                            className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:bg-secondary-300 transition duration-200 px-2 py-1.5 border border-secondary-900 hover:border-secondary-500 hover:bg-secondary-700/70 hover:shadow-xl ${checked && 'border-secondary-700'}`}
+                                                            className={`space-x-2 flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 border border-secondary-900 hover:border-secondary-500 hover:bg-secondary-700/70 hover:shadow-xl ${checked && 'border-secondary-700'}`}
                                                         >
                                                             <div className='flex bg-secondary-400 text-secondary-text flex-row items-left  rounded-md p-2'>
                                                                 <AddressIcon address={a.address} size={20} />

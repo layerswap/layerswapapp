@@ -135,10 +135,10 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
                 source_exchange &&
                 <ExchangeNetworkPicker onChange={handleChangeSelectedNetwork} />
             }
-            <div className='p-2 bg-white/30 bg-opacity-30 rounded-xl'>
-                <div className='p-2 bg-white/70 bg-opacity-70 rounded-lg'>
+            <div className='p-2 bg-primary-text/30 bg-opacity-30 rounded-xl'>
+                <div className='p-2 bg-primary-text/40 bg-opacity-70 rounded-lg'>
                     {qrData ? <QRCode
-                        className="p-2 bg-white rounded-md"
+                        className="p-2 bg-primary-text rounded-md"
                         value={qrData}
                         size={120}
                         bgColor={colors.white}

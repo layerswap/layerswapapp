@@ -24,19 +24,18 @@ export default function Home({ settings, inMaintanance, themeData }: InferGetSer
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   let appSettings = new LayerSwapAppSettings(settings)
 
-  return (
-    <>
-      <Layout settings={appSettings}>
-        {
-          inMaintanance
-            ?
-            <MaintananceContent />
-            :
-            <Swap />
-        }
-      </Layout>
-      <ColorSchema themeData={themeData} />
-    </>
+  return (<>
+    <Layout settings={appSettings}>
+      {
+        inMaintanance
+          ?
+          <MaintananceContent />
+          :
+          <Swap />
+      }
+    </Layout>
+    <ColorSchema themeData={themeData} />
+  </>)
 }
 
 export async function getServerSideProps(context) {
