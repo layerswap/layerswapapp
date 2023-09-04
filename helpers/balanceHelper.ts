@@ -5,7 +5,7 @@ import { BaseL2Asset, Layer } from '../Models/Layer';
 import { supportedChains } from '../lib/chainConfigs';
 import { Currency } from '../Models/Currency';
 import KnownInternalNames from '../lib/knownIds';
-import { estimateFees } from '@eth-optimism/fee-estimation'
+import { estimateFees } from '../lib/optimism/estimateFees';
 
 export type ERC20ContractRes = ({
     error: Error;

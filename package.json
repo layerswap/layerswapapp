@@ -11,7 +11,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@eth-optimism/fee-estimation": "^0.15.2",
+    "@eth-optimism/contracts-ts": "^0.15.0",
     "@headlessui/react": "^1.7.3",
     "@imtbl/imx-sdk": "2.1.1",
     "@markdoc/markdoc": "^0.1.3",
