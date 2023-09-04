@@ -6,7 +6,6 @@ import LayerSwapApiClient, { Campaigns } from "../../lib/layerSwapApiClient";
 import HeaderWithMenu from "../HeaderWithMenu";
 import SpinIcon from "../icons/spinIcon";
 import useSWR from 'swr'
-import Link from "next/link";
 import { useSettingsState } from "../../context/settings";
 import Image from "next/image";
 import LinkWrapper from "../LinkWraapper";
@@ -40,9 +39,9 @@ const Rewards = () => {
                                     activeCampaigns?.length > 0 ?
                                         activeCampaigns.map(c => {
                                             const campaignLayer = layers?.find(l => l.internal_name === c.network)
-
+                                            const campaignDaysLeft = ((new Date(c.end_date).getTime() - new Date().getTime()) / 86400000).toFixed()
                                             return (
-                                                <LinkWrapper href={`/campaigns/${c.name}`} className="flex " key={c.name}>
+                                                <LinkWrapper href={`/campaigns/${c.name}`} className="flex justify-between items-center" key={c.name}>
                                                     <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
                                                         <span className="h-5 w-5 relative">
                                                             <Image
@@ -54,6 +53,9 @@ const Rewards = () => {
                                                                 className="rounded-md object-contain" />
                                                         </span>
                                                         <span className="font-semibold text-base text-left flex items-center">{c?.display_name} </span>
+                                                    </span>
+                                                    <span className="text-primary-text-muted text-right text-sm">
+                                                        {campaignDaysLeft} days left
                                                     </span>
                                                 </LinkWrapper>
                                             )
@@ -75,8 +77,6 @@ const Rewards = () => {
                                 <div className="p-3 flex flex-col space-y-2">
                                     {inactiveCampaigns.map(c => {
                                         const campaignLayer = layers?.find(l => l.internal_name === c.network)
-                                        const campaignEndDate = new Date(c.end_date).toLocaleDateString()
-
                                         return (
                                             <LinkWrapper href={`/campaigns/${c.name}`} className="flex items-center justify-between" key={c.name}>
                                                 <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
@@ -91,17 +91,14 @@ const Rewards = () => {
                                                     </span>
                                                     <span className="font-semibold text-base text-left flex items-center">{c?.display_name} </span>
                                                 </span>
-                                                <span className="text-secondary-text-muted">
-                                                    {campaignEndDate}
-                                                </span>
                                             </LinkWrapper>
                                         )
                                     })}
-                                </div>
-                            </div>
-                        </div>
+                                </div >
+                            </div >
+                        </div >
                     }
-                </div>
+                </div >
                 :
                 <div className="absolute top-[calc(50%-5px)] left-[calc(50%-5px)]">
                     <SpinIcon className="animate-spin h-5 w-5" />

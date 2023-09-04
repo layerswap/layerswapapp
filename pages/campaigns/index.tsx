@@ -1,25 +1,19 @@
 import Layout from '../../components/layout'
-import LayerSwapApiClient from '../../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
-import { SettingsProvider } from '../../context/settings'
-import { MenuProvider } from '../../context/menu'
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient'
-import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings'
 import Rewards from '../../components/Rewards'
 import { THEME_COLORS } from '../../Models/Theme'
 import ColorSchema from '../../components/ColorSchema'
+import LayerSwapApiClient from '../../lib/layerSwapApiClient'
+import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings'
 
 export default function RewardsPage({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
     let appSettings = new LayerSwapAppSettings(settings)
 
     return (<>
-        <Layout>
-            <SettingsProvider data={appSettings}>
-                <MenuProvider>
-                    <Rewards />
-                </MenuProvider>
-            </SettingsProvider>
+        <Layout settings={appSettings}>
+            <Rewards />
         </Layout>
         <ColorSchema themeData={themeData} />
     </>)

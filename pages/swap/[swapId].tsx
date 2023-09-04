@@ -5,33 +5,27 @@ import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import { SwapDataProvider } from '../../context/swap';
 import { UserExchangeProvider } from '../../context/userExchange';
-import { MenuProvider } from '../../context/menu';
-import { SettingsProvider } from '../../context/settings';
 import SwapWithdrawal from '../../components/SwapWithdrawal';
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient';
 import { validateSignature } from '../../helpers/validateSignature';
-import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings';
 import { TimerProvider } from '../../context/timerContext';
 import { THEME_COLORS } from '../../Models/Theme';
 import ColorSchema from '../../components/ColorSchema';
+import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings';
 
 const SwapDetails = ({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   let appSettings = new LayerSwapAppSettings(settings)
 
   return (<>
-    <Layout>
-      <SettingsProvider data={appSettings}>
-        <MenuProvider>
-          <SwapDataProvider >
-            <UserExchangeProvider>
-              <TimerProvider>
-                <SwapWithdrawal />
-              </TimerProvider>
-            </UserExchangeProvider>
-          </SwapDataProvider >
-        </MenuProvider>
-      </SettingsProvider>
+    <Layout settings={appSettings}>
+      <SwapDataProvider >
+        <UserExchangeProvider>
+          <TimerProvider>
+            <SwapWithdrawal />
+          </TimerProvider>
+        </UserExchangeProvider>
+      </SwapDataProvider >
     </Layout>
     <ColorSchema themeData={themeData} />
   </>)

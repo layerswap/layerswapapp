@@ -248,13 +248,6 @@ export default function () {
                                                 <ChevronRight className="h-4 w-4 absolute right-3" />
                                             </LinkWrapper>
                                         }
-                                        <LinkWrapper
-                                            href="/exchanges"
-                                            className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
-                                            <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><LinkIcon className="h-5 w-5" /></div>
-                                            <p className="text-base font-semibold">Exchange Accounts</p>
-                                            <ChevronRight className="h-4 w-4 absolute right-3" />
-                                        </LinkWrapper>
                                         {!embedded && router.pathname != '/campaigns' &&
                                             <LinkWrapper
                                                 href="/campaigns"

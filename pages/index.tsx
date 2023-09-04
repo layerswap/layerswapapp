@@ -2,7 +2,6 @@ import Swap from '../components/swapComponent'
 import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
-import { SettingsProvider } from '../context/settings'
 import { LayerSwapSettings } from '../Models/LayerSwapSettings'
 import MaintananceContent from '../components/maintanance/maintanance'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
@@ -23,23 +22,21 @@ const toRGB = (value) => parseColor(value).color.join(" ");
 
 export default function Home({ settings, inMaintanance, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
-
   let appSettings = new LayerSwapAppSettings(settings)
 
-  return <>
-    <Layout>
-      {
-        inMaintanance
-          ?
-          <MaintananceContent />
-          :
-          <SettingsProvider data={appSettings}>
+  return (
+    <>
+      <Layout settings={appSettings}>
+        {
+          inMaintanance
+            ?
+            <MaintananceContent />
+            :
             <Swap />
-          </SettingsProvider>
-      }
-    </Layout>
-    <ColorSchema themeData={themeData} />
-  </>
+        }
+      </Layout>
+      <ColorSchema themeData={themeData} />
+    </>
 }
 
 export async function getServerSideProps(context) {
