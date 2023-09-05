@@ -5,6 +5,14 @@ export enum DepositType {
     Wallet = 'wallet'
 }
 
+type NetworkItemSettings = {
+    [network: string]: {
+        apiUri: string,
+        appUri?: string,
+        linkUri?: string
+    }
+}
+
 const destinationOrder = [
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
@@ -63,6 +71,8 @@ export default class NetworkSettings {
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
+
+    public static ImmutableXSettings: NetworkItemSettings
 
     private static _isInitialized = false;
     public static Initialize() {
@@ -208,6 +218,17 @@ export default class NetworkSettings {
             ChainId: 1101,
             AccountExplorerTemplate: "https://zkevm.polygonscan.com/address//{0}"
         };
+
+        NetworkSettings.ImmutableXSettings = {
+            [KnownInternalNames.Networks.ImmutableXMainnet]: {
+                apiUri: "https://api.x.immutable.com/v1",
+                linkUri: "https://link.x.immutable.com",
+            },
+            [KnownInternalNames.Networks.ImmutableXGoerli]: {
+                apiUri: "https://api.sandbox.x.immutable.com/v1",
+                linkUri: "https://link.sandbox.x.immutable.com"
+            }
+        }
 
         for (var k in NetworkSettings.KnownSettings) {
             let networkSetting = NetworkSettings.KnownSettings[k];
