@@ -218,14 +218,21 @@ type Transaction = {
     max_confirmations: number,
     explorer_url: string,
     account_explorer_url: string,
-    usd_value: number
-    usd_price: number
+    usd_value: number,
+    usd_price: number,
+    status: TransactionStatus,
 }
 
 export enum TransactionType {
     Input = 'input',
     Output = 'output',
     Refuel = 'refuel'
+}
+
+export enum TransactionStatus {
+    Completed = 'completed',
+    Initiated = 'initiated',
+    Pending = 'pending'
 }
 
 export type Fee = {

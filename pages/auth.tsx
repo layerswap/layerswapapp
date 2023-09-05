@@ -11,11 +11,11 @@ import { useEffect, useState } from 'react'
 import inIframe from '../components/utils/inIframe'
 import { SwapDataProvider } from '../context/swap'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
+import { getServerSideSettings } from '../helpers/getSettings'
 
-export default function AuthPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function AuthPage({ settings }: InferGetServerSidePropsType<typeof getServerSideSettings>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   let appSettings = new LayerSwapAppSettings(settings)
-
   const [embedded, setEmbedded] = useState<boolean>()
 
   useEffect(() => {
@@ -35,20 +35,4 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
       </SettingsProvider>
     </Layout>
   )
-}
-export async function getServerSideProps(context) {
-
-  context.res.setHeader(
-    'Cache-Control',
-    's-maxage=60, stale-while-revalidate'
-  );
-
-  var apiClient = new LayerSwapApiClient();
-  const { data: settings } = await apiClient.GetSettingsAsync()
-
-  LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
-
-  return {
-    props: { settings }
-  }
 }

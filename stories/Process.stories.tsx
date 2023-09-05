@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import Processing from '../components/Swap/Withdraw/Processing';
-import LayerSwapApiClient, { SwapItem } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapDataStateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
@@ -93,6 +93,22 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
     </WagmiConfig>
 }
 
+const DUMMY_TRANSACTION = {
+    account_explorer_url: "",
+    from: "0x5da5c2a98e26fd28914b91212b1232d58eb9bbab",
+    to: "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
+    created_date: "2023-08-16T16:33:23.4937+00:00",
+    transaction_id: "0xae9231b805139bee7e92ddae631b13bb2d13a09e106826b4f08e8efa965d1c27",
+    explorer_url: "https://goerli.arbiscan.io/tx/0xae9231b805139bee7e92ddae631b13bb2d13a09e106826b4f08e8efa965d1c27",
+    confirmations: 28,
+    max_confirmations: 12,
+    amount: 0.00093,
+    usd_price: 1819.02,
+    type: TransactionType,
+    usd_value: 1.6916886,
+    status: TransactionStatus,
+}
+
 const meta = {
     title: 'Example/Process',
     component: Comp,
@@ -106,42 +122,98 @@ type Story = StoryObj<typeof meta>;
 
 export const Initial: Story = {
     args: {
-        swap: { ...swap, status: SwapStatus.Created }
+        swap: {
+            ...swap,
+            status: SwapStatus.Created,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const OutputPending: Story = {
     args: {
-        swap: { ...swap, status: SwapStatus.LsTransferPending }
+        swap: {
+            ...swap,
+            status: SwapStatus.LsTransferPending,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const Completed: Story = {
     args: {
-        swap: { ...swap, status: SwapStatus.Completed }
+        swap: {
+            ...swap,
+            status: SwapStatus.Completed,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const UserTransferPending: Story = {
     args: {
-        swap: { ...swap, status: SwapStatus.UserTransferPending }
+        swap: {
+            ...swap,
+            status: SwapStatus.UserTransferPending,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const UserTransferDelayed: Story = {
     args: {
-        swap: { ...swap, status: SwapStatus.UserTransferDelayed }
+        swap: {
+            ...swap,
+            status: SwapStatus.UserTransferDelayed,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const Failed: Story = {
     args: {
-        swap: { ...failedSwap, status: SwapStatus.Failed }
+        swap: {
+            ...failedSwap,
+            status: SwapStatus.Failed,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const FailedOutOfRangeAmount: Story = {
     args: {
-        swap: { ...failedSwapOutOfRange, status: SwapStatus.Failed }
+        swap: {
+            ...failedSwapOutOfRange,
+            status: SwapStatus.Failed,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
