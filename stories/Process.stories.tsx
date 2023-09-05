@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import Processing from '../components/Swap/Withdraw/Processing';
-import LayerSwapApiClient, { SwapItem } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapDataStateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
@@ -15,6 +15,13 @@ import { FC, useEffect, useState } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange } from './Data/swaps'
 import { Settings } from './Data/settings';
+import Withdraw from '../components/Swap/Withdraw';
+import Success from '../components/Swap/Withdraw/Success';
+import Delay from '../components/Swap/Withdraw/Delay';
+import Widget from '../components/Wizard/Widget';
+import MessageComponent from '../components/MessageComponent';
+import SubmitButton, { DoubleLineText } from '../components/buttons/submitButton';
+import { MessageSquare } from 'lucide-react';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 
@@ -49,6 +56,8 @@ let settings = new LayerSwapAppSettings(Settings)
 
 const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, }> = ({ swap, failedSwap, failedSwapOutOfRange }) => {
     const [appSettings, setAppSettings] = useState(null);
+    const swapStatus = swap.status;
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))[swap?.id]
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
@@ -80,8 +89,39 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
                         <div className={`flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg`}>
                             <div className={`flex flex-col w-full text-white`}>
                                 <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
-                                    <div className="relative px-6">
-                                        <Processing />
+                                    <div className="relative px-6 py-4">
+                                        {
+                                            (swapInputTransaction
+                                                || swapStatus === SwapStatus.LsTransferPending)
+                                            &&
+                                            <Processing />
+                                        }
+                                        {
+                                            swapStatus === SwapStatus.Completed &&
+                                            <Success />
+                                        }
+                                        {
+                                            swapStatus === SwapStatus.Failed &&
+                                            <Widget.Content>
+                                                <MessageComponent.Buttons>
+                                                    <div className="flex text-white text-base space-x-2">
+                                                        <div className='basis-1/3 grow'>
+                                                            <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='filled' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
+                                                                <DoubleLineText
+                                                                    colorStyle='mltln-text-light'
+                                                                    primaryText='Contact Support'
+                                                                    secondarytext=''
+                                                                />
+                                                            </SubmitButton>
+                                                        </div>
+                                                    </div>
+                                                </MessageComponent.Buttons>
+                                            </Widget.Content>
+                                        }
+                                        {
+                                            swapStatus === SwapStatus.UserTransferDelayed &&
+                                            <Delay />
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -91,6 +131,22 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
             </QueryStateContext.Provider>
         </SettingsStateContext.Provider>
     </WagmiConfig>
+}
+
+const DUMMY_TRANSACTION = {
+    account_explorer_url: "",
+    from: "0x5da5c2a98e26fd28914b91212b1232d58eb9bbab",
+    to: "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
+    created_date: "2023-08-16T16:33:23.4937+00:00",
+    transaction_id: "0xae9231b805139bee7e92ddae631b13bb2d13a09e106826b4f08e8efa965d1c27",
+    explorer_url: "https://goerli.arbiscan.io/tx/0xae9231b805139bee7e92ddae631b13bb2d13a09e106826b4f08e8efa965d1c27",
+    confirmations: 28,
+    max_confirmations: 12,
+    amount: 0.00093,
+    usd_price: 1819.02,
+    type: TransactionType,
+    usd_value: 1.6916886,
+    status: TransactionStatus,
 }
 
 const meta = {
@@ -106,42 +162,98 @@ type Story = StoryObj<typeof meta>;
 
 export const Initial: Story = {
     args: {
-        swap: { ...swap, status: SwapStatus.Created }
+        swap: {
+            ...swap,
+            status: SwapStatus.Created,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const OutputPending: Story = {
     args: {
-        swap: { ...swap, status: SwapStatus.LsTransferPending }
+        swap: {
+            ...swap,
+            status: SwapStatus.LsTransferPending,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const Completed: Story = {
     args: {
-        swap: { ...swap, status: SwapStatus.Completed }
+        swap: {
+            ...swap,
+            status: SwapStatus.Completed,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const UserTransferPending: Story = {
     args: {
-        swap: { ...swap, status: SwapStatus.UserTransferPending }
+        swap: {
+            ...swap,
+            status: SwapStatus.UserTransferPending,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const UserTransferDelayed: Story = {
     args: {
-        swap: { ...swap, status: SwapStatus.UserTransferDelayed }
+        swap: {
+            ...swap,
+            status: SwapStatus.UserTransferDelayed,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const Failed: Story = {
     args: {
-        swap: { ...failedSwap, status: SwapStatus.Failed }
+        swap: {
+            ...failedSwap,
+            status: SwapStatus.Failed,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };
 
 export const FailedOutOfRangeAmount: Story = {
     args: {
-        swap: { ...failedSwapOutOfRange, status: SwapStatus.Failed }
+        swap: {
+            ...failedSwapOutOfRange,
+            status: SwapStatus.Failed,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
     }
 };

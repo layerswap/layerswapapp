@@ -6,7 +6,7 @@ export default function Steps({ steps }) {
         <nav aria-label="Progress">
             <ol role="list" className="overflow-hidden">
                 {steps.map((step, stepIdx) => (
-                    <li key={step?.name} className={classNames(stepIdx !== steps.length - 1 ? 'pb-10' : '', 'relative')}>
+                    step.description && <li key={step?.name} className={classNames(stepIdx !== steps.length - 1 ? 'pb-10' : '', 'relative')}>
                         <div className="flex items-center justify-between w-full">
                             {step?.status === 'complete' ? (
                                 <>
@@ -53,12 +53,12 @@ export default function Steps({ steps }) {
                                             <XCircle className="h-8 w-8 text-red-600" aria-hidden="true" />
                                         </span>
                                         <span className="ml-4 flex min-w-0 flex-col">
-                                        <span className="text-sm font-medium text-gray-300">{step.name}</span>
+                                            <span className="text-sm font-medium text-gray-300">{step.name}</span>
                                             <span className="text-sm text-primary-text">{step?.description}</span>
                                         </span>
                                     </div>
                                 </>
-                            ) : step?.status === 'user_transfer_delayed' ? (
+                            ) : step?.status === 'delayed' ? (
                                 <>
                                     {stepIdx !== steps.length - 1 ? (
                                         <div className="absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 bg-gray-300 opacity-60" aria-hidden="true" />
@@ -68,7 +68,7 @@ export default function Steps({ steps }) {
                                             <XCircle className="h-8 w-8 text-yellow-600" aria-hidden="true" />
                                         </span>
                                         <span className="ml-4 flex min-w-0 flex-col">
-                                        <span className="text-sm font-medium text-gray-300">{step.name}</span>
+                                            <span className="text-sm font-medium text-gray-300">{step.name}</span>
                                             <span className="text-sm text-primary-text">{step?.description}</span>
                                         </span>
                                     </div>

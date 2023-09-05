@@ -2,6 +2,8 @@ import Layout from '../components/layout'
 import React, { useEffect } from 'react'
 import { useRouter } from 'next/router';
 import { clearTempData, getTempData } from '../lib/openLink';
+import LayerSwapApiClient from '../lib/layerSwapApiClient';
+import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 
 export default function Salon() {
     const router = useRouter();
