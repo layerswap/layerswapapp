@@ -6,16 +6,21 @@ import { CryptoNetwork } from '../Models/CryptoNetwork'
 import { Exchange } from '../Models/Exchange'
 import { useRouter } from 'next/router'
 import { ArrowLeft } from 'lucide-react'
+import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
+import { InferGetServerSidePropsType } from 'next'
+import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
 
-export default function GlobalTable(props) {
+export default function GlobalTable(props, { settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const router = useRouter();
+    LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+    let appSettings = new LayerSwapAppSettings(settings)
 
     const handleGoBack = useCallback(() => {
         router.back()
     }, [router])
 
     return (
-        <Layout>
+        <Layout settings={appSettings}>
             <div className="flex content-center items-center justify-center mb-5 space-y-5 flex-col container mx-auto sm:px-6 lg:px-8 max-w-md md:max-w-3xl">
                 <Head>
                     <title>Table</title>
@@ -75,18 +80,23 @@ export default function GlobalTable(props) {
     )
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps(context) {
+
+    context.res.setHeader(
+        'Cache-Control',
+        's-maxage=60, stale-while-revalidate'
+    );
+
     var apiClient = new LayerSwapApiClient();
     const { data: settings } = await apiClient.GetSettingsAsync()
-    var networks: CryptoNetwork[] = [];
-    var exchanges: Exchange[] = [];
-    networks = settings.networks.filter(n => n.status !== "inactive");
-    exchanges = settings.exchanges
+
+    const resource_storage_url = settings.discovery.resource_storage_url
+    if (resource_storage_url[resource_storage_url.length - 1] === "/")
+        settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+
+    LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
 
     return {
-        props: {
-            networks,
-            exchanges,
-        },
+        props: { settings }
     }
 }

@@ -11,17 +11,13 @@ import { getServerSideProps } from '../helpers/getSettings'
 export default function Transactions({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   let appSettings = new LayerSwapAppSettings(settings)
-
+  
   return (
-      <Layout>
-        <SettingsProvider data={appSettings}>
-          <MenuProvider>
-            <SwapDataProvider >
-              <TransfersWrapper />
-            </SwapDataProvider >
-          </MenuProvider>
-        </SettingsProvider>
-      </Layout>
+    <Layout settings={appSettings}>
+      <SwapDataProvider >
+        <TransfersWrapper />
+      </SwapDataProvider >
+    </Layout>
   )
 }
 

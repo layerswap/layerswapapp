@@ -9,17 +9,24 @@ import MaintananceContent from "./maintanance/maintanance";
 import { AuthProvider } from "../context/authContext";
 import NoCookies from "./NoCookies";
 import useStorage from "../hooks/useStorage";
+import RainbowKitComponent from "./RainbowKit";
+import { SettingsProvider } from "../context/settings";
+import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
+import { LayerSwapSettings } from "../Models/LayerSwapSettings";
+import { MenuProvider } from "../context/menu";
 import ErrorFallback from "./ErrorFallback";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
   hideNavbar?: boolean;
+  settings?: LayerSwapSettings;
 };
 
-export default function Layout({ hideNavbar, children }: Props) {
+export default function Layout({ hideNavbar, children, settings }: Props) {
   const router = useRouter();
   const { storageAvailable } = useStorage();
+  let appSettings = new LayerSwapAppSettings(settings);
 
   const query: QueryParams = {
     ...router.query,
@@ -89,15 +96,21 @@ export default function Layout({ hideNavbar, children }: Props) {
     </Head>
     {
       storageAvailable === true &&
-      <AuthProvider>
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <QueryProvider query={query}>
-            <ThemeWrapper hideNavbar={hideNavbar}>
-              {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ? <MaintananceContent /> : children}
-            </ThemeWrapper>
-          </QueryProvider>
-        </ErrorBoundary>
-      </AuthProvider>
+      <SettingsProvider data={appSettings}>
+        <RainbowKitComponent>
+          <MenuProvider>
+            <AuthProvider>
+              <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <QueryProvider query={query}>
+                  <ThemeWrapper hideNavbar={hideNavbar}>
+                    {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ? <MaintananceContent /> : children}
+                  </ThemeWrapper>
+                </QueryProvider>
+              </ErrorBoundary>
+            </AuthProvider>
+          </MenuProvider>
+        </RainbowKitComponent>
+      </SettingsProvider>
     }
     {storageAvailable === false &&
       <NoCookies />

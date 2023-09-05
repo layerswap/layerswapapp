@@ -10,6 +10,8 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import AmountAndFeeDetails from "../../DisclosureComponents/amountAndFeeDetailsComponent";
 import Modal from "../../modal/modal";
+import toast from "react-hot-toast";
+import { useRouter } from "next/router";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
@@ -122,7 +124,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     );
 
     const lockedCurrency = query?.lockAsset ? settings.currencies?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : null
-
 
     useEffect(() => {
 
@@ -245,12 +246,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
                             <WarningMessage messageType="warning" className="mt-4">
                                 <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
-                            </WarningMessage>
-                        }
-                        {
-                            source?.internal_name === KnownInternalNames.Networks.PolygonMainnet &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">Transfers from Polygon take up to 1 hour due to a recent Polygon network issue with chain reorgs.</span>
                             </WarningMessage>
                         }
                     </div>
