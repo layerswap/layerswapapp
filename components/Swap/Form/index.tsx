@@ -110,7 +110,7 @@ export default function () {
                 toast.error(`Enter valid ${values.to?.display_name} address`)
             }
             else if (data?.code === KnownErrorCode.UNACTIVATED_ADDRESS_ERROR) {
-                setNetworkToConnect({ DisplayName: values.to?.display_name, AppURL: data.code })
+                setNetworkToConnect({ DisplayName: values.to?.display_name, AppURL: data.message })
                 setShowConnectNetworkModal(true);
             }
             else {
