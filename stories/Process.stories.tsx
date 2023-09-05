@@ -80,7 +80,7 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
                         <div className={`flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg`}>
                             <div className={`flex flex-col w-full text-white`}>
                                 <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
-                                    <div className="relative px-6">
+                                    <div className="relative px-6 py-4">
                                         <Processing />
                                     </div>
                                 </div>
