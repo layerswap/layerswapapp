@@ -23,9 +23,9 @@ const ConnectOauthExchange: FC<Props> = ({ exchange, onClose }) => {
     const authWindowRef = useRef(null);
 
     const settings = useSettingsState()
-    const oauthProviders = settings?.discovery?.o_auth_providers
-    const coinbaseOauthProvider = oauthProviders?.find(p => p.provider === KnownInternalNames.Exchanges.Coinbase)
-    const { oauth_authorize_url } = coinbaseOauthProvider || {}
+    const oauthProviders = settings?.discovery?.o_auth_providers;
+    const coinbaseOauthProvider = oauthProviders?.find(p => p.provider === KnownInternalNames.Exchanges.Coinbase);
+    const { oauth_authorize_url } = coinbaseOauthProvider || {};
 
     useEffect(() => {
         setLoading(false)
