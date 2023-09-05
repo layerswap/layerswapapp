@@ -13,25 +13,28 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         this.layers = LayerSwapAppSettings.ResolveLayers(this.exchanges, this.networks);
     }
 
-
     layers?: Layer[]
 
     resolveImgSrc = (item: Layer | Currency | Pick<Layer, 'internal_name'> | { asset: string } | Partner) => {
-        const basePath = new URL(this.discovery.resource_storage_url).href.replace(/\/$/, "");
 
         if (!item) {
             return "/images/logo_placeholder.png";
         }
+
+        const basePath = new URL(this.discovery.resource_storage_url);
+
         // Shitty way to check for partner
-        else if ((item as Partner).is_wallet != undefined) {
-            return `${basePath}/layerswap/partners/${(item as Partner)?.organization_name?.toLowerCase()}.png`
+        if ((item as Partner).is_wallet != undefined) {
+            basePath.pathname = `/layerswap/partners/${(item as Partner)?.organization_name?.toLowerCase()}.png`;
         }
         else if ((item as any)?.internal_name != undefined) {
-            return `${basePath}/layerswap/networks/${(item as any)?.internal_name?.toLowerCase()}.png`
+            basePath.pathname = `/layerswap/networks/${(item as any)?.internal_name?.toLowerCase()}.png`;
         }
         else if ((item as any)?.asset != undefined) {
-            return `${basePath}/layerswap/networks/layerswap/currencies/${(item as any)?.asset?.toLowerCase()}.png`
+            basePath.pathname = `/layerswap/currencies/${(item as any)?.asset?.toLowerCase()}.png`;
         }
+
+        return basePath.href;
     }
 
     static ResolveLayers(exchanges: Exchange[], networks: CryptoNetwork[]): Layer[] {
@@ -42,6 +45,8 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             status: e.status,
             authorization_flow: e.authorization_flow,
             type: e.type,
+            is_featured: e.is_featured,
+            nodes: e.nodes,
             assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks)
         }))
         const networkLayers: Layer[] = networks.map((n): Layer =>
@@ -54,6 +59,8 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             average_completion_time: n.average_completion_time,
             chain_id: n.chain_id,
             address_type: n.address_type,
+            nodes: n.nodes,
+            is_featured: n?.is_featured,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)
         }))
         const result = exchangeLayers.concat(networkLayers)

@@ -9,17 +9,31 @@ import MaintananceContent from "./maintanance/maintanance";
 import { AuthProvider } from "../context/authContext";
 import NoCookies from "./NoCookies";
 import useStorage from "../hooks/useStorage";
+import RainbowKitComponent from "./RainbowKit";
+import { SettingsProvider } from "../context/settings";
+import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
+import { LayerSwapSettings } from "../Models/LayerSwapSettings";
+import { MenuProvider } from "../context/menu";
 import ErrorFallback from "./ErrorFallback";
+import { SendErrorMessage } from "../lib/telegram";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
   hideNavbar?: boolean;
+  settings?: LayerSwapSettings;
 };
 
-export default function Layout({ hideNavbar, children }: Props) {
+export default function Layout({ hideNavbar, children, settings }: Props) {
   const router = useRouter();
   const { storageAvailable } = useStorage();
+  let appSettings = new LayerSwapAppSettings(settings);
+
+  function logErrorToService(error, info) {
+    if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+      SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
+    }
+  }
 
   const query: QueryParams = {
     ...router.query,
@@ -89,15 +103,21 @@ export default function Layout({ hideNavbar, children }: Props) {
     </Head>
     {
       storageAvailable === true &&
-      <AuthProvider>
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <QueryProvider query={query}>
-            <ThemeWrapper hideNavbar={hideNavbar}>
-              {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ? <MaintananceContent /> : children}
-            </ThemeWrapper>
-          </QueryProvider>
-        </ErrorBoundary>
-      </AuthProvider>
+      <SettingsProvider data={appSettings}>
+        <RainbowKitComponent>
+          <MenuProvider>
+            <AuthProvider>
+              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+                <QueryProvider query={query}>
+                  <ThemeWrapper hideNavbar={hideNavbar}>
+                    {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ? <MaintananceContent /> : children}
+                  </ThemeWrapper>
+                </QueryProvider>
+              </ErrorBoundary>
+            </AuthProvider>
+          </MenuProvider>
+        </RainbowKitComponent>
+      </SettingsProvider>
     }
     {storageAvailable === false &&
       <NoCookies />

@@ -63,9 +63,7 @@ export default class LayerSwapApiClient {
     async GetExchangeAccount(exchange: string, type?: number): Promise<ApiResponse<UserExchangesData>> {
         return await this.AuthenticatedRequest<ApiResponse<UserExchangesData>>("GET", `/exchange_accounts/${exchange}?type=${type || 0}`);
     }
-    async GetExchangeDepositAddress(exchange: string, currency: string): Promise<ApiResponse<string>> {
-        return await this.AuthenticatedRequest<ApiResponse<string>>("GET", `/exchange_accounts/${exchange}/deposit_address/${currency}`);
-    }
+
     async DeleteExchange(exchange: string): Promise<ApiResponse<void>> {
         try {
             await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/exchange_accounts/${exchange}?type=0`);
@@ -218,14 +216,21 @@ type Transaction = {
     max_confirmations: number,
     explorer_url: string,
     account_explorer_url: string,
-    usd_value: number
-    usd_price: number
+    usd_value: number,
+    usd_price: number,
+    status: TransactionStatus,
 }
 
 export enum TransactionType {
     Input = 'input',
     Output = 'output',
     Refuel = 'refuel'
+}
+
+export enum TransactionStatus {
+    Completed = 'completed',
+    Initiated = 'initiated',
+    Pending = 'pending'
 }
 
 export type Fee = {

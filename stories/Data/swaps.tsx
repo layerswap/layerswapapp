@@ -1,8 +1,8 @@
 import { SwapStatus } from "../../Models/SwapStatus"
-import { SwapItem, TransactionType } from "../../lib/layerSwapApiClient"
+import { SwapItem, TransactionStatus, TransactionType } from "../../lib/layerSwapApiClient"
 
 export const swap: SwapItem = {
-    "id": "2f3f3d0f-028a-49ed-a648-bb3543061a80",
+    "id": "39dbe478-5a7d-427c-b316-cc8c362ec010",
     "sequence_number": 2308,
     "requested_amount": 0.0015,
     "fee": 0.00057,
@@ -33,6 +33,7 @@ export const swap: SwapItem = {
             "usd_price": 1819.02,
             "type": TransactionType.Input,
             "usd_value": 2.728530,
+            "status": TransactionStatus.Pending,
             "account_explorer_url": ''
         },
         {
@@ -47,6 +48,7 @@ export const swap: SwapItem = {
             "amount": 0.00093,
             "usd_price": 1819.02,
             "type": TransactionType.Output,
+            "status": TransactionStatus.Pending,
             "usd_value": 1.6916886
         },
         {
@@ -61,6 +63,7 @@ export const swap: SwapItem = {
             "type": TransactionType.Refuel,
             "usd_price": 1840.02,
             "usd_value": 0.49864542,
+            "status": TransactionStatus.Pending,
             "account_explorer_url": ''
         }
     ]
@@ -98,6 +101,7 @@ export const failedSwap: SwapItem = {
             "amount": 0.0018,
             "usd_price": 1718.42,
             "type": TransactionType.Input,
+            "status": TransactionStatus.Pending,
             "usd_value": 3.093156
         },
         {
@@ -112,6 +116,7 @@ export const failedSwap: SwapItem = {
             "amount": 0.00123,
             "usd_price": 1718.42,
             "type": TransactionType.Output,
+            "status": TransactionStatus.Pending,
             "usd_value": 2.1136566
         }
     ]
@@ -135,7 +140,7 @@ export const failedSwapOutOfRange: SwapItem = {
     "destination_network_asset": "ETH",
     "destination_network": "ARBITRUM_GOERLI",
     "destination_exchange": null,
-    "has_refuel": false,
+    "has_refuel": true,
     "transactions": [
         {
             "account_explorer_url": '',
@@ -149,7 +154,23 @@ export const failedSwapOutOfRange: SwapItem = {
             "amount": 0.11,
             "usd_price": 1643.98,
             "type": TransactionType.Input,
+            "status": TransactionStatus.Pending,
             "usd_value": 180.8378
+        },
+        {
+            "amount": 0.000271,
+            "confirmations": 15,
+            "created_date": "2023-08-15T15:38:46.036437+00:00",
+            "explorer_url": "https://goerli.arbiscan.io/tx/0x673d993640252bc40e7f69291a341deea2bb5250e8b13531b9e1412e326c5c42",
+            "from": "0xe66aa98b55c5a55c9af9da12fe39b8868af9a346",
+            "max_confirmations": 12,
+            "to": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
+            "transaction_id": "0x673d993640252bc40e7f69291a341deea2bb5250e8b13531b9e1412e326c5c42",
+            "type": TransactionType.Refuel,
+            "status": TransactionStatus.Pending,
+            "usd_price": 1840.02,
+            "usd_value": 0.49864542,
+            "account_explorer_url": ''
         }
     ]
 }

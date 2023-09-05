@@ -54,40 +54,10 @@ export default function () {
 
 
     useEffect(() => {
-        if (query.coinbase_redirect) {
-            const temp_data = getTempData()
-            const five_minutes_before = new Date(new Date().setMinutes(-5))
-            let formValues = { ...temp_data?.swap_data }
-            const source = formValues?.from
-            if (new Date(temp_data?.date) >= five_minutes_before) {
-                (async () => {
-                    try {
-
-                        if (temp_data?.swap_data?.to?.isExchange) {
-                            const layerswapApiClient = new LayerSwapApiClient(router)
-                            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, temp_data.swap_data?.currency?.asset)
-                            formValues.destination_address = deposit_address?.data
-                            setDepositeAddressIsfromAccount(true)
-                        }
-                    }
-                    catch (e) {
-                        toast(e?.response?.data?.error?.message || e.message)
-                    }
-
-                })()
-            }
-            if (temp_data) {
-                clearTempData()
-                formikRef.current.resetForm({ values: formValues })
-            }
-            setLoading(false)
-        }
-        else {
-            const initialValues = generateSwapInitialValues(settings, query)
-            formikRef.current.resetForm({ values: initialValues })
-            formikRef.current.validateForm(initialValues)
-            setLoading(false)
-        }
+        const initialValues = generateSwapInitialValues(settings, query)
+        formikRef.current.resetForm({ values: initialValues })
+        formikRef.current.validateForm(initialValues)
+        setLoading(false)
     }, [query, settings])
 
 

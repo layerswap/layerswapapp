@@ -13,13 +13,12 @@ import TransferFromWallet from "./WalletTransfer"
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
-    const { layers } = useSettingsState()
+    const { layers, networks } = useSettingsState()
     const { address } = useAccount()
     const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap
-
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const destination = layers.find(n => n.internal_name === destination_network)
-    const sourceCurrency = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
+    const sourceAsset = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
@@ -35,11 +34,9 @@ const WalletTransfer: FC = () => {
         data: generatedDeposit
     } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
 
-    const { data: managedDeposit } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.Managed}`, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
+    const managedDepositAddress = sourceAsset?.network?.managed_accounts?.[0]?.address;
     const generatedDepositAddress = generatedDeposit?.data?.address
-    const managedDepositAddress = managedDeposit?.data?.address
     const sourceChainId = source_network.isExchange === false && Number(source_network.chain_id)
-
     const feeParams = {
         source: source_network_internal_name,
         destination: destination?.internal_name,
@@ -65,14 +62,14 @@ const WalletTransfer: FC = () => {
             sequenceNumber={swap.sequence_number}
             swapId={swap.id}
             networkDisplayName={source_network?.display_name}
-            tokenDecimals={sourceCurrency?.decimals}
-            tokenContractAddress={sourceCurrency?.contract_address as `0x${string}`}
+            tokenDecimals={sourceAsset?.decimals}
+            tokenContractAddress={sourceAsset?.contract_address as `0x${string}`}
             chainId={sourceChainId as number}
             generatedDepositAddress={generatedDepositAddress as `0x${string}`}
             managedDepositAddress={managedDepositAddress as `0x${string}`}
             userDestinationAddress={swap.destination_address as `0x${string}`}
             amount={requested_amount}
-            asset={sourceCurrency?.asset}
+            asset={sourceAsset?.asset}
         />
     </Wrapper>
 
