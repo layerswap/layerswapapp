@@ -5,17 +5,14 @@ import SwapButton from "../../buttons/swapButton";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
 import AmountField from "../../Input/Amount";
-import LayerSwapApiClient, { AddressBookItem, UserExchangesData } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import AmountAndFeeDetails from "../../DisclosureComponents/amountAndFeeDetailsComponent";
 import Modal from "../../modal/modal";
-import CoinbaseAccountConnect from "./CoinbaseAccountConnect";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
-import { KnownErrorCode } from "../../../Models/ApiError";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
-import ConnectApiKeyExchange from "./connectApiKeyExchange";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/addressValidator";
@@ -58,11 +55,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
-    const [openExchangeConnect, setOpenExchangeConnect] = useState(false)
-    const [exchangeAccount, setExchangeAccount] = useState<UserExchangesData>()
     const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
     const partnerImage = partner?.organization_name ? settings.resolveImgSrc(partner) : null
-    const router = useRouter();
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
@@ -78,25 +72,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
     }
-
-    const handleSetExchangeDepositAddress = useCallback(async () => {
-        const layerswapApiClient = new LayerSwapApiClient(router)
-        try {
-            const exchange_account = await layerswapApiClient.GetExchangeAccount(destination?.internal_name, 0)
-            setExchangeAccount(exchange_account.data)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(destination?.internal_name, values?.currency?.asset)
-            setFieldValue("destination_address", deposit_address.data)
-            setDepositeAddressIsfromAccount(true)
-        }
-        catch (e) {
-            if (e?.response?.data?.error?.code === KnownErrorCode.NOT_FOUND || e?.response?.data?.error?.code === KnownErrorCode.INVALID_CREDENTIALS)
-                setOpenExchangeConnect(true)
-            else {
-                toast(e?.response?.data?.error?.message || e.message)
-            }
-        }
-    }, [values])
-
     const depositeAddressIsfromAccountRef = useRef(depositeAddressIsfromAccount);
 
     useEffect(() => {
@@ -104,23 +79,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         return () => depositeAddressIsfromAccountRef.current = null
     }, [depositeAddressIsfromAccount])
 
-    const handleExchangeConnected = useCallback(async () => {
-        if (!destination || !values.currency)
-            return
-        try {
-            const layerswapApiClient = new LayerSwapApiClient(router)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(destination?.internal_name, values?.currency?.asset)
-            setFieldValue("destination_address", deposit_address.data)
-            setDepositeAddressIsfromAccount(true)
-        }
-        catch (e) {
-            toast(e?.response?.data?.error?.message || e.message)
-        }
-    }, [values])
-
     useEffect(() => {
-        if (depositeAddressIsfromAccountRef.current)
-            handleExchangeConnected()
         if (!destination?.isExchange && !GetNetworkCurrency(source, asset)?.is_refuel_enabled) {
             handleConfirmToggleChange(false)
         }
@@ -165,7 +124,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     );
 
     const lockedCurrency = query?.lockAsset ? settings.currencies?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : null
-
 
     useEffect(() => {
 
@@ -247,8 +205,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             >
                                 <Address
                                     close={() => setShowAddressModal(false)}
-                                    onSetExchangeDepoisteAddress={handleSetExchangeDepositAddress}
-                                    exchangeAccount={exchangeAccount}
                                     disabled={lockAddress || (!values.to || !values.from)}
                                     name={"destination_address"}
                                     partnerImage={partnerImage}
@@ -292,12 +248,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
                             </WarningMessage>
                         }
-                        {
-                            source?.internal_name === KnownInternalNames.Networks.PolygonMainnet &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">Transfers from Polygon take up to 1 hour due to a recent Polygon network issue with chain reorgs.</span>
-                            </WarningMessage>
-                        }
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
@@ -310,15 +260,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                     </SwapButton>
                 </Widget.Footer>
             </Widget>
-            {destination?.isExchange &&
-                <Modal setShow={setOpenExchangeConnect} show={openExchangeConnect} header={`Connect ${values?.to?.display_name}`} >
-                    {
-                        (destination?.authorization_flow) === "o_auth2" ?
-                            <CoinbaseAccountConnect OnSuccess={async () => { await handleExchangeConnected(); setOpenExchangeConnect(false) }} />
-                            : <ConnectApiKeyExchange exchange={destination} onSuccess={async () => { handleExchangeConnected(); setOpenExchangeConnect(false) }} />
-                    }
-                </Modal>
-            }
         </Form >
     </>
 }
