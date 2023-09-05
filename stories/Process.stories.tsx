@@ -185,7 +185,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const UserTransferPendingLocalStorage: Story = {
+export const UserTransferInitiated: Story = {
     args: {
         swap: {
             ...swap,
@@ -201,7 +201,7 @@ export const UserTransferPendingLocalStorage: Story = {
     ]
 };
 
-export const UserTransferPending: Story = {
+export const UserTransferDetected: Story = {
     args: {
         swap: {
             ...swap,
@@ -216,7 +216,7 @@ export const UserTransferPending: Story = {
 export const LsTransferPending: Story = {
     args: {
         swap: {
-            ...swap,
+            ...failedSwap,
             status: SwapStatus.LsTransferPending,
             transactions: [
                 { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },

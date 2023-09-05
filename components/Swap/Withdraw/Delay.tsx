@@ -4,7 +4,7 @@ import { FC } from 'react'
 const Delay: FC = () => {
     return (
         <div>
-            <p className='text-center pb-2'>This swap is being delayed by Coinbase. This usually means that the exchange needs additional verification.</p>
+            <p className='text-left pb-2 text-sm text-primary-text'>This usually means that the exchange needs additional verification.</p>
             <div className='p-4 bg-secondary-700 text-white rounded-lg border border-secondary-500'>
                 <div className="flex items-center">
                     <Info className='h-5 w-5 text-primary-600 mr-3' />

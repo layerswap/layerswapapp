@@ -76,7 +76,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <div>
                     <span>
                         Waiting for confirmations
-                        {swapInputTransaction && (
+                        {swapInputTransaction && swapInputTransaction.confirmations && (
                             <span className="text-white ml-1">
                                 {swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations
                                     ? swapInputTransaction.max_confirmations
@@ -108,12 +108,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             delayed: {
                 name: `This swap is being delayed by Coinbase`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        This usually means that the exchange needs additional verification
-                    </div>
-                </div>
+                description: null
             }
         },
         "output_transfer": {
@@ -148,12 +143,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             delayed: {
                 name: `This swap is being delayed by Coinbase`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        This usually means that the exchange needs additional verification
-                    </div>
-                </div>
+                description: null
             }
         },
         "refuel": {
@@ -186,12 +176,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             delayed: {
                 name: `This swap is being delayed by Coinbase`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        This usually means that the exchange needs additional verification
-                    </div>
-                </div>
+                description: null
             }
         },
         "failed": {
@@ -215,7 +200,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             failed: {
                 name: `Your transfer is failed`,
-                description: <div className='flex space-x-1'>
+                description: swap.message && <div className='flex space-x-1'>
                     <span>Error: </span>
                     <div className='space-x-1 text-white'>
                         {swap.message}
@@ -224,12 +209,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             delayed: {
                 name: `This swap is being delayed by Coinbase`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        This usually means that the exchange needs additional verification
-                    </div>
-                </div>
+                description: null
             }
         },
         "delayed": {
@@ -278,26 +258,20 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             status: progressStatuses?.input_transfer,
             description: progressStates["input_transfer"][progressStatuses?.input_transfer]?.description,
             index: 1
-        }
-    ]
-
-    if (swapOutputTransaction) {
-        progress.push({
+        },
+        {
             name: progressStates["output_transfer"][progressStatuses?.output_transfer]?.name,
             status: progressStatuses?.output_transfer,
             description: progressStates["output_transfer"][progressStatuses?.output_transfer]?.description,
             index: 2
-        })
-    }
-
-    if (swap?.has_refuel) {
-        progress.push({
+        },
+        {
             name: progressStates["refuel"][progressStatuses?.refuel]?.name,
             status: progressStatuses?.refuel,
             description: progressStates["refuel"][progressStatuses?.refuel]?.description,
-            index: swapOutputTransaction ? 3 : 2
-        })
-    }
+            index: 3
+        }
+    ]
 
     if (swap?.status == "failed") {
         progress.push({
