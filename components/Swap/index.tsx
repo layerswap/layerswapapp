@@ -21,6 +21,7 @@ const SwapDetails: FC = () => {
         return () => setInterval(0)
     }, [swapStatus])
 
+
     return (
         <>
             <Widget>
