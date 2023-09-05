@@ -7,8 +7,6 @@ import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import React from "react";
 import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
-import { clearTempData, getTempData } from "../../../lib/openLink";
-import KnownInternalNames from "../../../lib/knownIds";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
@@ -39,7 +37,7 @@ export default function () {
 
     const settings = useSettingsState();
     const query = useQueryState();
-    const { setDepositeAddressIsfromAccount, createSwap } = useSwapDataUpdate()
+    const { createSwap } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?name=${query?.addressSource}`, layerswapApiClient.fetcher)
@@ -70,7 +68,7 @@ export default function () {
             }
 
             const swapId = await createSwap(values, query, partner);
-            if (swapId) await router.push(`/swap/${swapId}`)
+            await router.push(`/swap/${swapId}`)
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
@@ -78,7 +76,7 @@ export default function () {
                 toast.error('You can’t transfer to that address. Please double check your wallet’s address and change it in the previous page.')
             }
             else if (data?.code === KnownErrorCode.INVALID_ADDRESS_ERROR) {
-                toast.error(`Enter valid ${values.to?.display_name} address`)
+                toast.error(`Enter a valid ${values.to?.display_name} address`)
             }
             else if (data?.code === KnownErrorCode.UNACTIVATED_ADDRESS_ERROR) {
                 setNetworkToConnect({ DisplayName: values.to?.display_name, AppURL: data.message })
