@@ -375,7 +375,7 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { [key in 
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
 
     const input_transfer = swapInputTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete : ProgressStatus.Current;
-    let output_transfer = swapOutputTransaction.status == TransactionStatus.Completed ? ProgressStatus.Complete : swapOutputTransaction.status == TransactionStatus.Initiated ? ProgressStatus.Current : ProgressStatus.Upcoming;
+    let output_transfer = swapOutputTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete : swapOutputTransaction.status == TransactionStatus.Initiated ? ProgressStatus.Current : ProgressStatus.Upcoming;
     let refuel_transfer = (swap.has_refuel && !swapRefuelTransaction) || swapRefuelTransaction?.status == TransactionStatus.Pending ? ProgressStatus.Upcoming : swapRefuelTransaction?.status == TransactionStatus.Initiated ? ProgressStatus.Current : swapRefuelTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete : null;
     let failed = null;
     let delayed = null;
