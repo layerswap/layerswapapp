@@ -6,7 +6,7 @@ import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { SwapDataProvider } from '../context/swap'
 import TransfersWrapper from '../components/SwapHistory/TransfersWrapper'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
-import LayerSwapApiClient from '../lib/layerSwapApiClient'
+import { getServerSideProps } from '../helpers/getSettings'
 
 export default function Transactions({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
@@ -25,16 +25,4 @@ export default function Transactions({ settings }: InferGetServerSidePropsType<t
   )
 }
 
-export async function getServerSideProps(context) {
-  context.res.setHeader(
-    'Cache-Control',
-    's-maxage=60, stale-while-revalidate'
-  );
-
-  var apiClient = new LayerSwapApiClient();
-  const { data: settings } = await apiClient.GetSettingsAsync()
-
-  return {
-    props: { settings },
-  }
-}
+export { getServerSideProps };

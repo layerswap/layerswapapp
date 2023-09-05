@@ -1,6 +1,6 @@
 import LayerSwapApiClient from "../lib/layerSwapApiClient";
 
-export async function getServerSideSettings(context) {
+export async function getServerSideProps(context) {
 
     context.res.setHeader(
         'Cache-Control',
@@ -9,7 +9,7 @@ export async function getServerSideSettings(context) {
 
     var apiClient = new LayerSwapApiClient();
     const { data: settings } = await apiClient.GetSettingsAsync()
-console.log(settings,"settings")
+
     return {
         props: { settings }
     }

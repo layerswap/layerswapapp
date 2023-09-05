@@ -1,15 +1,19 @@
 import Layout from '../components/layout'
-import { InferGetServerSidePropsType } from 'next'
 import { SettingsProvider } from '../context/settings'
 import UserExchanges from '../components/UserExchanges'
 import { MenuProvider } from '../context/menu'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
-import LayerSwapApiClient from '../lib/layerSwapApiClient'
+import { getServerSideProps } from '../helpers/getSettings'
 
-export default function Home({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ settings }) {
     LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
     let appSettings = new LayerSwapAppSettings(settings)
+
+    appSettings.networks = appSettings.networks.filter((element) =>
+        element.status !== "inactive")
+
+    appSettings.exchanges = appSettings.exchanges.filter(e => e.status === 'active')
 
     return (
         <div className='wide-page'>
@@ -24,21 +28,4 @@ export default function Home({ settings }: InferGetServerSidePropsType<typeof ge
     )
 }
 
-export async function getServerSideProps(context) {
-    context.res.setHeader(
-        'Cache-Control',
-        's-maxage=60, stale-while-revalidate'
-    );
-
-    var apiClient = new LayerSwapApiClient();
-    const { data: settings } = await apiClient.GetSettingsAsync()
-
-    settings.networks = settings.networks.filter((element) =>
-        element.status !== "inactive")
-
-    settings.exchanges = settings.exchanges.filter(e => e.status === 'active')
-
-    return {
-        props: { settings },
-    }
-}
+export { getServerSideProps };
