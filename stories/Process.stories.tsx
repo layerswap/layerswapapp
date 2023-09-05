@@ -5,7 +5,6 @@ import { SwapStatus } from '../Models/SwapStatus';
 import { SwapDataStateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
 import { WagmiConfig, configureChains, createConfig } from 'wagmi';
-import { supportedChains } from '../lib/chainConfigs';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
@@ -24,9 +23,38 @@ import SubmitButton, { DoubleLineText } from '../components/buttons/submitButton
 import { MessageSquare } from 'lucide-react';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
+let settings = new LayerSwapAppSettings(Settings)
+
+const settingsChains = settings.networks.filter(net => net.address_type === 'evm' && net.nodes?.some(n => n.url?.length > 0)).map(n => {
+    const nativeCurrency = n.currencies.find(c => c.asset === n.native_currency);
+    const blockExplorersBaseURL = new URL(n.transaction_explorer_template).origin;
+    return {
+        id: Number(n.chain_id),
+        name: n.display_name,
+        network: n.internal_name,
+        nativeCurrency: { name: nativeCurrency?.name, symbol: nativeCurrency?.asset, decimals: nativeCurrency?.decimals },
+        rpcUrls: {
+            default: {
+                http: n.nodes.map(n => n?.url),
+            },
+            public: {
+                http: n.nodes.map(n => n?.url),
+            },
+        },
+        blockExplorers: {
+            default: {
+                name: 'name',
+                url: blockExplorersBaseURL,
+            },
+        },
+        contracts: {
+            multicall3 : n?.metadata?.contracts?.multicall3
+        },
+    }
+})
 
 const { chains, publicClient } = configureChains(
-    supportedChains,
+    settingsChains,
     [
         publicProvider()
     ]
@@ -51,8 +79,6 @@ const connectors = connectorsForWallets([
         ],
     },
 ]);
-
-let settings = new LayerSwapAppSettings(Settings)
 
 const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, }> = ({ swap, failedSwap, failedSwapOutOfRange }) => {
     const [appSettings, setAppSettings] = useState(null);
