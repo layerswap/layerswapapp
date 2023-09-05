@@ -15,6 +15,13 @@ import { FC, useEffect, useState } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange } from './Data/swaps'
 import { Settings } from './Data/settings';
+import Withdraw from '../components/Swap/Withdraw';
+import Success from '../components/Swap/Withdraw/Success';
+import Delay from '../components/Swap/Withdraw/Delay';
+import Widget from '../components/Wizard/Widget';
+import MessageComponent from '../components/MessageComponent';
+import SubmitButton, { DoubleLineText } from '../components/buttons/submitButton';
+import { MessageSquare } from 'lucide-react';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 
@@ -49,6 +56,8 @@ let settings = new LayerSwapAppSettings(Settings)
 
 const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, }> = ({ swap, failedSwap, failedSwapOutOfRange }) => {
     const [appSettings, setAppSettings] = useState(null);
+    const swapStatus = swap.status;
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))[swap?.id]
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
@@ -81,7 +90,38 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
                             <div className={`flex flex-col w-full text-white`}>
                                 <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
                                     <div className="relative px-6 py-4">
-                                        <Processing />
+                                        {
+                                            (swapInputTransaction
+                                                || swapStatus === SwapStatus.LsTransferPending)
+                                            &&
+                                            <Processing />
+                                        }
+                                        {
+                                            swapStatus === SwapStatus.Completed &&
+                                            <Success />
+                                        }
+                                        {
+                                            swapStatus === SwapStatus.Failed &&
+                                            <Widget.Content>
+                                                <MessageComponent.Buttons>
+                                                    <div className="flex text-white text-base space-x-2">
+                                                        <div className='basis-1/3 grow'>
+                                                            <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='filled' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
+                                                                <DoubleLineText
+                                                                    colorStyle='mltln-text-light'
+                                                                    primaryText='Contact Support'
+                                                                    secondarytext=''
+                                                                />
+                                                            </SubmitButton>
+                                                        </div>
+                                                    </div>
+                                                </MessageComponent.Buttons>
+                                            </Widget.Content>
+                                        }
+                                        {
+                                            swapStatus === SwapStatus.UserTransferDelayed &&
+                                            <Delay />
+                                        }
                                     </div>
                                 </div>
                             </div>
