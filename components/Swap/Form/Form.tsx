@@ -21,7 +21,6 @@ import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { CalculateMinAllowedAmount } from "../../../lib/fees";
 import Address from "../../Input/Address";
-import NetworkSettings from "../../../lib/NetworkSettings";
 import shortenAddress from "../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";

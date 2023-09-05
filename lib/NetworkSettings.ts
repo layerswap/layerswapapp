@@ -1,13 +1,5 @@
 import KnownInternalNames from "./knownIds";
 
-type NetworkItemSettings = {
-    [network: string]: {
-        apiUri: string,
-        appUri?: string,
-        linkUri?: string
-    }
-}
-
 export enum DepositType {
     Manual = 'manual',
     Wallet = 'wallet'
@@ -71,12 +63,6 @@ export default class NetworkSettings {
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
-
-    public static ImmutableXSettings: NetworkItemSettings
-
-    public static RhinoFiSettings: NetworkItemSettings
-
-    public static DydxSettings: NetworkItemSettings
 
     private static _isInitialized = false;
     public static Initialize() {
@@ -222,34 +208,6 @@ export default class NetworkSettings {
             ChainId: 1101,
             AccountExplorerTemplate: "https://zkevm.polygonscan.com/address//{0}"
         };
-
-        NetworkSettings.ImmutableXSettings = {
-            [KnownInternalNames.Networks.ImmutableXMainnet]: {
-                apiUri: "https://api.x.immutable.com/v1",
-                linkUri: "https://link.x.immutable.com",
-            },
-            [KnownInternalNames.Networks.ImmutableXGoerli]: {
-                apiUri: "https://api.sandbox.x.immutable.com/v1",
-                linkUri: "https://link.sandbox.x.immutable.com"
-            }
-        }
-        NetworkSettings.RhinoFiSettings = {
-            [KnownInternalNames.Networks.RhinoFiMainnet]: {
-                apiUri: "https://api.rhino.fi/v1/trading/registrations",
-                appUri: "https://app.rhinofi.com/",
-            }
-        }
-
-        NetworkSettings.DydxSettings = {
-            [KnownInternalNames.Networks.DydxMainnet]: {
-                apiUri: "https://api.dydx.exchange/v3/users/exists?ethereumAddress=",
-                appUri: "https://trade.dydx.exchange/",
-            },
-            [KnownInternalNames.Networks.DydxGoerli]: {
-                apiUri: "https://api.stage.dydx.exchange/v3/users/exists?ethereumAddress=",
-                appUri: "https://trade.stage.dydx.exchange/",
-            }
-        }
 
         for (var k in NetworkSettings.KnownSettings) {
             let networkSetting = NetworkSettings.KnownSettings[k];
