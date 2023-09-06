@@ -10,14 +10,25 @@ import WalletIcon from "../icons/WalletIcon"
 import shortenAddress from "../utils/ShortenAddress"
 import BitKeep from "../icons/Wallets/BitKeep"
 import Argent from "../icons/Wallets/Argent"
+import { FC, useCallback } from "react"
 
 
 export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean }) => {
     return <ConnectButton.Custom>
-        {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
+        {({ openConnectModal, account, mounted, chain, openAccountModal, openChainModal }) => {
             const connected = !!(mounted && account && chain)
             const { connector } = useAccount()
-            return <button onClick={() => connected ? openAccountModal() : openConnectModal()} type="button" className={`-mx-2 p-1.5 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none inline-flex rounded-lg items-center`}>
+            const handleClick = useCallback(() => {
+                if (chain?.unsupported) {
+                    return openChainModal()
+                } else if (connected) {
+                    return openAccountModal()
+                } else {
+                    openConnectModal()
+                }
+            }, [openConnectModal, openChainModal, openAccountModal, connected, chain])
+
+            return <button onClick={handleClick} type="button" className={`-mx-2 p-1.5 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none inline-flex rounded-lg items-center`}>
                 {connected ?
                     <div className="mx-0.5">
                         <div className="font-bold grow flex space-x-2">
@@ -35,15 +46,25 @@ export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { i
                 }
             </button>
         }}
-    </ConnectButton.Custom>
+    </ConnectButton.Custom >
 }
 
 export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean }) => {
     return <ConnectButton.Custom>
-        {({ openConnectModal, account, mounted, chain, openAccountModal }) => {
+        {({ openConnectModal, account, mounted, chain, openAccountModal, openChainModal }) => {
             const connected = !!(mounted && account && chain)
             const { connector } = useAccount()
-            return <button onClick={() => connected ? openAccountModal() : openConnectModal()} type="button" className={`${!isMobile ? "h-24 w-24" : "h-20 w-14"} mx-2 w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
+            const handleClick = useCallback(() => {
+                if (chain?.unsupported) {
+                    return openChainModal()
+                } else if (connected) {
+                    return openAccountModal()
+                } else {
+                    openConnectModal()
+                }
+            }, [openConnectModal, openChainModal, openAccountModal, connected, chain])
+
+            return <button onClick={handleClick} type="button" className={`${!isMobile ? "h-24 w-24" : "h-20 w-14"} mx-2 w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
                 {connected ?
                     <div className="mx-0.5">
                         <div className="flex-col items-center">
