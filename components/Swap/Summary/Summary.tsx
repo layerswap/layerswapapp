@@ -83,8 +83,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
         <div className="pb-8 border-b border-secondary-500">
             <div className="bg-secondary-700 font-normal rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
                 <div className="flex items-center justify-between w-full px-3 py-2 border-b border-secondary-500">
-                    <div className="flex items-center gap-2">
-                        <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={30} height={30} className="rounded-md" />
+                    <div className="flex items-center gap-3">
+                        <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={36} height={36} className="rounded-md" />
                         <div>
                             <p className="text-white text-lg leading-5">{sourceDisplayName}</p>
                             {
@@ -100,8 +100,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                 </div>
                 <ArrowDown className="h-4 w-4 text-primary-text absolute top-[calc(50%-8px)] left-[calc(50%-8px)]" />
                 <div className="flex items-center justify-between w-full px-3 py-2">
-                    <div className="flex items-center gap-2">
-                        <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={30} height={30} className="rounded-md" />
+                    <div className="flex items-center gap-3">
+                        <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={36} height={36} className="rounded-md" />
                         <div>
                             <p className="text-white text-lg leading-5">{destinationDisplayName}</p>
                             <p className="text-sm text-primary-text">{shortenAddress(destAddress)}</p>

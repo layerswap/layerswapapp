@@ -22,7 +22,10 @@ function renderStepIcon(step) {
             return <XCircle className="h-8 w-8 text-red-600" aria-hidden="true" />;
 
         case "delayed":
-            return <XCircle className="h-8 w-8 text-yellow-600" aria-hidden="true" />;
+            return <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary opacity-40">
+                <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+                <span className="h-2.5 w-2.5 rounded-full bg-primary animate-ping absolute" />
+            </span>;
 
         default:
             return (

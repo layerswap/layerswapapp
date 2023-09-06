@@ -213,6 +213,19 @@ export const UserTransferDetected: Story = {
     }
 };
 
+
+export const UserTransferPendingInputCompleted: Story = {
+    args: {
+        swap: {
+            ...failedSwap,
+            status: SwapStatus.UserTransferPending,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+            ]
+        }
+    }
+};
+
 export const LsTransferPending: Story = {
     args: {
         swap: {
@@ -220,7 +233,7 @@ export const LsTransferPending: Story = {
             status: SwapStatus.LsTransferPending,
             transactions: [
                 { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
-                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Output },
             ]
         }
     }
@@ -233,8 +246,22 @@ export const LsTransferPendingWithRefuel: Story = {
             status: SwapStatus.LsTransferPending,
             transactions: [
                 { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
-                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
-                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Refuel },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
+    }
+};
+
+export const LsTransferInitiated: Story = {
+    args: {
+        swap: {
+            ...swap,
+            status: SwapStatus.LsTransferPending,
+            transactions: [
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output, confirmations: 2, max_confirmations: 5 },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Refuel, confirmations: 1, max_confirmations: 5 },
             ]
         }
     }
@@ -261,7 +288,7 @@ export const OnlyRefuelCompleted: Story = {
             status: SwapStatus.Completed,
             transactions: [
                 { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
-                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Output },
                 { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Refuel },
             ]
         }

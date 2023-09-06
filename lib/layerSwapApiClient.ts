@@ -44,6 +44,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/swaps/${swapid}`);
     }
 
+    async DisconnectExchangeAsync(swapid: string, exchangeName: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/swaps/${swapid}/exchange/${exchangeName}/disconnect`);
+    }
+
     async GetSwapDetailsAsync(id: string): Promise<ApiResponse<SwapItem>> {
         return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}`);
     }
@@ -160,7 +164,7 @@ export type AddressBookItem = {
     exchanges: string[]
 }
 
-type Transaction = {
+export type Transaction = {
     type: TransactionType,
     from: string,
     to: string,
