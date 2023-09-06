@@ -97,7 +97,7 @@ export default function () {
     const initialValues: SwapFormValues = generateSwapInitialValues(settings, query)
 
     return <>
-        <Modal show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
+        <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
             <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
         </Modal>
         <Formik
