@@ -201,7 +201,7 @@ const WalletTransferContent: FC = () => {
             if (swap.source_exchange) {
                 await handleDisconnectCoinbase()
             }
-            if (sourceAddressType === NetworkAddressType.evm) {
+            else if (sourceAddressType === NetworkAddressType.evm) {
                 await wagmiDisconnect()
             }
             else if (sourceAddressType === NetworkAddressType.starknet) {
