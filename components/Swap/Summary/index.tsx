@@ -76,6 +76,8 @@ const SwapSummary: FC = () => {
         hasRefuel={swap?.has_refuel}
         refuelAmount={refuelAmountInNativeCurrency}
         fee={fee}
+        exchange_account_connected={swap?.exchange_account_connected}
+        exchange_account_name={swap?.exchange_account_name}
     />
 }
 export default SwapSummary
