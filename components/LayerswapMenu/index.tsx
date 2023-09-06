@@ -37,9 +37,7 @@ export default function () {
     const { openConnectModal } = useConnectModal();
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
     const UserEmail = ({ email }: { email: string }) => {
-        return (
-            email.length >= 22 ? <>{shortenEmail(email)}</> : <>{email}</>
-        )
+        return shortenEmail(email, 22)
     }
 
     useEffect(() => {
