@@ -9,12 +9,6 @@ export const parameters = {
 };
 
 const preview: Preview = {
-  // decorators: [
-  //   (Story) => {
-  //     window.localStorage.clear();
-  //     return Story();
-  //   },
-  // ],
   loaders: [
     async () => ({
       settings: await (await fetch('https://jsonplaceholder.typicode.com/users/1')).json(),

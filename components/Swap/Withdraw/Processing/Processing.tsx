@@ -35,7 +35,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const destinationNetworkCurrency = GetNetworkCurrency(destination_layer, swap?.destination_network_asset)
 
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))[swap?.id]
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id]
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
@@ -302,7 +302,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                             <SwapSummary />
                         }
                         <div className="w-full flex flex-col h-full space-y-5">
-                            <div className="text-left text-primary-text mt-4 space-y-2">
+                            <div className="text-left text-primary-text space-y-2">
                                 <p className="block sm:text-lg font-medium text-white">
                                     Transfer status
                                 </p>
@@ -348,9 +348,20 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { [key in 
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
 
-    const input_transfer = swapInputTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete : ProgressStatus.Current;
-    let output_transfer = swapOutputTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete : swapOutputTransaction?.status == TransactionStatus.Initiated ? ProgressStatus.Current : ProgressStatus.Upcoming;
-    let refuel_transfer = (swap.has_refuel && !swapRefuelTransaction) || swapRefuelTransaction?.status == TransactionStatus.Pending ? ProgressStatus.Upcoming : swapRefuelTransaction?.status == TransactionStatus.Initiated ? ProgressStatus.Current : swapRefuelTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete : null;
+    const input_transfer =
+        swapInputTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete
+            : ProgressStatus.Current;
+
+    let output_transfer =
+        swapOutputTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete
+            : swapOutputTransaction?.status == TransactionStatus.Initiated || swapOutputTransaction?.status == TransactionStatus.Pending ? ProgressStatus.Current
+                : ProgressStatus.Upcoming;
+
+    let refuel_transfer =
+        (swap.has_refuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
+            : swapRefuelTransaction?.status == TransactionStatus.Initiated || swapRefuelTransaction?.status == TransactionStatus.Pending ? ProgressStatus.Current
+                : swapRefuelTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete
+                    : null;
     let failed = null;
     let delayed = null;
 

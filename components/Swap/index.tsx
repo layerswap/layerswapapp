@@ -26,7 +26,7 @@ const SwapDetails: FC = () => {
         <>
             <Widget>
                 {
-                    swapStatus === SwapStatus.UserTransferPending &&
+                    swapStatus === SwapStatus.UserTransferPending && !swapInputTransaction &&
                     <Withdraw />
                 }
                 {
