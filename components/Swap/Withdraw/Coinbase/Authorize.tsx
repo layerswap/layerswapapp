@@ -76,7 +76,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     )
 
     useEffect(() => {
-        if (swap.exchange_account_connected && authorizedAmount) {
+        if (authorizedAmount) {
             if (Number(authorizedAmount) < minimalAuthorizeAmount)
                 toast.error("You did not authorize enough")
             else {

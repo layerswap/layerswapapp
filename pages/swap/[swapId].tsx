@@ -25,8 +25,6 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
   )
 }
 
-const CACHE_PATH = ".settings";
-
 export const getServerSideProps = async (ctx) => {
   const params = ctx.params;
   let isValidGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(params.swapId);
