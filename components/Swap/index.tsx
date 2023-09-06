@@ -15,7 +15,7 @@ const SwapDetails: FC = () => {
     const { swap } = useSwapDataState()
     const swapStatus = swap.status;
     const { setInterval } = useSwapDataUpdate()
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))[swap?.id]
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id]
     useEffect(() => {
         setInterval(ResolvePollingInterval(swapStatus))
         return () => setInterval(0)

@@ -344,7 +344,7 @@ type StatusStep = {
 
 
 const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { [key in Progress]: ProgressStatus } => {
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))[swap?.id];
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id];
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
 
