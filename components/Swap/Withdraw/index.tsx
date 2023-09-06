@@ -185,21 +185,8 @@ const WalletTransferContent: FC = () => {
 
     const sourceAddressType = GetDefaultNetwork(source_network, source_network_asset)?.address_type
 
-    const handleReconnectCoinbase = useCallback(async () => {
-        // try {
-        //     const apiClient = new LayerSwapApiClient()
-        //     await apiClient.DeleteExchange("coinbase")
-        // }
-        // catch (e) {
-        //     toast.error(e.message)
-        // }
-    }, [])
-
     const handleDisconnect = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-        if (swap.source_exchange) {
-            handleReconnectCoinbase()
-        }
-        else if (sourceAddressType === NetworkAddressType.evm) {
+        if (sourceAddressType === NetworkAddressType.evm) {
             wagmiDisconnect()
         }
         else if (sourceAddressType === NetworkAddressType.starknet) {

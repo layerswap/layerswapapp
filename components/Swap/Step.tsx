@@ -38,7 +38,7 @@ function Step({ step, isLastStep }) {
         <li className={classNames(isLastStep ? '' : 'pb-10', 'relative')} key={step?.name}>
             <div className="flex items-center justify-between w-full">
                 {!isLastStep && (
-                    <div className="absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 bg-gray-300 opacity-60" aria-hidden="true" />
+                    <div className={`absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 ${step.status === "complete" ? "bg-primary" : "bg-gray-300"} opacity-60`} aria-hidden="true" />
                 )}
                 <div className={`group relative flex ${step?.description ? "items-start" : "items-center"}`}>
                     <span className="flex h-9 items-center" aria-hidden="true">
